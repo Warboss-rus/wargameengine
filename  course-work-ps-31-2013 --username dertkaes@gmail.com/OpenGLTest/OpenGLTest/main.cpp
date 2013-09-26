@@ -1,13 +1,13 @@
 #include <windows.h>
 #include <GL\glut.h>
-#include "3dObject.h"
+#include "3dModel.h"
+
+C3DModel model("teapot.obj");
 
 void OnDrawScene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glutWireSphere(0.6, 20, 20);
-	C3DObject obj;
-	obj.Draw();
+	model.Draw();
 	glutSwapBuffers();
 }
 
