@@ -3,23 +3,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-
-void Normalize(std::vector<double> & vect)
-{
-	for(size_t i = 0; i < vect.size(); i += 3)
-	{
-		double length = 0;
-		for(unsigned int j = i; j < i + 3; ++j)
-		{
-			length += vect[j] * vect[j];
-		}
-		length = sqrt(length);
-		for(unsigned int j = i; j < i + 3; ++j)
-		{
-			vect[j] /= length;
-		}
-	}
-}
+//#define NEW_RENDERING //uncomment it to render normals and texture coords in exchange of speed
 
 C3DModel::C3DModel(std::string const& path)
 {
@@ -27,7 +11,8 @@ C3DModel::C3DModel(std::string const& path)
 	iFile.open(path);
 	std::string line;
 	std::string type;
-	double coords;
+	double dvalue;
+	unsigned int uintvalue;
 	while(std::getline(iFile, line))
 	{
 		if(line.empty() || line[0] == '#')//Empty line or commentary
@@ -40,9 +25,9 @@ C3DModel::C3DModel(std::string const& path)
 		{
 			for(unsigned int i = 0; i < 3; ++i)
 			{
-				coords = 0.0;
-				lineStream >> coords;
-				m_vertices.push_back(coords);
+				dvalue = 0.0;
+				lineStream >> dvalue;
+				m_vertices.push_back(dvalue);
 			}
 		}
 
@@ -50,38 +35,55 @@ C3DModel::C3DModel(std::string const& path)
 		{
 			for(unsigned int i = 0; i < 2; ++i)
 			{
-				coords = 0.0;
-				lineStream >> coords;
-				m_textureCoords.push_back(coords);
+				dvalue = 0.0;
+				lineStream >> dvalue;
+				m_textureCoords.push_back(dvalue);
 			}
 		}
 		if(type == "vn")// Normals
 		{
 			for(unsigned int i = 0; i < 3; ++i)
 			{
-				coords = 0.0;
-				lineStream >> coords;
-				m_normals.push_back(coords);
+				dvalue = 0.0;
+				lineStream >> dvalue;
+				m_normals.push_back(dvalue);
 			}
 		}
 		if(type == "f")// faces
 		{
 			for(unsigned int i = 0; i < 3; ++i)
 			{
-				lineStream >> coords;
-				--coords;
-				m_faces.push_back(coords);
+				std::string indexes;
+				lineStream >> indexes;
+				std::stringstream indexStream(indexes);
+				std::string index;
+				//vertex index
+				std::getline(indexStream, index, '/');
+				uintvalue = atoi(index.c_str());
+				--uintvalue;
+				m_faces.push_back(uintvalue);
+#ifdef NEW_RENDERING
+				//texture coord index.
+				std::getline(indexStream, index, '/');
+				if(!index.empty()) uintvalue = atoi(index.c_str());
+				--uintvalue;
+				m_faces.push_back(uintvalue);
+				//normal index
+				std::getline(indexStream, index);
+				if(!index.empty()) uintvalue = atoi(index.c_str());
+				--uintvalue;
+				m_faces.push_back(uintvalue);/**/
+#endif
 			}
 		}
 	}
 	iFile.close();
-	Normalize(m_normals);
 }
 
 void C3DModel::Draw()
 {
 	if(m_vertices.size() > 2)
-	{
+	{;
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(3, GL_DOUBLE, 0, &m_vertices[0]);
 	}
@@ -97,7 +99,18 @@ void C3DModel::Draw()
 	}
 	if(!m_faces.empty())
 	{
+#ifdef NEW_RENDERING //new rendering with normals and texcoords. Slow
+		glBegin(GL_TRIANGLES); 
+		for(unsigned int i = 0; i < m_faces.size(); i += 3)
+		{
+			glTexCoord2d(m_vertices[m_faces[i + 1] * 2], m_vertices[m_faces[i + 1] * 2 + 1]);
+			glNormal3d(m_vertices[m_faces[i + 2] * 3], m_vertices[m_faces[i + 2] * 3 + 1], m_vertices[m_faces[i + 2] * 3 + 2]);
+			glVertex3d(m_vertices[m_faces[i] * 3], m_vertices[m_faces[i] * 3 + 1], m_vertices[m_faces[i] * 3 + 2]);
+		}
+		glEnd();
+#else//Old rendering with incorrect normals and texcoords. Very fast.
 		glDrawElements(GL_TRIANGLES, m_faces.size(), GL_UNSIGNED_INT, &m_faces[0]);
+#endif
 	}
 	else 
 	{

@@ -6,14 +6,30 @@ C3DModel model("teapot.obj");
 
 void OnDrawScene()
 {
+	glPushMatrix();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	model.Draw();
+	glPopMatrix();
 	glutSwapBuffers();
 }
 
-void OnMouse(int a, int b, int x, int y)
+void OnMouse(int button, int state, int x, int y)
 {
-
+	switch(button)
+	{
+	case 3://scroll up
+		if (state == GLUT_UP)
+		{
+			 glScaled(1.1, 1.1, 1.1);
+			 glutPostRedisplay();
+		}break;
+	case 4://scroll down
+		if (state == GLUT_UP)
+		{
+			glScaled(1.0 / 1.1, 1.0 / 1.1, 1.0 / 1.1);
+			glutPostRedisplay();
+		}break;
+	}
 }
 
 void OnKeyPress(unsigned char key, int x, int y)
@@ -24,22 +40,22 @@ void OnKeyPress(unsigned char key, int x, int y)
          break;
 	  case 'a':
 		  {
-			  gluLookAt(-0.1, 0.0, -1.0, -0.1, 0.0, 0.0, 0.0, 1.0, 0.0);
+			  glTranslated(0.1, 0.0, 0.0);
 			  glutPostRedisplay();
 		  }break;
 	  case 'd':
 		  {
-			  gluLookAt(0.1, 0.0, -1.0, 0.1, 0.0, 0.0, 0.0, 1.0, 0.0);
+			  glTranslated(-0.1, 0.0, 0.0);
 			  glutPostRedisplay();
 		  }break;
 	  case 's':
 		  {
-			  gluLookAt(0.0, 0.1, -1.0, 0.0, 0.1, 0.0, 0.0, 1.0, 0.0);
+			  glTranslated(0.0, 0.1, 0.0);
 			  glutPostRedisplay();
 		  }break;
 	  case 'w':
 		  {
-			  gluLookAt(0.0, -0.1, -1.0, 0.0, -0.1, 0.0, 0.0, 1.0, 0.0);
+			  glTranslated(0.0, -0.1, 0.0);
 			  glutPostRedisplay();
 		  }break;
    }
@@ -56,6 +72,8 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	glutDisplayFunc(&OnDrawScene);
 	glutKeyboardFunc(&OnKeyPress);
 	glutMouseFunc(&OnMouse);
+	glEnable(GL_NORMALIZE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glutMainLoop();
 	return 0;
 }
