@@ -1,13 +1,13 @@
 #include "ModelManager.h"
+#include <string>
 
 C3DModel * CModelManager::GetModel(std::string const& path)
 {
-	/*if(m_models.find(path) == m_models.end())
+	if(m_models.find(path) == m_models.end())
 	{
 		m_models[path] = new C3DModel(path);
 	}
-	return m_models[path];*/
-	return new C3DModel(path);
+	return m_models[path];
 }
 
 CModelManager::~CModelManager()

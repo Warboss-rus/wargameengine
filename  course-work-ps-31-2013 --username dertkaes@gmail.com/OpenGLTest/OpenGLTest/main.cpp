@@ -2,14 +2,12 @@
 #include <GL\glut.h>
 #include "3dModel.h"
 
-C3DModel model("teapot.obj");
+C3DModel model("Mine.obj");
 
 void OnDrawScene()
 {
-	glPushMatrix();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	model.Draw();
-	glPopMatrix();
 	glutSwapBuffers();
 }
 
@@ -73,7 +71,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	glutKeyboardFunc(&OnKeyPress);
 	glutMouseFunc(&OnMouse);
 	glEnable(GL_NORMALIZE);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glutMainLoop();
 	return 0;
 }

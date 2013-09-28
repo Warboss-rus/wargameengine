@@ -3,14 +3,15 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <map>
 
 C3DModel::C3DModel(std::string const& path)
 {
 	std::vector<double> vertices;
 	std::vector<double> textureCoords;
 	std::vector<double> normals;
-	std::ifstream iFile;
-	iFile.open(path);
+	std::map<std::string, unsigned int> faces;
+	std::ifstream iFile(path);
 	std::string line;
 	std::string type;
 	double dvalue;
@@ -58,35 +59,44 @@ C3DModel::C3DModel(std::string const& path)
 			{
 				std::string indexes;
 				lineStream >> indexes;
-				std::stringstream indexStream(indexes);
-				std::string index;
-				unsigned int vertexIndex;
-				unsigned int textureIndex;
-				unsigned int normalIndex;
-				//vertex index
-				std::getline(indexStream, index, '/');
-				vertexIndex = (atoi(index.c_str()) - 1) * 3;
-				m_vertices.push_back(vertices[vertexIndex]);
-				m_vertices.push_back(vertices[vertexIndex + 1]);
-				m_vertices.push_back(vertices[vertexIndex + 2]);
-				index.clear();
-				//texture coord index.
-				std::getline(indexStream, index, '/');
-				if(!index.empty())
+				if(faces.find(indexes) != faces.end()) //This vertex\normals\texture coords already exist
 				{
-					textureIndex = (atoi(index.c_str()) - 1) * 2;
-					m_textureCoords.push_back(textureCoords[textureIndex]);
-					m_textureCoords.push_back(textureCoords[textureIndex + 1]);
+					m_polygon.push_back(faces[indexes]);
 				}
-				index.clear();
-				//normal index
-				std::getline(indexStream, index);
-				if(!index.empty())
+				else//New vertex\normal\texcoord
 				{
-					normalIndex = (atoi(index.c_str()) - 1) * 3;
-					m_normals.push_back(normals[normalIndex]);
-					m_normals.push_back(normals[normalIndex + 1]);
-					m_normals.push_back(normals[normalIndex + 2]);
+					std::stringstream indexStream(indexes);
+					std::string index;
+					unsigned int vertexIndex;
+					unsigned int textureIndex;
+					unsigned int normalIndex;
+					//vertex index
+					std::getline(indexStream, index, '/');
+					vertexIndex = (atoi(index.c_str()) - 1) * 3;
+					m_vertices.push_back(vertices[vertexIndex]);
+					m_vertices.push_back(vertices[vertexIndex + 1]);
+					m_vertices.push_back(vertices[vertexIndex + 2]);
+					index.clear();
+					//texture coord index.
+					std::getline(indexStream, index, '/');
+					if(!index.empty())
+					{
+						textureIndex = (atoi(index.c_str()) - 1) * 2;
+						m_textureCoords.push_back(textureCoords[textureIndex]);
+						m_textureCoords.push_back(textureCoords[textureIndex + 1]);
+					}
+					index.clear();
+					//normal index
+					std::getline(indexStream, index);
+					if(!index.empty())
+					{
+						normalIndex = (atoi(index.c_str()) - 1) * 3;
+						m_normals.push_back(normals[normalIndex]);
+						m_normals.push_back(normals[normalIndex + 1]);
+						m_normals.push_back(normals[normalIndex + 2]);
+					}
+					m_polygon.push_back((m_vertices.size() - 1) / 3);
+					faces[indexes] = (m_vertices.size() - 1) / 3;
 				}
 			}
 		}
@@ -117,7 +127,14 @@ void C3DModel::Draw()
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, GL_DOUBLE, 0, &m_textureCoords[0]);
 	}
-	glDrawArrays(GL_TRIANGLES, 0, m_vertices.size() / 3);
+	if(!m_polygon.empty()) //Draw by indexes;
+	{
+		glDrawElements(GL_TRIANGLES, m_polygon.size(), GL_UNSIGNED_INT, &m_polygon[0]);
+	}
+	else //Draw in a row
+	{
+		glDrawArrays(GL_TRIANGLES, 0, m_vertices.size() / 3);
+	}
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
