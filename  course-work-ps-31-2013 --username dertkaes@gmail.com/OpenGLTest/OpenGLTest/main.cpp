@@ -30,33 +30,41 @@ void OnMouse(int button, int state, int x, int y)
 	}
 }
 
-void OnKeyPress(unsigned char key, int x, int y)
+void OnSpecialKeyPress(int key, int x, int y)
 {
-   switch (key) {
-      case 27: /* escape */
-         exit(0);
-         break;
-	  case 'a':
+   switch (key) 
+   {
+	case GLUT_KEY_LEFT:
 		  {
 			  glTranslated(0.1, 0.0, 0.0);
 			  glutPostRedisplay();
 		  }break;
-	  case 'd':
+	 case GLUT_KEY_RIGHT:
 		  {
 			  glTranslated(-0.1, 0.0, 0.0);
 			  glutPostRedisplay();
 		  }break;
-	  case 's':
+	 case GLUT_KEY_DOWN:
 		  {
 			  glTranslated(0.0, 0.1, 0.0);
 			  glutPostRedisplay();
 		  }break;
-	  case 'w':
+	 case GLUT_KEY_UP:
 		  {
 			  glTranslated(0.0, -0.1, 0.0);
 			  glutPostRedisplay();
 		  }break;
    }
+}
+
+void OnReshape(int width, int height) 
+{
+	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//change view angle here
+	glMatrixMode(GL_MODELVIEW);
+	glutPostRedisplay();
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmdLine*/,int nCmdShow)
@@ -68,10 +76,12 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	glutInitWindowSize(600, 600);
 	glutCreateWindow("GLUT test");
 	glutDisplayFunc(&OnDrawScene);
-	glutKeyboardFunc(&OnKeyPress);
+	glutReshapeFunc(&OnReshape);
+	glutSpecialFunc(&OnSpecialKeyPress);
 	glutMouseFunc(&OnMouse);
 	glEnable(GL_NORMALIZE);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glutMainLoop();
 	return 0;
 }

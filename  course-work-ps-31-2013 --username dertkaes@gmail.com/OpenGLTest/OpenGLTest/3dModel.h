@@ -13,4 +13,5 @@ private:
 	std::vector<double> m_normals;
 	std::vector<unsigned int> m_polygon;
 	CMaterialManager m_materials;
+	std::string m_usedMaterial;
 };
