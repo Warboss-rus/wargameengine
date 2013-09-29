@@ -1,6 +1,12 @@
 #include<vector>
 #include "MaterialManager.h"
 
+struct sUsingMaterial
+{
+	std::string materialName;
+	unsigned int polygonIndex;
+};
+
 class C3DModel
 {
 public:
@@ -13,5 +19,5 @@ private:
 	std::vector<double> m_normals;
 	std::vector<unsigned int> m_polygon;
 	CMaterialManager m_materials;
-	std::string m_usedMaterial;
+	std::vector<sUsingMaterial> m_usedMaterials;
 };

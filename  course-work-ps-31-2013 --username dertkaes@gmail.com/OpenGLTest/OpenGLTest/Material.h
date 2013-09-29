@@ -6,11 +6,11 @@ struct sMaterial
 	{
 		for(unsigned int i = 0; i < 3; ++i)
 		{
-			ambient[i] = 0.2;
-			diffuse[i] = 0.8;
-			specular[i] = 0.0;
+			ambient[i] = 0.2f;
+			diffuse[i] = 0.8f;
+			specular[i] = 0.0f;
 		}
-		shininess = 0.0;
+		shininess = 0.0f;
 	}
 	float ambient[3];
 	float diffuse[3];

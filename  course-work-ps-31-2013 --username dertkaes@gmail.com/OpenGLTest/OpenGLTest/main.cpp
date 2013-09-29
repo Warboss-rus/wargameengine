@@ -1,12 +1,15 @@
 #include <windows.h>
 #include <GL\glut.h>
 #include "3dModel.h"
+#include "Table.h"
 
-C3DModel model("Mine.obj");
+C3DModel model("SpaceMarine.obj");
+CTable table(2.0, 1.0);
 
 void OnDrawScene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//table.Draw();
 	model.Draw();
 	glutSwapBuffers();
 }

@@ -67,9 +67,9 @@ C3DModel::C3DModel(std::string const& path)
 				{
 					std::stringstream indexStream(indexes);
 					std::string index;
-					unsigned int vertexIndex;
-					unsigned int textureIndex;
-					unsigned int normalIndex;
+					long vertexIndex;
+					long textureIndex = UINT_MAX;
+					long normalIndex;
 					//vertex index
 					std::getline(indexStream, index, '/');
 					vertexIndex = (atoi(index.c_str()) - 1) * 3;
@@ -85,6 +85,11 @@ C3DModel::C3DModel(std::string const& path)
 						m_textureCoords.push_back(textureCoords[textureIndex]);
 						m_textureCoords.push_back(textureCoords[textureIndex + 1]);
 					}
+					else
+					{
+						m_textureCoords.push_back(0.0);
+						m_textureCoords.push_back(0.0);
+					}
 					index.clear();
 					//normal index
 					std::getline(indexStream, index);
@@ -95,6 +100,13 @@ C3DModel::C3DModel(std::string const& path)
 						m_normals.push_back(normals[normalIndex + 1]);
 						m_normals.push_back(normals[normalIndex + 2]);
 					}
+					else
+					{
+						m_normals.push_back(0.0);
+						m_normals.push_back(0.0);
+						m_normals.push_back(0.0);
+					}
+					//if(textureIndex == UINT_MAX) continue;
 					m_polygon.push_back((m_vertices.size() - 1) / 3);
 					faces[indexes] = (m_vertices.size() - 1) / 3;
 				}
@@ -108,9 +120,10 @@ C3DModel::C3DModel(std::string const& path)
 		}
 		if(type == "usemtl")//apply material
 		{
-			std::string name;
-			lineStream >> name;
-			m_usedMaterial = name;
+			sUsingMaterial material;
+			lineStream >> material.materialName;
+			material.polygonIndex = m_polygon.size();
+			m_usedMaterials.push_back(material);
 		}
 	}
 	iFile.close();
@@ -132,23 +145,11 @@ void SetMaterial(sMaterial * material)
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,material->diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,material->specular);
 	glMaterialf(GL_FRONT,GL_SHININESS,material->shininess);
-	if(material->textureID != 0)
-	{
-		glBindTexture(GL_TEXTURE_2D, material->textureID);
-	}
+	glBindTexture(GL_TEXTURE_2D, material->textureID);
 }
 
 void C3DModel::Draw()
 {
-	if(!m_usedMaterial.empty())
-	{
-		SetMaterial(m_materials.GetMaterial(m_usedMaterial));
-	}
-	else
-	{
-		sMaterial empty;
-		SetMaterial(&empty);
-	}
 	if(m_vertices.size() > 2)
 	{;
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -164,10 +165,19 @@ void C3DModel::Draw()
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, GL_DOUBLE, 0, &m_textureCoords[0]);
 	}
-	
 	if(!m_polygon.empty()) //Draw by indexes;
 	{
-		glDrawElements(GL_TRIANGLES, m_polygon.size(), GL_UNSIGNED_INT, &m_polygon[0]);
+		unsigned int begin = 0;
+		unsigned int end;
+		for(unsigned int i = 0; i < m_usedMaterials.size(); ++i)
+		{
+			end = m_usedMaterials[i].polygonIndex;
+			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_polygon[begin]);
+			SetMaterial(m_materials.GetMaterial(m_usedMaterials[i].materialName));
+			begin = end;
+		}
+		end = m_polygon.size();
+		glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_polygon[begin]);
 	}
 	else //Draw in a row
 	{
@@ -176,4 +186,6 @@ void C3DModel::Draw()
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	sMaterial empty;
+	SetMaterial(&empty);
 }

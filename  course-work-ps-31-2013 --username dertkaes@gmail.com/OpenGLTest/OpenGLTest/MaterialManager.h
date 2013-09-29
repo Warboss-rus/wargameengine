@@ -10,3 +10,5 @@ public:
 private:
 	std::map<std::string, sMaterial *> m_materials;
 };
+
+unsigned int LoadBMPTexture(std::string const& path);

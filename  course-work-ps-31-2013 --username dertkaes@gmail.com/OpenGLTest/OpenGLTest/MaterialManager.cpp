@@ -60,7 +60,7 @@ unsigned int LoadBMPTexture(std::string const& path)
 	// "Bind" the newly created texture : all future texture functions will modify this texture
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	// Give the image to OpenGL
-	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, width, height, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -74,7 +74,7 @@ void CMaterialManager::LoadMTL(std::string const& path)
 	std::ifstream iFile(path);
 	std::string line;
 	std::string type;
-	double dvalue;
+	float dvalue;
 	sMaterial * lastMaterial = NULL;
 	while(std::getline(iFile, line))
 	{

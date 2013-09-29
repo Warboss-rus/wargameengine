@@ -84,6 +84,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MaterialManager.cpp" />
     <ClCompile Include="ModelManager.cpp" />
+    <ClCompile Include="Table.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3dModel.h" />
@@ -92,6 +93,7 @@
     <ClInclude Include="MaterialManager.h" />
     <ClInclude Include="ModelManager.h" />
     <ClInclude Include="ObjectInterface.h" />
+    <ClInclude Include="Table.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
