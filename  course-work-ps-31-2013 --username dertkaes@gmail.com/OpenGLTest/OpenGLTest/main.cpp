@@ -1,16 +1,19 @@
 #include <windows.h>
 #include <GL\glut.h>
-#include "3dModel.h"
+#include "3dObject.h"
+#include "ObjectManager.h"
+#include "ModelManager.h"
 #include "Table.h"
 
-C3DModel model("SpaceMarine.obj");
-CTable table(2.0, 1.0);
+CObjectManager objectManager;
+CModelManager modelManager;
+//CTable table(6.0f, 3.0f, "sand.bmp");
 
 void OnDrawScene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//table.Draw();
-	model.Draw();
+	objectManager.Draw();
 	glutSwapBuffers();
 }
 
@@ -28,6 +31,38 @@ void OnMouse(int button, int state, int x, int y)
 		if (state == GLUT_UP)
 		{
 			glScaled(1.0 / 1.1, 1.0 / 1.1, 1.0 / 1.1);
+			glutPostRedisplay();
+		}break;
+	}
+}
+
+void OnKeyboard(unsigned char key, int x, int y)
+{
+	switch(key)
+	{
+	case 'a':
+		{
+			glRotated(1.0, 0.0, 1.0, 0.0);
+			glutPostRedisplay();
+		}break;
+	case 'd':
+		{
+			glRotated(-1.0, 0.0, 1.0, 0.0);
+			glutPostRedisplay();
+		}break;
+	case 'w':
+		{
+			glRotated(1.0, 0.0, 0.0, 1.0);
+			glutPostRedisplay();
+		}break;
+	case 's':
+		{
+			glRotated(-1.0, 0.0, 0.0, 1.0);
+			glutPostRedisplay();
+		}break;
+	case 8://backspace
+		{
+			glLoadIdentity();
 			glutPostRedisplay();
 		}break;
 	}
@@ -72,6 +107,7 @@ void OnReshape(int width, int height)
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmdLine*/,int nCmdShow)
 {
+	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine.obj"), 0.0, 0.0, 0.0));
 	int argc = 0;
 	char* argv[] = {""};
 	glutInit(&argc, argv);
@@ -80,9 +116,11 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	glutCreateWindow("GLUT test");
 	glutDisplayFunc(&OnDrawScene);
 	glutReshapeFunc(&OnReshape);
+	glutKeyboardFunc(&OnKeyboard);
 	glutSpecialFunc(&OnSpecialKeyPress);
 	glutMouseFunc(&OnMouse);
 	glEnable(GL_NORMALIZE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glutMainLoop();

@@ -1,10 +1,15 @@
+#include<string>
+#include "TextureManager.h"
+
 class CTable
 {
 public:
-	CTable(double height, double width):m_height(height), m_width(width) {}
+	CTable(float width, float height,std::string const& texture):m_height(height / 2), m_width(width / 2), m_texture(texture) {}
 	void Draw();
 private:
-	double m_height;
-	double m_width;
+	float m_height;
+	float m_width;
+	std::string m_texture;
 	unsigned int m_textureID;
+	CTextureManager m_textureManager;
 };

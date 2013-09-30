@@ -1,5 +1,5 @@
 #include "Material.h"
-#include <map>
+#include "TextureManager.h"
 
 class CMaterialManager
 {
@@ -9,6 +9,6 @@ public:
 	void LoadMTL(std::string const& path);
 private:
 	std::map<std::string, sMaterial *> m_materials;
+	CTextureManager m_textureManager;
 };
 
-unsigned int LoadBMPTexture(std::string const& path);

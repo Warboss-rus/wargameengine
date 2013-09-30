@@ -4,18 +4,22 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include "C3DModelUtils.h"
 
 C3DModel::C3DModel(std::string const& path)
 {
-	std::vector<double> vertices;
-	std::vector<double> textureCoords;
-	std::vector<double> normals;
+	std::vector<sPoint3> vertices;
+	std::vector<sPoint2> textureCoords;
+	std::vector<sPoint3> normals;
 	std::map<std::string, unsigned int> faces;
 	std::ifstream iFile(path);
 	std::string line;
 	std::string type;
-	double dvalue;
+	sPoint3 p3;
+	sPoint2 p2;
 	bool useFaces = false;
+	bool useNormals = false;
+	bool useUVs = false;
 	while(std::getline(iFile, line))
 	{
 		if(line.empty() || line[0] == '#')//Empty line or commentary
@@ -26,31 +30,26 @@ C3DModel::C3DModel(std::string const& path)
 
 		if(type == "v")// Vertex
 		{
-			for(unsigned int i = 0; i < 3; ++i)
-			{
-				dvalue = 0.0;
-				lineStream >> dvalue;
-				vertices.push_back(dvalue);
-			}
+			lineStream >> p3.x;
+			lineStream >> p3.y;
+			lineStream >> p3.z;
+			vertices.push_back(p3);
 		}
 
 		if(type == "vt")// Texture coords
 		{
-			for(unsigned int i = 0; i < 2; ++i)
-			{
-				dvalue = 0.0;
-				lineStream >> dvalue;
-				textureCoords.push_back(dvalue);
-			}
+			useUVs = true;
+			lineStream >> p2.x;
+			lineStream >> p2.y;
+			textureCoords.push_back(p2);
 		}
 		if(type == "vn")// Normals
 		{
-			for(unsigned int i = 0; i < 3; ++i)
-			{
-				dvalue = 0.0;
-				lineStream >> dvalue;
-				normals.push_back(dvalue);
-			}
+			useNormals = true;
+			lineStream >> p3.x;
+			lineStream >> p3.y;
+			lineStream >> p3.z;
+			normals.push_back(p3);
 		}
 		if(type == "f")// faces
 		{
@@ -59,56 +58,34 @@ C3DModel::C3DModel(std::string const& path)
 			{
 				std::string indexes;
 				lineStream >> indexes;
-				if(faces.find(indexes) != faces.end()) //This vertex/texture coords/normals already exist
+				if(faces.find(indexes) != faces.end()) //This vertex/texture coord/normal already exist
 				{
-					m_polygon.push_back(faces[indexes]);
+					m_indexes.push_back(faces[indexes]);
 				}
 				else//New vertex/texcoord/normal
 				{
-					std::stringstream indexStream(indexes);
-					std::string index;
-					long vertexIndex;
-					long textureIndex = UINT_MAX;
-					long normalIndex;
+					C3DModelUtils::FaceIndex faceIndex  = C3DModelUtils::ParseFaceIndex(indexes);
 					//vertex index
-					std::getline(indexStream, index, '/');
-					vertexIndex = (atoi(index.c_str()) - 1) * 3;
-					m_vertices.push_back(vertices[vertexIndex]);
-					m_vertices.push_back(vertices[vertexIndex + 1]);
-					m_vertices.push_back(vertices[vertexIndex + 2]);
-					index.clear();
-					//texture coord index
-					std::getline(indexStream, index, '/');
-					if(!index.empty())
+					m_vertices.push_back(vertices[faceIndex.vertex - 1]);
+				
+					if(faceIndex.textureCoord != 0)
 					{
-						textureIndex = (atoi(index.c_str()) - 1) * 2;
-						m_textureCoords.push_back(textureCoords[textureIndex]);
-						m_textureCoords.push_back(textureCoords[textureIndex + 1]);
+						m_textureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
 					}
 					else
 					{
-						m_textureCoords.push_back(0.0);
-						m_textureCoords.push_back(0.0);
+						m_textureCoords.push_back(sPoint2());
 					}
-					index.clear();
-					//normal index
-					std::getline(indexStream, index);
-					if(!index.empty())
+					if(faceIndex.normal != 0)
 					{
-						normalIndex = (atoi(index.c_str()) - 1) * 3;
-						m_normals.push_back(normals[normalIndex]);
-						m_normals.push_back(normals[normalIndex + 1]);
-						m_normals.push_back(normals[normalIndex + 2]);
+						m_normals.push_back(normals[faceIndex.normal - 1]);
 					}
 					else
 					{
-						m_normals.push_back(0.0);
-						m_normals.push_back(0.0);
-						m_normals.push_back(0.0);
+						m_normals.push_back(sPoint3());
 					}
-					//if(textureIndex == UINT_MAX) continue;
-					m_polygon.push_back((m_vertices.size() - 1) / 3);
-					faces[indexes] = (m_vertices.size() - 1) / 3;
+					m_indexes.push_back(m_vertices.size() - 1);
+					faces[indexes] = m_vertices.size() - 1;
 				}
 			}
 		}
@@ -122,9 +99,17 @@ C3DModel::C3DModel(std::string const& path)
 		{
 			sUsingMaterial material;
 			lineStream >> material.materialName;
-			material.polygonIndex = m_polygon.size();
+			material.polygonIndex = m_indexes.size();
 			m_usedMaterials.push_back(material);
 		}
+	}
+	if(!useNormals)
+	{
+		m_normals.clear();
+	}
+	if(!useUVs)
+	{
+		m_textureCoords.clear();
 	}
 	iFile.close();
 	if(!useFaces)
@@ -165,23 +150,23 @@ void C3DModel::Draw()
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, GL_DOUBLE, 0, &m_textureCoords[0]);
 	}
-	if(!m_polygon.empty()) //Draw by indexes;
+	if(!m_indexes.empty()) //Draw by indexes;
 	{
 		unsigned int begin = 0;
 		unsigned int end;
 		for(unsigned int i = 0; i < m_usedMaterials.size(); ++i)
 		{
 			end = m_usedMaterials[i].polygonIndex;
-			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_polygon[begin]);
+			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
 			SetMaterial(m_materials.GetMaterial(m_usedMaterials[i].materialName));
 			begin = end;
 		}
-		end = m_polygon.size();
-		glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_polygon[begin]);
+		end = m_indexes.size();
+		glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
 	}
 	else //Draw in a row
 	{
-		glDrawArrays(GL_TRIANGLES, 0, m_vertices.size() / 3);
+		glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
 	}
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);

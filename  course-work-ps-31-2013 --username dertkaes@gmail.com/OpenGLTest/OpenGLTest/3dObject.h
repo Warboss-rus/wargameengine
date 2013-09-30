@@ -4,11 +4,11 @@
 class C3DObject : public IObject
 {
 public:
-	C3DObject(C3DModel * model):m_model(model), m_x(0), m_y(0), m_rotation(0) {}
-	void Draw() {m_model->Draw(); }
+	C3DObject(C3DModel * model, double x, double y, double rotation):m_model(model), m_x(x), m_y(y), m_rotation(rotation) {}
+	void Draw();
 private:
 	C3DModel * m_model;
-	int m_x;
-	int m_y;
-	int m_rotation;
+	double m_x;
+	double m_y;
+	double m_rotation;
 };
