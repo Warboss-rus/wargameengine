@@ -8,6 +8,7 @@
 CObjectManager objectManager;
 CModelManager modelManager;
 //CTable table(6.0f, 3.0f, "sand.bmp");
+bool lineDrawing;
 
 void OnDrawScene()
 {
@@ -65,6 +66,12 @@ void OnKeyboard(unsigned char key, int x, int y)
 			glLoadIdentity();
 			glutPostRedisplay();
 		}break;
+	case 32: //space
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, lineDrawing?GL_FILL:GL_LINE);
+			lineDrawing = !lineDrawing;
+			glutPostRedisplay();
+		}break;
 	}
 }
 
@@ -100,7 +107,6 @@ void OnReshape(int width, int height)
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//change view angle here
 	glMatrixMode(GL_MODELVIEW);
 	glutPostRedisplay();
 }
@@ -108,6 +114,7 @@ void OnReshape(int width, int height)
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmdLine*/,int nCmdShow)
 {
 	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine.obj"), 0.0, 0.0, 0.0));
+	lineDrawing = false;
 	int argc = 0;
 	char* argv[] = {""};
 	glutInit(&argc, argv);
@@ -120,7 +127,8 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	glutSpecialFunc(&OnSpecialKeyPress);
 	glutMouseFunc(&OnMouse);
 	glEnable(GL_NORMALIZE);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glutMainLoop();
