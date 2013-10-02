@@ -9,6 +9,5 @@ public:
 	void LoadMTL(std::string const& path);
 private:
 	std::map<std::string, sMaterial *> m_materials;
-	CTextureManager m_textureManager;
 };
 

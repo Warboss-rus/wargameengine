@@ -4,16 +4,20 @@
 #include "ObjectManager.h"
 #include "ModelManager.h"
 #include "Table.h"
+#include "SkyBox.h"
 
 CObjectManager objectManager;
 CModelManager modelManager;
 //CTable table(6.0f, 3.0f, "sand.bmp");
+//CSkyBox skybox(0.0, 0.0, 0.0, 100.0, 100.0, 100.0, "texture\\skybox");
+
 bool lineDrawing;
 
 void OnDrawScene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//table.Draw();
+	//skybox.Draw();
 	objectManager.Draw();
 	glutSwapBuffers();
 }
@@ -113,7 +117,9 @@ void OnReshape(int width, int height)
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmdLine*/,int nCmdShow)
 {
-	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine.obj"), 0.0, 0.0, 0.0));
+	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine2.obj"), 0.0, 0.0, 0.0));
+	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine.obj"), -2.0, 0.0, 0.0));
+	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine.obj"), 2.0, 0.0, 0.0));
 	lineDrawing = false;
 	int argc = 0;
 	char* argv[] = {""};

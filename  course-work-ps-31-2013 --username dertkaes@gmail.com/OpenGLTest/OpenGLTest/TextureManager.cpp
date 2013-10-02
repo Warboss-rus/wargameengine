@@ -1,6 +1,8 @@
 #include "TextureManager.h"
 #include <GL\glut.h>
 
+CTextureManager * CTextureManager::m_manager = NULL;
+
 unsigned int LoadBMPTexture(std::string const& path)
 {
 	// Data read from the header of the BMP file
@@ -40,6 +42,21 @@ unsigned int LoadBMPTexture(std::string const& path)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	delete [] data;
 	return textureID;
+}
+
+CTextureManager * CTextureManager::GetInstance()
+{
+	if(!m_manager)
+	{
+		m_manager = new CTextureManager;
+	}
+	return m_manager;
+}
+
+void CTextureManager::FreeInstance()
+{
+	delete m_manager;
+	m_manager = NULL;
 }
 
 unsigned int CTextureManager::GetTexture(std::string const& path)

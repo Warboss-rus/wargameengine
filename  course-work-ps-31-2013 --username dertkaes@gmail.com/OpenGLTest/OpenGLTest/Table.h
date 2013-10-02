@@ -1,5 +1,4 @@
 #include<string>
-#include "TextureManager.h"
 
 class CTable
 {
@@ -11,5 +10,4 @@ private:
 	float m_width;
 	std::string m_texture;
 	unsigned int m_textureID;
-	CTextureManager m_textureManager;
 };

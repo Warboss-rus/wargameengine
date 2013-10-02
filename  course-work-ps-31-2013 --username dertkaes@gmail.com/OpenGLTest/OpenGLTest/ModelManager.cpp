@@ -1,11 +1,13 @@
 #include "ModelManager.h"
+#include "OBJModelFactory.h"
 #include <string>
 
 C3DModel * CModelManager::GetModel(std::string const& path)
 {
 	if(m_models.find(path) == m_models.end())
 	{
-		m_models[path] = new C3DModel(path);
+		CObjModelCreator factory;
+		m_models[path] = factory.Create(path);
 	}
 	return m_models[path];
 }

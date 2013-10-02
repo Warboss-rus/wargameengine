@@ -15,7 +15,8 @@ sMaterial * CMaterialManager::GetMaterial(std::string const& name)
 	sMaterial * material = m_materials[name];
 	if(material->textureID == 0)
 	{
-		material->textureID = m_textureManager.GetTexture(material->texture);
+		CTextureManager * texManager = CTextureManager::GetInstance();
+		material->textureID = texManager->GetTexture(material->texture);
 	}
 	return material;
 }

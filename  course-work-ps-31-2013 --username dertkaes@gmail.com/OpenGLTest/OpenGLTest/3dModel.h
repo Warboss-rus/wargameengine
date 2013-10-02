@@ -26,8 +26,6 @@ struct sPoint2
 class C3DModel
 {
 public:
-	C3DModel(std::string const& path);
-	void OpenMTL(std::string const& path);
 	void Draw();
 private:
 	std::vector<sPoint3> m_vertices;
@@ -36,4 +34,5 @@ private:
 	std::vector<unsigned int> m_indexes;
 	CMaterialManager m_materials;
 	std::vector<sUsingMaterial> m_usedMaterials;
+	friend class CObjModelCreator;
 };
