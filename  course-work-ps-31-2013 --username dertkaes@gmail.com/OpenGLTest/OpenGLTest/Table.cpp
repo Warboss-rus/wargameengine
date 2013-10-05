@@ -11,13 +11,13 @@ void CTable::Draw()
 	}
 	glBindTexture(GL_TEXTURE_2D, m_textureID);
 	glBegin(GL_QUADS);
+	glTexCoord2f(0.0, 0.0);
 	glVertex3f(-m_width, -m_height, 0.0);
-	glTexCoord2f(-m_width, -m_height);
+	glTexCoord2f(m_width, 0.0);
 	glVertex3f(m_width, -m_height, 0.0);
-	glTexCoord2f(m_width, -m_height);
-	glVertex3f(m_width, m_height, 0.0);
 	glTexCoord2f(m_width, m_height);
+	glVertex3f(m_width, m_height, 0.0);
+	glTexCoord2f(0.0, m_height);
 	glVertex3f(-m_width, m_height, 0.0);
-	glTexCoord2f(-m_width, m_height);
 	glEnd();
 }

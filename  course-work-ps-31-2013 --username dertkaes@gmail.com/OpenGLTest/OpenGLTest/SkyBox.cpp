@@ -35,57 +35,59 @@ void CSkyBox::Draw()
 	{
 		m_textureID[SKYBOX_RIGHT] = texManager->GetTexture(m_imageFolder + "/right.bmp");
 	}
+	glCullFace(GL_FRONT);
 	// Top side
 	glBindTexture(GL_TEXTURE_2D, m_textureID[SKYBOX_TOP]);
 	glBegin(GL_QUADS);		
 		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x + m_width, m_y + m_height, m_z);
 		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x + m_width, m_y + m_height, m_z + m_length); 
-		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x,		  m_y + m_height,	m_z + m_length);
-		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x,		  m_y + m_height,	m_z);
+		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x, m_y + m_height,	m_z + m_length);
+		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x, m_y + m_height,	m_z);
 	glEnd();
 
 	// Bottom side
 	glBindTexture(GL_TEXTURE_2D, m_textureID[SKYBOX_BOTTOM]);
 	glBegin(GL_QUADS);		
-		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x,		  m_y,		m_z);
-		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x,		  m_y,		m_z + m_length);
-		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x + m_width, m_y,		m_z + m_length); 
-		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x + m_width, m_y,		m_z);
+		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x, m_y, m_z);
+		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x, m_y, m_z + m_length);
+		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x + m_width, m_y, m_z + m_length); 
+		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x + m_width, m_y, m_z);
 	glEnd();
 
 	// Front side
 	glBindTexture(GL_TEXTURE_2D, m_textureID[SKYBOX_FRONT]);
 	glBegin(GL_QUADS);	
-		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x,		  m_y,		m_z + m_length);
-		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x,		  m_y + m_height, m_z + m_length);
+		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x, m_y, m_z + m_length);
+		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x, m_y + m_height, m_z + m_length);
 		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x + m_width, m_y + m_height, m_z + m_length); 
-		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x + m_width, m_y,		m_z + m_length);
+		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x + m_width, m_y, m_z + m_length);
 	glEnd();
 
 	// Back side
 	glBindTexture(GL_TEXTURE_2D, m_textureID[SKYBOX_BACK]);
 	glBegin(GL_QUADS);		
-		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x + m_width, m_y,		m_z);
+		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x + m_width, m_y, m_z);
 		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x + m_width, m_y + m_height, m_z); 
-		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x,		  m_y + m_height,	m_z);
-		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x,		  m_y,		m_z);
+		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x, m_y + m_height, m_z);
+		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x, m_y, m_z);
 	glEnd();
 
 	// Left side
 	glBindTexture(GL_TEXTURE_2D, m_textureID[SKYBOX_LEFT]);
 	glBegin(GL_QUADS);		
-		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x,		  m_y + m_height,	m_z);	
-		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x,		  m_y + m_height,	m_z + m_length); 
-		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x,		  m_y,		m_z + m_length);
-		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x,		  m_y,		m_z);		
+		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x, m_y + m_height, m_z);	
+		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x, m_y + m_height, m_z + m_length); 
+		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x, m_y, m_z + m_length);
+		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x, m_y, m_z);		
 	glEnd();
 
 	// Right side
 	glBindTexture(GL_TEXTURE_2D, m_textureID[SKYBOX_RIGHT]);
 	glBegin(GL_QUADS);		
-		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x + m_width, m_y,		m_z);
-		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x + m_width, m_y,		m_z + m_length);
+		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x + m_width, m_y, m_z);
+		glTexCoord2f(1.0f, 0.0f); glVertex3d(m_x + m_width, m_y, m_z + m_length);
 		glTexCoord2f(1.0f, 1.0f); glVertex3d(m_x + m_width, m_y + m_height,	m_z + m_length); 
 		glTexCoord2f(0.0f, 1.0f); glVertex3d(m_x + m_width, m_y + m_height,	m_z);
 	glEnd();
+	glCullFace(GL_BACK);
 }
