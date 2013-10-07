@@ -86,7 +86,7 @@ bool BoxRayIntersect(double minB[3], double maxB[3], double origin[3], double di
 
 
 
-IObject * CObjectManager::GetNearestObjectByVector(double startx, double starty, double startz, double endx, double endy, double endz)
+IObject * CObjectManager::GetNearestObjectByVector(double startx, double starty, double startz, double endx, double endy, double endz) const
 {
 	IObject* selectedObject = NULL;
 	double minDistance = 10000000.0;

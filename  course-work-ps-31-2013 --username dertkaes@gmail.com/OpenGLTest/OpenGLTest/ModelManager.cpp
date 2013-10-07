@@ -2,14 +2,31 @@
 #include "OBJModelFactory.h"
 #include <string>
 
-C3DModel * CModelManager::GetModel(std::string const& path)
+CModelManager * CModelManager::m_manager = NULL;
+
+CModelManager * CModelManager::GetInstance()
+{
+	if(!m_manager)
+	{
+		m_manager = new CModelManager;
+	}
+	return m_manager;
+}
+
+void CModelManager::FreeInstance()
+{
+	delete m_manager;
+	m_manager = NULL;
+}
+
+void CModelManager::DrawModel(std::string const& path)
 {
 	if(m_models.find(path) == m_models.end())
 	{
 		CObjModelCreator factory;
 		m_models[path] = factory.Create(path);
 	}
-	return m_models[path];
+	m_models[path]->Draw();
 }
 
 CModelManager::~CModelManager()

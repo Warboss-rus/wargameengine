@@ -11,7 +11,8 @@ void SetMaterial(sMaterial * material)
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,material->diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,material->specular);
 	glMaterialf(GL_FRONT,GL_SHININESS,material->shininess);
-	glBindTexture(GL_TEXTURE_2D, material->textureID);
+	CTextureManager * texManager = CTextureManager::GetInstance();
+	texManager->SetTexture(material->texture);
 }
 
 void C3DModel::Draw()

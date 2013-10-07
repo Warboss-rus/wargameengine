@@ -2,7 +2,7 @@
 
 struct sMaterial
 {
-	sMaterial():textureID(0)
+	sMaterial()
 	{
 		for(unsigned int i = 0; i < 3; ++i)
 		{
@@ -16,6 +16,5 @@ struct sMaterial
 	float diffuse[3];
 	float specular[3];
 	float shininess;
-	unsigned int textureID;
 	std::string texture;
 };

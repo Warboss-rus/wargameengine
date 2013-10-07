@@ -7,7 +7,7 @@ class CTextureManager
 public:
 	static CTextureManager * GetInstance();
 	static void FreeInstance();
-	unsigned int CTextureManager::GetTexture(std::string const& path);
+	void CTextureManager::SetTexture(std::string const& path);
 protected:
 	CTextureManager(){}
 	CTextureManager(CTextureManager const& other){}

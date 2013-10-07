@@ -4,12 +4,8 @@
 
 void CTable::Draw()
 {
-	if(m_textureID == 0)
-	{
-		CTextureManager * texManager = CTextureManager::GetInstance();
-		m_textureID = texManager->GetTexture(m_texture);
-	}
-	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	CTextureManager * texManager = CTextureManager::GetInstance();
+	texManager->SetTexture(m_texture);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0, 0.0);
 	glVertex3f(-m_width, -m_height, 0.0);

@@ -2,80 +2,33 @@
 #include <GL\glut.h>
 #include "3dObject.h"
 #include "ObjectManager.h"
-#include "ModelManager.h"
 #include "Table.h"
 #include "SkyBox.h"
+#include "Camera.h"
+#include "Selection.h"
 
 CObjectManager objectManager;
-CModelManager modelManager;
 IObject * selected;
-//CTable table(6.0f, 3.0f, "sand.bmp");
-//CSkyBox skybox(0.0, 0.0, 0.0, 100.0, 100.0, 100.0, "texture\\skybox");
+CCamera camera;
+CTable table(30.0f, 15.0f, "sand.bmp");
+CSkyBox skybox(0.0, 0.0, 0.0, 100.0, 100.0, 100.0, "skybox");
 
 void DrawSelectionBox(IObject * object);
 
 void OnDrawScene()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//skybox.Draw();
-	//table.Draw();
+	camera.Update();
+	skybox.Draw();
+	table.Draw();
 	objectManager.Draw();
 	if(selected) DrawSelectionBox(selected);
 	glutSwapBuffers();
 }
 
-void DrawSelectionBox(IObject * object)
+void OnIdle()
 {
-	glPushMatrix();
-	glTranslated(object->GetX(), object->GetY(), object->GetZ());
-	glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glColor3d(0.0, 0.0, 255.0);
-	const double * box = object->GetBounding();
-	glBegin(GL_QUADS);
-	//Left
-	glVertex3d(box[3], box[1], box[2]);
-	glVertex3d(box[3], box[4], box[2]);
-	glVertex3d(box[3], box[4], box[5]);
-	glVertex3d(box[3], box[1], box[5]);
-	//Right
-	glVertex3d(box[0], box[1], box[2]);
-	glVertex3d(box[0], box[4], box[2]);
-	glVertex3d(box[0], box[4], box[5]);
-	glVertex3d(box[0], box[1], box[5]);
-	//Front
-	glVertex3d(box[0], box[1], box[2]);
-	glVertex3d(box[3], box[1], box[2]);
-	glVertex3d(box[3], box[1], box[5]);
-	glVertex3d(box[0], box[1], box[5]);
-	//Back
-	glVertex3d(box[0], box[4], box[2]);
-	glVertex3d(box[3], box[4], box[2]);
-	glVertex3d(box[3], box[4], box[5]);
-	glVertex3d(box[0], box[4], box[5]);
-	glEnd();
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopMatrix();
-}
-
-IObject* SelectObject(int x, int y)
-{
-	//Get model, projection and viewport matrices
-	double matModelView[16], matProjection[16]; 
-	int viewport[4]; 
-	glGetDoublev( GL_MODELVIEW_MATRIX, matModelView ); 
-	glGetDoublev( GL_PROJECTION_MATRIX, matProjection ); 
-	glGetIntegerv( GL_VIEWPORT, viewport ); 
-	//Set OpenGL Windows coordinates
-	double winX = (double)x; 
-	double winY = viewport[3] - (double)y;
-	double startx, starty, startz, endx, endy, endz;
-	//Cast a ray from eye to mouse cursor;
-	gluUnProject(winX, winY, 0.0, matModelView, matProjection, 
-             viewport, &startx, &starty, &startz); 
-	gluUnProject(winX, winY, 1.0, matModelView, matProjection, 
-             viewport, &endx, &endy, &endz);
-	return objectManager.GetNearestObjectByVector(startx, starty, startz, endx, endy, endz);
+	glutPostRedisplay();
 }
 
 void OnMouse(int button, int state, int x, int y)
@@ -85,7 +38,7 @@ void OnMouse(int button, int state, int x, int y)
 	case GLUT_LEFT_BUTTON: //LMB
 		if (state == GLUT_DOWN)
 		{
-			selected = SelectObject(x, y);
+			selected = SelectObject(x, y, objectManager);
 		}
 		else
 		{
@@ -94,46 +47,35 @@ void OnMouse(int button, int state, int x, int y)
 	case 3://scroll up
 		if (state == GLUT_UP)
 		{
-			 glScaled(1.1, 1.1, 1.1);
-			 glutPostRedisplay();
+			camera.Scale(1.1); 
 		}break;
 	case 4://scroll down
 		if (state == GLUT_UP)
 		{
-			glScaled(1.0 / 1.1, 1.0 / 1.1, 1.0 / 1.1);
-			glutPostRedisplay();
+			camera.Scale(1.0 / 1.1);
 		}break;
 	}
+}
+
+void OnPassiveMouseMove(int x, int y)
+{
+	static int prevMouseX;
+	static int prevMouseY;
+	if(glutGetModifiers() == GLUT_ACTIVE_ALT)
+	{
+		camera.Rotate((double)(x - prevMouseX) / 10, (double)(prevMouseY - y) / 5);
+	}
+	prevMouseX = x;
+	prevMouseY = y;
 }
 
 void OnKeyboard(unsigned char key, int x, int y)
 {
 	switch(key)
 	{
-	case 'a':
-		{
-			glRotated(1.0, 0.0, 1.0, 0.0);
-			glutPostRedisplay();
-		}break;
-	case 'd':
-		{
-			glRotated(-1.0, 0.0, 1.0, 0.0);
-			glutPostRedisplay();
-		}break;
-	case 'w':
-		{
-			glRotated(1.0, 0.0, 0.0, 1.0);
-			glutPostRedisplay();
-		}break;
-	case 's':
-		{
-			glRotated(-1.0, 0.0, 0.0, 1.0);
-			glutPostRedisplay();
-		}break;
 	case 8://backspace
 		{
-			glLoadIdentity();
-			glutPostRedisplay();
+			camera.Reset();
 		}break;
 	}
 }
@@ -144,23 +86,19 @@ void OnSpecialKeyPress(int key, int x, int y)
    {
 	case GLUT_KEY_LEFT:
 		  {
-			  glTranslated(0.1, 0.0, 0.0);
-			  glutPostRedisplay();
+			  camera.Translate(0.1, 0.0);
 		  }break;
 	 case GLUT_KEY_RIGHT:
 		  {
-			  glTranslated(-0.1, 0.0, 0.0);
-			  glutPostRedisplay();
+			 camera.Translate(-0.1, 0.0);
 		  }break;
 	 case GLUT_KEY_DOWN:
 		  {
-			  glTranslated(0.0, 0.1, 0.0);
-			  glutPostRedisplay();
+			  camera.Translate(0.0, 0.1);
 		  }break;
 	 case GLUT_KEY_UP:
 		  {
-			  glTranslated(0.0, -0.1, 0.0);
-			  glutPostRedisplay();
+			  camera.Translate(0.0, -0.1);
 		  }break;
    }
 }
@@ -171,15 +109,14 @@ void OnReshape(int width, int height)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
-	glutPostRedisplay();
 }
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmdLine*/,int nCmdShow)
 {
-	selected = new C3DObject(modelManager.GetModel("SpaceMarine2.obj"), 0.0, 0.0, 0.0);
-	objectManager.AddObject(selected);
-	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine.obj"), -2.0, 0.0, 0.0));
-	objectManager.AddObject(new C3DObject(modelManager.GetModel("SpaceMarine.obj"), 2.0, 0.0, 0.0));
+	selected = NULL;
+	objectManager.AddObject(new C3DObject("CSM.obj", 0.0, 0.0, 0.0));
+	objectManager.AddObject(new C3DObject("SpaceMarine.obj", -2.0, 0.0, 0.0));
+	objectManager.AddObject(new C3DObject("SpaceMarine.obj", 2.0, 0.0, 0.0));
 	int argc = 0;
 	char* argv[] = {""};
 	glutInit(&argc, argv);
@@ -187,10 +124,12 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	glutInitWindowSize(600, 600);
 	glutCreateWindow("GLUT test");
 	glutDisplayFunc(&OnDrawScene);
+	glutIdleFunc(&OnIdle);
 	glutReshapeFunc(&OnReshape);
 	glutKeyboardFunc(&OnKeyboard);
 	glutSpecialFunc(&OnSpecialKeyPress);
 	glutMouseFunc(&OnMouse);
+	glutPassiveMotionFunc(&OnPassiveMouseMove);
 	glEnable(GL_NORMALIZE);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_DEPTH_TEST);

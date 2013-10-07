@@ -59,11 +59,16 @@ void CTextureManager::FreeInstance()
 	m_manager = NULL;
 }
 
-unsigned int CTextureManager::GetTexture(std::string const& path)
+void CTextureManager::SetTexture(std::string const& path)
 {
+	if(path.empty()) 
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+		return;	
+	}
 	if(m_textures.find(path) == m_textures.end())
 	{
-		m_textures[path] = LoadBMPTexture(path);
+		m_textures[path] = LoadBMPTexture("texture\\" + path);
 	}
-	return m_textures[path];
+	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
 }

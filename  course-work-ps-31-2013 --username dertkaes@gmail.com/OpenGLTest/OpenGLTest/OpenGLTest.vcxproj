@@ -82,11 +82,13 @@
   <ItemGroup>
     <ClCompile Include="3dModel.cpp" />
     <ClCompile Include="3dObject.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MaterialManager.cpp" />
     <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="OBJModelFactory.cpp" />
+    <ClCompile Include="Selection.cpp" />
     <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="Table.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -94,6 +96,7 @@
   <ItemGroup>
     <ClInclude Include="3dModel.h" />
     <ClInclude Include="3dObject.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialManager.h" />
     <ClInclude Include="ModelManager.h" />
@@ -101,6 +104,7 @@
     <ClInclude Include="ObjectInterface.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="OBJModelFactory.h" />
+    <ClInclude Include="Selection.h" />
     <ClInclude Include="SkyBox.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="TextureManager.h" />
