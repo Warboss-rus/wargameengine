@@ -11,7 +11,7 @@ CObjectManager objectManager;
 IObject * selected;
 CCamera camera;
 CTable table(30.0f, 15.0f, "sand.bmp");
-CSkyBox skybox(0.0, 0.0, 0.0, 100.0, 100.0, 100.0, "skybox");
+CSkyBox skybox(0.0, 0.0, 0.0, 60.0, 60.0, 60.0, "skybox");
 
 void DrawSelectionBox(IObject * object);
 
@@ -86,28 +86,30 @@ void OnSpecialKeyPress(int key, int x, int y)
    {
 	case GLUT_KEY_LEFT:
 		  {
-			  camera.Translate(0.1, 0.0);
+			  camera.Translate(0.3, 0.0);
 		  }break;
 	 case GLUT_KEY_RIGHT:
 		  {
-			 camera.Translate(-0.1, 0.0);
+			 camera.Translate(-0.3, 0.0);
 		  }break;
 	 case GLUT_KEY_DOWN:
 		  {
-			  camera.Translate(0.0, 0.1);
+			  camera.Translate(0.0, 0.3);
 		  }break;
 	 case GLUT_KEY_UP:
 		  {
-			  camera.Translate(0.0, -0.1);
+			  camera.Translate(0.0, -0.3);
 		  }break;
    }
 }
 
 void OnReshape(int width, int height) 
 {
-	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	GLdouble aspect = (GLdouble)width / (GLdouble)height;
+	gluPerspective(60, aspect, 0.5, 100.0);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -121,7 +123,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	char* argv[] = {""};
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitWindowSize(600, 600);
+	glutInitWindowSize(640, 480);
 	glutCreateWindow("GLUT test");
 	glutDisplayFunc(&OnDrawScene);
 	glutIdleFunc(&OnIdle);
