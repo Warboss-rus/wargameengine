@@ -2,6 +2,7 @@
 #include <GL\glut.h>
 #include "GlutInitializer.h"
 #include <string>
+#include "..\SelectionTools.h"
 
 using namespace std;
 
@@ -65,7 +66,8 @@ void CGameView::Update()
 	m_skybox->Draw();
 	m_table->Draw();
 	DrawObjects();
-	//if(selected) DrawSelectionBox(selected);
+	if(m_selectedObject.get()) DrawSelectionBox(m_selectedObject.get());
+	ruler.Draw();
 }
 CGameView::~CGameView(void)
 {
@@ -110,14 +112,9 @@ void CGameView::CameraZoomOut()
 	m_camera.ZoomOut();
 }
 
-void CGameView::CameraTranslate(double transX, double transY)
+void CGameView::CameraRotate(int rotZ, int rotX)
 {
-	m_camera.Translate(transX, transY);
-}
-
-void CGameView::CameraRotate(double rotZ, double rotX)
-{
-	m_camera.Rotate(rotZ, rotX);
+	m_camera.Rotate((double)rotZ / 10, (double)rotX / 5);
 }
 
 void CGameView::CameraReset()
@@ -143,4 +140,28 @@ void CGameView::CameraTranslateDown()
 void CGameView::CameraTranslateUp()
 {
 	m_camera.Translate(0.0, -CCamera::TRANSLATE);
+}
+
+void CGameView::SelectObject(int x, int y)
+{
+	double start[3];
+	double end[3];
+	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
+	//m_selectedObject.reset(m_gameModel.lock()->Get3DObjectIntersectingRay(start, end));
+}
+
+void CGameView::RulerBegin(int x, int y)
+{
+	ruler.SetBegin(x, y);
+}
+
+void CGameView::RulerEnd(int x, int y)
+{
+	ruler.SetEnd(x, y);
+	char str[10];
+	double distance = ruler.GetDistance();
+	sprintf(str, "%0.2f", distance);
+	OnDrawScene();
+	MessageBoxA(NULL, str, "Distance", 0);
+	ruler.Hide();
 }

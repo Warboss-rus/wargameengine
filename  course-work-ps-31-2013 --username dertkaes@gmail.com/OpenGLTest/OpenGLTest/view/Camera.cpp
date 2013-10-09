@@ -29,7 +29,7 @@ void CCamera::Rotate(double rotZ, double rotX)
 	m_rotZ = fmod(m_rotZ + rotZ, 360);
 	m_rotX += rotX;
 	if(m_rotX > 90) m_rotX = 90;
-	if(m_rotX < 0.1) m_rotX= 0.1;
+	if(m_rotX < 1.0) m_rotX= 1.0;
 }
 
 void CCamera::ZoomIn()

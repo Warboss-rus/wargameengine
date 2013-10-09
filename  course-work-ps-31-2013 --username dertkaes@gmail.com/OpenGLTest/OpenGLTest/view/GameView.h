@@ -9,6 +9,7 @@
 #include "SkyBox.h"
 #include "Camera.h"
 #include "Input.h"
+#include "..\Ruler.h"
 
 class CGameView
 {
@@ -22,6 +23,7 @@ private:
 	std::shared_ptr<CSkyBox> m_skybox;
 	std::shared_ptr<CInput> m_input;
 	CCamera m_camera;
+	CRuler ruler;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
@@ -33,17 +35,17 @@ public:
 	void DrawObjects(void);
 	void Init();
 
-	IObject* CGameView::SelectObject(int x, int y);
-	void DrawSelectionBox(IObject * object);
+	void SelectObject(int x, int y);
 	void CameraZoomIn();
 	void CameraZoomOut();
-	void CameraTranslate(double transX, double transY);
-	void CameraRotate(double rotZ, double rotX);
+	void CameraRotate(int rotZ, int rotX);
 	void CameraReset();
 	void CameraTranslateLeft();
 	void CameraTranslateRight();
 	void CameraTranslateDown();
 	void CameraTranslateUp();
+	void RulerBegin(int x, int y);
+	void RulerEnd(int x, int y);
 
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

@@ -1,5 +1,6 @@
 #include "TextureManager.h"
 #include <GL\glut.h>
+#include "..\picopng.h"
 
 CTextureManager * CTextureManager::m_manager = NULL;
 
@@ -69,6 +70,46 @@ unsigned int LoadTGATexture(std::string const& path)
 	return textureID;
 }
 
+unsigned int LoadPNGTexture(std::string const& path)
+{
+	unsigned char * rawData;
+	FILE * file = fopen(path.c_str(),"rb");
+	fseek(file, 0L, SEEK_END);
+	long imageSize = ftell(file);
+	fseek(file, 0L, SEEK_SET);
+	rawData = new unsigned char[imageSize];
+	fread(rawData, 1, imageSize, file);
+	fclose(file);
+	std::vector<unsigned char> data;
+	unsigned long width;
+	unsigned long height;
+	decodePNG(data, width, height, rawData, imageSize, true);
+	for(unsigned long y = 0; y < height / 2; ++y)
+	{
+		for(unsigned long x = 0; x < width; ++x)
+		{
+			for(unsigned int k = 0; k < 4; k++)
+			{
+				std::swap(data[(y * width + x) * 4 + k], data[((height - y - 1) * width + x) * 4 + k]);
+			}
+		}
+	}
+
+	// Create one OpenGL texture
+	GLuint textureID;
+	glGenTextures(1, &textureID);
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	// Give the image to OpenGL
+	glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	delete [] rawData;
+	return textureID;
+}
+
 unsigned int LoadTexture(std::string const& path)
 {
 	unsigned int pointCoord = path.find_last_of('.') + 1;
@@ -77,6 +118,8 @@ unsigned int LoadTexture(std::string const& path)
 		return LoadBMPTexture(path);
 	if(extension == "tga")
 		return LoadTGATexture(path);
+	if(extension == "png")
+		return LoadPNGTexture(path);
 	return 0; //unknown
 }
 

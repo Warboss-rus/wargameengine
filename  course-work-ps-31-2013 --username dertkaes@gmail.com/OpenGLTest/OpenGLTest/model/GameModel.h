@@ -7,7 +7,7 @@
 class CGameModel
 {
 private:
-	std::vector<IObject *> m_objects;
+	std::vector<IObject*> m_objects;
 
 	static std::shared_ptr<CGameModel> m_instanse;
 	CGameModel(void){};
@@ -19,5 +19,6 @@ public:
 	IObject* Get3DObject(unsigned long number) const;
 	void AddObject(IObject * object);
 	void DeleteObject(IObject * object);
+	IObject* Get3DObjectIntersectingRay(double begin[3], double end[3]) const;
 };
 
