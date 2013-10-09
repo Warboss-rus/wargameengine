@@ -1,18 +1,12 @@
 #include "3dObject.h"
 #include <GL\glut.h>
-#include "ModelManager.h"
 
-void C3DObject::Draw() const
+std::string C3DObject::GetPathToModel() const
 {
-	glPushMatrix();
-	glTranslated(m_x, m_y, 0);
-	glRotated(m_rotation, 0.0, 0.0, 1.0);
-	CModelManager * modelManager = CModelManager::GetInstance();
-	modelManager->DrawModel(m_model);
-	glPopMatrix();
+	return m_model;
 }
 
-C3DObject::C3DObject(std::string model, double x, double y, double rotation):m_model(model), m_x(x), m_y(y), 
+C3DObject::C3DObject(std::string const& model, double x, double y, double rotation):m_model(model), m_x(x), m_y(y), 
 		m_rotation(rotation)
 {
 	m_bounding[0] = -0.8;

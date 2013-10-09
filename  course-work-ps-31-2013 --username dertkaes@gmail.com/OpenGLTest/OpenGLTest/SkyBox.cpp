@@ -1,12 +1,6 @@
 #include "SkyBox.h"
 #include <GL\glut.h>
 #include "TextureManager.h"
-#define SKYBOX_TOP 0
-#define SKYBOX_BOTTOM 1
-#define SKYBOX_FRONT 2
-#define SKYBOX_BACK 3
-#define SKYBOX_LEFT 4
-#define SKYBOX_RIGHT 5
 
 void CSkyBox::Draw()
 {

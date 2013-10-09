@@ -24,37 +24,55 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="3dModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Table.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="3dObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ObjectManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
+    <ClCompile Include="Selection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SkyBox.cpp">
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GameView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OBJModelFactory.cpp">
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GlutInitializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\model\GameModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\controller\GameController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\SkyBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\3dModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\ModelManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\MaterialManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Table.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\TextureManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\OBJModelFactory.cpp">
       <Filter>Source Files\Parsers</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Selection.cpp">
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -66,9 +84,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3dModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
@@ -95,10 +110,28 @@
     <ClInclude Include="OBJModelFactory.h">
       <Filter>Header Files\Parsers</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="Selection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Selection.h">
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GameView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GlutInitializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\model\GameModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\controller\GameController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\ModelManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\freeglut\include;H:\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\freeglut\lib;H:\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Program Files (x86)\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files (x86)\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -80,26 +80,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="3dModel.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\controller\GameController.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\model\GameModel.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\Source.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\3dModel.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Camera.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GameView.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GlutInitializer.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Input.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\MaterialManager.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\ModelManager.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\OBJModelFactory.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\SkyBox.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Table.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\TextureManager.cpp" />
     <ClCompile Include="3dObject.cpp" />
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MaterialManager.cpp" />
-    <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="OBJModelFactory.cpp" />
     <ClCompile Include="Selection.cpp" />
-    <ClCompile Include="SkyBox.cpp" />
-    <ClCompile Include="Table.cpp" />
-    <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\controller\GameController.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\model\GameModel.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Camera.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GameView.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\GlutInitializer.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Input.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\ModelManager.h" />
     <ClInclude Include="3dModel.h" />
     <ClInclude Include="3dObject.h" />
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialManager.h" />
-    <ClInclude Include="ModelManager.h" />
     <ClInclude Include="ModelFactoryInterface.h" />
     <ClInclude Include="ObjectInterface.h" />
     <ClInclude Include="ObjectManager.h" />

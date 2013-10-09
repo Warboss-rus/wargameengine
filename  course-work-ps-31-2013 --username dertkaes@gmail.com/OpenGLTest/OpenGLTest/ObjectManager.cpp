@@ -2,10 +2,10 @@
 
 void CObjectManager::Draw()
 {
-	for(unsigned int i = 0; i < m_objects.size(); ++i)
+/*	for(unsigned int i = 0; i < m_objects.size(); ++i)
 	{
 		m_objects[i]->Draw();
-	}
+	}*/
 }
 
 void CObjectManager::AddObject(IObject * object)

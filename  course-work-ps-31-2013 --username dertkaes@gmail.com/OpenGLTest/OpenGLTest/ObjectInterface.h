@@ -1,9 +1,10 @@
 #pragma once
+#include <string>
 
 class IObject
 {
 public:
-	virtual void Draw() const = 0;
+	virtual std::string GetPathToModel() const = 0;
 	virtual ~IObject() {}
 	virtual void Move(double deltaX, double deltaY, double deltaRotate) = 0;
 	virtual double GetX() const = 0;
