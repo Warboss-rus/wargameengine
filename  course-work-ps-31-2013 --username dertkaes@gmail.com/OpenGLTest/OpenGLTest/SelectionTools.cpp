@@ -80,37 +80,47 @@ void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, d
              viewport, &endx, &endy, &endz);
 }
 
-void DrawSelectionBox(IObject * object)
+void DrawSelectionBox(const double * box)
 {
 	glPushMatrix();
-	glTranslated(object->GetX(), object->GetY(), object->GetZ());
-	glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glColor3d(0.0, 0.0, 255.0);
-	const double * box = object->GetBounding();
-	glBegin(GL_QUADS);
 	//Left
+	glBegin(GL_LINE_LOOP);
 	glVertex3d(box[3], box[1], box[2]);
 	glVertex3d(box[3], box[4], box[2]);
 	glVertex3d(box[3], box[4], box[5]);
 	glVertex3d(box[3], box[1], box[5]);
+	glEnd();
 	//Right
+	glBegin(GL_LINE_LOOP);
 	glVertex3d(box[0], box[1], box[2]);
 	glVertex3d(box[0], box[4], box[2]);
 	glVertex3d(box[0], box[4], box[5]);
 	glVertex3d(box[0], box[1], box[5]);
+	glEnd();
 	//Front
+	glBegin(GL_LINE_LOOP);
 	glVertex3d(box[0], box[1], box[2]);
 	glVertex3d(box[3], box[1], box[2]);
 	glVertex3d(box[3], box[1], box[5]);
 	glVertex3d(box[0], box[1], box[5]);
+	glEnd();
 	//Back
+	glBegin(GL_LINE_LOOP);
 	glVertex3d(box[0], box[4], box[2]);
 	glVertex3d(box[3], box[4], box[2]);
 	glVertex3d(box[3], box[4], box[5]);
 	glVertex3d(box[0], box[4], box[5]);
 	glEnd();
 	glColor3d(255.0, 255.0, 255.0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopMatrix();
+}
+
+void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY)
+{
+	double startx, starty, startz, endx, endy, endz;
+	WindowCoordsToWorldVector(windowX, windowY, startx, starty, startz, endx, endy, endz);
+	double a = (-startz) / (endz - startz);
+	worldX = a * (endx - startx) + startx;
+	worldY = a * (endy - starty) + starty;
 }

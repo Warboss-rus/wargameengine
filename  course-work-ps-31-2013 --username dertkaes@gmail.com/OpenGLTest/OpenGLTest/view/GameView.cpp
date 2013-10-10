@@ -66,7 +66,7 @@ void CGameView::Update()
 	m_skybox->Draw();
 	m_table->Draw();
 	DrawObjects();
-	if(m_selectedObject.get()) DrawSelectionBox(m_selectedObject.get());
+	if(m_gameModel.lock()->GetSelectedObjectBoundingBox()) DrawSelectionBox(m_gameModel.lock()->GetSelectedObjectBoundingBox());
 	ruler.Draw();
 }
 CGameView::~CGameView(void)
@@ -78,7 +78,7 @@ void CGameView::DrawObjects(void)
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
-		IObject const* object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
@@ -147,7 +147,7 @@ void CGameView::SelectObject(int x, int y)
 	double start[3];
 	double end[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
-	//m_selectedObject.reset(m_gameModel.lock()->Get3DObjectIntersectingRay(start, end));
+	m_gameModel.lock()->TrySelectObject(start, end);
 }
 
 void CGameView::RulerBegin(int x, int y)
@@ -164,4 +164,11 @@ void CGameView::RulerEnd(int x, int y)
 	OnDrawScene();
 	MessageBoxA(NULL, str, "Distance", 0);
 	ruler.Hide();
+}
+
+void CGameView::TryMoveSelectedObject(int x, int y)
+{
+	double worldX, worldY;
+	WindowCoordsToWorldCoords(x, y, worldX, worldY);
+	m_gameModel.lock()->MoveSelectedObjectTo(worldX, worldY);
 }

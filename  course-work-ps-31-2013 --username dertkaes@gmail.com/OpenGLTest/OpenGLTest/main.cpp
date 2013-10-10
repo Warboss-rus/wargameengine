@@ -11,7 +11,8 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 {
 	std::weak_ptr<CGameModel> pModel = CGameModel::GetIntanse();
 	std::weak_ptr<CGameController> pController = CGameController::GetIntanse();
-	pModel.lock()->AddObject(new C3DObject("SpaceMarine.obj", 0.0, 0.0, 0.0));
+	std::shared_ptr<IObject> pObject(new C3DObject("SpaceMarine.obj", 0.0, 0.0, 0.0)); 
+	pModel.lock()->AddObject(pObject);
 	std::weak_ptr<CGameView> pView = CGameView::GetIntanse(); 
 //	CCommandManager commandManager(pView.lock().get());
 //	commandManager.Execute(new CCreateObjectCommand());

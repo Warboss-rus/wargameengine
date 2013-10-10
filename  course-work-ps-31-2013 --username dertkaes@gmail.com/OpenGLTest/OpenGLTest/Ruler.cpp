@@ -3,15 +3,6 @@
 #include <math.h>
 #include "SelectionTools.h"
 
-void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY)
-{
-	double startx, starty, startz, endx, endy, endz;
-	WindowCoordsToWorldVector(windowX, windowY, startx, starty, startz, endx, endy, endz);
-	double a = (-startz) / (endz - startz);
-	worldX = a * (endx - startx) + startx;
-	worldY = a * (endy - starty) + starty;
-}
-
 void CRuler::SetBegin(int windowBeginX, int windowBeginY)
 {
 	if(m_isVisible) return;

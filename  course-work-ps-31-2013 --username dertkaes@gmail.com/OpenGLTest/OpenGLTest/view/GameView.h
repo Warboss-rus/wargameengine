@@ -46,7 +46,8 @@ public:
 	void CameraTranslateUp();
 	void RulerBegin(int x, int y);
 	void RulerEnd(int x, int y);
-
+	void TryMoveSelectedObject(int x, int y);
+	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);
 	static void OnIdle();

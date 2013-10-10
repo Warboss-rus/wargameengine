@@ -2,11 +2,15 @@
 #include <GL\glut.h>
 #include "GameView.h"
 
-CInput::CInput(void)
+bool CInput::m_isLMBDown = false;
+
+CInput::CInput(void) 
 {
+	m_isLMBDown = false;
 	glutKeyboardFunc(&OnKeyboard);
 	glutSpecialFunc(&OnSpecialKeyPress);
 	glutMouseFunc(&OnMouse);
+	glutMotionFunc(&OnMouseMove);
 	glutPassiveMotionFunc(&OnPassiveMouseMove);
 }
 
@@ -22,6 +26,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 	case GLUT_LEFT_BUTTON: //LMB
 		if (state == GLUT_DOWN)
 		{
+			m_isLMBDown = true;
 			if(glutGetModifiers() == GLUT_ACTIVE_CTRL)
 			{
 				CGameView::GetIntanse().lock()->RulerBegin(x, y);
@@ -33,6 +38,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		}
 		else
 		{
+			m_isLMBDown = false;
 			if(glutGetModifiers() == GLUT_ACTIVE_CTRL)
 			{
 				CGameView::GetIntanse().lock()->RulerEnd(x, y);
@@ -102,5 +108,13 @@ void CInput::OnPassiveMouseMove(int x, int y)
 		glutSetCursor(GLUT_CURSOR_INHERIT);
 		prevMouseX = x;
 		prevMouseY = y;
+	}
+}
+
+void CInput::OnMouseMove(int x, int y)
+{
+	if (m_isLMBDown)
+	{
+		CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
 	}
 }

@@ -6,7 +6,7 @@ class IObject
 public:
 	virtual std::string GetPathToModel() const = 0;
 	virtual ~IObject() {}
-	virtual void Move(double deltaX, double deltaY, double deltaRotate) = 0;
+	virtual void MoveTo(double x, double y, double rotation) = 0;
 	virtual double GetX() const = 0;
 	virtual double GetY() const = 0;
 	virtual double GetZ() const = 0;
