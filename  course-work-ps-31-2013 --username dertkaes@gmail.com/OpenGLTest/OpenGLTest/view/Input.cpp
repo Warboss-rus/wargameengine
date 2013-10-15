@@ -1,12 +1,13 @@
 #include "Input.h"
 #include <GL\glut.h>
 #include "GameView.h"
+#include "..\UI.h"
 
 bool CInput::m_isLMBDown = false;
+bool CInput::m_ruler = false;
 
 CInput::CInput(void) 
 {
-	m_isLMBDown = false;
 	glutKeyboardFunc(&OnKeyboard);
 	glutSpecialFunc(&OnSpecialKeyPress);
 	glutMouseFunc(&OnMouse);
@@ -27,23 +28,21 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		if (state == GLUT_DOWN)
 		{
 			m_isLMBDown = true;
-			if(glutGetModifiers() == GLUT_ACTIVE_CTRL)
+			if(m_ruler)
 			{
 				CGameView::GetIntanse().lock()->RulerBegin(x, y);
 			}
 			else
 			{
 				CGameView::GetIntanse().lock()->SelectObject(x, y);
+				CGameView::GetIntanse().lock()->RulerHide();
 			}
 		}
 		else
 		{
 			m_isLMBDown = false;
-			if(glutGetModifiers() == GLUT_ACTIVE_CTRL)
-			{
-				CGameView::GetIntanse().lock()->RulerEnd(x, y);
-			}
-			//find intersection with z==0 plane and place model there
+			m_ruler = false;
+			CUI::GetIntanse().lock()->Click(x, y);
 		}break;
 	case 3://scroll up
 		if (state == GLUT_UP)
@@ -115,6 +114,13 @@ void CInput::OnMouseMove(int x, int y)
 {
 	if (m_isLMBDown)
 	{
-		CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
+		if(m_ruler)
+		{
+			CGameView::GetIntanse().lock()->RulerEnd(x, y);
+		}
+		else
+		{
+			CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
+		}
 	}
 }

@@ -11,6 +11,7 @@
 #include "Input.h"
 #include "..\Ruler.h"
 
+
 class CGameView
 {
 private:
@@ -23,11 +24,12 @@ private:
 	std::shared_ptr<CSkyBox> m_skybox;
 	std::shared_ptr<CInput> m_input;
 	CCamera m_camera;
-	CRuler ruler;
+	CRuler m_ruler;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
 	CGameView& operator=(const CGameView&){};
+	
 public:
 	~CGameView(void);
 	static std::weak_ptr<CGameView> GetIntanse();
@@ -46,6 +48,7 @@ public:
 	void CameraTranslateUp();
 	void RulerBegin(int x, int y);
 	void RulerEnd(int x, int y);
+	void RulerHide();
 	void TryMoveSelectedObject(int x, int y);
 	
 	static void OnDrawScene();
@@ -54,4 +57,3 @@ public:
 
 	static void FreeInstance();
 };
-

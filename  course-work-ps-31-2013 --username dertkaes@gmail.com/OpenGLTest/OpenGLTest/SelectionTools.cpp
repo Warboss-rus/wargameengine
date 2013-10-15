@@ -1,6 +1,7 @@
 #include "SelectionTools.h"
 #include <GL\glut.h>
 #include "ObjectInterface.h"
+#include <vector>
 
 bool BoxRayIntersect(double minB[3], double maxB[3], double origin[3], double dir[3])
 {
@@ -123,4 +124,44 @@ void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double
 	double a = (-startz) / (endz - startz);
 	worldX = a * (endx - startx) + startx;
 	worldY = a * (endy - starty) + starty;
+}
+
+void RollDice(unsigned int number, unsigned int sides, bool groupByResult)
+{
+	std::vector<unsigned int> groups;
+	std::string raw;
+	for(unsigned int i = 0; i < sides; ++i)
+	{
+		groups.push_back(0);
+	}
+
+	for(unsigned int i = 0; i < number; ++i)
+	{
+		unsigned int result = rand() % sides;
+		if(groupByResult)
+		{
+			groups[result]++;
+		}
+		else
+		{
+			char temp[6] = "";
+			itoa((int)result + 1, temp, 10);
+			std::string stemp(temp);
+			raw += stemp + ' ';
+		}
+	}
+	if(groupByResult)
+	{
+		for(unsigned int i = 0; i < sides; ++i)
+		{
+			char temp[6] = "";
+			itoa((int)i + 1, temp, 10);
+			std::string stemp(temp);
+			raw += stemp + ": ";
+			itoa((int)groups[i], temp, 10);
+			stemp = temp;
+			raw += stemp + '\n';
+		}
+	}
+	MessageBoxA(NULL, raw.c_str(), "Player rolls", 0);
 }

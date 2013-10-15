@@ -3,6 +3,7 @@
 #include "GlutInitializer.h"
 #include <string>
 #include "..\SelectionTools.h"
+#include "..\UI.h"
 
 using namespace std;
 
@@ -26,11 +27,36 @@ void CGameView::OnIdle()
 	glutPostRedisplay();
 }
 
+void CreateSpaceMarine()
+{
+	std::shared_ptr<IObject> pObject(new C3DObject("SpaceMarine.obj", 0.0, 0.0, 0.0)); 
+	CGameModel::GetIntanse().lock()->AddObject(pObject);
+}
+
+void DeleteObject()
+{
+	CGameModel::GetIntanse().lock()->DeleteSelectedObject();
+}
+
+void RollDices()
+{
+	RollDice(10, 6, false);
+}
+
+void Ruler()
+{
+	CInput::EnableRuler();
+}
+
 CGameView::CGameView(void)
 {
 	m_gameModel = CGameModel::GetIntanse();
 	m_table.reset(new CTable(30.0f, 15.0f, "sand.bmp"));
 	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, 60.0, 60.0, 60.0, "skybox"));
+	CUI::GetIntanse().lock()->CreateButton("Button1", 10, 10, 30, 100, "Create", CreateSpaceMarine);
+	CUI::GetIntanse().lock()->CreateButton("Button2", 130, 10, 30, 100, "Delete", DeleteObject);
+	CUI::GetIntanse().lock()->CreateButton("Button3", 250, 10, 30, 100, "Roll 10D6", RollDices);
+	CUI::GetIntanse().lock()->CreateButton("Button4", 380, 10, 30, 100, "Ruler", Ruler);
 }
 
 void CGameView::Init()
@@ -50,6 +76,7 @@ void CGameView::Init()
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	m_input.reset(new CInput());
+	
 	glutMainLoop();
 }
 
@@ -67,7 +94,8 @@ void CGameView::Update()
 	m_table->Draw();
 	DrawObjects();
 	if(m_gameModel.lock()->GetSelectedObjectBoundingBox()) DrawSelectionBox(m_gameModel.lock()->GetSelectedObjectBoundingBox());
-	ruler.Draw();
+	m_ruler.Draw();
+	CUI::GetIntanse().lock()->Draw();
 }
 CGameView::~CGameView(void)
 {
@@ -152,23 +180,24 @@ void CGameView::SelectObject(int x, int y)
 
 void CGameView::RulerBegin(int x, int y)
 {
-	ruler.SetBegin(x, y);
+	m_ruler.SetBegin(x, y);
 }
 
 void CGameView::RulerEnd(int x, int y)
 {
-	ruler.SetEnd(x, y);
-	char str[10];
-	double distance = ruler.GetDistance();
-	sprintf(str, "%0.2f", distance);
+	m_ruler.SetEnd(x, y);
 	OnDrawScene();
-	MessageBoxA(NULL, str, "Distance", 0);
-	ruler.Hide();
+}
+
+void CGameView::RulerHide()
+{
+	m_ruler.Hide();
 }
 
 void CGameView::TryMoveSelectedObject(int x, int y)
 {
 	double worldX, worldY;
 	WindowCoordsToWorldCoords(x, y, worldX, worldY);
+	if(worldX > m_table.get()->GetWidth() / 2 || worldX < -m_table.get()->GetWidth() / 2 || worldY > m_table.get()->GetHeight() / 2 || worldY < -m_table.get()->GetHeight() / 2) return;
 	m_gameModel.lock()->MoveSelectedObjectTo(worldX, worldY);
 }

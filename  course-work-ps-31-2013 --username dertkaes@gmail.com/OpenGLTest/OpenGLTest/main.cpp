@@ -6,6 +6,7 @@
 #include "model\GameModel.h"
 #include "controller\GameController.h"
 #include "3dObject.h"
+#include <time.h>
 
 int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmdLine*/,int nCmdShow)
 {
@@ -14,6 +15,7 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE /*hPrevInstance*/,LPSTR /*lpCmd
 	std::shared_ptr<IObject> pObject(new C3DObject("SpaceMarine.obj", 0.0, 0.0, 0.0)); 
 	pModel.lock()->AddObject(pObject);
 	std::weak_ptr<CGameView> pView = CGameView::GetIntanse(); 
+	srand(time(NULL));
 //	CCommandManager commandManager(pView.lock().get());
 //	commandManager.Execute(new CCreateObjectCommand());
 	

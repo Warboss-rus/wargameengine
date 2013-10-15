@@ -7,6 +7,7 @@ public:
 	void Draw() const;
 	double GetDistance() const;
 	void Hide();
+	void PrintText( double x, double y, char *st) const;
 private:
 	bool m_isVisible;
 	double m_worldBeginX;

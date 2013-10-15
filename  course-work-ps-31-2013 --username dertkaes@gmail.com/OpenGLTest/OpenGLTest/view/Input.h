@@ -4,9 +4,12 @@ class CInput
 {
 private:
 	static bool m_isLMBDown;
+	static bool m_ruler;
 public:
 	CInput(void);
 	~CInput(void);
+
+	static void EnableRuler() { m_ruler = true; }
 	
 	static void OnSpecialKeyPress(int key, int x, int y);
 	static void OnMouse(int button, int state, int x, int y);
