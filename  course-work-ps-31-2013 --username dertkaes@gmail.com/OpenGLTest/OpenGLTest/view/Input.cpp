@@ -1,7 +1,6 @@
 #include "Input.h"
 #include <GL\glut.h>
 #include "GameView.h"
-#include "..\UI.h"
 
 bool CInput::m_isLMBDown = false;
 bool CInput::m_ruler = false;
@@ -28,6 +27,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		if (state == GLUT_DOWN)
 		{
 			m_isLMBDown = true;
+			CGameView::GetIntanse().lock()->UILeftMouseButtonDown(x, y);
 			if(m_ruler)
 			{
 				CGameView::GetIntanse().lock()->RulerBegin(x, y);
@@ -42,7 +42,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			m_isLMBDown = false;
 			m_ruler = false;
-			CUI::GetIntanse().lock()->Click(x, y);
+			CGameView::GetIntanse().lock()->UILeftMouseButtonUp(x, y);
 		}break;
 	case 3://scroll up
 		if (state == GLUT_UP)

@@ -3,7 +3,8 @@
 #include "GlutInitializer.h"
 #include <string>
 #include "..\SelectionTools.h"
-#include "..\UI.h"
+#include "..\UIButton.h"
+#include "..\UIListBox.h"
 
 using namespace std;
 
@@ -27,10 +28,16 @@ void CGameView::OnIdle()
 	glutPostRedisplay();
 }
 
-void CreateSpaceMarine()
+void CGameView::CreateSpaceMarine()
 {
-	std::shared_ptr<IObject> pObject(new C3DObject("SpaceMarine.obj", 0.0, 0.0, 0.0)); 
+	CUIListBox * list = (CUIListBox * )m_ui.GetChildByName("ListBox1").get();
+	std::shared_ptr<IObject> pObject(new C3DObject(list->GetSelectedItem(), 0.0, 0.0, 0.0)); 
 	CGameModel::GetIntanse().lock()->AddObject(pObject);
+}
+
+void NewSpaceMarine()
+{
+	CGameView::GetIntanse().lock()->CreateSpaceMarine();
 }
 
 void DeleteObject()
@@ -53,10 +60,15 @@ CGameView::CGameView(void)
 	m_gameModel = CGameModel::GetIntanse();
 	m_table.reset(new CTable(30.0f, 15.0f, "sand.bmp"));
 	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, 60.0, 60.0, 60.0, "skybox"));
-	CUI::GetIntanse().lock()->CreateButton("Button1", 10, 10, 30, 100, "Create", CreateSpaceMarine);
-	CUI::GetIntanse().lock()->CreateButton("Button2", 130, 10, 30, 100, "Delete", DeleteObject);
-	CUI::GetIntanse().lock()->CreateButton("Button3", 250, 10, 30, 100, "Roll 10D6", RollDices);
-	CUI::GetIntanse().lock()->CreateButton("Button4", 380, 10, 30, 100, "Ruler", Ruler);
+	CUIListBox * list = new CUIListBox(10, 10, 30, 200);
+	list->AddItem("SpaceMarine.obj");
+	list->AddItem("CSM.obj");
+	list->AddItem("rhino.obj");
+	m_ui.AddChild("ListBox1", std::shared_ptr<IUIElement>(list));
+	m_ui.AddChild("Button1", std::shared_ptr<IUIElement>(new CUIButton(220, 10, 30, 80, "Create", NewSpaceMarine)));
+	m_ui.AddChild("Button2", std::shared_ptr<IUIElement>(new CUIButton(310, 10, 30, 80, "Delete", DeleteObject)));
+	m_ui.AddChild("Button3", std::shared_ptr<IUIElement>(new CUIButton(400, 10, 30, 100, "Roll 10D6", RollDices)));
+	m_ui.AddChild("Button4", std::shared_ptr<IUIElement>(new CUIButton(510, 10, 30, 80, "Ruler", Ruler)));
 }
 
 void CGameView::Init()
@@ -87,6 +99,23 @@ void CGameView::OnDrawScene()
 	glutSwapBuffers();
 }
 
+void CGameView::DrawUI() const
+{
+	glDisable(GL_DEPTH_TEST);
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0,glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT),0,-1,1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	m_ui.Draw();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+}
+
 void CGameView::Update()
 {
 	m_camera.Update();
@@ -95,8 +124,9 @@ void CGameView::Update()
 	DrawObjects();
 	if(m_gameModel.lock()->GetSelectedObjectBoundingBox()) DrawSelectionBox(m_gameModel.lock()->GetSelectedObjectBoundingBox());
 	m_ruler.Draw();
-	CUI::GetIntanse().lock()->Draw();
+	DrawUI();
 }
+
 CGameView::~CGameView(void)
 {
 }
@@ -200,4 +230,14 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 	WindowCoordsToWorldCoords(x, y, worldX, worldY);
 	if(worldX > m_table.get()->GetWidth() / 2 || worldX < -m_table.get()->GetWidth() / 2 || worldY > m_table.get()->GetHeight() / 2 || worldY < -m_table.get()->GetHeight() / 2) return;
 	m_gameModel.lock()->MoveSelectedObjectTo(worldX, worldY);
+}
+
+void CGameView::UILeftMouseButtonDown(int x, int y)
+{
+	m_ui.LeftMouseButtonDown(x, y);
+}
+
+void CGameView::UILeftMouseButtonUp(int x, int y)
+{
+	m_ui.LeftMouseButtonUp(x, y);
 }

@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "Input.h"
 #include "..\Ruler.h"
+#include "..\UIElement.h"
 
 
 class CGameView
@@ -25,11 +26,12 @@ private:
 	std::shared_ptr<CInput> m_input;
 	CCamera m_camera;
 	CRuler m_ruler;
+	CUIElement m_ui;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
 	CGameView& operator=(const CGameView&){};
-	
+	void DrawUI() const;
 public:
 	~CGameView(void);
 	static std::weak_ptr<CGameView> GetIntanse();
@@ -50,6 +52,9 @@ public:
 	void RulerEnd(int x, int y);
 	void RulerHide();
 	void TryMoveSelectedObject(int x, int y);
+	void UILeftMouseButtonDown(int x, int y);
+	void UILeftMouseButtonUp(int x, int y);
+	void CreateSpaceMarine();
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);
