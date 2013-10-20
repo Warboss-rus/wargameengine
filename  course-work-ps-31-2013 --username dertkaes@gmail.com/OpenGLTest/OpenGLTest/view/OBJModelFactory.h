@@ -1,7 +1,8 @@
-#include "ModelFactoryInterface.h"
+#include <string>
+#include "3dModel.h"
 
-class CObjModelCreator : public IModelCreator
+class CObjModelCreator
 {
 public:
-	C3DModel * Create(std::string const& path);
+	static C3DModel * Create(std::string const& path);
 };

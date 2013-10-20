@@ -27,6 +27,7 @@ class C3DModel
 {
 public:
 	void Draw();
+	const double* GetBounding() const { return m_bounding; }
 private:
 	std::vector<sPoint3> m_vertices;
 	std::vector<sPoint2> m_textureCoords;
@@ -34,5 +35,6 @@ private:
 	std::vector<unsigned int> m_indexes;
 	CMaterialManager m_materials;
 	std::vector<sUsingMaterial> m_usedMaterials;
+	double m_bounding[6];
 	friend class CObjModelCreator;
 };

@@ -8,10 +8,10 @@ class CGameModel
 {
 private:
 	std::vector<std::shared_ptr<IObject>> m_objects;
-	IObject * m_pSelectedObject;
+	long m_SelectedObject;
 	static std::shared_ptr<CGameModel> m_instanse;
 
-	CGameModel(void):m_pSelectedObject(NULL){};
+	CGameModel(void):m_SelectedObject(-1){};
 	CGameModel(CGameModel const&){};
 	IObject* Get3DObjectIntersectingRay(double begin[3], double end[3]);
 public:
@@ -21,8 +21,9 @@ public:
 	std::shared_ptr<const IObject> Get3DObject(unsigned long number) const;
 	void AddObject(std::shared_ptr<IObject> pObject);
 	void DeleteSelectedObject();
-	bool TrySelectObject(double begin[3], double end[3]);
-	const double * GetSelectedObjectBoundingBox() const;
+	void SelectObjectByIndex(long index);
+	std::string GetSelectedObjectModel() const;
+	std::shared_ptr<const IObject> GetSelectedObject() const;
 	void MoveSelectedObjectTo(double x, double y);
 };
 

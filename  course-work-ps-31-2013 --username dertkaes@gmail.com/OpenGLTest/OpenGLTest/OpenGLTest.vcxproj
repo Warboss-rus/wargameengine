@@ -86,6 +86,7 @@
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
     <ClCompile Include="UIListBox.cpp" />
+    <ClCompile Include="UIPanel.cpp" />
     <ClCompile Include="UIStaticText.cpp" />
     <ClCompile Include="UIButton.cpp" />
     <ClCompile Include="UIElement.cpp" />
@@ -101,10 +102,10 @@
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\Table.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
-    <ClCompile Include="3dObject.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="UIPanel.h" />
     <ClInclude Include="UIListBox.h" />
     <ClInclude Include="UIButton.h" />
     <ClInclude Include="controller\GameController.h" />
@@ -116,21 +117,20 @@
     <ClInclude Include="SelectionTools.h" />
     <ClInclude Include="UIStaticText.h" />
     <ClInclude Include="UIUtils.h" />
+    <ClInclude Include="view\3dModel.h" />
     <ClInclude Include="view\Camera.h" />
     <ClInclude Include="view\GameView.h" />
     <ClInclude Include="view\GlutInitializer.h" />
     <ClInclude Include="view\Input.h" />
     <ClInclude Include="view\ModelManager.h" />
-    <ClInclude Include="3dModel.h" />
     <ClInclude Include="3dObject.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialManager.h" />
-    <ClInclude Include="ModelFactoryInterface.h" />
     <ClInclude Include="ObjectInterface.h" />
-    <ClInclude Include="OBJModelFactory.h" />
     <ClInclude Include="SkyBox.h" />
-    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="view\OBJModelFactory.h" />
     <ClInclude Include="view\Table.h" />
+    <ClInclude Include="view\TextureManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

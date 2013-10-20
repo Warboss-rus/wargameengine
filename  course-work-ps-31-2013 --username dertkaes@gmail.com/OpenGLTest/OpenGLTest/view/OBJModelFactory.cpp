@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <vector>
 
 struct FaceIndex
 {
@@ -51,6 +52,12 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
+	model->m_bounding[0] = DBL_MAX;
+	model->m_bounding[1] = DBL_MAX;
+	model->m_bounding[2] = DBL_MAX;
+	model->m_bounding[3] = -DBL_MAX;
+	model->m_bounding[4] = -DBL_MAX;
+	model->m_bounding[5] = -DBL_MAX;
 	while(std::getline(iFile, line))
 	{
 		if(line.empty() || line[0] == '#')//Empty line or commentary
@@ -64,6 +71,12 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 			lineStream >> p3.x;
 			lineStream >> p3.y;
 			lineStream >> p3.z;
+			if(p3.x < model->m_bounding[0]) model->m_bounding[0] = p3.x;
+			if(p3.y < model->m_bounding[1]) model->m_bounding[1] = p3.y;
+			if(p3.z < model->m_bounding[2]) model->m_bounding[2] = p3.z;
+			if(p3.x > model->m_bounding[3]) model->m_bounding[3] = p3.x;
+			if(p3.y > model->m_bounding[4]) model->m_bounding[4] = p3.y;
+			if(p3.z > model->m_bounding[5]) model->m_bounding[5] = p3.z;
 			vertices.push_back(p3);
 		}
 

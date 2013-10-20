@@ -55,4 +55,5 @@ void CSkyBox::Draw()
 		glTexCoord2f(0.0f, 0.0f); glVertex3d(m_x + m_width, m_y + m_height,	m_z);
 	glEnd();
 	glEnable(GL_DEPTH_TEST);
+	texManager->SetTexture("");
 }

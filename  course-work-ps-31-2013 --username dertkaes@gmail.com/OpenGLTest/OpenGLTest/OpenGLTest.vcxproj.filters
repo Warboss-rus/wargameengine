@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Parsers">
-      <UniqueIdentifier>{5254e711-f296-4ad9-a602-3c83f70ee131}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Parsers">
-      <UniqueIdentifier>{7235ddf3-5b10-4afb-bc97-94f3a55e0766}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\UI">
       <UniqueIdentifier>{8332af67-ba2c-45df-bd31-0c2a8362dafb}</UniqueIdentifier>
     </Filter>
@@ -28,9 +22,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="3dObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="view\GameView.cpp">
@@ -63,9 +54,6 @@
     <ClCompile Include="view\TextureManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view\OBJModelFactory.cpp">
-      <Filter>Source Files\Parsers</Filter>
-    </ClCompile>
     <ClCompile Include="view\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -96,6 +84,12 @@
     <ClCompile Include="UIListBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
+    <ClCompile Include="UIPanel.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="view\OBJModelFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectInterface.h">
@@ -104,26 +98,14 @@
     <ClInclude Include="3dObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="3dModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MaterialManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextureManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SkyBox.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelFactoryInterface.h">
-      <Filter>Header Files\Parsers</Filter>
-    </ClInclude>
-    <ClInclude Include="OBJModelFactory.h">
-      <Filter>Header Files\Parsers</Filter>
     </ClInclude>
     <ClInclude Include="view\GameView.h">
       <Filter>Header Files</Filter>
@@ -175,6 +157,18 @@
     </ClInclude>
     <ClInclude Include="UIListBox.h">
       <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIPanel.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="view\OBJModelFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\3dModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\TextureManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

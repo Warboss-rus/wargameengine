@@ -122,7 +122,8 @@ void CGameView::Update()
 	m_skybox->Draw();
 	m_table->Draw();
 	DrawObjects();
-	if(m_gameModel.lock()->GetSelectedObjectBoundingBox()) DrawSelectionBox(m_gameModel.lock()->GetSelectedObjectBoundingBox());
+	if(m_gameModel.lock()->GetSelectedObjectModel() != "") DrawSelectionBox(m_modelManager.GetBoundingBox(m_gameModel.lock()->GetSelectedObjectModel()), m_gameModel.lock()->GetSelectedObject()->GetX(),
+		m_gameModel.lock()->GetSelectedObject()->GetY(), m_gameModel.lock()->GetSelectedObject()->GetZ(), m_gameModel.lock()->GetSelectedObject()->GetRotation());
 	m_ruler.Draw();
 	DrawUI();
 }
@@ -202,10 +203,32 @@ void CGameView::CameraTranslateUp()
 
 void CGameView::SelectObject(int x, int y)
 {
+	long selectedObject = -1;
+	double minDistance = 10000000.0;
+	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	double start[3];
 	double end[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
-	m_gameModel.lock()->TrySelectObject(start, end);
+	for(long i = 0; i < model->GetObjectCount(); ++i)
+	{
+		std::shared_ptr<const IObject> object = model->Get3DObject(i);
+		std::string modelpath = object->GetPathToModel();
+		const double *bounding = m_modelManager.GetBoundingBox(modelpath);
+		double minBox[3] = {bounding[0] + object->GetX(), bounding[1] + object->GetY(), bounding[2] + object->GetZ()};
+		double maxBox[3] = {bounding[3] + object->GetX(), bounding[4] + object->GetY(), bounding[5] + object->GetZ()};
+		double direction[3] = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
+		if(BoxRayIntersect(minBox, maxBox, start, direction))
+		{
+			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + 
+				object->GetZ() * object->GetZ());
+			if(distance < minDistance)
+			{
+				selectedObject = i;
+				minDistance = distance;
+			}
+		}
+	}
+	m_gameModel.lock()->SelectObjectByIndex(selectedObject);
 }
 
 void CGameView::RulerBegin(int x, int y)
@@ -232,12 +255,12 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 	m_gameModel.lock()->MoveSelectedObjectTo(worldX, worldY);
 }
 
-void CGameView::UILeftMouseButtonDown(int x, int y)
+bool CGameView::UILeftMouseButtonDown(int x, int y)
 {
-	m_ui.LeftMouseButtonDown(x, y);
+	return m_ui.LeftMouseButtonDown(x, y);
 }
 
-void CGameView::UILeftMouseButtonUp(int x, int y)
+bool CGameView::UILeftMouseButtonUp(int x, int y)
 {
-	m_ui.LeftMouseButtonUp(x, y);
+	 return m_ui.LeftMouseButtonUp(x, y);
 }

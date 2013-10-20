@@ -27,7 +27,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		if (state == GLUT_DOWN)
 		{
 			m_isLMBDown = true;
-			CGameView::GetIntanse().lock()->UILeftMouseButtonDown(x, y);
+			if(CGameView::GetIntanse().lock()->UILeftMouseButtonDown(x, y)) return;
 			if(m_ruler)
 			{
 				CGameView::GetIntanse().lock()->RulerBegin(x, y);
@@ -41,8 +41,8 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		else
 		{
 			m_isLMBDown = false;
+			if(CGameView::GetIntanse().lock()->UILeftMouseButtonUp(x, y)) return;
 			m_ruler = false;
-			CGameView::GetIntanse().lock()->UILeftMouseButtonUp(x, y);
 		}break;
 	case 3://scroll up
 		if (state == GLUT_UP)

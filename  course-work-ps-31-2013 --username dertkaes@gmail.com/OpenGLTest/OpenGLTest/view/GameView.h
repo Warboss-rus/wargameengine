@@ -52,8 +52,8 @@ public:
 	void RulerEnd(int x, int y);
 	void RulerHide();
 	void TryMoveSelectedObject(int x, int y);
-	void UILeftMouseButtonDown(int x, int y);
-	void UILeftMouseButtonUp(int x, int y);
+	bool UILeftMouseButtonDown(int x, int y);
+	bool UILeftMouseButtonUp(int x, int y);
 	void CreateSpaceMarine();
 	
 	static void OnDrawScene();

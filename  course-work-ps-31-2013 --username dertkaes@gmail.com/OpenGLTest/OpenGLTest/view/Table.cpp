@@ -16,4 +16,5 @@ void CTable::Draw() const
 	glTexCoord2f(m_width, m_height);
 	glVertex3f(m_width, m_height, 0.0);
 	glEnd();
+	texManager->SetTexture("");
 }

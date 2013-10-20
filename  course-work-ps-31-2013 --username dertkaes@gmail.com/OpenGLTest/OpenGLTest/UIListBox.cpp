@@ -46,6 +46,7 @@ void CUIListBox::Draw() const
 		}
 	glEnd();
 	}
+	CUIElement::Draw();
 	glPopMatrix();
 }
 

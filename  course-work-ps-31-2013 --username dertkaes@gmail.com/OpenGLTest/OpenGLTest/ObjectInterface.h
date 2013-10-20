@@ -11,5 +11,4 @@ public:
 	virtual double GetY() const = 0;
 	virtual double GetZ() const = 0;
 	virtual double GetRotation() const = 0;
-	virtual const double* GetBounding() const = 0;
 };

@@ -6,10 +6,18 @@ void CModelManager::DrawModel(std::string const& path)
 {
 	if(m_models.find(path) == m_models.end())
 	{
-		CObjModelCreator factory;
-		m_models[path] = factory.Create(path);
+		m_models[path] = CObjModelCreator::Create(path);
 	}
 	m_models[path]->Draw();
+}
+
+const double * CModelManager::GetBoundingBox(std::string const& path)
+{
+	if(m_models.find(path) == m_models.end())
+	{
+		m_models[path] = CObjModelCreator::Create(path);
+	}
+	return m_models[path]->GetBounding();
 }
 
 CModelManager::~CModelManager()

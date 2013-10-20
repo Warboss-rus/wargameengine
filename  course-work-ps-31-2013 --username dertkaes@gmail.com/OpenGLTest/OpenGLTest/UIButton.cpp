@@ -17,14 +17,21 @@ void CUIButton::Draw() const
 	int fontx = (m_width - glutBitmapLength(GLUT_BITMAP_TIMES_ROMAN_24, (unsigned char*)m_text.c_str())) / 2 ;
 	int fonty = (m_height + 20) / 2;
 	PrintText(fontx, fonty, m_text.c_str(), GLUT_BITMAP_TIMES_ROMAN_24);
+	CUIElement::Draw();
 	glPopMatrix();
 }
 
 bool CUIButton::LeftMouseButtonUp(int x, int y)
 {
-	if(!CUIElement::LeftMouseButtonDown(x, y))
+	if(!CUIElement::LeftMouseButtonUp(x, y))
 	{
 		m_onClick();
 	}
+	return true;
+}
+
+bool CUIButton::LeftMouseButtonDown(int x, int y)
+{
+	CUIElement::LeftMouseButtonDown(x, y);
 	return true;
 }
