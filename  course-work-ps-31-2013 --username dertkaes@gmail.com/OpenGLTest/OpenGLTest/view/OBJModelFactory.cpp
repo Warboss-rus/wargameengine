@@ -39,7 +39,6 @@ FaceIndex ParseFaceIndex(std::string const& str)
 
 C3DModel * CObjModelCreator::Create(std::string const& path)
 {
-	C3DModel * model = new C3DModel();
 	std::vector<sPoint3> vertices;
 	std::vector<sPoint2> textureCoords;
 	std::vector<sPoint3> normals;
@@ -52,12 +51,19 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
-	model->m_bounding[0] = DBL_MAX;
-	model->m_bounding[1] = DBL_MAX;
-	model->m_bounding[2] = DBL_MAX;
-	model->m_bounding[3] = -DBL_MAX;
-	model->m_bounding[4] = -DBL_MAX;
-	model->m_bounding[5] = -DBL_MAX;
+	double bounding[6];
+	std::vector<sPoint3> newVertices;
+	std::vector<sPoint2> newTextureCoords;
+	std::vector<sPoint3> newNormals;
+	std::vector<unsigned int> newIndexes;
+	CMaterialManager newMaterialManager;
+	std::vector<sUsingMaterial> newUsedMaterials;
+	bounding[0] = DBL_MAX;
+	bounding[1] = DBL_MAX;
+	bounding[2] = DBL_MAX;
+	bounding[3] = -DBL_MAX;
+	bounding[4] = -DBL_MAX;
+	bounding[5] = -DBL_MAX;
 	while(std::getline(iFile, line))
 	{
 		if(line.empty() || line[0] == '#')//Empty line or commentary
@@ -71,12 +77,12 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 			lineStream >> p3.x;
 			lineStream >> p3.y;
 			lineStream >> p3.z;
-			if(p3.x < model->m_bounding[0]) model->m_bounding[0] = p3.x;
-			if(p3.y < model->m_bounding[1]) model->m_bounding[1] = p3.y;
-			if(p3.z < model->m_bounding[2]) model->m_bounding[2] = p3.z;
-			if(p3.x > model->m_bounding[3]) model->m_bounding[3] = p3.x;
-			if(p3.y > model->m_bounding[4]) model->m_bounding[4] = p3.y;
-			if(p3.z > model->m_bounding[5]) model->m_bounding[5] = p3.z;
+			if(p3.x < bounding[0]) bounding[0] = p3.x;
+			if(p3.y < bounding[1]) bounding[1] = p3.y;
+			if(p3.z < bounding[2]) bounding[2] = p3.z;
+			if(p3.x > bounding[3]) bounding[3] = p3.x;
+			if(p3.y > bounding[4]) bounding[4] = p3.y;
+			if(p3.z > bounding[5]) bounding[5] = p3.z;
 			vertices.push_back(p3);
 		}
 
@@ -104,30 +110,30 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 				lineStream >> indexes;
 				if(faces.find(indexes) != faces.end()) //This vertex/texture coord/normal already exist
 				{
-					model->m_indexes.push_back(faces[indexes]);
+					newIndexes.push_back(faces[indexes]);
 				}
 				else//New vertex/texcoord/normal
 				{
 					FaceIndex faceIndex  = ParseFaceIndex(indexes);
-					model->m_vertices.push_back(vertices[faceIndex.vertex - 1]);
+					newVertices.push_back(vertices[faceIndex.vertex - 1]);
 					if(faceIndex.textureCoord != 0)
 					{
-						model->m_textureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
+						newTextureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
 					}
 					else
 					{
-						model->m_textureCoords.push_back(sPoint2());
+						newTextureCoords.push_back(sPoint2());
 					}
 					if(faceIndex.normal != 0)
 					{
-						model->m_normals.push_back(normals[faceIndex.normal - 1]);
+						newNormals.push_back(normals[faceIndex.normal - 1]);
 					}
 					else
 					{
-						model->m_normals.push_back(sPoint3());
+						newNormals.push_back(sPoint3());
 					}
-					model->m_indexes.push_back(model->m_vertices.size() - 1);
-					faces[indexes] = model->m_vertices.size() - 1;
+					newIndexes.push_back(newVertices.size() - 1);
+					faces[indexes] = newVertices.size() - 1;
 				}
 			}
 		}
@@ -135,30 +141,31 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 		{
 			std::string path;
 			lineStream >> path;
-			model->m_materials.LoadMTL(path);
+			newMaterialManager.LoadMTL(path);
 		}
 		if(type == "usemtl")//apply material
 		{
 			sUsingMaterial material;
 			lineStream >> material.materialName;
-			material.polygonIndex = model->m_indexes.size();
-			model->m_usedMaterials.push_back(material);
+			material.polygonIndex = newIndexes.size();
+			newUsedMaterials.push_back(material);
 		}
 	}
 	if(!useNormals)
 	{
-		model->m_normals.clear();
+		newNormals.clear();
 	}
 	if(!useUVs)
 	{
-		model->m_textureCoords.clear();
+		newTextureCoords.clear();
 	}
 	iFile.close();
 	if(!useFaces)
 	{
-		model->m_vertices.swap(vertices);
-		model->m_textureCoords.swap(textureCoords);
-		model->m_normals.swap(normals);
+		newVertices.swap(vertices);
+		newTextureCoords.swap(textureCoords);
+		newNormals.swap(normals);
 	}
-	return model;
+	std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
+	return new C3DModel(newVertices, newTextureCoords, newNormals, newIndexes, newMaterialManager, newUsedMaterials, LoadBoundingFromFile(boundingPath));
 }

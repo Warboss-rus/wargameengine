@@ -1,6 +1,18 @@
 #include "3dModel.h"
 #include <GL\glut.h>
 
+C3DModel::C3DModel(std::vector<sPoint3> & vertices, std::vector<sPoint2> & textureCoords, std::vector<sPoint3> & normals, std::vector<unsigned int> & indexes,
+		CMaterialManager & materials, std::vector<sUsingMaterial> & usedMaterials, std::shared_ptr<IBounding> bounding)
+{
+	m_vertices.swap(vertices);
+	m_textureCoords.swap(textureCoords);
+	m_normals.swap(normals);
+	m_indexes.swap(indexes);
+	std::swap(m_materials, materials);
+	m_usedMaterials.swap(usedMaterials);
+	m_bounding = bounding;
+}
+
 void SetMaterial(sMaterial * material)
 {
 	if(!material)

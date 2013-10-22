@@ -1,5 +1,7 @@
 #include<vector>
+#include <memory>
 #include "MaterialManager.h"
+#include "Bounding.h"
 #pragma once
 
 struct sUsingMaterial
@@ -26,8 +28,11 @@ struct sPoint2
 class C3DModel
 {
 public:
+	C3DModel() {}
+	C3DModel(std::vector<sPoint3> & vertices, std::vector<sPoint2> & textureCoords, std::vector<sPoint3> & normals, std::vector<unsigned int> & indexes,
+		CMaterialManager & materials, std::vector<sUsingMaterial> & usedMaterials, std::shared_ptr<IBounding> bounding);
 	void Draw();
-	const double* GetBounding() const { return m_bounding; }
+	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 private:
 	std::vector<sPoint3> m_vertices;
 	std::vector<sPoint2> m_textureCoords;
@@ -35,6 +40,5 @@ private:
 	std::vector<unsigned int> m_indexes;
 	CMaterialManager m_materials;
 	std::vector<sUsingMaterial> m_usedMaterials;
-	double m_bounding[6];
-	friend class CObjModelCreator;
+	std::shared_ptr<IBounding> m_bounding;
 };

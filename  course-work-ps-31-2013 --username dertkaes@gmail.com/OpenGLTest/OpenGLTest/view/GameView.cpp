@@ -1,10 +1,10 @@
 #include "GameView.h"
 #include <GL\glut.h>
-#include "GlutInitializer.h"
 #include <string>
 #include "..\SelectionTools.h"
-#include "..\UIButton.h"
-#include "..\UIListBox.h"
+#include "..\UI\UIButton.h"
+#include "..\UI\UIListBox.h"
+#include "..\CommandHandler.h"
 
 using namespace std;
 
@@ -31,8 +31,8 @@ void CGameView::OnIdle()
 void CGameView::CreateSpaceMarine()
 {
 	CUIListBox * list = (CUIListBox * )m_ui.GetChildByName("ListBox1").get();
-	std::shared_ptr<IObject> pObject(new C3DObject(list->GetSelectedItem(), 0.0, 0.0, 0.0)); 
-	CGameModel::GetIntanse().lock()->AddObject(pObject);
+	CCommandHandler handler;
+	handler.AddNewCreateObject(list->GetSelectedItem(), 0.0, 0.0, 0.0);
 }
 
 void NewSpaceMarine()
@@ -122,8 +122,9 @@ void CGameView::Update()
 	m_skybox->Draw();
 	m_table->Draw();
 	DrawObjects();
-	if(m_gameModel.lock()->GetSelectedObjectModel() != "") DrawSelectionBox(m_modelManager.GetBoundingBox(m_gameModel.lock()->GetSelectedObjectModel()), m_gameModel.lock()->GetSelectedObject()->GetX(),
-		m_gameModel.lock()->GetSelectedObject()->GetY(), m_gameModel.lock()->GetSelectedObject()->GetZ(), m_gameModel.lock()->GetSelectedObject()->GetRotation());
+	const IObject * object = m_gameModel.lock()->GetSelectedObject().get();
+	if(m_gameModel.lock()->GetSelectedObjectModel() != "") m_modelManager.GetBoundingBox(m_gameModel.lock()->GetSelectedObjectModel())->Draw(
+		object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
 	m_ruler.Draw();
 	DrawUI();
 }
@@ -209,15 +210,11 @@ void CGameView::SelectObject(int x, int y)
 	double start[3];
 	double end[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
-	for(long i = 0; i < model->GetObjectCount(); ++i)
+	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<const IObject> object = model->Get3DObject(i);
-		std::string modelpath = object->GetPathToModel();
-		const double *bounding = m_modelManager.GetBoundingBox(modelpath);
-		double minBox[3] = {bounding[0] + object->GetX(), bounding[1] + object->GetY(), bounding[2] + object->GetZ()};
-		double maxBox[3] = {bounding[3] + object->GetX(), bounding[4] + object->GetY(), bounding[5] + object->GetZ()};
 		double direction[3] = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
-		if(BoxRayIntersect(minBox, maxBox, start, direction))
+		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, direction, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation()))
 		{
 			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + 
 				object->GetZ() * object->GetZ());
@@ -233,12 +230,16 @@ void CGameView::SelectObject(int x, int y)
 
 void CGameView::RulerBegin(int x, int y)
 {
-	m_ruler.SetBegin(x, y);
+	double worldX, worldY;
+	WindowCoordsToWorldCoords(x, y, worldX, worldY);
+	m_ruler.SetBegin(worldX, worldY);
 }
 
 void CGameView::RulerEnd(int x, int y)
 {
-	m_ruler.SetEnd(x, y);
+	double worldX, worldY;
+	WindowCoordsToWorldCoords(x, y, worldX, worldY);
+	m_ruler.SetEnd(worldX, worldY);
 	OnDrawScene();
 }
 

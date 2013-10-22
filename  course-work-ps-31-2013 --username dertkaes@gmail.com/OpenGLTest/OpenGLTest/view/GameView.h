@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include "GlutInitializer.h"
 #include "../3dObject.h"
 #include "ModelManager.h"
 #include "../model/GameModel.h"
@@ -10,8 +9,7 @@
 #include "Camera.h"
 #include "Input.h"
 #include "..\Ruler.h"
-#include "..\UIElement.h"
-
+#include "..\UI\UIElement.h"
 
 class CGameView
 {

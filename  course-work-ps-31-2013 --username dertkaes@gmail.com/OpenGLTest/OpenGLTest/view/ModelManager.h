@@ -6,7 +6,7 @@ class CModelManager
 public:
 	CModelManager() {}
 	void DrawModel(std::string const& path);
-	const double * GetBoundingBox(std::string const& path);
+	std::shared_ptr<IBounding> GetBoundingBox(std::string const& path);
 	~CModelManager();
 protected:
 	CModelManager(CModelManager const& other) {}

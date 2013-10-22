@@ -2,12 +2,12 @@ class CRuler
 {
 public:
 	CRuler() { Hide(); }
-	void SetBegin(int windowBeginX, int windowBeginY);
-	void SetEnd(int windowEndX, int windowEndY);
+	void SetBegin(double x, double y);
+	void SetEnd(double x, double y);
 	void Draw() const;
 	double GetDistance() const;
 	void Hide();
-	void PrintText( double x, double y, char *st) const;
+	void PrintText( double x, double y, const char *st) const;
 private:
 	bool m_isVisible;
 	double m_worldBeginX;

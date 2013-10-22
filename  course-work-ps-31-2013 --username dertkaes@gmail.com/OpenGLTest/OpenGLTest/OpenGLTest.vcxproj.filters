@@ -19,45 +19,21 @@
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{85f77776-fb0b-4e1a-b9ab-93330f23f37c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\view">
+      <UniqueIdentifier>{cfab82e7-a9e2-415e-8296-446dc3ff7347}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\view">
+      <UniqueIdentifier>{0ef7c67f-d75f-417d-b16d-1f3bf064e45c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GameView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GlutInitializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="model\GameModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="controller\GameController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\SkyBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\3dModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ModelManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\MaterialManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\Table.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\TextureManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SelectionTools.cpp">
@@ -69,26 +45,62 @@
     <ClCompile Include="picopng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UIElement.cpp">
+    <ClCompile Include="UI\UIButton.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIButton.cpp">
+    <ClCompile Include="UI\UIElement.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIUtils.cpp">
+    <ClCompile Include="UI\UIListBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIStaticText.cpp">
+    <ClCompile Include="UI\UIPanel.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIListBox.cpp">
+    <ClCompile Include="UI\UIStaticText.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UIPanel.cpp">
+    <ClCompile Include="UI\UIUtils.cpp">
       <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="view\3dModel.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Camera.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\GameView.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\MaterialManager.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ModelManager.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\OBJModelFactory.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\SkyBox.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Table.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\TextureManager.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandCreateObject.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Bounding.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Input.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -98,34 +110,10 @@
     <ClInclude Include="3dObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SkyBox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\GameView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\GlutInitializer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="model\GameModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="controller\GameController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ModelManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SelectionTools.h">
@@ -137,38 +125,71 @@
     <ClInclude Include="picopng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\Table.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IUI.h">
+    <ClInclude Include="UI\IUI.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIElement.h">
+    <ClInclude Include="UI\UIButton.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIButton.h">
+    <ClInclude Include="UI\UIElement.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIUtils.h">
+    <ClInclude Include="UI\UIListBox.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIStaticText.h">
+    <ClInclude Include="UI\UIPanel.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIListBox.h">
+    <ClInclude Include="UI\UIStaticText.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UIPanel.h">
+    <ClInclude Include="UI\UIUtils.h">
       <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="view\OBJModelFactory.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="view\3dModel.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Camera.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\GameView.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialManager.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ModelManager.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\OBJModelFactory.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyBox.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Table.h">
+      <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\TextureManager.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="ICommand.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandCreateObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Bounding.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Input.h">
+      <Filter>Header Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

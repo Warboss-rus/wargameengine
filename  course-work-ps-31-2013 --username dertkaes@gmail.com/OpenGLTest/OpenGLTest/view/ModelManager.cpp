@@ -11,7 +11,7 @@ void CModelManager::DrawModel(std::string const& path)
 	m_models[path]->Draw();
 }
 
-const double * CModelManager::GetBoundingBox(std::string const& path)
+std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path)
 {
 	if(m_models.find(path) == m_models.end())
 	{

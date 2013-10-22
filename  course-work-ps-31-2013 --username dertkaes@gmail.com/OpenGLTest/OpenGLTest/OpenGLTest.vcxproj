@@ -80,21 +80,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CommandCreateObject.cpp" />
+    <ClCompile Include="CommandHandler.cpp" />
     <ClCompile Include="controller\GameController.cpp" />
     <ClCompile Include="model\GameModel.cpp" />
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
-    <ClCompile Include="UIListBox.cpp" />
-    <ClCompile Include="UIPanel.cpp" />
-    <ClCompile Include="UIStaticText.cpp" />
-    <ClCompile Include="UIButton.cpp" />
-    <ClCompile Include="UIElement.cpp" />
-    <ClCompile Include="UIUtils.cpp" />
+    <ClCompile Include="UI\UIButton.cpp" />
+    <ClCompile Include="UI\UIElement.cpp" />
+    <ClCompile Include="UI\UIListBox.cpp" />
+    <ClCompile Include="UI\UIPanel.cpp" />
+    <ClCompile Include="UI\UIStaticText.cpp" />
+    <ClCompile Include="UI\UIUtils.cpp" />
     <ClCompile Include="view\3dModel.cpp" />
+    <ClCompile Include="view\Bounding.cpp" />
     <ClCompile Include="view\Camera.cpp" />
     <ClCompile Include="view\GameView.cpp" />
-    <ClCompile Include="view\GlutInitializer.cpp" />
     <ClCompile Include="view\Input.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
@@ -105,22 +107,25 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="UIPanel.h" />
-    <ClInclude Include="UIListBox.h" />
-    <ClInclude Include="UIButton.h" />
+    <ClInclude Include="CommandCreateObject.h" />
+    <ClInclude Include="CommandHandler.h" />
     <ClInclude Include="controller\GameController.h" />
-    <ClInclude Include="UIElement.h" />
-    <ClInclude Include="IUI.h" />
+    <ClInclude Include="ICommand.h" />
     <ClInclude Include="model\GameModel.h" />
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />
     <ClInclude Include="SelectionTools.h" />
-    <ClInclude Include="UIStaticText.h" />
-    <ClInclude Include="UIUtils.h" />
+    <ClInclude Include="UI\IUI.h" />
+    <ClInclude Include="UI\UIButton.h" />
+    <ClInclude Include="UI\UIElement.h" />
+    <ClInclude Include="UI\UIListBox.h" />
+    <ClInclude Include="UI\UIPanel.h" />
+    <ClInclude Include="UI\UIStaticText.h" />
+    <ClInclude Include="UI\UIUtils.h" />
     <ClInclude Include="view\3dModel.h" />
+    <ClInclude Include="view\Bounding.h" />
     <ClInclude Include="view\Camera.h" />
     <ClInclude Include="view\GameView.h" />
-    <ClInclude Include="view\GlutInitializer.h" />
     <ClInclude Include="view\Input.h" />
     <ClInclude Include="view\ModelManager.h" />
     <ClInclude Include="3dObject.h" />

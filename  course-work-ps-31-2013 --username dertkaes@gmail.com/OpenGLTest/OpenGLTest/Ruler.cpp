@@ -1,20 +1,21 @@
 #include "Ruler.h"
 #include <GL\glut.h>
 #include <math.h>
-#include "SelectionTools.h"
 #include <string>
 
-void CRuler::SetBegin(int windowBeginX, int windowBeginY)
+void CRuler::SetBegin(double x, double y)
 {
-	WindowCoordsToWorldCoords(windowBeginX, windowBeginY, m_worldBeginX, m_worldBeginY);
-	m_worldEndX = m_worldBeginX;
-	m_worldEndY = m_worldBeginY;
+	m_worldBeginX = x;
+	m_worldBeginY = y;
+	m_worldEndX = x;
+	m_worldEndY = y;
 	m_isVisible = true;
 }
 
-void CRuler::SetEnd(int windowEndX, int windowEndY)
+void CRuler::SetEnd(double x, double y)
 {
-	WindowCoordsToWorldCoords(windowEndX, windowEndY, m_worldEndX, m_worldEndY);
+	m_worldEndX = x;
+	m_worldEndY = y;
 }
 
 void CRuler::Draw() const
@@ -49,7 +50,7 @@ void CRuler::Hide()
 	m_worldEndY = 0.0;
 }
 
-void CRuler::PrintText( double x, double y, char *st) const
+void CRuler::PrintText( double x, double y, const char *st) const
 {
 	int l,i;
 
