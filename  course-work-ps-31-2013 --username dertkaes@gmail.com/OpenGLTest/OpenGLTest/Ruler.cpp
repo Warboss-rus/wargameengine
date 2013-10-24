@@ -2,6 +2,13 @@
 #include <GL\glut.h>
 #include <math.h>
 #include <string>
+#include <time.h>
+
+CRuler::CRuler() 
+{ 
+	srand(time(NULL));
+	Hide(); 
+}
 
 void CRuler::SetBegin(double x, double y)
 {
@@ -21,7 +28,6 @@ void CRuler::SetEnd(double x, double y)
 void CRuler::Draw() const
 {
 	if(!m_isVisible) return;
-	glDisable(GL_DEPTH_TEST);
 	glColor3d(255.0, 255.0, 0.0);
 	glBegin(GL_LINES);
 	glVertex3d(m_worldBeginX, m_worldBeginY, 0.0);
@@ -31,7 +37,6 @@ void CRuler::Draw() const
 	char str[10];
 	sprintf(str, "%0.2f", GetDistance());
 	PrintText(m_worldEndX, m_worldEndY, str);
-	glEnable(GL_DEPTH_TEST);
 }
 
 double CRuler::GetDistance() const

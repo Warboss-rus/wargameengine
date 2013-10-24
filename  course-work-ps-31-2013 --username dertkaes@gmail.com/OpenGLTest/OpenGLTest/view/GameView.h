@@ -1,4 +1,5 @@
 #pragma once
+#define USE_GLUI2
 
 #include <memory>
 #include "../3dObject.h"
@@ -21,7 +22,6 @@ private:
 	static std::shared_ptr<CGameView> m_instanse;
 	std::shared_ptr<CTable> m_table;
 	std::shared_ptr<CSkyBox> m_skybox;
-	std::shared_ptr<CInput> m_input;
 	CCamera m_camera;
 	CRuler m_ruler;
 	CUIElement m_ui;
@@ -53,6 +53,8 @@ public:
 	bool UILeftMouseButtonDown(int x, int y);
 	bool UILeftMouseButtonUp(int x, int y);
 	void CreateSpaceMarine();
+	void RollDices();
+	void DisplayDicePanel();
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

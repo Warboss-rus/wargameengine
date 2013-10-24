@@ -49,7 +49,7 @@ void RollDice(unsigned int number, unsigned int sides, bool groupByResult)
 		else
 		{
 			char temp[6] = "";
-			itoa((int)result + 1, temp, 10);
+			sprintf(temp, "%d", result + 1);
 			std::string stemp(temp);
 			raw += stemp + ' ';
 		}
@@ -59,10 +59,10 @@ void RollDice(unsigned int number, unsigned int sides, bool groupByResult)
 		for(unsigned int i = 0; i < sides; ++i)
 		{
 			char temp[6] = "";
-			itoa((int)i + 1, temp, 10);
+			sprintf(temp, "%d", i + 1);
 			std::string stemp(temp);
 			raw += stemp + ": ";
-			itoa((int)groups[i], temp, 10);
+			sprintf(temp, "%d", groups[i]);
 			stemp = temp;
 			raw += stemp + '\n';
 		}

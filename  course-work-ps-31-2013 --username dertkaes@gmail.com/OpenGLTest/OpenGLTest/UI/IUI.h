@@ -1,5 +1,6 @@
 #include <memory>
 #include <string>
+#include <vector>
 
 class IUIElement
 {
@@ -14,4 +15,13 @@ public:
 	virtual int GetY() const = 0;
 	virtual int GetHeight() const = 0;
 	virtual int GetWidth() const = 0;
+	virtual void SetVisible(bool visible) = 0;
+	virtual bool GetVisible() = 0;
+
+	virtual std::shared_ptr<IUIElement> AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, void (onClick)()) = 0;
+	virtual std::shared_ptr<IUIElement> AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;
+	virtual std::shared_ptr<IUIElement> AddNewPanel(std::string const& name, int x, int y, int height, int width) = 0;
+	virtual std::shared_ptr<IUIElement> AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState) = 0;
+	virtual std::shared_ptr<IUIElement> AddNewListBox(std::string const& name, int x, int y, int height, int width) = 0;
+	virtual std::shared_ptr<IUIElement> AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items) = 0;
 };

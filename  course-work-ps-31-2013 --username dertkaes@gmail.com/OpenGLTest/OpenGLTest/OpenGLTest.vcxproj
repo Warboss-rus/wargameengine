@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\glui2\;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\glui2\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\glui2\;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\glui2\Release\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -60,6 +60,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Glui2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,6 +78,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Glui2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -88,6 +90,8 @@
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
+    <ClCompile Include="UI\UICheckBox.cpp" />
+    <ClCompile Include="UI\UIConfig.cpp" />
     <ClCompile Include="UI\UIElement.cpp" />
     <ClCompile Include="UI\UIListBox.cpp" />
     <ClCompile Include="UI\UIPanel.cpp" />
@@ -117,6 +121,8 @@
     <ClInclude Include="SelectionTools.h" />
     <ClInclude Include="UI\IUI.h" />
     <ClInclude Include="UI\UIButton.h" />
+    <ClInclude Include="UI\UICheckBox.h" />
+    <ClInclude Include="UI\UIConfig.h" />
     <ClInclude Include="UI\UIElement.h" />
     <ClInclude Include="UI\UIListBox.h" />
     <ClInclude Include="UI\UIPanel.h" />

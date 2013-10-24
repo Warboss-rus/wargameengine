@@ -2,45 +2,61 @@
 #include <GL\glut.h>
 #include "UIUtils.h"
 #include "..\view\TextureManager.h"
+#include "UIConfig.h"
 
 void CUIButton::Draw() const
 {
+	if(!m_visible)
+		return;
 	glPushMatrix();
 	glTranslatef(m_x, m_y, 0);
-	glColor3f(0.6f,0.6f,0.6f);
-	CTextureManager::GetInstance()->SetTexture("g2Default.png");
+	CTextureManager::GetInstance()->SetTexture(CUIConfig::texture);
 	glBegin(GL_QUADS);
-		(m_isPressed)?glTexCoord2d(0.02344, 0.66016):glTexCoord2d(0.02344, 0.59375);
+		(m_isPressed)?glTexCoord2d(CUIConfig::button.pressedTexCoord[0], CUIConfig::button.pressedTexCoord[1]):glTexCoord2d(CUIConfig::button.texCoord[0], CUIConfig::button.texCoord[1]);
 		glVertex2d(0, 0);
-		(m_isPressed)?glTexCoord2d(0.02344, 0.60157):glTexCoord2d(0.02344, 0.53516);
+		(m_isPressed)?glTexCoord2d(CUIConfig::button.pressedTexCoord[0], CUIConfig::button.pressedTexCoord[3]):glTexCoord2d(CUIConfig::button.texCoord[0], CUIConfig::button.texCoord[3]);
 		glVertex2d(0, m_height);
-		(m_isPressed)?glTexCoord2d(0.22266, 0.60157):glTexCoord2d(0.22266, 0.53516);
+		(m_isPressed)?glTexCoord2d(CUIConfig::button.pressedTexCoord[2], CUIConfig::button.pressedTexCoord[3]):glTexCoord2d(CUIConfig::button.texCoord[2], CUIConfig::button.texCoord[3]);
 		glVertex2d(m_width, m_height);
-		(m_isPressed)?glTexCoord2d(0.22266, 0.66016):glTexCoord2d(0.22266, 0.59375);
+		(m_isPressed)?glTexCoord2d(CUIConfig::button.pressedTexCoord[2], CUIConfig::button.pressedTexCoord[1]):glTexCoord2d(CUIConfig::button.texCoord[2], CUIConfig::button.texCoord[1]);
 		glVertex2d(m_width, 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
-	glColor3f(0.0f,0.0f,0.0f);
-	int fontx = (m_width - glutBitmapLength(GLUT_BITMAP_HELVETICA_18, (unsigned char*)m_text.c_str())) / 2 ;
-	int fonty = (m_height + 15) / 2;
-	PrintText(fontx, fonty, m_text.c_str(), GLUT_BITMAP_HELVETICA_18);
+	glColor3f(CUIConfig::textColor[0], CUIConfig::textColor[1], CUIConfig::textColor[2]);
+	int fontx = (m_width - glutBitmapLength(CUIConfig::font, (unsigned char*)m_text.c_str())) / 2 ;
+	int fonty = (m_height + CUIConfig::fontHeight) / 2;
+	PrintText(fontx, fonty, m_text.c_str(), CUIConfig::font);
 	CUIElement::Draw();
 	glPopMatrix();
 }
 
 bool CUIButton::LeftMouseButtonUp(int x, int y)
 {
-	if(!CUIElement::LeftMouseButtonUp(x, y))
+	if(CUIElement::LeftMouseButtonUp(x, y))
 	{
 		m_isPressed = false;
-		m_onClick();
+		return true;
 	}
-	return true;
+	if(m_isPressed && PointIsOnElement(x, y))
+	{
+		m_onClick();
+		m_isPressed = false;
+		return true;
+	}
+	m_isPressed = false;
+	return false;
 }
 
 bool CUIButton::LeftMouseButtonDown(int x, int y)
 {
-	CUIElement::LeftMouseButtonDown(x, y);
-	m_isPressed = true;
-	return true;
+	if (CUIElement::LeftMouseButtonDown(x, y))
+	{
+		return true;
+	}
+	if(PointIsOnElement(x, y))
+	{
+		m_isPressed = true;
+		return true;
+	}
+	return false;
 }

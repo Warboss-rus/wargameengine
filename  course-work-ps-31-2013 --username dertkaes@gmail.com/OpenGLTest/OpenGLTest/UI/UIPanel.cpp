@@ -3,6 +3,8 @@
 
 void CUIPanel::Draw() const
 {
+	if(!m_visible)
+		return;
 	glPushMatrix();
 	glTranslatef(m_x, m_y, 0);
 	glColor3f(0.6f,0.6f,0.6f);

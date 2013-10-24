@@ -5,20 +5,6 @@
 bool CInput::m_isLMBDown = false;
 bool CInput::m_ruler = false;
 
-CInput::CInput(void) 
-{
-	glutKeyboardFunc(&OnKeyboard);
-	glutSpecialFunc(&OnSpecialKeyPress);
-	glutMouseFunc(&OnMouse);
-	glutMotionFunc(&OnMouseMove);
-	glutPassiveMotionFunc(&OnPassiveMouseMove);
-}
-
-
-CInput::~CInput(void)
-{
-}
-
 void CInput::OnMouse(int button, int state, int x, int y)
 {
 	switch(button)
@@ -93,21 +79,7 @@ void CInput::OnSpecialKeyPress(int key, int x, int y)
 
 void CInput::OnPassiveMouseMove(int x, int y)
 {
-	static int prevMouseX;
-	static int prevMouseY;
-	if(glutGetModifiers() == GLUT_ACTIVE_ALT)
-	{
-		glutSetCursor(GLUT_CURSOR_NONE);
-		glutWarpPointer(prevMouseX, prevMouseY);
-		CGameView::GetIntanse().lock()->CameraRotate(x - prevMouseX, prevMouseY - y);
-		CGameView::GetIntanse().lock()->OnDrawScene();
-	}
-	else
-	{
-		glutSetCursor(GLUT_CURSOR_INHERIT);
-		prevMouseX = x;
-		prevMouseY = y;
-	}
+	
 }
 
 void CInput::OnMouseMove(int x, int y)
@@ -122,5 +94,20 @@ void CInput::OnMouseMove(int x, int y)
 		{
 			CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
 		}
+	}
+	static int prevMouseX;
+	static int prevMouseY;
+	if(glutGetModifiers() == GLUT_ACTIVE_ALT)
+	{
+		glutSetCursor(GLUT_CURSOR_NONE);
+		glutWarpPointer(prevMouseX, prevMouseY);
+		CGameView::GetIntanse().lock()->CameraRotate(x - prevMouseX, prevMouseY - y);
+		CGameView::GetIntanse().lock()->OnDrawScene();
+	}
+	else
+	{
+		glutSetCursor(GLUT_CURSOR_INHERIT);
+		prevMouseX = x;
+		prevMouseY = y;
 	}
 }

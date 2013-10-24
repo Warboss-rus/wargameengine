@@ -6,8 +6,6 @@ private:
 	static bool m_isLMBDown;
 	static bool m_ruler;
 public:
-	CInput(void);
-	~CInput(void);
 
 	static void EnableRuler() { m_ruler = true; }
 	

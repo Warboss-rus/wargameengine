@@ -5,8 +5,9 @@
 class CUIListBox : public CUIElement
 {
 public:
-	CUIListBox(int x, int y, int height, int width): m_selected(-1), m_expanded(false) { m_x = x; m_y = y; m_height = height; m_width = width; }
+	CUIListBox(int x, int y, int height, int width): CUIElement(x, y, height, width), m_selected(-1), m_expanded(false), m_pressed(false) { }
 	void Draw() const;
+	bool LeftMouseButtonDown(int x, int y);
 	bool LeftMouseButtonUp(int x, int y);
 	void AddItem(std::string const& str);
 	std::string GetSelectedItem() const;
@@ -16,4 +17,5 @@ private:
 	std::vector<std::string> m_items;
 	int m_selected;
 	bool m_expanded;
+	bool m_pressed;
 };

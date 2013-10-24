@@ -1,7 +1,7 @@
 class CRuler
 {
 public:
-	CRuler() { Hide(); }
+	CRuler();
 	void SetBegin(double x, double y);
 	void SetEnd(double x, double y);
 	void Draw() const;

@@ -2,22 +2,22 @@
 #include <GL\glut.h>
 #include <string>
 #include "..\SelectionTools.h"
-#include "..\UI\UIButton.h"
 #include "..\UI\UIListBox.h"
+#include "..\UI\UICheckBox.h"
 #include "..\CommandHandler.h"
 
 using namespace std;
 
-std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
+shared_ptr<CGameView> CGameView::m_instanse = NULL;
 
-std::weak_ptr<CGameView> CGameView::GetIntanse()
+weak_ptr<CGameView> CGameView::GetIntanse()
 {
 	if (!m_instanse.get())
 	{
 		m_instanse.reset(new CGameView());
 		m_instanse->Init();
 	}
-	std::weak_ptr<CGameView> pView(m_instanse);
+	weak_ptr<CGameView> pView(m_instanse);
 
 	return pView;
 }
@@ -30,9 +30,9 @@ void CGameView::OnIdle()
 
 void CGameView::CreateSpaceMarine()
 {
-	CUIListBox * list = (CUIListBox * )m_ui.GetChildByName("ListBox1").get();
 	CCommandHandler handler;
-	handler.AddNewCreateObject(list->GetSelectedItem(), 0.0, 0.0, 0.0);
+	CUIListBox * listbox = (CUIListBox *)m_ui.GetChildByName("ListBox1").get();
+	handler.AddNewCreateObject(listbox->GetSelectedItem(), 0.0, 0.0, 0.0);
 }
 
 void NewSpaceMarine()
@@ -45,9 +45,27 @@ void DeleteObject()
 	CGameModel::GetIntanse().lock()->DeleteSelectedObject();
 }
 
-void RollDices()
+void RollXDX()
 {
-	RollDice(10, 6, false);
+	CGameView::GetIntanse().lock()->RollDices();
+}
+
+void SetDicePanelVisibility()
+{
+	CGameView::GetIntanse().lock()->DisplayDicePanel();
+}
+
+void CGameView::RollDices()
+{
+	CUIListBox * listbox2 = (CUIListBox *)m_ui.GetChildByName("Panel1")->GetChildByName("ListBox2").get();
+	CUIListBox * listbox3 = (CUIListBox *)m_ui.GetChildByName("Panel1")->GetChildByName("ListBox3").get();
+	CUICheckBox * checkbox = (CUICheckBox *)m_ui.GetChildByName("Panel1")->GetChildByName("CheckBox1").get();
+	RollDice(atoi(listbox3->GetSelectedItem().c_str()), atoi(listbox2->GetSelectedItem().c_str()), checkbox->GetState());
+}
+
+void CGameView::DisplayDicePanel()
+{
+	m_ui.GetChildByName("Panel1")->SetVisible(!m_ui.GetChildByName("Panel1")->GetVisible());
 }
 
 void Ruler()
@@ -60,15 +78,37 @@ CGameView::CGameView(void)
 	m_gameModel = CGameModel::GetIntanse();
 	m_table.reset(new CTable(30.0f, 15.0f, "sand.bmp"));
 	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, 60.0, 60.0, 60.0, "skybox"));
-	CUIListBox * list = new CUIListBox(10, 10, 30, 200);
-	list->AddItem("SpaceMarine.obj");
-	list->AddItem("CSM.obj");
-	list->AddItem("rhino.obj");
-	m_ui.AddChild("ListBox1", std::shared_ptr<IUIElement>(list));
-	m_ui.AddChild("Button1", std::shared_ptr<IUIElement>(new CUIButton(220, 10, 30, 80, "Create", NewSpaceMarine)));
-	m_ui.AddChild("Button2", std::shared_ptr<IUIElement>(new CUIButton(310, 10, 30, 80, "Delete", DeleteObject)));
-	m_ui.AddChild("Button3", std::shared_ptr<IUIElement>(new CUIButton(400, 10, 30, 100, "Roll 10D6", RollDices)));
-	m_ui.AddChild("Button4", std::shared_ptr<IUIElement>(new CUIButton(510, 10, 30, 80, "Ruler", Ruler)));
+	vector<string> items;;
+	items.push_back("SpaceMarine.obj");
+	items.push_back("CSM.obj");
+	items.push_back("rhino.obj");
+	m_ui.AddNewListBox("ListBox1", 10, 10, 30, 200, items);
+	m_ui.AddNewButton("Button1", 220, 10, 30, 80, "Create", NewSpaceMarine);
+	m_ui.AddNewButton("Button2", 310, 10, 30, 80, "Delete", DeleteObject);
+	m_ui.AddNewButton("Button3", 400, 10, 30, 100, "Roll Dices", SetDicePanelVisibility);
+	m_ui.AddNewButton("Button4", 510, 10, 30, 80, "Ruler", Ruler).get();
+
+	IUIElement * panel = m_ui.AddNewPanel("Panel1", 390, 40, 160, 120).get();
+	panel->SetVisible(false);
+	panel->AddNewStaticText("Label1", 5, 10, 30, 50, "Count");
+	panel->AddNewStaticText("Label2", 5, 50, 30, 50, "Faces");
+	panel->AddNewButton("Button5", 30, 120, 30, 60, "Roll", RollXDX);
+	panel->AddNewCheckBox("CheckBox1", 5, 80, 30, 100, "Group", false);
+	items.clear();
+	items.push_back("6");
+	items.push_back("3");
+	items.push_back("12");
+	items.push_back("20");
+	panel->AddNewListBox("ListBox2", 65, 50, 30, 50, items);
+	items.clear();
+	items.push_back("1");
+	items.push_back("2");
+	items.push_back("5");
+	items.push_back("10");
+	items.push_back("20");
+	items.push_back("50");
+	items.push_back("100");
+	panel->AddNewListBox("ListBox3", 65, 10, 30, 50, items);
 }
 
 void CGameView::Init()
@@ -79,29 +119,35 @@ void CGameView::Init()
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(600, 600);
 	glutCreateWindow("GLUT test");
-	glutDisplayFunc(&OnDrawScene);
-	glutIdleFunc(&OnIdle);
-	glutReshapeFunc(&OnReshape);
 	glEnable(GL_NORMALIZE);
 	glDepthFunc(GL_LESS);
-	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	m_input.reset(new CInput());
+	glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.01f);
+	
+	glutDisplayFunc(CGameView::OnDrawScene);
+	glutIdleFunc(&OnIdle);
+	glutReshapeFunc(&OnReshape);
+	glutKeyboardFunc(&CInput::OnKeyboard);
+	glutSpecialFunc(&CInput::OnSpecialKeyPress);
+	glutMouseFunc(&CInput::OnMouse);
+	glutMotionFunc(&CInput::OnMouseMove);
+	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
+	glutMotionFunc(&CInput::OnMouseMove);
 	
 	glutMainLoop();
 }
 
 void CGameView::OnDrawScene()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	CGameView::GetIntanse().lock()->Update();
 	glutSwapBuffers();
 }
 
 void CGameView::DrawUI() const
 {
-	glDisable(GL_DEPTH_TEST);
 	glPushMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -118,13 +164,16 @@ void CGameView::DrawUI() const
 
 void CGameView::Update()
 {
+	glEnable(GL_TEXTURE_2D);
 	m_camera.Update();
 	m_skybox->Draw();
 	m_table->Draw();
+	glEnable(GL_DEPTH_TEST);
 	DrawObjects();
 	const IObject * object = m_gameModel.lock()->GetSelectedObject().get();
 	if(m_gameModel.lock()->GetSelectedObjectModel() != "") m_modelManager.GetBoundingBox(m_gameModel.lock()->GetSelectedObjectModel())->Draw(
 		object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
+	glDisable(GL_DEPTH_TEST);
 	m_ruler.Draw();
 	DrawUI();
 }
@@ -138,7 +187,7 @@ void CGameView::DrawObjects(void)
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
@@ -152,7 +201,7 @@ void CGameView::OnReshape(int width, int height)
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	GLdouble aspect = (GLdouble)width / (GLdouble)height;
+	GLdouble aspect = (GLdouble)glutGet(GLUT_WINDOW_WIDTH) / (GLdouble)glutGet(GLUT_WINDOW_HEIGHT);
 	gluPerspective(60, aspect, 0.5, 100.0);
 	glMatrixMode(GL_MODELVIEW);
 }
@@ -212,7 +261,7 @@ void CGameView::SelectObject(int x, int y)
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
-		std::shared_ptr<const IObject> object = model->Get3DObject(i);
+		shared_ptr<const IObject> object = model->Get3DObject(i);
 		double direction[3] = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
 		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, direction, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation()))
 		{
