@@ -1,8 +1,6 @@
 #include "UICheckBox.h"
 #include <GL\glut.h>
-#include "UIUtils.h"
 #include "..\view\TextureManager.h"
-#include "UIConfig.h"
 
 void CUICheckBox::Draw() const
 {
@@ -10,22 +8,19 @@ void CUICheckBox::Draw() const
 		return;
 	glPushMatrix();
 	glTranslatef(m_x, m_y, 0);
-	CTextureManager::GetInstance()->SetTexture(CUIConfig::texture);
+	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
-		(m_state)?glTexCoord2d(CUIConfig::checkbox.checkedTexCoord[0], CUIConfig::checkbox.checkedTexCoord[1]):glTexCoord2d(CUIConfig::checkbox.texCoord[0], CUIConfig::checkbox.texCoord[1]);
+		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[0], m_theme.checkbox.checkedTexCoord[1]):glTexCoord2d(m_theme.checkbox.texCoord[0], m_theme.checkbox.texCoord[1]);
 		glVertex2d(0, 0);
-		(m_state)?glTexCoord2d(CUIConfig::checkbox.checkedTexCoord[0], CUIConfig::checkbox.checkedTexCoord[3]):glTexCoord2d(CUIConfig::checkbox.texCoord[0], CUIConfig::checkbox.texCoord[3]);
-		glVertex2d(0, m_height * CUIConfig::checkbox.checkboxSizeCoeff);
-		(m_state)?glTexCoord2d(CUIConfig::checkbox.checkedTexCoord[2], CUIConfig::checkbox.checkedTexCoord[3]):glTexCoord2d(CUIConfig::checkbox.texCoord[2], CUIConfig::checkbox.texCoord[3]);
-		glVertex2d(m_height * CUIConfig::checkbox.checkboxSizeCoeff, m_height * CUIConfig::checkbox.checkboxSizeCoeff);
-		(m_state)?glTexCoord2d(CUIConfig::checkbox.checkedTexCoord[2], CUIConfig::checkbox.checkedTexCoord[1]):glTexCoord2d(CUIConfig::checkbox.texCoord[2], CUIConfig::checkbox.texCoord[1]);
-		glVertex2d(m_height * CUIConfig::checkbox.checkboxSizeCoeff, 0);
+		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[0], m_theme.checkbox.checkedTexCoord[3]):glTexCoord2d(m_theme.checkbox.texCoord[0], m_theme.checkbox.texCoord[3]);
+		glVertex2d(0, m_height * m_theme.checkbox.checkboxSizeCoeff);
+		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[2], m_theme.checkbox.checkedTexCoord[3]):glTexCoord2d(m_theme.checkbox.texCoord[2], m_theme.checkbox.texCoord[3]);
+		glVertex2d(m_height * m_theme.checkbox.checkboxSizeCoeff, m_height * m_theme.checkbox.checkboxSizeCoeff);
+		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[2], m_theme.checkbox.checkedTexCoord[1]):glTexCoord2d(m_theme.checkbox.texCoord[2], m_theme.checkbox.texCoord[1]);
+		glVertex2d(m_height * m_theme.checkbox.checkboxSizeCoeff, 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
-	glColor3f(CUIConfig::textColor[0], CUIConfig::textColor[1], CUIConfig::textColor[2]);
-	int fontx = m_height * CUIConfig::checkbox.checkboxSizeCoeff + (m_width - m_height * CUIConfig::checkbox.checkboxSizeCoeff - glutBitmapLength(CUIConfig::font, (unsigned char*)m_text.c_str())) / 2 ;
-	int fonty = (m_height + CUIConfig::fontHeight) / 2;
-	PrintText(fontx, fonty, m_text.c_str(), CUIConfig::font);
+	m_text.Draw();
 	CUIElement::Draw();
 	glPopMatrix();
 }

@@ -1,17 +1,18 @@
 #include "UIElement.h"
+#include "UIText.h"
 
 class CUICheckBox : public CUIElement
 {
 public:
-	CUICheckBox(int x, int y, int height, int width, char* text, bool initState):
-		CUIElement(x, y, height, width), m_text(text), m_state(initState), m_pressed(false) {}
+	CUICheckBox(int x, int y, int height, int width, char* text, bool initState, IUIElement * parent):
+		CUIElement(x, y, height, width, parent), m_text(m_height * m_theme.checkbox.checkboxSizeCoeff, 0 ,height, width, text, m_theme.text), m_state(initState), m_pressed(false) {}
 	void Draw() const;
 	bool LeftMouseButtonUp(int x, int y);
 	bool LeftMouseButtonDown(int x, int y);
 	void SetState(bool state);
 	bool GetState() const { return m_state; }
 private:
-	std::string m_text;
+	CUIText m_text;
 	bool m_state;
 	bool m_pressed;
 };

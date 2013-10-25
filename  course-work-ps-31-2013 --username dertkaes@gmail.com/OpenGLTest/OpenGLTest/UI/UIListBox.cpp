@@ -2,7 +2,6 @@
 #include "UIUtils.h"
 #include <GL\glut.h>
 #include "..\view\TextureManager.h"
-#include "UIConfig.h"
 
 void CUIListBox::Draw() const
 {
@@ -10,51 +9,50 @@ void CUIListBox::Draw() const
 		return;
 	glPushMatrix();
 	glTranslatef(m_x, m_y, 0);
-	glColor3f(CUIConfig::defaultColor[0], CUIConfig::defaultColor[1], CUIConfig::defaultColor[2]);
+	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2d(0, 0);
 		glVertex2d(0, m_height);
 		glVertex2d(m_width, m_height);
 		glVertex2d(m_width, 0);
 	glEnd();
-	glColor3f(CUIConfig::textfieldColor[0], CUIConfig::textfieldColor[1], CUIConfig::textfieldColor[2]);
+	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 	glBegin(GL_QUADS);
-		glVertex2d(CUIConfig::listbox.borderSize, CUIConfig::listbox.borderSize);
-		glVertex2d(CUIConfig::listbox.borderSize, m_height - CUIConfig::listbox.borderSize);
-		glVertex2d(m_width - CUIConfig::listbox.borderSize, m_height - CUIConfig::listbox.borderSize);
-		glVertex2d(m_width - CUIConfig::listbox.borderSize, CUIConfig::listbox.borderSize);
+		glVertex2d(m_theme.listbox.borderSize, m_theme.listbox.borderSize);
+		glVertex2d(m_theme.listbox.borderSize, m_height - m_theme.listbox.borderSize);
+		glVertex2d(m_width - m_theme.listbox.borderSize, m_height - m_theme.listbox.borderSize);
+		glVertex2d(m_width - m_theme.listbox.borderSize, m_theme.listbox.borderSize);
 	glEnd();
-	glColor3f(CUIConfig::textColor[0], CUIConfig::textColor[1], CUIConfig::textColor[2]);
-	int fonty = (m_height + CUIConfig::fontHeight) / 2;
-	if(m_selected >= 0)	PrintText(CUIConfig::listbox.borderSize, fonty, m_items[m_selected].c_str(), CUIConfig::font);
+	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
+	int fonty = (m_height + m_theme.text.fontHeight) / 2;
+	if(m_selected >= 0)	PrintText(m_theme.listbox.borderSize, fonty, m_items[m_selected].c_str(), m_theme.text.font);
 	glColor3f(0.6f,0.6f,0.6f);
-	CTextureManager::GetInstance()->SetTexture(CUIConfig::texture);
+	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
-		(m_expanded)?glTexCoord2d(CUIConfig::listbox.expandedTexCoord[0], CUIConfig::listbox.expandedTexCoord[1]):glTexCoord2d(CUIConfig::listbox.texCoord[0], CUIConfig::listbox.texCoord[1]);
-		glVertex2d(m_width - m_height * CUIConfig::listbox.buttonWidthCoeff, 0);
-		(m_expanded)?glTexCoord2d(CUIConfig::listbox.expandedTexCoord[0], CUIConfig::listbox.expandedTexCoord[3]):glTexCoord2d(CUIConfig::listbox.texCoord[0], CUIConfig::listbox.texCoord[3]);
-		glVertex2d(m_width - m_height * CUIConfig::listbox.buttonWidthCoeff, m_height);
-		(m_expanded)?glTexCoord2d(CUIConfig::listbox.expandedTexCoord[2], CUIConfig::listbox.expandedTexCoord[3]):glTexCoord2d(CUIConfig::listbox.texCoord[2], CUIConfig::listbox.texCoord[3]);
+		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[0], m_theme.listbox.expandedTexCoord[1]):glTexCoord2d(m_theme.listbox.texCoord[0], m_theme.listbox.texCoord[1]);
+		glVertex2d(m_width - m_height * m_theme.listbox.buttonWidthCoeff, 0);
+		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[0], m_theme.listbox.expandedTexCoord[3]):glTexCoord2d(m_theme.listbox.texCoord[0], m_theme.listbox.texCoord[3]);
+		glVertex2d(m_width - m_height * m_theme.listbox.buttonWidthCoeff, m_height);
+		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[2], m_theme.listbox.expandedTexCoord[3]):glTexCoord2d(m_theme.listbox.texCoord[2], m_theme.listbox.texCoord[3]);
 		glVertex2d(m_width, m_height);
-		(m_expanded)?glTexCoord2d(CUIConfig::listbox.expandedTexCoord[2], CUIConfig::listbox.expandedTexCoord[1]):glTexCoord2d(CUIConfig::listbox.texCoord[2], CUIConfig::listbox.texCoord[1]);
+		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[2], m_theme.listbox.expandedTexCoord[1]):glTexCoord2d(m_theme.listbox.texCoord[2], m_theme.listbox.texCoord[1]);
 		glVertex2d(m_width, 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
 	if(m_expanded)
 	{
-		glColor3f(CUIConfig::textfieldColor[0], CUIConfig::textfieldColor[1], CUIConfig::textfieldColor[2]);
+		glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 		glBegin(GL_QUADS);
 			glVertex2d(0, m_height);
 			glVertex2d(0, m_height * (m_items.size() + 1));
 			glVertex2d(m_width, m_height * (m_items.size() + 1));
 			glVertex2d(m_width, m_height);
 		glEnd();
-		glColor3f(CUIConfig::textColor[0], CUIConfig::textColor[1], CUIConfig::textColor[2]);
+		glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 		for(size_t i = 0; i < m_items.size(); ++i)
 		{
-			PrintText(CUIConfig::listbox.borderSize, m_height * (i + 1) + fonty, m_items[i].c_str(), CUIConfig::font);
+			PrintText(m_theme.listbox.borderSize, m_height * (i + 1) + fonty, m_items[i].c_str(), m_theme.text.font);
 		}
-	glEnd();
 	}
 	CUIElement::Draw();
 	glPopMatrix();
@@ -90,6 +88,7 @@ bool CUIListBox::LeftMouseButtonUp(int x, int y)
 			}
 			m_expanded = !m_expanded;
 		}
+		SetFocus();
 		m_pressed = false;
 		return true;
 	}
@@ -115,7 +114,7 @@ std::string CUIListBox::GetSelectedItem() const
 	return m_items[m_selected];
 }
 
-void CUIListBox::SetSelected(int index)
+void CUIListBox::SetSelected(size_t index)
 {
 	m_selected = index;
 }
@@ -127,4 +126,11 @@ int CUIListBox::GetHeight() const
 		return m_height * (m_items.size() + 1);
 	}
 	return m_height;
+}
+
+void CUIListBox::DeleteItem(size_t index)
+{
+	m_items.erase(m_items.begin() + index);
+	if(m_selected == index) m_selected--;
+	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
 }

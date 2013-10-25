@@ -52,13 +52,15 @@ public:
 	void TryMoveSelectedObject(int x, int y);
 	bool UILeftMouseButtonDown(int x, int y);
 	bool UILeftMouseButtonUp(int x, int y);
+	bool UIKeyPress(unsigned char key);
+	bool UISpecialKeyPress(int key);
 	void CreateSpaceMarine();
 	void RollDices();
 	void DisplayDicePanel();
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);
-	static void OnIdle();
+	static void OnTimer(int value);
 
 	static void FreeInstance();
 };

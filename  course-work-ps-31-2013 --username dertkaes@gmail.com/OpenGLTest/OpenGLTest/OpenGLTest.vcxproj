@@ -60,7 +60,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Glui2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -91,11 +90,13 @@
     <ClCompile Include="SelectionTools.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
-    <ClCompile Include="UI\UIConfig.cpp" />
+    <ClCompile Include="UI\UIEdit.cpp" />
     <ClCompile Include="UI\UIElement.cpp" />
     <ClCompile Include="UI\UIListBox.cpp" />
     <ClCompile Include="UI\UIPanel.cpp" />
     <ClCompile Include="UI\UIStaticText.cpp" />
+    <ClCompile Include="UI\UIText.cpp" />
+    <ClCompile Include="UI\UITheme.cpp" />
     <ClCompile Include="UI\UIUtils.cpp" />
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\Bounding.cpp" />
@@ -122,11 +123,13 @@
     <ClInclude Include="UI\IUI.h" />
     <ClInclude Include="UI\UIButton.h" />
     <ClInclude Include="UI\UICheckBox.h" />
-    <ClInclude Include="UI\UIConfig.h" />
+    <ClInclude Include="UI\UIEdit.h" />
     <ClInclude Include="UI\UIElement.h" />
     <ClInclude Include="UI\UIListBox.h" />
     <ClInclude Include="UI\UIPanel.h" />
     <ClInclude Include="UI\UIStaticText.h" />
+    <ClInclude Include="UI\UIText.h" />
+    <ClInclude Include="UI\UITheme.h" />
     <ClInclude Include="UI\UIUtils.h" />
     <ClInclude Include="view\3dModel.h" />
     <ClInclude Include="view\Bounding.h" />

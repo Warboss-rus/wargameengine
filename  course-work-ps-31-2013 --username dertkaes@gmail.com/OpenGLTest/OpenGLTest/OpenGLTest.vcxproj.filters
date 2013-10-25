@@ -105,7 +105,13 @@
     <ClCompile Include="UI\UICheckBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UI\UIConfig.cpp">
+    <ClCompile Include="UI\UIEdit.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\UIText.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\UITheme.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -200,7 +206,13 @@
     <ClInclude Include="UI\UICheckBox.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="UI\UIConfig.h">
+    <ClInclude Include="UI\UIEdit.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIText.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UITheme.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
   </ItemGroup>

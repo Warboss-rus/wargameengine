@@ -4,6 +4,7 @@
 #include "..\SelectionTools.h"
 #include "..\UI\UIListBox.h"
 #include "..\UI\UICheckBox.h"
+#include "..\UI\UIEdit.h"
 #include "..\CommandHandler.h"
 
 using namespace std;
@@ -22,16 +23,10 @@ weak_ptr<CGameView> CGameView::GetIntanse()
 	return pView;
 }
 
-
-void CGameView::OnIdle()
-{
-	glutPostRedisplay();
-}
-
 void CGameView::CreateSpaceMarine()
 {
 	CCommandHandler handler;
-	CUIListBox * listbox = (CUIListBox *)m_ui.GetChildByName("ListBox1").get();
+	CUIListBox * listbox = (CUIListBox *)m_ui.GetChildByName("ListBox1");
 	handler.AddNewCreateObject(listbox->GetSelectedItem(), 0.0, 0.0, 0.0);
 }
 
@@ -57,10 +52,10 @@ void SetDicePanelVisibility()
 
 void CGameView::RollDices()
 {
-	CUIListBox * listbox2 = (CUIListBox *)m_ui.GetChildByName("Panel1")->GetChildByName("ListBox2").get();
-	CUIListBox * listbox3 = (CUIListBox *)m_ui.GetChildByName("Panel1")->GetChildByName("ListBox3").get();
-	CUICheckBox * checkbox = (CUICheckBox *)m_ui.GetChildByName("Panel1")->GetChildByName("CheckBox1").get();
-	RollDice(atoi(listbox3->GetSelectedItem().c_str()), atoi(listbox2->GetSelectedItem().c_str()), checkbox->GetState());
+	CUIListBox * listbox = (CUIListBox *)m_ui.GetChildByName("Panel1")->GetChildByName("ListBox2");
+	CUIEdit * edit = (CUIEdit *)m_ui.GetChildByName("Panel1")->GetChildByName("Edit1");
+	CUICheckBox * checkbox = (CUICheckBox *)m_ui.GetChildByName("Panel1")->GetChildByName("CheckBox1");
+	RollDice(atoi(edit->GetText().c_str()), atoi(listbox->GetSelectedItem().c_str()), checkbox->GetState());
 }
 
 void CGameView::DisplayDicePanel()
@@ -86,29 +81,27 @@ CGameView::CGameView(void)
 	m_ui.AddNewButton("Button1", 220, 10, 30, 80, "Create", NewSpaceMarine);
 	m_ui.AddNewButton("Button2", 310, 10, 30, 80, "Delete", DeleteObject);
 	m_ui.AddNewButton("Button3", 400, 10, 30, 100, "Roll Dices", SetDicePanelVisibility);
-	m_ui.AddNewButton("Button4", 510, 10, 30, 80, "Ruler", Ruler).get();
+	m_ui.AddNewButton("Button4", 510, 10, 30, 80, "Ruler", Ruler);
 
-	IUIElement * panel = m_ui.AddNewPanel("Panel1", 390, 40, 160, 120).get();
+	IUIElement * panel = m_ui.AddNewPanel("Panel1", 390, 40, 160, 120);
 	panel->SetVisible(false);
 	panel->AddNewStaticText("Label1", 5, 10, 30, 50, "Count");
 	panel->AddNewStaticText("Label2", 5, 50, 30, 50, "Faces");
 	panel->AddNewButton("Button5", 30, 120, 30, 60, "Roll", RollXDX);
 	panel->AddNewCheckBox("CheckBox1", 5, 80, 30, 100, "Group", false);
+	panel->AddNewEdit("Edit1", 65, 10, 30, 50, "1");
 	items.clear();
 	items.push_back("6");
 	items.push_back("3");
 	items.push_back("12");
 	items.push_back("20");
 	panel->AddNewListBox("ListBox2", 65, 50, 30, 50, items);
-	items.clear();
-	items.push_back("1");
-	items.push_back("2");
-	items.push_back("5");
-	items.push_back("10");
-	items.push_back("20");
-	items.push_back("50");
-	items.push_back("100");
-	panel->AddNewListBox("ListBox3", 65, 10, 30, 50, items);
+}
+
+void CGameView::OnTimer(int value)
+{
+	glutPostRedisplay();
+	glutTimerFunc(10, OnTimer, 0);
 }
 
 void CGameView::Init()
@@ -127,7 +120,7 @@ void CGameView::Init()
     glAlphaFunc(GL_GREATER, 0.01f);
 	
 	glutDisplayFunc(CGameView::OnDrawScene);
-	glutIdleFunc(&OnIdle);
+	glutTimerFunc(10, OnTimer, 0);
 	glutReshapeFunc(&OnReshape);
 	glutKeyboardFunc(&CInput::OnKeyboard);
 	glutSpecialFunc(&CInput::OnSpecialKeyPress);
@@ -289,7 +282,6 @@ void CGameView::RulerEnd(int x, int y)
 	double worldX, worldY;
 	WindowCoordsToWorldCoords(x, y, worldX, worldY);
 	m_ruler.SetEnd(worldX, worldY);
-	OnDrawScene();
 }
 
 void CGameView::RulerHide()
@@ -313,4 +305,14 @@ bool CGameView::UILeftMouseButtonDown(int x, int y)
 bool CGameView::UILeftMouseButtonUp(int x, int y)
 {
 	 return m_ui.LeftMouseButtonUp(x, y);
+}
+
+bool CGameView::UIKeyPress(unsigned char key)
+{
+	return m_ui.OnKeyPress(key);
+}
+
+bool CGameView::UISpecialKeyPress(int key)
+{
+	return m_ui.OnSpecialKeyPress(key);
 }

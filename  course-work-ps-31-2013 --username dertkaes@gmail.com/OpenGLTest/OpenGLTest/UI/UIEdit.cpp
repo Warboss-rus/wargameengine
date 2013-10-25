@@ -1,0 +1,112 @@
+#include "UIEdit.h"
+#include "UIUtils.h"
+#include <GL\glut.h>
+#include "..\view\TextureManager.h"
+
+void CUIEdit::Draw() const
+{
+	if(!m_visible)
+		return;
+	glPushMatrix();
+	glTranslatef(m_x, m_y, 0);
+	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
+	glBegin(GL_QUADS);
+		glVertex2d(0, 0);
+		glVertex2d(0, m_height);
+		glVertex2d(m_width, m_height);
+		glVertex2d(m_width, 0);
+	glEnd();
+	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
+	glBegin(GL_QUADS);
+		glVertex2d(m_theme.edit.borderSize, m_theme.edit.borderSize);
+		glVertex2d(m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
+		glVertex2d(m_width - m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
+		glVertex2d(m_width - m_theme.edit.borderSize, m_theme.edit.borderSize);
+	glEnd();
+	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
+	int fonty = (m_height + m_theme.text.fontHeight) / 2;
+	std::string newtext = m_text;
+	if(IsFocused(NULL)) 
+		newtext.insert(m_pos, "|");
+	PrintText(m_theme.edit.borderSize, fonty, newtext.c_str(), m_theme.text.font);
+	CTextureManager::GetInstance()->SetTexture("");
+	CUIElement::Draw();
+	glPopMatrix();
+}
+
+bool CUIEdit::OnKeyPress(unsigned char key)
+{
+	if(CUIElement::OnKeyPress(key)) 
+		return true;
+	if(!IsFocused(NULL))
+	{
+		return false;
+	}
+	if(key < 32 && key != 8) 
+		return false;
+	if(key != 127 && key != 8)
+	{
+		char str[2];
+		str[0] = key;
+		str[1] = '\0';
+		m_text.insert(m_pos, str);
+		m_pos++;
+	}
+	if(key == 8 && m_pos > 0)
+	{
+		m_text.erase(m_pos - 1, 1);
+		m_pos--;
+	}
+	if(key == 127 && m_pos < m_text.size())
+	{
+		m_text.erase(m_pos, 1);
+	}
+}
+
+bool CUIEdit::OnSpecialKeyPress(int key)
+{
+	if(CUIElement::OnSpecialKeyPress(key)) 
+		return true;
+	if(!IsFocused(NULL))
+	{
+		return false;
+	}
+	switch (key) 
+	{
+	case GLUT_KEY_LEFT:
+		{
+			if(m_pos > 0) m_pos--;
+			return true;
+		}break;
+	case GLUT_KEY_RIGHT:
+		{
+			if(m_pos < m_text.size()) m_pos++;
+			return true;
+		}break;
+	case GLUT_KEY_HOME:
+		{
+			m_pos = 0;
+			return true;
+		}break;
+	case GLUT_KEY_END:
+		{
+			m_pos = m_text.size();
+			return true;
+		}break;
+	}
+	return false;
+}
+
+bool CUIEdit::LeftMouseButtonUp(int x, int y)
+{
+	if(CUIElement::LeftMouseButtonUp(x, y))
+		return true;
+	if(PointIsOnElement(x, y))
+	{
+		int pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		m_pos = (pos > m_text.size())?m_text.size():pos;
+		SetFocus();
+		return true;
+	}
+	return false;
+}

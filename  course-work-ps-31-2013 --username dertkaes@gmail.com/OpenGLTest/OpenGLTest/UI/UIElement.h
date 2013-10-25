@@ -5,13 +5,15 @@
 class CUIElement : public IUIElement
 {
 public:
-	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true) {}
+	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(NULL), m_focused(NULL), m_theme(CUITheme::defaultTheme) {}
 	void Draw() const;
 	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element);
-	std::shared_ptr<IUIElement> GetChildByName(std::string const& name);
+	IUIElement* GetChildByName(std::string const& name);
 	void DeleteChild(std::string const& name);
 	bool LeftMouseButtonDown(int x, int y);
 	bool LeftMouseButtonUp(int x, int y);
+	bool OnKeyPress(unsigned char key);
+	bool OnSpecialKeyPress(int key);
 	int GetX() const { return m_x; }
 	int GetY() const { return m_y; }
 	int GetHeight() const { return m_height; }
@@ -19,19 +21,27 @@ public:
 	bool PointIsOnElement(int x, int y) const;
 	void SetVisible(bool visible);
 	bool GetVisible() { return m_visible; }
+	void SetFocus(IUIElement * focus = NULL);
+	bool IsFocused(const IUIElement * child) const;
+	void SetTheme(CUITheme const& theme) { m_theme = theme; }
 
-	std::shared_ptr<IUIElement> AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, void (onClick)());
-	std::shared_ptr<IUIElement> AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
-	std::shared_ptr<IUIElement> AddNewPanel(std::string const& name, int x, int y, int height, int width);
-	std::shared_ptr<IUIElement> AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState);
-	std::shared_ptr<IUIElement> AddNewListBox(std::string const& name, int x, int y, int height, int width);
-	std::shared_ptr<IUIElement> AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items);
+	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, void (onClick)());
+	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
+	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width);
+	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState);
+	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width);
+	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items);
+	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text);
 protected:
-	CUIElement(int x, int y, int height, int width): m_x(x), m_y(y), m_height(height), m_width(width), m_visible(true) {}
+	CUIElement(int x, int y, int height, int width, IUIElement * parent): m_x(x), m_y(y), m_height(height), m_width(width), 
+		m_visible(true), m_parent(parent), m_focused(NULL) {}
 	std::map<std::string, std::shared_ptr<IUIElement>> m_children;
 	int m_x;
 	int m_y;
 	int m_height;
 	int m_width;
 	bool m_visible;
+	IUIElement * m_parent;
+	IUIElement * m_focused;
+	CUITheme m_theme;
 };
