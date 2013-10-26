@@ -22,11 +22,10 @@ public:
 	unsigned long GetObjectCount() const;
 	std::shared_ptr<const IObject> Get3DObject(unsigned long number) const;
 	void AddObject(std::shared_ptr<IObject> pObject);
-	void DeleteSelectedObject();
 	void DeleteObjectByPtr(std::shared_ptr<IObject> pObject);
 	void SelectObjectByIndex(long index);
-	std::string GetSelectedObjectModel() const;
 	std::shared_ptr<const IObject> GetSelectedObject() const;
+	std::shared_ptr<IObject> GetSelectedObject();
 	void MoveSelectedObjectTo(double x, double y);
 };
 

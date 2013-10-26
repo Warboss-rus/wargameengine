@@ -25,6 +25,12 @@
     <Filter Include="Source Files\view">
       <UniqueIdentifier>{0ef7c67f-d75f-417d-b16d-1f3bf064e45c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\actions">
+      <UniqueIdentifier>{7fcd2ea5-c4a3-4bc6-82d0-4ac3c86d605f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\actions">
+      <UniqueIdentifier>{bbfc768f-9356-4e40-bfa4-23e779379293}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -90,12 +96,6 @@
     <ClCompile Include="view\TextureManager.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="CommandCreateObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="view\Bounding.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -113,6 +113,18 @@
     </ClCompile>
     <ClCompile Include="UI\UITheme.cpp">
       <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandCreateObject.cpp">
+      <Filter>Source Files\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandDeleteObject.cpp">
+      <Filter>Source Files\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandHandler.cpp">
+      <Filter>Source Files\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandMoveObject.cpp">
+      <Filter>Source Files\actions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -188,15 +200,6 @@
     <ClInclude Include="view\TextureManager.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="ICommand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandCreateObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="view\Bounding.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
@@ -214,6 +217,21 @@
     </ClInclude>
     <ClInclude Include="UI\UITheme.h">
       <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandCreateObject.h">
+      <Filter>Header Files\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandDeleteObject.h">
+      <Filter>Header Files\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandHandler.h">
+      <Filter>Header Files\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandMoveObject.h">
+      <Filter>Header Files\actions</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ICommand.h">
+      <Filter>Header Files\actions</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

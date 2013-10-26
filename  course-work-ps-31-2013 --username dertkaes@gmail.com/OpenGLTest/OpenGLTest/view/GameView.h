@@ -1,5 +1,4 @@
 #pragma once
-#define USE_GLUI2
 
 #include <memory>
 #include "../3dObject.h"
@@ -31,7 +30,6 @@ private:
 	CGameView& operator=(const CGameView&){};
 	void DrawUI() const;
 public:
-	~CGameView(void);
 	static std::weak_ptr<CGameView> GetIntanse();
 	void Update();
 	void DrawObjects(void);

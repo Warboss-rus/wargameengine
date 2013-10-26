@@ -23,11 +23,22 @@ void CUIEdit::Draw() const
 		glVertex2d(m_width - m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
 		glVertex2d(m_width - m_theme.edit.borderSize, m_theme.edit.borderSize);
 	glEnd();
-	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 	int fonty = (m_height + m_theme.text.fontHeight) / 2;
 	std::string newtext = m_text;
 	if(IsFocused(NULL)) 
 		newtext.insert(m_pos, "|");
+	if(m_pos != m_beginSelection)
+	{
+		glColor3f(0.0f, 0.0f, 1.0f);
+		double fontwidth = glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		glBegin(GL_QUADS);
+		glVertex2d(m_theme.edit.borderSize + (m_beginSelection + (m_pos < m_beginSelection) * 0.5)* fontwidth, fonty);
+		glVertex2d(m_theme.edit.borderSize + (m_beginSelection + (m_pos < m_beginSelection) * 0.5) * fontwidth, fonty - m_theme.text.fontHeight);
+		glVertex2d(m_theme.edit.borderSize + (m_pos + (m_pos < m_beginSelection) * 0.5) * fontwidth, fonty - m_theme.text.fontHeight);
+		glVertex2d(m_theme.edit.borderSize + (m_pos + (m_pos < m_beginSelection) * 0.5) * fontwidth, fonty);
+		glEnd();
+	}
+	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 	PrintText(m_theme.edit.borderSize, fonty, newtext.c_str(), m_theme.text.font);
 	CTextureManager::GetInstance()->SetTexture("");
 	CUIElement::Draw();
@@ -51,15 +62,31 @@ bool CUIEdit::OnKeyPress(unsigned char key)
 		str[1] = '\0';
 		m_text.insert(m_pos, str);
 		m_pos++;
+		m_beginSelection++;
 	}
 	if(key == 8 && m_pos > 0)
 	{
 		m_text.erase(m_pos - 1, 1);
 		m_pos--;
+		m_beginSelection--;
 	}
-	if(key == 127 && m_pos < m_text.size())
+	if(key == 127)
 	{
-		m_text.erase(m_pos, 1);
+		if(m_pos != m_beginSelection)
+		{
+			size_t begin = (m_pos < m_beginSelection)?m_pos:m_beginSelection;
+			size_t count = (m_pos - m_beginSelection > 0)?m_pos - m_beginSelection:m_beginSelection - m_pos;
+			m_text.erase(begin, count);
+			m_pos = begin;
+			m_beginSelection = begin;
+		}
+		else
+		{
+			if(m_pos < m_text.size())
+			{
+				m_text.erase(m_pos, 1);
+			}
+		}
 	}
 }
 
@@ -76,11 +103,13 @@ bool CUIEdit::OnSpecialKeyPress(int key)
 	case GLUT_KEY_LEFT:
 		{
 			if(m_pos > 0) m_pos--;
+			if(m_beginSelection > 0) m_beginSelection--;
 			return true;
 		}break;
 	case GLUT_KEY_RIGHT:
 		{
 			if(m_pos < m_text.size()) m_pos++;
+			if(m_beginSelection < m_text.size()) m_beginSelection++;
 			return true;
 		}break;
 	case GLUT_KEY_HOME:
@@ -105,6 +134,25 @@ bool CUIEdit::LeftMouseButtonUp(int x, int y)
 	{
 		int pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
 		m_pos = (pos > m_text.size())?m_text.size():pos;
+		SetFocus();
+		return true;
+	}
+	else
+	{
+		m_beginSelection = m_pos;
+	}
+	return false;
+}
+
+bool CUIEdit::LeftMouseButtonDown(int x, int y)
+{
+	if(CUIElement::LeftMouseButtonDown(x, y))
+		return true;
+	if(PointIsOnElement(x, y))
+	{
+		int pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		m_beginSelection = (pos > m_text.size())?m_text.size():pos;
+		m_pos = m_beginSelection;
 		SetFocus();
 		return true;
 	}

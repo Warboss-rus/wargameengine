@@ -1,12 +1,16 @@
 #include "Input.h"
 #include <GL\glut.h>
 #include "GameView.h"
+#include "..\SelectionTools.h"
+#include "..\controller\CommandHandler.h"
 
 bool CInput::m_isLMBDown = false;
 bool CInput::m_ruler = false;
 
 void CInput::OnMouse(int button, int state, int x, int y)
 {
+	static double startX = -1;
+	static double startY = -1;
 	switch(button)
 	{
 	case GLUT_LEFT_BUTTON: //LMB
@@ -21,6 +25,8 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			else
 			{
 				CGameView::GetIntanse().lock()->SelectObject(x, y);
+				startX = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetX();
+				startY = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetY();
 				CGameView::GetIntanse().lock()->RulerHide();
 			}
 		}
@@ -28,6 +34,14 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			m_isLMBDown = false;
 			if(CGameView::GetIntanse().lock()->UILeftMouseButtonUp(x, y)) return;
+			if(!m_ruler && startX != -1 && startY != -1)
+			{
+				double worldX, worldY;
+				WindowCoordsToWorldCoords(x, y, worldX, worldY);
+				CCommandHandler::GetInstance().lock()->AddNewMoveObject(worldX - startX, worldY - startY);
+				startX = -1;
+				startY = -1;
+			}
 			m_ruler = false;
 		}break;
 	case 3://scroll up
@@ -90,7 +104,7 @@ void CInput::OnPassiveMouseMove(int x, int y)
 		glutSetCursor(GLUT_CURSOR_NONE);
 		glutWarpPointer(prevMouseX, prevMouseY);
 		CGameView::GetIntanse().lock()->CameraRotate(x - prevMouseX, prevMouseY - y);
-		CGameView::GetIntanse().lock()->OnDrawScene;
+		CGameView::GetIntanse().lock()->OnDrawScene();
 	}
 	else
 	{

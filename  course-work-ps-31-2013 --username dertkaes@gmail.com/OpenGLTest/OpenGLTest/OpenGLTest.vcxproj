@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\glui2\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\glui2\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\glui2\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\glui2\Release\;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -77,12 +77,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Glui2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CommandCreateObject.cpp" />
-    <ClCompile Include="CommandHandler.cpp" />
+    <ClCompile Include="controller\CommandCreateObject.cpp" />
+    <ClCompile Include="controller\CommandDeleteObject.cpp" />
+    <ClCompile Include="controller\CommandHandler.cpp" />
+    <ClCompile Include="controller\CommandMoveObject.cpp" />
     <ClCompile Include="controller\GameController.cpp" />
     <ClCompile Include="model\GameModel.cpp" />
     <ClCompile Include="picopng.cpp" />
@@ -112,10 +113,12 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CommandCreateObject.h" />
-    <ClInclude Include="CommandHandler.h" />
+    <ClInclude Include="controller\CommandCreateObject.h" />
+    <ClInclude Include="controller\CommandDeleteObject.h" />
+    <ClInclude Include="controller\CommandHandler.h" />
+    <ClInclude Include="controller\CommandMoveObject.h" />
     <ClInclude Include="controller\GameController.h" />
-    <ClInclude Include="ICommand.h" />
+    <ClInclude Include="controller\ICommand.h" />
     <ClInclude Include="model\GameModel.h" />
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />
