@@ -24,13 +24,13 @@ public:
 	void SetFocus(IUIElement * focus = NULL);
 	bool IsFocused(const IUIElement * child) const;
 	void SetTheme(CUITheme const& theme) { m_theme = theme; }
+	CUITheme & GetTheme() { return m_theme; }
 
 	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, void (onClick)());
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
 	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width);
 	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState);
-	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width);
-	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items);
+	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items = std::vector<std::string>());
 	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text);
 protected:
 	CUIElement(int x, int y, int height, int width, IUIElement * parent): m_x(x), m_y(y), m_height(height), m_width(width), 

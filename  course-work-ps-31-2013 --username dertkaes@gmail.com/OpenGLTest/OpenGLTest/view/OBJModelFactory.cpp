@@ -48,22 +48,16 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 	std::string type;
 	sPoint3 p3;
 	sPoint2 p2;
+	sMesh mesh;
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
-	double bounding[6];
 	std::vector<sPoint3> newVertices;
 	std::vector<sPoint2> newTextureCoords;
 	std::vector<sPoint3> newNormals;
-	std::vector<unsigned int> newIndexes;
-	CMaterialManager newMaterialManager;
-	std::vector<sUsingMaterial> newUsedMaterials;
-	bounding[0] = DBL_MAX;
-	bounding[1] = DBL_MAX;
-	bounding[2] = DBL_MAX;
-	bounding[3] = -DBL_MAX;
-	bounding[4] = -DBL_MAX;
-	bounding[5] = -DBL_MAX;
+	std::vector<unsigned int> indexes;
+	CMaterialManager materialManager;
+	std::vector<sMesh> meshes;
 	while(std::getline(iFile, line))
 	{
 		if(line.empty() || line[0] == '#')//Empty line or commentary
@@ -77,12 +71,6 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 			lineStream >> p3.x;
 			lineStream >> p3.y;
 			lineStream >> p3.z;
-			if(p3.x < bounding[0]) bounding[0] = p3.x;
-			if(p3.y < bounding[1]) bounding[1] = p3.y;
-			if(p3.z < bounding[2]) bounding[2] = p3.z;
-			if(p3.x > bounding[3]) bounding[3] = p3.x;
-			if(p3.y > bounding[4]) bounding[4] = p3.y;
-			if(p3.z > bounding[5]) bounding[5] = p3.z;
 			vertices.push_back(p3);
 		}
 
@@ -106,15 +94,15 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 			useFaces = true;
 			for(unsigned int i = 0; i < 3; ++i)
 			{
-				std::string indexes;
-				lineStream >> indexes;
-				if(faces.find(indexes) != faces.end()) //This vertex/texture coord/normal already exist
+				std::string index3;
+				lineStream >> index3;
+				if(faces.find(index3) != faces.end()) //This vertex/texture coord/normal already exist
 				{
-					newIndexes.push_back(faces[indexes]);
+					indexes.push_back(faces[index3]);
 				}
 				else//New vertex/texcoord/normal
 				{
-					FaceIndex faceIndex  = ParseFaceIndex(indexes);
+					FaceIndex faceIndex  = ParseFaceIndex(index3);
 					newVertices.push_back(vertices[faceIndex.vertex - 1]);
 					if(faceIndex.textureCoord != 0)
 					{
@@ -132,8 +120,8 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 					{
 						newNormals.push_back(sPoint3());
 					}
-					newIndexes.push_back(newVertices.size() - 1);
-					faces[indexes] = newVertices.size() - 1;
+					indexes.push_back(newVertices.size() - 1);
+					faces[index3] = newVertices.size() - 1;
 				}
 			}
 		}
@@ -141,14 +129,39 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 		{
 			std::string path;
 			lineStream >> path;
-			newMaterialManager.LoadMTL(path);
+			materialManager.LoadMTL(path);
 		}
 		if(type == "usemtl")//apply material
 		{
-			sUsingMaterial material;
-			lineStream >> material.materialName;
-			material.polygonIndex = newIndexes.size();
-			newUsedMaterials.push_back(material);
+			lineStream >> mesh.materialName;
+			mesh.polygonIndex = indexes.size();
+			if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
+			{
+				meshes.back() = mesh;
+			}
+			else
+			{
+				meshes.push_back(mesh);
+			}
+		}
+		if(type == "g")//apply material
+		{
+			std::string name;
+			lineStream.get();
+			std::getline(lineStream, name);
+			if(!name.empty())
+			{
+				mesh.name = name;
+				mesh.polygonIndex = indexes.size();
+				if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
+				{
+					meshes.back() = mesh;
+				}
+				else
+				{
+					meshes.push_back(mesh);
+				}
+			}
 		}
 	}
 	if(!useNormals)
@@ -167,5 +180,7 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 		newNormals.swap(normals);
 	}
 	std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
-	return new C3DModel(newVertices, newTextureCoords, newNormals, newIndexes, newMaterialManager, newUsedMaterials, LoadBoundingFromFile(boundingPath));
+	double scale = 1.0;
+	std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
+	return new C3DModel(newVertices, newTextureCoords, newNormals, indexes, materialManager, meshes, bounding, scale);
 }

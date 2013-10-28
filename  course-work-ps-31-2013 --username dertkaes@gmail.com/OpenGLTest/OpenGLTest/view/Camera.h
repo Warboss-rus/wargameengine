@@ -4,7 +4,7 @@ public:
 	static const double SCALE;
 	static const double TRANSLATE;
 
-	CCamera(void):m_maxTransX(8.0), m_maxTransY(8.0), m_maxScale(1.9), m_minScale(0.35) { Reset(); }
+	CCamera(void):m_maxTransX(8.0), m_maxTransY(8.0), m_maxScale(2.8), m_minScale(0.35) { Reset(); }
 	void Update();
 	void Translate(double transX, double transY);
 	void Rotate(double rotZ, double rotX);

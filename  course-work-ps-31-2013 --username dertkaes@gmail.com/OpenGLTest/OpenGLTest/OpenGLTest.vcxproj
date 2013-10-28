@@ -98,7 +98,6 @@
     <ClCompile Include="UI\UIStaticText.cpp" />
     <ClCompile Include="UI\UIText.cpp" />
     <ClCompile Include="UI\UITheme.cpp" />
-    <ClCompile Include="UI\UIUtils.cpp" />
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\Bounding.cpp" />
     <ClCompile Include="view\Camera.cpp" />
@@ -133,7 +132,6 @@
     <ClInclude Include="UI\UIStaticText.h" />
     <ClInclude Include="UI\UIText.h" />
     <ClInclude Include="UI\UITheme.h" />
-    <ClInclude Include="UI\UIUtils.h" />
     <ClInclude Include="view\3dModel.h" />
     <ClInclude Include="view\Bounding.h" />
     <ClInclude Include="view\Camera.h" />

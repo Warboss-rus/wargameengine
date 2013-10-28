@@ -25,8 +25,11 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			else
 			{
 				CGameView::GetIntanse().lock()->SelectObject(x, y);
-				startX = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetX();
-				startY = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetY();
+				if(CGameModel::GetIntanse().lock()->GetSelectedObject().get())
+				{
+					startX = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetX();
+					startY = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetY();
+				}
 				CGameView::GetIntanse().lock()->RulerHide();
 			}
 		}
@@ -34,7 +37,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			m_isLMBDown = false;
 			if(CGameView::GetIntanse().lock()->UILeftMouseButtonUp(x, y)) return;
-			if(!m_ruler && startX != -1 && startY != -1)
+			if(!m_ruler && CGameModel::GetIntanse().lock()->GetSelectedObject().get() && startX != -1 && startY != -1)
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);

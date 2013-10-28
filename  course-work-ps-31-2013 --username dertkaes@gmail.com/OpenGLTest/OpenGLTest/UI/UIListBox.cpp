@@ -1,5 +1,5 @@
 #include "UIListBox.h"
-#include "UIUtils.h"
+#include "UIText.h"
 #include <GL\glut.h>
 #include "..\view\TextureManager.h"
 

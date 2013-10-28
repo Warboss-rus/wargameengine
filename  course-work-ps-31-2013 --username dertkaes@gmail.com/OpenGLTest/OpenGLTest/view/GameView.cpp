@@ -81,11 +81,12 @@ CGameView::CGameView(void)
 {
 	m_gameModel = CGameModel::GetIntanse();
 	m_table.reset(new CTable(30.0f, 15.0f, "sand.bmp"));
-	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, 60.0, 60.0, 60.0, "skybox"));
+	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, 50.0, 50.0, 50.0, "skybox"));
 	vector<string> items;;
 	items.push_back("SpaceMarine.obj");
 	items.push_back("CSM.obj");
 	items.push_back("rhino.obj");
+	items.push_back("Ruine.obj");
 	m_ui.AddNewListBox("ListBox1", 10, 10, 30, 200, items);
 	m_ui.AddNewButton("Button1", 220, 10, 30, 80, "Create", NewSpaceMarine);
 	m_ui.AddNewButton("Button2", 310, 10, 30, 80, "Delete", DeleteObject);
@@ -99,7 +100,7 @@ CGameView::CGameView(void)
 	panel->AddNewStaticText("Label1", 5, 10, 30, 50, "Count");
 	panel->AddNewStaticText("Label2", 5, 50, 30, 50, "Faces");
 	panel->AddNewButton("Button5", 30, 110, 30, 60, "Roll", RollXDX);
-	panel->AddNewCheckBox("CheckBox1", 5, 80, 20, 100, "Group", false);
+	panel->AddNewCheckBox("CheckBox1", 5, 85, 20, 100, "Group", false);
 	panel->AddNewEdit("Edit1", 65, 10, 30, 50, "1");
 	items.clear();
 	items.push_back("6");

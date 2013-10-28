@@ -66,9 +66,6 @@
     <ClCompile Include="UI\UIStaticText.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UI\UIUtils.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
     <ClCompile Include="view\3dModel.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -165,9 +162,6 @@
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIStaticText.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIUtils.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\3dModel.h">

@@ -133,13 +133,6 @@ IUIElement* CUIElement::AddNewCheckBox(std::string const& name, int x, int y, in
 	return item.get();
 }
 
-IUIElement* CUIElement::AddNewListBox(std::string const& name, int x, int y, int height, int width)
-{
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIListBox(x, y, height, width, this));
-	AddChild(name, item);
-	return item.get();
-}
-
 IUIElement* CUIElement::AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIListBox(x, y, height, width, this));

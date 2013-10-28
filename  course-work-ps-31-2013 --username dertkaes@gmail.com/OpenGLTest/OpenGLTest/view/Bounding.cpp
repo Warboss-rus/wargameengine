@@ -12,8 +12,8 @@ CBoundingBox::CBoundingBox(double min[3], double max[3])
 
 bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, double y, double z, double rotation) const
 {
-	double minB[3] = {m_min[0] + x, m_min[1] + y, m_min[2] + z};
-	double maxB[3] = {m_max[0] + x, m_max[1] + y, m_max[2] + z};
+	double minB[3] = {m_min[0] * m_scale + x, m_min[1] * m_scale + y, m_min[2] * m_scale + z};
+	double maxB[3] = {m_max[0] * m_scale + x, m_max[1] * m_scale + y, m_max[2] * m_scale + z};
 	double coord[3];
 	char inside = true;
 	char quadrant[3];
@@ -73,7 +73,8 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, do
 
 void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 {
-	double box[6] = {m_min[0] + x, m_min[1] + y, m_min[2] + z, m_max[0] + x, m_max[1] + y, m_max[2] + z};
+	double box[6] = {m_min[0] * m_scale + x, m_min[1] * m_scale + y, m_min[2] * m_scale + z,
+		m_max[0] * m_scale + x, m_max[1] * m_scale + y, m_max[2] * m_scale + z};
 	glPushMatrix();
 	glColor3d(0.0, 0.0, 255.0);
 	//Left
@@ -132,12 +133,18 @@ bool CBoundingCompound::IsIntersectsRay(double origin[3], double dir[3], double 
 	}
 	return false;
 }
+void CBoundingCompound::SetScale(double scale)
+{
+	for(size_t i = 0; i < m_children.size(); ++i)
+	{
+		m_children[i]->SetScale(scale);
+	}
+}
 
-std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path)
+std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale)
 {
 	std::ifstream iFile(path);
 	std::shared_ptr<IBounding> bounding (new CBoundingCompound());
-	std::shared_ptr<IBounding> current;
 	std::string line;
 	unsigned int count = 0;
 	while(iFile.good())
@@ -147,15 +154,17 @@ std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path)
 		{
 			double min[3], max[3];
 			iFile >> min[0] >> min[1] >> min[2] >> max[0] >> max[1] >> max[2];
-			current.reset(new CBoundingBox(min, max));
+			std::shared_ptr<IBounding> current(new CBoundingBox(min, max));
 			CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
 			compound->AddChild(current);
 		}
+		if(line == "scale")
+		{
+			iFile >> scale;
+		}
 	}
 	iFile.close();
-	if(count == 1)
-	{
-		return current;
-	}
+	CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
+	compound->SetScale(scale);
 	return bounding;
 }

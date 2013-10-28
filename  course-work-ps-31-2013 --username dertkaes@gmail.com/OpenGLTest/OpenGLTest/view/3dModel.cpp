@@ -2,15 +2,16 @@
 #include <GL\glut.h>
 
 C3DModel::C3DModel(std::vector<sPoint3> & vertices, std::vector<sPoint2> & textureCoords, std::vector<sPoint3> & normals, std::vector<unsigned int> & indexes,
-		CMaterialManager & materials, std::vector<sUsingMaterial> & usedMaterials, std::shared_ptr<IBounding> bounding)
+				   CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale)
 {
 	m_vertices.swap(vertices);
 	m_textureCoords.swap(textureCoords);
 	m_normals.swap(normals);
 	m_indexes.swap(indexes);
 	std::swap(m_materials, materials);
-	m_usedMaterials.swap(usedMaterials);
+	m_meshes.swap(meshes);
 	m_bounding = bounding;
+	m_scale = scale;
 }
 
 void SetMaterial(sMaterial * material)
@@ -27,8 +28,10 @@ void SetMaterial(sMaterial * material)
 	texManager->SetTexture(material->texture);
 }
 
-void C3DModel::Draw()
+void C3DModel::Draw(std::set<std::string> const& hideMeshes)
 {
+	glPushMatrix();
+	glScaled(m_scale, m_scale, m_scale);
 	if(!m_vertices.empty())
 	{
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -48,15 +51,23 @@ void C3DModel::Draw()
 	{
 		unsigned int begin = 0;
 		unsigned int end;
-		for(unsigned int i = 0; i < m_usedMaterials.size(); ++i)
+		for(unsigned int i = 0; i < m_meshes.size(); ++i)
 		{
-			end = m_usedMaterials[i].polygonIndex;
+			if(hideMeshes.find(m_meshes[i].name) != hideMeshes.end())
+			{
+				begin = (i + 1 == m_meshes.size())?m_indexes.size():m_meshes[i + 1].polygonIndex;
+				continue;
+			}
+			end = m_meshes[i].polygonIndex;
 			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-			SetMaterial(m_materials.GetMaterial(m_usedMaterials[i].materialName));
+			SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
 			begin = end;
 		}
 		end = m_indexes.size();
-		glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
+		if(begin != end)
+		{
+			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
+		}
 	}
 	else //Draw in a row
 	{
@@ -67,4 +78,5 @@ void C3DModel::Draw()
 	glDisableClientState(GL_VERTEX_ARRAY);
 	sMaterial empty;
 	SetMaterial(&empty);
+	glPopMatrix();
 }

@@ -22,12 +22,12 @@ public:
 	virtual bool GetVisible() = 0;
 	virtual bool IsFocused(const IUIElement * child) const = 0;
 	virtual void SetTheme(CUITheme const& theme) = 0;
+	virtual CUITheme & GetTheme() = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, void (onClick)()) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;
 	virtual IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState) = 0;
-	virtual IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items) = 0;
 	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text) = 0;
 	virtual void SetFocus(IUIElement * focus = NULL) = 0;

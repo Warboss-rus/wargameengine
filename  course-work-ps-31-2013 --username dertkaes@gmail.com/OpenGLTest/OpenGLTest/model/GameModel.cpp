@@ -65,6 +65,7 @@ std::shared_ptr<IObject> CGameModel::GetSelectedObject()
 
 void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 {
+	if(m_selectedObjectIndex != NULL_INDEX && pObject == m_objects[m_selectedObjectIndex]) m_selectedObjectIndex = NULL_INDEX;
 	for(unsigned int i = 0; i < m_objects.size(); ++i)
 	{
 		if(m_objects[i].get() == pObject.get())
@@ -72,5 +73,4 @@ void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 			m_objects.erase(m_objects.begin() + i);
 		}
 	}
-	if(m_selectedObjectIndex != NULL_INDEX && pObject == m_objects[m_selectedObjectIndex]) m_selectedObjectIndex = NULL_INDEX;
 }
