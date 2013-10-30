@@ -12,7 +12,7 @@ public:
 	bool LeftMouseButtonUp(int x, int y);
 	void AddItem(std::string const& str);
 	void DeleteItem(size_t index);
-	std::string GetSelectedItem() const;
+	std::string const& GetText() const;
 	int GetSelectedIndex() const { return m_selected; }
 	size_t GetItemsCount() const { return m_items.size(); }
 	std::string GetItem(size_t index) const { return m_items[index]; }

@@ -5,6 +5,14 @@
 const double CCamera::SCALE = 1.1;
 const double CCamera::TRANSLATE = 0.3;
 
+void CCamera::SetLimits(double maxTransX, double maxTransY, double maxScale, double minScale)
+{
+	m_maxTransX = maxTransX;
+	m_maxTransY = maxTransY;
+	m_maxScale = maxScale;
+	m_minScale = minScale;
+}
+
 void CCamera::Update()
 {
 	glLoadIdentity();

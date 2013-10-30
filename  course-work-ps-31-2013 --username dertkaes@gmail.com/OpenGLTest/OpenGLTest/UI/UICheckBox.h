@@ -11,6 +11,7 @@ public:
 	bool LeftMouseButtonDown(int x, int y);
 	void SetState(bool state);
 	bool GetState() const { return m_state; }
+	std::string const& GetText() const { return m_text.GetText(); }
 private:
 	CUIText m_text;
 	bool m_state;

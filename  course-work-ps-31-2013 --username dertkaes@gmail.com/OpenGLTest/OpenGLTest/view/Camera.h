@@ -11,11 +11,12 @@ public:
 	void ZoomIn();
 	void ZoomOut();
 	void Reset();
+	void SetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
 private:
-	const double m_maxTransX;
-	const double m_maxTransY;
-	const double m_maxScale;
-	const double m_minScale;
+	double m_maxTransX;
+	double m_maxTransY;
+	double m_maxScale;
+	double m_minScale;
 	double m_transX;
 	double m_transY;
 	double m_rotX;

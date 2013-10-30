@@ -93,6 +93,7 @@ bool CUIEdit::OnKeyPress(unsigned char key)
 			}
 		}
 	}
+	return true;
 }
 
 bool CUIEdit::OnSpecialKeyPress(int key)

@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -85,6 +85,9 @@
     <ClCompile Include="controller\CommandHandler.cpp" />
     <ClCompile Include="controller\CommandMoveObject.cpp" />
     <ClCompile Include="controller\GameController.cpp" />
+    <ClCompile Include="LUARegisterFunctions.cpp" />
+    <ClCompile Include="LUARegisterUI.cpp" />
+    <ClCompile Include="LUAScriptHandler.cpp" />
     <ClCompile Include="model\GameModel.cpp" />
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />
@@ -118,6 +121,9 @@
     <ClInclude Include="controller\CommandMoveObject.h" />
     <ClInclude Include="controller\GameController.h" />
     <ClInclude Include="controller\ICommand.h" />
+    <ClInclude Include="LUARegisterFunctions.h" />
+    <ClInclude Include="LUARegisterUI.h" />
+    <ClInclude Include="LUAScriptHandler.h" />
     <ClInclude Include="model\GameModel.h" />
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />

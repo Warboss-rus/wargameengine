@@ -10,6 +10,7 @@
 #include "Input.h"
 #include "..\Ruler.h"
 #include "..\UI\UIElement.h"
+#include "..\LUAScriptHandler.h"
 
 class CGameView
 {
@@ -23,7 +24,8 @@ private:
 	std::shared_ptr<CSkyBox> m_skybox;
 	CCamera m_camera;
 	CRuler m_ruler;
-	CUIElement m_ui;
+	std::shared_ptr<IUIElement> m_ui;
+	std::shared_ptr<CLUAScript> m_lua;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
@@ -35,7 +37,13 @@ public:
 	void DrawObjects(void);
 	void Init();
 
+	void CreateTable(float width, float height, std::string const& texture);
+	void CreateSkybox(double size, std::string const& textureFolder);
+	void SetUI(IUIElement * ui);
+	IUIElement * GetUI() const;
+
 	void SelectObject(int x, int y);
+	void CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
 	void CameraZoomIn();
 	void CameraZoomOut();
 	void CameraRotate(int rotZ, int rotX);
@@ -52,9 +60,6 @@ public:
 	bool UILeftMouseButtonUp(int x, int y);
 	bool UIKeyPress(unsigned char key);
 	bool UISpecialKeyPress(int key);
-	void CreateSpaceMarine();
-	void RollDices();
-	void DisplayDicePanel();
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

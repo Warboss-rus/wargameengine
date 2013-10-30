@@ -105,7 +105,7 @@ bool CUIElement::OnSpecialKeyPress(int key)
 	return false;
 }
 
-IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, void (onClick)())
+IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick))
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this));
 	AddChild(name, item);
@@ -129,6 +129,14 @@ IUIElement* CUIElement::AddNewPanel(std::string const& name, int x, int y, int h
 IUIElement* CUIElement::AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUICheckBox(x, y, height, width, text, initState, this));
+	AddChild(name, item);
+	return item.get();
+}
+
+IUIElement* CUIElement::AddNewListBox(std::string const& name, int x, int y, int height, int width)
+{
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIListBox(x, y, height, width, this));
+	CUIListBox * listbox = (CUIListBox *)item.get();
 	AddChild(name, item);
 	return item.get();
 }

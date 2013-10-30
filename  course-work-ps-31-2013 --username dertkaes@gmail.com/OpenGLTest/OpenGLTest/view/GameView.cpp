@@ -2,10 +2,10 @@
 #include <GL\glut.h>
 #include <string>
 #include "..\SelectionTools.h"
-#include "..\UI\UIListBox.h"
 #include "..\UI\UICheckBox.h"
-#include "..\UI\UIEdit.h"
 #include "..\controller\CommandHandler.h"
+#include "..\LUARegisterFunctions.h"
+#include "..\LUARegisterUI.h"
 
 using namespace std;
 
@@ -23,91 +23,19 @@ weak_ptr<CGameView> CGameView::GetIntanse()
 	return pView;
 }
 
-void CGameView::CreateSpaceMarine()
+void CGameView::CreateTable(float width, float height, std::string const& texture)
 {
-	CUIListBox * listbox = (CUIListBox *)m_ui.GetChildByName("ListBox1");
-	CCommandHandler::GetInstance().lock()->AddNewCreateObject(listbox->GetSelectedItem(), 0.0, 0.0, 0.0);
+	m_table.reset(new CTable(width, height, texture));
 }
 
-void NewSpaceMarine()
+void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 {
-	CGameView::GetIntanse().lock()->CreateSpaceMarine();
-}
-
-void DeleteObject()
-{
-	CCommandHandler::GetInstance().lock()->AddNewDeleteObject();
-}
-
-void RollXDX()
-{
-	CGameView::GetIntanse().lock()->RollDices();
-}
-
-void SetDicePanelVisibility()
-{
-	CGameView::GetIntanse().lock()->DisplayDicePanel();
-}
-
-void CGameView::RollDices()
-{
-	CUIListBox * listbox = (CUIListBox *)m_ui.GetChildByName("Panel1")->GetChildByName("ListBox2");
-	CUIEdit * edit = (CUIEdit *)m_ui.GetChildByName("Panel1")->GetChildByName("Edit1");
-	CUICheckBox * checkbox = (CUICheckBox *)m_ui.GetChildByName("Panel1")->GetChildByName("CheckBox1");
-	RollDice(atoi(edit->GetText().c_str()), atoi(listbox->GetSelectedItem().c_str()), checkbox->GetState());
-}
-
-void CGameView::DisplayDicePanel()
-{
-	m_ui.GetChildByName("Panel1")->SetVisible(!m_ui.GetChildByName("Panel1")->GetVisible());
-}
-
-void Ruler()
-{
-	CInput::EnableRuler();
-}
-
-void Undo()
-{
-	CCommandHandler::GetInstance().lock()->Undo();
-}
-
-void Redo()
-{
-	CCommandHandler::GetInstance().lock()->Redo();
+	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, size, size, size, textureFolder));
 }
 
 CGameView::CGameView(void)
 {
 	m_gameModel = CGameModel::GetIntanse();
-	m_table.reset(new CTable(30.0f, 15.0f, "sand.bmp"));
-	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, 50.0, 50.0, 50.0, "skybox"));
-	vector<string> items;;
-	items.push_back("SpaceMarine.obj");
-	items.push_back("CSM.obj");
-	items.push_back("rhino.obj");
-	items.push_back("Ruine.obj");
-	m_ui.AddNewListBox("ListBox1", 10, 10, 30, 200, items);
-	m_ui.AddNewButton("Button1", 220, 10, 30, 80, "Create", NewSpaceMarine);
-	m_ui.AddNewButton("Button2", 310, 10, 30, 80, "Delete", DeleteObject);
-	m_ui.AddNewButton("Button3", 400, 10, 30, 100, "Roll Dices", SetDicePanelVisibility);
-	m_ui.AddNewButton("Button4", 510, 10, 30, 80, "Ruler", Ruler);
-	m_ui.AddNewButton("Button5", 10, 50, 30, 80, "Undo", Undo);
-	m_ui.AddNewButton("Button6", 100, 50, 30, 80, "Redo", Redo);
-
-	IUIElement * panel = m_ui.AddNewPanel("Panel1", 390, 40, 150, 120);
-	panel->SetVisible(false);
-	panel->AddNewStaticText("Label1", 5, 10, 30, 50, "Count");
-	panel->AddNewStaticText("Label2", 5, 50, 30, 50, "Faces");
-	panel->AddNewButton("Button5", 30, 110, 30, 60, "Roll", RollXDX);
-	panel->AddNewCheckBox("CheckBox1", 5, 85, 20, 100, "Group", false);
-	panel->AddNewEdit("Edit1", 65, 10, 30, 50, "1");
-	items.clear();
-	items.push_back("6");
-	items.push_back("3");
-	items.push_back("12");
-	items.push_back("20");
-	panel->AddNewListBox("ListBox2", 65, 50, 30, 50, items);
 }
 
 void CGameView::OnTimer(int value)
@@ -160,7 +88,7 @@ void CGameView::DrawUI() const
 	glOrtho(0,glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT),0,-1,1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	m_ui.Draw();
+	m_ui->Draw();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
@@ -169,10 +97,18 @@ void CGameView::DrawUI() const
 
 void CGameView::Update()
 {
+	if(!m_lua)
+	{
+		//init lua
+		m_lua.reset(new CLUAScript());
+		RegisterFunctions(*m_lua.get());
+		RegisterUI(*m_lua.get());
+		m_lua->RunScript("main.lua");
+	}
 	glEnable(GL_TEXTURE_2D);
 	m_camera.Update();
-	m_skybox->Draw();
-	m_table->Draw();
+	if (m_skybox) m_skybox->Draw();
+	if(m_table) m_table->Draw();
 	glEnable(GL_DEPTH_TEST);
 	DrawObjects();
 	const IObject * object = m_gameModel.lock()->GetSelectedObject().get();
@@ -181,7 +117,7 @@ void CGameView::Update()
 			object->GetY(), object->GetZ(), object->GetRotation());
 	glDisable(GL_DEPTH_TEST);
 	m_ruler.Draw();
-	DrawUI();
+	if(m_ui) DrawUI();
 }
 
 void CGameView::DrawObjects(void)
@@ -211,6 +147,11 @@ void CGameView::OnReshape(int width, int height)
 void CGameView::FreeInstance()
 {
 	m_instanse.reset();
+}
+
+void CGameView::CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale)
+{
+	m_camera.SetLimits(maxTransX, maxTransY, maxScale, minScale);
 }
 
 void CGameView::CameraZoomIn()
@@ -308,20 +249,34 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 
 bool CGameView::UILeftMouseButtonDown(int x, int y)
 {
-	return m_ui.LeftMouseButtonDown(x, y);
+	if(!m_ui) return false;
+	return m_ui->LeftMouseButtonDown(x, y);
 }
 
 bool CGameView::UILeftMouseButtonUp(int x, int y)
 {
-	 return m_ui.LeftMouseButtonUp(x, y);
+	if(!m_ui) return false;
+	return m_ui->LeftMouseButtonUp(x, y);
 }
 
 bool CGameView::UIKeyPress(unsigned char key)
 {
-	return m_ui.OnKeyPress(key);
+	if(!m_ui) return false;
+	return m_ui->OnKeyPress(key);
 }
 
 bool CGameView::UISpecialKeyPress(int key)
 {
-	return m_ui.OnSpecialKeyPress(key);
+	if(!m_ui) return false;
+	return m_ui->OnSpecialKeyPress(key);
+}
+
+void CGameView::SetUI(IUIElement * ui)
+{
+	m_ui.reset(ui);
+}
+
+IUIElement * CGameView::GetUI() const
+{
+	return m_ui.get();
 }

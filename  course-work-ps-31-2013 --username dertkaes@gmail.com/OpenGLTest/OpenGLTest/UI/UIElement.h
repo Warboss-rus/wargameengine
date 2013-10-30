@@ -7,7 +7,6 @@ class CUIElement : public IUIElement
 public:
 	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(NULL), m_focused(NULL), m_theme(CUITheme::defaultTheme) {}
 	void Draw() const;
-	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element);
 	IUIElement* GetChildByName(std::string const& name);
 	void DeleteChild(std::string const& name);
 	bool LeftMouseButtonDown(int x, int y);
@@ -25,16 +24,19 @@ public:
 	bool IsFocused(const IUIElement * child) const;
 	void SetTheme(CUITheme const& theme) { m_theme = theme; }
 	CUITheme & GetTheme() { return m_theme; }
+	std::string const& GetText() const { return ""; }
 
-	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, void (onClick)());
+	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick));
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
 	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width);
 	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState);
-	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items = std::vector<std::string>());
+	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width);
+	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items);
 	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text);
 protected:
 	CUIElement(int x, int y, int height, int width, IUIElement * parent): m_x(x), m_y(y), m_height(height), m_width(width), 
 		m_visible(true), m_parent(parent), m_focused(NULL) {}
+	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element);
 	std::map<std::string, std::shared_ptr<IUIElement>> m_children;
 	int m_x;
 	int m_y;

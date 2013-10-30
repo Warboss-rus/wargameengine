@@ -1,0 +1,1 @@
+void RegisterUI(CLUAScript & lua);
