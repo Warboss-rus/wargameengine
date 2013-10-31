@@ -1,8 +1,13 @@
 #pragma once
 
+
 class CInput
 {
 private:
+	static const int BACKSPACE_BUTTON_ID = 8;
+	static const int SCROLL_UP = 3;
+	static const int SCROLL_DOWN = 2;
+
 	static bool m_isLMBDown;
 	static bool m_ruler;
 public:

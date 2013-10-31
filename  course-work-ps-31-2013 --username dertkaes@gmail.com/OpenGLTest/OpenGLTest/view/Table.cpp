@@ -18,3 +18,9 @@ void CTable::Draw() const
 	glEnd();
 	texManager->SetTexture("");
 }
+
+bool CTable::isCoordsOnTable(int worldX, int worldY) const
+{
+	return (worldX < GetWidth() / 2 && worldX > -GetWidth() / 2 
+	   && worldY < GetHeight() / 2 && worldY > -GetHeight() / 2);
+}

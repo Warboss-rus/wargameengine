@@ -70,6 +70,15 @@ void CGameView::Init()
 	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
 	glutMotionFunc(&CInput::OnMouseMove);
 	
+	if (!m_lua)
+	{
+		m_lua.reset(new CLUAScript());
+		RegisterFunctions(*m_lua.get());
+		RegisterUI(*m_lua.get());
+		RegisterObject(*m_lua.get());
+		m_lua->RunScript("main.lua");
+	}
+
 	glutMainLoop();
 }
 
@@ -98,15 +107,6 @@ void CGameView::DrawUI() const
 
 void CGameView::Update()
 {
-	if(!m_lua)
-	{
-		//init lua
-		m_lua.reset(new CLUAScript());
-		RegisterFunctions(*m_lua.get());
-		RegisterUI(*m_lua.get());
-		RegisterObject(*m_lua.get());
-		m_lua->RunScript("main.lua");
-	}
 	glEnable(GL_TEXTURE_2D);
 	m_camera.Update();
 	if (m_skybox) m_skybox->Draw();
@@ -243,10 +243,18 @@ void CGameView::RulerHide()
 
 void CGameView::TryMoveSelectedObject(int x, int y)
 {
+	bool isSomeObjectSelect = m_gameModel.lock()->GetSelectedObject();
+	if (!isSomeObjectSelect)
+	{
+		return;
+	}
+
 	double worldX, worldY;
 	WindowCoordsToWorldCoords(x, y, worldX, worldY);
-	if(worldX > m_table.get()->GetWidth() / 2 || worldX < -m_table.get()->GetWidth() / 2 || worldY > m_table.get()->GetHeight() / 2 || worldY < -m_table.get()->GetHeight() / 2) return;
-	m_gameModel.lock()->GetSelectedObject()->MoveTo(worldX, worldY, 0);
+	if (m_table.get()->isCoordsOnTable(worldX, worldY))
+	{
+		m_gameModel.lock()->GetSelectedObject()->MoveTo(worldX, worldY, 0);
+	}
 }
 
 bool CGameView::UILeftMouseButtonDown(int x, int y)
@@ -282,3 +290,4 @@ IUIElement * CGameView::GetUI() const
 {
 	return m_ui.get();
 }
+

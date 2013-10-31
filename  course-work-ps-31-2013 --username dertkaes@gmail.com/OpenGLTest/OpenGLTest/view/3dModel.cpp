@@ -20,10 +20,10 @@ void SetMaterial(sMaterial * material)
 	{
 		return;
 	}
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,material->ambient);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,material->diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,material->specular);
-	glMaterialf(GL_FRONT,GL_SHININESS,material->shininess);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT, material->ambient);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE, material->diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, material->specular);
+	glMaterialf(GL_FRONT,GL_SHININESS, material->shininess);
 	CTextureManager * texManager = CTextureManager::GetInstance();
 	texManager->SetTexture(material->texture);
 }

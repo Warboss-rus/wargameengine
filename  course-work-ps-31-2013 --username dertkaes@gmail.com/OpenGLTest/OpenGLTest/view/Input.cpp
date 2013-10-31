@@ -13,7 +13,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 	static double startY = -1;
 	switch(button)
 	{
-	case GLUT_LEFT_BUTTON: //LMB
+	case GLUT_LEFT_BUTTON: 
 		if (state == GLUT_DOWN)
 		{
 			m_isLMBDown = true;
@@ -47,12 +47,12 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			}
 			m_ruler = false;
 		}break;
-	case 3://scroll up
+	case SCROLL_UP:
 		if (state == GLUT_UP)
 		{
 			CGameView::GetIntanse().lock()->CameraZoomIn();
 		}break;
-	case 4://scroll down
+	case SCROLL_DOWN:
 		if (state == GLUT_UP)
 		{
 			CGameView::GetIntanse().lock()->CameraZoomOut();
@@ -66,36 +66,41 @@ void CInput::OnKeyboard(unsigned char key, int x, int y)
 		return;
 	switch(key)
 	{
-	case 8://backspace
+		case BACKSPACE_BUTTON_ID:
 		{
 			CGameView::GetIntanse().lock()->CameraReset();
-		}break;
+		}
+		break;
 	}
 }
 
 void CInput::OnSpecialKeyPress(int key, int x, int y)
 {
-   if(CGameView::GetIntanse().lock()->UISpecialKeyPress(key))
+    if(CGameView::GetIntanse().lock()->UISpecialKeyPress(key))
 		return;
 	switch (key) 
-   {
-	case GLUT_KEY_LEFT:
-		  {
-			  CGameView::GetIntanse().lock()->CameraTranslateLeft();
-		  }break;
-	 case GLUT_KEY_RIGHT:
-		  {
-			 CGameView::GetIntanse().lock()->CameraTranslateRight();
-		  }break;
-	 case GLUT_KEY_DOWN:
-		  {
-			  CGameView::GetIntanse().lock()->CameraTranslateDown();
-		  }break;
-	 case GLUT_KEY_UP:
-		  {
-			  CGameView::GetIntanse().lock()->CameraTranslateUp();
-		  }break;
-   }
+	{
+		case GLUT_KEY_LEFT:
+		{
+			CGameView::GetIntanse().lock()->CameraTranslateLeft();
+		}
+		break;
+		case GLUT_KEY_RIGHT:
+		{
+			CGameView::GetIntanse().lock()->CameraTranslateRight();
+		}
+		break;
+		case GLUT_KEY_DOWN:
+		{
+			CGameView::GetIntanse().lock()->CameraTranslateDown();
+		}
+		break;
+		case GLUT_KEY_UP:
+		{
+			CGameView::GetIntanse().lock()->CameraTranslateUp();
+		}
+		break;
+	}
 }
 
 void CInput::OnPassiveMouseMove(int x, int y)
