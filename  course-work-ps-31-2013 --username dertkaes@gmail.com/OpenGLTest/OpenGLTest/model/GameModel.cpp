@@ -36,15 +36,6 @@ void CGameModel::SelectObjectByIndex(long index)
 	m_selectedObjectIndex = index;
 }
 
-void CGameModel::MoveSelectedObjectTo(double x, double y)
-{
-	if (m_selectedObjectIndex == NULL_INDEX)
-	{
-		return;
-	}
-	m_objects[m_selectedObjectIndex]->MoveTo(x, y, 0);
-}
-
 std::shared_ptr<const IObject> CGameModel::GetSelectedObject() const
 {
 	if (m_selectedObjectIndex == NULL_INDEX)

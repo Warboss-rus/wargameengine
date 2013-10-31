@@ -19,6 +19,12 @@ double CLUAScript::GetArgument<double>(int index)
 }
 
 template<>
+int CLUAScript::GetArgument<int>(int index)
+{
+    return luaL_checknumber(m_lua_state,index);
+}
+
+template<>
 const char* CLUAScript::GetArgument<const char*>(int index)
 {
 	return luaL_checkstring(m_lua_state,index);

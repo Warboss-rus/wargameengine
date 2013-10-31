@@ -1,0 +1,1 @@
+void RegisterObject(CLUAScript & lua);

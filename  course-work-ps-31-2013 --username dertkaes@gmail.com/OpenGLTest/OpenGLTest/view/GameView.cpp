@@ -4,8 +4,9 @@
 #include "..\SelectionTools.h"
 #include "..\UI\UICheckBox.h"
 #include "..\controller\CommandHandler.h"
-#include "..\LUARegisterFunctions.h"
-#include "..\LUARegisterUI.h"
+#include "..\LUA\LUARegisterFunctions.h"
+#include "..\LUA\LUARegisterUI.h"
+#include "..\LUA\LUARegisterObject.h"
 
 using namespace std;
 
@@ -103,6 +104,7 @@ void CGameView::Update()
 		m_lua.reset(new CLUAScript());
 		RegisterFunctions(*m_lua.get());
 		RegisterUI(*m_lua.get());
+		RegisterObject(*m_lua.get());
 		m_lua->RunScript("main.lua");
 	}
 	glEnable(GL_TEXTURE_2D);
@@ -244,7 +246,7 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 	double worldX, worldY;
 	WindowCoordsToWorldCoords(x, y, worldX, worldY);
 	if(worldX > m_table.get()->GetWidth() / 2 || worldX < -m_table.get()->GetWidth() / 2 || worldY > m_table.get()->GetHeight() / 2 || worldY < -m_table.get()->GetHeight() / 2) return;
-	m_gameModel.lock()->MoveSelectedObjectTo(worldX, worldY);
+	m_gameModel.lock()->GetSelectedObject()->MoveTo(worldX, worldY, 0);
 }
 
 bool CGameView::UILeftMouseButtonDown(int x, int y)

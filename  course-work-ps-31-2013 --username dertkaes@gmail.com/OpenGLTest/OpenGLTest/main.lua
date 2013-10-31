@@ -1,11 +1,11 @@
 function NewObject()
 	local ui = UI:Get()--Retrives current assigned UI
 	local model = ui:GetChild("ListBox1"):GetText() --Gets a text from Edit or Listbox (selected item)
-	CreateObject(model, 0, 0, 0)--Creates a new object(model path, x, y, rotation)
+	Object:New(model, 0, 0, 0)--Creates a new object(model path, x, y, rotation) and returns it
 end
 
 function DeleteSelectedObject()
-	DeleteObject()--Deletes currently selected object
+	Object:GetSelected():Delete()--Gets currently selected object and deletes it
 end
 
 function SetDicePanelVisibility()
@@ -39,7 +39,6 @@ CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 CameraSetLimits(8, 8, 2.8, 0.35)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 local ui = UI:New()--Creates a new UI (doesn't displays anything)
 ui:Set()--Assigns this UI to window. Old assigned UI will be destroyed (Even if you have it in some variable)
-ui = UI:Get()
 local list = ui:NewListbox("ListBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
 list:AddItem("SpaceMarine.obj")
 list:AddItem("CSM.obj")
@@ -64,5 +63,15 @@ list2:AddItem(6)
 list2:AddItem(3)
 list2:AddItem(12)
 list2:AddItem(20)
-
---ui:Free()--Frees an UI. UI automaticly frees when deassigned from the window or at program exit
+--[[Other functions
+Object:Null()--(bool)Checks whenether this instance of object is NULL
+Object:GetModel()--(string)Retrieves model path of this instance of object
+Object:GetX()--(number)Retrieves x coordinate of this instance of object.
+Object:GetY()--(number)Retrieves y coordinate of this instance of object.
+Object:GetZ()--(number)Retrieves z coordinate of this instance of object.
+Object:GetRotation()--(number)Retrieves rotation of this instance of object.
+Object:MoveTo(x, y, rotation)--()Moves current object to specified coordinates and rotates.
+MessageBox("It works this way", "Working")--()Show Message box with caption
+MessageBox("Or this")--()Messagebox without caption
+RunScript("script.lua")--()Runs another script file
+ui:Free()--()Frees an UI. UI automaticly frees when deassigned from the window or at program exit]]

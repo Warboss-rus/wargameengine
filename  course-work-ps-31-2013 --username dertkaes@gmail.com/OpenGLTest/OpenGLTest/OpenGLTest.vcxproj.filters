@@ -31,6 +31,12 @@
     <Filter Include="Source Files\actions">
       <UniqueIdentifier>{bbfc768f-9356-4e40-bfa4-23e779379293}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\LUA">
+      <UniqueIdentifier>{cda6e00c-b34a-4ac9-8f0b-8aef3d443092}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\LUA">
+      <UniqueIdentifier>{b2113b92-b917-4410-aed7-a0ae5d5e44a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -123,14 +129,17 @@
     <ClCompile Include="controller\CommandMoveObject.cpp">
       <Filter>Source Files\actions</Filter>
     </ClCompile>
-    <ClCompile Include="LUAScriptHandler.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="LUA\LUARegisterFunctions.cpp">
+      <Filter>Source Files\LUA</Filter>
     </ClCompile>
-    <ClCompile Include="LUARegisterFunctions.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="LUA\LUARegisterUI.cpp">
+      <Filter>Source Files\LUA</Filter>
     </ClCompile>
-    <ClCompile Include="LUARegisterUI.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="LUA\LUAScriptHandler.cpp">
+      <Filter>Source Files\LUA</Filter>
+    </ClCompile>
+    <ClCompile Include="LUA\LUARegisterObject.cpp">
+      <Filter>Source Files\LUA</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -236,14 +245,17 @@
     <ClInclude Include="controller\ICommand.h">
       <Filter>Header Files\actions</Filter>
     </ClInclude>
-    <ClInclude Include="LUAScriptHandler.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="LUA\LUARegisterFunctions.h">
+      <Filter>Header Files\LUA</Filter>
     </ClInclude>
-    <ClInclude Include="LUARegisterFunctions.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="LUA\LUARegisterUI.h">
+      <Filter>Header Files\LUA</Filter>
     </ClInclude>
-    <ClInclude Include="LUARegisterUI.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="LUA\LUAScriptHandler.h">
+      <Filter>Header Files\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="LUA\LUARegisterObject.h">
+      <Filter>Header Files\LUA</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

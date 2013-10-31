@@ -1,8 +1,8 @@
 #include "LUAScriptHandler.h"
-#include "UI\UIElement.h"
-#include "UI\UICheckBox.h"
-#include "UI\UIListBox.h"
-#include "view\GameView.h"
+#include "..\UI\UIElement.h"
+#include "..\UI\UICheckBox.h"
+#include "..\UI\UIListBox.h"
+#include "..\view\GameView.h"
 
 int NewUI(lua_State* L)
 {
@@ -15,10 +15,10 @@ int NewButton(lua_State* L)
         return luaL_error(L, "7 arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string name = CLUAScript::GetArgument<char*>(2);
-	int x = CLUAScript::GetArgument<double>(3);
-	int y = CLUAScript::GetArgument<double>(4);
-	int height = CLUAScript::GetArgument<double>(5);
-	int width = CLUAScript::GetArgument<double>(6);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
 	char* text = CLUAScript::GetArgument<char*>(7);
 	std::string callback = CLUAScript::GetArgument<char*>(8);
 	auto onClick = [callback]()
@@ -35,10 +35,10 @@ int NewStaticText(lua_State* L)
         return luaL_error(L, "6 arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string name = CLUAScript::GetArgument<char*>(2);
-	int x = CLUAScript::GetArgument<double>(3);
-	int y = CLUAScript::GetArgument<double>(4);
-	int height = CLUAScript::GetArgument<double>(5);
-	int width = CLUAScript::GetArgument<double>(6);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
 	char* caption = CLUAScript::GetArgument<char*>(7);
 	IUIElement * text = c->AddNewStaticText(name, x, y, height, width, caption);
 	return CLUAScript::NewInstanceClass(text, "UI");
@@ -50,10 +50,10 @@ int NewPanel(lua_State* L)
         return luaL_error(L, "5 arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string name = CLUAScript::GetArgument<char*>(2);
-	int x = CLUAScript::GetArgument<double>(3);
-	int y = CLUAScript::GetArgument<double>(4);
-	int height = CLUAScript::GetArgument<double>(5);
-	int width = CLUAScript::GetArgument<double>(6);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
 	IUIElement * panel = c->AddNewPanel(name, x, y, height, width);
 	return CLUAScript::NewInstanceClass(panel, "UI");
 }
@@ -64,10 +64,10 @@ int NewCheckbox(lua_State* L)
         return luaL_error(L, "7 arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string name = CLUAScript::GetArgument<char*>(2);
-	int x = CLUAScript::GetArgument<double>(3);
-	int y = CLUAScript::GetArgument<double>(4);
-	int height = CLUAScript::GetArgument<double>(5);
-	int width = CLUAScript::GetArgument<double>(6);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
 	char* caption = CLUAScript::GetArgument<char*>(7);
 	bool state = CLUAScript::GetArgument<bool>(8);
 	IUIElement * checkbox = c->AddNewCheckBox(name, x, y, height, width, caption, state);
@@ -80,10 +80,10 @@ int NewListbox(lua_State* L)
         return luaL_error(L, "5 arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string name = CLUAScript::GetArgument<char*>(2);
-	int x = CLUAScript::GetArgument<double>(3);
-	int y = CLUAScript::GetArgument<double>(4);
-	int height = CLUAScript::GetArgument<double>(5);
-	int width = CLUAScript::GetArgument<double>(6);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
 	IUIElement * listbox = c->AddNewListBox(name, x, y, height, width);
 	return CLUAScript::NewInstanceClass(listbox, "UI");
 }
@@ -94,10 +94,10 @@ int NewEdit(lua_State* L)
         return luaL_error(L, "6 arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string name = CLUAScript::GetArgument<char*>(2);
-	int x = CLUAScript::GetArgument<double>(3);
-	int y = CLUAScript::GetArgument<double>(4);
-	int height = CLUAScript::GetArgument<double>(5);
-	int width = CLUAScript::GetArgument<double>(6);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
 	char* caption = CLUAScript::GetArgument<char*>(7);
 	IUIElement * edit = c->AddNewEdit(name, x, y, height, width, caption);
 	return CLUAScript::NewInstanceClass(edit, "UI");

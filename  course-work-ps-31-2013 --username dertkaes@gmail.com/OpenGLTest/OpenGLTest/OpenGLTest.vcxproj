@@ -85,9 +85,10 @@
     <ClCompile Include="controller\CommandHandler.cpp" />
     <ClCompile Include="controller\CommandMoveObject.cpp" />
     <ClCompile Include="controller\GameController.cpp" />
-    <ClCompile Include="LUARegisterFunctions.cpp" />
-    <ClCompile Include="LUARegisterUI.cpp" />
-    <ClCompile Include="LUAScriptHandler.cpp" />
+    <ClCompile Include="LUA\LUARegisterFunctions.cpp" />
+    <ClCompile Include="LUA\LUARegisterObject.cpp" />
+    <ClCompile Include="LUA\LUARegisterUI.cpp" />
+    <ClCompile Include="LUA\LUAScriptHandler.cpp" />
     <ClCompile Include="model\GameModel.cpp" />
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />
@@ -121,9 +122,10 @@
     <ClInclude Include="controller\CommandMoveObject.h" />
     <ClInclude Include="controller\GameController.h" />
     <ClInclude Include="controller\ICommand.h" />
-    <ClInclude Include="LUARegisterFunctions.h" />
-    <ClInclude Include="LUARegisterUI.h" />
-    <ClInclude Include="LUAScriptHandler.h" />
+    <ClInclude Include="LUA\LUARegisterFunctions.h" />
+    <ClInclude Include="LUA\LUARegisterObject.h" />
+    <ClInclude Include="LUA\LUARegisterUI.h" />
+    <ClInclude Include="LUA\LUAScriptHandler.h" />
     <ClInclude Include="model\GameModel.h" />
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />

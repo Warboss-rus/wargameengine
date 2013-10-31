@@ -26,6 +26,5 @@ public:
 	void SelectObjectByIndex(long index);
 	std::shared_ptr<const IObject> GetSelectedObject() const;
 	std::shared_ptr<IObject> GetSelectedObject();
-	void MoveSelectedObjectTo(double x, double y);
 };
 

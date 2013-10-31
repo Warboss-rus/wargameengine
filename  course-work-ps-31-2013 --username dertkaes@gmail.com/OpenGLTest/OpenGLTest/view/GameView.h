@@ -10,7 +10,7 @@
 #include "Input.h"
 #include "..\Ruler.h"
 #include "..\UI\UIElement.h"
-#include "..\LUAScriptHandler.h"
+#include "..\LUA\LUAScriptHandler.h"
 
 class CGameView
 {
