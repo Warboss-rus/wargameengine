@@ -9,10 +9,10 @@ CCommandMoveObject::CCommandMoveObject(double deltaX, double deltaY):
 
 void CCommandMoveObject::Execute()
 {
-	m_pObject->MoveTo(m_pObject->GetX() + m_deltaX, m_pObject->GetY() + m_deltaY, 0);
+	m_pObject->Move(m_deltaX, m_deltaY, 0);
 }
 
 void CCommandMoveObject::Rollback()
 {
-	m_pObject->MoveTo(m_pObject->GetX() - m_deltaX, m_pObject->GetY() - m_deltaY, 0);
+	m_pObject->Move(-m_deltaX,-m_deltaY, 0);
 }

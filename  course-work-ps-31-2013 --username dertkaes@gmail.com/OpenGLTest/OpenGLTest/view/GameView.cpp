@@ -7,6 +7,7 @@
 #include "..\LUA\LUARegisterFunctions.h"
 #include "..\LUA\LUARegisterUI.h"
 #include "..\LUA\LUARegisterObject.h"
+#include "..\ObjectGroup.h"
 
 using namespace std;
 
@@ -31,12 +32,13 @@ void CGameView::CreateTable(float width, float height, std::string const& textur
 
 void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 {
-	m_skybox.reset(new CSkyBox(0.0, 0.0, 0.0, size, size, size, textureFolder));
+	m_skybox.reset(new CSkyBox(size, size, size, textureFolder));
 }
 
 CGameView::CGameView(void)
 {
 	m_gameModel = CGameModel::GetIntanse();
+	m_ui.reset(new CUIElement());
 }
 
 void CGameView::OnTimer(int value)
@@ -69,16 +71,13 @@ void CGameView::Init()
 	glutMotionFunc(&CInput::OnMouseMove);
 	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
 	glutMotionFunc(&CInput::OnMouseMove);
-	
-	if (!m_lua)
-	{
-		m_lua.reset(new CLUAScript());
-		RegisterFunctions(*m_lua.get());
-		RegisterUI(*m_lua.get());
-		RegisterObject(*m_lua.get());
-		m_lua->RunScript("main.lua");
-	}
 
+	m_lua.reset(new CLUAScript());
+	RegisterFunctions(*m_lua.get());
+	RegisterUI(*m_lua.get());
+	RegisterObject(*m_lua.get());
+	m_lua->RunScript("main.lua");
+	
 	glutMainLoop();
 }
 
@@ -105,21 +104,40 @@ void CGameView::DrawUI() const
 	glPopMatrix();
 }
 
+void CGameView::DrawBoundingBox()
+{
+	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
+	if(object)
+	{
+		if (CGameModel::IsGroup(object))
+		{
+			CObjectGroup * group = (CObjectGroup *)object.get();
+			for(unsigned int i = 0; i < group->GetCount(); ++i)
+			{
+				object = group->GetChild(i);
+				m_modelManager.GetBoundingBox(object->GetPathToModel())->Draw(object->GetX(), 
+					object->GetY(), object->GetZ(), object->GetRotation());
+			}
+		}
+		else
+		{
+			m_modelManager.GetBoundingBox(object->GetPathToModel())->Draw(object->GetX(), 
+				object->GetY(), object->GetZ(), object->GetRotation());
+		}
+	}
+}
+
 void CGameView::Update()
 {
-	glEnable(GL_TEXTURE_2D);
 	m_camera.Update();
-	if (m_skybox) m_skybox->Draw();
+	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	if(m_table) m_table->Draw();
 	glEnable(GL_DEPTH_TEST);
 	DrawObjects();
-	const IObject * object = m_gameModel.lock()->GetSelectedObject().get();
-	if(object) 
-		m_modelManager.GetBoundingBox(object->GetPathToModel())->Draw(object->GetX(), 
-			object->GetY(), object->GetZ(), object->GetRotation());
 	glDisable(GL_DEPTH_TEST);
+	DrawBoundingBox();
 	m_ruler.Draw();
-	if(m_ui) DrawUI();
+	DrawUI();
 }
 
 void CGameView::DrawObjects(void)
@@ -131,7 +149,7 @@ void CGameView::DrawObjects(void)
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel());
+		m_modelManager.DrawModel(object->GetPathToModel(), object->GetHiddenMeshes());
 		glPopMatrix();
 	}
 }
@@ -196,9 +214,48 @@ void CGameView::CameraTranslateUp()
 	m_camera.Translate(0.0, -CCamera::TRANSLATE);
 }
 
+void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//Works only for Z = 0 plane and select object only if its center is within selection rectangle, needs better algorithm
+{
+	double beginWorldX, beginWorldY, endWorldX, endWorldY;
+	WindowCoordsToWorldCoords(beginX, beginY, beginWorldX, beginWorldY);
+	WindowCoordsToWorldCoords(endX, endY, endWorldX, endWorldY);
+	double minX = (beginWorldX < endWorldX)?beginWorldX:endWorldX;
+	double maxX = (beginWorldX > endWorldX)?beginWorldX:endWorldX;
+	double minY = (beginWorldY < endWorldY)?beginWorldY:endWorldY;
+	double maxY = (beginWorldY > endWorldY)?beginWorldY:endWorldY;
+	CObjectGroup* group = new CObjectGroup();
+	CGameModel * model = CGameModel::GetIntanse().lock().get();
+	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
+	{
+		shared_ptr<IObject> object = model->Get3DObject(i);
+		if(object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY)
+		{
+			group->AddChildren(object);
+		}
+	}
+	switch(group->GetCount())
+	{
+	case 0:
+		{
+			model->SelectObject(NULL);
+			delete group;
+		}break;
+	case 1:
+		{
+			model->SelectObject(group->GetChild(0));
+			delete group;
+		}break;
+	default:
+		{
+			model->SelectObject(std::shared_ptr<IObject>(group));
+		}break;
+	}
+
+}
+
 void CGameView::SelectObject(int x, int y)
 {
-	long selectedObject = -1;
+	shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	double start[3];
@@ -206,7 +263,7 @@ void CGameView::SelectObject(int x, int y)
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
-		shared_ptr<const IObject> object = model->Get3DObject(i);
+		shared_ptr<IObject> object = model->Get3DObject(i);
 		double direction[3] = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
 		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, direction, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation()))
 		{
@@ -214,12 +271,12 @@ void CGameView::SelectObject(int x, int y)
 				object->GetZ() * object->GetZ());
 			if(distance < minDistance)
 			{
-				selectedObject = i;
+				selectedObject = object;
 				minDistance = distance;
 			}
 		}
 	}
-	m_gameModel.lock()->SelectObjectByIndex(selectedObject);
+	m_gameModel.lock()->SelectObject(selectedObject);
 }
 
 void CGameView::RulerBegin(int x, int y)
@@ -243,41 +300,36 @@ void CGameView::RulerHide()
 
 void CGameView::TryMoveSelectedObject(int x, int y)
 {
-	bool isSomeObjectSelect = m_gameModel.lock()->GetSelectedObject();
-	if (!isSomeObjectSelect)
+	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
+	if (!object)
 	{
 		return;
 	}
-
 	double worldX, worldY;
 	WindowCoordsToWorldCoords(x, y, worldX, worldY);
-	if (m_table.get()->isCoordsOnTable(worldX, worldY))
+	if (m_table->isCoordsOnTable(worldX, worldY))
 	{
-		m_gameModel.lock()->GetSelectedObject()->MoveTo(worldX, worldY, 0);
+		object->Move(worldX - object->GetX(), worldY - object->GetY(), 0);
 	}
 }
 
 bool CGameView::UILeftMouseButtonDown(int x, int y)
 {
-	if(!m_ui) return false;
 	return m_ui->LeftMouseButtonDown(x, y);
 }
 
 bool CGameView::UILeftMouseButtonUp(int x, int y)
 {
-	if(!m_ui) return false;
 	return m_ui->LeftMouseButtonUp(x, y);
 }
 
 bool CGameView::UIKeyPress(unsigned char key)
 {
-	if(!m_ui) return false;
 	return m_ui->OnKeyPress(key);
 }
 
 bool CGameView::UISpecialKeyPress(int key)
 {
-	if(!m_ui) return false;
 	return m_ui->OnSpecialKeyPress(key);
 }
 
@@ -290,4 +342,3 @@ IUIElement * CGameView::GetUI() const
 {
 	return m_ui.get();
 }
-

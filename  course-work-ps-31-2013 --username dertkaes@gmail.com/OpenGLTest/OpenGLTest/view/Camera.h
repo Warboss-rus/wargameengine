@@ -12,6 +12,9 @@ public:
 	void ZoomOut();
 	void Reset();
 	void SetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
+	double GetTranslationX() { return m_transX; }
+	double GetTranslationY() { return m_transY; }
+	double GetScale() { return m_scale; }
 private:
 	double m_maxTransX;
 	double m_maxTransY;

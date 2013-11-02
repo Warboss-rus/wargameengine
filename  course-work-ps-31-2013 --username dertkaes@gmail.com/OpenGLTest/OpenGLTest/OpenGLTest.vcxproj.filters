@@ -141,6 +141,9 @@
     <ClCompile Include="LUA\LUARegisterObject.cpp">
       <Filter>Source Files\LUA</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectGroup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectInterface.h">
@@ -191,19 +194,10 @@
     <ClInclude Include="view\GameView.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialManager.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\ModelManager.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\OBJModelFactory.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="SkyBox.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\Table.h">
@@ -256,6 +250,18 @@
     </ClInclude>
     <ClInclude Include="LUA\LUARegisterObject.h">
       <Filter>Header Files\LUA</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectGroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Material.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\MaterialManager.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\SkyBox.h">
+      <Filter>Header Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

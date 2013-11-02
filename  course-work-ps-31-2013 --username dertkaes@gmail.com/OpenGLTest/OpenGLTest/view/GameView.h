@@ -35,6 +35,7 @@ public:
 	static std::weak_ptr<CGameView> GetIntanse();
 	void Update();
 	void DrawObjects(void);
+	void DrawBoundingBox();
 	void Init();
 
 	void CreateTable(float width, float height, std::string const& texture);
@@ -43,6 +44,7 @@ public:
 	IUIElement * GetUI() const;
 
 	void SelectObject(int x, int y);
+	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
 	void CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
 	void CameraZoomIn();
 	void CameraZoomOut();

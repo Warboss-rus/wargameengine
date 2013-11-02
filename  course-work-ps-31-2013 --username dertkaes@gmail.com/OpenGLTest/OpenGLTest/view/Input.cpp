@@ -6,11 +6,11 @@
 
 bool CInput::m_isLMBDown = false;
 bool CInput::m_ruler = false;
+double CInput::startX = 0;
+double CInput::startY = 0;
 
 void CInput::OnMouse(int button, int state, int x, int y)
 {
-	static double startX = -1;
-	static double startY = -1;
 	switch(button)
 	{
 	case GLUT_LEFT_BUTTON: 
@@ -24,11 +24,17 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			}
 			else
 			{
-				CGameView::GetIntanse().lock()->SelectObject(x, y);
-				if(CGameModel::GetIntanse().lock()->GetSelectedObject().get())
+				if(!CGameModel::IsGroup(CGameModel::GetIntanse().lock()->GetSelectedObject()))
+					CGameView::GetIntanse().lock()->SelectObject(x, y);
+				if(CGameModel::GetIntanse().lock()->GetSelectedObject().get())//drag object
 				{
 					startX = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetX();
 					startY = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetY();
+				}
+				else//selection rectangle
+				{
+					startX = x;
+					startY = y;
 				}
 				CGameView::GetIntanse().lock()->RulerHide();
 			}
@@ -37,13 +43,17 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			m_isLMBDown = false;
 			if(CGameView::GetIntanse().lock()->UILeftMouseButtonUp(x, y)) return;
-			if(!m_ruler && CGameModel::GetIntanse().lock()->GetSelectedObject().get() && startX != -1 && startY != -1)
+			if(!m_ruler && CGameModel::GetIntanse().lock()->GetSelectedObject())
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
 				CCommandHandler::GetInstance().lock()->AddNewMoveObject(worldX - startX, worldY - startY);
 				startX = -1;
 				startY = -1;
+			}
+			if(!CGameModel::GetIntanse().lock()->GetSelectedObject())
+			{
+				CGameView::GetIntanse().lock()->SelectObjectGroup(startX, startY, x, y);
 			}
 			m_ruler = false;
 		}break;
@@ -132,7 +142,14 @@ void CInput::OnMouseMove(int x, int y)
 		}
 		else
 		{
-			CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
+			if(CGameModel::GetIntanse().lock()->GetSelectedObject())
+			{
+				CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
+			}
+			else
+			{
+				//CGameView::GetIntanse().lock()->SelectObjectGroup(startX, startY, x, y);
+			}
 		}
 	}
 }

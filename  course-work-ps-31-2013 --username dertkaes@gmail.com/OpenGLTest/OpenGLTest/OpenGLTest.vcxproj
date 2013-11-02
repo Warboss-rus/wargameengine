@@ -90,6 +90,7 @@
     <ClCompile Include="LUA\LUARegisterUI.cpp" />
     <ClCompile Include="LUA\LUAScriptHandler.cpp" />
     <ClCompile Include="model\GameModel.cpp" />
+    <ClCompile Include="ObjectGroup.cpp" />
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
@@ -127,6 +128,7 @@
     <ClInclude Include="LUA\LUARegisterUI.h" />
     <ClInclude Include="LUA\LUAScriptHandler.h" />
     <ClInclude Include="model\GameModel.h" />
+    <ClInclude Include="ObjectGroup.h" />
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />
     <ClInclude Include="SelectionTools.h" />
@@ -145,13 +147,13 @@
     <ClInclude Include="view\Camera.h" />
     <ClInclude Include="view\GameView.h" />
     <ClInclude Include="view\Input.h" />
+    <ClInclude Include="view\Material.h" />
+    <ClInclude Include="view\MaterialManager.h" />
     <ClInclude Include="view\ModelManager.h" />
     <ClInclude Include="3dObject.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="MaterialManager.h" />
     <ClInclude Include="ObjectInterface.h" />
-    <ClInclude Include="SkyBox.h" />
     <ClInclude Include="view\OBJModelFactory.h" />
+    <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\Table.h" />
     <ClInclude Include="view\TextureManager.h" />
   </ItemGroup>

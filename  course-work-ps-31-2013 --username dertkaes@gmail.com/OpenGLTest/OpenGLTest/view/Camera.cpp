@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include <GL\glut.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 const double CCamera::SCALE = 1.1;
@@ -16,18 +17,19 @@ void CCamera::SetLimits(double maxTransX, double maxTransY, double maxScale, dou
 void CCamera::Update()
 {
 	glLoadIdentity();
-	glTranslated(m_transX, m_transY, -10.0);
+	glTranslated(0.0, 0.0, -10.0);
 	glScaled(m_scale, m_scale, m_scale);
 	glRotated(m_rotX, -1.0, 0.0, 0.0);
 	glRotated(m_rotZ, 0.0, 0.0, 1.0);
+	glTranslated(m_transX, m_transY, 0.0);
 }
 
 void CCamera::Translate(double transX, double transY)
 {
-	m_transX += transX;
+	m_transX += transX * cos(m_rotZ * M_PI / 180) + transY * sin(m_rotZ * M_PI / 180);
 	if(m_transX > m_maxTransX) m_transX = m_maxTransX;
 	if(m_transX < -m_maxTransX) m_transX = -m_maxTransX;
-	m_transY += transY;
+	m_transY += -transX * sin(m_rotZ * M_PI / 180) + transY * cos(m_rotZ * M_PI / 180);
 	if(m_transY > m_maxTransY) m_transY = m_maxTransY;
 	if(m_transY < -m_maxTransY) m_transY = -m_maxTransY;
 }

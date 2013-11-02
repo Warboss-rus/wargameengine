@@ -36,7 +36,7 @@ end
 
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
-CameraSetLimits(8, 8, 2.8, 0.35)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
+CameraSetLimits(15, 6, 2.8, 0.4)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 local ui = UI:New()--Creates a new UI (doesn't displays anything)
 ui:Set()--Assigns this UI to window. Old assigned UI will be destroyed (Even if you have it in some variable)
 local list = ui:NewListbox("ListBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
@@ -70,7 +70,10 @@ Object:GetX()--(number)Retrieves x coordinate of this instance of object.
 Object:GetY()--(number)Retrieves y coordinate of this instance of object.
 Object:GetZ()--(number)Retrieves z coordinate of this instance of object.
 Object:GetRotation()--(number)Retrieves rotation of this instance of object.
-Object:MoveTo(x, y, rotation)--()Moves current object to specified coordinates and rotates.
+Object:Move(x, y, z)--()Translates current object by specified coordinates.
+Object:Rotate(rotation)--()Rotates current object by specifed angle
+Object:HideMesh(meshName)--()Hides specified mesh of current object
+Object:ShowMesh(meshName)--()Unhides specified mesh of current object
 MessageBox("It works this way", "Working")--()Show Message box with caption
 MessageBox("Or this")--()Messagebox without caption
 RunScript("script.lua")--()Runs another script file

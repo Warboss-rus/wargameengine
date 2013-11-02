@@ -88,12 +88,39 @@ int GetObjectRotation(lua_State* L)
 	return 1;
 }
 
-int MoveObjectTo(lua_State* L)
+int MoveObject(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 4)
-        return luaL_error(L, "3 argument expected(x, y, rotation)");
+        return luaL_error(L, "3 arguments expected(x, y, z)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	object->MoveTo(CLUAScript::GetArgument<double>(2), CLUAScript::GetArgument<double>(3), CLUAScript::GetArgument<double>(4));
+	object->Move(CLUAScript::GetArgument<double>(2), CLUAScript::GetArgument<double>(3), CLUAScript::GetArgument<double>(4));
+	return 0;
+}
+
+int RotateObject(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected(rotation)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	object->Rotate(CLUAScript::GetArgument<double>(2));
+	return 0;
+}
+
+int ShowMesh(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected(meshname)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	object->ShowMesh(CLUAScript::GetArgument<char*>(2));
+	return 0;
+}
+
+int HideMesh(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected(meshname)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	object->HideMesh(CLUAScript::GetArgument<char*>(2));
 	return 0;
 }
 
@@ -107,7 +134,10 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "GetY", GetObjectY },
 	{ "GetZ", GetObjectZ },
 	{ "GetRotation", GetObjectRotation },
-	{ "MoveTo", MoveObjectTo },
+	{ "Move", MoveObject },
+	{ "Rotate", RotateObject },
+	{ "ShowMesh", ShowMesh },
+	{ "HideMesh", HideMesh },
 	{ NULL, NULL }
 };
 
