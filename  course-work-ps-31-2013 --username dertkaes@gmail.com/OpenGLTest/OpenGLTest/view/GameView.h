@@ -16,6 +16,7 @@ class CGameView
 {
 private:
 	std::shared_ptr<IObject> m_selectedObject;
+	sPoint2 m_selectedObjectCapturePoint;
 	CModelManager m_modelManager;
 	std::weak_ptr<CGameModel> m_gameModel;
 

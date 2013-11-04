@@ -276,6 +276,13 @@ void CGameView::SelectObject(int x, int y)
 			}
 		}
 	}
+	if (selectedObject)
+	{
+		double worldX, worldY;
+		WindowCoordsToWorldCoords(x, y, worldX, worldY);
+		m_selectedObjectCapturePoint.x = worldX - selectedObject->GetX();
+		m_selectedObjectCapturePoint.y = worldY - selectedObject->GetY();
+	}
 	m_gameModel.lock()->SelectObject(selectedObject);
 }
 
@@ -309,7 +316,8 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 	WindowCoordsToWorldCoords(x, y, worldX, worldY);
 	if (m_table->isCoordsOnTable(worldX, worldY))
 	{
-		object->Move(worldX - object->GetX(), worldY - object->GetY(), 0);
+		object->Move(worldX - object->GetX() - m_selectedObjectCapturePoint.x, worldY - object->GetY() - m_selectedObjectCapturePoint.y, 0);
+		//SetCursorPos(object->GetX(), object->GetY());
 	}
 }
 
