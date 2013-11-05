@@ -6,21 +6,6 @@
 #include "Bounding.h"
 #pragma once
 
-struct sPoint3
-{
-	sPoint3(): x(0), y(0), z(0){}
-	double x;
-	double y;
-	double z;
-};
-
-struct sPoint2
-{
-	sPoint2(): x(0), y(0){}
-	double x;
-	double y;
-};
-
 struct sMesh
 {
 	std::string name;

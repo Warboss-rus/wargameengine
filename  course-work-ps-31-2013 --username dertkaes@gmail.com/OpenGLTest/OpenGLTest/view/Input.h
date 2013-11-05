@@ -9,6 +9,7 @@ private:
 	static const int SCROLL_DOWN = 4;
 
 	static bool m_isLMBDown;
+	static bool m_isRMBDown;
 	static bool m_ruler;
 	static double startX;
 	static double startY;

@@ -7,7 +7,8 @@ class C3DObject : public IObject
 public:
 	C3DObject(std::string const& model, double x, double y, double rotation):m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation)  {}
 	std::string GetPathToModel() const { return m_model; }
-	void Move(double x, double y, double z) { m_x += x; m_y += y; m_z = z; }
+	void Move(double x, double y, double z) { m_x += x; m_y += y; m_z += z; }
+	void SetCoords(double x, double y, double z) { m_x = x; m_y = y; m_z = z; }
 	void Rotate(double rotation) { m_rotation = fmod(m_rotation + rotation + 360.0, 360); }
 	double GetX() const { return m_x; }
 	double GetY() const { return m_y; }

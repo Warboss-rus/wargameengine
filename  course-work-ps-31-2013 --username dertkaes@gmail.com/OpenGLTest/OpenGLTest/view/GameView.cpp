@@ -253,37 +253,77 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 
 }
 
-void CGameView::SelectObject(int x, int y)
+void CGameView::SelectObject(int x, int y, bool shiftPressed)
 {
 	shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	double start[3];
 	double end[3];
+	double instersectCoord[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		shared_ptr<IObject> object = model->Get3DObject(i);
 		double direction[3] = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
-		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, direction, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation()))
+		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, direction, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
-			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + 
-				object->GetZ() * object->GetZ());
+			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + object->GetZ() * object->GetZ());
 			if(distance < minDistance)
 			{
 				selectedObject = object;
 				minDistance = distance;
+				m_selectedObjectCapturePoint.x -= selectedObject->GetX();
+				m_selectedObjectCapturePoint.y -= selectedObject->GetY();
+				m_selectedObjectCapturePoint.z -= selectedObject->GetZ();
 			}
 		}
 	}
-	if (selectedObject)
+	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
+	if(CGameModel::IsGroup(object))
 	{
-		double worldX, worldY;
-		WindowCoordsToWorldCoords(x, y, worldX, worldY);
-		m_selectedObjectCapturePoint.x = worldX - selectedObject->GetX();
-		m_selectedObjectCapturePoint.y = worldY - selectedObject->GetY();
+		CObjectGroup * group = (CObjectGroup *)object.get();
+		if(shiftPressed && selectedObject != NULL)
+		{
+			if(group->ContainsChildren(selectedObject))
+			{
+				group->RemoveChildren(selectedObject);
+				if(group->GetCount() == 1)//Destroy group
+				{
+					m_gameModel.lock()->SelectObject(group->GetChild(0));
+				}
+			}
+			else
+			{
+				group->AddChildren(selectedObject);
+			}
+		}
+		else
+		{
+			if(!group->ContainsChildren(selectedObject))
+			{
+				m_gameModel.lock()->SelectObject(selectedObject);
+			}
+			else
+			{
+				group->SetCurrent(selectedObject);
+			}
+		}
 	}
-	m_gameModel.lock()->SelectObject(selectedObject);
+	else
+	{
+		if(shiftPressed && object != NULL)
+		{
+			CObjectGroup * group = new CObjectGroup();
+			group->AddChildren(object);
+			group->AddChildren(selectedObject);
+			m_gameModel.lock()->SelectObject(std::shared_ptr<IObject>(group));
+		}
+		else
+		{
+			m_gameModel.lock()->SelectObject(selectedObject);
+		}
+	}
 }
 
 void CGameView::RulerBegin(int x, int y)
@@ -313,11 +353,10 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 		return;
 	}
 	double worldX, worldY;
-	WindowCoordsToWorldCoords(x, y, worldX, worldY);
+	WindowCoordsToWorldCoords(x, y, worldX, worldY, m_selectedObjectCapturePoint.z);
 	if (m_table->isCoordsOnTable(worldX, worldY))
 	{
-		object->Move(worldX - object->GetX() - m_selectedObjectCapturePoint.x, worldY - object->GetY() - m_selectedObjectCapturePoint.y, 0);
-		//SetCursorPos(object->GetX(), object->GetY());
+		object->SetCoords(worldX - m_selectedObjectCapturePoint.x, worldY - m_selectedObjectCapturePoint.y, 0);
 	}
 }
 

@@ -9,6 +9,17 @@ void CObjectGroup::Move(double x, double y, double z)
 	}
 }
 
+void CObjectGroup::SetCoords(double x, double y, double z)
+{
+	x -= GetX();
+	y -= GetY();
+	z -= GetZ();
+	for(auto i = m_children.begin(); i != m_children.end(); ++i)
+	{
+		i->get()->Move(x, y, z);
+	}
+}
+
 void CObjectGroup::Rotate(double rotation)
 {
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
@@ -19,36 +30,36 @@ void CObjectGroup::Rotate(double rotation)
 
 double CObjectGroup::GetX() const
 {
-	if(m_children.begin() != m_children.end())
+	if(m_current < m_children.size())
 	{
-		return m_children.begin()->get()->GetX();
+		return m_children[m_current]->GetX();
 	}
 	return 0.0;
 }
 
 double CObjectGroup::GetY() const
 {
-	if(m_children.begin() != m_children.end())
+	if(m_current < m_children.size())
 	{
-		return m_children.begin()->get()->GetY();
+		return m_children[m_current]->GetY();
 	}
 	return 0.0;
 }
 
 double CObjectGroup::GetZ() const
 {
-	if(m_children.begin() != m_children.end())
+	if(m_current < m_children.size())
 	{
-		return m_children.begin()->get()->GetZ();
+		return m_children[m_current]->GetZ();
 	}
 	return 0.0;
 }
 
 double CObjectGroup::GetRotation() const
 {
-	if(m_children.begin() != m_children.end())
+	if(m_current < m_children.size())
 	{
-		return m_children.begin()->get()->GetRotation();
+		return m_children[m_current]->GetRotation();
 	}
 	return 0.0;
 }
@@ -81,6 +92,7 @@ void CObjectGroup::AddChildren(std::shared_ptr<IObject> object)
 
 void CObjectGroup::RemoveChildren(std::shared_ptr<IObject> object)
 {
+	if(object == m_children[m_current]) m_current = 0;
 	for(unsigned int i =0; i < m_children.size(); ++i)
 	{
 		if(m_children[i] == object)
@@ -115,4 +127,15 @@ void CObjectGroup::DeleteAll()
 		model->DeleteObjectByPtr(*i);
 	}
 	m_children.clear();
+}
+
+void CObjectGroup::SetCurrent(std::shared_ptr<IObject> object)
+{
+	for(unsigned int i =0; i < m_children.size(); ++i)
+	{
+		if(m_children[i] == object)
+		{
+			m_current = i;
+		}
+	}
 }

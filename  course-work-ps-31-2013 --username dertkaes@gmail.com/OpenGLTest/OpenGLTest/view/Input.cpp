@@ -5,6 +5,7 @@
 #include "..\controller\CommandHandler.h"
 
 bool CInput::m_isLMBDown = false;
+bool CInput::m_isRMBDown = false;
 bool CInput::m_ruler = false;
 double CInput::startX = 0;
 double CInput::startY = 0;
@@ -24,8 +25,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			}
 			else
 			{
-				if(!CGameModel::IsGroup(CGameModel::GetIntanse().lock()->GetSelectedObject()))
-					CGameView::GetIntanse().lock()->SelectObject(x, y);
+				CGameView::GetIntanse().lock()->SelectObject(x, y, glutGetModifiers() == GLUT_ACTIVE_SHIFT);
 				if(CGameModel::GetIntanse().lock()->GetSelectedObject().get())//drag object
 				{
 					startX = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetX();
@@ -56,6 +56,20 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				CGameView::GetIntanse().lock()->SelectObjectGroup(startX, startY, x, y);
 			}
 			m_ruler = false;
+		}break;
+	case GLUT_RIGHT_BUTTON:
+		if (state == GLUT_DOWN)
+		{
+			m_isRMBDown = true;
+			CGameView::GetIntanse().lock()->SelectObject(x, y, false);
+			startX = x;
+			startY = y;
+		}
+		else
+		{
+			m_isLMBDown = false;
+			startX = 0;
+			startY = 0;
 		}break;
 	case SCROLL_UP:
 		if (state == GLUT_UP)
@@ -146,10 +160,15 @@ void CInput::OnMouseMove(int x, int y)
 			{
 				CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
 			}
-			else
-			{
-				//CGameView::GetIntanse().lock()->SelectObjectGroup(startX, startY, x, y);
-			}
+		}
+	}
+	if(m_isRMBDown)
+	{
+		if(CGameModel::GetIntanse().lock()->GetSelectedObject())
+		{
+			double rot = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation();
+			double rotation = 90 - (atan2(y-startY,x-startX)*180/3.14);
+			CGameModel::GetIntanse().lock()->GetSelectedObject()->Rotate(rotation-rot);
 		}
 	}
 }

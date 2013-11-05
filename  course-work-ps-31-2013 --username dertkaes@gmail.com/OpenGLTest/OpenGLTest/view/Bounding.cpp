@@ -10,7 +10,7 @@ CBoundingBox::CBoundingBox(double min[3], double max[3])
 	memcpy(m_max, max, sizeof(double) * 3); 
 }
 
-bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, double y, double z, double rotation) const
+bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, double y, double z, double rotation, sPoint3 & intersectCoord) const
 {
 	double minB[3] = {m_min[0] * m_scale + x, m_min[1] * m_scale + y, m_min[2] * m_scale + z};
 	double maxB[3] = {m_max[0] * m_scale + x, m_max[1] * m_scale + y, m_max[2] * m_scale + z};
@@ -68,6 +68,9 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, do
 		} else {
 			coord[i] = candidatePlane[i];
 		}
+	intersectCoord.x = coord[0];
+	intersectCoord.y = coord[1];
+	intersectCoord.z = coord[2];
 	return true;				/* ray hits box */
 }
 
@@ -122,11 +125,11 @@ void CBoundingCompound::Draw(double x, double y, double z, double rotation) cons
 	}
 }
 
-bool CBoundingCompound::IsIntersectsRay(double origin[3], double dir[3], double x, double y, double z, double rotation) const
+bool CBoundingCompound::IsIntersectsRay(double origin[3], double dir[3], double x, double y, double z, double rotation, sPoint3 & intersectCoord) const
 {
 	for(size_t i = 0; i < m_children.size(); ++i)
 	{
-		if(m_children[i]->IsIntersectsRay(origin, dir, x, y, z, rotation))
+		if(m_children[i]->IsIntersectsRay(origin, dir, x, y, z, rotation, intersectCoord))
 		{
 			return true;
 		}

@@ -21,11 +21,11 @@ void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, d
              viewport, &endx, &endy, &endz);
 }
 
-void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY)
+void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0)
 {
 	double startx, starty, startz, endx, endy, endz;
 	WindowCoordsToWorldVector(windowX, windowY, startx, starty, startz, endx, endy, endz);
-	double a = (-startz) / (endz - startz);
+	double a = (worldZ - startz) / (endz - startz);
 	worldX = a * (endx - startx) + startx;
 	worldY = a * (endy - starty) + starty;
 }

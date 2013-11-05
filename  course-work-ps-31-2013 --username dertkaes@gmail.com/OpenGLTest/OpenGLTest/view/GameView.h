@@ -16,7 +16,7 @@ class CGameView
 {
 private:
 	std::shared_ptr<IObject> m_selectedObject;
-	sPoint2 m_selectedObjectCapturePoint;
+	sPoint3 m_selectedObjectCapturePoint;
 	CModelManager m_modelManager;
 	std::weak_ptr<CGameModel> m_gameModel;
 
@@ -44,7 +44,7 @@ public:
 	void SetUI(IUIElement * ui);
 	IUIElement * GetUI() const;
 
-	void SelectObject(int x, int y);
+	void SelectObject(int x, int y, bool shiftPressed);
 	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
 	void CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
 	void CameraZoomIn();
