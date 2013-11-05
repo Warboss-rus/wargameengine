@@ -3,6 +3,7 @@
 #include "../ObjectInterface.h"
 #include <vector>
 #include <string>
+#include <map>
 
 class CGameModel
 {
@@ -10,6 +11,7 @@ private:
 	std::vector<std::shared_ptr<IObject>> m_objects;
 	std::shared_ptr<IObject> m_selectedObject;
 	static std::shared_ptr<CGameModel> m_instanse;
+	std::map<std::string, std::string> m_properties;
 
 	CGameModel(void):m_selectedObject(NULL){};
 	CGameModel(CGameModel const&){};
@@ -25,5 +27,10 @@ public:
 	std::shared_ptr<const IObject> GetSelectedObject() const;
 	std::shared_ptr<IObject> GetSelectedObject();
 	static bool IsGroup(std::shared_ptr<IObject> object);
+	void SetProperty(std::string const& key, std::string const& value) { m_properties[key] = value; }
+	std::string const& GetProperty(std::string const& key) {
+		if(m_properties.find(key) != m_properties.end())
+			return m_properties.find(key)->second;
+		return "";	}
 };
 

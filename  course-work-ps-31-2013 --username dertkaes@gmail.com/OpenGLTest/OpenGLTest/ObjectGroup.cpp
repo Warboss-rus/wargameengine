@@ -139,3 +139,27 @@ void CObjectGroup::SetCurrent(std::shared_ptr<IObject> object)
 		}
 	}
 }
+
+void CObjectGroup::SetProperty(std::string const& key, std::string const& value) 
+{ 
+	for(unsigned int i =0; i < m_children.size(); ++i)
+	{
+		m_children[i]->SetProperty(key, value);
+	}
+}
+std::string const& CObjectGroup::GetProperty(std::string const& key) const 
+{
+	if(m_current < m_children.size())
+	{
+		return m_children[m_current]->GetProperty(key);
+	}
+	return "";
+}
+
+void CObjectGroup::SetSelectable(bool selectable)
+{
+	for(unsigned int i =0; i < m_children.size(); ++i)
+	{
+		m_children[i]->SetSelectable(selectable);
+	}
+}

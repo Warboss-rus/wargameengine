@@ -2,6 +2,10 @@
 #include <GL\glut.h>
 #include "TextureManager.h"
 
+#ifndef GL_CLAMP_TO_EDGE_EXT 
+#define GL_CLAMP_TO_EDGE_EXT 0x812F 
+#endif 
+
 void CSkyBox::Draw(double x, double y, double z, double scale)
 {
 	x = -x - m_width / (scale * 2);
@@ -10,6 +14,8 @@ void CSkyBox::Draw(double x, double y, double z, double scale)
 	CTextureManager * texManager = CTextureManager::GetInstance();
 	// Top side
 	texManager->SetTexture(m_imageFolder + "/top.bmp");
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	glBegin(GL_QUADS);
 		glTexCoord2f(1.0f, 1.0f); glVertex3d(x, y, z + m_length / scale);
 		glTexCoord2f(0.0f, 1.0f); glVertex3d(x, y + m_height / scale, z + m_length / scale);
@@ -18,6 +24,8 @@ void CSkyBox::Draw(double x, double y, double z, double scale)
 	glEnd();
 	// Bottom side
 	texManager->SetTexture(m_imageFolder + "/bottom.bmp");
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	glBegin(GL_QUADS);
 		glTexCoord2f(1.0f, 1.0f); glVertex3d(x + m_width / scale, y, z);
 		glTexCoord2f(0.0f, 1.0f); glVertex3d(x + m_width / scale, y + m_height / scale, z); 
@@ -26,6 +34,8 @@ void CSkyBox::Draw(double x, double y, double z, double scale)
 	glEnd();
 	// Front side
 	texManager->SetTexture(m_imageFolder + "/front.bmp");
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	glBegin(GL_QUADS);
 		glTexCoord2f(1.0f, 0.0f); glVertex3d(x, y, z);
 		glTexCoord2f(1.0f, 1.0f); glVertex3d(x,		  y,		z + m_length / scale);
@@ -34,6 +44,8 @@ void CSkyBox::Draw(double x, double y, double z, double scale)
 	glEnd();
 	// Back side
 	texManager->SetTexture(m_imageFolder + "/back.bmp");
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f); glVertex3d(x, y + m_height / scale, z);
 		glTexCoord2f(0.0f, 1.0f); glVertex3d(x,		  y + m_height / scale,		z + m_length / scale);
@@ -42,6 +54,8 @@ void CSkyBox::Draw(double x, double y, double z, double scale)
 	glEnd();
 	// Left side
 	texManager->SetTexture(m_imageFolder + "/left.bmp");
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	glBegin(GL_QUADS);
 		glTexCoord2f(1.0f, 0.0f); glVertex3d(x, y + m_height / scale, z);	
 		glTexCoord2f(1.0f, 1.0f); glVertex3d(x, y + m_height / scale, z + m_length / scale); 
@@ -50,6 +64,8 @@ void CSkyBox::Draw(double x, double y, double z, double scale)
 	glEnd();
 	// Right side
 	texManager->SetTexture(m_imageFolder + "/right.bmp");
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	glBegin(GL_QUADS);
 		glTexCoord2f(1.0f, 0.0f); glVertex3d(x + m_width / scale, y,		z);
 		glTexCoord2f(1.0f, 1.0f); glVertex3d(x + m_width / scale, y,		z + m_length / scale);

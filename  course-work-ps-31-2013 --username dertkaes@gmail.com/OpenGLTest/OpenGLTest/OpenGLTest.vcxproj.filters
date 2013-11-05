@@ -263,5 +263,8 @@
     <ClInclude Include="view\SkyBox.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="Structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

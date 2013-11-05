@@ -13,6 +13,7 @@ public:
 	double GetX() const;
 	double GetY() const;
 	double GetZ() const;
+	sPoint3 GetCoords() const { return sPoint3(GetX(), GetY(), GetZ()); }
 	double GetRotation() const;
 	std::set<std::string> const& GetHiddenMeshes() const;
 	void HideMesh(std::string const& meshName);
@@ -25,6 +26,10 @@ public:
 	void DeleteAll();
 	void SetCurrent(std::shared_ptr<IObject> object);
 	std::shared_ptr<IObject> GetCurrent() const { return m_children[m_current]; }
+	void SetProperty(std::string const& key, std::string const& value);
+	std::string const& GetProperty(std::string const& key) const;
+	bool IsSelectable() const { return true; }
+	void SetSelectable(bool selectable);
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

@@ -10,10 +10,26 @@ CBoundingBox::CBoundingBox(double min[3], double max[3])
 	memcpy(m_max, max, sizeof(double) * 3); 
 }
 
+void RotateScaleTranslate(double & x, double & y, double & z, double angle, double scale, double transX, double transY, double transZ)
+{
+	angle *= 3.1417 / 180;
+	//double newx = x * cos(angle) - y * sin(angle);//rotate
+	//y = x * sin(angle) + y * cos(angle);
+	//x = newx;
+	x *= scale;//scale
+	y *= scale;
+	z *= scale;
+	x += transX;//translate
+	y += transY;
+	z += transZ;
+}
+
 bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, double y, double z, double rotation, sPoint3 & intersectCoord) const
 {
-	double minB[3] = {m_min[0] * m_scale + x, m_min[1] * m_scale + y, m_min[2] * m_scale + z};
-	double maxB[3] = {m_max[0] * m_scale + x, m_max[1] * m_scale + y, m_max[2] * m_scale + z};
+	double minB[3] = {m_min[0], m_min[1], m_min[2]};
+	double maxB[3] = {m_max[0], m_max[1], m_max[2]};
+	RotateScaleTranslate(minB[0], minB[1], minB[2], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(maxB[0], maxB[1], maxB[2], rotation, m_scale, x, y, z);
 	double coord[3];
 	char inside = true;
 	char quadrant[3];
@@ -76,8 +92,9 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, do
 
 void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 {
-	double box[6] = {m_min[0] * m_scale + x, m_min[1] * m_scale + y, m_min[2] * m_scale + z,
-		m_max[0] * m_scale + x, m_max[1] * m_scale + y, m_max[2] * m_scale + z};
+	double box[6] = {m_min[0], m_min[1], m_min[2], m_max[0], m_max[1], m_max[2]};
+	RotateScaleTranslate(box[0], box[1], box[2], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(box[3], box[4], box[5], rotation, m_scale, x, y, z);
 	glPushMatrix();
 	glColor3d(0.0, 0.0, 255.0);
 	//Left

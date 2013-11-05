@@ -44,6 +44,7 @@ public:
 	void SetUI(IUIElement * ui);
 	IUIElement * GetUI() const;
 
+	std::shared_ptr<IObject> GetNearestObject(int x, int y);
 	void SelectObject(int x, int y, bool shiftPressed);
 	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
 	void CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);

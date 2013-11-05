@@ -124,6 +124,36 @@ int HideMesh(lua_State* L)
 	return 0;
 }
 
+int GetProperty(lua_State* L)
+{
+	if(CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "1 argument expected (key)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	char* key = CLUAScript::GetArgument<char*>(2);
+	CLUAScript::SetArgument(object->GetProperty(key).c_str());
+	return 1;
+}
+
+int SetProperty(lua_State* L)
+{
+	if(CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "2 arguments expected (key, value)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	char* key = CLUAScript::GetArgument<char*>(2);
+	char* value = CLUAScript::GetArgument<char*>(3);
+	object->SetProperty(key, value);
+	return 0;
+}
+
+int SetSelectable(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected(meshname)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	object->SetSelectable(CLUAScript::GetArgument<bool>(2));
+	return 0;
+}
+
 static const luaL_Reg ObjectFuncs[] = {
 	{ "New", NewObject },
 	{ "GetSelected", GetSelectedObject },
@@ -138,6 +168,9 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "Rotate", RotateObject },
 	{ "ShowMesh", ShowMesh },
 	{ "HideMesh", HideMesh },
+	{ "GetProperty", GetProperty },
+	{ "SetProperty", SetProperty },
+	{ "SetSelectable", SetSelectable },
 	{ NULL, NULL }
 };
 

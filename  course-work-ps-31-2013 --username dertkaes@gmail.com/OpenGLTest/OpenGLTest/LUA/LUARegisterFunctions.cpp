@@ -94,6 +94,25 @@ int RunScript(lua_State* L)
 	return 0;
 }
 
+int GetGlobalProperty(lua_State* L)
+{
+	if(CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (key)");
+	char* key = CLUAScript::GetArgument<char*>(1);
+	CLUAScript::SetArgument(CGameModel::GetIntanse().lock()->GetProperty(key).c_str());
+	return 1;
+}
+
+int SetGlobalProperty(lua_State* L)
+{
+	if(CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 arguments expected (key, value)");
+	char* key = CLUAScript::GetArgument<char*>(1);
+	char* value = CLUAScript::GetArgument<char*>(2);
+	CGameModel::GetIntanse().lock()->SetProperty(key, value);
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -105,4 +124,6 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(Redo, "Redo");
 	lua.RegisterConstant(ShowMessageBox, "MessageBox");
 	lua.RegisterConstant(RunScript, "RunScript");
+	lua.RegisterConstant(GetGlobalProperty, "GetGlobalProperty");
+	lua.RegisterConstant(SetGlobalProperty, "SetGlobalProperty");
 }

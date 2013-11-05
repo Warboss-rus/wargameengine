@@ -1,20 +1,6 @@
 #include <memory>
 #include <vector>
-
-struct sPoint3
-{
-	sPoint3(): x(0), y(0), z(0){}
-	double x;
-	double y;
-	double z;
-};
-
-struct sPoint2
-{
-	sPoint2(): x(0), y(0){}
-	double x;
-	double y;
-};
+#include "..\Structs.h"
 
 class IBounding
 {

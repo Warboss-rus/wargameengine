@@ -253,9 +253,9 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 
 }
 
-void CGameView::SelectObject(int x, int y, bool shiftPressed)
+shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 {
-	shared_ptr<IObject> selectedObject = NULL;
+	std::shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	double start[3];
@@ -264,7 +264,7 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
-		shared_ptr<IObject> object = model->Get3DObject(i);
+		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		double direction[3] = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
 		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, direction, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
@@ -273,11 +273,20 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 			{
 				selectedObject = object;
 				minDistance = distance;
-				m_selectedObjectCapturePoint.x -= selectedObject->GetX();
-				m_selectedObjectCapturePoint.y -= selectedObject->GetY();
-				m_selectedObjectCapturePoint.z -= selectedObject->GetZ();
 			}
 		}
+	}
+	return selectedObject;
+}
+
+void CGameView::SelectObject(int x, int y, bool shiftPressed)
+{
+	std::shared_ptr<IObject> selectedObject = GetNearestObject(x, y);
+	if(selectedObject)
+	{
+		m_selectedObjectCapturePoint.x -= selectedObject->GetX();
+		m_selectedObjectCapturePoint.y -= selectedObject->GetY();
+		m_selectedObjectCapturePoint.z -= selectedObject->GetZ();
 	}
 	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
 	if(CGameModel::IsGroup(object))

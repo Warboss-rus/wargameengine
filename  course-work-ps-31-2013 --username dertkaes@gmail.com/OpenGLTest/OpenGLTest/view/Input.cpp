@@ -25,18 +25,19 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			}
 			else
 			{
+				CGameView::GetIntanse().lock()->RulerHide();
 				CGameView::GetIntanse().lock()->SelectObject(x, y, glutGetModifiers() == GLUT_ACTIVE_SHIFT);
 				if(CGameModel::GetIntanse().lock()->GetSelectedObject().get())//drag object
 				{
 					startX = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetX();
 					startY = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetY();
+					CGameView::GetIntanse().lock()->RulerBegin(x, y);
 				}
 				else//selection rectangle
 				{
 					startX = x;
 					startY = y;
 				}
-				CGameView::GetIntanse().lock()->RulerHide();
 			}
 		}
 		else
@@ -50,6 +51,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				CCommandHandler::GetInstance().lock()->AddNewMoveObject(worldX - startX, worldY - startY);
 				startX = -1;
 				startY = -1;
+				CGameView::GetIntanse().lock()->RulerHide();
 			}
 			if(!CGameModel::GetIntanse().lock()->GetSelectedObject())
 			{
@@ -62,12 +64,11 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			m_isRMBDown = true;
 			CGameView::GetIntanse().lock()->SelectObject(x, y, false);
-			startX = x;
-			startY = y;
+			WindowCoordsToWorldCoords(x, y, startX, startY);
 		}
 		else
 		{
-			m_isLMBDown = false;
+			m_isRMBDown = false;
 			startX = 0;
 			startY = 0;
 		}break;
@@ -159,6 +160,7 @@ void CInput::OnMouseMove(int x, int y)
 			if(CGameModel::GetIntanse().lock()->GetSelectedObject())
 			{
 				CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
+				CGameView::GetIntanse().lock()->RulerEnd(x, y);
 			}
 		}
 	}
@@ -166,9 +168,12 @@ void CInput::OnMouseMove(int x, int y)
 	{
 		if(CGameModel::GetIntanse().lock()->GetSelectedObject())
 		{
+			double worldX, worldY;
+			WindowCoordsToWorldCoords(x, y, worldX, worldY);
 			double rot = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation();
-			double rotation = 90 - (atan2(y-startY,x-startX)*180/3.14);
-			CGameModel::GetIntanse().lock()->GetSelectedObject()->Rotate(rotation-rot);
+			double rotation = 90 + (atan2(worldY-startY,worldX-startX)*180/3.1417);
+			if(sqrt((worldX - startX) * (worldX - startX) + (worldY - startY) * (worldY - startY)) > 0.2)
+				CGameModel::GetIntanse().lock()->GetSelectedObject()->Rotate(rotation-rot);
 		}
 	}
 }
