@@ -12,6 +12,7 @@ public:
 	void SetState(bool state);
 	bool GetState() const { return m_state; }
 	std::string const& GetText() const { return m_text.GetText(); }
+	void SetText(std::string const& text) { m_text.SetText(text); }
 private:
 	CUIText m_text;
 	bool m_state;

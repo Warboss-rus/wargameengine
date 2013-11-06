@@ -56,8 +56,8 @@ public:
 	void CameraTranslateRight();
 	void CameraTranslateDown();
 	void CameraTranslateUp();
-	void RulerBegin(int x, int y);
-	void RulerEnd(int x, int y);
+	void RulerBegin(double x, double y);
+	void RulerEnd(double x, double y);
 	void RulerHide();
 	void TryMoveSelectedObject(int x, int y);
 	bool UILeftMouseButtonDown(int x, int y);

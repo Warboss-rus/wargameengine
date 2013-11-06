@@ -2,11 +2,9 @@
 #include <GL\glut.h>
 #include <math.h>
 #include <string>
-#include <time.h>
 
 CRuler::CRuler() 
 { 
-	srand(time(NULL));
 	Hide(); 
 }
 

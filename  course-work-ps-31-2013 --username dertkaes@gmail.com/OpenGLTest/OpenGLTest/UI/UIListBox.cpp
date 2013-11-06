@@ -134,3 +134,15 @@ void CUIListBox::DeleteItem(size_t index)
 	if(m_selected == index) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
 }
+
+void CUIListBox::SetText(std::string const& text)
+{
+	for(size_t i = 0; i < m_items.size(); ++i)
+	{
+		if(m_items[i] == text)
+		{
+			m_selected = i;
+			return;
+		}
+	}
+}

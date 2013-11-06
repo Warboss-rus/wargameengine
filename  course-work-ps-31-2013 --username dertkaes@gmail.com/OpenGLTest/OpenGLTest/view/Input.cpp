@@ -21,7 +21,9 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			if(CGameView::GetIntanse().lock()->UILeftMouseButtonDown(x, y)) return;
 			if(m_ruler)
 			{
-				CGameView::GetIntanse().lock()->RulerBegin(x, y);
+				double worldX, worldY;
+				WindowCoordsToWorldCoords(x, y, worldX, worldY);
+				CGameView::GetIntanse().lock()->RulerBegin(worldX, worldY);
 			}
 			else
 			{
@@ -31,7 +33,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				{
 					startX = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetX();
 					startY = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetY();
-					CGameView::GetIntanse().lock()->RulerBegin(x, y);
+					CGameView::GetIntanse().lock()->RulerBegin(startX, startY);
 				}
 				else//selection rectangle
 				{
@@ -153,14 +155,17 @@ void CInput::OnMouseMove(int x, int y)
 	{
 		if(m_ruler)
 		{
-			CGameView::GetIntanse().lock()->RulerEnd(x, y);
+			double worldX, worldY;
+			WindowCoordsToWorldCoords(x, y, worldX, worldY);
+			CGameView::GetIntanse().lock()->RulerEnd(worldX, worldY);
 		}
 		else
 		{
-			if(CGameModel::GetIntanse().lock()->GetSelectedObject())
+			std::shared_ptr<IObject> object = CGameModel::GetIntanse().lock()->GetSelectedObject();
+			if(object)
 			{
 				CGameView::GetIntanse().lock()->TryMoveSelectedObject(x, y);
-				CGameView::GetIntanse().lock()->RulerEnd(x, y);
+				CGameView::GetIntanse().lock()->RulerEnd(object->GetX(), object->GetY());
 			}
 		}
 	}

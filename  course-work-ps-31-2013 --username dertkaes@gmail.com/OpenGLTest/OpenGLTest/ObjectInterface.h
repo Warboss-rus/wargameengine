@@ -20,7 +20,8 @@ public:
 	virtual void HideMesh(std::string const& meshName) = 0;
 	virtual void ShowMesh(std::string const& meshName) = 0;
 	virtual void SetProperty(std::string const& key, std::string const& value) = 0;
-	virtual std::string const& GetProperty(std::string const& key) const = 0;
+	virtual std::string const GetProperty(std::string const& key) const = 0;
 	virtual bool IsSelectable() const = 0;
 	virtual void SetSelectable(bool selectable) = 0;
+	virtual void SetRelocatable(bool relocatable) = 0;
 };

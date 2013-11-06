@@ -147,7 +147,7 @@ void CObjectGroup::SetProperty(std::string const& key, std::string const& value)
 		m_children[i]->SetProperty(key, value);
 	}
 }
-std::string const& CObjectGroup::GetProperty(std::string const& key) const 
+std::string const CObjectGroup::GetProperty(std::string const& key) const 
 {
 	if(m_current < m_children.size())
 	{
@@ -161,5 +161,13 @@ void CObjectGroup::SetSelectable(bool selectable)
 	for(unsigned int i =0; i < m_children.size(); ++i)
 	{
 		m_children[i]->SetSelectable(selectable);
+	}
+}
+
+void CObjectGroup::SetRelocatable(bool relocatable)
+{
+	for(unsigned int i =0; i < m_children.size(); ++i)
+	{
+		m_children[i]->SetRelocatable(relocatable);
 	}
 }

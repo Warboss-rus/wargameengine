@@ -27,11 +27,30 @@ function RedoAction()
 end
 
 function RollDices()
+	math.randomseed(os.time())
 	local panel = UI:Get():GetChild("Panel1")
 	local sides = panel:GetChild("ListBox2"):GetText()
 	local count = panel:GetChild("Edit1"):GetText()
 	local group = panel:GetChild("CheckBox1"):GetState()
-	RollDice(count, sides, group)--Rolls "count" dices with "sides" sides, group them by result if "group" and returns result as a messagebox
+	local result = ""
+	local grouped = {}
+	for i = 1, sides do
+		grouped[i] = 0
+	end
+	for i = 1, count do
+		local rand = math.random(1, sides)
+		if(group) then
+			grouped[rand] = grouped[rand] + 1
+		else
+			result = result .. rand .. " "
+		end
+	end
+	if(group) then
+		for i = 1, sides do
+			result = result .. i .. ": " .. grouped[i] .. "\n"
+		end
+	end
+	MessageBox(result)
 end
 
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))

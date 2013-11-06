@@ -31,6 +31,7 @@ public:
 	virtual void SetTheme(CUITheme const& theme) = 0;
 	virtual CUITheme & GetTheme() = 0;
 	virtual std::string const& GetText() const = 0;
+	virtual void SetText(std::string const& text) = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick)) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;

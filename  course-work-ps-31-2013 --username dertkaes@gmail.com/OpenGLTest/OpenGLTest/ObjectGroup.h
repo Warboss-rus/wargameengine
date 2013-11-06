@@ -27,9 +27,10 @@ public:
 	void SetCurrent(std::shared_ptr<IObject> object);
 	std::shared_ptr<IObject> GetCurrent() const { return m_children[m_current]; }
 	void SetProperty(std::string const& key, std::string const& value);
-	std::string const& GetProperty(std::string const& key) const;
+	std::string const GetProperty(std::string const& key) const;
 	bool IsSelectable() const { return true; }
 	void SetSelectable(bool selectable);
+	void SetRelocatable(bool relocatable);
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

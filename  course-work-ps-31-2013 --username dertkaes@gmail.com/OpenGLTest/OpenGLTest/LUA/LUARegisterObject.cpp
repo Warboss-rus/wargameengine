@@ -148,9 +148,18 @@ int SetProperty(lua_State* L)
 int SetSelectable(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
-        return luaL_error(L, "1 argument expected(meshname)");
+        return luaL_error(L, "1 argument expected(isSelectable)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	object->SetSelectable(CLUAScript::GetArgument<bool>(2));
+	return 0;
+}
+
+int SetRelocatable(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected(isRelocatable)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	object->SetRelocatable(CLUAScript::GetArgument<bool>(2));
 	return 0;
 }
 
@@ -171,6 +180,7 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "GetProperty", GetProperty },
 	{ "SetProperty", SetProperty },
 	{ "SetSelectable", SetSelectable },
+	{ "SetRelocatable", SetRelocatable },
 	{ NULL, NULL }
 };
 

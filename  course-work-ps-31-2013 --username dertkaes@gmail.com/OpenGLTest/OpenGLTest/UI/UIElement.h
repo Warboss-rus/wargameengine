@@ -25,6 +25,7 @@ public:
 	void SetTheme(CUITheme const& theme) { m_theme = theme; }
 	CUITheme & GetTheme() { return m_theme; }
 	std::string const& GetText() const { return ""; }
+	void SetText(std::string const& text) {}
 
 	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick));
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);

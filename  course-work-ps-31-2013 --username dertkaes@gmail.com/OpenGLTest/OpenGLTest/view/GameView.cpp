@@ -228,7 +228,7 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		shared_ptr<IObject> object = model->Get3DObject(i);
-		if(object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY)
+		if(object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY && object->IsSelectable())
 		{
 			group->AddChildren(object);
 		}
@@ -250,7 +250,6 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 			model->SelectObject(std::shared_ptr<IObject>(group));
 		}break;
 	}
-
 }
 
 shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
@@ -273,6 +272,9 @@ shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 			{
 				selectedObject = object;
 				minDistance = distance;
+				m_selectedObjectCapturePoint.x -= selectedObject->GetX();
+				m_selectedObjectCapturePoint.y -= selectedObject->GetY();
+				m_selectedObjectCapturePoint.z -= selectedObject->GetZ();
 			}
 		}
 	}
@@ -282,11 +284,9 @@ shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 void CGameView::SelectObject(int x, int y, bool shiftPressed)
 {
 	std::shared_ptr<IObject> selectedObject = GetNearestObject(x, y);
-	if(selectedObject)
+	if(selectedObject && !selectedObject->IsSelectable())
 	{
-		m_selectedObjectCapturePoint.x -= selectedObject->GetX();
-		m_selectedObjectCapturePoint.y -= selectedObject->GetY();
-		m_selectedObjectCapturePoint.z -= selectedObject->GetZ();
+		return;
 	}
 	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
 	if(CGameModel::IsGroup(object))
@@ -335,18 +335,14 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 	}
 }
 
-void CGameView::RulerBegin(int x, int y)
+void CGameView::RulerBegin(double x, double y)
 {
-	double worldX, worldY;
-	WindowCoordsToWorldCoords(x, y, worldX, worldY);
-	m_ruler.SetBegin(worldX, worldY);
+	m_ruler.SetBegin(x, y);
 }
 
-void CGameView::RulerEnd(int x, int y)
+void CGameView::RulerEnd(double x, double y)
 {
-	double worldX, worldY;
-	WindowCoordsToWorldCoords(x, y, worldX, worldY);
-	m_ruler.SetEnd(worldX, worldY);
+	m_ruler.SetEnd(x, y);
 }
 
 void CGameView::RulerHide()

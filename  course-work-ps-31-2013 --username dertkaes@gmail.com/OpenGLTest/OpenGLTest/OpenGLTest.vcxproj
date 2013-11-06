@@ -80,6 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="3dObject.cpp" />
     <ClCompile Include="controller\CommandCreateObject.cpp" />
     <ClCompile Include="controller\CommandDeleteObject.cpp" />
     <ClCompile Include="controller\CommandHandler.cpp" />

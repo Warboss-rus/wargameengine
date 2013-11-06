@@ -18,6 +18,7 @@ public:
 	std::string GetItem(size_t index) const { return m_items[index]; }
 	void SetSelected(size_t index);
 	int GetHeight() const;
+	void SetText(std::string const& text);
 private:
 	std::vector<std::string> m_items;
 	int m_selected;

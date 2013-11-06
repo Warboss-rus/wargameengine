@@ -116,6 +116,8 @@ CLUAScript::CLUAScript()
     
     static const luaL_Reg lualibs[] = 
     {
+		{"math", luaopen_math },
+		{"os", luaopen_os },
 		{NULL, NULL}
     };
 

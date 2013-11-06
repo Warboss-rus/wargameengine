@@ -121,6 +121,15 @@ int SetVisible(lua_State* L)
 	return 0;
 }
 
+int SetText(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected (text)");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	c->SetText(CLUAScript::GetArgument<char*>(2));
+	return 0;
+}
+
 int GetVisible(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
@@ -189,6 +198,7 @@ static const luaL_Reg UIFuncs[] = {
 	{ "SetVisible", SetVisible },
 	{ "GetVisible", GetVisible },
 	{ "GetText", GetText },
+	{ "SetText", SetText },
 	{ "GetState", GetState },
 	{ "AddItem", AddItem },
 	{ "Set", Set },
