@@ -2,6 +2,7 @@
 #include "ObjectInterface.h"
 #include <string>
 #include <map>
+#include <memory>
 
 class C3DObject : public IObject
 {
@@ -23,7 +24,7 @@ public:
 	std::string const GetProperty(std::string const& key) const;
 	bool IsSelectable() const { return m_isSelectable; }
 	void SetSelectable(bool selectable) { m_isSelectable = selectable; }
-	void SetRelocatable(bool relocatable) { m_relocatable = relocatable; }
+	void SetMovementLimiter(IMoveLimiter * limiter) { m_movelimiter.reset(limiter); }
 private:
 	std::string m_model;
 	double m_x;
@@ -33,5 +34,5 @@ private:
 	std::set<std::string> m_hiddenMeshes;
 	std::map<std::string, std::string> m_properties;
 	bool m_isSelectable;
-	bool m_relocatable;
+	std::shared_ptr<IMoveLimiter> m_movelimiter;
 };

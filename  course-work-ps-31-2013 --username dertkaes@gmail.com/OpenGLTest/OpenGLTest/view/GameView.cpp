@@ -259,7 +259,6 @@ shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	double start[3];
 	double end[3];
-	double instersectCoord[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{

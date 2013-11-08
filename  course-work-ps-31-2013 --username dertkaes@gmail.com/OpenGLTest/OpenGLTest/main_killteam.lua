@@ -1,18 +1,18 @@
-SMs = {}
-CSMs = {}
-SMCount = 10
-CSMCount = 10
+Player1 = {}
+Player2 = {}
+Player1Count = 10
+Player2Count = 10
 
 function Init()
 	for i = 1, 10 do
-		SMs[i] = Object:New("SpaceMarine.obj", 20 + (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, -90)
-		SMs[i]:SetProperty("Owner", "1")
-		SMs[i]:SetSelectable(false)
-		SMs[i]:SetRelocatable(false)
-		CSMs[i] = Object:New("CSM.obj", -20 - (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, 90)
-		CSMs[i]:SetProperty("Owner", "2")
-		CSMs[i]:SetSelectable(false)
-		CSMs[i]:SetRelocatable(false)
+		Player1[i] = Object:New("SpaceMarine.obj", 20 + (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, -90)
+		Player1[i]:SetProperty("Owner", "1")
+		Player1[i]:SetSelectable(true)
+		Player1[i]:SetMoveLimit("rectangle", 15, 15, 30, -15)
+		Player2[i] = Object:New("CSM.obj", -20 - (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, 90)
+		Player2[i]:SetProperty("Owner", "2")
+		Player2[i]:SetSelectable(true)
+		Player2[i]:SetMoveLimit("rectangle", -15, 15, -30, -15)
 	end
 	SetGlobalProperty("Turn", 0)
 	SetGlobalProperty("Player", "2")
@@ -22,13 +22,13 @@ end
 function MovePhase(player)
 	if(player == "1") then
 		for i = 1, 10 do
-			SMs[i]:SetSelectable(true)
-			SMs[i]:SetRelocatable(true)
+			Player1[i]:SetSelectable(true)
+			Player1[i]:SetMoveLimit("circle", Player1[i]:GetX(), Player1[i]:GetY(), 6)
 		end
 	else
 		for i = 1, 10 do
-			CSMs[i]:SetSelectable(true)
-			CSMs[i]:SetRelocatable(true)
+			Player2[i]:SetSelectable(true)
+			Player2[i]:SetMoveLimit("circle", Player2[i]:GetX(), Player2[i]:GetY(), 6)
 		end
 	end
 end
@@ -36,23 +36,23 @@ end
 function ShootingPhase(player)
 	if(player == "1") then
 		for i = 1, 10 do
-			SMs[i]:SetSelectable(true)
-			SMs[i]:SetRelocatable(false)
+			Player1[i]:SetSelectable(true)
+			Player1[i]:SetMoveLimit("static")
 		end
 	else
 		for i = 1, 10 do
-			CSMs[i]:SetSelectable(true)
-			CSMs[i]:SetRelocatable(false)
+			Player2[i]:SetSelectable(true)
+			Player2[i]:SetMoveLimit("static")
 		end
 	end
 end
 
 function EndTurn()
 	for i = 1, 10 do
-		SMs[i]:SetSelectable(false)
-		SMs[i]:SetRelocatable(false)
-		CSMs[i]:SetSelectable(false)
-		CSMs[i]:SetRelocatable(false)
+		Player1[i]:SetSelectable(false)
+		Player1[i]:SetMoveLimit("static")
+		Player2[i]:SetSelectable(false)
+		Player2[i]:SetMoveLimit("static")
 	end
 end
 
@@ -138,6 +138,8 @@ function RedoAction()
 	Redo()
 end
 
+IncludeLibrary("math")
+IncludeLibrary("os")
 CreateSkybox(80, "skybox")
 CreateTable(60, 30, "sand.bmp")
 CameraSetLimits(30, 12, 5, 0.2)

@@ -72,5 +72,5 @@ void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 
 bool CGameModel::IsGroup(std::shared_ptr<IObject> object)
 {
-	return dynamic_cast<CObjectGroup *>(object.get());
+	return dynamic_cast<CObjectGroup *>(object.get()) != NULL;
 }

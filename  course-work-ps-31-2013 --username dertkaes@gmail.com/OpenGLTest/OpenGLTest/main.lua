@@ -53,6 +53,8 @@ function RollDices()
 	MessageBox(result)
 end
 
+IncludeLibrary("math")
+IncludeLibrary("os")
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 CameraSetLimits(15, 6, 5, 0.4)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
@@ -82,18 +84,3 @@ list2:AddItem(6)
 list2:AddItem(3)
 list2:AddItem(12)
 list2:AddItem(20)
---[[Other functions
-Object:Null()--(bool)Checks whenether this instance of object is NULL
-Object:GetModel()--(string)Retrieves model path of this instance of object
-Object:GetX()--(number)Retrieves x coordinate of this instance of object.
-Object:GetY()--(number)Retrieves y coordinate of this instance of object.
-Object:GetZ()--(number)Retrieves z coordinate of this instance of object.
-Object:GetRotation()--(number)Retrieves rotation of this instance of object.
-Object:Move(x, y, z)--()Translates current object by specified coordinates.
-Object:Rotate(rotation)--()Rotates current object by specifed angle
-Object:HideMesh(meshName)--()Hides specified mesh of current object
-Object:ShowMesh(meshName)--()Unhides specified mesh of current object
-MessageBox("It works this way", "Working")--()Show Message box with caption
-MessageBox("Or this")--()Messagebox without caption
-RunScript("script.lua")--()Runs another script file
-ui:Free()--()Frees an UI. UI automaticly frees when deassigned from the window or at program exit]]

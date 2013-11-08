@@ -3,6 +3,8 @@
 #include <set>
 #include "Structs.h"
 
+class IMoveLimiter;
+
 class IObject
 {
 public:
@@ -23,5 +25,5 @@ public:
 	virtual std::string const GetProperty(std::string const& key) const = 0;
 	virtual bool IsSelectable() const = 0;
 	virtual void SetSelectable(bool selectable) = 0;
-	virtual void SetRelocatable(bool relocatable) = 0;
+	virtual void SetMovementLimiter(IMoveLimiter * limiter) = 0;
 };

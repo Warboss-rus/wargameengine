@@ -37,7 +37,7 @@ FaceIndex ParseFaceIndex(std::string const& str)
 	return res;
 }
 
-C3DModel * CObjModelCreator::Create(std::string const& path)
+C3DModel * LoadObjModel(std::string const& path)
 {
 	std::vector<sPoint3> vertices;
 	std::vector<sPoint2> textureCoords;
@@ -58,35 +58,33 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 	std::vector<unsigned int> indexes;
 	CMaterialManager materialManager;
 	std::vector<sMesh> meshes;
-	while(std::getline(iFile, line))
+	while(iFile.good())
 	{
-		if(line.empty() || line[0] == '#')//Empty line or commentary
+		iFile >> type;
+		if(type.empty() || type[0] == '#')//Empty line or commentary
 			continue;
-
-		std::istringstream lineStream(line);
-		lineStream >> type;
 
 		if(type == "v")// Vertex
 		{
-			lineStream >> p3.x;
-			lineStream >> p3.y;
-			lineStream >> p3.z;
+			iFile >> p3.x;
+			iFile >> p3.y;
+			iFile >> p3.z;
 			vertices.push_back(p3);
 		}
 
 		if(type == "vt")// Texture coords
 		{
 			useUVs = true;
-			lineStream >> p2.x;
-			lineStream >> p2.y;
+			iFile >> p2.x;
+			iFile >> p2.y;
 			textureCoords.push_back(p2);
 		}
 		if(type == "vn")// Normals
 		{
 			useNormals = true;
-			lineStream >> p3.x;
-			lineStream >> p3.y;
-			lineStream >> p3.z;
+			iFile >> p3.x;
+			iFile >> p3.y;
+			iFile >> p3.z;
 			normals.push_back(p3);
 		}
 		if(type == "f")// faces
@@ -95,7 +93,7 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 			for(unsigned int i = 0; i < 3; ++i)
 			{
 				std::string index3;
-				lineStream >> index3;
+				iFile >> index3;
 				if(faces.find(index3) != faces.end()) //This vertex/texture coord/normal already exist
 				{
 					indexes.push_back(faces[index3]);
@@ -128,12 +126,12 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 		if(type == "mtllib")//Load materials file
 		{
 			std::string path;
-			lineStream >> path;
+			iFile >> path;
 			materialManager.LoadMTL(path);
 		}
 		if(type == "usemtl")//apply material
 		{
-			lineStream >> mesh.materialName;
+			iFile >> mesh.materialName;
 			mesh.polygonIndex = indexes.size();
 			if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
 			{
@@ -147,8 +145,8 @@ C3DModel * CObjModelCreator::Create(std::string const& path)
 		if(type == "g")//apply material
 		{
 			std::string name;
-			lineStream.get();
-			std::getline(lineStream, name);
+			iFile.get();
+			std::getline(iFile, name);
 			if(!name.empty())
 			{
 				mesh.name = name;

@@ -28,7 +28,7 @@ public:
 	std::shared_ptr<IObject> GetSelectedObject();
 	static bool IsGroup(std::shared_ptr<IObject> object);
 	void SetProperty(std::string const& key, std::string const& value) { m_properties[key] = value; }
-	std::string const& GetProperty(std::string const& key) {
+	std::string const GetProperty(std::string const& key) {
 		if(m_properties.find(key) != m_properties.end())
 			return m_properties.find(key)->second;
 		return "";	}

@@ -109,7 +109,7 @@ void CUIListBox::AddItem(std::string const& str)
 	}
 }
 
-std::string const& CUIListBox::GetText() const
+std::string const CUIListBox::GetText() const
 {
 	return m_items[m_selected];
 }

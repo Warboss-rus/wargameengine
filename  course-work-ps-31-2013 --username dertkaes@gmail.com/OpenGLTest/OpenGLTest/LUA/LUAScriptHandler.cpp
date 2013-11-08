@@ -2,6 +2,11 @@
 
 lua_State* CLUAScript::m_lua_state;
 
+CLUAScript::CLUAScript()
+{
+	m_lua_state = luaL_newstate();
+}
+
 CLUAScript::~CLUAScript()
 {
 	lua_close(m_lua_state);
@@ -39,7 +44,7 @@ char* CLUAScript::GetArgument<char*>(int index)
 template<>
 bool CLUAScript::GetArgument<bool>(int index)
 {
-	return lua_toboolean(m_lua_state,index);
+	return lua_toboolean(m_lua_state,index) != 0;
 }
 
 template<>
@@ -110,24 +115,6 @@ void CLUAScript::RegisterClass(const luaL_Reg funcs[], std::string const& classN
 	lua_setglobal(m_lua_state, className.c_str());
 }
 
-CLUAScript::CLUAScript()
-{
-	m_lua_state = luaL_newstate();
-    
-    static const luaL_Reg lualibs[] = 
-    {
-		{"math", luaopen_math },
-		{"os", luaopen_os },
-		{NULL, NULL}
-    };
-
-    for(const luaL_Reg *lib = lualibs; lib->func != NULL; lib++)
-    {
-        luaL_requiref(m_lua_state, lib->name, lib->func, 1);
-        lua_settop(m_lua_state, 0);
-    }
-}
-
 void CLUAScript::CallFunction(std::string const& funcName)
 {
 	lua_getglobal(m_lua_state, funcName.c_str());
@@ -166,4 +153,31 @@ int CLUAScript::NewInstanceClass(void* instance, std::string const& className)
 	lua_setfield(m_lua_state, -2, "__self"); 
     
 	return 1; 
+}
+
+void CLUAScript::IncludeLibrary(std::string const& libName)
+{
+	static const luaL_Reg lualibs[] = 
+    {
+		{"base", luaopen_base },
+		{"bit32", luaopen_bit32 },
+		{"coroutine", luaopen_coroutine },
+		{"debug", luaopen_debug },
+		{"io", luaopen_io },
+		{"math", luaopen_math },
+		{"os", luaopen_os },
+		{"package", luaopen_package },
+		{"string", luaopen_string },
+		{"table", luaopen_table },
+		{NULL, NULL}
+    };
+
+    for(const luaL_Reg *lib = lualibs; lib->func != NULL; lib++)
+    {
+        if(libName == lib->name)
+		{
+			luaL_requiref(m_lua_state, lib->name, lib->func, 1);
+			lua_settop(m_lua_state, 0);
+		}
+    }
 }

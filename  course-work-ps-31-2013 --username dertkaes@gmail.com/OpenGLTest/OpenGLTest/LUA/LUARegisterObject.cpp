@@ -2,6 +2,7 @@
 #include "..\controller\CommandHandler.h"
 #include "LUAScriptHandler.h"
 #include "..\3dObject.h"
+#include "..\MovementLimiter.h"
 
 int NewObject(lua_State* L)
 {
@@ -154,12 +155,44 @@ int SetSelectable(lua_State* L)
 	return 0;
 }
 
-int SetRelocatable(lua_State* L)
+int SetMoveLimit(lua_State* L)
 {
-	if (CLUAScript::GetArgumentCount() != 2)
-        return luaL_error(L, "1 argument expected(isRelocatable)");
+	if (CLUAScript::GetArgumentCount() < 2)
+        return luaL_error(L, "at least 1 argument expected(moveLimiterType)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	object->SetRelocatable(CLUAScript::GetArgument<bool>(2));
+	std::string limiterType = CLUAScript::GetArgument<const char*>(2);
+	if(limiterType == "free")
+	{
+		/*if (CLUAScript::GetArgumentCount() != 2)
+			return luaL_error(L, "1 argument expected(moveLimiterType)");*/
+		object->SetMovementLimiter(NULL);
+	}
+	if(limiterType == "static")
+	{
+		/*if (CLUAScript::GetArgumentCount() != 2)
+			return luaL_error(L, "1 argument expected(moveLimiterType)");*/
+		object->SetMovementLimiter(new CMoveLimiterStatic());
+	}
+	if(limiterType == "circle")
+	{
+		/*if (CLUAScript::GetArgumentCount() != 5)
+			return luaL_error(L, "4 argument expected(moveLimiterType, centerX, centerY, radius)");*/
+		double centerX = CLUAScript::GetArgument<double>(3);
+		double centerY = CLUAScript::GetArgument<double>(4);
+		double radius = CLUAScript::GetArgument<double>(5);
+		object->SetMovementLimiter(new CMoveLimiterCircle(centerX, centerY, radius));
+	}
+	if(limiterType == "rectangle")
+	{
+		int n =CLUAScript::GetArgumentCount();
+		/*if (CLUAScript::GetArgumentCount() != 6)
+			return luaL_error(L, "5 argument expected(moveLimiterType, x1, y1, x2, y2)");*/
+		double x1 = CLUAScript::GetArgument<double>(3);
+		double y1 = CLUAScript::GetArgument<double>(4);
+		double x2 = CLUAScript::GetArgument<double>(5);
+		double y2 = CLUAScript::GetArgument<double>(6);
+		object->SetMovementLimiter(new CMoveLimiterRectangle(x1, y1, x2, y2));
+	}
 	return 0;
 }
 
@@ -180,7 +213,7 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "GetProperty", GetProperty },
 	{ "SetProperty", SetProperty },
 	{ "SetSelectable", SetSelectable },
-	{ "SetRelocatable", SetRelocatable },
+	{ "SetMoveLimit", SetMoveLimit },
 	{ NULL, NULL }
 };
 

@@ -112,13 +112,7 @@ unsigned char * LoadPNGTexture(std::string const& path, unsigned int & width, un
 	data = new unsigned char [imageSize];
 	for(unsigned long y = 0; y < height; ++y)
 	{
-		for(unsigned long x = 0; x < width; ++x)
-		{
-			for(unsigned int k = 0; k < 4; k++)
-			{
-				data[(y * width + x) * 4 + k] = uncompressedData[((height - y - 1) * width + x) * 4 + k];
-			}
-		}
+		memcpy(&data[y * width * 4], &uncompressedData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
 	}
 	return data;
 }

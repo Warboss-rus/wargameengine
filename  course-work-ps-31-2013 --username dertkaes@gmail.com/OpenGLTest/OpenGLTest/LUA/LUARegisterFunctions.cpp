@@ -101,6 +101,15 @@ int SetGlobalProperty(lua_State* L)
 	return 0;
 }
 
+int IncludeLibrary(lua_State* L)
+{
+	if(CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (libName)");
+	char* lib = CLUAScript::GetArgument<char*>(1);
+	CLUAScript::IncludeLibrary(lib);
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -113,4 +122,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(RunScript, "RunScript");
 	lua.RegisterConstant(GetGlobalProperty, "GetGlobalProperty");
 	lua.RegisterConstant(SetGlobalProperty, "SetGlobalProperty");
+	lua.RegisterConstant(IncludeLibrary, "IncludeLibrary");
 }

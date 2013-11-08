@@ -164,10 +164,10 @@ void CObjectGroup::SetSelectable(bool selectable)
 	}
 }
 
-void CObjectGroup::SetRelocatable(bool relocatable)
+void CObjectGroup::SetMovementLimiter(IMoveLimiter * limiter)
 {
 	for(unsigned int i =0; i < m_children.size(); ++i)
 	{
-		m_children[i]->SetRelocatable(relocatable);
+		m_children[i]->SetMovementLimiter(limiter);
 	}
 }

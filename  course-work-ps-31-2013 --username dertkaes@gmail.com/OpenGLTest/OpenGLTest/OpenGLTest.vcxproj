@@ -129,6 +129,7 @@
     <ClInclude Include="LUA\LUARegisterUI.h" />
     <ClInclude Include="LUA\LUAScriptHandler.h" />
     <ClInclude Include="model\GameModel.h" />
+    <ClInclude Include="MovementLimiter.h" />
     <ClInclude Include="ObjectGroup.h" />
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />

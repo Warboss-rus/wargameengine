@@ -19,7 +19,7 @@ void CTable::Draw() const
 	texManager->SetTexture("");
 }
 
-bool CTable::isCoordsOnTable(int worldX, int worldY) const
+bool CTable::isCoordsOnTable(double worldX, double worldY) const
 {
 	return (worldX < GetWidth() / 2 && worldX > -GetWidth() / 2 
 	   && worldY < GetHeight() / 2 && worldY > -GetHeight() / 2);

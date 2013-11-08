@@ -20,6 +20,7 @@ public:
 	static void CallFunction(std::string const& funcName);
 	static void * GetClassInstance(std::string const& className);
 	static int NewInstanceClass(void* instance, std::string const& className);
+	static void IncludeLibrary(std::string const& libName);
 private:
 	static lua_State* m_lua_state;
 };

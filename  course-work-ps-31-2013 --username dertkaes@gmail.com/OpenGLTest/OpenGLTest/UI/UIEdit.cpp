@@ -138,7 +138,7 @@ bool CUIEdit::LeftMouseButtonUp(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		int pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		size_t pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
 		m_pos = (pos > m_text.GetText().size())?m_text.GetText().size():pos;
 		SetFocus();
 		return true;
@@ -156,7 +156,7 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		int pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		size_t pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
 		m_beginSelection = (pos > m_text.GetText().size())?m_text.GetText().size():pos;
 		m_pos = m_beginSelection;
 		SetFocus();

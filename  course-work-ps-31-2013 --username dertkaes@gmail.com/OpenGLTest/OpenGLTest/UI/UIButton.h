@@ -9,7 +9,7 @@ public:
 	void Draw() const;
 	bool LeftMouseButtonUp(int x, int y);
 	bool LeftMouseButtonDown(int x, int y);
-	std::string const& GetText() const { return m_text.GetText(); }
+	std::string const GetText() const { return m_text.GetText(); }
 	void SetText(std::string const& text) { m_text.SetText(text); }
 private:
 	CUIText m_text;

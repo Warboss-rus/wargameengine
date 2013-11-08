@@ -30,7 +30,7 @@ public:
 	std::string const GetProperty(std::string const& key) const;
 	bool IsSelectable() const { return true; }
 	void SetSelectable(bool selectable);
-	void SetRelocatable(bool relocatable);
+	void SetMovementLimiter(IMoveLimiter * limiter);
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

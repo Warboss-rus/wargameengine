@@ -2,21 +2,23 @@
 #include "OBJModelFactory.h"
 #include <string>
 
-void CModelManager::DrawModel(std::string const& path, std::set<std::string> const& hideMeshes)
+void CModelManager::LoadIfNotExist(std::string const& path)
 {
 	if(m_models.find(path) == m_models.end())
 	{
-		m_models[path] = CObjModelCreator::Create(path);
+		m_models[path] = LoadObjModel(path);
 	}
+}
+
+void CModelManager::DrawModel(std::string const& path, std::set<std::string> const& hideMeshes)
+{
+	LoadIfNotExist(path);
 	m_models[path]->Draw(hideMeshes);
 }
 
 std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path)
 {
-	if(m_models.find(path) == m_models.end())
-	{
-		m_models[path] = CObjModelCreator::Create(path);
-	}
+	LoadIfNotExist(path);
 	return m_models[path]->GetBounding();
 }
 

@@ -13,6 +13,7 @@
 class IUIElement
 {
 public:
+	virtual ~IUIElement() {}
 	virtual void Draw() const = 0;
 	virtual void AddChild(std::string const& name, std::shared_ptr<IUIElement> element) = 0;
 	virtual IUIElement* GetChildByName(std::string const& name) = 0;
@@ -30,7 +31,7 @@ public:
 	virtual bool IsFocused(const IUIElement * child) const = 0;
 	virtual void SetTheme(CUITheme const& theme) = 0;
 	virtual CUITheme & GetTheme() = 0;
-	virtual std::string const& GetText() const = 0;
+	virtual std::string const GetText() const = 0;
 	virtual void SetText(std::string const& text) = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick)) = 0;

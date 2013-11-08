@@ -1,8 +1,4 @@
 #include <string>
 #include "3dModel.h"
 
-class CObjModelCreator
-{
-public:
-	static C3DModel * Create(std::string const& path);
-};
+C3DModel * LoadObjModel(std::string const& path);
