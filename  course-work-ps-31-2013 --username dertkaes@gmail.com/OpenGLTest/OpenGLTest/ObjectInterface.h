@@ -2,8 +2,7 @@
 #include <string>
 #include <set>
 #include "Structs.h"
-
-class IMoveLimiter;
+#include "MovementLimiter.h"
 
 class IObject
 {

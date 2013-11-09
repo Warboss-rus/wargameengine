@@ -332,6 +332,7 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 			m_gameModel.lock()->SelectObject(selectedObject);
 		}
 	}
+	if(m_selectionCallback) m_selectionCallback();
 }
 
 void CGameView::RulerBegin(double x, double y)
@@ -392,4 +393,9 @@ void CGameView::SetUI(IUIElement * ui)
 IUIElement * CGameView::GetUI() const
 {
 	return m_ui.get();
+}
+
+void CGameView::SetSelectionCallback(callback(onSelect))
+{
+	m_selectionCallback = onSelect;
 }

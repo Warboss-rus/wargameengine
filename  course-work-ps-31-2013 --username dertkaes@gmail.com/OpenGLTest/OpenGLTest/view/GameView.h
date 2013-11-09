@@ -11,6 +11,13 @@
 #include "..\Ruler.h"
 #include "..\UI\UIElement.h"
 #include "..\LUA\LUAScriptHandler.h"
+#define CPP11CALLBACK
+#ifdef CPP11CALLBACK
+#include <functional>
+#define callback(x) std::function<void()>(x)
+#else
+#define callback(x) void(*x)()
+#endif
 
 class CGameView
 {
@@ -32,6 +39,8 @@ private:
 	CGameView(CGameView const&){};
 	CGameView& operator=(const CGameView&){};
 	void DrawUI() const;
+
+	callback(m_selectionCallback);
 public:
 	static std::weak_ptr<CGameView> GetIntanse();
 	void Update();
@@ -64,6 +73,8 @@ public:
 	bool UILeftMouseButtonUp(int x, int y);
 	bool UIKeyPress(unsigned char key);
 	bool UISpecialKeyPress(int key);
+
+	void SetSelectionCallback(callback(onSelect));
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

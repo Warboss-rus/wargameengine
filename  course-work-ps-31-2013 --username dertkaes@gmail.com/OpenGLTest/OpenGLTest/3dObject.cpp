@@ -1,29 +1,28 @@
 #include "3dObject.h"
-#include "MovementLimiter.h"
 
 C3DObject::C3DObject(std::string const& model, double x, double y, double rotation)
 	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation)  {}
 
 void C3DObject::Move(double x, double y, double z) 
 { 
-	if(m_movelimiter && !m_movelimiter->CheckPosition(m_x + x, m_y + y, m_z + z, m_rotation)) return;
 	m_x += x; 
 	m_y += y; 
 	m_z += z; 
+	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
 }
 
 void C3DObject::SetCoords(double x, double y, double z) 
 { 
-	if(m_movelimiter && !m_movelimiter->CheckPosition(x, y, z, m_rotation)) return;
 	m_x = x; 
 	m_y = y; 
-	m_z = z; 
+	m_z = z;
+	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
 }
 
 void C3DObject::Rotate(double rotation) 
 { 
-	if(m_movelimiter && !m_movelimiter->CheckPosition(m_x, m_y, m_z, fmod(m_rotation + rotation + 360.0, 360))) return;
 	m_rotation = fmod(m_rotation + rotation + 360.0, 360); 
+	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
 }
 
 void C3DObject::ShowMesh(std::string const& meshName) 

@@ -91,6 +91,7 @@
     <ClCompile Include="LUA\LUARegisterUI.cpp" />
     <ClCompile Include="LUA\LUAScriptHandler.cpp" />
     <ClCompile Include="model\GameModel.cpp" />
+    <ClCompile Include="MovementLimiter.cpp" />
     <ClCompile Include="ObjectGroup.cpp" />
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />

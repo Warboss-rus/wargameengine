@@ -2,7 +2,6 @@
 #include "..\controller\CommandHandler.h"
 #include "LUAScriptHandler.h"
 #include "..\3dObject.h"
-#include "..\MovementLimiter.h"
 
 int NewObject(lua_State* L)
 {
@@ -163,20 +162,20 @@ int SetMoveLimit(lua_State* L)
 	std::string limiterType = CLUAScript::GetArgument<const char*>(2);
 	if(limiterType == "free")
 	{
-		/*if (CLUAScript::GetArgumentCount() != 2)
-			return luaL_error(L, "1 argument expected(moveLimiterType)");*/
+		if (CLUAScript::GetArgumentCount() != 3)//I have no idea why arguments are +1
+			return luaL_error(L, "1 argument expected(moveLimiterType)");
 		object->SetMovementLimiter(NULL);
 	}
 	if(limiterType == "static")
 	{
-		/*if (CLUAScript::GetArgumentCount() != 2)
-			return luaL_error(L, "1 argument expected(moveLimiterType)");*/
-		object->SetMovementLimiter(new CMoveLimiterStatic());
+		if (CLUAScript::GetArgumentCount() != 3)
+			return luaL_error(L, "1 argument expected(moveLimiterType)");
+		object->SetMovementLimiter(new CMoveLimiterStatic(object->GetX(), object->GetY(), object->GetZ(), object->GetRotation()));
 	}
 	if(limiterType == "circle")
 	{
-		/*if (CLUAScript::GetArgumentCount() != 5)
-			return luaL_error(L, "4 argument expected(moveLimiterType, centerX, centerY, radius)");*/
+		if (CLUAScript::GetArgumentCount() != 6)
+			return luaL_error(L, "4 argument expected(moveLimiterType, centerX, centerY, radius)");
 		double centerX = CLUAScript::GetArgument<double>(3);
 		double centerY = CLUAScript::GetArgument<double>(4);
 		double radius = CLUAScript::GetArgument<double>(5);
@@ -185,14 +184,23 @@ int SetMoveLimit(lua_State* L)
 	if(limiterType == "rectangle")
 	{
 		int n =CLUAScript::GetArgumentCount();
-		/*if (CLUAScript::GetArgumentCount() != 6)
-			return luaL_error(L, "5 argument expected(moveLimiterType, x1, y1, x2, y2)");*/
+		if (CLUAScript::GetArgumentCount() != 7)
+			return luaL_error(L, "5 argument expected(moveLimiterType, x1, y1, x2, y2)");
 		double x1 = CLUAScript::GetArgument<double>(3);
 		double y1 = CLUAScript::GetArgument<double>(4);
 		double x2 = CLUAScript::GetArgument<double>(5);
 		double y2 = CLUAScript::GetArgument<double>(6);
 		object->SetMovementLimiter(new CMoveLimiterRectangle(x1, y1, x2, y2));
 	}
+	return 0;
+}
+
+int SelectNull(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+        return luaL_error(L, "no argument expected");
+	std::shared_ptr<IObject> object;
+	CGameModel::GetIntanse().lock()->SelectObject(object);
 	return 0;
 }
 
@@ -214,6 +222,7 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "SetProperty", SetProperty },
 	{ "SetSelectable", SetSelectable },
 	{ "SetMoveLimit", SetMoveLimit },
+	{ "SelectNull", SelectNull },
 	{ NULL, NULL }
 };
 
