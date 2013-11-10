@@ -54,6 +54,7 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 
 bool CUIElement::LeftMouseButtonDown(int x, int y)
 {
+	if(!m_visible) return false;
 	if(m_focused && m_focused->LeftMouseButtonDown(x - m_x, y - m_y))
 		return true;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
@@ -68,6 +69,7 @@ bool CUIElement::LeftMouseButtonDown(int x, int y)
 
 bool CUIElement::LeftMouseButtonUp(int x, int y)
 {
+	if(!m_visible) return false;
 	if(m_focused && m_focused->LeftMouseButtonUp(x - m_x, y - m_y))
 		return true;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
@@ -83,6 +85,7 @@ bool CUIElement::LeftMouseButtonUp(int x, int y)
 
 bool CUIElement::OnKeyPress(unsigned char key)
 {
+	if(!m_visible) return false;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
 		if (i->second->OnKeyPress(key))
@@ -95,6 +98,7 @@ bool CUIElement::OnKeyPress(unsigned char key)
 
 bool CUIElement::OnSpecialKeyPress(int key)
 {
+	if(!m_visible) return false;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
 		if (i->second->OnSpecialKeyPress(key))

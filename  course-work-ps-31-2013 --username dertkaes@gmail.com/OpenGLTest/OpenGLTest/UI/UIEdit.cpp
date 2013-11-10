@@ -52,6 +52,7 @@ void CUIEdit::Draw() const
 
 bool CUIEdit::OnKeyPress(unsigned char key)
 {
+	if(!m_visible) return false;
 	if(CUIElement::OnKeyPress(key)) 
 		return true;
 	if(!IsFocused(NULL))
@@ -98,6 +99,7 @@ bool CUIEdit::OnKeyPress(unsigned char key)
 
 bool CUIEdit::OnSpecialKeyPress(int key)
 {
+	if(!m_visible) return false;
 	if(CUIElement::OnSpecialKeyPress(key)) 
 		return true;
 	if(!IsFocused(NULL))
@@ -134,6 +136,7 @@ bool CUIEdit::OnSpecialKeyPress(int key)
 
 bool CUIEdit::LeftMouseButtonUp(int x, int y)
 {
+	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonUp(x, y))
 		return true;
 	if(PointIsOnElement(x, y))
@@ -152,6 +155,7 @@ bool CUIEdit::LeftMouseButtonUp(int x, int y)
 
 bool CUIEdit::LeftMouseButtonDown(int x, int y)
 {
+	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonDown(x, y))
 		return true;
 	if(PointIsOnElement(x, y))

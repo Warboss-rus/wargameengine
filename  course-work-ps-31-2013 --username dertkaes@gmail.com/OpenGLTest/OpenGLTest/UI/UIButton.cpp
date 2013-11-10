@@ -27,6 +27,7 @@ void CUIButton::Draw() const
 
 bool CUIButton::LeftMouseButtonUp(int x, int y)
 {
+	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonUp(x, y))
 	{
 		m_isPressed = false;
@@ -45,6 +46,7 @@ bool CUIButton::LeftMouseButtonUp(int x, int y)
 
 bool CUIButton::LeftMouseButtonDown(int x, int y)
 {
+	if(!m_visible) return false;
 	if (CUIElement::LeftMouseButtonDown(x, y))
 	{
 		return true;

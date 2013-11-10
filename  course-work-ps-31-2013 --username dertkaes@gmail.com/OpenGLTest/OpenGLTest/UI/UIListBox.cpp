@@ -60,6 +60,7 @@ void CUIListBox::Draw() const
 
 bool CUIListBox::LeftMouseButtonDown(int x, int y)
 {
+	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonUp(x, y))
 		return true;
 	if(PointIsOnElement(x, y))
@@ -72,6 +73,7 @@ bool CUIListBox::LeftMouseButtonDown(int x, int y)
 
 bool CUIListBox::LeftMouseButtonUp(int x, int y)
 {
+	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonUp(x, y))
 	{
 		m_pressed = false;

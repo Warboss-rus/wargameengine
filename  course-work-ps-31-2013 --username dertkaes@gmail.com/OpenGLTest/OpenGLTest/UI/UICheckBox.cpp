@@ -27,6 +27,7 @@ void CUICheckBox::Draw() const
 
 bool CUICheckBox::LeftMouseButtonUp(int x, int y)
 {
+	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonUp(x, y))
 	{
 		m_pressed = false;
@@ -44,6 +45,7 @@ bool CUICheckBox::LeftMouseButtonUp(int x, int y)
 
 bool CUICheckBox::LeftMouseButtonDown(int x, int y)
 {
+	if(!m_visible) return false;
 	if (CUIElement::LeftMouseButtonDown(x, y))
 	{
 		return true;
