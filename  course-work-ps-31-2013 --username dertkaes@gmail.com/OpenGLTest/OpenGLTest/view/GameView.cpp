@@ -109,7 +109,7 @@ void CGameView::DrawBoundingBox()
 	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
 	if(object)
 	{
-		if (CGameModel::IsGroup(object))
+		if (CGameModel::IsGroup(object.get()))
 		{
 			CObjectGroup * group = (CObjectGroup *)object.get();
 			for(unsigned int i = 0; i < group->GetCount(); ++i)
@@ -250,6 +250,7 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 			model->SelectObject(std::shared_ptr<IObject>(group));
 		}break;
 	}
+	if(m_selectionCallback) m_selectionCallback();
 }
 
 shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
@@ -288,7 +289,7 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 		return;
 	}
 	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
-	if(CGameModel::IsGroup(object))
+	if(CGameModel::IsGroup(object.get()))
 	{
 		CObjectGroup * group = (CObjectGroup *)object.get();
 		if(shiftPressed && selectedObject != NULL)

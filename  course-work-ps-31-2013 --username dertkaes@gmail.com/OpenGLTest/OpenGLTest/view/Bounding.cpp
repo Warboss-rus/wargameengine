@@ -13,9 +13,19 @@ CBoundingBox::CBoundingBox(double min[3], double max[3])
 void RotateScaleTranslate(double & x, double & y, double & z, double angle, double scale, double transX, double transY, double transZ)
 {
 	angle *= 3.1417 / 180;
-	//double newx = x * cos(angle) - y * sin(angle);//rotate
-	//y = x * sin(angle) + y * cos(angle);
-	//x = newx;
+	double newx = x * cos(angle) - y * sin(angle);//rotate
+	y = x * sin(angle) + y * cos(angle);
+	x = newx;
+	x *= scale;//scale
+	y *= scale;
+	z *= scale;
+	x += transX;//translate
+	y += transY;
+	z += transZ;
+}
+
+void RotateScaleTranslate2(double & x, double & y, double & z, double angle, double scale, double transX, double transY, double transZ)
+{
 	x *= scale;//scale
 	y *= scale;
 	z *= scale;
@@ -28,8 +38,8 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, do
 {
 	double minB[3] = {m_min[0], m_min[1], m_min[2]};
 	double maxB[3] = {m_max[0], m_max[1], m_max[2]};
-	RotateScaleTranslate(minB[0], minB[1], minB[2], rotation, m_scale, x, y, z);
-	RotateScaleTranslate(maxB[0], maxB[1], maxB[2], rotation, m_scale, x, y, z);
+	RotateScaleTranslate2(minB[0], minB[1], minB[2], rotation, m_scale, x, y, z);
+	RotateScaleTranslate2(maxB[0], maxB[1], maxB[2], rotation, m_scale, x, y, z);
 	double coord[3];
 	char inside = true;
 	char quadrant[3];
@@ -92,38 +102,51 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double dir[3], double x, do
 
 void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 {
-	double box[6] = {m_min[0], m_min[1], m_min[2], m_max[0], m_max[1], m_max[2]};
+	double box[24] = {m_min[0], m_min[1], m_min[2],
+		m_min[0], m_max[1], m_min[2], 
+		m_max[0], m_max[1], m_min[2], 
+		m_max[0], m_min[1], m_min[2],
+		m_min[0], m_min[1], m_max[2], 
+		m_min[0], m_max[1], m_max[2], 
+		m_max[0], m_max[1], m_max[2], 
+		m_max[0], m_min[1], m_max[2]};
 	RotateScaleTranslate(box[0], box[1], box[2], rotation, m_scale, x, y, z);
 	RotateScaleTranslate(box[3], box[4], box[5], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(box[6], box[7], box[8], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(box[9], box[10], box[11], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(box[12], box[13], box[14], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(box[15], box[16], box[17], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(box[18], box[19], box[20], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(box[21], box[22], box[23], rotation, m_scale, x, y, z);
 	glPushMatrix();
 	glColor3d(0.0, 0.0, 255.0);
 	//Left
 	glBegin(GL_LINE_LOOP);
-	glVertex3d(box[3], box[1], box[2]);
-	glVertex3d(box[3], box[4], box[2]);
-	glVertex3d(box[3], box[4], box[5]);
-	glVertex3d(box[3], box[1], box[5]);
+	glVertex3d(box[9], box[10], box[11]);
+	glVertex3d(box[6], box[7], box[8]);
+	glVertex3d(box[18], box[19], box[20]);
+	glVertex3d(box[21], box[22], box[23]);
 	glEnd();
 	//Right
 	glBegin(GL_LINE_LOOP);
 	glVertex3d(box[0], box[1], box[2]);
-	glVertex3d(box[0], box[4], box[2]);
-	glVertex3d(box[0], box[4], box[5]);
-	glVertex3d(box[0], box[1], box[5]);
+	glVertex3d(box[3], box[4], box[5]);
+	glVertex3d(box[15], box[16], box[17]);
+	glVertex3d(box[12], box[13], box[14]);
 	glEnd();
 	//Front
 	glBegin(GL_LINE_LOOP);
 	glVertex3d(box[0], box[1], box[2]);
-	glVertex3d(box[3], box[1], box[2]);
-	glVertex3d(box[3], box[1], box[5]);
-	glVertex3d(box[0], box[1], box[5]);
+	glVertex3d(box[9], box[10], box[11]);
+	glVertex3d(box[21], box[22], box[23]);
+	glVertex3d(box[12], box[13], box[14]);
 	glEnd();
 	//Back
 	glBegin(GL_LINE_LOOP);
-	glVertex3d(box[0], box[4], box[2]);
-	glVertex3d(box[3], box[4], box[2]);
 	glVertex3d(box[3], box[4], box[5]);
-	glVertex3d(box[0], box[4], box[5]);
+	glVertex3d(box[6], box[7], box[8]);
+	glVertex3d(box[18], box[19], box[20]);
+	glVertex3d(box[15], box[16], box[17]);
 	glEnd();
 	glColor3d(255.0, 255.0, 255.0);
 	glPopMatrix();

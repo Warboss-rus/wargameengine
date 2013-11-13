@@ -1,7 +1,5 @@
 Player1 = {}
 Player2 = {}
-Player1Count = 10
-Player2Count = 10
 hunter = nil
 
 function SetInitParamters(unit)
@@ -43,12 +41,14 @@ function IsLockedInCombat(unit)
 	local owner = unit:GetProperty("Owner")
 	local x = unit:GetX()
 	local y = unit:GetY()
-	for i=1, 10 do
-		if(owner == "1") then
+	if(owner == "1") then
+		for i=1, #Player2 do
 			if(math.sqrt((x - Player2[i]:GetX()) * (x - Player2[i]:GetX()) + (y - Player2[i]:GetY()) * (y - Player2[i]:GetY())) < 3) then
 				return true
 			end
-		else
+		end
+	else
+		for i=1, #Player1 do
 			if(math.sqrt((x - Player1[i]:GetX()) * (x - Player1[i]:GetX()) + (y - Player1[i]:GetY()) * (y - Player1[i]:GetY())) < 3) then
 				return true
 			end
@@ -59,14 +59,14 @@ end
 
 function MovePhase(player)
 	if(player == "1") then
-		for i = 1, 10 do
+		for i=1, #Player1 do
 			Player1[i]:SetSelectable(true)
 			if(not IsLockedInCombat(Player1[i])) then
 				Player1[i]:SetMoveLimit("circle", Player1[i]:GetX(), Player1[i]:GetY(), 6)
 			end
 		end
 	else
-		for i = 1, 10 do
+		for i=1, #Player2 do
 			Player2[i]:SetSelectable(true)
 			if(not IsLockedInCombat(Player2[i])) then
 				Player2[i]:SetMoveLimit("circle", Player2[i]:GetX(), Player2[i]:GetY(), 6)
@@ -79,13 +79,13 @@ function ShootingPhase(player)
 	UI:Get():GetChild("Button5"):SetVisible(true)
 	UI:Get():GetChild("Button6"):SetVisible(true)
 	if(player == "1") then
-		for i = 1, 10 do
+		for i=1, #Player1 do
 			Player1[i]:SetSelectable(true)
 			Player1[i]:SetMoveLimit("static")
 			Player1[i]:SetProperty("Shooted", "0")
 		end
 	else
-		for i = 1, 10 do
+		for i=1, #Player2 do
 			Player2[i]:SetSelectable(true)
 			Player2[i]:SetMoveLimit("static")
 			Player2[i]:SetProperty("Shooted", "0")
@@ -95,12 +95,12 @@ end
 
 function MeleePhase(player)
 	if(player == "1") then
-		for i = 1, 10 do
+		for i=1, #Player1 do
 			Player1[i]:SetProperty("StrikedAtMelee", "0")
 			Player1[i]:SetMoveLimit("static")
 		end
 	else
-		for i = 1, 10 do
+		for i=1, #Player2 do
 			Player2[i]:SetProperty("StrikedAtMelee", "0")
 			Player2[i]:SetMoveLimit("static")
 		end
@@ -108,9 +108,12 @@ function MeleePhase(player)
 end
 
 function EndTurn()
-	for i = 1, 10 do
+	Object:SelectNull()
+	for i=1, #Player1 do
 		Player1[i]:SetSelectable(false)
 		Player1[i]:SetMoveLimit("static")
+	end
+	for i=1, #Player2 do
 		Player2[i]:SetSelectable(false)
 		Player2[i]:SetMoveLimit("static")
 	end
@@ -142,10 +145,12 @@ end
 function CancelEnemySelection()
 	hunter = nil;
 	local owner = hunter:GetProperty("Owner")
-	for i=1, 10 do
-		if(owner == "1") then
+	if(owner == "1") then
+		for i=1, #Player2 do
 			Player2[i]:SetSelectable(false)
-		else
+		end
+	else
+		for i=1, #Player1 do
 			Player1[i]:SetSelectable(false)
 		end
 	end
@@ -160,6 +165,27 @@ function GetToWound(S, T)
 		result = 6
 	end
 	return result
+end
+
+function RemoveObject(prey)
+	if(prey:GetProperty("Owner") == "2") then
+		for i=1, #Player2 do
+			if(Player2[i]:Equals(prey)) then
+				table.remove(Player2, i)
+				prey:Delete()
+				return
+			end
+		end
+	else
+		for i=1, #Player1 do
+			if(Player1[i]:Equals(prey)) then
+				table.remove(Player1, i)
+					prey:Delete()
+				return
+			end
+		end
+	end
+	prey:Delete()
 end
 
 function Fire()
@@ -181,10 +207,12 @@ function Fire()
 	end
 	MessageBox("Choose an enemy to shoot at or choose an ally model to cancel shooting")
 	local owner = hunter:GetProperty("Owner")
-	for i=1, 10 do
-		if(owner == "1") then
+	if(owner == "1") then
+		for i=1, #Player2 do
 			Player2[i]:SetSelectable(true)
-		else
+		end
+	else
+		for i=1, #Player1 do
 			Player1[i]:SetSelectable(true)
 		end
 	end
@@ -252,17 +280,18 @@ function Fire2()
 	else
 		result = result .. "\n Saves are ignored by weapon AP"
 	end
+	CancelEnemySelection()
+	Object:SelectNull()
+	OnSelection()
 	result = result .. "\nTotal " .. unsaved .. " unsaved wounds. "
 	if(unsaved > 0) then
 		result = result .. "Enemy dies"
-		prey:Delete()
+		RemoveObject(prey)
 	else
 		result = result .. "Enemy still alive"
 	end
 	hunter:SetProperty("Shooted", "1")
-	Object:SelectNull()
 	MessageBox(result)
-	CancelEnemySelection()
 end
 
 function Strike()
@@ -301,7 +330,7 @@ function Strike2()
 		return
 	end
 	local range = math.sqrt((hunter:GetX() - prey:GetX()) * (hunter:GetX() - prey:GetX()) + (hunter:GetY() - prey:GetY()) * (hunter:GetY() - prey:GetY()))
-	if(range > 3) then
+	if(range >= 3) then
 		MessageBox("Target is not in base contact with striker(range=" .. range .. "; baseContact=3)")
 		return
 	end
@@ -347,30 +376,31 @@ function Strike2()
 	else
 		result = result .. "\n Saves are ignored by melee AP"
 	end
+	CancelEnemySelection()
+	Object:SelectNull()
+	OnSelection()
 	result = result .. "\nTotal " .. unsaved .. " unsaved wounds. "
 	if(unsaved > 0) then
 		result = result .. "Enemy dies"
-		prey:Delete()
+		RemoveObject(prey)
 	else
 		result = result .. "Enemy still alive"
 	end
 	hunter:SetProperty("StrikedAtMelee", "1")
-	Object:SelectNull()
 	MessageBox(result)
-	CancelEnemySelection()
 end
 
 function OnSelection()
+	UI:Get():GetChild("Button5"):SetVisible(false)
+	UI:Get():GetChild("Button6"):SetVisible(false)
+	UI:Get():GetChild("Button7"):SetVisible(false)
 	local selected = Object:GetSelected()
-	if(selected:Null()) then
+	if(selected:Null() or selected:IsGroup()) then
 		UI:Get():GetChild("Label2"):SetText("")
 		return
 	else
 		UI:Get():GetChild("Label2"):SetText(selected:GetProperty("Name"))
 	end
-	UI:Get():GetChild("Button5"):SetVisible(false)
-	UI:Get():GetChild("Button6"):SetVisible(false)
-	UI:Get():GetChild("Button7"):SetVisible(false)
 	if(selected:GetProperty("Owner") == GetGlobalProperty("Player")) then
 		if(GetGlobalProperty("Phase") == "Shooting" and selected:GetProperty("Shooted") == "0") then
 			UI:Get():GetChild("Button5"):SetVisible(true)
@@ -399,15 +429,25 @@ function Run()
 		MessageBox("This unit already shooted or runned")
 		return
 	end
+	if(object:IsGroup()) then
+		for i=1, object:GetGroupChildrenCount() do
+			RunObject(object:GetGroupChildrenAt(i))
+		end
+		return
+	end
+	RunObject(object)
+end
+
+function RunObject(object)
 	if(IsLockedInCombat(object)) then
 		MessageBox("This unit is locked in close combat and cannot run")
 		return
 	end
+	object:SetProperty("Shooted", "1")
 	math.randomseed(os.time())
 	local rand = math.random(1, 6)
-	MessageBox("Unit rolls " .. rand .. " to run")
+	MessageBox(object:GetProperty("Name") .. " rolls " .. rand .. " to run")
 	object:SetMoveLimit("circle", object:GetX(), object:GetY(), rand)
-	object:SetProperty("Shooted", "1")
 end
 
 function SetRuler()
@@ -424,6 +464,7 @@ end
 
 IncludeLibrary("math")
 IncludeLibrary("os")
+IncludeLibrary("table")
 CreateSkybox(80, "skybox")
 CreateTable(60, 30, "sand.bmp")
 CameraSetLimits(30, 12, 5, 0.2)

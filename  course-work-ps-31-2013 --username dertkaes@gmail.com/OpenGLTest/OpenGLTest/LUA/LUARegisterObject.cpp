@@ -2,6 +2,7 @@
 #include "..\controller\CommandHandler.h"
 #include "LUAScriptHandler.h"
 #include "..\3dObject.h"
+#include "..\ObjectGroup.h"
 
 int NewObject(lua_State* L)
 {
@@ -199,9 +200,53 @@ int SelectNull(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no argument expected");
-	std::shared_ptr<IObject> object;
+	std::shared_ptr<IObject> object = NULL;
 	CGameModel::GetIntanse().lock()->SelectObject(object);
 	return 0;
+}
+
+int ObjectEquals(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected (secondObject)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	IObject * obj2= (IObject*)CLUAScript::GetArgument<void*>(2);
+	CLUAScript::SetArgument(object == obj2);
+	return 1;
+}
+
+int IsGroup(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+        return luaL_error(L, "no argument expected");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	CLUAScript::SetArgument(CGameModel::IsGroup(object));
+	return 1;
+}
+
+int GetGroupChildrenCount(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+        return luaL_error(L, "no argument expected");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	if(!object) CLUAScript::SetArgument(0);//NULL contains no objects
+	if(!CGameModel::IsGroup(object)) CLUAScript::SetArgument(1); //single object
+	CObjectGroup * group = (CObjectGroup *)object;
+	CLUAScript::SetArgument((int)group->GetCount());
+	return 1;
+}
+
+int GetGroupChildrenAt(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected(index)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	size_t index = CLUAScript::GetArgument<int>(2);
+	if(!object && !CGameModel::IsGroup(object)) CLUAScript::NewInstanceClass(NULL, "Object");
+	CObjectGroup * group = (CObjectGroup *)object;
+	if(index > group->GetCount()) CLUAScript::NewInstanceClass(NULL, "Object");
+	CLUAScript::NewInstanceClass(group->GetChild(index - 1).get(), "Object");
+	return 1;
 }
 
 static const luaL_Reg ObjectFuncs[] = {
@@ -223,6 +268,10 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "SetSelectable", SetSelectable },
 	{ "SetMoveLimit", SetMoveLimit },
 	{ "SelectNull", SelectNull },
+	{ "Equals", ObjectEquals },
+	{ "IsGroup", IsGroup },
+	{ "GetGroupChildrenCount", GetGroupChildrenCount },
+	{ "GetGroupChildrenAt", GetGroupChildrenAt },
 	{ NULL, NULL }
 };
 

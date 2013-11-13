@@ -48,7 +48,23 @@ bool CLUAScript::GetArgument<bool>(int index)
 }
 
 template<>
+void* CLUAScript::GetArgument<void*>(int index)
+{
+	luaL_checktype(m_lua_state, index, LUA_TTABLE); 
+	lua_getfield(m_lua_state, index, "__self");
+	
+	void * ud = lua_touserdata(m_lua_state, -1);//return NULL
+	return *((void**)ud);
+}
+
+template<>
 void CLUAScript::SetArgument<double>(double arg)
+{
+	lua_pushnumber(m_lua_state, arg);
+}
+
+template<>
+void CLUAScript::SetArgument<int>(int arg)
 {
 	lua_pushnumber(m_lua_state, arg);
 }
