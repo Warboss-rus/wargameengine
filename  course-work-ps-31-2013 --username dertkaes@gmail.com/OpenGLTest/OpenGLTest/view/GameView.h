@@ -11,13 +11,6 @@
 #include "..\Ruler.h"
 #include "..\UI\UIElement.h"
 #include "..\LUA\LUAScriptHandler.h"
-#define CPP11CALLBACK
-#ifdef CPP11CALLBACK
-#include <functional>
-#define callback(x) std::function<void()>(x)
-#else
-#define callback(x) void(*x)()
-#endif
 
 class CGameView
 {

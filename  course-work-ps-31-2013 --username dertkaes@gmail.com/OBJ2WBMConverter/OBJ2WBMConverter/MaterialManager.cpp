@@ -2,16 +2,6 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include <GL\glut.h>
-
-sMaterial * CMaterialManager::GetMaterial(std::string const& name)
-{
-	if(m_materials.find(name) == m_materials.end())
-	{
-		return NULL;
-	}
-	return &m_materials[name];
-}
 
 void CMaterialManager::LoadMTL(std::string const& path)
 {

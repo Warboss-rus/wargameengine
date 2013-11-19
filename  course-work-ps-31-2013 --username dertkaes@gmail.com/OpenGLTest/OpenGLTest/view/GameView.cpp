@@ -115,8 +115,11 @@ void CGameView::DrawBoundingBox()
 			for(unsigned int i = 0; i < group->GetCount(); ++i)
 			{
 				object = group->GetChild(i);
-				m_modelManager.GetBoundingBox(object->GetPathToModel())->Draw(object->GetX(), 
-					object->GetY(), object->GetZ(), object->GetRotation());
+				if(object)
+				{
+					m_modelManager.GetBoundingBox(object->GetPathToModel())->Draw(object->GetX(), 
+						object->GetY(), object->GetZ(), object->GetRotation());
+				}
 			}
 		}
 		else
@@ -292,7 +295,7 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 	if(CGameModel::IsGroup(object.get()))
 	{
 		CObjectGroup * group = (CObjectGroup *)object.get();
-		if(shiftPressed && selectedObject != NULL)
+		if(shiftPressed)
 		{
 			if(group->ContainsChildren(selectedObject))
 			{

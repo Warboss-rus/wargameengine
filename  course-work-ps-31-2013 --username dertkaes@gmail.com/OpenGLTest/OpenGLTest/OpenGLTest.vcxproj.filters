@@ -150,6 +150,9 @@
     <ClCompile Include="MovementLimiter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="view\WBMModelFactory.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectInterface.h">
@@ -192,9 +195,6 @@
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\3dModel.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Camera.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\GameView.h">
@@ -274,6 +274,12 @@
     </ClInclude>
     <ClInclude Include="MovementLimiter.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Camera.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\WBMModelFactory.h">
+      <Filter>Header Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

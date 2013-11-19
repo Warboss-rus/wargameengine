@@ -87,7 +87,10 @@ void CObjectGroup::ShowMesh(std::string const& meshName)
 
 void CObjectGroup::AddChildren(std::shared_ptr<IObject> object)
 {
-	m_children.push_back(object);
+	if(object)
+	{
+		m_children.push_back(object);
+	}
 }
 
 void CObjectGroup::RemoveChildren(std::shared_ptr<IObject> object)

@@ -117,6 +117,7 @@
     <ClCompile Include="view\Table.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="controller\CommandCreateObject.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\Table.h" />
     <ClInclude Include="view\TextureManager.h" />
+    <ClInclude Include="view\WBMModelFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

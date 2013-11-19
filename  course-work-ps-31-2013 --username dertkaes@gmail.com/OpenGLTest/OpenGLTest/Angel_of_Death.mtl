@@ -7,7 +7,7 @@ Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd space_marine_power_armor_01.bmp
+map_Kd space_marine_power_armor_01.tga
 #
 newmtl 02_-_Default
 Ka  0.6 0.6 0.6
@@ -16,19 +16,24 @@ Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd space_marine_power_armor_02.bmp
+map_Kd space_marine_power_armor_02.tga
 #
-# Multi/Sub Multimaterial (3) to come 
-#
-newmtl space_marine_weapons
+newmtl Материал__0
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd space_marine_weapons.tga
+map_Kd space_marine_power_armor_02.tga
 #
-# Multi/Sub Multimaterial done 
+newmtl Материал__1
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd space_marine_power_armor_wargear_01.tga
 #
 # EOF

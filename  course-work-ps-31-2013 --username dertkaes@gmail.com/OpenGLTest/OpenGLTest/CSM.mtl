@@ -1,31 +1,22 @@
 # Max2Mtl Version 4.0 Mar 10th, 2001
 #
-newmtl 17_-_Default
+newmtl Материал__35
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd chaos_melta_pistol_common_dif.bmp
+map_Kd csm_armour_mp_children_torso_dif.tga
 #
-newmtl 10_-_Default
+newmtl Материал__30
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd daemon_sword_common_dif.bmp
-#
-newmtl 08_-_Default
-Ka  0.6 0.6 0.6
-Kd  0.6 0.6 0.6
-Ks  0.9 0.9 0.9
-d  1.0
-Ns  0.0
-illum 2
-map_Kd plague_champion_powerfist_dif.bmp
+map_Kd csm_armour_mp_children_legr_dif.tga
 #
 newmtl 03_-_Default
 Ka  0.6 0.6 0.6
@@ -34,24 +25,127 @@ Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd plague_marine_armour_epic_dif.bmp
+map_Kd csm_armour_mp_children_legl_dif.tga
 #
-newmtl 05_-_Default
+newmtl Материал__36
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd plague_marine_head_epic_dif.bmp
+map_Kd csm_armour_mp_children_helmet_dif.tga
 #
-newmtl 02_-_Default
+newmtl 01_-_Default
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd plague_marine_backpack_epic_dif.bmp
+map_Kd csm_armour_mp_children_arml_dif.tga
+#
+newmtl Материал__55
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd csm_armour_mp_children_armr_dif.tga
+#
+newmtl Материал__0
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd space_marine_power_armor_02.tga
+#
+# Multi/Sub Материал__54 (3) to come 
+#
+newmtl Материал__25
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd chaos_bolter_dif.tga
+#
+newmtl Материал__27
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd chaos_bolter_dif.tga
+#
+newmtl Материал__26
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd chaos_bolter_dif.tga
+#
+# Multi/Sub Материал__54 done 
+#
+newmtl 04_-_Default
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd csm_armour_mp_children_helmet_dif.tga
+#
+newmtl Материал__31
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd csm_armour_mp_children_shldrl_dif.tga
+#
+newmtl Материал__32
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd csm_armour_mp_children_shldrr_dif.tga
+#
+newmtl Материал__34
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd csm_armour_mp_children_torso_dif.tga
+#
+newmtl Материал__28
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd csm_armour_mp_children_bp_dif.tga
+#
+newmtl Материал__33
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd csm_armour_mp_children_torso_dif.tga
 #
 # EOF

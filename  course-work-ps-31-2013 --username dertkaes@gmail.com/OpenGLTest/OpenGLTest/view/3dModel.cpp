@@ -47,7 +47,7 @@ void C3DModel::Draw(std::set<std::string> const& hideMeshes)
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, GL_DOUBLE, 0, &m_textureCoords[0]);
 	}
-	if(!m_indexes.empty()) //Draw by indexes;
+	if(!m_indexes.empty()) //Draw by meshes;
 	{
 		unsigned int begin = 0;
 		unsigned int end;

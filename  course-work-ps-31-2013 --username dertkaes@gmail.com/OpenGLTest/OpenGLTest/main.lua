@@ -61,7 +61,7 @@ CameraSetLimits(15, 6, 5, 0.4)--Changes camera limitations (max translation in X
 local ui = UI:New()--Creates a new UI (doesn't displays anything)
 ui:Set()--Assigns this UI to window. Old assigned UI will be destroyed (Even if you have it in some variable)
 local list = ui:NewListbox("ListBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
-list:AddItem("SpaceMarine.obj")
+list:AddItem("Angel_of_Death.obj")
 list:AddItem("CSM.obj")
 list:AddItem("rhino.obj")
 list:AddItem("Ruine.obj")
