@@ -1,6 +1,5 @@
 #include "UIElement.h"
 #include <vector>
-#include <string>
 
 class CUIListBox : public CUIElement
 {

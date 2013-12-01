@@ -14,11 +14,11 @@ public:
 		void * font;
 		int fontHeight;
 		enum eAligment
-		{
-			left = 0,
-			center,
-			right
-		};
+	{
+		left = 0,
+		center,
+		right
+	};
 		eAligment aligment;
 	};
 	sText text;

@@ -28,7 +28,7 @@ void SetMaterial(sMaterial * material)
 	texManager->SetTexture(material->texture);
 }
 
-void C3DModel::Draw(std::set<std::string> const& hideMeshes)
+void C3DModel::Draw(const std::set<std::string> * hideMeshes)
 {
 	glPushMatrix();
 	glScaled(m_scale, m_scale, m_scale);
@@ -53,7 +53,7 @@ void C3DModel::Draw(std::set<std::string> const& hideMeshes)
 		unsigned int end;
 		for(unsigned int i = 0; i < m_meshes.size(); ++i)
 		{
-			if(hideMeshes.find(m_meshes[i].name) != hideMeshes.end())
+			if(hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
 			{
 				begin = (i + 1 == m_meshes.size())?m_indexes.size():m_meshes[i + 1].polygonIndex;
 				continue;

@@ -16,7 +16,7 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, std::set<std::string> const& hideMeshes)
+void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes)
 {
 	LoadIfNotExist(path);
 	m_models[path]->Draw(hideMeshes);

@@ -1,6 +1,7 @@
 #include "UICheckBox.h"
 #include <GL\glut.h>
 #include "..\view\TextureManager.h"
+#include "UIText.h"
 
 void CUICheckBox::Draw() const
 {
@@ -20,7 +21,7 @@ void CUICheckBox::Draw() const
 		glVertex2d(m_height * m_theme.checkbox.checkboxSizeCoeff, 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
-	m_text.Draw();
+	PrintText(m_height * m_theme.checkbox.checkboxSizeCoeff + 1, 0, m_width, m_height, m_text, m_theme.text);
 	CUIElement::Draw();
 	glPopMatrix();
 }

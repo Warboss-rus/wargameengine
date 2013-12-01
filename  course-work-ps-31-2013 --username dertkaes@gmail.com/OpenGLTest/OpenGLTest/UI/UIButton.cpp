@@ -1,6 +1,7 @@
 #include "UIButton.h"
 #include <GL\glut.h>
 #include "..\view\TextureManager.h"
+#include "UIText.h"
 
 void CUIButton::Draw() const
 {
@@ -20,7 +21,9 @@ void CUIButton::Draw() const
 		glVertex2d(m_width, 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
-	m_text.Draw();
+	CUITheme::sText text = m_theme.text;
+	text.aligment = text.center;
+	PrintText(0, 0, m_width, m_height, m_text, text);
 	CUIElement::Draw();
 	glPopMatrix();
 }

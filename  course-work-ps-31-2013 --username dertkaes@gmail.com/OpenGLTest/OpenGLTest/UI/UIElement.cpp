@@ -5,6 +5,7 @@
 #include "UICheckBox.h"
 #include "UIListBox.h"
 #include "UIEdit.h"
+#include "UIList.h"
 
 void CUIElement::Draw() const
 {
@@ -160,6 +161,13 @@ IUIElement* CUIElement::AddNewListBox(std::string const& name, int x, int y, int
 IUIElement* CUIElement::AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIEdit(x, y, height, width, text, this));
+	AddChild(name, item);
+	return item.get();
+}
+
+IUIElement* CUIElement::AddNewList(std::string const& name, int x, int y, int height, int width)
+{
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIList(x, y, height, width, this));
 	AddChild(name, item);
 	return item.get();
 }

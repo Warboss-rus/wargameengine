@@ -100,6 +100,7 @@
     <ClCompile Include="UI\UICheckBox.cpp" />
     <ClCompile Include="UI\UIEdit.cpp" />
     <ClCompile Include="UI\UIElement.cpp" />
+    <ClCompile Include="UI\UIList.cpp" />
     <ClCompile Include="UI\UIListBox.cpp" />
     <ClCompile Include="UI\UIPanel.cpp" />
     <ClCompile Include="UI\UIStaticText.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="UI\UICheckBox.h" />
     <ClInclude Include="UI\UIEdit.h" />
     <ClInclude Include="UI\UIElement.h" />
+    <ClInclude Include="UI\UIList.h" />
     <ClInclude Include="UI\UIListBox.h" />
     <ClInclude Include="UI\UIPanel.h" />
     <ClInclude Include="UI\UIStaticText.h" />

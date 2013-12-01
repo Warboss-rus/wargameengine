@@ -153,6 +153,9 @@
     <ClCompile Include="view\WBMModelFactory.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="UI\UIList.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectInterface.h">
@@ -189,9 +192,6 @@
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIPanel.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIStaticText.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\3dModel.h">
@@ -280,6 +280,12 @@
     </ClInclude>
     <ClInclude Include="view\WBMModelFactory.h">
       <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIStaticText.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIList.h">
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

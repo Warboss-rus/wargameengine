@@ -19,7 +19,7 @@ public:
 	C3DModel() {}
 	C3DModel(std::vector<sPoint3> & vertices, std::vector<sPoint2> & textureCoords, std::vector<sPoint3> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale);
-	void Draw(std::set<std::string> const& hideMeshes);
+	void Draw(const std::set<std::string>* hideMeshes = NULL);
 	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 private:
 	std::vector<sPoint3> m_vertices;

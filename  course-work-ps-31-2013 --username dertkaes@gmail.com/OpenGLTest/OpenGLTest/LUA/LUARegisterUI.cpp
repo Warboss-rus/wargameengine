@@ -103,6 +103,20 @@ int NewEdit(lua_State* L)
 	return CLUAScript::NewInstanceClass(edit, "UI");
 }
 
+int NewList(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 6)
+        return luaL_error(L, "5 arguments expected");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	std::string name = CLUAScript::GetArgument<char*>(2);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
+	IUIElement * listbox = c->AddNewList(name, x, y, height, width);
+	return CLUAScript::NewInstanceClass(listbox, "UI");
+}
+
 int GetChild(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
@@ -161,9 +175,50 @@ int AddItem(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (item)");
-	CUIListBox * c = (CUIListBox *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	c->AddItem(CLUAScript::GetArgument<char*>(2));
 	return 0;
+}
+
+int DeleteItem(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected (index)");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	int index = CLUAScript::GetArgument<int>(2);
+	if(index >= 0 && index < c->GetItemsCount())
+	{
+		c->DeleteItem(index);
+	}
+	return 0;
+}
+
+int GetSelectedIndex(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+        return luaL_error(L, "no arguments expected");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	CLUAScript::SetArgument(c->GetSelectedIndex());
+	return 1;
+}
+
+int GetItemsCount(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+        return luaL_error(L, "no arguments expected");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	CLUAScript::SetArgument((int)c->GetItemsCount());
+	return 1;
+}
+
+int GetItem(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected (index)");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	int index = CLUAScript::GetArgument<int>(2) - 1;
+	CLUAScript::SetArgument(c->GetItem(index).c_str());
+	return 1;
 }
 
 int Free(lua_State* L)
@@ -194,6 +249,7 @@ static const luaL_Reg UIFuncs[] = {
 	{ "NewCheckbox", NewCheckbox },
 	{ "NewListbox", NewListbox },
 	{ "NewEdit", NewEdit },
+	{ "NewList", NewList },
 	{ "GetChild", GetChild },
 	{ "SetVisible", SetVisible },
 	{ "GetVisible", GetVisible },
@@ -201,6 +257,10 @@ static const luaL_Reg UIFuncs[] = {
 	{ "SetText", SetText },
 	{ "GetState", GetState },
 	{ "AddItem", AddItem },
+	{ "DeleteItem", DeleteItem },
+	{ "GetSelectedIndex", GetSelectedIndex },
+	{ "GetItemsCount", GetItemsCount },
+	{ "GetItem", GetItem },
 	{ "Set", Set },
 	{ "Get", Get },
 	{ "Free", Free },

@@ -51,7 +51,7 @@ void CUIListBox::Draw() const
 		glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 		for(size_t i = 0; i < m_items.size(); ++i)
 		{
-			PrintText(m_theme.listbox.borderSize, m_height * (i + 1) + fonty, m_items[i].c_str(), m_theme.text.font);
+			PrintText(m_theme.listbox.borderSize, m_height * (i + 1) + fonty, m_items[i], m_theme.text.font);
 		}
 	}
 	CUIElement::Draw();

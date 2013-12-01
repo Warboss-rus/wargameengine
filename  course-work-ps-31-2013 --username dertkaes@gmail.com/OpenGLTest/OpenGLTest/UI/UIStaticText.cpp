@@ -1,5 +1,6 @@
 #include "UIStaticText.h"
 #include <GL\glut.h>
+#include "UIText.h"
 
 void CUIStaticText::Draw() const
 {
@@ -7,7 +8,7 @@ void CUIStaticText::Draw() const
 		return;
 	glPushMatrix();
 	glTranslatef(m_x, m_y, 0);
-	m_text.Draw();
+	PrintText(0, 0, m_width, m_height, m_text, m_theme.text);
 	CUIElement::Draw();
 	glPopMatrix();
 }
