@@ -267,8 +267,7 @@ shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
-		double direction[3] = {end[0] - start[0], end[1] - start[1], end[2] - start[2]};
-		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, direction, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
+		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
 			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + object->GetZ() * object->GetZ());
 			if(distance < minDistance)
@@ -403,3 +402,4 @@ void CGameView::SetSelectionCallback(callback(onSelect))
 {
 	m_selectionCallback = onSelect;
 }
+

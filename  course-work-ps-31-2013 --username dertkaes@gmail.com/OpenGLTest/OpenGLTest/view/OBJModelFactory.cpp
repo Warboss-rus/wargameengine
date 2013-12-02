@@ -39,22 +39,22 @@ FaceIndex ParseFaceIndex(std::string const& str)
 
 C3DModel * LoadObjModel(std::string const& path)
 {
-	std::vector<sPoint3> vertices;
+	std::vector<CVector3d> vertices;
 	std::vector<sPoint2> textureCoords;
-	std::vector<sPoint3> normals;
+	std::vector<CVector3d> normals;
 	std::map<std::string, unsigned int> faces;
 	std::ifstream iFile(path);
 	std::string line;
 	std::string type;
-	sPoint3 p3;
+	CVector3d p3;
 	sPoint2 p2;
 	sMesh mesh;
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
-	std::vector<sPoint3> newVertices;
+	std::vector<CVector3d> newVertices;
 	std::vector<sPoint2> newTextureCoords;
-	std::vector<sPoint3> newNormals;
+	std::vector<CVector3d> newNormals;
 	std::vector<unsigned int> indexes;
 	CMaterialManager materialManager;
 	std::vector<sMesh> meshes;
@@ -116,7 +116,7 @@ C3DModel * LoadObjModel(std::string const& path)
 					}
 					else
 					{
-						newNormals.push_back(sPoint3());
+						newNormals.push_back(CVector3d());
 					}
 					indexes.push_back(newVertices.size() - 1);
 					faces[index3] = newVertices.size() - 1;

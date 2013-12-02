@@ -17,14 +17,14 @@ class C3DModel
 {
 public:
 	C3DModel() {}
-	C3DModel(std::vector<sPoint3> & vertices, std::vector<sPoint2> & textureCoords, std::vector<sPoint3> & normals, std::vector<unsigned int> & indexes,
+	C3DModel(std::vector<CVector3d> & vertices, std::vector<sPoint2> & textureCoords, std::vector<CVector3d> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale);
 	void Draw(const std::set<std::string>* hideMeshes = NULL);
 	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 private:
-	std::vector<sPoint3> m_vertices;
+	std::vector<CVector3d> m_vertices;
 	std::vector<sPoint2> m_textureCoords;
-	std::vector<sPoint3> m_normals;
+	std::vector<CVector3d> m_normals;
 	std::vector<size_t> m_indexes;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;

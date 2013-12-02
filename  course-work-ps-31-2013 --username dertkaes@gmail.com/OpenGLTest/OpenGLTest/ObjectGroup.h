@@ -13,7 +13,7 @@ public:
 	double GetX() const;
 	double GetY() const;
 	double GetZ() const;
-	sPoint3 GetCoords() const { return sPoint3(GetX(), GetY(), GetZ()); }
+	CVector3d GetCoords() const { return CVector3d(GetX(), GetY(), GetZ()); }
 	double GetRotation() const;
 	std::set<std::string> const& GetHiddenMeshes() const;
 	void HideMesh(std::string const& meshName);

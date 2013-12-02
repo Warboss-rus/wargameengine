@@ -121,6 +121,9 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Vector2.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Vector3.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Vector4.h" />
     <ClInclude Include="controller\CommandCreateObject.h" />
     <ClInclude Include="controller\CommandDeleteObject.h" />
     <ClInclude Include="controller\CommandHandler.h" />

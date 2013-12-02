@@ -5,9 +5,9 @@
 
 C3DModel * LoadWbmModel(std::string const& path)
 {
-	std::vector<sPoint3> newVertices;
+	std::vector<CVector3d> newVertices;
 	std::vector<sPoint2> newTextureCoords;
-	std::vector<sPoint3> newNormals;
+	std::vector<CVector3d> newNormals;
 	std::vector<unsigned int> indexes;
 	std::map<std::string, sMaterial> materials;
 	std::vector<sMesh> meshes;
@@ -15,13 +15,13 @@ C3DModel * LoadWbmModel(std::string const& path)
 	unsigned int size;
 	unsigned int count;
 	fread(&size, sizeof(size_t), 1, iFile);
-	newVertices.resize(size / sizeof(sPoint3));
+	newVertices.resize(size / sizeof(CVector3d));
 	fread(&newVertices[0], size, 1, iFile);
 	fread(&size, sizeof(size_t), 1, iFile);
 	newTextureCoords.resize(size / sizeof(sPoint2));
 	fread(&newTextureCoords[0], size, 1, iFile);
 	fread(&size, sizeof(size_t), 1, iFile);
-	newNormals.resize(size / sizeof(sPoint3));
+	newNormals.resize(size / sizeof(CVector3d));
 	fread(&newNormals[0], size, 1, iFile);
 	fread(&size, sizeof(size_t), 1, iFile);
 	indexes.resize(size / sizeof(size_t));

@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include "view\Vector3.h"
 
 class C3DObject : public IObject
 {
@@ -15,7 +16,7 @@ public:
 	double GetX() const { return m_x; }
 	double GetY() const { return m_y; }
 	double GetZ() const { return m_z; }
-	sPoint3 GetCoords() const { return sPoint3(m_x, m_y, m_z); }
+	CVector3d GetCoords() const { return CVector3d(m_x, m_y, m_z); }
 	double GetRotation() const { return m_rotation; }
 	std::set<std::string> const& GetHiddenMeshes() const { return m_hiddenMeshes; }
 	void HideMesh(std::string const& meshName);
