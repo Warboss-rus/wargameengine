@@ -133,6 +133,7 @@ void CGameView::DrawBoundingBox()
 
 void CGameView::Update()
 {
+	if(m_updateCallback) m_updateCallback();
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	if(m_table) m_table->Draw();
@@ -172,9 +173,10 @@ void CGameView::OnReshape(int width, int height)
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	GLdouble aspect = (GLdouble)glutGet(GLUT_WINDOW_WIDTH) / (GLdouble)glutGet(GLUT_WINDOW_HEIGHT);
+	GLdouble aspect = (GLdouble)width / (GLdouble)height;
 	gluPerspective(60, aspect, 0.5, 100.0);
 	glMatrixMode(GL_MODELVIEW);
+	CGameView::GetIntanse().lock()->m_ui->Resize(height, width);
 }
 
 void CGameView::FreeInstance()
@@ -413,3 +415,7 @@ void CGameView::SetSelectionCallback(callback(onSelect))
 	m_selectionCallback = onSelect;
 }
 
+void CGameView::SetUpdateCallback(callback(onUpdate))
+{
+	m_updateCallback = onUpdate;
+}

@@ -9,22 +9,22 @@ void CUIEdit::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(m_x, m_y, 0);
+	glTranslatef(GetX(), GetY(), 0);
 	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2d(0, 0);
-		glVertex2d(0, m_height);
-		glVertex2d(m_width, m_height);
-		glVertex2d(m_width, 0);
+		glVertex2d(0, GetHeight());
+		glVertex2d(GetWidth(), GetHeight());
+		glVertex2d(GetWidth(), 0);
 	glEnd();
 	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2d(m_theme.edit.borderSize, m_theme.edit.borderSize);
 		glVertex2d(m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
-		glVertex2d(m_width - m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
-		glVertex2d(m_width - m_theme.edit.borderSize, m_theme.edit.borderSize);
+		glVertex2d(GetWidth() - m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
+		glVertex2d(GetWidth() - m_theme.edit.borderSize, m_theme.edit.borderSize);
 	glEnd();
-	int fonty = (m_height + m_theme.text.fontHeight) / 2;
+	int fonty = (GetHeight() + m_theme.text.fontHeight) / 2;
 	if(IsFocused(NULL))
 	{
 		double cursorpos = m_theme.edit.borderSize + m_pos * glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
@@ -142,7 +142,7 @@ bool CUIEdit::LeftMouseButtonUp(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		size_t pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		size_t pos = (x - GetX()) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
 		m_pos = (pos > m_text.size())?m_text.size():pos;
 		SetFocus();
 		return true;
@@ -161,7 +161,7 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		size_t pos = (x - m_x) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		size_t pos = (x - GetX()) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
 		m_beginSelection = (pos > m_text.size())?m_text.size():pos;
 		m_pos = m_beginSelection;
 		SetFocus();

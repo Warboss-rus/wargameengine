@@ -130,6 +130,26 @@ int SetSelectionCallback(lua_State* L)
 	return 0;
 }
 
+int SetUpdateCallback(lua_State* L)
+{
+	if(CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (funcName)");
+	std::string func = CLUAScript::GetArgument<char*>(1);
+	if(func.empty())
+	{
+		CGameView::GetIntanse().lock()->SetUpdateCallback(std::function<void()>());
+	}
+	else
+	{
+		auto function = [func]()
+		{ 
+			CLUAScript::CallFunction(func);
+		};
+		CGameView::GetIntanse().lock()->SetUpdateCallback(function);
+	}
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -144,4 +164,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(SetGlobalProperty, "SetGlobalProperty");
 	lua.RegisterConstant(IncludeLibrary, "IncludeLibrary");
 	lua.RegisterConstant(SetSelectionCallback, "SetSelectionCallback");
+	lua.RegisterConstant(SetUpdateCallback, "SetUpdateCallback");
 }

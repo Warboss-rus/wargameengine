@@ -1,3 +1,6 @@
+game = nil
+initComplete = false
+
 function CreateUnit(name, x, y, rot, owner)
 	local object = nil
 	if(name == "Tactical Marine(bolter)" or name == "Tactical Marine(meltagun)" or name == "Tactical Marine(heavy bolter)" or
@@ -5,7 +8,7 @@ function CreateUnit(name, x, y, rot, owner)
 		object = Object:New("Angel_of_Death.wbm", x, y, rot)
 	end
 	if(name == "Chaos Marine(bolter)" or name == "Chaos Marine(meltagun)" or name == "Chaos Marine(heavy bolter)" or
-		name == "Raptor" or name == "Terminator(combi bolter)" or name == "Terminator(lightning claws)") then
+		name == "Raptor" or name == "Terminator(combi bolter)" or name == "Chaos Terminator(lightning claws)") then
 		object = Object:New("CSM.wbm", x, y, rot)
 	end
 	object:SetProperty("Name", name)
@@ -19,6 +22,7 @@ function CreateUnit(name, x, y, rot, owner)
 		object:SetProperty("Sv", "3")
 		object:SetProperty("InvSv", "7")
 		object:SetProperty("MeleeAP", "7")
+		object:SetProperty("RerollFailed2Wound", "0")
 		object:SetProperty("MovementSpeed", "6")
 		object:SetProperty("WeaponRange", "24")
 		object:SetProperty("WeaponS", "4")
@@ -34,6 +38,7 @@ function CreateUnit(name, x, y, rot, owner)
 		object:SetProperty("Sv", "3")
 		object:SetProperty("InvSv", "7")
 		object:SetProperty("MeleeAP", "7")
+		object:SetProperty("RerollFailed2Wound", "0")
 		object:SetProperty("MovementSpeed", "6")
 		object:SetProperty("WeaponRange", "12")
 		object:SetProperty("WeaponS", "8")
@@ -49,6 +54,7 @@ function CreateUnit(name, x, y, rot, owner)
 		object:SetProperty("Sv", "3")
 		object:SetProperty("InvSv", "7")
 		object:SetProperty("MeleeAP", "7")
+		object:SetProperty("RerollFailed2Wound", "0")
 		object:SetProperty("MovementSpeed", "6")
 		object:SetProperty("WeaponRange", "36")
 		object:SetProperty("WeaponS", "5")
@@ -64,13 +70,14 @@ function CreateUnit(name, x, y, rot, owner)
 		object:SetProperty("Sv", "3")
 		object:SetProperty("InvSv", "7")
 		object:SetProperty("MeleeAP", "7")
+		object:SetProperty("RerollFailed2Wound", "0")
 		object:SetProperty("MovementSpeed", "12")
 		object:SetProperty("WeaponRange", "12")
 		object:SetProperty("WeaponS", "4")
 		object:SetProperty("WeaponAP", "5")
 		object:SetProperty("WeaponType", "Pistol")
 		object:SetProperty("WeaponShots", "1")
-	elseif(name == "Terminator(storm bolter)" or name == "Terminator(combi bolter)") then
+	elseif(name == "Terminator(storm bolter)" or name == "Chaos Terminator(combi bolter)") then
 		object:SetProperty("WS", "4")
 		object:SetProperty("BS", "4")
 		object:SetProperty("S", "8")
@@ -79,21 +86,23 @@ function CreateUnit(name, x, y, rot, owner)
 		object:SetProperty("Sv", "2")
 		object:SetProperty("InvSv", "5")
 		object:SetProperty("MeleeAP", "2")
+		object:SetProperty("RerollFailed2Wound", "0")
 		object:SetProperty("MovementSpeed", "6")
 		object:SetProperty("WeaponRange", "24")
 		object:SetProperty("WeaponS", "4")
 		object:SetProperty("WeaponAP", "5")
 		object:SetProperty("WeaponType", "Assault")
 		object:SetProperty("WeaponShots", "2")
-	elseif(name == "Terminator(lightning claws)") then
+	elseif(name == "Terminator(lightning claws)" or name == "Chaos Terminator(lightning claws)") then
 		object:SetProperty("WS", "4")
 		object:SetProperty("BS", "4")
 		object:SetProperty("S", "4")
 		object:SetProperty("T", "4")
-		object:SetProperty("Attacks", "5")
+		object:SetProperty("Attacks", "4")
 		object:SetProperty("Sv", "2")
 		object:SetProperty("InvSv", "5")
 		object:SetProperty("MeleeAP", "3")
+		object:SetProperty("RerollFailed2Wound", "1")
 		object:SetProperty("MovementSpeed", "6")
 		object:SetProperty("WeaponRange", "0")
 		object:SetProperty("WeaponS", "0")
@@ -110,23 +119,30 @@ function Battle()
 		MessageBox("Total unit cost must not exceed 200")
 		return
 	end
-	local game = loadfile("killteam.lua")
+	game = loadfile("killteam.lua")
+	game()
 	local ui = UI:Get():GetChild("Panel1")
 	local list = ui:GetChild("List2")
 	for i=1, list:GetItemsCount() do
 		local name = list:GetItem(i)
 		local object = CreateUnit(name, 20 + (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, -90, "1")
-		MessageBox("Object created")
-		game.Player1[i] = object
+		Player1[i] = object
 	end
 	list = ui:GetChild("List4")
 	for i=1, list:GetItemsCount() do
 		local name = list:GetItem(i)
-		local object = CreateUnit(name, -20 - (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, 90, "1")
-		MessageBox("Object created")
-		game.Player2[i] = object
+		local object = CreateUnit(name, -20 - (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, 90, "2")
+		Player2[i] = object
 	end
-	game()
+	SetUpdateCallback("OnUpdate")
+end
+
+function OnUpdate()
+	if not initComplete then
+		Init()
+	end
+	initComplete = true
+	--SetUpdateCallback("")
 end
 
 function GetCost(list)
@@ -134,17 +150,17 @@ function GetCost(list)
 	for i=1, list:GetItemsCount() do
 		local name = list:GetItem(i)
 		if(name == "Tactical Marine(bolter)" or name == "Chaos Marine(bolter)") then
-			sum = sum + 14
+			sum = sum + 15
 		elseif(name == "Tactical Marine(meltagun)" or name == "Chaos Marine(meltagun)") then
-			sum = sum + 29
+			sum = sum + 30
 		elseif(name == "Tactical Marine(heavy bolter)" or name == "Chaos Marine(heavy bolter)") then
-			sum = sum + 24
+			sum = sum + 30
 		elseif(name == "Assault Marine" or name == "Raptor") then
-			sum = sum + 17
+			sum = sum + 20
 		elseif(name == "Terminator(storm bolter)" or name == "Terminator(combi bolter)") then
 			sum = sum + 40
-		elseif(name == "Terminator(lightning claws)") then
-			sum = sum + 45
+		elseif(name == "Terminator(lightning claws)" or name == "Chaos Terminator(lightning claws)") then
+			sum = sum + 40
 		end
 	end
 	return sum
@@ -206,8 +222,8 @@ list:AddItem("Chaos Marine(bolter)")
 list:AddItem("Chaos Marine(meltagun)")
 list:AddItem("Chaos Marine(heavy bolter)")
 list:AddItem("Raptor")
-list:AddItem("Terminator(combi bolter)")
-list:AddItem("Terminator(lightning claws)")
+list:AddItem("Chaos Terminator(combi bolter)")
+list:AddItem("Chaos Terminator(lightning claws)")
 ui:NewList("List4", 398, 367, 230, 200)
 ui:NewButton("Button3", 210, 435, 30, 180, "Add>", "AddItem2")
 ui:NewButton("Button4", 210, 475, 30, 180, "<Delete", "DeleteItem2")

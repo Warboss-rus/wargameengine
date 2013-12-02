@@ -35,6 +35,7 @@ public:
 		double expandedTexCoord[4];
 		double buttonWidthCoeff;
 		int borderSize;
+		int spacing;
 	};
 	sListBox listbox;
 	struct sCheckBox

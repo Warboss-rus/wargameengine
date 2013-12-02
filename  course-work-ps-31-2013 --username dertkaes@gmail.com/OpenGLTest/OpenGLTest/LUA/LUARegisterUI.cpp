@@ -4,11 +4,6 @@
 #include "..\UI\UIListBox.h"
 #include "..\view\GameView.h"
 
-int NewUI(lua_State* L)
-{
-	return CLUAScript::NewInstanceClass(new CUIElement(), "UI");
-}
-
 int NewButton(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 8)
@@ -221,14 +216,6 @@ int GetItem(lua_State* L)
 	return 1;
 }
 
-int Free(lua_State* L)
-{
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-    delete c;
-	c = nullptr;
-    return 0;
-}
-
 int Set(lua_State* L)
 {
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
@@ -241,9 +228,15 @@ int Get(lua_State* L)
 	return CLUAScript::NewInstanceClass(CGameView::GetIntanse().lock()->GetUI(), "UI");
 }
 
+int ClearChildren(lua_State* L)
+{
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	c->ClearChildren();
+	return 0;
+}
+
 static const luaL_Reg UIFuncs[] = {
-    { "New", NewUI },
-	{ "NewButton", NewButton },
+   	{ "NewButton", NewButton },
 	{ "NewStaticText", NewStaticText },
 	{ "NewPanel", NewPanel },
 	{ "NewCheckbox", NewCheckbox },
@@ -263,8 +256,8 @@ static const luaL_Reg UIFuncs[] = {
 	{ "GetItem", GetItem },
 	{ "Set", Set },
 	{ "Get", Get },
-	{ "Free", Free },
-    { NULL, NULL }
+	{ "ClearChildren", ClearChildren },
+	{ NULL, NULL }
 };
 
 void RegisterUI(CLUAScript & lua)

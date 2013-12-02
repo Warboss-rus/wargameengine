@@ -4,42 +4,24 @@ hunter = nil
 hunterGroup = nil
 hunterGroupIndex = nil
 
-function SetInitParamters(unit)
-	unit:SetProperty("WS", "4")
-	unit:SetProperty("BS", "4")
-	unit:SetProperty("S", "4")
-	unit:SetProperty("T", "4")
-	unit:SetProperty("Attacks", "1")
-	unit:SetProperty("Sv", "3")
-	unit:SetProperty("InvSv", "7")
-	unit:SetProperty("MeleeAP", "7")
-	unit:SetProperty("WeaponRange", "24")
-	unit:SetProperty("WeaponS", "4")
-	unit:SetProperty("WeaponAP", "5")
-	unit:SetProperty("WeaponType", "RapidFire")
-	unit:SetProperty("WeaponShots", "2")
-	unit:SetSelectable(true)
-end
-
 function Init()
-	for i = 1, 10 do
-		Player1[i] = Object:New("Angel_of_Death.wbm", 20 + (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, -90)
-		Player1[i]:SetProperty("Name", "Tactical Space Marine with bolter")
-		Player1[i]:SetProperty("Owner", "1")
-		SetInitParamters(Player1[i])
-		Player1[i]:SetMoveLimit("rectangle", 15, 15, 30, -15)
-		Player2[i] = Object:New("CSM.wbm", -20 - (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, 90)
-		Player2[i]:SetProperty("Name", "Chaos Space Marine with bolter")
-		Player2[i]:SetProperty("Owner", "2")
-		SetInitParamters(Player2[i])
-		Player2[i]:SetMoveLimit("rectangle", -15, 15, -30, -15)
-	end
-	--[[for i=1, #Player1 do
+	for i=1, #Player1 do
 		Player1[i]:SetMoveLimit("rectangle", 15, 15, 30, -15)
 	end
 	for i=1, #Player2 do
 		Player2[i]:SetMoveLimit("rectangle", -15, 15, -30, -15)
-	end]]
+	end
+	local ui = UI:Get()
+	ui:ClearChildren()
+	ui:NewButton("Button1", 10, 10, 30, 90, "End phase", "EndPhase")
+	ui:NewButton("Button2", 110, 10, 30, 80, "Ruler", "SetRuler")
+	ui:NewButton("Button3", 200, 10, 30, 80, "Undo", "UndoAction")
+	ui:NewButton("Button4", 290, 10, 30, 80, "Redo", "RedoAction")
+	ui:NewButton("Button5", 380, 10, 30, 80, "Shoot", "Fire"):SetVisible(false)
+	ui:NewButton("Button6", 470, 10, 30, 80, "Run", "Run"):SetVisible(false)
+	ui:NewButton("Button7", 380, 10, 30, 80, "Strike", "Strike"):SetVisible(false)
+	ui:NewStaticText("Label1", 10, 40, 30, 180, "Deployment Phase")
+	ui:NewStaticText("Label2", 10, 570, 30, 200, "")
 	SetGlobalProperty("Turn", 0)
 	SetGlobalProperty("Player", "2")
 	SetGlobalProperty("Phase", "NULL")
@@ -69,15 +51,19 @@ function MovePhase(player)
 	if(player == "1") then
 		for i=1, #Player1 do
 			Player1[i]:SetSelectable(true)
+			Player1[i]:SetProperty("MovementX", Player1[i]:GetX())
+			Player1[i]:SetProperty("MovementY", Player1[i]:GetY())
 			if(not IsLockedInCombat(Player1[i])) then
-				Player1[i]:SetMoveLimit("circle", Player1[i]:GetX(), Player1[i]:GetY(), 6)
+				Player1[i]:SetMoveLimit("circle", Player1[i]:GetX(), Player1[i]:GetY(), Player1[i]:GetProperty("MovementSpeed"))
 			end
 		end
 	else
 		for i=1, #Player2 do
 			Player2[i]:SetSelectable(true)
+			Player2[i]:SetProperty("MovementX", Player2[i]:GetX())
+			Player2[i]:SetProperty("MovementY", Player2[i]:GetY())
 			if(not IsLockedInCombat(Player2[i])) then
-				Player2[i]:SetMoveLimit("circle", Player2[i]:GetX(), Player2[i]:GetY(), 6)
+				Player2[i]:SetMoveLimit("circle", Player2[i]:GetX(), Player2[i]:GetY(), Player2[i]:GetProperty("MovementSpeed"))
 			end
 		end
 	end
@@ -91,6 +77,7 @@ function ShootingPhase(player)
 			Player1[i]:SetSelectable(true)
 			Player1[i]:SetMoveLimit("static")
 			Player1[i]:SetProperty("Shooted", "0")
+			
 		end
 	else
 		for i=1, #Player2 do
@@ -278,6 +265,14 @@ function Fire2(prey)
 		numShots = numShots / 2
 	end
 	local toHit = 7 - hunter:GetProperty("BS")
+	
+	if(hunter:GetProperty("WeaponType") == "Heavy") then
+		local deltaX = hunter:GetProperty("MovementX") - hunter:GetX()
+		local deltaY = hunter:GetProperty("MovementY") - hunter:GetY()
+		if((math.sqrt(deltaX * deltaX + deltaY * deltaY) > 0.25)) then
+			toHit = 6
+		end
+	end
 	local toWound = GetToWound(hunter:GetProperty("WeaponS"), prey:GetProperty("T"))
 	local save = 0 + prey:GetProperty("Sv")
 	if(0 + hunter:GetProperty("WeaponAP") <= save) then
@@ -431,6 +426,16 @@ function Strike2(prey)
 		end
 		result = result .. rand .. " "
 	end
+	if(hunter:GetProperty("RerollFailed2Wound") == "1") then
+		result = result .. "\nRerolls failed to wound(" .. hits - wounds .. " dice, " .. toWound .. "+): "
+		for i = 1, hits - wounds do
+			local rand = math.random(1, 6)
+			if(rand >= toWound) then
+				wounds = wounds + 1
+			end
+			result = result .. rand .. " "
+		end
+	end
 	if(save < 7) then
 		result = result .. "\nRolls saves (" .. wounds .. " dice, " .. save .. "+): "
 		for i = 1, wounds do
@@ -442,6 +447,7 @@ function Strike2(prey)
 		end
 	else
 		result = result .. "\n Saves are ignored by melee AP"
+		unsaved = wounds
 	end
 	result = result .. "\nTotal " .. unsaved .. " unsaved wounds. "
 	if(unsaved > 0) then
@@ -549,16 +555,4 @@ math.randomseed(os.time())
 CreateSkybox(80, "skybox")
 CreateTable(60, 30, "sand.bmp")
 CameraSetLimits(30, 12, 5, 0.2)
-local ui = UI:New()
-ui:Set()
-ui:NewButton("Button1", 10, 10, 30, 90, "End phase", "EndPhase")
-ui:NewButton("Button2", 110, 10, 30, 80, "Ruler", "SetRuler")
-ui:NewButton("Button3", 200, 10, 30, 80, "Undo", "UndoAction")
-ui:NewButton("Button4", 290, 10, 30, 80, "Redo", "RedoAction")
-ui:NewButton("Button5", 380, 10, 30, 80, "Shoot", "Fire"):SetVisible(false)
-ui:NewButton("Button6", 470, 10, 30, 80, "Run", "Run"):SetVisible(false)
-ui:NewButton("Button7", 380, 10, 30, 80, "Strike", "Strike"):SetVisible(false)
-ui:NewStaticText("Label1", 10, 40, 30, 180, "Deployment Phase")
-ui:NewStaticText("Label2", 10, 570, 30, 200, "")
-Init()
 SetSelectionCallback("OnSelection")

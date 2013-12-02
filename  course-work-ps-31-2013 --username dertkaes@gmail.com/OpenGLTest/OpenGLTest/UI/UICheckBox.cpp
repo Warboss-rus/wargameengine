@@ -8,20 +8,20 @@ void CUICheckBox::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(m_x, m_y, 0);
+	glTranslatef(GetX(), GetY(), 0);
 	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
 		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[0], m_theme.checkbox.checkedTexCoord[1]):glTexCoord2d(m_theme.checkbox.texCoord[0], m_theme.checkbox.texCoord[1]);
 		glVertex2d(0, 0);
 		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[0], m_theme.checkbox.checkedTexCoord[3]):glTexCoord2d(m_theme.checkbox.texCoord[0], m_theme.checkbox.texCoord[3]);
-		glVertex2d(0, m_height * m_theme.checkbox.checkboxSizeCoeff);
+		glVertex2d(0, GetHeight() * m_theme.checkbox.checkboxSizeCoeff);
 		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[2], m_theme.checkbox.checkedTexCoord[3]):glTexCoord2d(m_theme.checkbox.texCoord[2], m_theme.checkbox.texCoord[3]);
-		glVertex2d(m_height * m_theme.checkbox.checkboxSizeCoeff, m_height * m_theme.checkbox.checkboxSizeCoeff);
+		glVertex2d(GetHeight() * m_theme.checkbox.checkboxSizeCoeff, GetHeight() * m_theme.checkbox.checkboxSizeCoeff);
 		(m_state)?glTexCoord2d(m_theme.checkbox.checkedTexCoord[2], m_theme.checkbox.checkedTexCoord[1]):glTexCoord2d(m_theme.checkbox.texCoord[2], m_theme.checkbox.texCoord[1]);
-		glVertex2d(m_height * m_theme.checkbox.checkboxSizeCoeff, 0);
+		glVertex2d(GetHeight() * m_theme.checkbox.checkboxSizeCoeff, 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
-	PrintText(m_height * m_theme.checkbox.checkboxSizeCoeff + 1, 0, m_width, m_height, m_text, m_theme.text);
+	PrintText(GetHeight() * m_theme.checkbox.checkboxSizeCoeff + 1, 0, GetWidth(), GetHeight(), m_text, m_theme.text);
 	CUIElement::Draw();
 	glPopMatrix();
 }

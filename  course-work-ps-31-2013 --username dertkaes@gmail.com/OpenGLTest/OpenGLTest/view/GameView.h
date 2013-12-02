@@ -34,6 +34,7 @@ private:
 	void DrawUI() const;
 
 	callback(m_selectionCallback);
+	callback(m_updateCallback);
 public:
 	static std::weak_ptr<CGameView> GetIntanse();
 	void Update();
@@ -68,6 +69,7 @@ public:
 	bool UISpecialKeyPress(int key);
 
 	void SetSelectionCallback(callback(onSelect));
+	void SetUpdateCallback(callback(onUpdate));
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

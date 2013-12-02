@@ -37,6 +37,7 @@ CUITheme::CUITheme()
 	listbox.expandedTexCoord[3] = 0.80469;
 	listbox.buttonWidthCoeff = 0.66;
 	listbox.borderSize = 2;
+	listbox.spacing = 2;
 	//checkbox
 	checkbox.texCoord[0] = 0.121;
 	checkbox.texCoord[1] = 0.789;

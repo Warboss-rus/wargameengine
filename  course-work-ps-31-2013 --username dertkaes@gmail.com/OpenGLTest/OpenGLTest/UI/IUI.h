@@ -18,6 +18,7 @@ public:
 	virtual void AddChild(std::string const& name, std::shared_ptr<IUIElement> element) = 0;
 	virtual IUIElement* GetChildByName(std::string const& name) = 0;
 	virtual void DeleteChild(std::string const& name) = 0;
+	virtual void ClearChildren() = 0;
 	virtual bool LeftMouseButtonDown(int x, int y) = 0;
 	virtual bool LeftMouseButtonUp(int x, int y) = 0;
 	virtual bool OnKeyPress(unsigned char key) = 0;
@@ -39,6 +40,9 @@ public:
 	virtual size_t GetItemsCount() const = 0;
 	virtual std::string GetItem(size_t index) const = 0;
 	virtual void SetSelected(size_t index) = 0;
+	virtual void Resize(int windowHeight, int windowWidth) = 0;
+	virtual int GetWindowHeight() const = 0;
+	virtual int GetWindowWidth() const = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick)) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;

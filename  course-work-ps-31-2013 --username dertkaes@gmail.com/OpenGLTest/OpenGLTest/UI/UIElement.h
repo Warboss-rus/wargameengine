@@ -5,18 +5,19 @@
 class CUIElement : public IUIElement
 {
 public:
-	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(NULL), m_focused(NULL), m_theme(CUITheme::defaultTheme) {}
+	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(NULL), m_focused(NULL), m_theme(CUITheme::defaultTheme), m_windowHeight(640), m_windowWidth(640) {}
 	void Draw() const;
 	IUIElement* GetChildByName(std::string const& name);
 	void DeleteChild(std::string const& name);
+	void ClearChildren();
 	bool LeftMouseButtonDown(int x, int y);
 	bool LeftMouseButtonUp(int x, int y);
 	bool OnKeyPress(unsigned char key);
 	bool OnSpecialKeyPress(int key);
-	int GetX() const { return m_x; }
-	int GetY() const { return m_y; }
-	int GetHeight() const { return m_height; }
-	int GetWidth() const { return m_width; }
+	int GetX() const;
+	int GetY() const;
+	int GetHeight() const;
+	int GetWidth() const;
 	bool PointIsOnElement(int x, int y) const;
 	void SetVisible(bool visible);
 	bool GetVisible() { return m_visible; }
@@ -32,6 +33,9 @@ public:
 	size_t GetItemsCount() const { return 0; }
 	std::string GetItem(size_t index) const { return ""; }
 	void SetSelected(size_t index) {}
+	void Resize(int windowHeight, int windowWidth);
+	int GetWindowHeight() const;
+	int GetWindowWidth() const;
 
 	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick));
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
@@ -50,6 +54,8 @@ protected:
 	int m_y;
 	int m_height;
 	int m_width;
+	int m_windowHeight;
+	int m_windowWidth;
 	bool m_visible;
 	IUIElement * m_parent;
 	IUIElement * m_focused;

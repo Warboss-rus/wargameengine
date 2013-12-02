@@ -8,50 +8,50 @@ void CUIListBox::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(m_x, m_y, 0);
+	glTranslatef(GetX(), GetY(), 0);
 	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2d(0, 0);
-		glVertex2d(0, m_height);
-		glVertex2d(m_width, m_height);
-		glVertex2d(m_width, 0);
+		glVertex2d(0, CUIElement::GetHeight());
+		glVertex2d(CUIElement::GetWidth(), CUIElement::GetHeight());
+		glVertex2d(CUIElement::GetWidth(), 0);
 	glEnd();
 	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2d(m_theme.listbox.borderSize, m_theme.listbox.borderSize);
-		glVertex2d(m_theme.listbox.borderSize, m_height - m_theme.listbox.borderSize);
-		glVertex2d(m_width - m_theme.listbox.borderSize, m_height - m_theme.listbox.borderSize);
-		glVertex2d(m_width - m_theme.listbox.borderSize, m_theme.listbox.borderSize);
+		glVertex2d(m_theme.listbox.borderSize, CUIElement::GetHeight() - m_theme.listbox.borderSize);
+		glVertex2d(CUIElement::GetWidth() - m_theme.listbox.borderSize, CUIElement::GetHeight() - m_theme.listbox.borderSize);
+		glVertex2d(CUIElement::GetWidth() - m_theme.listbox.borderSize, m_theme.listbox.borderSize);
 	glEnd();
 	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
-	int fonty = (m_height + m_theme.text.fontHeight) / 2;
+	int fonty = (CUIElement::GetHeight() + m_theme.text.fontHeight) / 2;
 	if(m_selected >= 0)	PrintText(m_theme.listbox.borderSize, fonty, m_items[m_selected].c_str(), m_theme.text.font);
 	glColor3f(0.6f,0.6f,0.6f);
 	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
 		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[0], m_theme.listbox.expandedTexCoord[1]):glTexCoord2d(m_theme.listbox.texCoord[0], m_theme.listbox.texCoord[1]);
-		glVertex2d(m_width - m_height * m_theme.listbox.buttonWidthCoeff, 0);
+		glVertex2d(CUIElement::GetWidth() - CUIElement::GetHeight() * m_theme.listbox.buttonWidthCoeff, 0);
 		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[0], m_theme.listbox.expandedTexCoord[3]):glTexCoord2d(m_theme.listbox.texCoord[0], m_theme.listbox.texCoord[3]);
-		glVertex2d(m_width - m_height * m_theme.listbox.buttonWidthCoeff, m_height);
+		glVertex2d(CUIElement::GetWidth() - CUIElement::GetHeight() * m_theme.listbox.buttonWidthCoeff, CUIElement::GetHeight());
 		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[2], m_theme.listbox.expandedTexCoord[3]):glTexCoord2d(m_theme.listbox.texCoord[2], m_theme.listbox.texCoord[3]);
-		glVertex2d(m_width, m_height);
+		glVertex2d(CUIElement::GetWidth(), CUIElement::GetHeight());
 		(m_expanded)?glTexCoord2d(m_theme.listbox.expandedTexCoord[2], m_theme.listbox.expandedTexCoord[1]):glTexCoord2d(m_theme.listbox.texCoord[2], m_theme.listbox.texCoord[1]);
-		glVertex2d(m_width, 0);
+		glVertex2d(CUIElement::GetWidth(), 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
 	if(m_expanded)
 	{
 		glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 		glBegin(GL_QUADS);
-			glVertex2d(0, m_height);
-			glVertex2d(0, m_height * (m_items.size() + 1));
-			glVertex2d(m_width, m_height * (m_items.size() + 1));
-			glVertex2d(m_width, m_height);
+			glVertex2d(0, CUIElement::GetHeight());
+			glVertex2d(0, CUIElement::GetHeight() * (m_items.size() + 1));
+			glVertex2d(CUIElement::GetWidth(), CUIElement::GetHeight() * (m_items.size() + 1));
+			glVertex2d(CUIElement::GetWidth(), CUIElement::GetHeight());
 		glEnd();
 		glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 		for(size_t i = 0; i < m_items.size(); ++i)
 		{
-			PrintText(m_theme.listbox.borderSize, m_height * (i + 1) + fonty, m_items[i], m_theme.text.font);
+			PrintText(m_theme.listbox.borderSize, CUIElement::GetHeight() * (i + 1) + fonty, m_items[i], m_theme.text.font);
 		}
 	}
 	CUIElement::Draw();
@@ -85,7 +85,7 @@ bool CUIListBox::LeftMouseButtonUp(int x, int y)
 		{
 			if(m_expanded && PointIsOnElement(x, y))
 			{
-				int index = (y - m_y) / m_height;
+				int index = (y - m_y) / CUIElement::GetHeight();
 				if(index > 0) m_selected = index - 1;
 			}
 			m_expanded = !m_expanded;
@@ -125,9 +125,9 @@ int CUIListBox::GetHeight() const
 {
 	if(m_expanded && !m_items.empty())
 	{
-		return m_height * (m_items.size() + 1);
+		return CUIElement::GetHeight() * (m_items.size() + 1);
 	}
-	return m_height;
+	return CUIElement::GetHeight();
 }
 
 void CUIListBox::DeleteItem(size_t index)

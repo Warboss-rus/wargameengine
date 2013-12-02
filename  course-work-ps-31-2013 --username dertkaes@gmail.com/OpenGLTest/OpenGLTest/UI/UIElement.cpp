@@ -6,6 +6,7 @@
 #include "UIListBox.h"
 #include "UIEdit.h"
 #include "UIList.h"
+#include <GL\glut.h>
 
 void CUIElement::Draw() const
 {
@@ -48,7 +49,7 @@ void CUIElement::DeleteChild(std::string const& name)
 
 bool CUIElement::PointIsOnElement(int x, int y) const
 {
-	if(x > m_x && x < m_x + GetWidth()	&& y > m_y && y < m_y + GetHeight())
+	if(x > GetX() && x < GetX() + GetWidth()	&& y > GetY() && y < GetY() + GetHeight())
 		return true;
 	return false;
 }
@@ -56,11 +57,11 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 bool CUIElement::LeftMouseButtonDown(int x, int y)
 {
 	if(!m_visible) return false;
-	if(m_focused && m_focused->LeftMouseButtonDown(x - m_x, y - m_y))
+	if(m_focused && m_focused->LeftMouseButtonDown(x - GetX(), y - GetY()))
 		return true;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		if(i->second->LeftMouseButtonDown(x - m_x, y - m_y))
+		if(i->second->LeftMouseButtonDown(x - GetX(), y - GetY()))
 		{
 			return true;
 		}
@@ -71,11 +72,11 @@ bool CUIElement::LeftMouseButtonDown(int x, int y)
 bool CUIElement::LeftMouseButtonUp(int x, int y)
 {
 	if(!m_visible) return false;
-	if(m_focused && m_focused->LeftMouseButtonUp(x - m_x, y - m_y))
+	if(m_focused && m_focused->LeftMouseButtonUp(x - GetX(), y - GetY()))
 		return true;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		if(i->second->LeftMouseButtonUp(x - m_x, y - m_y))
+		if(i->second->LeftMouseButtonUp(x - GetX(), y - GetY()))
 		{
 			return true;
 		}
@@ -185,4 +186,52 @@ bool CUIElement::IsFocused(const IUIElement * child) const
 	if(m_parent != NULL)
 		return m_parent->IsFocused(this);
 	return true;
+}
+
+void CUIElement::ClearChildren()
+{
+	m_children.clear();
+}
+
+int CUIElement::GetX() const
+{
+	return m_x * GetWindowWidth() / 600;
+}
+
+int CUIElement::GetY() const
+{
+	return m_y * GetWindowHeight() / 600;
+}
+
+int CUIElement::GetHeight() const
+{
+	return m_height * GetWindowHeight() / 600;
+}
+
+int CUIElement::GetWidth() const
+{
+	return m_width * GetWindowWidth() / 600;
+}
+
+void CUIElement::Resize(int windowHeight, int windowWidth)
+{
+	m_windowHeight = windowHeight;
+	m_windowWidth = windowWidth;
+}
+
+int CUIElement::GetWindowHeight() const
+{
+	if(m_parent)
+	{
+		return m_parent->GetWindowHeight();
+	}
+	return m_windowHeight;
+}
+int CUIElement::GetWindowWidth() const
+{
+	if(m_parent)
+	{
+		return m_parent->GetWindowWidth();
+	}
+	return m_windowWidth;
 }
