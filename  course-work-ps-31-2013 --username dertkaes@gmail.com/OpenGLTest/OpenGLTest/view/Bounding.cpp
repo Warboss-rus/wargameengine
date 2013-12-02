@@ -86,26 +86,47 @@ bool IntersectRayWithSide(CVector3d const& pa, CVector3d const& pb, CVector3d co
 
 bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
-	CVector3d firstDiagonal[3] = {CVector3d(m_min[0], m_max[1], m_min[2]), CVector3d(m_max[0], m_max[1], m_min[2]), CVector3d(m_min[0], m_min[1], m_max[2])};
-	CVector3d secondDiagonal[3] = {CVector3d(m_max[0], m_max[1], m_min[2]), CVector3d(m_max[0], m_min[1], m_min[2]), CVector3d(m_min[0], m_min[1], m_max[2])};
+	CVector3d side1[3] = {CVector3d(m_min[0], m_max[1], m_min[2]), CVector3d(m_max[0], m_max[1], m_min[2]), CVector3d(m_min[0], m_min[1], m_min[2])};
+	CVector3d side2[3] = {CVector3d(m_min[0], m_max[1], m_min[2]), CVector3d(m_max[0], m_max[1], m_min[2]), CVector3d(m_min[0], m_max[1], m_max[2])};
+	CVector3d side3[3] = {CVector3d(m_min[0], m_max[1], m_max[2]), CVector3d(m_max[0], m_max[1], m_max[2]), CVector3d(m_max[0], m_min[1], m_max[2])};
+	CVector3d side4[3] = {CVector3d(m_min[0], m_max[1], m_max[2]), CVector3d(m_min[0], m_min[1], m_max[2]), CVector3d(m_min[0], m_min[1], m_min[2])};
+	CVector3d side5[3] = {CVector3d(m_min[0], m_min[1], m_min[2]), CVector3d(m_max[0], m_min[1], m_min[2]), CVector3d(m_max[0], m_min[1], m_max[2])};
+	CVector3d side6[3] = {CVector3d(m_max[0], m_max[1], m_max[2]), CVector3d(m_max[0], m_min[1], m_max[2]), CVector3d(m_max[0], m_min[1], m_min[2])};
 
-    RotateScaleTranslate(firstDiagonal[0], rotation, m_scale, x, y, z);
-	RotateScaleTranslate(firstDiagonal[1], rotation, m_scale, x, y, z);
-	RotateScaleTranslate(firstDiagonal[2], rotation, m_scale, x, y, z);
-    RotateScaleTranslate(secondDiagonal[0], rotation, m_scale, x, y, z);
-	RotateScaleTranslate(secondDiagonal[1], rotation, m_scale, x, y, z);
-	RotateScaleTranslate(secondDiagonal[2], rotation, m_scale, x, y, z);
+	RotateScaleTranslate(side1[0], rotation, m_scale, x, y, z); RotateScaleTranslate(side1[1], rotation, m_scale, x, y, z); RotateScaleTranslate(side1[2], rotation, m_scale, x, y, z); 
+	RotateScaleTranslate(side2[0], rotation, m_scale, x, y, z); RotateScaleTranslate(side2[1], rotation, m_scale, x, y, z); RotateScaleTranslate(side2[2], rotation, m_scale, x, y, z); 
+	RotateScaleTranslate(side3[0], rotation, m_scale, x, y, z); RotateScaleTranslate(side3[1], rotation, m_scale, x, y, z); RotateScaleTranslate(side3[2], rotation, m_scale, x, y, z); 
+	RotateScaleTranslate(side4[0], rotation, m_scale, x, y, z); RotateScaleTranslate(side4[1], rotation, m_scale, x, y, z); RotateScaleTranslate(side4[2], rotation, m_scale, x, y, z); 
+	RotateScaleTranslate(side5[0], rotation, m_scale, x, y, z); RotateScaleTranslate(side5[1], rotation, m_scale, x, y, z); RotateScaleTranslate(side5[2], rotation, m_scale, x, y, z); 
+	RotateScaleTranslate(side6[0], rotation, m_scale, x, y, z); RotateScaleTranslate(side6[1], rotation, m_scale, x, y, z); RotateScaleTranslate(side6[2], rotation, m_scale, x, y, z); 
+
 
 	CVector3d p1(origin[0], origin[1], origin[2]);
 	CVector3d p2(end[0], end[1], end[2]);
 
 	CVector3d interesect;
 	bool result;
-	if (IntersectRayWithSide(firstDiagonal[0], firstDiagonal[1], firstDiagonal[2], p1, p2, intersectCoord))
+	if (IntersectRayWithSide(side1[0], side1[1], side1[2], p1, p2, intersectCoord))
 	{
 	   return true;
 	}
-	if (IntersectRayWithSide(secondDiagonal[0], secondDiagonal[1], secondDiagonal[2], p1, p2, intersectCoord))
+	if (IntersectRayWithSide(side2[0], side2[1], side2[2], p1, p2, intersectCoord))
+	{
+	   return true;
+	}
+	if (IntersectRayWithSide(side3[0], side3[1], side3[2], p1, p2, intersectCoord))
+	{
+	   return true;
+	}
+	if (IntersectRayWithSide(side4[0], side4[1], side4[2], p1, p2, intersectCoord))
+	{
+	   return true;
+	}
+	if (IntersectRayWithSide(side5[0], side5[1], side5[2], p1, p2, intersectCoord))
+	{
+	   return true;
+	}
+	if (IntersectRayWithSide(side6[0], side6[1], side6[2], p1, p2, intersectCoord))
 	{
 	   return true;
 	}

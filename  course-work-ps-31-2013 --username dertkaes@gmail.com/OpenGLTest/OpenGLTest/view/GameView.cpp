@@ -8,6 +8,7 @@
 #include "..\LUA\LUARegisterUI.h"
 #include "..\LUA\LUARegisterObject.h"
 #include "..\ObjectGroup.h"
+#include "DirectLight.h"
 
 using namespace std;
 
@@ -145,6 +146,13 @@ void CGameView::Update()
 
 void CGameView::DrawObjects(void)
 {
+    glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	CDirectLight light(CVector3f(0, 0, -1));
+	light.SetAmbientIntensity(0.0, 0.0, 0.0, 1.0);
+	light.SetDiffuseIntensity(1.0, 1.0, 1.0, 1.0);
+	light.SetSpecularIntensity(1.0, 1.0, 1.0, 1.0);
+	light.SetLight(GL_LIGHT0);
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
@@ -155,6 +163,8 @@ void CGameView::DrawObjects(void)
 		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes());
 		glPopMatrix();
 	}
+	glDisable(GL_LIGHTING);
+	glDisable(GL_LIGHT0);
 }
 
 void CGameView::OnReshape(int width, int height) 

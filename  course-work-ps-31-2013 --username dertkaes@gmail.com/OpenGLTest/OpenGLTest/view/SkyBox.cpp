@@ -6,6 +6,10 @@
 #define GL_CLAMP_TO_EDGE_EXT 0x812F 
 #endif 
 
+CSkyBox::CSkyBox(double width, double height, double length, std::string const& imageFolder): m_width(width), m_height(height), m_length(length), m_imageFolder(imageFolder) 
+{
+}
+
 void CSkyBox::Draw(double x, double y, double z, double scale)
 {
 	x = -x - m_width / (scale * 2);
