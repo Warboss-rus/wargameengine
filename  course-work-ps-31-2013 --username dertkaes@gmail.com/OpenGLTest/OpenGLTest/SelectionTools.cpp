@@ -2,6 +2,23 @@
 #include "ObjectInterface.h"
 #include <vector>
 
+
+#ifndef	HUGE_VAL
+#define	HUGE_VAL	1.7976931348623157e+308
+#endif
+
+typedef struct Point4Struct {	/* 4d point */
+	double x, y, z, w;
+	} Point4;
+
+/* fast macro version of V3Dot, usable with Point4 */
+#define DOT3( a, b )	( (a)->x*(b)->x + (a)->y*(b)->y + (a)->z*(b)->z )
+
+/* return codes */
+#define	MISSED		 0
+#define	FRONTFACE	 1
+#define	BACKFACE	-1
+
 void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, double & startz, double & endx, double & endy, double & endz)
 {
 	//Get model, projection and viewport matrices

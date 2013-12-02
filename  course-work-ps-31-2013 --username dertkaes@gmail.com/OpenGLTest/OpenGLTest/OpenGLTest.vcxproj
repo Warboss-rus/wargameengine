@@ -140,7 +140,6 @@
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />
     <ClInclude Include="SelectionTools.h" />
-    <ClInclude Include="Structs.h" />
     <ClInclude Include="UI\IUI.h" />
     <ClInclude Include="UI\UIButton.h" />
     <ClInclude Include="UI\UICheckBox.h" />

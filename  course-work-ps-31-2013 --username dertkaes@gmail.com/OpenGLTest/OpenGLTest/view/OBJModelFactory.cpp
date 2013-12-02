@@ -40,20 +40,20 @@ FaceIndex ParseFaceIndex(std::string const& str)
 C3DModel * LoadObjModel(std::string const& path)
 {
 	std::vector<CVector3d> vertices;
-	std::vector<sPoint2> textureCoords;
+	std::vector<CVector2d> textureCoords;
 	std::vector<CVector3d> normals;
 	std::map<std::string, unsigned int> faces;
 	std::ifstream iFile(path);
 	std::string line;
 	std::string type;
 	CVector3d p3;
-	sPoint2 p2;
+	CVector2d p2;
 	sMesh mesh;
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
 	std::vector<CVector3d> newVertices;
-	std::vector<sPoint2> newTextureCoords;
+	std::vector<CVector2d> newTextureCoords;
 	std::vector<CVector3d> newNormals;
 	std::vector<unsigned int> indexes;
 	CMaterialManager materialManager;
@@ -108,7 +108,7 @@ C3DModel * LoadObjModel(std::string const& path)
 					}
 					else
 					{
-						newTextureCoords.push_back(sPoint2());
+						newTextureCoords.push_back(CVector2d());
 					}
 					if(faceIndex.normal != 0)
 					{

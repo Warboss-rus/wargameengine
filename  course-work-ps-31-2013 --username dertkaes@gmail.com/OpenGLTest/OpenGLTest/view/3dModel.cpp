@@ -1,7 +1,7 @@
 #include "3dModel.h"
 #include <GL\glut.h>
 
-C3DModel::C3DModel(std::vector<CVector3d> & vertices, std::vector<sPoint2> & textureCoords, std::vector<CVector3d> & normals, std::vector<unsigned int> & indexes,
+C3DModel::C3DModel(std::vector<CVector3d> & vertices, std::vector<CVector2d> & textureCoords, std::vector<CVector3d> & normals, std::vector<unsigned int> & indexes,
 				   CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale)
 {
 	m_vertices.swap(vertices);

@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <set>
-#include "Structs.h" 
 #include "view\Vector3.h"
 #include "MovementLimiter.h"
 

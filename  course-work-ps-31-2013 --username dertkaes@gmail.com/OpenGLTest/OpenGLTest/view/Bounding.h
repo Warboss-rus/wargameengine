@@ -1,6 +1,5 @@
 #include <memory>
 #include <vector>
-#include "..\Structs.h"
 #include "Vector3.h"
 class IBounding
 {
