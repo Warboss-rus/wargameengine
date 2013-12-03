@@ -1,6 +1,6 @@
 function NewObject()
 	local ui = UI:Get()--Retrives current assigned UI
-	local model = ui:GetChild("ListBox1"):GetText() --Gets a text from Edit or Listbox (selected item)
+	local model = ui:GetChild("ComboBox1"):GetText() --Gets a text from Edit or Listbox (selected item)
 	Object:New(model, 0, 0, 0)--Creates a new object(model path, x, y, rotation) and returns it
 end
 
@@ -59,12 +59,15 @@ CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to textu
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 CameraSetLimits(15, 6, 5, 0.4)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 local ui = UI:Get()--Get current UI
-local list = ui:NewListbox("ListBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
+local list = ui:NewCombobox("ComboBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
 list:AddItem("Angel_of_Death.wbm")
 list:AddItem("CSM.wbm")
 list:AddItem("rhino.obj")
-list:AddItem("Ruine.obj")
-list:AddItem("assault_marine.obj")
+list:AddItem("Ruine.wbm")
+list:AddItem("assault_marine.wbm")
+list:AddItem("CSM_HB.wbm")
+list:AddItem("CSM_plasma.wbm")
+list:AddItem("raptor.wbm")
 ui:NewButton("Button1", 220, 10, 30, 80, "Create", "NewObject")--Adds new button to UI (name, x, y, width, height, caption, callback function name)
 ui:NewButton("Button2", 310, 10, 30, 80, "Delete", "DeleteSelectedObject")
 ui:NewButton("Button3", 400, 10, 30, 100, "Roll Dices", "SetDicePanelVisibility")

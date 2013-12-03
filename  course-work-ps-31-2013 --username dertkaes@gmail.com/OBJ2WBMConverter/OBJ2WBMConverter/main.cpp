@@ -7,13 +7,13 @@ int main(int argc, char* argv[])
 	C3DModel * model = LoadObjModel(path);
 	path = path.substr(0, path.find_last_of('.')) + ".wbm";
 	FILE* oFile = fopen(path.c_str(), "wb");
-	unsigned int size = model->m_vertices.size() * sizeof(sPoint3);
+	unsigned int size = model->m_vertices.size() * sizeof(CVector3f);
 	fwrite(&size, sizeof(size_t), 1, oFile);
 	fwrite(&model->m_vertices[0], size, 1, oFile);
-	size = model->m_textureCoords.size() * sizeof(sPoint2);
+	size = model->m_textureCoords.size() * sizeof(CVector2f);
 	fwrite(&size, sizeof(size_t), 1, oFile);
 	fwrite(&model->m_textureCoords[0], size, 1, oFile);
-	size = model->m_normals.size() * sizeof(sPoint3);
+	size = model->m_normals.size() * sizeof(CVector3f);
 	fwrite(&size, sizeof(size_t), 1, oFile);
 	fwrite(&model->m_normals[0], size, 1, oFile);
 	size = model->m_indexes.size() * sizeof(size_t);

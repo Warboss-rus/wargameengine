@@ -134,6 +134,11 @@ void CGameView::DrawBoundingBox()
 void CGameView::Update()
 {
 	if(m_updateCallback) m_updateCallback();
+	if(m_singleCallback)
+	{
+		m_singleCallback();
+		m_singleCallback = std::function<void()>();
+	}
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	if(m_table) m_table->Draw();
@@ -418,4 +423,9 @@ void CGameView::SetSelectionCallback(callback(onSelect))
 void CGameView::SetUpdateCallback(callback(onUpdate))
 {
 	m_updateCallback = onUpdate;
+}
+
+void CGameView::SetSingleCallback(callback(onSingleUpdate))
+{
+	m_singleCallback = onSingleUpdate;
 }

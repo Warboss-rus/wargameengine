@@ -2,7 +2,6 @@
 #include "UIText.h"
 #include <GL\glut.h>
 #include "..\view\TextureManager.h"
-#include "UIText.h"
 
 void CUIEdit::Draw() const
 {
@@ -12,37 +11,37 @@ void CUIEdit::Draw() const
 	glTranslatef(GetX(), GetY(), 0);
 	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
 	glBegin(GL_QUADS);
-		glVertex2d(0, 0);
-		glVertex2d(0, GetHeight());
-		glVertex2d(GetWidth(), GetHeight());
-		glVertex2d(GetWidth(), 0);
+		glVertex2i(0, 0);
+		glVertex2i(0, GetHeight());
+		glVertex2i(GetWidth(), GetHeight());
+		glVertex2i(GetWidth(), 0);
 	glEnd();
 	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 	glBegin(GL_QUADS);
-		glVertex2d(m_theme.edit.borderSize, m_theme.edit.borderSize);
-		glVertex2d(m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
-		glVertex2d(GetWidth() - m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
-		glVertex2d(GetWidth() - m_theme.edit.borderSize, m_theme.edit.borderSize);
+		glVertex2i(m_theme.edit.borderSize, m_theme.edit.borderSize);
+		glVertex2i(m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
+		glVertex2i(GetWidth() - m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
+		glVertex2i(GetWidth() - m_theme.edit.borderSize, m_theme.edit.borderSize);
 	glEnd();
 	int fonty = (GetHeight() + m_theme.text.fontHeight) / 2;
 	if(IsFocused(NULL))
 	{
-		double cursorpos = m_theme.edit.borderSize + m_pos * glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
-		glColor3b(0, 0, 0);
+		int cursorpos = m_theme.edit.borderSize + m_pos * glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		glColor3ub(0, 0, 0);
 		glBegin(GL_LINES);
-		glVertex2d(cursorpos, fonty);
-		glVertex2d(cursorpos, fonty - m_theme.text.fontHeight);
+		glVertex2i(cursorpos, fonty);
+		glVertex2i(cursorpos, fonty - m_theme.text.fontHeight);
 		glEnd();
 	}
 	if(m_pos != m_beginSelection)
 	{
 		glColor3f(0.0f, 0.0f, 1.0f);
-		double fontwidth = glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		int fontwidth = glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
 		glBegin(GL_QUADS);
-		glVertex2d(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty);
-		glVertex2d(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty - m_theme.text.fontHeight);
-		glVertex2d(m_theme.edit.borderSize + m_pos * fontwidth, fonty - m_theme.text.fontHeight);
-		glVertex2d(m_theme.edit.borderSize + m_pos * fontwidth, fonty);
+		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty);
+		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty - m_theme.text.fontHeight);
+		glVertex2i(m_theme.edit.borderSize + m_pos * fontwidth, fonty - m_theme.text.fontHeight);
+		glVertex2i(m_theme.edit.borderSize + m_pos * fontwidth, fonty);
 		glEnd();
 	}
 	PrintText(m_theme.edit.borderSize, m_theme.edit.borderSize, m_width - 2 * m_theme.edit.borderSize, m_height - 2 *m_theme.edit.borderSize, m_text, m_theme.text);

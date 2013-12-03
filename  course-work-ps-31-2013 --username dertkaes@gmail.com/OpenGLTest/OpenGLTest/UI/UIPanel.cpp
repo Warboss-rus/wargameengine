@@ -9,10 +9,10 @@ void CUIPanel::Draw() const
 	glTranslatef(GetX(), GetY(), 0);
 	glColor3f(0.6f,0.6f,0.6f);
 	glBegin(GL_QUADS);
-		glVertex2d(0, 0);
-		glVertex2d(0, GetHeight());
-		glVertex2d(GetWidth(), GetHeight());
-		glVertex2d(GetWidth(), 0);
+		glVertex2i(0, 0);
+		glVertex2i(0, GetHeight());
+		glVertex2i(GetWidth(), GetHeight());
+		glVertex2i(GetWidth(), 0);
 	glEnd();
 	glColor3f(0.0f,0.0f,0.0f);
 	CUIElement::Draw();

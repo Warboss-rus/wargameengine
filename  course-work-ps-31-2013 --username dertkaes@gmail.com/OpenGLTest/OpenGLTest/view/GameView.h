@@ -35,6 +35,7 @@ private:
 
 	callback(m_selectionCallback);
 	callback(m_updateCallback);
+	callback(m_singleCallback);
 public:
 	static std::weak_ptr<CGameView> GetIntanse();
 	void Update();
@@ -70,6 +71,7 @@ public:
 
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));
+	void SetSingleCallback(callback(onSingleUpdate));
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

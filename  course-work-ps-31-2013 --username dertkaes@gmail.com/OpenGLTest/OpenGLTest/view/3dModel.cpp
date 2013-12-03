@@ -1,7 +1,7 @@
 #include "3dModel.h"
 #include <GL\glut.h>
 
-C3DModel::C3DModel(std::vector<CVector3d> & vertices, std::vector<CVector2d> & textureCoords, std::vector<CVector3d> & normals, std::vector<unsigned int> & indexes,
+C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 				   CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale)
 {
 	m_vertices.swap(vertices);
@@ -35,17 +35,17 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes)
 	if(!m_vertices.empty())
 	{
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_DOUBLE, 0, &m_vertices[0]);
+		glVertexPointer(3, GL_FLOAT, 0, &m_vertices[0]);
 	}
 	if(!m_normals.empty())
 	{
 		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_DOUBLE, 0, &m_normals[0]);
+		glNormalPointer(GL_FLOAT, 0, &m_normals[0]);
 	}
 	if(!m_textureCoords.empty())
 	{
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, GL_DOUBLE, 0, &m_textureCoords[0]);
+		glTexCoordPointer(2, GL_FLOAT, 0, &m_textureCoords[0]);
 	}
 	if(!m_indexes.empty()) //Draw by meshes;
 	{

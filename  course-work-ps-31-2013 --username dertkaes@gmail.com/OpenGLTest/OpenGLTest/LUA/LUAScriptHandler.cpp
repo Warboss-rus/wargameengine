@@ -26,7 +26,13 @@ double CLUAScript::GetArgument<double>(int index)
 template<>
 int CLUAScript::GetArgument<int>(int index)
 {
-    return luaL_checknumber(m_lua_state,index);
+    return luaL_checkinteger(m_lua_state,index);
+}
+
+template<>
+unsigned int CLUAScript::GetArgument<unsigned int>(int index)
+{
+    return luaL_checkunsigned(m_lua_state,index);
 }
 
 template<>

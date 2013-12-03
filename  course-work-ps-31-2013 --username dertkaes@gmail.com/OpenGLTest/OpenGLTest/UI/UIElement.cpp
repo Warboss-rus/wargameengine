@@ -3,10 +3,9 @@
 #include "UIStaticText.h"
 #include "UIPanel.h"
 #include "UICheckBox.h"
-#include "UIListBox.h"
+#include "UIComboBox.h"
 #include "UIEdit.h"
 #include "UIList.h"
-#include <GL\glut.h>
 
 void CUIElement::Draw() const
 {
@@ -139,21 +138,15 @@ IUIElement* CUIElement::AddNewCheckBox(std::string const& name, int x, int y, in
 	return item.get();
 }
 
-IUIElement* CUIElement::AddNewListBox(std::string const& name, int x, int y, int height, int width)
+IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIListBox(x, y, height, width, this));
-	CUIListBox * listbox = (CUIListBox *)item.get();
-	AddChild(name, item);
-	return item.get();
-}
-
-IUIElement* CUIElement::AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items)
-{
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIListBox(x, y, height, width, this));
-	CUIListBox * listbox = (CUIListBox *)item.get();
-	for(auto i = items.begin(); i != items.end(); i++)
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIComboBox(x, y, height, width, this));
+	if(items)
 	{
-		listbox->AddItem(*i);
+		for(auto i = items->begin(); i != items->end(); i++)
+		{
+			item->AddItem(*i);
+		}
 	}
 	AddChild(name, item);
 	return item.get();

@@ -11,19 +11,17 @@ void CUIButton::Draw() const
 	glTranslatef(GetX(), GetY(), 0);
 	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
-		(m_isPressed)?glTexCoord2d(m_theme.button.pressedTexCoord[0], m_theme.button.pressedTexCoord[1]):glTexCoord2d(m_theme.button.texCoord[0], m_theme.button.texCoord[1]);
-		glVertex2d(0, 0);
-		(m_isPressed)?glTexCoord2d(m_theme.button.pressedTexCoord[0], m_theme.button.pressedTexCoord[3]):glTexCoord2d(m_theme.button.texCoord[0], m_theme.button.texCoord[3]);
-		glVertex2d(0, GetHeight());
-		(m_isPressed)?glTexCoord2d(m_theme.button.pressedTexCoord[2], m_theme.button.pressedTexCoord[3]):glTexCoord2d(m_theme.button.texCoord[2], m_theme.button.texCoord[3]);
-		glVertex2d(GetWidth(), GetHeight());
-		(m_isPressed)?glTexCoord2d(m_theme.button.pressedTexCoord[2], m_theme.button.pressedTexCoord[1]):glTexCoord2d(m_theme.button.texCoord[2], m_theme.button.texCoord[1]);
-		glVertex2d(GetWidth(), 0);
+		(m_isPressed)?glTexCoord2f(m_theme.button.pressedTexCoord[0], m_theme.button.pressedTexCoord[1]):glTexCoord2f(m_theme.button.texCoord[0], m_theme.button.texCoord[1]);
+		glVertex2i(0, 0);
+		(m_isPressed)?glTexCoord2f(m_theme.button.pressedTexCoord[0], m_theme.button.pressedTexCoord[3]):glTexCoord2f(m_theme.button.texCoord[0], m_theme.button.texCoord[3]);
+		glVertex2i(0, GetHeight());
+		(m_isPressed)?glTexCoord2f(m_theme.button.pressedTexCoord[2], m_theme.button.pressedTexCoord[3]):glTexCoord2f(m_theme.button.texCoord[2], m_theme.button.texCoord[3]);
+		glVertex2i(GetWidth(), GetHeight());
+		(m_isPressed)?glTexCoord2f(m_theme.button.pressedTexCoord[2], m_theme.button.pressedTexCoord[1]):glTexCoord2f(m_theme.button.texCoord[2], m_theme.button.texCoord[1]);
+		glVertex2i(GetWidth(), 0);
 	glEnd();
 	CTextureManager::GetInstance()->SetTexture("");
-	CUITheme::sText text = m_theme.text;
-	text.aligment = text.center;
-	PrintText(0, 0, GetWidth(), GetHeight(), m_text, text);
+	PrintText(0, 0, GetWidth(), GetHeight(), m_text, m_theme.button.text);
 	CUIElement::Draw();
 	glPopMatrix();
 }

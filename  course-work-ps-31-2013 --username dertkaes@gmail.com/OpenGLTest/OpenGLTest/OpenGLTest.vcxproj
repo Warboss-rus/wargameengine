@@ -101,7 +101,7 @@
     <ClCompile Include="UI\UIEdit.cpp" />
     <ClCompile Include="UI\UIElement.cpp" />
     <ClCompile Include="UI\UIList.cpp" />
-    <ClCompile Include="UI\UIListBox.cpp" />
+    <ClCompile Include="UI\UIComboBox.cpp" />
     <ClCompile Include="UI\UIPanel.cpp" />
     <ClCompile Include="UI\UIStaticText.cpp" />
     <ClCompile Include="UI\UIText.cpp" />
@@ -109,8 +109,10 @@
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\Bounding.cpp" />
     <ClCompile Include="view\Camera.cpp" />
+    <ClCompile Include="view\DirectLight.cpp" />
     <ClCompile Include="view\GameView.cpp" />
     <ClCompile Include="view\Input.cpp" />
+    <ClCompile Include="view\Light.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
@@ -121,6 +123,8 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="view\DirectLight.h" />
+    <ClInclude Include="view\Light.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />
     <ClInclude Include="view\Vector4.h" />
@@ -146,7 +150,7 @@
     <ClInclude Include="UI\UIEdit.h" />
     <ClInclude Include="UI\UIElement.h" />
     <ClInclude Include="UI\UIList.h" />
-    <ClInclude Include="UI\UIListBox.h" />
+    <ClInclude Include="UI\UIComboBox.h" />
     <ClInclude Include="UI\UIPanel.h" />
     <ClInclude Include="UI\UIStaticText.h" />
     <ClInclude Include="UI\UIText.h" />

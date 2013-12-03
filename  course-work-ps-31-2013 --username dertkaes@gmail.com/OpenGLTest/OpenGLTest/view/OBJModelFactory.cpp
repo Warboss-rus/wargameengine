@@ -39,22 +39,22 @@ FaceIndex ParseFaceIndex(std::string const& str)
 
 C3DModel * LoadObjModel(std::string const& path)
 {
-	std::vector<CVector3d> vertices;
-	std::vector<CVector2d> textureCoords;
-	std::vector<CVector3d> normals;
+	std::vector<CVector3f> vertices;
+	std::vector<CVector2f> textureCoords;
+	std::vector<CVector3f> normals;
 	std::map<std::string, unsigned int> faces;
 	std::ifstream iFile(path);
 	std::string line;
 	std::string type;
-	CVector3d p3;
-	CVector2d p2;
+	CVector3f p3;
+	CVector2f p2;
 	sMesh mesh;
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
-	std::vector<CVector3d> newVertices;
-	std::vector<CVector2d> newTextureCoords;
-	std::vector<CVector3d> newNormals;
+	std::vector<CVector3f> newVertices;
+	std::vector<CVector2f> newTextureCoords;
+	std::vector<CVector3f> newNormals;
 	std::vector<unsigned int> indexes;
 	CMaterialManager materialManager;
 	std::vector<sMesh> meshes;
@@ -108,7 +108,7 @@ C3DModel * LoadObjModel(std::string const& path)
 					}
 					else
 					{
-						newTextureCoords.push_back(CVector2d());
+						newTextureCoords.push_back(CVector2f());
 					}
 					if(faceIndex.normal != 0)
 					{
@@ -116,7 +116,7 @@ C3DModel * LoadObjModel(std::string const& path)
 					}
 					else
 					{
-						newNormals.push_back(CVector3d());
+						newNormals.push_back(CVector3f());
 					}
 					indexes.push_back(newVertices.size() - 1);
 					faces[index3] = newVertices.size() - 1;

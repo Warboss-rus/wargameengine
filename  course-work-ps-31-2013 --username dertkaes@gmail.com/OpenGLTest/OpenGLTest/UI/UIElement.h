@@ -41,8 +41,7 @@ public:
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
 	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width);
 	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState);
-	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width);
-	IUIElement* AddNewListBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> items);
+	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = NULL);
 	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text);
 	IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width);
 protected:

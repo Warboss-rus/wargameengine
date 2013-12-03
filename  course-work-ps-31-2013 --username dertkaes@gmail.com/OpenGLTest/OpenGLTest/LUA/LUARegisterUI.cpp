@@ -1,7 +1,7 @@
 #include "LUAScriptHandler.h"
 #include "..\UI\UIElement.h"
 #include "..\UI\UICheckBox.h"
-#include "..\UI\UIListBox.h"
+#include "..\UI\UIComboBox.h"
 #include "..\view\GameView.h"
 
 int NewButton(lua_State* L)
@@ -69,7 +69,7 @@ int NewCheckbox(lua_State* L)
 	return CLUAScript::NewInstanceClass(checkbox, "UI");
 }
 
-int NewListbox(lua_State* L)
+int NewCombobox(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 6)
         return luaL_error(L, "5 arguments expected");
@@ -79,7 +79,7 @@ int NewListbox(lua_State* L)
 	int y = CLUAScript::GetArgument<int>(4);
 	int height = CLUAScript::GetArgument<int>(5);
 	int width = CLUAScript::GetArgument<int>(6);
-	IUIElement * listbox = c->AddNewListBox(name, x, y, height, width);
+	IUIElement * listbox = c->AddNewComboBox(name, x, y, height, width);
 	return CLUAScript::NewInstanceClass(listbox, "UI");
 }
 
@@ -180,7 +180,7 @@ int DeleteItem(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (index)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	int index = CLUAScript::GetArgument<int>(2);
+	unsigned int index = CLUAScript::GetArgument<unsigned int>(2);
 	if(index >= 0 && index < c->GetItemsCount())
 	{
 		c->DeleteItem(index);
@@ -240,7 +240,7 @@ static const luaL_Reg UIFuncs[] = {
 	{ "NewStaticText", NewStaticText },
 	{ "NewPanel", NewPanel },
 	{ "NewCheckbox", NewCheckbox },
-	{ "NewListbox", NewListbox },
+	{ "NewCombobox", NewCombobox },
 	{ "NewEdit", NewEdit },
 	{ "NewList", NewList },
 	{ "GetChild", GetChild },

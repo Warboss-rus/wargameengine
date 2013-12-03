@@ -66,7 +66,7 @@ double CObjectGroup::GetRotation() const
 
 std::set<std::string> const& CObjectGroup::GetHiddenMeshes() const
 {
-	return std::set<std::string>();
+	return empty;
 }
 
 void CObjectGroup::HideMesh(std::string const& meshName)

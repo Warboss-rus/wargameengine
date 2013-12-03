@@ -34,4 +34,5 @@ public:
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;
+	const std::set<std::string> empty;
 };

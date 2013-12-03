@@ -25,29 +25,33 @@ public:
 	struct sButton
 	{
 	public:
-		double texCoord[4];
-		double pressedTexCoord[4];
+		float texCoord[4];
+		float pressedTexCoord[4];
+		sText text;
 	};
 	sButton button;
-	struct sListBox
+	struct sComboBox
 	{
-		double texCoord[4];
-		double expandedTexCoord[4];
-		double buttonWidthCoeff;
+		float texCoord[4];
+		float expandedTexCoord[4];
+		float buttonWidthCoeff;
 		int borderSize;
 		int spacing;
+		sText text;
 	};
-	sListBox listbox;
+	sComboBox combobox;
 	struct sCheckBox
 	{
-		double texCoord[4];
-		double checkedTexCoord[4];
-		double checkboxSizeCoeff;
+		float texCoord[4];
+		float checkedTexCoord[4];
+		float checkboxSizeCoeff;
+		sText text;
 	};
 	sCheckBox checkbox;
 	struct sEdit
 	{
 		int borderSize;
+		sText text;
 	};
 	sEdit edit;
 	static CUITheme defaultTheme;
