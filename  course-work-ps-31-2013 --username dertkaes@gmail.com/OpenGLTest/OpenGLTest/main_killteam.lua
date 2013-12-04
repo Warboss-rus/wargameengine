@@ -3,13 +3,22 @@ initComplete = false
 
 function CreateUnit(name, x, y, rot, owner)
 	local object = nil
-	if(name == "Tactical Marine(bolter)" or name == "Tactical Marine(meltagun)" or name == "Tactical Marine(heavy bolter)" or
-		name == "Assault Marine" or name == "Terminator(storm bolter)" or name == "Terminator(lightning claws)") then
+	if(name == "Tactical Marine(bolter)" or name == "Terminator(storm bolter)" or name == "Terminator(lightning claws)") then
 		object = Object:New("Angel_of_Death.wbm", x, y, rot)
-	end
-	if(name == "Chaos Marine(bolter)" or name == "Chaos Marine(meltagun)" or name == "Chaos Marine(heavy bolter)" or
-		name == "Raptor" or name == "Terminator(combi bolter)" or name == "Chaos Terminator(lightning claws)") then
+	elseif(name == "Tactical Marine(meltagun)") then
+		object = Object:New("SM_Melta.wbm", x, y, rot)
+	elseif(name == "Tactical Marine(heavy bolter)") then
+		object = Object:New("SM_HB.wbm", x, y, rot)
+	elseif(name == "Assault Marine") then
+		object = Object:New("assault_marine.wbm", x, y, rot)
+	elseif(name == "Chaos Marine(bolter)" or name == "Chaos Terminator(combi bolter)" or name == "Chaos Terminator(lightning claws)") then
 		object = Object:New("CSM.wbm", x, y, rot)
+	elseif(name == "Chaos Marine(meltagun)") then
+		object = Object:New("CSM_melta.wbm", x, y, rot)
+	elseif(name == "Chaos Marine(heavy bolter)") then
+		object = Object:New("CSM_HB.wbm", x, y, rot)
+	elseif(name == "Raptor") then
+		object = Object:New("raptor.wbm", x, y, rot)
 	end
 	object:SetProperty("Name", name)
 	object:SetProperty("Owner", owner)
@@ -134,15 +143,11 @@ function Battle()
 		local object = CreateUnit(name, -20 - (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, 90, "2")
 		Player2[i] = object
 	end
-	SetUpdateCallback("OnUpdate")
+	SetSingleCallback("OnSingleUpdate")
 end
 
-function OnUpdate()
-	if not initComplete then
-		Init()
-	end
-	initComplete = true
-	--SetUpdateCallback("")
+function OnSingleUpdate()
+	Init()
 end
 
 function GetCost(list)
@@ -157,7 +162,7 @@ function GetCost(list)
 			sum = sum + 30
 		elseif(name == "Assault Marine" or name == "Raptor") then
 			sum = sum + 20
-		elseif(name == "Terminator(storm bolter)" or name == "Terminator(combi bolter)") then
+		elseif(name == "Terminator(storm bolter)" or name == "Chaos Terminator(combi bolter)") then
 			sum = sum + 40
 		elseif(name == "Terminator(lightning claws)" or name == "Chaos Terminator(lightning claws)") then
 			sum = sum + 40

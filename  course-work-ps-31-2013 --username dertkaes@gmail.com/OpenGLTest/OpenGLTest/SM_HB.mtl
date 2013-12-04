@@ -1,58 +1,112 @@
 # Max2Mtl Version 4.0 Mar 10th, 2001
 #
-newmtl Материал__35
+newmtl Материал__4
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_torso_dif.tga
+map_Kd sm_armour_mp_dlc3_set1_arml_dif.tga
 #
-newmtl Материал__30
+newmtl Материал__5
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_legr_dif.tga
+map_Kd sm_armour_mp_dlc3_set1_armr_dif.tga
 #
-newmtl 03_-_Default
+newmtl Материал__8
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_legl_dif.tga
+map_Kd sm_armour_mp_dlc3_set1_helmet_dif.tga
 #
-newmtl Материал__36
+newmtl Материал__9
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_helmet_dif.tga
+map_Kd sm_armour_mp_dlc3_set1_legl_dif.tga
 #
-newmtl 01_-_Default
+newmtl Материал__10
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_arml_dif.tga
+map_Kd sm_armour_mp_dlc3_set1_legr_dif.tga
 #
-newmtl Материал__55
+newmtl Материал__11
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_armr_dif.tga
+map_Kd sm_armour_mp_dlc3_set1_legr_dif.tga
+#
+newmtl Материал__7
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd sm_armour_mp_dlc3_set1_helmet_dif.tga
+#
+newmtl Материал__12
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd sm_armour_mp_dlc3_set1_shldrl_dif.tga
+#
+newmtl Материал__13
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd sm_armour_mp_dlc3_set1_shldrr_dif.tga
+#
+newmtl Материал__14
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd sm_armour_mp_dlc3_set1_torso_dif.tga
+#
+newmtl Материал__6
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd sm_armour_mp_dlc3_set1_bp_dif.tga
+#
+newmtl Материал__15
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd sm_armour_mp_dlc3_set1_torso_dif.tga
 #
 newmtl Материал__0
 Ka  0.6 0.6 0.6
@@ -63,67 +117,26 @@ Ns  0.0
 illum 2
 map_Kd space_marine_power_armor_02.tga
 #
-newmtl 04_-_Default
-Ka  0.6 0.6 0.6
-Kd  0.6 0.6 0.6
-Ks  0.9 0.9 0.9
-d  1.0
-Ns  0.0
-illum 2
-map_Kd csm_armour_mp_children_helmet_dif.tga
+# Multi/Sub Материал__29 (2) to come 
 #
-newmtl Материал__31
+newmtl Материал__16
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_shldrl_dif.tga
+map_Kd sm_heavybolter_dif.tga
 #
-newmtl Материал__32
+newmtl Материал__17
 Ka  0.6 0.6 0.6
 Kd  0.6 0.6 0.6
 Ks  0.9 0.9 0.9
 d  1.0
 Ns  0.0
 illum 2
-map_Kd csm_armour_mp_children_shldrr_dif.tga
+map_Kd sm_heavybolter_dif.tga
 #
-newmtl Материал__34
-Ka  0.6 0.6 0.6
-Kd  0.6 0.6 0.6
-Ks  0.9 0.9 0.9
-d  1.0
-Ns  0.0
-illum 2
-map_Kd csm_armour_mp_children_torso_dif.tga
-#
-newmtl Материал__28
-Ka  0.6 0.6 0.6
-Kd  0.6 0.6 0.6
-Ks  0.9 0.9 0.9
-d  1.0
-Ns  0.0
-illum 2
-map_Kd csm_armour_mp_children_bp_dif.tga
-#
-newmtl Материал__33
-Ka  0.6 0.6 0.6
-Kd  0.6 0.6 0.6
-Ks  0.9 0.9 0.9
-d  1.0
-Ns  0.0
-illum 2
-map_Kd csm_armour_mp_children_torso_dif.tga
-#
-newmtl Материал__56
-Ka  0.6 0.6 0.6
-Kd  0.6 0.6 0.6
-Ks  0.9 0.9 0.9
-d  1.0
-Ns  0.0
-illum 2
-map_Kd chaos_plasmagun_dif.tga
+# Multi/Sub Материал__29 done 
 #
 # EOF

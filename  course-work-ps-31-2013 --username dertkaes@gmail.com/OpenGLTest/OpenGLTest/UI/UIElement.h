@@ -34,8 +34,6 @@ public:
 	std::string GetItem(size_t index) const { return ""; }
 	void SetSelected(size_t index) {}
 	void Resize(int windowHeight, int windowWidth);
-	int GetWindowHeight() const;
-	int GetWindowWidth() const;
 
 	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick));
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);

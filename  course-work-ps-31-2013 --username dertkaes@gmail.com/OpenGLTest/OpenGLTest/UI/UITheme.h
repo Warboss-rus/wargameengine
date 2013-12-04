@@ -11,8 +11,8 @@ public:
 	struct sText
 	{
 		float color[3];
-		void * font;
-		int fontHeight;
+		std::string font;
+		unsigned int fontSize;
 		enum eAligment
 	{
 		left = 0,

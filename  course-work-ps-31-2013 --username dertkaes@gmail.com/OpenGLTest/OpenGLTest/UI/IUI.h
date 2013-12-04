@@ -41,8 +41,6 @@ public:
 	virtual std::string GetItem(size_t index) const = 0;
 	virtual void SetSelected(size_t index) = 0;
 	virtual void Resize(int windowHeight, int windowWidth) = 0;
-	virtual int GetWindowHeight() const = 0;
-	virtual int GetWindowWidth() const = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick)) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;

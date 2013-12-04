@@ -162,6 +162,9 @@
     <ClCompile Include="view\Light.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="TextWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectInterface.h">
@@ -304,6 +307,9 @@
     </ClInclude>
     <ClInclude Include="view\Light.h">
       <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="TextWriter.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

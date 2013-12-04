@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Debug;..\..\freetype-2.5.1\objs\win32\vc2010;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -60,6 +60,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freetype251.lib;LUA.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,6 +78,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>freetype251.lib;LUA.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -96,6 +98,7 @@
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
+    <ClCompile Include="TextWriter.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
     <ClCompile Include="UI\UIEdit.cpp" />
@@ -123,6 +126,7 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="TextWriter.h" />
     <ClInclude Include="view\DirectLight.h" />
     <ClInclude Include="view\Light.h" />
     <ClInclude Include="view\Vector2.h" />

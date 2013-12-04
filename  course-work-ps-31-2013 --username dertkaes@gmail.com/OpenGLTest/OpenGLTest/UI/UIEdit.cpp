@@ -23,24 +23,24 @@ void CUIEdit::Draw() const
 		glVertex2i(GetWidth() - m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
 		glVertex2i(GetWidth() - m_theme.edit.borderSize, m_theme.edit.borderSize);
 	glEnd();
-	int fonty = (GetHeight() + m_theme.text.fontHeight) / 2;
+	int fonty = (GetHeight() + GetStringHeight(m_theme.edit.text, m_text)) / 2;
 	if(IsFocused(NULL))
 	{
-		int cursorpos = m_theme.edit.borderSize + m_pos * glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		int cursorpos = m_theme.edit.borderSize + m_pos * GetStringWidth(m_theme.edit.text, "0");
 		glColor3ub(0, 0, 0);
 		glBegin(GL_LINES);
 		glVertex2i(cursorpos, fonty);
-		glVertex2i(cursorpos, fonty - m_theme.text.fontHeight);
+		glVertex2i(cursorpos, fonty - GetStringHeight(m_theme.edit.text, m_text));
 		glEnd();
 	}
 	if(m_pos != m_beginSelection)
 	{
 		glColor3f(0.0f, 0.0f, 1.0f);
-		int fontwidth = glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		int fontwidth = GetStringWidth(m_theme.edit.text, "0");
 		glBegin(GL_QUADS);
 		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty);
-		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty - m_theme.text.fontHeight);
-		glVertex2i(m_theme.edit.borderSize + m_pos * fontwidth, fonty - m_theme.text.fontHeight);
+		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty - GetStringHeight(m_theme.edit.text, m_text));
+		glVertex2i(m_theme.edit.borderSize + m_pos * fontwidth, fonty - GetStringHeight(m_theme.edit.text, m_text));
 		glVertex2i(m_theme.edit.borderSize + m_pos * fontwidth, fonty);
 		glEnd();
 	}
@@ -141,7 +141,7 @@ bool CUIEdit::LeftMouseButtonUp(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		size_t pos = (x - GetX()) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		size_t pos = (x - GetX()) / GetStringHeight(m_theme.edit.text, "0");
 		m_pos = (pos > m_text.size())?m_text.size():pos;
 		SetFocus();
 		return true;
@@ -160,7 +160,7 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		size_t pos = (x - GetX()) / glutBitmapLength(m_theme.text.font, (const unsigned char*)"0");
+		size_t pos = (x - GetX()) / GetStringHeight(m_theme.edit.text, "0");
 		m_beginSelection = (pos > m_text.size())?m_text.size():pos;
 		m_pos = m_beginSelection;
 		SetFocus();

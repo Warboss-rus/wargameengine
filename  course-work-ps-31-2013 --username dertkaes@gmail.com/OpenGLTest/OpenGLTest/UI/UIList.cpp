@@ -27,16 +27,16 @@ void CUIList::Draw() const
 	{
 		glColor3f(0.2f, 0.2f, 1.0f);
 		glBegin(GL_QUADS);
-			glVertex2i(m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.text.fontHeight * m_selected);
-			glVertex2i(m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.text.fontHeight * (m_selected + 1));
-			glVertex2i(GetWidth() - m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.text.fontHeight * (m_selected + 1));
-			glVertex2i(GetWidth() - m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.text.fontHeight * m_selected);
+			glVertex2i(m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * m_selected);
+			glVertex2i(m_theme.combobox.borderSize, 2 * m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * (m_selected + 1) );
+			glVertex2i(GetWidth() - m_theme.combobox.borderSize, 2 * m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * (m_selected + 1));
+			glVertex2i(GetWidth() - m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * m_selected);
 		glEnd();
 	}
 	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 	for(size_t i = 0; i < m_items.size(); ++i)
 	{
-		PrintText(m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.text.fontHeight * i, GetWidth(), 20, m_items[i], m_theme.text);
+		PrintText(m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * i, GetWidth(), 20, m_items[i], m_theme.text);
 	}
 	CUIElement::Draw();
 	glPopMatrix();

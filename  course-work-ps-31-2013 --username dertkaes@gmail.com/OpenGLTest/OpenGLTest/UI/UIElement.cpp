@@ -188,43 +188,30 @@ void CUIElement::ClearChildren()
 
 int CUIElement::GetX() const
 {
-	return m_x * GetWindowWidth() / 600;
+	return m_x * m_windowWidth / 600;
 }
 
 int CUIElement::GetY() const
 {
-	return m_y * GetWindowHeight() / 600;
+	return m_y * m_windowHeight / 600;
 }
 
 int CUIElement::GetHeight() const
 {
-	return m_height * GetWindowHeight() / 600;
+	return m_height * m_windowHeight / 600;
 }
 
 int CUIElement::GetWidth() const
 {
-	return m_width * GetWindowWidth() / 600;
+	return m_width * m_windowWidth / 600;
 }
 
 void CUIElement::Resize(int windowHeight, int windowWidth)
 {
 	m_windowHeight = windowHeight;
 	m_windowWidth = windowWidth;
-}
-
-int CUIElement::GetWindowHeight() const
-{
-	if(m_parent)
+	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		return m_parent->GetWindowHeight();
+		i->second->Resize(windowHeight, windowWidth);
 	}
-	return m_windowHeight;
-}
-int CUIElement::GetWindowWidth() const
-{
-	if(m_parent)
-	{
-		return m_parent->GetWindowWidth();
-	}
-	return m_windowWidth;
 }

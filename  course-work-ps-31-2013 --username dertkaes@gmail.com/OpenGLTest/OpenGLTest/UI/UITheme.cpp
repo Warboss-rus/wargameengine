@@ -14,8 +14,8 @@ CUITheme::CUITheme()
 		text.color[i] = 0.0f;
 	}
 	//text
-	text.font = GLUT_BITMAP_HELVETICA_18;
-	text.fontHeight = 18;
+	text.font = "times.ttf";
+	text.fontSize = 18;
 	text.aligment = text.left;
 	//button
 	button.texCoord[0] = 0.02344f;

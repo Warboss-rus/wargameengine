@@ -3,4 +3,5 @@
 #pragma once
 
 void PrintText(int x, int y, int width, int height, std::string const& str, CUITheme::sText const& theme);
-void PrintText(int x, int y, std::string const& str, void* font);
+int GetStringHeight(CUITheme::sText const& theme, std::string const& str);
+int GetStringWidth(CUITheme::sText const& theme, std::string const& str);

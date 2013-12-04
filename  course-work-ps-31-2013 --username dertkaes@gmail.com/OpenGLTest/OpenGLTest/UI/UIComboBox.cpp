@@ -24,8 +24,7 @@ void CUIComboBox::Draw() const
 		glVertex2i(GetWidth() - m_theme.combobox.borderSize, m_theme.combobox.borderSize);
 	glEnd();
 	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
-	int fonty = (GetHeight() + m_theme.text.fontHeight) / 2;
-	if(m_selected >= 0)	PrintText(m_theme.combobox.borderSize, fonty, m_items[m_selected].c_str(), m_theme.text.font);
+	if(m_selected >= 0)	PrintText(m_theme.combobox.borderSize, m_theme.combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme.combobox.text);
 	glColor3f(0.6f,0.6f,0.6f);
 	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
@@ -51,7 +50,7 @@ void CUIComboBox::Draw() const
 		glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 		for(size_t i = 0; i < m_items.size(); ++i)
 		{
-			PrintText(m_theme.combobox.borderSize, GetHeight() * (i + 1) + fonty, m_items[i], m_theme.text.font);
+			PrintText(m_theme.combobox.borderSize, GetHeight() * (i + 1), GetWidth(), GetHeight(), m_items[i], m_theme.combobox.text);
 		}
 	}
 	CUIElement::Draw();
