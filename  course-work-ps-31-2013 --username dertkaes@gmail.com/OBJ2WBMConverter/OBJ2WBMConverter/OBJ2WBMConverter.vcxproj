@@ -82,12 +82,14 @@
     <ClInclude Include="OBJModelFactory.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />
+    <ClInclude Include="WBMSerializer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3dModel.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MaterialManager.cpp" />
     <ClCompile Include="OBJModelFactory.cpp" />
+    <ClCompile Include="WBMSerializer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

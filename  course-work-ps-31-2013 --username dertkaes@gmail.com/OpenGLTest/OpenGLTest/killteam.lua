@@ -12,7 +12,7 @@ function Init()
 		Player2[i]:SetMoveLimit("rectangle", -15, 15, -30, -15)
 	end
 	local ui = UI:Get()
-	ui:ClearChildren()
+	--ui:ClearChildren()
 	ui:NewButton("Button1", 10, 10, 30, 90, "End phase", "EndPhase")
 	ui:NewButton("Button2", 110, 10, 30, 80, "Ruler", "SetRuler")
 	ui:NewButton("Button3", 200, 10, 30, 80, "Undo", "UndoAction")
@@ -183,6 +183,11 @@ function RemoveObject(prey)
 		end
 	end
 	prey:Delete()
+	if(#Player2 == 0) then
+		MessageBox("Player1 wins")
+	elseif(#Player1 == 0) then
+		MessageBox("Player2 wins")
+	end
 end
 
 function NextHunter()
@@ -555,4 +560,5 @@ math.randomseed(os.time())
 CreateSkybox(80, "skybox")
 CreateTable(60, 30, "sand.bmp")
 CameraSetLimits(30, 12, 5, 0.2)
+Init()
 SetSelectionCallback("OnSelection")

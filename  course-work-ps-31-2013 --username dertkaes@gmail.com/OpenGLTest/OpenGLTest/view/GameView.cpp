@@ -50,6 +50,7 @@ void CGameView::OnTimer(int value)
 
 void CGameView::Init()
 {
+	setlocale(LC_ALL, ""); 
 	int argc = 0;
 	char* argv[] = {""};
 	glutInit(&argc, argv);
@@ -63,6 +64,7 @@ void CGameView::Init()
 	glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glutDisplayFunc(CGameView::OnDrawScene);
 	glutTimerFunc(10, OnTimer, 0);
@@ -92,6 +94,7 @@ void CGameView::OnDrawScene()
 
 void CGameView::DrawUI() const
 {
+	glEnable(GL_BLEND);
 	glPushMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -104,6 +107,7 @@ void CGameView::DrawUI() const
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+	glDisable(GL_BLEND);
 }
 
 void CGameView::DrawBoundingBox()
@@ -139,6 +143,7 @@ void CGameView::Update()
 	{
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
+		Sleep(50);
 	}
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
@@ -171,7 +176,7 @@ void CGameView::DrawObjects(void)
 		glPopMatrix();
 	}
 	glDisable(GL_LIGHTING);
-	glDisable(GL_LIGHT0);
+	//glDisable(GL_LIGHT0);
 }
 
 void CGameView::OnReshape(int width, int height) 

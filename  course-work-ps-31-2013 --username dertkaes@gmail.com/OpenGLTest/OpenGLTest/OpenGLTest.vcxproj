@@ -20,7 +20,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -42,7 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Debug;..\..\freetype-2.5.1\objs\win32\vc2010;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -88,6 +88,7 @@
     <ClCompile Include="controller\CommandHandler.cpp" />
     <ClCompile Include="controller\CommandMoveObject.cpp" />
     <ClCompile Include="controller\GameController.cpp" />
+    <ClCompile Include="los.cpp" />
     <ClCompile Include="LUA\LUARegisterFunctions.cpp" />
     <ClCompile Include="LUA\LUARegisterObject.cpp" />
     <ClCompile Include="LUA\LUARegisterUI.cpp" />
@@ -126,12 +127,12 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="los.h" />
     <ClInclude Include="TextWriter.h" />
     <ClInclude Include="view\DirectLight.h" />
     <ClInclude Include="view\Light.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />
-    <ClInclude Include="view\Vector4.h" />
     <ClInclude Include="controller\CommandCreateObject.h" />
     <ClInclude Include="controller\CommandDeleteObject.h" />
     <ClInclude Include="controller\CommandHandler.h" />

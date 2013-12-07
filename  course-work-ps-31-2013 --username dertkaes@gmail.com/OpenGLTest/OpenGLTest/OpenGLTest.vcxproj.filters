@@ -165,6 +165,9 @@
     <ClCompile Include="TextWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="los.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectInterface.h">
@@ -296,9 +299,6 @@
     <ClInclude Include="view\Vector3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\Vector4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UI\UIComboBox.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
@@ -309,6 +309,9 @@
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="TextWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="los.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

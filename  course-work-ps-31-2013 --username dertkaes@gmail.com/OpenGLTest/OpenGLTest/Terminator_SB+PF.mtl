@@ -1,0 +1,61 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+# Multi/Sub Multimaterial (6) to come 
+#
+newmtl terminator_codex_shared_01
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd terminator_codex_shared_01.tga
+#
+newmtl terminator_codex_shared_02
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd terminator_codex_shared_02.tga
+#
+newmtl terminator_codex_shared_03
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd terminator_codex_shared_03.tga
+#
+newmtl space_marine_weapons_4
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd space_marine_weapons_4.tga
+#
+newmtl chainsword_blade
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd chainsword_blade.tga
+#
+# Multi/Sub Multimaterial done 
+#
+newmtl Материал__0
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd space_marine_power_armor_02.tga
+#
+# EOF

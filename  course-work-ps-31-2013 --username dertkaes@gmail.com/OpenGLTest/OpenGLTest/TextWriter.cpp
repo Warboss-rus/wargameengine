@@ -31,16 +31,15 @@ sGlyph CTextWriter::CreateSymbol(sSymbol s)
 	sGlyph symbol;
 	FT_Face face = s.face;
 	FT_Set_Pixel_Sizes(face, 0, s.size);
-	FT_Load_Char(face, s.symbol, FT_LOAD_RENDER);
+	wchar_t unicodeSymbol;
+	mbstowcs(&unicodeSymbol, &s.symbol, 1);
+	FT_Load_Char(face, unicodeSymbol, FT_LOAD_RENDER);
 	GLuint textureID;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_ALPHA, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
-	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	symbol.texture = textureID;
@@ -68,7 +67,7 @@ sGlyph CTextWriter::GetSymbol(std::string const& font, unsigned int size, char s
 void CTextWriter::DrawBitmap(float & x, float & y, sGlyph symbol)
 {
 	float x2 = x + symbol.bitmap_left;
-    float y2 = +y - symbol.bitmap_top;
+    float y2 = y - symbol.bitmap_top;
     float w = symbol.width;
     float h = symbol.rows;
 	glBegin(GL_TRIANGLE_STRIP);
@@ -81,8 +80,6 @@ void CTextWriter::DrawBitmap(float & x, float & y, sGlyph symbol)
 	glTexCoord2f(1.0f, 1.0f);
 	glVertex2f(x2+w, y2+h);
 	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
-	x += symbol.advancex;
 }
 
 void CTextWriter::PrintText(float x, float y, std::string const& font, unsigned int size, std::string const& text)
@@ -92,6 +89,8 @@ void CTextWriter::PrintText(float x, float y, std::string const& font, unsigned 
 		sGlyph glyph = GetSymbol(font, size, text[i]);
 		glBindTexture(GL_TEXTURE_2D, glyph.texture);
 		DrawBitmap(x, y, glyph);
+		x += glyph.advancex;
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 

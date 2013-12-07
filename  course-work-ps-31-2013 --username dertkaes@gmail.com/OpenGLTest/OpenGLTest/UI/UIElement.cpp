@@ -30,6 +30,7 @@ void CUIElement::AddChild(std::string const& name, std::shared_ptr<IUIElement> e
 {
 	m_children[name] = element;
 	element->SetTheme(m_theme);
+	element->Resize(m_windowHeight, m_windowWidth);
 }
 
 IUIElement* CUIElement::GetChildByName(std::string const& name)

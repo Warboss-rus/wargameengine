@@ -103,9 +103,7 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, do
 
 	CVector3d p1(origin[0], origin[1], origin[2]);
 	CVector3d p2(end[0], end[1], end[2]);
-
 	CVector3d interesect;
-	bool result;
 	if (IntersectRayWithSide(side1[0], side1[1], side1[2], p1, p2, intersectCoord))
 	{
 	   return true;
@@ -151,16 +149,6 @@ void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 	RotateScaleTranslate(box[15], box[16], box[17], rotation, m_scale, x, y, z);
 	RotateScaleTranslate(box[18], box[19], box[20], rotation, m_scale, x, y, z);
 	RotateScaleTranslate(box[21], box[22], box[23], rotation, m_scale, x, y, z);
-
-	glColor3d(0.0, 255.0, 255.0);
-		//Left
-	glBegin(GL_LINE_LOOP);
-	glVertex3d(1, 1, 0);
-	glVertex3d(1, 0, 0);
-	glVertex3d(0, 0, 0);
-	glVertex3d(0, 1, 0);
-	glEnd();
-	//Right
 
 	glPushMatrix();
 	glColor3d(0.0, 0.0, 255.0);

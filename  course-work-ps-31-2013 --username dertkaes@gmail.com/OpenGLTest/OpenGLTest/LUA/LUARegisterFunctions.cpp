@@ -3,6 +3,7 @@
 #include "..\controller\CommandHandler.h"
 #include "..\view\Input.h"
 #include <Windows.h>
+#include "..\los.h"
 
 int CreateTable(lua_State* L)
 {
@@ -35,6 +36,17 @@ int CameraSetLimits(lua_State* L)
 	double minScale = CLUAScript::GetArgument<double>(4);
 	CGameView::GetIntanse().lock()->CameraSetLimits(maxTransX, maxTransY, maxScale, minScale);
 	return 0;
+}
+
+int LoS(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "2 argument expected (max trans x, max trans y, max scale, min scale)");
+	IObject* shootingModel = (IObject*)CLUAScript::GetArgument<void*>(1);
+	IObject* target = (IObject*)CLUAScript::GetArgument<void*>(2);
+	int los = Los(shootingModel, target);
+	CLUAScript::SetArgument(los);
+	return 1;
 }
 
 int Ruler(lua_State* L)
@@ -182,4 +194,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(SetSelectionCallback, "SetSelectionCallback");
 	lua.RegisterConstant(SetUpdateCallback, "SetUpdateCallback");
 	lua.RegisterConstant(SetSingleCallback, "SetSingleCallback");
+	lua.RegisterConstant(LoS, "LoS");
 }

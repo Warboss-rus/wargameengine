@@ -68,6 +68,7 @@ public:
 	bool UILeftMouseButtonUp(int x, int y);
 	bool UIKeyPress(unsigned char key);
 	bool UISpecialKeyPress(int key);
+	CModelManager* GetModelManager() { return &m_modelManager; }
 
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));

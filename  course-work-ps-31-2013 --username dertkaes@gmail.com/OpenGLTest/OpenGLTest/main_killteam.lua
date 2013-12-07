@@ -1,9 +1,6 @@
-game = nil
-initComplete = false
-
 function CreateUnit(name, x, y, rot, owner)
 	local object = nil
-	if(name == "Tactical Marine(bolter)" or name == "Terminator(storm bolter)" or name == "Terminator(lightning claws)") then
+	if(name == "Tactical Marine(bolter)") then
 		object = Object:New("Angel_of_Death.wbm", x, y, rot)
 	elseif(name == "Tactical Marine(meltagun)") then
 		object = Object:New("SM_Melta.wbm", x, y, rot)
@@ -11,6 +8,10 @@ function CreateUnit(name, x, y, rot, owner)
 		object = Object:New("SM_HB.wbm", x, y, rot)
 	elseif(name == "Assault Marine") then
 		object = Object:New("assault_marine.wbm", x, y, rot)
+	elseif(name == "Terminator(storm bolter)") then
+		object = Object:New("Terminator_SB+PF.wbm", x, y, rot)
+	elseif(name == "Terminator(lightning claws)") then
+		object = Object:New("Terminator_LC.wbm", x, y, rot)
 	elseif(name == "Chaos Marine(bolter)" or name == "Chaos Terminator(combi bolter)" or name == "Chaos Terminator(lightning claws)") then
 		object = Object:New("CSM.wbm", x, y, rot)
 	elseif(name == "Chaos Marine(meltagun)") then
@@ -143,11 +144,7 @@ function Battle()
 		local object = CreateUnit(name, -20 - (i - 1) / 2.5, (i - 1) % 5 * 2 - 5, 90, "2")
 		Player2[i] = object
 	end
-	SetSingleCallback("OnSingleUpdate")
-end
-
-function OnSingleUpdate()
-	Init()
+	ui:SetVisible(false)
 end
 
 function GetCost(list)

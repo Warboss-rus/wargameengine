@@ -23,20 +23,20 @@ void CUIEdit::Draw() const
 		glVertex2i(GetWidth() - m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
 		glVertex2i(GetWidth() - m_theme.edit.borderSize, m_theme.edit.borderSize);
 	glEnd();
-	int fonty = (GetHeight() + GetStringHeight(m_theme.edit.text, m_text)) / 2;
+	int fonty = (GetHeight() + m_theme.edit.text.fontSize) / 2;
 	if(IsFocused(NULL))
 	{
-		int cursorpos = m_theme.edit.borderSize + m_pos * GetStringWidth(m_theme.edit.text, "0");
+		int cursorpos = m_theme.edit.borderSize + GetStringWidth(m_theme.edit.text, m_text);
 		glColor3ub(0, 0, 0);
 		glBegin(GL_LINES);
 		glVertex2i(cursorpos, fonty);
-		glVertex2i(cursorpos, fonty - GetStringHeight(m_theme.edit.text, m_text));
+		glVertex2i(cursorpos, fonty - m_theme.edit.text.fontSize);
 		glEnd();
 	}
 	if(m_pos != m_beginSelection)
 	{
 		glColor3f(0.0f, 0.0f, 1.0f);
-		int fontwidth = GetStringWidth(m_theme.edit.text, "0");
+		int fontwidth = GetStringWidth(m_theme.edit.text, m_text);
 		glBegin(GL_QUADS);
 		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty);
 		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty - GetStringHeight(m_theme.edit.text, m_text));
