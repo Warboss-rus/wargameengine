@@ -10,9 +10,9 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		unsigned int dotCoord = path.find_last_of('.') + 1;
 		std::string extension = path.substr(dotCoord, path.length() - dotCoord);
 		if(extension == "obj")
-			m_models[path] = LoadObjModel(path);
+			m_models[path] = LoadObjModel("models\\" + path);
 		if(extension == "wbm")
-			m_models[path] = LoadWbmModel(path);
+			m_models[path] = LoadWbmModel("models\\" + path);
 	}
 }
 

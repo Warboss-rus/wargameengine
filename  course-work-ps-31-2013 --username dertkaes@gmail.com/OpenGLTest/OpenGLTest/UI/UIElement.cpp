@@ -6,6 +6,7 @@
 #include "UIComboBox.h"
 #include "UIEdit.h"
 #include "UIList.h"
+#include "UIRadioGroup.h"
 
 void CUIElement::Draw() const
 {
@@ -163,6 +164,13 @@ IUIElement* CUIElement::AddNewEdit(std::string const& name, int x, int y, int he
 IUIElement* CUIElement::AddNewList(std::string const& name, int x, int y, int height, int width)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIList(x, y, height, width, this));
+	AddChild(name, item);
+	return item.get();
+}
+
+IUIElement* CUIElement::AddNewRadioGroup(std::string const& name, int x, int y, int height, int width)
+{
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIRadioGroup(x, y, height, width, this));
 	AddChild(name, item);
 	return item.get();
 }

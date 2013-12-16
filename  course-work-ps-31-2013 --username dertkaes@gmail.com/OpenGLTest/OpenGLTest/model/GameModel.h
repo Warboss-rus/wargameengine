@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "../ObjectInterface.h"
+#include "ObjectInterface.h"
 #include <vector>
 #include <string>
 #include <map>

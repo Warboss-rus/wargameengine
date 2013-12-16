@@ -86,6 +86,7 @@ bool CUIComboBox::LeftMouseButtonUp(int x, int y)
 			{
 				int index = (y - m_y) / GetHeight();
 				if(index > 0) m_selected = index - 1;
+				if(m_onChange) m_onChange();
 			}
 			m_expanded = !m_expanded;
 		}

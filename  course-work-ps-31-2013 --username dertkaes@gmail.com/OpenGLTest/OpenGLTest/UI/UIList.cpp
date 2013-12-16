@@ -18,25 +18,25 @@ void CUIList::Draw() const
 	glEnd();
 	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 	glBegin(GL_QUADS);
-		glVertex2i(m_theme.combobox.borderSize, m_theme.combobox.borderSize);
-		glVertex2i(m_theme.combobox.borderSize, GetHeight() - m_theme.combobox.borderSize);
-		glVertex2i(GetWidth() - m_theme.combobox.borderSize, GetHeight() - m_theme.combobox.borderSize);
-		glVertex2i(GetWidth() - m_theme.combobox.borderSize, m_theme.combobox.borderSize);
+		glVertex2i(m_theme.list.borderSize, m_theme.list.borderSize);
+		glVertex2i(m_theme.list.borderSize, GetHeight() - m_theme.list.borderSize);
+		glVertex2i(GetWidth() - m_theme.list.borderSize, GetHeight() - m_theme.list.borderSize);
+		glVertex2i(GetWidth() - m_theme.list.borderSize, m_theme.list.borderSize);
 	glEnd();
 	if(m_selected > -1)
 	{
 		glColor3f(0.2f, 0.2f, 1.0f);
 		glBegin(GL_QUADS);
-			glVertex2i(m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * m_selected);
-			glVertex2i(m_theme.combobox.borderSize, 2 * m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * (m_selected + 1) );
-			glVertex2i(GetWidth() - m_theme.combobox.borderSize, 2 * m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * (m_selected + 1));
-			glVertex2i(GetWidth() - m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * m_selected);
+			glVertex2i(m_theme.list.borderSize, m_theme.list.borderSize + m_theme.list.elementSize * m_selected);
+			glVertex2i(m_theme.list.borderSize, 2 * m_theme.list.borderSize + m_theme.list.elementSize * (m_selected + 1) );
+			glVertex2i(GetWidth() - m_theme.list.borderSize, 2 * m_theme.list.borderSize + m_theme.list.elementSize * (m_selected + 1));
+			glVertex2i(GetWidth() - m_theme.list.borderSize, m_theme.list.borderSize + m_theme.list.elementSize * m_selected);
 		glEnd();
 	}
 	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 	for(size_t i = 0; i < m_items.size(); ++i)
 	{
-		PrintText(m_theme.combobox.borderSize, m_theme.combobox.borderSize + m_theme.combobox.text.fontSize * i, GetWidth(), 20, m_items[i], m_theme.text);
+		PrintText(m_theme.list.borderSize, m_theme.list.borderSize + m_theme.list.elementSize * i, GetWidth(), m_theme.list.text.fontSize, m_items[i], m_theme.text);
 	}
 	CUIElement::Draw();
 	glPopMatrix();
@@ -51,8 +51,9 @@ bool CUIList::LeftMouseButtonUp(int x, int y)
 	}
 	if(PointIsOnElement(x, y))
 	{
-		unsigned int index = (y - GetY()) / 20;
+		unsigned int index = (y - GetY()) / m_theme.list.elementSize;
 		if(index >= 0 && index < m_items.size()) m_selected = index;
+		if(m_onChange) m_onChange();
 		SetFocus();
 		return true;
 	}

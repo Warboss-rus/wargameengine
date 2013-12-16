@@ -36,11 +36,13 @@ public:
 	virtual void SetText(std::string const& text) = 0;
 	virtual void AddItem(std::string const& str) = 0;
 	virtual void DeleteItem(size_t index) = 0;
+	virtual void ClearItems() = 0;
 	virtual int GetSelectedIndex() const = 0;
 	virtual size_t GetItemsCount() const = 0;
 	virtual std::string GetItem(size_t index) const = 0;
 	virtual void SetSelected(size_t index) = 0;
 	virtual void Resize(int windowHeight, int windowWidth) = 0;
+	virtual void SetOnChangeCallback(callback(onChange)) = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick)) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;
@@ -49,5 +51,6 @@ public:
 	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = NULL) = 0;
 	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text) = 0;
 	virtual IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) = 0;
+	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual void SetFocus(IUIElement * focus = NULL) = 0;
 };

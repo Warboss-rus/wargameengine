@@ -9,7 +9,7 @@ CUITheme::CUITheme()
 	texture = "g2Default.png";
 	for(unsigned int i = 0; i < 3; ++i)
 	{
-		defaultColor[i] = 0.6f;
+		defaultColor[i] = 0.75f;
 		textfieldColor[i] = 1.0f;
 		text.color[i] = 0.0f;
 	}
@@ -41,6 +41,10 @@ CUITheme::CUITheme()
 	combobox.borderSize = 2;
 	combobox.spacing = 2;
 	combobox.text = text;
+	//list
+	list.borderSize = 2;
+	list.elementSize = 20;
+	list.text = text;
 	//checkbox
 	checkbox.texCoord[0] = 0.121f;
 	checkbox.texCoord[1] = 0.789f;
@@ -52,6 +56,19 @@ CUITheme::CUITheme()
 	checkbox.checkedTexCoord[3] = 0.797f;
 	checkbox.checkboxSizeCoeff = 1.0f;
 	checkbox.text = text;
+	//edit
 	edit.borderSize = 2;
 	edit.text = text;
+	//radiogroup
+	radiogroup.texCoord[0] = 0.379f;
+	radiogroup.texCoord[1] = 0.793f;
+	radiogroup.texCoord[2] = 0.429f;
+	radiogroup.texCoord[3] = 0.742f;
+	radiogroup.selectedTexCoord[0] = 0.379f;
+	radiogroup.selectedTexCoord[1] = 0.8515f;
+	radiogroup.selectedTexCoord[2] = 0.429f;
+	radiogroup.selectedTexCoord[3] = 0.8f;
+	radiogroup.buttonSize = 15.0f;
+	radiogroup.elementSize = 22.0f;
+	radiogroup.text = text;
 }

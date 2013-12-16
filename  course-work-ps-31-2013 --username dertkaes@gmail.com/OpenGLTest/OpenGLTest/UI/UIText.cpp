@@ -1,7 +1,7 @@
 #include "UIText.h"
 #include <GL\glut.h>
 #include "UITheme.h"
-#include "..\TextWriter.h"
+#include "..\view\TextWriter.h"
 
 CTextWriter text;
 
@@ -13,7 +13,7 @@ void PrintText(int x, int y, int width, int height, std::string const& str, CUIT
 		x = width - text.GetStringWidth(theme.font, theme.fontSize, str);
 	y += (height - theme.fontSize) / 2 + theme.fontSize;
 	glColor3f(theme.color[0], theme.color[1], theme.color[2]);
-	text.PrintText(x, y, "times.ttf", 18, str);
+	text.PrintText(x, y, "times.ttf", theme.fontSize, str);
 	glColor3f(0.0f, 0.0f, 0.0f);
 }
 

@@ -32,8 +32,10 @@ public:
 	int GetSelectedIndex() const { return -1; }
 	size_t GetItemsCount() const { return 0; }
 	std::string GetItem(size_t index) const { return ""; }
+	void ClearItems() {}
 	void SetSelected(size_t index) {}
 	void Resize(int windowHeight, int windowWidth);
+	void SetOnChangeCallback(callback(onChange)) {}
 
 	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick));
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
@@ -42,6 +44,7 @@ public:
 	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = NULL);
 	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text);
 	IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width);
+	IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width);
 protected:
 	CUIElement(int x, int y, int height, int width, IUIElement * parent): m_x(x), m_y(y), m_height(height), m_width(width), 
 		m_visible(true), m_parent(parent), m_focused(NULL) {}

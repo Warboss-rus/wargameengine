@@ -39,6 +39,13 @@ public:
 		int spacing;
 		sText text;
 	};
+	struct sList
+	{
+		int borderSize;
+		int elementSize;
+		sText text;
+	};
+	sList list;
 	sComboBox combobox;
 	struct sCheckBox
 	{
@@ -53,6 +60,15 @@ public:
 		int borderSize;
 		sText text;
 	};
+	struct sRadioGroup
+	{
+		float texCoord[4];
+		float selectedTexCoord[4];
+		float buttonSize;
+		float elementSize;
+		sText text;
+	};
+	sRadioGroup radiogroup;
 	sEdit edit;
 	static CUITheme defaultTheme;
 };

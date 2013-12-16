@@ -5,12 +5,6 @@ hunterGroup = nil
 hunterGroupIndex = nil
 
 function Init()
-	for i=1, #Player1 do
-		Player1[i]:SetMoveLimit("rectangle", 15, 15, 30, -15)
-	end
-	for i=1, #Player2 do
-		Player2[i]:SetMoveLimit("rectangle", -15, 15, -30, -15)
-	end
 	local ui = UI:Get()
 	--ui:ClearChildren()
 	ui:NewButton("Button1", 10, 10, 30, 90, "End phase", "EndPhase")
@@ -316,6 +310,7 @@ function Fire2(prey)
 		end
 	else
 		result = result .. "\n Saves are ignored by weapon AP"
+		unsaved = wounds
 	end
 	
 	result = result .. "\nTotal " .. unsaved .. " unsaved wounds. "

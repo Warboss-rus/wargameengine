@@ -7,7 +7,7 @@
 #include "..\LUA\LUARegisterFunctions.h"
 #include "..\LUA\LUARegisterUI.h"
 #include "..\LUA\LUARegisterObject.h"
-#include "..\ObjectGroup.h"
+#include "..\model\ObjectGroup.h"
 #include "DirectLight.h"
 
 using namespace std;

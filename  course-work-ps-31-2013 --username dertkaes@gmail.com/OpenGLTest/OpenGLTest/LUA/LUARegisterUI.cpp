@@ -112,6 +112,20 @@ int NewList(lua_State* L)
 	return CLUAScript::NewInstanceClass(listbox, "UI");
 }
 
+int NewRadioGroup(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 6)
+        return luaL_error(L, "5 arguments expected");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	std::string name = CLUAScript::GetArgument<char*>(2);
+	int x = CLUAScript::GetArgument<int>(3);
+	int y = CLUAScript::GetArgument<int>(4);
+	int height = CLUAScript::GetArgument<int>(5);
+	int width = CLUAScript::GetArgument<int>(6);
+	IUIElement * listbox = c->AddNewRadioGroup(name, x, y, height, width);
+	return CLUAScript::NewInstanceClass(listbox, "UI");
+}
+
 int GetChild(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
@@ -193,7 +207,7 @@ int GetSelectedIndex(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	CLUAScript::SetArgument(c->GetSelectedIndex());
+	CLUAScript::SetArgument(c->GetSelectedIndex() + 1);
 	return 1;
 }
 
@@ -216,6 +230,46 @@ int GetItem(lua_State* L)
 	return 1;
 }
 
+int ClearItems(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+        return luaL_error(L, "no arguments expected");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	c->ClearItems();
+	return 0;
+}
+
+int SetSelectedIndex(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected (index)");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	int index = CLUAScript::GetArgument<int>(2) - 1;
+	c->SetSelected(index);
+	return 0;
+}
+
+int SetOnChangeCallback(lua_State* L)
+{
+	if(CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "1 argument expected (funcName)");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	std::string func = CLUAScript::GetArgument<char*>(2);
+	if(func.empty())
+	{
+		c->SetOnChangeCallback(std::function<void()>());
+	}
+	else
+	{
+		auto function = [func]()
+		{ 
+			CLUAScript::CallFunction(func);
+		};
+		c->SetOnChangeCallback(function);
+	}
+	return 0;
+}
+
 int Set(lua_State* L)
 {
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
@@ -235,6 +289,16 @@ int ClearChildren(lua_State* L)
 	return 0;
 }
 
+int DeleteChild(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected (name)");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	std::string name = CLUAScript::GetArgument<char*>(2);
+	c->DeleteChild(name);
+	return 0;
+}
+
 static const luaL_Reg UIFuncs[] = {
    	{ "NewButton", NewButton },
 	{ "NewStaticText", NewStaticText },
@@ -243,6 +307,7 @@ static const luaL_Reg UIFuncs[] = {
 	{ "NewCombobox", NewCombobox },
 	{ "NewEdit", NewEdit },
 	{ "NewList", NewList },
+	{ "NewRadioGroup", NewRadioGroup },
 	{ "GetChild", GetChild },
 	{ "SetVisible", SetVisible },
 	{ "GetVisible", GetVisible },
@@ -252,11 +317,15 @@ static const luaL_Reg UIFuncs[] = {
 	{ "AddItem", AddItem },
 	{ "DeleteItem", DeleteItem },
 	{ "GetSelectedIndex", GetSelectedIndex },
+	{ "SetSelectedIndex", SetSelectedIndex },
 	{ "GetItemsCount", GetItemsCount },
 	{ "GetItem", GetItem },
+	{ "ClearItems", ClearItems },
 	{ "Set", Set },
 	{ "Get", Get },
 	{ "ClearChildren", ClearChildren },
+	{ "DeleteChild", DeleteChild },
+	{ "SetOnChangeCallback", SetOnChangeCallback },
 	{ NULL, NULL }
 };
 

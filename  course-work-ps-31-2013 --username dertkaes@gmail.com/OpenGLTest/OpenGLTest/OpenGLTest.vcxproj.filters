@@ -37,12 +37,15 @@
     <Filter Include="Header Files\LUA">
       <UniqueIdentifier>{b2113b92-b917-4410-aed7-a0ae5d5e44a9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\model">
+      <UniqueIdentifier>{0948a43f-f393-42e0-bf26-3155fbcd0809}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\model">
+      <UniqueIdentifier>{636ee3a0-8baf-4c83-94b5-ae1f908c9261}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="model\GameModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="controller\GameController.cpp">
@@ -138,15 +141,6 @@
     <ClCompile Include="LUA\LUARegisterObject.cpp">
       <Filter>Source Files\LUA</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectGroup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="3dObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MovementLimiter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="view\WBMModelFactory.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -162,21 +156,30 @@
     <ClCompile Include="view\Light.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="TextWriter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="los.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="view\TextWriter.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="model\3dObject.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\GameModel.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\MovementLimiter.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="model\ObjectGroup.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\UIRadioGroup.cpp">
+      <Filter>Source Files\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjectInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="3dObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="model\GameModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="controller\GameController.h">
@@ -308,11 +311,29 @@
     <ClInclude Include="view\Light.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="TextWriter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="los.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIRadioGroup.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="view\TextWriter.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="model\3dObject.h">
+      <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\GameModel.h">
+      <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\MovementLimiter.h">
+      <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\ObjectGroup.h">
+      <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\ObjectInterface.h">
+      <Filter>Header Files\model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

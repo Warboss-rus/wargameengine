@@ -1,8 +1,8 @@
 #include "..\model\GameModel.h"
 #include "..\controller\CommandHandler.h"
 #include "LUAScriptHandler.h"
-#include "..\3dObject.h"
-#include "..\ObjectGroup.h"
+#include "..\model\3dObject.h"
+#include "..\model\ObjectGroup.h"
 
 int NewObject(lua_State* L)
 {
