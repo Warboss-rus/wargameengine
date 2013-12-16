@@ -60,6 +60,16 @@ bool PointInSegment(CVector3d const& p, CVector3d const& pa, CVector3d const& pb
 	return true;
 }
 
+void RotateScaleTranslate2(double & x, double & y, double & z, double angle, double scale, double transX, double transY, double transZ)
+{
+	x *= scale;//scale
+	y *= scale;
+	z *= scale;
+	x += transX;//translate
+	y += transY;
+	z += transZ;
+}
+
 bool IntersectRayWithSide(CVector3d const& pa, CVector3d const& pb, CVector3d const& pc, CVector3d const& startPointRay, CVector3d const& endPointRay, CVector3d& interesect)
 {
    double d, denom, mu;
@@ -86,7 +96,7 @@ bool IntersectRayWithSide(CVector3d const& pa, CVector3d const& pb, CVector3d co
 
 bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
-	CVector3d side1[3] = {CVector3d(m_min[0], m_max[1], m_min[2]), CVector3d(m_max[0], m_max[1], m_min[2]), CVector3d(m_min[0], m_min[1], m_min[2])};
+/*	CVector3d side1[3] = {CVector3d(m_min[0], m_max[1], m_min[2]), CVector3d(m_max[0], m_max[1], m_min[2]), CVector3d(m_min[0], m_min[1], m_min[2])};
 	CVector3d side2[3] = {CVector3d(m_min[0], m_max[1], m_min[2]), CVector3d(m_max[0], m_max[1], m_min[2]), CVector3d(m_min[0], m_max[1], m_max[2])};
 	CVector3d side3[3] = {CVector3d(m_min[0], m_max[1], m_max[2]), CVector3d(m_max[0], m_max[1], m_max[2]), CVector3d(m_max[0], m_min[1], m_max[2])};
 	CVector3d side4[3] = {CVector3d(m_min[0], m_max[1], m_max[2]), CVector3d(m_min[0], m_min[1], m_max[2]), CVector3d(m_min[0], m_min[1], m_min[2])};
@@ -103,7 +113,6 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, do
 
 	CVector3d p1(origin[0], origin[1], origin[2]);
 	CVector3d p2(end[0], end[1], end[2]);
-	CVector3d interesect;
 	if (IntersectRayWithSide(side1[0], side1[1], side1[2], p1, p2, intersectCoord))
 	{
 	   return true;
@@ -128,7 +137,70 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, do
 	{
 	   return true;
 	}
-	return false;
+	return false;*/
+	double minB[3] = {m_min[0], m_min[1], m_min[2]};
+	double maxB[3] = {m_max[0], m_max[1], m_max[2]};
+	RotateScaleTranslate2(minB[0], minB[1], minB[2], rotation, m_scale, x, y, z);
+	RotateScaleTranslate2(maxB[0], maxB[1], maxB[2], rotation, m_scale, x, y, z);
+	double coord[3];
+	char inside = true;
+	char quadrant[3];
+	register int i;
+	int whichPlane;
+	double maxT[3];
+	double candidatePlane[3];
+
+	/* Find candidate planes; this loop can be avoided if
+   	rays cast all from the eye(assume perpsective view) */
+	for (i=0; i<3; i++)
+		if(origin[i] < minB[i]) {
+			quadrant[i] = 1;
+			candidatePlane[i] = minB[i];
+			inside = false;
+		}else if (origin[i] > maxB[i]) {
+			quadrant[i] = 0;
+			candidatePlane[i] = maxB[i];
+			inside = false;
+		}else	{
+			quadrant[i] = 2;
+		}
+
+	/* Ray origin inside bounding box */
+	if(inside)	{
+		coord[0] = origin[0];
+		coord[1] = origin[1];
+		coord[2] = origin[2];
+		return true;
+	}
+	double dir[3] = {end[0] - origin[0], end[1] - origin[1], end[2] - origin[2]};
+
+	/* Calculate T distances to candidate planes */
+	for (i = 0; i < 3; i++)
+		if (quadrant[i] != 2 && dir[i] !=0.)
+			maxT[i] = (candidatePlane[i]-origin[i]) / dir[i];
+		else
+			maxT[i] = -1.;
+
+	/* Get largest of the maxT's for final choice of intersection */
+	whichPlane = 0;
+	for (i = 1; i < 3; i++)
+		if (maxT[whichPlane] < maxT[i])
+			whichPlane = i;
+
+	/* Check final candidate actually inside box */
+	if (maxT[whichPlane] < 0.) return (false);
+	for (i = 0; i < 3; i++)
+		if (whichPlane != i) {
+			coord[i] = origin[i] + maxT[whichPlane] *dir[i];
+			if (coord[i] < minB[i] || coord[i] > maxB[i])
+				return (false);
+		} else {
+			coord[i] = candidatePlane[i];
+		}
+	intersectCoord.x = coord[0];
+	intersectCoord.y = coord[1];
+	intersectCoord.z = coord[2];
+	return true;				/* ray hits box */
 }
 
 void CBoundingBox::Draw(double x, double y, double z, double rotation) const
