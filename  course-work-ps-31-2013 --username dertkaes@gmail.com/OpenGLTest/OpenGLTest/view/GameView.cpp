@@ -65,6 +65,7 @@ void CGameView::Init()
     glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_LIGHT0);
 	
 	glutDisplayFunc(CGameView::OnDrawScene);
 	glutTimerFunc(10, OnTimer, 0);
@@ -158,9 +159,9 @@ void CGameView::Update()
 
 void CGameView::DrawObjects(void)
 {
-    glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	CDirectLight light(CVector3f(0, 0, -1));
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glEnable(GL_LIGHTING);
+	CDirectLight light(CVector3f(0, 0, 1000));
 	light.SetAmbientIntensity(0.0, 0.0, 0.0, 1.0);
 	light.SetDiffuseIntensity(1.0, 1.0, 1.0, 1.0);
 	light.SetSpecularIntensity(1.0, 1.0, 1.0, 1.0);
@@ -176,7 +177,7 @@ void CGameView::DrawObjects(void)
 		glPopMatrix();
 	}
 	glDisable(GL_LIGHTING);
-	//glDisable(GL_LIGHT0);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
 void CGameView::OnReshape(int width, int height) 

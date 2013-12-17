@@ -13,7 +13,7 @@ void CDirectLight::SetLight(GLenum light)const
 		m_direction.x, 
 		m_direction.y, 
 		m_direction.z, 
-		0
+		1
 	};
 	glLightfv(light, GL_POSITION, lightDirection);
 	CLight::SetLight(light);

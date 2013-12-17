@@ -19,6 +19,8 @@ function Init()
 	SetGlobalProperty("Turn", 0)
 	SetGlobalProperty("Player", "2")
 	SetGlobalProperty("Phase", "NULL")
+	Object:New("rhino.wbm", 15, 5, 0):SetSelectable(false)
+	Object:New("rhino.wbm", -15, -5, 180):SetSelectable(false)
 end
 
 function IsLockedInCombat(unit)
@@ -158,12 +160,21 @@ function GetToWound(S, T)
 	return result
 end
 
+function CheckEndGame()
+	if(#Player2 == 0) then
+		MessageBox("Player1 wins")
+	elseif(#Player1 == 0) then
+		MessageBox("Player2 wins")
+	end
+end
+
 function RemoveObject(prey)
 	if(prey:GetProperty("Owner") == "2") then
 		for i=1, #Player2 do
 			if(Player2[i]:Equals(prey)) then
 				table.remove(Player2, i)
 				prey:Delete()
+				CheckEndGame()
 				return
 			end
 		end
@@ -171,17 +182,13 @@ function RemoveObject(prey)
 		for i=1, #Player1 do
 			if(Player1[i]:Equals(prey)) then
 				table.remove(Player1, i)
-					prey:Delete()
+				prey:Delete()
+				CheckEndGame()
 				return
 			end
 		end
 	end
 	prey:Delete()
-	if(#Player2 == 0) then
-		MessageBox("Player1 wins")
-	elseif(#Player1 == 0) then
-		MessageBox("Player2 wins")
-	end
 end
 
 function NextHunter()
@@ -264,7 +271,20 @@ function Fire2(prey)
 		numShots = numShots / 2
 	end
 	local toHit = 7 - hunter:GetProperty("BS")
-	
+	local los = LoS(hunter, prey)
+	if(los < 75) then
+		toHit = toHit + 1
+	end
+	if(los < 50) then
+		toHit = toHit + 1
+	end
+	if(los < 25) then
+		toHit = toHit + 1
+	end
+	if(los < 10) then
+		MessageBox("Can't see the target(visibility=" .. los .."%)")
+		return
+	end
 	if(hunter:GetProperty("WeaponType") == "Heavy") then
 		local deltaX = hunter:GetProperty("MovementX") - hunter:GetX()
 		local deltaY = hunter:GetProperty("MovementY") - hunter:GetY()
@@ -552,7 +572,7 @@ IncludeLibrary("math")
 IncludeLibrary("os")
 IncludeLibrary("table")
 math.randomseed(os.time())
-CreateSkybox(80, "skybox")
+CreateSkybox(80, "skybox1")
 CreateTable(60, 30, "sand.bmp")
 CameraSetLimits(30, 12, 5, 0.2)
 Init()

@@ -1,0 +1,34 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+# Multi/Sub Материал__27 (3) to come 
+#
+newmtl habblock_apartment_all
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd habblock_apartment_all.tga
+#
+newmtl habblock_apartment_all
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd habblock_apartment_all.tga
+#
+newmtl 02_-_Default
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd habblock_apartment_all.tga
+#
+# Multi/Sub Материал__27 done 
+#
+# EOF
