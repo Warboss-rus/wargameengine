@@ -81,8 +81,15 @@ void CGameView::Init()
 	RegisterFunctions(*m_lua.get());
 	RegisterUI(*m_lua.get());
 	RegisterObject(*m_lua.get());
-	m_lua->RunScript("main.lua");
-	
+	try
+	{
+		m_lua->RunScript("main.lua");
+	}
+	catch(std::exception e)
+	{
+		MessageBoxA(NULL, e.what(), "LUA Error", 0);
+	}
+
 	glutMainLoop();
 }
 

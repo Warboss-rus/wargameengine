@@ -15,7 +15,13 @@ sMaterial * CMaterialManager::GetMaterial(std::string const& name)
 
 void CMaterialManager::LoadMTL(std::string const& path)
 {
-	std::ifstream iFile(path);
+	std::ifstream iFile("models\\" + path);
+	if(!iFile.good())
+	{
+		iFile.close();
+		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading MTL", 0);
+		return;
+	}
 	std::string line;
 	std::string type;
 	float dvalue;

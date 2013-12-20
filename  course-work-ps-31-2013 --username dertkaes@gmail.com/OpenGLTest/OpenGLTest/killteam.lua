@@ -19,8 +19,6 @@ function Init()
 	SetGlobalProperty("Turn", 0)
 	SetGlobalProperty("Player", "2")
 	SetGlobalProperty("Phase", "NULL")
-	Object:New("rhino.wbm", 15, 5, 0):SetSelectable(false)
-	Object:New("rhino.wbm", -15, -5, 180):SetSelectable(false)
 end
 
 function IsLockedInCombat(unit)
@@ -568,12 +566,32 @@ function RedoAction()
 	Redo()
 end
 
+function Split(str)
+	local result = {}
+	for i in string.gmatch(str, "%S+") do
+		result[#result+1] = i
+	end
+	return result
+end
+
+function LoadMap(filename)
+	for line in io.lines(filename) do
+		local splitted = Split(line)
+		if(splitted[1] == "object") then
+			Object:New(splitted[2], splitted[3], splitted[4], splitted[5]):SetSelectable(false)
+		elseif(splitted[1] == "skybox") then
+			CreateSkybox(80, splitted[2])
+		elseif(splitted[1] == "table") then
+			CreateTable(60, 30, splitted[2])
+		end
+	end
+end
+
 IncludeLibrary("math")
 IncludeLibrary("os")
 IncludeLibrary("table")
+IncludeLibrary("io")
 math.randomseed(os.time())
-CreateSkybox(80, "skybox1")
-CreateTable(60, 30, "sand.bmp")
 CameraSetLimits(30, 12, 5, 0.2)
 Init()
 SetSelectionCallback("OnSelection")

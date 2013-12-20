@@ -134,12 +134,18 @@ void CInput::OnPassiveMouseMove(int x, int y)
 {
 	static int prevMouseX;
 	static int prevMouseY;
+	static bool just_warped = false;
+	if(just_warped) 
+	{
+        just_warped = false;
+        return;
+    }
 	if(glutGetModifiers() == GLUT_ACTIVE_ALT)
 	{
 		glutSetCursor(GLUT_CURSOR_NONE);
 		glutWarpPointer(prevMouseX, prevMouseY);
 		CGameView::GetIntanse().lock()->CameraRotate(x - prevMouseX, prevMouseY - y);
-		CGameView::GetIntanse().lock()->OnDrawScene();
+		just_warped = true;
 	}
 	else
 	{

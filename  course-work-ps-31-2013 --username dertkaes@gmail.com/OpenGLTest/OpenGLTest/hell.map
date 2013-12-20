@@ -1,0 +1,4 @@
+skybox skybox_hell
+table lava.bmp
+object rhino.wbm 15 5 0
+object rhino.wbm -15 -5 180

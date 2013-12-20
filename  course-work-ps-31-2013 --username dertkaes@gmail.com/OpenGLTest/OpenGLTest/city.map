@@ -1,0 +1,4 @@
+skybox skybox_city
+table asphalt.bmp
+object rhino.wbm 15 5 0
+object rhino.wbm -15 -5 180

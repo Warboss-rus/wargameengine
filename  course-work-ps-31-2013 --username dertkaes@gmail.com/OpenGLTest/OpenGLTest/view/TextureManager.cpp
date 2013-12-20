@@ -9,6 +9,15 @@ unsigned char * LoadBMPTexture(std::string const& path, unsigned int & width, un
 	// Data read from the header of the BMP file
 	unsigned char header[54];
 	FILE * file = fopen(path.c_str(),"rb");
+	if(!file)
+	{
+		width = 0; 
+		height = 0;
+		bpp = 0;
+		format = GL_BGR_EXT;
+		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading texture", 0);
+		return NULL;
+	}
 	fread(header, 1, 54, file);
 	unsigned int dataPos = *(int*)&(header[0x0A]);     // Position in the file where the actual data begins
 	unsigned int imageSize = *(int*)&(header[0x22]);
@@ -65,6 +74,15 @@ unsigned char * UncompressTGA(unsigned char * data, unsigned int width, unsigned
 unsigned char * LoadTGATexture(std::string const& path, unsigned int & width, unsigned int & height, unsigned int & bpp, GLenum & format)
 {
 	FILE * fTGA = fopen(path.c_str(), "rb");
+	if(!fTGA)
+	{
+		width = 0; 
+		height = 0;
+		bpp = 0;
+		format = GL_BGR_EXT;
+		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading texture", 0);
+		return NULL;
+	}
 	unsigned char header[18];
 	fread(&header, 18, 1, fTGA); //read header
 	if(header[2] != 2 && header[2] != 10) 
@@ -91,6 +109,15 @@ unsigned char * LoadTGATexture(std::string const& path, unsigned int & width, un
 unsigned char * LoadPNGTexture(std::string const& path, unsigned int & width, unsigned int & height, unsigned int & bpp, GLenum & format)
 {
 	FILE * file = fopen(path.c_str(),"rb");
+	if(!file)
+	{
+		width = 0; 
+		height = 0;
+		bpp = 0;
+		format = GL_BGR_EXT;
+		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading texture", 0);
+		return NULL;
+	}
 	fseek(file, 0L, SEEK_END);
 	unsigned int imageSize = ftell(file);
 	fseek(file, 0L, SEEK_SET);

@@ -1,0 +1,4 @@
+skybox skybox_sand
+table sand.bmp
+object rhino.wbm 15 5 0
+object rhino.wbm -15 -5 180

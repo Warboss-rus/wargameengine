@@ -1,4 +1,5 @@
 #include "LUAScriptHandler.h"
+#include <exception>
 
 lua_State* CLUAScript::m_lua_state;
 
@@ -89,7 +90,12 @@ void CLUAScript::SetArgument<bool>(bool arg)
 
 int CLUAScript::RunScript(std::string const& file)
 {
-	luaL_dofile(m_lua_state, file.c_str());
+	int result = luaL_dofile(m_lua_state, file.c_str());
+	if(result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		throw std::runtime_error(err);
+	}
 	return lua_tointeger(m_lua_state, lua_gettop(m_lua_state));
 }
 
