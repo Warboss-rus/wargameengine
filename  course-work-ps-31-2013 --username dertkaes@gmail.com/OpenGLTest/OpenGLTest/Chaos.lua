@@ -54,7 +54,7 @@ function Chaos:GetUnitModel(rosterItem)
 		return "raptor.wbm"
 	elseif(rosterItem.Name == "Chaos Terminator" and rosterItem.Weapon == "Combi Bolter(0)") then
 		return "Chaos_terminator_SB+PF.wbm"
-	elseif(rosterItem.Name == "Chaos Terminator" and rosterItem.Weapon == "Combi Bolter(0)") then
+	elseif(rosterItem.Name == "Chaos Terminator" and rosterItem.Weapon == "Lightning claws(0)") then
 		return "Chaos_terminator_LC.wbm"
 	end
 	return ""

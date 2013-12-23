@@ -13,6 +13,7 @@ public:
 	void AddNewCreateObject(std::shared_ptr<IObject> object);
 	void AddNewDeleteObject(std::shared_ptr<IObject> object);
 	void AddNewMoveObject(double deltaX, double deltaY);
+	void AddNewRotateObject(double deltaRotation);
 	void Undo();
 	void Redo();
 private:

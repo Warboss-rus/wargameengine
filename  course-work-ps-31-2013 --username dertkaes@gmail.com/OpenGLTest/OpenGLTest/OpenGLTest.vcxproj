@@ -87,6 +87,7 @@
     <ClCompile Include="controller\CommandDeleteObject.cpp" />
     <ClCompile Include="controller\CommandHandler.cpp" />
     <ClCompile Include="controller\CommandMoveObject.cpp" />
+    <ClCompile Include="controller\CommandRotateObject.cpp" />
     <ClCompile Include="controller\GameController.cpp" />
     <ClCompile Include="los.cpp" />
     <ClCompile Include="LUA\LUARegisterFunctions.cpp" />
@@ -129,6 +130,7 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="controller\CommandRotateObject.h" />
     <ClInclude Include="los.h" />
     <ClInclude Include="model\3dObject.h" />
     <ClInclude Include="model\MovementLimiter.h" />
@@ -151,8 +153,6 @@
     <ClInclude Include="LUA\LUARegisterUI.h" />
     <ClInclude Include="LUA\LUAScriptHandler.h" />
     <ClInclude Include="model\GameModel.h" />
-    <ClInclude Include="MovementLimiter.h" />
-    <ClInclude Include="ObjectGroup.h" />
     <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />
     <ClInclude Include="SelectionTools.h" />
@@ -175,7 +175,6 @@
     <ClInclude Include="view\Material.h" />
     <ClInclude Include="view\MaterialManager.h" />
     <ClInclude Include="view\ModelManager.h" />
-    <ClInclude Include="ObjectInterface.h" />
     <ClInclude Include="view\OBJModelFactory.h" />
     <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\Table.h" />

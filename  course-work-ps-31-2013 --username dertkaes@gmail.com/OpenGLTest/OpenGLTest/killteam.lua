@@ -269,7 +269,11 @@ function Fire2(prey)
 		numShots = numShots / 2
 	end
 	local toHit = 7 - hunter:GetProperty("BS")
+	if(toHit < 2) then
+		toHit = 2
+	end
 	local los = LoS(hunter, prey)
+	MessageBox(los)
 	if(los < 75) then
 		toHit = toHit + 1
 	end
@@ -282,6 +286,13 @@ function Fire2(prey)
 	if(los < 10) then
 		MessageBox("Can't see the target(visibility=" .. los .."%)")
 		return
+	end
+	local angle = math.atan2(prey:GetY() - hunter:GetY(), prey:GetX() - hunter:GetX()) * 90 / math.pi
+	if(math.abs(hunter:GetRotation() - angle) > 90) then
+		toHit = toHit + 2
+	end
+	if(toHit > 6) then
+		toHit = 6
 	end
 	if(hunter:GetProperty("WeaponType") == "Heavy") then
 		local deltaX = hunter:GetProperty("MovementX") - hunter:GetX()
@@ -417,6 +428,11 @@ function Strike2(prey)
 	end
 	local numStrikes = 0 + hunter:GetProperty("Attacks")
 	local toHit = 8 - hunter:GetProperty("WS")
+	if(toHit < 2) then
+		toHit = 2
+	elseif(toHit > 6) then
+		toHit = 6
+	end
 	local toWound = GetToWound(hunter:GetProperty("S"), prey:GetProperty("T"))
 	local save = 0 + prey:GetProperty("Sv")
 	if(0 + hunter:GetProperty("MeleeAP") <= save) then

@@ -5,7 +5,7 @@ class CUIComboBox : public CUIElement
 {
 public:
 	CUIComboBox(int x, int y, int height, int width, IUIElement * parent): CUIElement(x, y, height, width, parent), 
-		m_selected(-1), m_expanded(false), m_pressed(false), m_onChange(callback()) { }
+		m_selected(-1), m_expanded(false), m_pressed(false) { }
 	void Draw() const;
 	bool LeftMouseButtonDown(int x, int y);
 	bool LeftMouseButtonUp(int x, int y);

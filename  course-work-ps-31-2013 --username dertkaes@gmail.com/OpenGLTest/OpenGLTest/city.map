@@ -1,4 +1,28 @@
 skybox skybox_city
 table asphalt.bmp
-object rhino.wbm 15 5 0
-object rhino.wbm -15 -5 180
+object bunker_01.obj 15 0 90
+object bunker_01.obj -15 0 270
+object oil_01.obj 5 -10 0
+object oil_01.obj 5 -11 0
+object oil_01.obj 5 -12 0
+object oil_01.obj 6 -10 0
+object oil_01.obj 6 -11 0
+object oil_01.obj 6 -12 0
+object oil_01.obj -5 10 0
+object oil_01.obj -5 11 0
+object oil_01.obj -5 12 0
+object oil_01.obj -6 10 0
+object oil_01.obj -6 11 0
+object oil_01.obj -6 12 0
+object Carnage_01.obj -5 -10 0
+object Carnage_01.obj 7 3 0
+object Defense_wall_14.obj 0 0 0
+object Defense_wall_02.obj 15 6 90
+object Defense_wall_02.obj 15 11 90
+object Defense_wall_05.obj -15 -3 90
+object Defense_wall_05.obj -15 -5 90
+object Defense_wall_05.obj -15 -7 90
+object Defense_wall_05.obj -15 -9 90
+object Defense_wall_05.obj -15 -11 90
+object Defense_wall_05.obj -15 -13 90
+object Defense_wall_05.obj -15 -14 90

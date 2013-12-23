@@ -155,8 +155,8 @@ void CGameView::Update()
 	}
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
-	if(m_table) m_table->Draw();
 	glEnable(GL_DEPTH_TEST);
+	if(m_table) m_table->Draw();
 	DrawObjects();
 	glDisable(GL_DEPTH_TEST);
 	DrawBoundingBox();
@@ -442,4 +442,9 @@ void CGameView::SetUpdateCallback(callback(onUpdate))
 void CGameView::SetSingleCallback(callback(onSingleUpdate))
 {
 	m_singleCallback = onSingleUpdate;
+}
+
+void CGameView::ResizeWindow(int height, int width)
+{
+	glutReshapeWindow(width, height);
 }

@@ -9,6 +9,7 @@ bool CInput::m_isRMBDown = false;
 bool CInput::m_ruler = false;
 double CInput::startX = 0;
 double CInput::startY = 0;
+double CInput::m_oldRotation = 0;
 
 void CInput::OnMouse(int button, int state, int x, int y)
 {
@@ -67,10 +68,12 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			m_isRMBDown = true;
 			CGameView::GetIntanse().lock()->SelectObject(x, y, false);
 			WindowCoordsToWorldCoords(x, y, startX, startY);
+			m_oldRotation = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation();
 		}
 		else
 		{
 			m_isRMBDown = false;
+			CCommandHandler::GetInstance().lock()->AddNewRotateObject(CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation() - m_oldRotation);;
 			startX = 0;
 			startY = 0;
 		}break;

@@ -2,6 +2,7 @@
 #include "CommandCreateObject.h"
 #include "CommandDeleteObject.h"
 #include "CommandMoveObject.h"
+#include "CommandRotateObject.h"
 
 std::shared_ptr<CCommandHandler> CCommandHandler::m_instance = NULL;
 
@@ -40,6 +41,12 @@ void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object)
 void CCommandHandler::AddNewMoveObject(double deltaX, double deltaY)
 {
 	m_commands.push_back(new CCommandMoveObject(deltaX, deltaY));
+	m_current = m_commands.size() - 1;
+}
+
+void CCommandHandler::AddNewRotateObject(double deltaRotation)
+{
+	m_commands.push_back(new CCommandRotateObject(deltaRotation));
 	m_current = m_commands.size() - 1;
 }
 

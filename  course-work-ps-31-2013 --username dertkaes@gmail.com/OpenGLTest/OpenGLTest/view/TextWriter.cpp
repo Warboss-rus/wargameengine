@@ -69,28 +69,28 @@ sGlyph CTextWriter::GetSymbol(std::string const& font, unsigned int size, char s
 	return m_symbols[s];
 }
 
-void CTextWriter::DrawBitmap(float & x, float & y, sGlyph symbol)
+void CTextWriter::DrawBitmap(int & x, int & y, sGlyph symbol)
 {
-	float x2 = x + symbol.bitmap_left;
-    float y2 = y - symbol.bitmap_top;
-    float w = symbol.width;
-    float h = symbol.rows;
+	int x2 = x + symbol.bitmap_left;
+    int y2 = y - symbol.bitmap_top;
+    int w = symbol.width;
+    int h = symbol.rows;
 	glBegin(GL_TRIANGLE_STRIP);
 	glTexCoord2f(0.0f, 0.0f);
-	glVertex2f(x2, y2);
+	glVertex2i(x2, y2);
 	glTexCoord2f(1.0f, 0.0f);
-	glVertex2f(x2 + w, y2);
+	glVertex2i(x2 + w, y2);
 	glTexCoord2f(0.0f, 1.0f);
-	glVertex2f(x2, y2+h);
+	glVertex2i(x2, y2+h);
 	glTexCoord2f(1.0f, 1.0f);
-	glVertex2f(x2+w, y2+h);
+	glVertex2i(x2+w, y2+h);
 	glEnd();
 }
 
-void CTextWriter::PrintText(float x, float y, std::string const& font, unsigned int size, std::string const& text, int width, int height)
+void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int size, std::string const& text, int width, int height)
 {
-	float newx = x;
-	for (int i = 0; i < text.size(); ++i)
+	int newx = x;
+	for (size_t i = 0; i < text.size(); ++i)
 	{
 		if(text[i] == '\n')
 		{

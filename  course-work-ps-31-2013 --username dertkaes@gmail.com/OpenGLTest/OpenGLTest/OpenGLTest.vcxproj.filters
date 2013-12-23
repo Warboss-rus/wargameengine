@@ -177,11 +177,11 @@
     <ClCompile Include="UI\UIRadioGroup.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
+    <ClCompile Include="controller\CommandRotateObject.cpp">
+      <Filter>Source Files\actions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ObjectInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="controller\GameController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -269,9 +269,6 @@
     <ClInclude Include="LUA\LUARegisterObject.h">
       <Filter>Header Files\LUA</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectGroup.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="view\Material.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
@@ -280,9 +277,6 @@
     </ClInclude>
     <ClInclude Include="view\SkyBox.h">
       <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="MovementLimiter.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="view\Camera.h">
       <Filter>Header Files\view</Filter>
@@ -334,6 +328,9 @@
     </ClInclude>
     <ClInclude Include="model\ObjectInterface.h">
       <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandRotateObject.h">
+      <Filter>Header Files\actions</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

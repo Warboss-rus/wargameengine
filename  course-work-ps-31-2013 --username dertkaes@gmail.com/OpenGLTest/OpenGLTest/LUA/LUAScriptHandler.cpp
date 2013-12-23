@@ -3,9 +3,19 @@
 
 lua_State* CLUAScript::m_lua_state;
 
+int luaError( lua_State *L )
+{
+    const char* str = lua_tostring( L, -1 );
+    lua_pop(L, 1);
+	throw std::exception(str);
+    return 0;
+}
+
 CLUAScript::CLUAScript()
 {
 	m_lua_state = luaL_newstate();
+	lua_register( m_lua_state, "_ALERT", luaError );
+	lua_atpanic(m_lua_state, luaError);
 }
 
 CLUAScript::~CLUAScript()

@@ -29,7 +29,7 @@ bool TestIntersetion(IObject* shootingModel,IObject* target, CVector3d & mass)
 	double max1[3];
 	memcpy(&max1[0], coordinate1[1], sizeof(double) * 3);
 	CVector3d coordinateShootingModel((min1[0]+max1[0])/2, (min1[1]+max1[1])/2, (min1[2]+max1[2])/2);
-	for(int i = 0; i < CGameModel::GetIntanse().lock()->GetObjectCount(); i++)
+	for(size_t i = 0; i < CGameModel::GetIntanse().lock()->GetObjectCount(); i++)
 	{
 		IObject * object = CGameModel::GetIntanse().lock()->Get3DObject(i).get();
 		if(object == shootingModel || object == target) continue;

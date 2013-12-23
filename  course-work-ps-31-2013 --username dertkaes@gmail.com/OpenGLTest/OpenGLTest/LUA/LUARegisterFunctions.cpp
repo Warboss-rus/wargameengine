@@ -178,13 +178,14 @@ int SetSingleCallback(lua_State* L)
 	return 0;
 }
 
-int luaError( lua_State *L )
+int ResizeWindow(lua_State* L)
 {
-    const char* str = lua_tostring( L, -1 );
-    lua_pop(L, 1);
-    MessageBoxA(NULL, str, "", 0);
-    return 0;
-	
+	if(CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 argument expected (height, width)");
+	int height = CLUAScript::GetArgument<int>(1);
+	int width = CLUAScript::GetArgument<int>(2);
+	CGameView::GetIntanse().lock()->ResizeWindow(height, width);
+	return 0;
 }
 
 void RegisterFunctions(CLUAScript & lua)
@@ -204,5 +205,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(SetUpdateCallback, "SetUpdateCallback");
 	lua.RegisterConstant(SetSingleCallback, "SetSingleCallback");
 	lua.RegisterConstant(LoS, "LoS");
-	lua.RegisterConstant(luaError, "_ALERT");
+	lua.RegisterConstant(ResizeWindow, "ResizeWindow");
 }

@@ -69,6 +69,7 @@ public:
 	bool UIKeyPress(unsigned char key);
 	bool UISpecialKeyPress(int key);
 	CModelManager* GetModelManager() { return &m_modelManager; }
+	void ResizeWindow(int height, int width);
 
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));

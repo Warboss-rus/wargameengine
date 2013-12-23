@@ -1,4 +1,14 @@
 skybox skybox_hell
 table lava.bmp
-object rhino.wbm 15 5 0
-object rhino.wbm -15 -5 180
+object eye_wal_11.obj 15 5 0
+object eye_wal_12.obj -15 -5 180
+object eye_wal_05.obj 30 10 90
+object eye_wal_06.obj -30 0 90
+object eye_wal_20.obj 5 0 90
+object eye_wal_20.obj -5 0 270
+object eye_wal_20.obj 0 5 180
+object eye_wal_20.obj 0 -5 0
+object eye_wal_20.obj 3 3 135
+object eye_wal_20.obj -3 3 225
+object eye_wal_20.obj 3 -3 45
+object eye_wal_20.obj -3 -3 315

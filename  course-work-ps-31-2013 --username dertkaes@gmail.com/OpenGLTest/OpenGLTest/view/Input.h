@@ -13,6 +13,7 @@ private:
 	static bool m_ruler;
 	static double startX;
 	static double startY;
+	static double m_oldRotation;
 public:
 
 	static void EnableRuler() { m_ruler = true; }

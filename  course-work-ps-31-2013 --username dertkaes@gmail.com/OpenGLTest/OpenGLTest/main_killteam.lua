@@ -2,6 +2,7 @@ Player1Roster = {}
 Player2Roster = {}
 Player1Army = nil
 Player2Army = nil
+game = nil
 
 function CreateUnit(army, rosterItem, x, y, rot, owner)
 	local object = Object:New(army:GetUnitModel(rosterItem), x, y, rot)
@@ -22,7 +23,6 @@ function Battle()
 		MessageBox("Total unit cost must not exceed 200")
 		return
 	end
-	game = loadfile("killteam.lua")
 	game()
 	local ui = UI:Get():GetChild("Panel1")
 	local list = ui:GetChild("List2")
@@ -233,6 +233,8 @@ IncludeLibrary("base")
 IncludeLibrary("math")
 IncludeLibrary("table")
 IncludeLibrary("string")
+ResizeWindow(600, 600)
+game = loadfile("killteam.lua")
 dofile("Chaos.lua")
 dofile("SpaceMarines.lua")
 CameraSetLimits(15, 6, 5, 0.4)
