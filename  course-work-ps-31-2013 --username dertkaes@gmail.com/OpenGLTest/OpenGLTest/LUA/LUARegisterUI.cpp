@@ -331,5 +331,6 @@ static const luaL_Reg UIFuncs[] = {
 
 void RegisterUI(CLUAScript & lua)
 {
+#define RegisterClassA RegisterClass
 	lua.RegisterClass(UIFuncs, "UI");
 }

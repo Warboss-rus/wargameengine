@@ -11,9 +11,9 @@ private:
 	static bool m_isLMBDown;
 	static bool m_isRMBDown;
 	static bool m_ruler;
-	static double startX;
-	static double startY;
-	static double m_oldRotation;
+	static float startX;
+	static float startY;
+	static float m_oldRotation;
 public:
 
 	static void EnableRuler() { m_ruler = true; }

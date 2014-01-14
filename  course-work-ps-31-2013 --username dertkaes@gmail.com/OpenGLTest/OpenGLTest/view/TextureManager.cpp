@@ -1,5 +1,5 @@
 #include "TextureManager.h"
-#include <GL\glut.h>
+#include "gl.h"
 #include "..\picopng.h"
 
 CTextureManager * CTextureManager::m_manager = NULL;
@@ -189,6 +189,11 @@ void CTextureManager::FreeInstance()
 	m_manager = NULL;
 }
 
+void CTextureManager::SetShaderVarLocation(GLuint textureLocation)
+{
+	m_shaderTextureVarLocation = textureLocation;
+}
+
 void CTextureManager::SetTexture(std::string const& path)
 {
 	if(path.empty()) 
@@ -200,5 +205,6 @@ void CTextureManager::SetTexture(std::string const& path)
 	{
 		m_textures[path] = LoadTexture("texture\\" + path);
 	}
+	glUniform1i ( m_shaderTextureVarLocation, 0/*m_textures[path]*/ );
 	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
 }

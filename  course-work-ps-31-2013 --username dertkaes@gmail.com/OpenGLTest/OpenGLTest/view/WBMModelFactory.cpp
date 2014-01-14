@@ -57,7 +57,7 @@ C3DModel * LoadWbmModel(std::string const& path)
 	fclose(iFile);
 	CMaterialManager materialManager(materials);
 	std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
-	double scale = 1.0;
+	float scale = 1.0;
 	std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
 	return new C3DModel(newVertices, newTextureCoords, newNormals, indexes, materialManager, meshes, bounding, scale);
 }

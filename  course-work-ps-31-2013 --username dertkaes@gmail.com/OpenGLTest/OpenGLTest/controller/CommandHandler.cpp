@@ -38,13 +38,13 @@ void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object)
 	m_commands[m_current]->Execute();
 }
 
-void CCommandHandler::AddNewMoveObject(double deltaX, double deltaY)
+void CCommandHandler::AddNewMoveObject(float deltaX, float deltaY)
 {
 	m_commands.push_back(new CCommandMoveObject(deltaX, deltaY));
 	m_current = m_commands.size() - 1;
 }
 
-void CCommandHandler::AddNewRotateObject(double deltaRotation)
+void CCommandHandler::AddNewRotateObject(float deltaRotation)
 {
 	m_commands.push_back(new CCommandRotateObject(deltaRotation));
 	m_current = m_commands.size() - 1;

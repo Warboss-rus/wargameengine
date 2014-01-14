@@ -1,12 +1,12 @@
 #include "Camera.h"
-#include <GL\glut.h>
+#include "gl.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-const double CCamera::SCALE = 1.1;
-const double CCamera::TRANSLATE = 0.3;
+const float CCamera::SCALE = 1.1;
+const float CCamera::TRANSLATE = 0.3;
 
-void CCamera::SetLimits(double maxTransX, double maxTransY, double maxScale, double minScale)
+void CCamera::SetLimits(float maxTransX, float maxTransY, float maxScale, float minScale)
 {
 	m_maxTransX = maxTransX;
 	m_maxTransY = maxTransY;
@@ -24,7 +24,7 @@ void CCamera::Update()
 	glTranslated(m_transX, m_transY, 0.0);
 }
 
-void CCamera::Translate(double transX, double transY)
+void CCamera::Translate(float transX, float transY)
 {
 	m_transX += transX * cos(m_rotZ * M_PI / 180) + transY * sin(m_rotZ * M_PI / 180);
 	if(m_transX > m_maxTransX) m_transX = m_maxTransX;
@@ -34,7 +34,7 @@ void CCamera::Translate(double transX, double transY)
 	if(m_transY < -m_maxTransY) m_transY = -m_maxTransY;
 }
 
-void CCamera::Rotate(double rotZ, double rotX)
+void CCamera::Rotate(float rotZ, float rotX)
 {
 	m_rotZ = fmod(m_rotZ + rotZ, 360);
 	m_rotX += rotX;

@@ -29,7 +29,7 @@ int CLUAScript::GetArgumentCount()
 }
 
 template<>
-double CLUAScript::GetArgument<double>(int index)
+float CLUAScript::GetArgument<float>(int index)
 {
     return luaL_checknumber(m_lua_state,index);
 }
@@ -75,7 +75,7 @@ void* CLUAScript::GetArgument<void*>(int index)
 }
 
 template<>
-void CLUAScript::SetArgument<double>(double arg)
+void CLUAScript::SetArgument<float>(float arg)
 {
 	lua_pushnumber(m_lua_state, arg);
 }
@@ -117,7 +117,7 @@ void CLUAScript::RegisterConstant<int>(int value, char* constantname)
 }
 
 template<>
-void CLUAScript::RegisterConstant<double>(double value, char* constantname)
+void CLUAScript::RegisterConstant<float>(float value, char* constantname)
 {
     lua_pushnumber(m_lua_state, value);
     lua_setglobal(m_lua_state,constantname);

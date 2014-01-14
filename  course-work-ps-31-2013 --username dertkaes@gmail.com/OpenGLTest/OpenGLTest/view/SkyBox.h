@@ -3,11 +3,11 @@
 class CSkyBox
 {
 public:
-	CSkyBox(double width, double height, double length, std::string const& imageFolder);
-	void Draw(double x, double y, double z, double scale);
+	CSkyBox(float width, float height, float length, std::string const& imageFolder);
+	void Draw(float x, float y, float z, float scale);
 private:
-	double m_height;
-	double m_width;
-	double m_length;
+	float m_height;
+	float m_width;
+	float m_length;
 	std::string m_imageFolder;
 };

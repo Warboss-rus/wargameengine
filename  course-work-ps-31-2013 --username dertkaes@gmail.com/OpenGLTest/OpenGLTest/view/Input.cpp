@@ -1,5 +1,5 @@
 #include "Input.h"
-#include <GL\glut.h>
+#include "gl.h"
 #include "GameView.h"
 #include "..\SelectionTools.h"
 #include "..\controller\CommandHandler.h"
@@ -7,9 +7,9 @@
 bool CInput::m_isLMBDown = false;
 bool CInput::m_isRMBDown = false;
 bool CInput::m_ruler = false;
-double CInput::startX = 0;
-double CInput::startY = 0;
-double CInput::m_oldRotation = 0;
+float CInput::startX = 0;
+float CInput::startY = 0;
+float CInput::m_oldRotation = 0;
 
 void CInput::OnMouse(int button, int state, int x, int y)
 {
@@ -22,7 +22,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			if(CGameView::GetIntanse().lock()->UILeftMouseButtonDown(x, y)) return;
 			if(m_ruler)
 			{
-				double worldX, worldY;
+				float worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
 				CGameView::GetIntanse().lock()->RulerBegin(worldX, worldY);
 			}
@@ -49,7 +49,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			if(CGameView::GetIntanse().lock()->UILeftMouseButtonUp(x, y)) return;
 			if(!m_ruler && CGameModel::GetIntanse().lock()->GetSelectedObject())
 			{
-				double worldX, worldY;
+				float worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
 				CCommandHandler::GetInstance().lock()->AddNewMoveObject(worldX - startX, worldY - startY);
 				startX = -1;
@@ -63,19 +63,25 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			m_ruler = false;
 		}break;
 	case GLUT_RIGHT_BUTTON:
-		if (state == GLUT_DOWN)
 		{
-			m_isRMBDown = true;
-			CGameView::GetIntanse().lock()->SelectObject(x, y, false);
-			WindowCoordsToWorldCoords(x, y, startX, startY);
-			m_oldRotation = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation();
-		}
-		else
-		{
-			m_isRMBDown = false;
-			CCommandHandler::GetInstance().lock()->AddNewRotateObject(CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation() - m_oldRotation);;
-			startX = 0;
-			startY = 0;
+			std::shared_ptr<IObject> selectedObject = CGameModel::GetIntanse().lock()->GetSelectedObject();
+			if (!selectedObject)
+			{
+				return;
+			}
+			if (state == GLUT_DOWN)
+			{
+				m_isRMBDown = true;
+				CGameView::GetIntanse().lock()->SelectObject(x, y, false);
+				WindowCoordsToWorldCoords(x, y, startX, startY);
+			}
+			else
+			{
+				m_isRMBDown = false;
+				CCommandHandler::GetInstance().lock()->AddNewRotateObject(selectedObject->GetRotation() - m_oldRotation);;
+				startX = 0;
+				startY = 0;
+			}
 		}break;
 	case SCROLL_UP:
 		if (state == GLUT_UP)
@@ -164,7 +170,7 @@ void CInput::OnMouseMove(int x, int y)
 	{
 		if(m_ruler)
 		{
-			double worldX, worldY;
+			float worldX, worldY;
 			WindowCoordsToWorldCoords(x, y, worldX, worldY);
 			CGameView::GetIntanse().lock()->RulerEnd(worldX, worldY);
 		}
@@ -182,10 +188,10 @@ void CInput::OnMouseMove(int x, int y)
 	{
 		if(CGameModel::GetIntanse().lock()->GetSelectedObject())
 		{
-			double worldX, worldY;
+			float worldX, worldY;
 			WindowCoordsToWorldCoords(x, y, worldX, worldY);
-			double rot = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation();
-			double rotation = 90 + (atan2(worldY-startY,worldX-startX)*180/3.1417);
+			float rot = CGameModel::GetIntanse().lock()->GetSelectedObject()->GetRotation();
+			float rotation = 90 + (atan2(worldY-startY,worldX-startX)*180/3.1417);
 			if(sqrt((worldX - startX) * (worldX - startX) + (worldY - startY) * (worldY - startY)) > 0.2)
 				CGameModel::GetIntanse().lock()->GetSelectedObject()->Rotate(rotation-rot);
 		}

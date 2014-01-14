@@ -18,7 +18,7 @@ class C3DModel
 public:
 	C3DModel() {}
 	C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-		CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale);
+		CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, float scale);
 	void Draw(const std::set<std::string>* hideMeshes = NULL);
 	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 private:
@@ -29,5 +29,5 @@ private:
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
 	std::shared_ptr<IBounding> m_bounding;
-	double m_scale;
+	float m_scale;
 };

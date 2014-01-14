@@ -43,6 +43,12 @@
     <Filter Include="Source Files\model">
       <UniqueIdentifier>{636ee3a0-8baf-4c83-94b5-ae1f908c9261}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\lib">
+      <UniqueIdentifier>{5391a261-df5c-426f-b272-72cfb6fe01a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\view\shaders">
+      <UniqueIdentifier>{e5fbb9a1-786a-4289-b0a9-13331221a529}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -150,12 +156,6 @@
     <ClCompile Include="UI\UIComboBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="view\DirectLight.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\Light.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="los.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -179,6 +179,117 @@
     </ClCompile>
     <ClCompile Include="controller\CommandRotateObject.cpp">
       <Filter>Source Files\actions</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\AABB.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Capsule.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Circle.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Frustum.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Line.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\LineSegment.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\OBB.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\PBVolume.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Plane.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polygon.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polyhedron.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Ray.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Sphere.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Triangle.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\TriangleMesh.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\BitOps.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float2.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x3.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x4.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathFunc.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathLog.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathOps.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Polynomial.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Quat.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\SSEMath.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\TransformOps.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Algorithm\Random\LCG.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Time\Clock.cpp">
+      <Filter>Header Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\Light.cpp">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\OmniLight.cpp">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramInfo.cpp">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramLinker.cpp">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderCompiler.cpp">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderLoader.cpp">
+      <Filter>Header Files\view\shaders</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -299,12 +410,6 @@
     <ClInclude Include="UI\UIComboBox.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="view\DirectLight.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Light.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="los.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -332,5 +437,211 @@
     <ClInclude Include="controller\CommandRotateObject.h">
       <Filter>Header Files\actions</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Matrix3.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\OBB.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\MathBuildConfig.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\MathGeoLib.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\MathGeoLibFwd.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\AABB.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\AABB2D.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Capsule.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Circle.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Frustum.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\GeometryAll.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\GeomType.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\HitInfo.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\KDTree.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Line.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\LineSegment.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\PBVolume.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Plane.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polygon.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polyhedron.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\QuadTree.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Ray.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Sphere.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Triangle.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\TriangleMesh.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\BitOps.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\FixedPoint.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float2.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x3.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x4.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4_neon.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4_sse.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4_neon.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4_sse.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\FloatCmp.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathAll.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathConstants.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathFunc.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathLog.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathNamespace.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathTypes.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MatrixProxy.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\myassert.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Polynomial.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Quat.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\quat_simd.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Rect.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Reinterpret.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\simd.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\sse_mathfun.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\SSEMath.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\TransformOps.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\assume.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Algorithm\Random\LCG.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Time\Clock.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\gl.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\Light.h">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\OmniLight.h">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramInfo.h">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramLinker.h">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderCompiler.h">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderLoader.h">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\Shaders.h">
+      <Filter>Header Files\view\shaders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\per_pixel.fsh">
+      <Filter>Header Files\view\shaders</Filter>
+    </None>
+    <None Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\per_pixel.vsh">
+      <Filter>Header Files\view\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

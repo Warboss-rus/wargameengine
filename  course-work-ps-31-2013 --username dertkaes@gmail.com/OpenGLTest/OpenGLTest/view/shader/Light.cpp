@@ -2,9 +2,9 @@
 
 CLight::CLight(void)
 {
-	SetDiffuseIntensity(0.8f, 0.8f, 0.8f, 1.0f);
-	SetAmbientIntensity(0.2f, 0.2f, 0.2f, 1.0f);
-	SetSpecularIntensity(0.5f, 0.5f, 0.5f, 1.0f);
+	SetDiffuseIntensity(0.8, 0.8, 0.8, 1);
+	SetAmbientIntensity(0.2, 0.2, 0.2, 1);
+	SetSpecularIntensity(0.5, 0.5, 0.5, 1);
 }
 
 CLight::~CLight(void)

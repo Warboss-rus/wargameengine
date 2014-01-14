@@ -1,5 +1,5 @@
 #include "UIPanel.h"
-#include <GL\glut.h>
+#include "../view/gl.h"
 
 void CUIPanel::Draw() const
 {

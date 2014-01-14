@@ -9,8 +9,8 @@ int CreateTable(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 3)
         return luaL_error(L, "3 argument expected (width, height, texture)");
-	double width = CLUAScript::GetArgument<double>(1);
-	double height = CLUAScript::GetArgument<double>(2);
+	float width = CLUAScript::GetArgument<float>(1);
+	float height = CLUAScript::GetArgument<float>(2);
 	std::string texture = CLUAScript::GetArgument<char*>(3);
 	CGameView::GetIntanse().lock()->CreateTable(width, height, texture);
 	return 0;
@@ -20,7 +20,7 @@ int CreateSkybox(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "2 argument expected (size, texture folder)");
-	double size = CLUAScript::GetArgument<double>(1);
+	float size = CLUAScript::GetArgument<float>(1);
 	std::string texture = CLUAScript::GetArgument<char*>(2);
 	CGameView::GetIntanse().lock()->CreateSkybox(size, texture);
 	return 0;
@@ -30,10 +30,10 @@ int CameraSetLimits(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 4)
         return luaL_error(L, "4 argument expected (max trans x, max trans y, max scale, min scale)");
-	double maxTransX = CLUAScript::GetArgument<double>(1);
-	double maxTransY = CLUAScript::GetArgument<double>(2);
-	double maxScale = CLUAScript::GetArgument<double>(3);
-	double minScale = CLUAScript::GetArgument<double>(4);
+	float maxTransX = CLUAScript::GetArgument<float>(1);
+	float maxTransY = CLUAScript::GetArgument<float>(2);
+	float maxScale = CLUAScript::GetArgument<float>(3);
+	float minScale = CLUAScript::GetArgument<float>(4);
 	CGameView::GetIntanse().lock()->CameraSetLimits(maxTransX, maxTransY, maxScale, minScale);
 	return 0;
 }

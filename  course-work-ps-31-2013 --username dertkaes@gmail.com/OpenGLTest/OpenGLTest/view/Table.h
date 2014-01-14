@@ -7,7 +7,7 @@ public:
 	void Draw() const;
 	float GetWidth() const { return m_width * 2; }
 	float GetHeight() const { return m_height * 2; }
-    bool isCoordsOnTable(double worldX, double worldY) const;
+    bool isCoordsOnTable(float worldX, float worldY) const;
 private:
 	float m_height;
 	float m_width;

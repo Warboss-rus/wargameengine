@@ -1,4 +1,4 @@
 class IObject;
 
-void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, double & startz, double & endx, double & endy, double & endz);
-void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
+void WindowCoordsToWorldVector(int x, int y, float & startx, float & starty, float & startz, float & endx, float & endy, float & endz);
+void WindowCoordsToWorldCoords(int windowX, int windowY, float & worldX, float & worldY, float worldZ = 0);

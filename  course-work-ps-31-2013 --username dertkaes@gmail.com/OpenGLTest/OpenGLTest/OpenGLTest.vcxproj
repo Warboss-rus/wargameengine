@@ -41,8 +41,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\study\V\kurs\ course-work-ps-31-2013 --username dertkaes%40gmail.com\glew-1.9.0\include;..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;D:\study\V\cg\kurs\ course-work-ps-31-2013 --username dertkaes%40gmail.com\glew-1.9.0\lib;$(LibraryPath)</LibraryPath>
     <ExecutablePath>$(WindowsSDK_ExecutablePath_x86);$(VCInstallDir)bin;$(VSInstallDir)Common7\Tools\bin;$(VSInstallDir)Common7\tools;$(VSInstallDir)Common7\ide;$(ProgramFiles)\HTML Help Workshop;$(MSBuildToolsPath32);$(VSInstallDir);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -61,7 +61,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>freetype251.lib;LUA.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32s.lib;freetype251.lib;LUA.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -83,6 +83,43 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Algorithm\Random\LCG.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\AABB.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Capsule.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Circle.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Frustum.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Line.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\LineSegment.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\OBB.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\PBVolume.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Plane.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polygon.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polyhedron.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Ray.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Sphere.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Triangle.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\TriangleMesh.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\BitOps.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float2.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x3.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x4.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathFunc.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathLog.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathOps.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Polynomial.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Quat.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\SSEMath.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\TransformOps.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Time\Clock.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\Light.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\OmniLight.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramInfo.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramLinker.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderCompiler.cpp" />
+    <ClCompile Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderLoader.cpp" />
     <ClCompile Include="controller\CommandCreateObject.cpp" />
     <ClCompile Include="controller\CommandDeleteObject.cpp" />
     <ClCompile Include="controller\CommandHandler.cpp" />
@@ -115,10 +152,8 @@
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\Bounding.cpp" />
     <ClCompile Include="view\Camera.cpp" />
-    <ClCompile Include="view\DirectLight.cpp" />
     <ClCompile Include="view\GameView.cpp" />
     <ClCompile Include="view\Input.cpp" />
-    <ClCompile Include="view\Light.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
@@ -130,6 +165,72 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Algorithm\Random\LCG.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\AABB.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\AABB2D.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Capsule.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Circle.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Frustum.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\GeometryAll.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\GeomType.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\HitInfo.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\KDTree.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Line.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\LineSegment.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\OBB.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\PBVolume.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Plane.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polygon.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Polyhedron.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\QuadTree.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Ray.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Sphere.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\Triangle.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Geometry\TriangleMesh.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\MathBuildConfig.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\MathGeoLib.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\MathGeoLibFwd.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\assume.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\BitOps.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\FixedPoint.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float2.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x3.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float3x4.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4_neon.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4x4_sse.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4_neon.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\float4_sse.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\FloatCmp.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathAll.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathConstants.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathFunc.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathLog.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathNamespace.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MathTypes.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\MatrixProxy.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\myassert.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Polynomial.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Quat.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\quat_simd.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Rect.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\Reinterpret.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\simd.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\SSEMath.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\sse_mathfun.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Math\TransformOps.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\lib\src\Time\Clock.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\gl.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\Matrix3.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\Light.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\OmniLight.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramInfo.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ProgramLinker.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderCompiler.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\ShaderLoader.h" />
+    <ClInclude Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\Shaders.h" />
     <ClInclude Include="controller\CommandRotateObject.h" />
     <ClInclude Include="los.h" />
     <ClInclude Include="model\3dObject.h" />
@@ -137,8 +238,6 @@
     <ClInclude Include="model\ObjectGroup.h" />
     <ClInclude Include="model\ObjectInterface.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
-    <ClInclude Include="view\DirectLight.h" />
-    <ClInclude Include="view\Light.h" />
     <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />
@@ -180,6 +279,10 @@
     <ClInclude Include="view\Table.h" />
     <ClInclude Include="view\TextureManager.h" />
     <ClInclude Include="view\WBMModelFactory.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\per_pixel.fsh" />
+    <None Include="..\..\..\ course-work-ps-31-2013 --username dertkaes%40gmail.com\OpenGLTest\OpenGLTest\view\shader\per_pixel.vsh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

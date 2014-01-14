@@ -1,5 +1,5 @@
 #include "UICheckBox.h"
-#include <GL\glut.h>
+#include "../view/gl.h"
 #include "..\view\TextureManager.h"
 #include "UIText.h"
 

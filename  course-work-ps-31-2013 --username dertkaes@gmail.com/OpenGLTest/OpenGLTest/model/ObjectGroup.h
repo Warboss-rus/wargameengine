@@ -7,14 +7,15 @@ class CObjectGroup : public IObject
 public:
 	CObjectGroup():m_current(0) {}
 	std::string GetPathToModel() const { return ""; }
-	void Move(double x, double y, double z);
-	void SetCoords(double x, double y, double z);
-	void Rotate(double rotation);
-	double GetX() const;
-	double GetY() const;
-	double GetZ() const;
+	void Move(float x, float y, float z);
+	void SetCoords(float x, float y, float z);
+	void SetCoords(float3 pos);
+	void Rotate(float rotation);
+	float GetX() const;
+	float GetY() const;
+	float GetZ() const;
 	CVector3d GetCoords() const { return CVector3d(GetX(), GetY(), GetZ()); }
-	double GetRotation() const;
+	float GetRotation() const;
 	std::set<std::string> const& GetHiddenMeshes() const;
 	void HideMesh(std::string const& meshName);
 	void ShowMesh(std::string const& meshName);

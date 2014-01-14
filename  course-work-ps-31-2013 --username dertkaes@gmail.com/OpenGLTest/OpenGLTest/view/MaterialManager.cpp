@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include <GL\glut.h>
+#include "../view/gl.h"
 
 sMaterial * CMaterialManager::GetMaterial(std::string const& name)
 {

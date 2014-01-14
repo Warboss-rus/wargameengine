@@ -9,12 +9,12 @@ class CCommandMoveObject :
 	public ICommand
 {
 public:
-	CCommandMoveObject(double deltaX, double deltaY);
+	CCommandMoveObject(float deltaX, float deltaY);
 	void Execute();
 	void Rollback();
 private:
 	std::shared_ptr<IObject> m_pObject;
-	double m_deltaX;
-	double m_deltaY;
+	float m_deltaX;
+	float m_deltaY;
 };
 

@@ -1,7 +1,7 @@
 #include "ObjectGroup.h"
 #include "GameModel.h"
 
-void CObjectGroup::Move(double x, double y, double z)
+void CObjectGroup::Move(float x, float y, float z)
 {
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
@@ -9,7 +9,7 @@ void CObjectGroup::Move(double x, double y, double z)
 	}
 }
 
-void CObjectGroup::SetCoords(double x, double y, double z)
+void CObjectGroup::SetCoords(float x, float y, float z)
 {
 	x -= GetX();
 	y -= GetY();
@@ -20,7 +20,12 @@ void CObjectGroup::SetCoords(double x, double y, double z)
 	}
 }
 
-void CObjectGroup::Rotate(double rotation)
+void CObjectGroup::SetCoords(float3 pos)
+{
+	SetCoords(pos.x, pos.y, pos.z);
+}
+
+void CObjectGroup::Rotate(float rotation)
 {
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
@@ -28,7 +33,7 @@ void CObjectGroup::Rotate(double rotation)
 	}
 }
 
-double CObjectGroup::GetX() const
+float CObjectGroup::GetX() const
 {
 	if(m_current < m_children.size())
 	{
@@ -37,7 +42,7 @@ double CObjectGroup::GetX() const
 	return 0.0;
 }
 
-double CObjectGroup::GetY() const
+float CObjectGroup::GetY() const
 {
 	if(m_current < m_children.size())
 	{
@@ -46,7 +51,7 @@ double CObjectGroup::GetY() const
 	return 0.0;
 }
 
-double CObjectGroup::GetZ() const
+float CObjectGroup::GetZ() const
 {
 	if(m_current < m_children.size())
 	{
@@ -55,7 +60,7 @@ double CObjectGroup::GetZ() const
 	return 0.0;
 }
 
-double CObjectGroup::GetRotation() const
+float CObjectGroup::GetRotation() const
 {
 	if(m_current < m_children.size())
 	{

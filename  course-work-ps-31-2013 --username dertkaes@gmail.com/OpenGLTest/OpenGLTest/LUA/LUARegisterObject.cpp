@@ -9,9 +9,9 @@ int NewObject(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 5)
         return luaL_error(L, "4 argument expected (model, x, y, rotation)");
 	std::string model =  CLUAScript::GetArgument<char*>(2);
-	double x = CLUAScript::GetArgument<double>(3);
-	double y = CLUAScript::GetArgument<double>(4);
-	double rotation = CLUAScript::GetArgument<double>(5);
+	float x = CLUAScript::GetArgument<float>(3);
+	float y = CLUAScript::GetArgument<float>(4);
+	float rotation = CLUAScript::GetArgument<float>(5);
 	IObject* object = new C3DObject(model, x, y, rotation);
 	CCommandHandler::GetInstance().lock()->AddNewCreateObject(std::shared_ptr<IObject>(object));
 	return CLUAScript::NewInstanceClass(object, "Object");
@@ -94,7 +94,7 @@ int MoveObject(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 4)
         return luaL_error(L, "3 arguments expected(x, y, z)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	object->Move(CLUAScript::GetArgument<double>(2), CLUAScript::GetArgument<double>(3), CLUAScript::GetArgument<double>(4));
+	object->Move(CLUAScript::GetArgument<float>(2), CLUAScript::GetArgument<float>(3), CLUAScript::GetArgument<float>(4));
 	return 0;
 }
 
@@ -103,7 +103,7 @@ int RotateObject(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected(rotation)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	object->Rotate(CLUAScript::GetArgument<double>(2));
+	object->Rotate(CLUAScript::GetArgument<float>(2));
 	return 0;
 }
 
@@ -177,9 +177,9 @@ int SetMoveLimit(lua_State* L)
 	{
 		if (CLUAScript::GetArgumentCount() != 6)
 			return luaL_error(L, "4 argument expected(moveLimiterType, centerX, centerY, radius)");
-		double centerX = CLUAScript::GetArgument<double>(3);
-		double centerY = CLUAScript::GetArgument<double>(4);
-		double radius = CLUAScript::GetArgument<double>(5);
+		float centerX = CLUAScript::GetArgument<float>(3);
+		float centerY = CLUAScript::GetArgument<float>(4);
+		float radius = CLUAScript::GetArgument<float>(5);
 		object->SetMovementLimiter(new CMoveLimiterCircle(centerX, centerY, radius));
 	}
 	if(limiterType == "rectangle")
@@ -187,10 +187,10 @@ int SetMoveLimit(lua_State* L)
 		int n =CLUAScript::GetArgumentCount();
 		if (CLUAScript::GetArgumentCount() != 7)
 			return luaL_error(L, "5 argument expected(moveLimiterType, x1, y1, x2, y2)");
-		double x1 = CLUAScript::GetArgument<double>(3);
-		double y1 = CLUAScript::GetArgument<double>(4);
-		double x2 = CLUAScript::GetArgument<double>(5);
-		double y2 = CLUAScript::GetArgument<double>(6);
+		float x1 = CLUAScript::GetArgument<float>(3);
+		float y1 = CLUAScript::GetArgument<float>(4);
+		float x2 = CLUAScript::GetArgument<float>(5);
+		float y2 = CLUAScript::GetArgument<float>(6);
 		object->SetMovementLimiter(new CMoveLimiterRectangle(x1, y1, x2, y2));
 	}
 	return 0;

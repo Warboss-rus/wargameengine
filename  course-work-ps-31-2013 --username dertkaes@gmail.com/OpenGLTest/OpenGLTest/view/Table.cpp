@@ -1,5 +1,5 @@
 #include "Table.h"
-#include <GL\glut.h>
+#include "gl.h"
 #include "TextureManager.h"
 
 void CTable::Draw() const
@@ -19,7 +19,7 @@ void CTable::Draw() const
 	texManager->SetTexture("");
 }
 
-bool CTable::isCoordsOnTable(double worldX, double worldY) const
+bool CTable::isCoordsOnTable(float worldX, float worldY) const
 {
 	return (worldX < GetWidth() / 2 && worldX > -GetWidth() / 2 
 	   && worldY < GetHeight() / 2 && worldY > -GetHeight() / 2);
