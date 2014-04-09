@@ -193,6 +193,7 @@ bool CUIElement::IsFocused(const IUIElement * child) const
 void CUIElement::ClearChildren()
 {
 	m_children.clear();
+	m_focused = NULL;
 }
 
 int CUIElement::GetX() const

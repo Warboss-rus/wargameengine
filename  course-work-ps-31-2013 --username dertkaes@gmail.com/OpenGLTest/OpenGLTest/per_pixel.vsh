@@ -3,6 +3,7 @@ varying vec3 normal;
 varying vec3 eyeDir;	// eye direction
 
 varying vec3 lightDir;
+varying vec4 shadowCoord;
 
 void main()
 {
@@ -18,4 +19,5 @@ void main()
 	
 	// copy multi texture coordinates
 	gl_TexCoord[0] = gl_MultiTexCoord0;
+        shadowCoord = (gl_TextureMatrix[2] * gl_Vertex).xyzw;
 }

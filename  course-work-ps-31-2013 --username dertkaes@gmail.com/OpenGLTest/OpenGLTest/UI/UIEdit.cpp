@@ -1,6 +1,6 @@
 #include "UIEdit.h"
 #include "UIText.h"
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include "..\view\TextureManager.h"
 
 void CUIEdit::Draw() const
@@ -8,7 +8,7 @@ void CUIEdit::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0);
+	glTranslatef(GetX(), GetY(), 0.0f);
 	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2i(0, 0);

@@ -1,8 +1,8 @@
 #include "3dModel.h"
-#include "gl.h"
+#include <GL\glut.h>
 
 C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-				   CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, float scale)
+				   CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale)
 {
 	m_vertices.swap(vertices);
 	m_textureCoords.swap(textureCoords);
@@ -14,13 +14,18 @@ C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & t
 	m_scale = scale;
 }
 
+void C3DModel::SetBounding(std::shared_ptr<IBounding> bounding, double scale)
+{
+	m_bounding = bounding;
+	m_scale = scale;
+}
+
 void SetMaterial(sMaterial * material)
 {
 	if(!material)
 	{
 		return;
 	}
-
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT, material->ambient);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE, material->diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, material->specular);

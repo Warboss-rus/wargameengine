@@ -1,10 +1,9 @@
 #include "3dObject.h"
 
-
-C3DObject::C3DObject(std::string const& model, float x, float y, float rotation)
+C3DObject::C3DObject(std::string const& model, double x, double y, double rotation)
 	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation)  {}
 
-void C3DObject::Move(float x, float y, float z) 
+void C3DObject::Move(double x, double y, double z) 
 { 
 	m_x += x; 
 	m_y += y; 
@@ -12,7 +11,7 @@ void C3DObject::Move(float x, float y, float z)
 	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
 }
 
-void C3DObject::SetCoords(float x, float y, float z) 
+void C3DObject::SetCoords(double x, double y, double z) 
 { 
 	m_x = x; 
 	m_y = y; 
@@ -20,13 +19,7 @@ void C3DObject::SetCoords(float x, float y, float z)
 	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
 }
 
-void C3DObject::SetCoords(float3 pos) 
-{ 
-	SetCoords(pos.x, pos.y, pos.z);
-}
-
-
-void C3DObject::Rotate(float rotation) 
+void C3DObject::Rotate(double rotation) 
 { 
 	m_rotation = fmod(m_rotation + rotation + 360.0, 360); 
 	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);

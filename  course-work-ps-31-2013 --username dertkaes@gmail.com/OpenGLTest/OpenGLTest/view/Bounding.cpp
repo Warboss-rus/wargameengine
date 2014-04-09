@@ -1,28 +1,31 @@
 #include "Bounding.h"
 #include <cstring>
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include <fstream>
 #include <string>
 #include "Vector3.h"
 #include <algorithm>
-#include "Matrix3.h"
-#include "../lib/src/Geometry/Ray.h"
-#include "../lib/src/Geometry/Polyhedron.h"
-#include "../lib/src/Geometry/LineSegment.h"
-#include "../lib/src/Geometry/Line.h"
+#include "Geometry/Ray.h"
+#include "Geometry/Polyhedron.h"
+#include "Geometry/LineSegment.h"
+#include "Geometry/Line.h"
+#include "Geometry/OBB.h"
+#include "Geometry/AABB.h"
+#include "Math/float3.h"
+#include "Math/float3x3.h"
 
-const float PI = 3.14159265359;
+const double PI = 3.14159265359;
 
-CBoundingBox::CBoundingBox(float min[3], float max[3])
+CBoundingBox::CBoundingBox(double min[3], double max[3]) 
 { 
-	memcpy(m_min, min, sizeof(float) * 3); 
-	memcpy(m_max, max, sizeof(float) * 3); 
+	memcpy(m_min, min, sizeof(double) * 3); 
+	memcpy(m_max, max, sizeof(double) * 3); 
 }
 
-void RotateScaleTranslate(float& x, float& y, float& z, float angle, float scale, float transX, float transY, float transZ)
+void RotateScaleTranslate(double& x, double& y, double& z, double angle, double scale, double transX, double transY, double transZ)
 {
 	angle *= (PI / 180);
-	float newx = x * cos(angle) - y * sin(angle);//rotate
+	double newx = x * cos(angle) - y * sin(angle);//rotate
 	y = x * sin(angle) + y * cos(angle);
 	x = newx;
 	x *= scale;//scale
@@ -33,34 +36,38 @@ void RotateScaleTranslate(float& x, float& y, float& z, float angle, float scale
 	z += transZ;
 }
 
-void RotateScaleTranslate(CVector3d& vector, float angle, float scale, float transX, float transY, float transZ)
+AABB GetAABB(CBoundingBox const& bounding)
 {
-	angle *= (PI / 180);
-	float newx = vector.x * cos(angle) - vector.y * sin(angle);//rotate
-	vector.y = vector.x * sin(angle) + vector.y * cos(angle);
-	vector.x = newx;
-	vector.x *= scale;//scale
-	vector.y *= scale;
-	vector.z *= scale;
-	vector.x += transX;//translate
-	vector.y += transY;
-	vector.z += transZ;
+	const double *min = bounding.GetMin();
+	const double *max = bounding.GetMax();
+	float min1[] = {min[0], min[1], min[2]};
+	float max1[] = {max[0], max[1], max[2]};
+	math::float3 minVector(min1);
+	math::float3 maxVector(max1);
+	return AABB(minVector, maxVector);
 }
 
-void RotateScaleTranslate2(float & x, float & y, float & z, float angle, float scale, float transX, float transY, float transZ)
+OBB GetOBB(const CBoundingBox const& bounding, float3 translate, float angle)
 {
-	x *= scale;//scale
-	y *= scale;
-	z *= scale;
-	x += transX;//translate
-	y += transY;
-	z += transZ;
+	OBB res( GetAABB(bounding) );
+	float z = res.r.z;
+	res.Scale( res.CenterPoint(), bounding.GetScale() );
+	res.Translate(float3(0, 0, res.r.z - z));
+
+	float3x3 rotateMatrix(
+		cos(angle), -sin(angle), 0,
+		sin(angle), cos(angle), 0,
+		0, 0, 1
+	);
+	res.Transform(rotateMatrix);
+	res.Translate(translate);
+	return res;
 }
 
-bool CBoundingBox::IsIntersectsRay(float origin[3], float end[3], float x, float y, float z, float rotation, CVector3d & intersectCoord) const
+bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
-	CBoundingBox box(*this);
-	float3 pos(origin);
+	float origin1[] = {origin[0], origin[1], origin[2]};
+	float3 pos(origin1);
 	float3 dir(end[0] - origin[0], end[1] - origin[1], end[2] - origin[2]);
 	Line l(pos, dir);
 
@@ -69,7 +76,8 @@ bool CBoundingBox::IsIntersectsRay(float origin[3], float end[3], float x, float
 	if ( object.Intersects(l) )
 	{
 		Polyhedron polyhedron = object.ToPolyhedron();
-		float3 endPont(end);
+		float end1[] = {end[0], end[1], end[2]};
+		float3 endPont(end1);
 		LineSegment line(pos, endPont);
 		float3 interesectPoint = polyhedron.ClosestPoint(line);
 		intersectCoord.x = interesectPoint.x;
@@ -80,9 +88,9 @@ bool CBoundingBox::IsIntersectsRay(float origin[3], float end[3], float x, float
 	return false;
 }
 
-void CBoundingBox::Draw(float x, float y, float z, float rotation) const
+void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 {
-	float box[24] = {m_min[0], m_min[1], m_min[2],
+	double box[24] = {m_min[0], m_min[1], m_min[2],
 		m_min[0], m_max[1], m_min[2], 
 		m_max[0], m_max[1], m_min[2], 
 		m_max[0], m_min[1], m_min[2],
@@ -133,22 +141,12 @@ void CBoundingBox::Draw(float x, float y, float z, float rotation) const
 	glPopMatrix();
 }
 
-void CBoundingBox::Scale()
-{
-	m_min[0] *= m_scale;
-	m_min[1] *= m_scale;
-	m_min[2] *= m_scale;
-	m_max[0] *= m_scale;
-	m_max[1] *= m_scale;
-	m_max[2] *= m_scale;
-}
-
 void CBoundingCompound::AddChild(std::shared_ptr<IBounding> child)
 {
 	m_children.push_back(child);
 }
 
-void CBoundingCompound::Draw(float x, float y, float z, float rotation) const
+void CBoundingCompound::Draw(double x, double y, double z, double rotation) const
 {
 	for(size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -156,7 +154,7 @@ void CBoundingCompound::Draw(float x, float y, float z, float rotation) const
 	}
 }
 
-bool CBoundingCompound::IsIntersectsRay(float origin[3], float end[3], float x, float y, float z, float rotation, CVector3d & intersectCoord) const
+bool CBoundingCompound::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
 	for(size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -167,18 +165,7 @@ bool CBoundingCompound::IsIntersectsRay(float origin[3], float end[3], float x, 
 	}
 	return false;
 }
-
-void CBoundingBox::SetScale(float scale)
-{ 
-	m_scale = scale; 
-}
-
-float CBoundingBox::GetScale() const
-{ 
-	return m_scale; 
-}
-
-void CBoundingCompound::SetScale(float scale)
+void CBoundingCompound::SetScale(double scale)
 {
 	for(size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -186,16 +173,7 @@ void CBoundingCompound::SetScale(float scale)
 	}
 }
 
-float CBoundingCompound::GetScale() const
-{ 
-	if (m_children.size() >= 1)
-	{
-		return m_children[0]->GetScale();
-	}
-	return 1;
-}
-
-std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, float & scale)
+std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale)
 {
 	std::ifstream iFile(path);
 	std::shared_ptr<IBounding> bounding (new CBoundingCompound());
@@ -206,7 +184,7 @@ std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, float &
 		iFile >> line;
 		if(line == "box")
 		{
-			float min[3], max[3];
+			double min[3], max[3];
 			iFile >> min[0] >> min[1] >> min[2] >> max[0] >> max[1] >> max[2];
 			std::shared_ptr<IBounding> current(new CBoundingBox(min, max));
 			CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
@@ -221,94 +199,4 @@ std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, float &
 	CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
 	compound->SetScale(scale);
 	return bounding;
-}
-
-bool IsInteresect( CBoundingBox const& bounding1, float3 translate1, float angle1,  CBoundingBox const& bounding2, float3 translate2, float angle2 )
-{
-	OBB ob1 = GetOBB(bounding1, translate1, angle1);
-	OBB ob2 = GetOBB(bounding2, translate2, angle2);
-	return ob1.Intersects(ob2);
-}
-
-bool IsInteresect( CBoundingBox const& bounding1, float3 translate1, float angle1,  CBoundingCompound const& bounding2, float3 translate2, float angle2 )
-{
-	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
-	{
-		if (IsInteresect( (IBounding*)&bounding1, translate1, angle1,  bounding2.GetChild(i), translate2, angle2 ))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool IsInteresect( CBoundingCompound const& bounding1, float3 translate1, float angle1,  CBoundingCompound const& bounding2, float3 translate2, float angle2 )
-{
-	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
-	{
-		if (IsInteresect( (IBounding*)&bounding1, translate1, angle1,  bounding2.GetChild(i), translate2, angle2 ))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool IsInteresect( IBounding* bounding1, float3 translate1, float angle1,  IBounding* bounding2, float3 translate2, float angle2 )
-{
-	if (bounding1->GetTypeObject() == IBounding::BOX)
-	{
-		if (bounding2->GetTypeObject() == IBounding::BOX)
-		{
-			CBoundingBox box1 = *( dynamic_cast<CBoundingBox*>(bounding1) );
-			CBoundingBox box2 = *( dynamic_cast<CBoundingBox*>(bounding2) );
-			return IsInteresect( box1, translate1, angle1, box2, translate2, angle2);
-		}
-		else
-		{
-			CBoundingBox box1 = *( dynamic_cast<CBoundingBox*>(bounding1) );
-			CBoundingCompound box2 = *( dynamic_cast<CBoundingCompound*>(bounding2) );
-			return IsInteresect( box1, translate1, angle1, box2, translate2, angle2);
-		}
-	}
-	else if (bounding1->GetTypeObject() == IBounding::COMPOUND)
-	{
-		if (bounding2->GetTypeObject() == IBounding::BOX)
-		{
-			CBoundingCompound box1 = *( dynamic_cast<CBoundingCompound*>(bounding1) );
-			CBoundingBox box2 = *( dynamic_cast<CBoundingBox*>(bounding2) );
-			return IsInteresect( box2, translate2, angle2, box1, translate1, angle1);
-		}
-		else
-		{
-			CBoundingCompound box1 = *( dynamic_cast<CBoundingCompound*>(bounding1) );
-			CBoundingCompound box2 = *( dynamic_cast<CBoundingCompound*>(bounding2) );
-			return IsInteresect( box1, translate1, angle1, box2, translate2, angle2);
-		}
-	}
-}
-
-
-AABB GetAABB(CBoundingBox const& bounding)
-{
-	math::float3 minVector(bounding.GetMin());
-	math::float3 maxVector(bounding.GetMax());
-	return AABB(minVector, maxVector);
-}
-
-OBB GetOBB(const CBoundingBox const& bounding, float3 translate, float angle)
-{
-	OBB res( GetAABB(bounding) );
-	float z = res.r.z;
-	res.Scale( res.CenterPoint(), bounding.GetScale() );
-	res.Translate(float3(0, 0, res.r.z - z));
-
-	float3x3 rotateMatrix(
-		cos(angle), -sin(angle), 0,
-		sin(angle), cos(angle), 0,
-		0, 0, 1
-	);
-	res.Transform(rotateMatrix);
-	res.Translate(translate);
-	return res;
 }

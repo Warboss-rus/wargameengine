@@ -1,10 +1,12 @@
 uniform sampler2D texture;
+uniform sampler2D shadowMap;
 
 varying vec3 normal;
 
 varying vec3 eyeDir;	// eye direction
 
 varying vec3 lightDir;
+varying vec4 shadowCoord;
 
 vec4 CalculateDiffuseColor(
 	vec3 normal,	// must be normalized 
@@ -32,7 +34,7 @@ vec4 CalculateSpecularColor(
 	float specularIntensity = pow(specularFactor, shininess) * attenuation;
 	if (dot(reflectedLight, eye) < 0)
         {
-             return 0.4;
+             return vec4(0.4, 0.4, 0.4, 1.0);
         }
 	return specularLight * specularIntensity * specularMaterial;
 }
@@ -70,6 +72,18 @@ void main()
 		1.0);
 	
 	vec4 ambientColor = gl_LightSource[0].ambient * diffuseMaterial;
-	
-	gl_FragColor = vec4(color * ( diffuseColor + ambientColor + clamp(specularColor, 0.0, 1.0)).xyz, 1.0);
+
+	float shadowDist = texture2DProj(shadowMap, shadowCoord).z;
+        float diffuseDist = texture2DProj(texture, gl_TexCoord[0]).z;
+	float dist = (shadowDist < diffuseDist) ? 0.5 : 1.0;
+	vec4 colorWithLight = vec4(color.xyz * ( diffuseColor + ambientColor + clamp(specularColor, 0.0, 1.0)).xyz, 1.0);
+    
+        vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
+		
+	shadowCoordinateWdivide.z += 0.0005;
+	float distanceFromLight = texture2D(shadowMap, shadowCoordinateWdivide.st).z;
+ 	float shadow = 1.0;
+ 	if (shadowCoord.w > 0.0)
+		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
+	gl_FragColor =	 colorWithLight;
 }

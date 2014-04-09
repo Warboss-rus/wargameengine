@@ -37,13 +37,18 @@ FaceIndex ParseFaceIndex(std::string const& str)
 	return res;
 }
 
-C3DModel * LoadObjModel(std::string const& path)
+void * LoadObjModel(void* data, unsigned int size, void* param)
 {
+	sOBJLoader * loader = (sOBJLoader*)param;
+	std::string boundingPath = loader->path.substr(0, loader->path.find_last_of('.')) + ".txt";
+	double scale = 1.0;
+	std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
+	loader->oldmodel->SetBounding(bounding, scale);
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
 	std::map<std::string, unsigned int> faces;
-	std::ifstream iFile(path);
+	std::stringstream iFile((char*)data);
 	std::string line;
 	std::string type;
 	CVector3f p3;
@@ -170,15 +175,13 @@ C3DModel * LoadObjModel(std::string const& path)
 	{
 		newTextureCoords.clear();
 	}
-	iFile.close();
+	delete [] data;
 	if(!useFaces)
 	{
 		newVertices.swap(vertices);
 		newTextureCoords.swap(textureCoords);
 		newNormals.swap(normals);
 	}
-	std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
-	float scale = 1.0;
-	std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
-	return new C3DModel(newVertices, newTextureCoords, newNormals, indexes, materialManager, meshes, bounding, scale);
+	loader->newModel = new C3DModel(newVertices, newTextureCoords, newNormals, indexes, materialManager, meshes, bounding, scale);
+	return loader;
 }

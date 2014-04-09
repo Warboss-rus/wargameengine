@@ -1,5 +1,5 @@
 #include "UIText.h"
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include "UITheme.h"
 #include "..\view\TextWriter.h"
 

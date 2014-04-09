@@ -255,18 +255,15 @@ int SetOnChangeCallback(lua_State* L)
 		return luaL_error(L, "1 argument expected (funcName)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string func = CLUAScript::GetArgument<char*>(2);
-	if(func.empty())
+	std::function<void()> function;
+	if(!func.empty())
 	{
-		c->SetOnChangeCallback(std::function<void()>());
-	}
-	else
-	{
-		auto function = [func]()
+		function = [func]()
 		{ 
 			CLUAScript::CallFunction(func);
 		};
-		c->SetOnChangeCallback(function);
 	}
+	c->SetOnChangeCallback(function);
 	return 0;
 }
 
@@ -331,6 +328,5 @@ static const luaL_Reg UIFuncs[] = {
 
 void RegisterUI(CLUAScript & lua)
 {
-#define RegisterClassA RegisterClass
 	lua.RegisterClass(UIFuncs, "UI");
 }

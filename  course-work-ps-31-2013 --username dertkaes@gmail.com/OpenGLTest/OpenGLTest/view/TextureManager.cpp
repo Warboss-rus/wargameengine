@@ -1,39 +1,36 @@
 #include "TextureManager.h"
-#include "gl.h"
+#include <GL\glut.h>
 #include "..\picopng.h"
+#include "..\LogWriter.h"
+#include "..\ThreadPool.h"
 
 CTextureManager * CTextureManager::m_manager = NULL;
 
-unsigned char * LoadBMPTexture(std::string const& path, unsigned int & width, unsigned int & height, unsigned int & bpp, GLenum & format)
+struct sImage
 {
-	// Data read from the header of the BMP file
-	unsigned char header[54];
-	FILE * file = fopen(path.c_str(),"rb");
-	if(!file)
-	{
-		width = 0; 
-		height = 0;
-		bpp = 0;
-		format = GL_BGR_EXT;
-		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading texture", 0);
-		return NULL;
-	}
-	fread(header, 1, 54, file);
-	unsigned int dataPos = *(int*)&(header[0x0A]);     // Position in the file where the actual data begins
-	unsigned int imageSize = *(int*)&(header[0x22]);
-	width = *(int*)&(header[0x12]);
-	height = *(int*)&(header[0x16]);
-	bpp = *(short*)&(header[0x1C]);
-	format = (bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
-	// Some BMP files are misformatted, guess missing information
-	if (imageSize==0)    imageSize=width*height*bpp / 8; 
-	if (dataPos==0)      dataPos=54; 
+	unsigned int width;
+	unsigned int height;
+	unsigned int bpp;
+	unsigned char * data;
+	unsigned int headerSize;
+	GLenum format;
+	GLuint id;
+};
 
-	unsigned char * data = new unsigned char [imageSize];
-	fread(data,1,imageSize,file);
-	fclose(file);
-
-	return data;
+void* LoadBMP(void * data, unsigned int size, void* param)
+{
+	sImage* img = (sImage*)param;
+	unsigned char* imgData = (unsigned char*) data;
+	img->headerSize = *(int*)&(imgData[0x0A]);     // Position in the file where the actual data begins
+	unsigned int imageSize = *(int*)&(imgData[0x22]);
+	img->width = *(int*)&(imgData[0x12]);
+	img->height = *(int*)&(imgData[0x16]);
+	img->bpp = *(short*)&(imgData[0x1C]);
+	img->format = (img->bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
+	if (img->headerSize==0)  // Some BMP files are misformatted, guess missing information
+		img->headerSize=54;
+	img->data = imgData;
+	return img;
 }
 
 unsigned char * UncompressTGA(unsigned char * data, unsigned int width, unsigned int height, unsigned int bpp)
@@ -67,111 +64,83 @@ unsigned char * UncompressTGA(unsigned char * data, unsigned int width, unsigned
 				memcpy(&uncompressedData[index],pCur,iPixelSize);
 		}
 	}
-	delete [] data;
 	return uncompressedData;
 }
 
-unsigned char * LoadTGATexture(std::string const& path, unsigned int & width, unsigned int & height, unsigned int & bpp, GLenum & format)
+void* LoadTGA(void * data, unsigned int size, void* param)
 {
-	FILE * fTGA = fopen(path.c_str(), "rb");
-	if(!fTGA)
+	sImage* img = (sImage*)param;
+	unsigned char* imgData = (unsigned char*) data;
+	if(imgData[2] != 2 && imgData[2] != 10) 
+		return img; //nonRGB TGA are not supported
+	img->width = imgData[13] * 256 + imgData[12];
+	img->height = imgData[15] * 256 + imgData[14];
+	img->bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
+	img->format = (img->bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
+	img->headerSize = 18;
+	if(imgData[2] == 10) //Compressed
 	{
-		width = 0; 
-		height = 0;
-		bpp = 0;
-		format = GL_BGR_EXT;
-		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading texture", 0);
-		return NULL;
+		unsigned char* old = imgData;
+		imgData = UncompressTGA(imgData + img->headerSize, img->width, img->height, img->bpp);
+		delete [] old;
+		img->headerSize = 0;
 	}
-	unsigned char header[18];
-	fread(&header, 18, 1, fTGA); //read header
-	if(header[2] != 2 && header[2] != 10) 
-		return NULL; //nonRGB TGA are not supported
-	width = header[13] * 256 + header[12];
-	height = header[15] * 256 + header[14];
-	bpp = header[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
-	format = (bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
-
-	fseek(fTGA, 0L, SEEK_END);
-	unsigned int imageSize = ftell(fTGA) - 18;
-	fseek(fTGA, 18L, SEEK_SET);
-
-	unsigned char * data = new unsigned char [imageSize];
-	fread(data, 1, imageSize, fTGA);
-	fclose(fTGA);
-
-	if(header[2] == 2) //uncompressed
-		return data;
-
-	return UncompressTGA(data, width, height, bpp);
+	img->data = imgData;
+	return img;
 }
 
-unsigned char * LoadPNGTexture(std::string const& path, unsigned int & width, unsigned int & height, unsigned int & bpp, GLenum & format)
+void * LoadPNG(void * data, unsigned int size, void* param)
 {
-	FILE * file = fopen(path.c_str(),"rb");
-	if(!file)
-	{
-		width = 0; 
-		height = 0;
-		bpp = 0;
-		format = GL_BGR_EXT;
-		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading texture", 0);
-		return NULL;
-	}
-	fseek(file, 0L, SEEK_END);
-	unsigned int imageSize = ftell(file);
-	fseek(file, 0L, SEEK_SET);
-
-	unsigned char * data = new unsigned char[imageSize];
-	fread(data, 1, imageSize, file);
-	fclose(file);
+	sImage* img = (sImage*)param;
+	unsigned char* imgData = (unsigned char*) data;
 
 	std::vector<unsigned char> uncompressedData;
 	unsigned long lheight, lwidth;
-	decodePNG(uncompressedData, lwidth, lheight, data, imageSize, true);
-	height = lheight;
-	width = lwidth;
-	delete [] data;
+	decodePNG(uncompressedData, lwidth, lheight, imgData, size, true);
+	img->height = lheight;
+	img->width = lwidth;
+	delete [] imgData;
 
-	bpp = 32;
-	imageSize = height * width * bpp / 8;
-	format = GL_RGBA;
-	data = new unsigned char [imageSize];
-	for(unsigned long y = 0; y < height; ++y)
+	img->bpp = 32;
+	long imageSize = img->height * img->width * img->bpp / 8;
+	img->format = GL_RGBA;
+	img->data = new unsigned char [imageSize];
+	img->headerSize = 0;
+	for(unsigned long y = 0; y < img->height; ++y)
 	{
-		memcpy(&data[y * width * 4], &uncompressedData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
+		memcpy(&img->data[y * img->width * 4], &uncompressedData[(img->height - y - 1) * img->width * 4], sizeof(unsigned char) * 4 * img->width);
 	}
-	return data;
+	return img;
 }
 
-unsigned int LoadTexture(std::string const& path)
+void UseTexture(void* data)
 {
-	unsigned int width = 0;
-	unsigned int height = 0;
-	unsigned int bpp = 0;
-	unsigned char * data;
-	GLenum format;
-	unsigned int dotCoord = path.find_last_of('.') + 1;
-	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
-	if(extension == "bmp")
-		data = LoadBMPTexture(path, width, height, bpp, format);
-	if(extension == "tga")
-		data = LoadTGATexture(path, width, height, bpp, format);
-	if(extension == "png")
-		data =  LoadPNGTexture(path, width, height, bpp, format);
-	if(!data) return 0;
-	GLuint textureID;
-	glGenTextures(1, &textureID);
+	sImage *img = (sImage*)data;
 	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
+	glBindTexture(GL_TEXTURE_2D, img->id);
 	// Give the image to OpenGL
-	gluBuild2DMipmaps(GL_TEXTURE_2D, bpp / 8, width, height, format, GL_UNSIGNED_BYTE, &data[0]);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, img->bpp / 8, img->width, img->height, img->format, GL_UNSIGNED_BYTE, &img->data[img->headerSize]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	delete [] data;
-	return textureID; //unknown
+	delete [] img->data;
+	delete img;
+}
+
+unsigned int LoadTexture(std::string const& path)
+{
+	sImage* img = new sImage;
+	glGenTextures(1, &img->id);
+	unsigned int dotCoord = path.find_last_of('.') + 1;
+	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
+	if(extension == "bmp")
+		CThreadPool::AsyncReadFile(path, LoadBMP, img, UseTexture);
+	if(extension == "tga")
+		CThreadPool::AsyncReadFile(path, LoadTGA, img, UseTexture);
+	if(extension == "png")
+		CThreadPool::AsyncReadFile(path, LoadPNG, img, UseTexture);
+	return img->id;
 }
 
 CTextureManager * CTextureManager::GetInstance()
@@ -189,13 +158,9 @@ void CTextureManager::FreeInstance()
 	m_manager = NULL;
 }
 
-void CTextureManager::SetShaderVarLocation(GLuint textureLocation)
-{
-	m_shaderTextureVarLocation = textureLocation;
-}
-
 void CTextureManager::SetTexture(std::string const& path)
 {
+	CThreadPool::Update();
 	if(path.empty()) 
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -205,6 +170,5 @@ void CTextureManager::SetTexture(std::string const& path)
 	{
 		m_textures[path] = LoadTexture("texture\\" + path);
 	}
-	glUniform1i ( m_shaderTextureVarLocation, 0/*m_textures[path]*/ );
 	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
 }

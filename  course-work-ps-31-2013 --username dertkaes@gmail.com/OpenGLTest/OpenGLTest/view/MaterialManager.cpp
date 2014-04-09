@@ -2,7 +2,8 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include "../view/gl.h"
+#include <GL\glut.h>
+#include "..\LogWriter.h"
 
 sMaterial * CMaterialManager::GetMaterial(std::string const& name)
 {
@@ -19,7 +20,7 @@ void CMaterialManager::LoadMTL(std::string const& path)
 	if(!iFile.good())
 	{
 		iFile.close();
-		MessageBoxA(NULL, (std::string("Cannot find ") + path).c_str(), "Error loading MTL", 0);
+		CLogWriter::WriteLine("Error loading MTL " + path);
 		return;
 	}
 	std::string line;
@@ -78,4 +79,9 @@ void CMaterialManager::LoadMTL(std::string const& path)
 		}
 	}
 	iFile.close();
+}
+
+void CMaterialManager::AddMaterial (std::string const& name, sMaterial const& material)
+{
+	m_materials[name] = material;
 }

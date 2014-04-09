@@ -1,16 +1,16 @@
 #include "SkyBox.h"
-#include "gl.h"
+#include <GL\glut.h>
 #include "TextureManager.h"
 
 #ifndef GL_CLAMP_TO_EDGE_EXT 
 #define GL_CLAMP_TO_EDGE_EXT 0x812F 
 #endif 
 
-CSkyBox::CSkyBox(float width, float height, float length, std::string const& imageFolder): m_width(width), m_height(height), m_length(length), m_imageFolder(imageFolder) 
+CSkyBox::CSkyBox(double width, double height, double length, std::string const& imageFolder): m_width(width), m_height(height), m_length(length), m_imageFolder(imageFolder) 
 {
 }
 
-void CSkyBox::Draw(float x, float y, float z, float scale)
+void CSkyBox::Draw(double x, double y, double z, double scale)
 {
 	x = -x - m_width / (scale * 2);
 	y = -y - m_height / (scale * 2);

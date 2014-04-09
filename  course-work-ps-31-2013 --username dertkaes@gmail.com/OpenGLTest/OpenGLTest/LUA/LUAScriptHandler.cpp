@@ -1,5 +1,5 @@
 #include "LUAScriptHandler.h"
-#include <exception>
+#include "..\LogWriter.h"
 
 lua_State* CLUAScript::m_lua_state;
 
@@ -29,9 +29,15 @@ int CLUAScript::GetArgumentCount()
 }
 
 template<>
-float CLUAScript::GetArgument<float>(int index)
+double CLUAScript::GetArgument<double>(int index)
 {
     return luaL_checknumber(m_lua_state,index);
+}
+
+template<>
+float CLUAScript::GetArgument<float>(int index)
+{
+    return (float)luaL_checknumber(m_lua_state,index);
 }
 
 template<>
@@ -75,7 +81,7 @@ void* CLUAScript::GetArgument<void*>(int index)
 }
 
 template<>
-void CLUAScript::SetArgument<float>(float arg)
+void CLUAScript::SetArgument<double>(double arg)
 {
 	lua_pushnumber(m_lua_state, arg);
 }
@@ -104,7 +110,7 @@ int CLUAScript::RunScript(std::string const& file)
 	if(result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		throw std::runtime_error(err);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 	return lua_tointeger(m_lua_state, lua_gettop(m_lua_state));
 }
@@ -117,7 +123,7 @@ void CLUAScript::RegisterConstant<int>(int value, char* constantname)
 }
 
 template<>
-void CLUAScript::RegisterConstant<float>(float value, char* constantname)
+void CLUAScript::RegisterConstant<double>(double value, char* constantname)
 {
     lua_pushnumber(m_lua_state, value);
     lua_setglobal(m_lua_state,constantname);
@@ -156,7 +162,12 @@ void CLUAScript::RegisterClass(const luaL_Reg funcs[], std::string const& classN
 void CLUAScript::CallFunction(std::string const& funcName)
 {
 	lua_getglobal(m_lua_state, funcName.c_str());
-	lua_pcall(m_lua_state, 0, 0, 0);
+	int result = lua_pcall(m_lua_state, 0, 0, 0);
+	if(result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
 }
 
 void * CLUAScript::GetClassInstance(std::string const& className)

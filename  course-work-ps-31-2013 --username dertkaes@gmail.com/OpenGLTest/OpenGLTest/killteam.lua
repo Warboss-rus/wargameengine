@@ -5,8 +5,21 @@ hunterGroup = nil
 hunterGroupIndex = nil
 
 function Init()
+	IncludeLibrary("math")
+	IncludeLibrary("os")
+	IncludeLibrary("table")
+	IncludeLibrary("io")
+	math.randomseed(os.time())
+	CameraSetLimits(30, 12, 5, 0.2)
+	EnableLight(1)
+	SetLightPosition(1, 0, 0, 50)
+	SetLightDiffuse(1, 1, 1, 1, 1)
+	SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
+	SetLightSpecular(1, 1, 1, 1, 1)
+	SetShaders("per_pixel.vsh", "per_pixel.fsh")
+	--EnableVertexLightning()
+	SetSelectionCallback("OnSelection")
 	local ui = UI:Get()
-	--ui:ClearChildren()
 	ui:NewButton("Button1", 10, 10, 30, 90, "End phase", "EndPhase")
 	ui:NewButton("Button2", 110, 10, 30, 80, "Ruler", "SetRuler")
 	ui:NewButton("Button3", 200, 10, 30, 80, "Undo", "UndoAction")
@@ -273,7 +286,6 @@ function Fire2(prey)
 		toHit = 2
 	end
 	local los = LoS(hunter, prey)
-	MessageBox(los)
 	if(los < 75) then
 		toHit = toHit + 1
 	end
@@ -287,10 +299,9 @@ function Fire2(prey)
 		MessageBox("Can't see the target(visibility=" .. los .."%)")
 		return
 	end
-	local angle = math.atan2(prey:GetY() - hunter:GetY(), prey:GetX() - hunter:GetX()) * 90 / math.pi
-	if(math.abs(hunter:GetRotation() - angle) > 90) then
-		toHit = toHit + 2
-	end
+	local angle = math.deg(math.atan2(prey:GetX() - hunter:GetX(), prey:GetY() - hunter:GetY()))
+	angle = math.rad((hunter:GetRotation() - angle) / 2)
+	toHit = toHit + math.floor(4 * (1 - math.abs(math.cos(angle))))
 	if(toHit > 6) then
 		toHit = 6
 	end
@@ -602,12 +613,3 @@ function LoadMap(filename)
 		end
 	end
 end
-
-IncludeLibrary("math")
-IncludeLibrary("os")
-IncludeLibrary("table")
-IncludeLibrary("io")
-math.randomseed(os.time())
-CameraSetLimits(30, 12, 5, 0.2)
-Init()
-SetSelectionCallback("OnSelection")

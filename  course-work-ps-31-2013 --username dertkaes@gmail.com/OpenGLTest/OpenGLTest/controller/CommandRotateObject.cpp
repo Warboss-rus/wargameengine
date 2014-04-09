@@ -1,7 +1,7 @@
 #include "CommandRotateObject.h"
 #include "..\model\GameModel.h"
 
-CCommandRotateObject::CCommandRotateObject(float deltaRotation):
+CCommandRotateObject::CCommandRotateObject(double deltaRotation):
 	m_deltaRotation(deltaRotation), m_pObject(CGameModel::GetIntanse().lock()->GetSelectedObject())
 {
 }

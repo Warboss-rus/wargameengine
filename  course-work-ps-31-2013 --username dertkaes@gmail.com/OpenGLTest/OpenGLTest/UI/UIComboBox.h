@@ -1,4 +1,5 @@
 #include "UIElement.h"
+#include "UIScrollBar.h"
 #include <vector>
 
 class CUIComboBox : public CUIElement
@@ -26,4 +27,5 @@ private:
 	bool m_expanded;
 	bool m_pressed;
 	callback(m_onChange);
+	CUIScrollBar m_scrollbar;
 };

@@ -1,4 +1,11 @@
 #include <string>
 #include "3dModel.h"
 
-C3DModel * LoadObjModel(std::string const& path);
+void * LoadObjModel(void* data, unsigned int size, void* param);
+
+struct sOBJLoader
+{
+	std::string path;
+	C3DModel * oldmodel;
+	C3DModel * newModel;
+};

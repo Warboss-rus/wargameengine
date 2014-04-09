@@ -18,6 +18,7 @@ private:
 public:
 	~CGameModel(void);
 	static std::weak_ptr<CGameModel> GetIntanse();
+	static void FreeInstance();
 	unsigned long GetObjectCount() const;
 	std::shared_ptr<const IObject> Get3DObject(unsigned long number) const;
 	std::shared_ptr<IObject> Get3DObject(unsigned long number);

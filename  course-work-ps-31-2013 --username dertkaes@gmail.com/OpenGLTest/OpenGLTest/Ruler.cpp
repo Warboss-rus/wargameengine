@@ -1,5 +1,5 @@
 #include "Ruler.h"
-#include "view/gl.h"
+#include <GL\glut.h>
 #include <math.h>
 #include <string>
 
@@ -8,7 +8,7 @@ CRuler::CRuler()
 	Hide(); 
 }
 
-void CRuler::SetBegin(float x, float y)
+void CRuler::SetBegin(double x, double y)
 {
 	m_worldBeginX = x;
 	m_worldBeginY = y;
@@ -17,7 +17,7 @@ void CRuler::SetBegin(float x, float y)
 	m_isVisible = true;
 }
 
-void CRuler::SetEnd(float x, float y)
+void CRuler::SetEnd(double x, double y)
 {
 	m_worldEndX = x;
 	m_worldEndY = y;
@@ -37,10 +37,10 @@ void CRuler::Draw() const
 	PrintText(m_worldEndX, m_worldEndY, str);
 }
 
-float CRuler::GetDistance() const
+double CRuler::GetDistance() const
 {
-	float deltaX = m_worldEndX - m_worldBeginX;
-	float deltaY = m_worldEndY - m_worldBeginY;
+	double deltaX = m_worldEndX - m_worldBeginX;
+	double deltaY = m_worldEndY - m_worldBeginY;
 	return sqrt(deltaX * deltaX + deltaY * deltaY);
 }
 
@@ -53,7 +53,7 @@ void CRuler::Hide()
 	m_worldEndY = 0.0;
 }
 
-void CRuler::PrintText( float x, float y, const char *st) const
+void CRuler::PrintText( double x, double y, const char *st) const
 {
 	int l,i;
 

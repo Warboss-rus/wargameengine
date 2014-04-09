@@ -9,11 +9,11 @@ class CCommandRotateObject :
 	public ICommand
 {
 public:
-	CCommandRotateObject(float deltaRotation);
+	CCommandRotateObject(double deltaRotation);
 	void Execute();
 	void Rollback();
 private:
 	std::shared_ptr<IObject> m_pObject;
-	float m_deltaRotation;
+	double m_deltaRotation;
 };
 

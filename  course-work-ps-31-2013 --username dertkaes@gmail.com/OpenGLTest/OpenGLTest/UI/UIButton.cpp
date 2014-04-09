@@ -1,5 +1,5 @@
 #include "UIButton.h"
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include "..\view\TextureManager.h"
 #include "UIText.h"
 
@@ -8,7 +8,7 @@ void CUIButton::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0);
+	glTranslatef(GetX(), GetY(), 0.0f);
 	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
 		(m_isPressed)?glTexCoord2f(m_theme.button.pressedTexCoord[0], m_theme.button.pressedTexCoord[1]):glTexCoord2f(m_theme.button.texCoord[0], m_theme.button.texCoord[1]);

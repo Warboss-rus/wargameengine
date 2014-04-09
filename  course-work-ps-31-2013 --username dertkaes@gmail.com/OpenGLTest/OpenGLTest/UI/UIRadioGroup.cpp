@@ -1,5 +1,5 @@
 #include "UIRadioGroup.h"
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include "..\view\TextureManager.h"
 #include "UIText.h"
 
@@ -8,7 +8,7 @@ void CUIRadioGroup::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0);
+	glTranslatef(GetX(), GetY(), 0.0f);
 	for(size_t i = 0; i < m_items.size(); ++i)
 	{
 		CTextureManager::GetInstance()->SetTexture(m_theme.texture);

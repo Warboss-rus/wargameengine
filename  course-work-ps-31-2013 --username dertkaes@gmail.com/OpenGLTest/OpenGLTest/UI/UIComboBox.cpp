@@ -1,6 +1,6 @@
 #include "UIComboBox.h"
 #include "UIText.h"
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include "..\view\TextureManager.h"
 
 void CUIComboBox::Draw() const
@@ -8,7 +8,7 @@ void CUIComboBox::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0);
+	glTranslatef(GetX(), GetY(), 0.0f);
 	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2i(0, 0);
@@ -52,6 +52,7 @@ void CUIComboBox::Draw() const
 		{
 			PrintText(m_theme.combobox.borderSize, GetHeight() * (i + 1), GetWidth(), GetHeight(), m_items[i], m_theme.combobox.text);
 		}
+		//m_scrollbar.Draw();
 	}
 	CUIElement::Draw();
 	glPopMatrix();
@@ -64,6 +65,10 @@ bool CUIComboBox::LeftMouseButtonDown(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
+		if(m_expanded && m_scrollbar.IsOnElement(x, y))
+		{
+			m_scrollbar.LeftMouseButtonDown(x, y);
+		}
 		m_pressed = true;
 		return true;
 	}
@@ -84,6 +89,10 @@ bool CUIComboBox::LeftMouseButtonUp(int x, int y)
 		{
 			if(m_expanded && PointIsOnElement(x, y))
 			{
+				if(m_expanded && m_scrollbar.IsOnElement(x, y))
+				{
+					m_scrollbar.LeftMouseButtonDown(x, y);
+				}
 				int index = (y - m_y) / GetHeight();
 				if(index > 0) m_selected = index - 1;
 				if(m_onChange) m_onChange();
@@ -109,6 +118,7 @@ void CUIComboBox::AddItem(std::string const& str)
 	{
 		m_selected = 0;
 	}
+	m_scrollbar.Update(GetHeight() * 10, GetHeight() * (m_items.size() + 1), GetWidth());
 }
 
 std::string const CUIComboBox::GetText() const

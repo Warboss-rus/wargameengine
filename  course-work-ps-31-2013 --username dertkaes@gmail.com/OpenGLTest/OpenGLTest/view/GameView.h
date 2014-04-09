@@ -11,18 +11,11 @@
 #include "..\Ruler.h"
 #include "..\UI\UIElement.h"
 #include "..\LUA\LUAScriptHandler.h"
-#include "shader/OmniLight.h"
-
-#include "shader/ShaderLoader.h"
-#include "shader/ShaderCompiler.h"
-#include "shader/ProgramLinker.h"
-#include "shader/ProgramInfo.h"
-#include "shader/Shaders.h"
+#include "ShaderManager.h"
 
 class CGameView
 {
 private:
-	std::shared_ptr<IObject> m_selectedObject;
 	CVector3d m_selectedObjectCapturePoint;
 	CModelManager m_modelManager;
 	std::weak_ptr<CGameModel> m_gameModel;
@@ -30,40 +23,39 @@ private:
 	static std::shared_ptr<CGameView> m_instanse;
 	std::shared_ptr<CTable> m_table;
 	std::shared_ptr<CSkyBox> m_skybox;
-	COmniLight m_light;
 	CCamera m_camera;
 	CRuler m_ruler;
 	std::shared_ptr<IUIElement> m_ui;
 	std::shared_ptr<CLUAScript> m_lua;
-
-	CProgram m_program;
+	CShaderManager m_shader;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
 	CGameView& operator=(const CGameView&){};
 	void DrawUI() const;
-	void InitShaders();
 
 	callback(m_selectionCallback);
 	callback(m_updateCallback);
 	callback(m_singleCallback);
+	bool m_vertexLightning;
 public:
 	static std::weak_ptr<CGameView> GetIntanse();
+	~CGameView();
+
 	void Update();
 	void DrawObjects(void);
 	void DrawBoundingBox();
 	void Init();
 
 	void CreateTable(float width, float height, std::string const& texture);
-	void CreateSkybox(float size, std::string const& textureFolder);
+	void CreateSkybox(double size, std::string const& textureFolder);
 	void SetUI(IUIElement * ui);
 	IUIElement * GetUI() const;
 
 	std::shared_ptr<IObject> GetNearestObject(int x, int y);
 	void SelectObject(int x, int y, bool shiftPressed);
 	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
-	bool IsObjectInteresectSomeObjects(std::shared_ptr<IObject> object);
-	void CameraSetLimits(float maxTransX, float maxTransY, float maxScale, float minScale);
+	void CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
 	void CameraZoomIn();
 	void CameraZoomOut();
 	void CameraRotate(int rotZ, int rotX);
@@ -72,8 +64,8 @@ public:
 	void CameraTranslateRight();
 	void CameraTranslateDown();
 	void CameraTranslateUp();
-	void RulerBegin(float x, float y);
-	void RulerEnd(float x, float y);
+	void RulerBegin(double x, double y);
+	void RulerEnd(double x, double y);
 	void RulerHide();
 	void TryMoveSelectedObject(int x, int y);
 	bool UILeftMouseButtonDown(int x, int y);
@@ -82,6 +74,9 @@ public:
 	bool UISpecialKeyPress(int key);
 	CModelManager* GetModelManager() { return &m_modelManager; }
 	void ResizeWindow(int height, int width);
+	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
+	void EnableVertexLightning() { m_vertexLightning = true; }
+	void DisableVertexLightning() { m_vertexLightning = false; }
 
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));

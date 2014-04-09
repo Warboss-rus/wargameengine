@@ -8,17 +8,16 @@
 class C3DObject : public IObject
 {
 public:
-	C3DObject(std::string const& model, float x, float y, float rotation);
+	C3DObject(std::string const& model, double x, double y, double rotation);
 	std::string GetPathToModel() const { return m_model; }
-	void Move(float x, float y, float z);
-	void SetCoords(float x, float y, float z);
-	void C3DObject::SetCoords(float3 pos);
-	void Rotate(float rotation);
-	float GetX() const { return m_x; }
-	float GetY() const { return m_y; }
-	float GetZ() const { return m_z; }
+	void Move(double x, double y, double z);
+	void SetCoords(double x, double y, double z);
+	void Rotate(double rotation);
+	double GetX() const { return m_x; }
+	double GetY() const { return m_y; }
+	double GetZ() const { return m_z; }
 	CVector3d GetCoords() const { return CVector3d(m_x, m_y, m_z); }
-	float GetRotation() const { return m_rotation; }
+	double GetRotation() const { return m_rotation; }
 	std::set<std::string> const& GetHiddenMeshes() const { return m_hiddenMeshes; }
 	void HideMesh(std::string const& meshName);
 	void ShowMesh(std::string const& meshName);
@@ -29,10 +28,10 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter) { m_movelimiter.reset(limiter); }
 private:
 	std::string m_model;
-	float m_x;
-	float m_y;
-	float m_z;
-	float m_rotation;
+	double m_x;
+	double m_y;
+	double m_z;
+	double m_rotation;
 	std::set<std::string> m_hiddenMeshes;
 	std::map<std::string, std::string> m_properties;
 	bool m_isSelectable;

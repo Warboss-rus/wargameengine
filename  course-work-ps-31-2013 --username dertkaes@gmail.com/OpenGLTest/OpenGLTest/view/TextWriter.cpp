@@ -1,5 +1,5 @@
 #include "TextWriter.h"
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include <exception>
 
 #ifndef GL_CLAMP_TO_EDGE_EXT 

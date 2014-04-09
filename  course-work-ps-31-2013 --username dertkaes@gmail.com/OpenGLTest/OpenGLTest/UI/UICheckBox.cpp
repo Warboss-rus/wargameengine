@@ -1,5 +1,5 @@
 #include "UICheckBox.h"
-#include "../view/gl.h"
+#include <GL\glut.h>
 #include "..\view\TextureManager.h"
 #include "UIText.h"
 
@@ -8,7 +8,7 @@ void CUICheckBox::Draw() const
 	if(!m_visible)
 		return;
 	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0);
+	glTranslatef(GetX(), GetY(), 0.0f);
 	CTextureManager::GetInstance()->SetTexture(m_theme.texture);
 	glBegin(GL_QUADS);
 		(m_state)?glTexCoord2f(m_theme.checkbox.checkedTexCoord[0], m_theme.checkbox.checkedTexCoord[1]):glTexCoord2f(m_theme.checkbox.texCoord[0], m_theme.checkbox.texCoord[1]);

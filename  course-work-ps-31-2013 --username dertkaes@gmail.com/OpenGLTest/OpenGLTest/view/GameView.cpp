@@ -1,5 +1,7 @@
 #include "GameView.h"
-#include "gl.h"
+#define GLEW_STATIC
+#include <GL/glew.h>
+#include <GL\freeglut.h>
 #include <string>
 #include "..\SelectionTools.h"
 #include "..\UI\UICheckBox.h"
@@ -8,6 +10,8 @@
 #include "..\LUA\LUARegisterUI.h"
 #include "..\LUA\LUARegisterObject.h"
 #include "..\model\ObjectGroup.h"
+#include "..\LogWriter.h"
+#include "..\ThreadPool.h"
 
 using namespace std;
 
@@ -25,12 +29,24 @@ weak_ptr<CGameView> CGameView::GetIntanse()
 	return pView;
 }
 
+void CGameView::FreeInstance()
+{
+	m_instanse.reset();
+}
+
+CGameView::~CGameView()
+{
+	CTextureManager::FreeInstance();
+	CCommandHandler::FreeInstance();
+	CGameModel::FreeInstance();
+}
+
 void CGameView::CreateTable(float width, float height, std::string const& texture)
 {
 	m_table.reset(new CTable(width, height, texture));
 }
 
-void CGameView::CreateSkybox(float size, std::string const& textureFolder)
+void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 {
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder));
 }
@@ -39,11 +55,6 @@ CGameView::CGameView(void)
 {
 	m_gameModel = CGameModel::GetIntanse();
 	m_ui.reset(new CUIElement());
-
-	m_light.SetPosition(float3(10, 10, 10));
-	m_light.SetDiffuseIntensity(1, 1, 1, 10);
-	m_light.SetAmbientIntensity(0.5f, 0.5f, 0.5f, 1.0f);
-	m_light.SetSpecularIntensity(1, 1, 1, 1);
 }
 
 void CGameView::OnTimer(int value)
@@ -69,7 +80,6 @@ void CGameView::Init()
     glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_LIGHT0);
 	
 	glutDisplayFunc(CGameView::OnDrawScene);
 	glutTimerFunc(10, OnTimer, 0);
@@ -80,52 +90,19 @@ void CGameView::Init()
 	glutMotionFunc(&CInput::OnMouseMove);
 	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
 	glutMotionFunc(&CInput::OnMouseMove);
+	glutCloseFunc(&CGameView::FreeInstance);
+
+	glewInit();
+	m_vertexLightning = false;
+	CThreadPool tpool;
 
 	m_lua.reset(new CLUAScript());
 	RegisterFunctions(*m_lua.get());
 	RegisterUI(*m_lua.get());
 	RegisterObject(*m_lua.get());
-	try
-	{
-		m_lua->RunScript("main.lua");
-	}
-	catch(std::exception e)
-	{
-		MessageBoxA(NULL, e.what(), "LUA Error", 0);
-	}
+	m_lua->RunScript("main.lua");
 
-	InitShaders();
 	glutMainLoop();
-}
-
-void CGameView::InitShaders()
-{
-	// Загружаем шейдеры
-	CShaderLoader loader;
-	CShader vertexShader =
-		loader.LoadShader(GL_VERTEX_SHADER, L"per_pixel.vsh");
-	CShader fragmentShader =
-		loader.LoadShader(GL_FRAGMENT_SHADER, L"per_pixel.fsh");
-
-	// Создаем программы и присоединяем к ней шейдеры
-	m_program.Create();
-	m_program.AttachShader(vertexShader);
-	m_program.AttachShader(fragmentShader);
-
-	// Компилируем шейдеры
-	CShaderCompiler compiler;
-	compiler.CompileShader(vertexShader);
-	compiler.CompileShader(fragmentShader);
-	compiler.CheckStatus();
-
-	// Компонуем программу
-	CProgramLinker linker;
-	linker.LinkProgram(m_program);
-	linker.CheckStatus();
-
-	CProgramInfo programInfo(m_program);
-
-	CTextureManager::GetInstance()->SetShaderVarLocation(m_program.GetUniformLocation("texture"));
 }
 
 void CGameView::OnDrawScene()
@@ -186,32 +163,12 @@ void CGameView::Update()
 	{
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
-		Sleep(50);
 	}
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	glEnable(GL_DEPTH_TEST);
-
-	glPushMatrix();
-	  float3 pos = m_light.GetPosition();
-	  glTranslatef(pos.x, pos.y, pos.z);
-	  float4 lightColor = m_light.GetColor();
-	  glColor3f(lightColor.x, lightColor.y, lightColor.z);
-	  glutWireSphere(0.1, 100, 100);
-	glPopMatrix();
-	
 	if(m_table) m_table->Draw();
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	glUseProgram(m_program);
-
-	glActiveTexture(GL_TEXTURE0);
-	m_light.SetLight(GL_LIGHT0);
-	DrawObjects();	
-	
-	glUseProgram(0);
-	//glCullFace(GL_BACK);
-
+	DrawObjects();
 	glDisable(GL_DEPTH_TEST);
 	DrawBoundingBox();
 	m_ruler.Draw();
@@ -220,8 +177,12 @@ void CGameView::Update()
 
 void CGameView::DrawObjects(void)
 {
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
+    if(m_vertexLightning)
+	{
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glEnable(GL_LIGHTING);
+	}
+	m_shader.BindProgram();
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
@@ -232,6 +193,8 @@ void CGameView::DrawObjects(void)
 		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes());
 		glPopMatrix();
 	}
+	m_shader.UnBindProgram();
+	glDisable(GL_LIGHTING);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
@@ -240,18 +203,13 @@ void CGameView::OnReshape(int width, int height)
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	GLfloat aspect = (GLfloat)width / (GLfloat)height;
+	GLdouble aspect = (GLdouble)width / (GLdouble)height;
 	gluPerspective(60, aspect, 0.5, 100.0);
 	glMatrixMode(GL_MODELVIEW);
 	CGameView::GetIntanse().lock()->m_ui->Resize(height, width);
 }
 
-void CGameView::FreeInstance()
-{
-	m_instanse.reset();
-}
-
-void CGameView::CameraSetLimits(float maxTransX, float maxTransY, float maxScale, float minScale)
+void CGameView::CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale)
 {
 	m_camera.SetLimits(maxTransX, maxTransY, maxScale, minScale);
 }
@@ -268,7 +226,7 @@ void CGameView::CameraZoomOut()
 
 void CGameView::CameraRotate(int rotZ, int rotX)
 {
-	m_camera.Rotate((float)rotZ / 10, (float)rotX / 5);
+	m_camera.Rotate((double)rotZ / 10, (double)rotX / 5);
 }
 
 void CGameView::CameraReset()
@@ -298,13 +256,13 @@ void CGameView::CameraTranslateUp()
 
 void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//Works only for Z = 0 plane and select object only if its center is within selection rectangle, needs better algorithm
 {
-	float beginWorldX, beginWorldY, endWorldX, endWorldY;
+	double beginWorldX, beginWorldY, endWorldX, endWorldY;
 	WindowCoordsToWorldCoords(beginX, beginY, beginWorldX, beginWorldY);
 	WindowCoordsToWorldCoords(endX, endY, endWorldX, endWorldY);
-	float minX = (beginWorldX < endWorldX)?beginWorldX:endWorldX;
-	float maxX = (beginWorldX > endWorldX)?beginWorldX:endWorldX;
-	float minY = (beginWorldY < endWorldY)?beginWorldY:endWorldY;
-	float maxY = (beginWorldY > endWorldY)?beginWorldY:endWorldY;
+	double minX = (beginWorldX < endWorldX)?beginWorldX:endWorldX;
+	double maxX = (beginWorldX > endWorldX)?beginWorldX:endWorldX;
+	double minY = (beginWorldY < endWorldY)?beginWorldY:endWorldY;
+	double maxY = (beginWorldY > endWorldY)?beginWorldY:endWorldY;
 	CObjectGroup* group = new CObjectGroup();
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
@@ -338,17 +296,17 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 {
 	std::shared_ptr<IObject> selectedObject = NULL;
-	float minDistance = 10000000.0;
+	double minDistance = 10000000.0;
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
-	float start[3];
-	float end[3];
+	double start[3];
+	double end[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
-			float distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + object->GetZ() * object->GetZ());
+			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + object->GetZ() * object->GetZ());
 			if(distance < minDistance)
 			{
 				selectedObject = object;
@@ -417,12 +375,12 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 	if(m_selectionCallback) m_selectionCallback();
 }
 
-void CGameView::RulerBegin(float x, float y)
+void CGameView::RulerBegin(double x, double y)
 {
 	m_ruler.SetBegin(x, y);
 }
 
-void CGameView::RulerEnd(float x, float y)
+void CGameView::RulerEnd(double x, double y)
 {
 	m_ruler.SetEnd(x, y);
 }
@@ -439,38 +397,12 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 	{
 		return;
 	}
-	float worldX, worldY;
+	double worldX, worldY;
 	WindowCoordsToWorldCoords(x, y, worldX, worldY, m_selectedObjectCapturePoint.z);
-
-	float3 oldCords(object->GetCoords());
 	if (m_table->isCoordsOnTable(worldX, worldY))
 	{
 		object->SetCoords(worldX - m_selectedObjectCapturePoint.x, worldY - m_selectedObjectCapturePoint.y, 0);
-		if (IsObjectInteresectSomeObjects(object))
-		{
-			object->SetCoords(oldCords);
-		}
 	}
-}
-
-bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
-{
-	CGameModel * model = CGameModel::GetIntanse().lock().get();
-	std::shared_ptr<IBounding> curBox = m_modelManager.GetBoundingBox(current->GetPathToModel());
-	float3 curPos( current->GetX(), current->GetY(), current->GetZ() );
-	float curAngle = current->GetRotation();
-	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
-	{
-		std::shared_ptr<IObject> object = model->Get3DObject(i);
-		std::shared_ptr<IBounding> bounding = m_modelManager.GetBoundingBox( object->GetPathToModel() );
-		float3 pos( object->GetX(), object->GetY(), object->GetZ() );
-		float angle = object->GetRotation();
-		if (current != object && IsInteresect( curBox.get(), curPos, curAngle, bounding.get(), pos, angle ) )
-		{
-			return true;
-		}
-	}		
-	return false;
 }
 
 bool CGameView::UILeftMouseButtonDown(int x, int y)
@@ -521,4 +453,9 @@ void CGameView::SetSingleCallback(callback(onSingleUpdate))
 void CGameView::ResizeWindow(int height, int width)
 {
 	glutReshapeWindow(width, height);
+}
+
+void CGameView::NewShaderProgram(std::string const& vertex, std::string const& fragment, std::string const& geometry)
+{
+	m_shader.NewProgram(vertex, fragment, geometry);
 }

@@ -17,6 +17,11 @@ std::weak_ptr<CGameModel> CGameModel::GetIntanse()
 	return std::weak_ptr<CGameModel>(m_instanse);
 }
 
+void CGameModel::FreeInstance() 
+{
+	m_instanse.reset();
+}
+
 unsigned long CGameModel::GetObjectCount() const
 {
 	return m_objects.size();

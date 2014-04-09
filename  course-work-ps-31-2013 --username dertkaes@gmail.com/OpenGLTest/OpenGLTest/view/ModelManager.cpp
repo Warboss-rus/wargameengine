@@ -1,7 +1,16 @@
 #include "ModelManager.h"
 #include "OBJModelFactory.h"
 #include "WBMModelFactory.h"
+#include "DecalFactory.h"
 #include <string>
+#include "..\ThreadPool.h"
+
+void UseModel(void* data)
+{
+	sOBJLoader * loader = (sOBJLoader*)data;
+	std::swap(*loader->oldmodel, *loader->newModel);
+	delete loader;
+}
 
 void CModelManager::LoadIfNotExist(std::string const& path)
 {
@@ -10,9 +19,17 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		unsigned int dotCoord = path.find_last_of('.') + 1;
 		std::string extension = path.substr(dotCoord, path.length() - dotCoord);
 		if(extension == "obj")
-			m_models[path] = LoadObjModel("models\\" + path);
+		{
+			m_models[path] = new C3DModel();
+			sOBJLoader * obj = new sOBJLoader();
+			obj->path = "models\\" + path;
+			obj->oldmodel = m_models[path];
+			CThreadPool::AsyncReadFile("models\\" + path, LoadObjModel, obj, UseModel);
+		}
 		if(extension == "wbm")
 			m_models[path] = LoadWbmModel("models\\" + path);
+		if(extension == "bmp" || extension == "tga" || extension == "png")
+			m_models[path] = LoadDecal(path);
 	}
 }
 

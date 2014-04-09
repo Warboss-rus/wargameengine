@@ -5,8 +5,7 @@
 
 class IObject;
 
-class CCommandCreateObject :
-	public ICommand
+class CCommandCreateObject : public ICommand
 {
 public:
 	CCommandCreateObject(std::shared_ptr<IObject> object);

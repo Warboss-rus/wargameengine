@@ -1,7 +1,6 @@
-#include "view/gl.h"
+#include <GL\glut.h>
 #include "model\ObjectInterface.h"
 #include <vector>
-
 
 void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, double & startz, double & endx, double & endy, double & endz)
 {
@@ -22,22 +21,7 @@ void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, d
              viewport, &endx, &endy, &endz);
 }
 
-void WindowCoordsToWorldVector(int x, int y, float & startx, float & starty, float & startz, float & endx, float & endy, float & endz)
-{
-	double dstartx, dstarty, dstartz, dendx, dendy, dendz; 
-	
-	WindowCoordsToWorldVector(x, y, dstartx, dstarty, dstartz, dendx, dendy, dendz);
-
-	startx = (float)dstartx;
-	starty = (float)dstarty;
-	startz = (float)dstartz;
-	endx = (float)dendx;
-	endy = (float)dendy;
-	endz = (float)dendz;
-}
-
-
-void WindowCoordsToWorldCoords(int windowX, int windowY, float & worldX, float & worldY, float worldZ = 0)
+void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0)
 {
 	double startx, starty, startz, endx, endy, endz;
 	WindowCoordsToWorldVector(windowX, windowY, startx, starty, startz, endx, endy, endz);

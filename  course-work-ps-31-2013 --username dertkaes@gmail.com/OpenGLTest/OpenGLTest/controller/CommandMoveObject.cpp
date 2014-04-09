@@ -2,7 +2,7 @@
 #include "..\model\GameModel.h"
 
 
-CCommandMoveObject::CCommandMoveObject(float deltaX, float deltaY):
+CCommandMoveObject::CCommandMoveObject(double deltaX, double deltaY):
 	m_deltaX(deltaX), m_deltaY(deltaY), m_pObject(CGameModel::GetIntanse().lock()->GetSelectedObject())
 {
 }
