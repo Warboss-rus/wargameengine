@@ -42,8 +42,10 @@ public:
 	void SetScale(double scale);
 	unsigned int GetChildCount() const { return m_children.size(); }
 	IBounding * GetChild(unsigned int index) { return m_children[index].get(); }
+	const IBounding * GetChild(unsigned int index) const { return m_children[index].get(); }
 private:
 	std::vector<std::shared_ptr<IBounding>> m_children;
 };
 
 std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale);
+bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, float angle1, const IBounding* bounding2, CVector3d const& translate2, float angle2);

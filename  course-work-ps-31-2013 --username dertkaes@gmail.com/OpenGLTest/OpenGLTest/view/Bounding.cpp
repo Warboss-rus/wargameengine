@@ -141,6 +141,71 @@ void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 	glPopMatrix();
 }
 
+bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, float angle1, CBoundingBox const& bounding2, CVector3d const& translate2, float angle2)
+{
+	float3 tr1(translate1[0], translate1[1], translate1[2]);
+	float3 tr2(translate2[0], translate2[1], translate2[2]);
+	OBB ob1 = GetOBB(bounding1, tr1, angle1);
+	OBB ob2 = GetOBB(bounding2, tr2, angle2);
+	return ob1.Intersects(ob2);
+}
+
+bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, float angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, float angle2)
+{
+	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
+	{
+		if (IsInteresect(&bounding1, translate1, angle1, bounding2.GetChild(i), translate2, angle2))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool IsInteresect(CBoundingCompound const& bounding1, CVector3d const& translate1, float angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, float angle2)
+{
+	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
+	{
+		if (IsInteresect((IBounding*)&bounding1, translate1, angle1, bounding2.GetChild(i), translate2, angle2))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, float angle1, const IBounding* bounding2, CVector3d const& translate2, float angle2)
+{
+	const CBoundingBox * b1 = dynamic_cast<const CBoundingBox*>(bounding1);
+	if (b1)
+	{
+		const CBoundingBox * b2 = dynamic_cast<const CBoundingBox*>(bounding2);
+		if (b2)
+		{
+			return IsInteresect(*b1, translate1, angle1, *b2, translate2, angle2);
+		}
+		else
+		{
+			const CBoundingCompound* b2 = dynamic_cast<const CBoundingCompound*>(bounding2);
+			return IsInteresect(*b1, translate1, angle1, *b2, translate2, angle2);
+		}
+	}
+	else
+	{
+		const CBoundingCompound* b1 = dynamic_cast<const CBoundingCompound*>(bounding1);
+		const CBoundingBox * b2 = dynamic_cast<const CBoundingBox*>(bounding2);
+		if (b2)
+		{
+			return IsInteresect(*b2, translate2, angle2, *b1, translate1, angle1);
+		}
+		else
+		{
+			const CBoundingCompound * b2 = dynamic_cast<const CBoundingCompound*>(bounding2);
+			return IsInteresect(*b1, translate1, angle1, *b2, translate2, angle2);
+		}
+	}
+}
+
 void CBoundingCompound::AddChild(std::shared_ptr<IBounding> child)
 {
 	m_children.push_back(child);

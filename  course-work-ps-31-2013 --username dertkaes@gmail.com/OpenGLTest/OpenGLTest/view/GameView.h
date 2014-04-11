@@ -38,6 +38,14 @@ private:
 	callback(m_updateCallback);
 	callback(m_singleCallback);
 	bool m_vertexLightning;
+	bool m_shadowMap;
+	unsigned int m_shadowMapTexture;
+	unsigned int m_shadowMapFBO;
+	int m_shadowMapSize;
+	float m_lightProjectionMatrix[16];
+	float m_lightModelViewMatrix[16];
+	float m_lightPosition[3];
+	float m_shadowAngle;
 public:
 	static std::weak_ptr<CGameView> GetIntanse();
 	~CGameView();
@@ -45,6 +53,8 @@ public:
 	void Update();
 	void DrawObjects(void);
 	void DrawBoundingBox();
+	void DrawShadowMap();
+	void SetUpShadowMapDraw();
 	void Init();
 
 	void CreateTable(float width, float height, std::string const& texture);
@@ -55,6 +65,7 @@ public:
 	std::shared_ptr<IObject> GetNearestObject(int x, int y);
 	void SelectObject(int x, int y, bool shiftPressed);
 	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
+	bool IsObjectInteresectSomeObjects(std::shared_ptr<IObject> object);
 	void CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
 	void CameraZoomIn();
 	void CameraZoomOut();
@@ -77,6 +88,9 @@ public:
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning() { m_vertexLightning = true; }
 	void DisableVertexLightning() { m_vertexLightning = false; }
+	void EnableShadowMap(int size, float angle);
+	void DisableShadowMap();
+	void SetLightPosition(int index, float* pos);
 
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));

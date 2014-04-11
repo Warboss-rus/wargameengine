@@ -249,14 +249,14 @@ int SetLightPosition(lua_State* L)
 	pos[0] = CLUAScript::GetArgument<float>(2);
 	pos[1] = CLUAScript::GetArgument<float>(3);
 	pos[2] = CLUAScript::GetArgument<float>(4);
-	glLightfv(GL_LIGHT0 + i, GL_POSITION, pos);
+	CGameView::GetIntanse().lock()->SetLightPosition(i, pos);
 	return 0;
 }
 
 int SetLightAmbient(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 5)
-		return luaL_error(L, "4 argument expected (index, r, g, b, a)");
+		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
 	int i = CLUAScript::GetArgument<int>(1) -1;
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
@@ -270,7 +270,7 @@ int SetLightAmbient(lua_State* L)
 int SetLightDiffuse(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 5)
-		return luaL_error(L, "4 argument expected (index, r, g, b, a)");
+		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
@@ -284,7 +284,7 @@ int SetLightDiffuse(lua_State* L)
 int SetLightSpecular(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 5)
-		return luaL_error(L, "4 argument expected (index, r, g, b, a)");
+		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
@@ -308,6 +308,24 @@ int DisableVertexLightning(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
 	CGameView::GetIntanse().lock()->DisableVertexLightning();
+	return 0;
+}
+
+int EnableShadowMap(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 arguments (shadowMap size, shadow max Angle) expected");
+	int size = CLUAScript::GetArgument<int>(1);
+	float angle = CLUAScript::GetArgument<float>(2);
+	CGameView::GetIntanse().lock()->EnableShadowMap(size, angle);
+	return 0;
+}
+
+int DisableShadowMap(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 0)
+		return luaL_error(L, "no arguments expected");
+	CGameView::GetIntanse().lock()->DisableShadowMap();
 	return 0;
 }
 
@@ -357,6 +375,8 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(SetLightSpecular, "SetLightSpecular");
 	lua.RegisterConstant(EnableVertexLightning, "EnableVertexLightning");
 	lua.RegisterConstant(DisableVertexLightning, "DisableVertexLightning");
+	lua.RegisterConstant(EnableShadowMap, "EnableShadowMap");
+	lua.RegisterConstant(DisableShadowMap, "DisableShadowMap");
 	lua.RegisterConstant(BeginActionCompound, "BeginActionCompound");
 	lua.RegisterConstant(EndActionCompound, "EndActionCompound");
 }

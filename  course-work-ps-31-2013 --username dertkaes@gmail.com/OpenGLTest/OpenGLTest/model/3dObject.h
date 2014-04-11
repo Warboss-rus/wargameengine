@@ -12,6 +12,7 @@ public:
 	std::string GetPathToModel() const { return m_model; }
 	void Move(double x, double y, double z);
 	void SetCoords(double x, double y, double z);
+	void SetCoords(CVector3d const& coords) { m_x = coords.x; m_y = coords.y; m_z = coords.z; }
 	void Rotate(double rotation);
 	double GetX() const { return m_x; }
 	double GetY() const { return m_y; }

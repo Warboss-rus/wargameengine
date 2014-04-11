@@ -9,6 +9,7 @@ public:
 	std::string GetPathToModel() const { return ""; }
 	void Move(double x, double y, double z);
 	void SetCoords(double x, double y, double z);
+	void SetCoords(CVector3d const& coords);
 	void Rotate(double rotation);
 	double GetX() const;
 	double GetY() const;

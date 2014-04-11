@@ -36,6 +36,11 @@ void CGameView::FreeInstance()
 
 CGameView::~CGameView()
 {
+	if (m_shadowMap)
+	{
+		glDeleteTextures(1, &m_shadowMapTexture);
+		glDeleteFramebuffersEXT(1, &m_shadowMapFBO);
+	}
 	CTextureManager::FreeInstance();
 	CCommandHandler::FreeInstance();
 	CGameModel::FreeInstance();
@@ -94,6 +99,8 @@ void CGameView::Init()
 
 	glewInit();
 	m_vertexLightning = false;
+	m_shadowMap = false;
+	memset(m_lightPosition, 0, sizeof(float)* 3);
 	CThreadPool tpool;
 
 	m_lua.reset(new CLUAScript());
@@ -107,6 +114,7 @@ void CGameView::Init()
 
 void CGameView::OnDrawScene()
 {
+	CGameView::GetIntanse().lock()->DrawShadowMap();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	CGameView::GetIntanse().lock()->Update();
 	glutSwapBuffers();
@@ -166,10 +174,7 @@ void CGameView::Update()
 	}
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
-	glEnable(GL_DEPTH_TEST);
-	if(m_table) m_table->Draw();
 	DrawObjects();
-	glDisable(GL_DEPTH_TEST);
 	DrawBoundingBox();
 	m_ruler.Draw();
 	DrawUI();
@@ -177,12 +182,15 @@ void CGameView::Update()
 
 void CGameView::DrawObjects(void)
 {
-    if(m_vertexLightning)
+	glEnable(GL_DEPTH_TEST);
+	if(m_vertexLightning)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glEnable(GL_LIGHTING);
 	}
 	m_shader.BindProgram();
+	if (m_shadowMap) SetUpShadowMapDraw();
+	if (m_table) m_table->Draw();
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
@@ -196,6 +204,95 @@ void CGameView::DrawObjects(void)
 	m_shader.UnBindProgram();
 	glDisable(GL_LIGHTING);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glDisable(GL_DEPTH_TEST);
+}
+
+void CGameView::SetUpShadowMapDraw()
+{
+	// Сохраняем матрицы, они нам нужны для вычисления освещения
+	// Инвертированная матрица используется в расчёте матрицы источника света
+	float cameraProjectionMatrix[16];
+	float cameraModelViewMatrix[16];
+	float cameraInverseModelViewMatrix[16];
+	float lightMatrix[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, cameraProjectionMatrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, cameraModelViewMatrix);
+	m_shader.SetUniformMatrix4("cameraModelViewMatrix", 1, cameraModelViewMatrix);
+
+	// Вычисляем матрицу источника света
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(0.5, 0.5, 0.5); // + 0.5
+	glScalef(0.5, 0.5, 0.5); // * 0.5
+	glMultMatrixf(m_lightProjectionMatrix);
+	glMultMatrixf(m_lightModelViewMatrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, lightMatrix);
+	glPopMatrix();
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMapTexture);
+
+	// Биндим шейдер и передаём юниформы необходимые для расчёта освещения и светового пятна
+	m_shader.SetUniformValue("shadowMap", 1);
+	m_shader.SetUniformMatrix4("lightMatrix", 1, lightMatrix);
+	float mvLightPos[3];
+	mvLightPos[0] = cameraModelViewMatrix[0] * m_lightPosition[0] + cameraModelViewMatrix[4] * m_lightPosition[1] + cameraModelViewMatrix[8] * m_lightPosition[2] + cameraModelViewMatrix[12];
+	mvLightPos[1] = cameraModelViewMatrix[1] * m_lightPosition[0] + cameraModelViewMatrix[5] * m_lightPosition[1] + cameraModelViewMatrix[9] * m_lightPosition[2] + cameraModelViewMatrix[13];
+	mvLightPos[2] = cameraModelViewMatrix[2] * m_lightPosition[0] + cameraModelViewMatrix[6] * m_lightPosition[1] + cameraModelViewMatrix[10] * m_lightPosition[2] + cameraModelViewMatrix[14];
+	m_shader.SetUniformValue3("lightPos", 1, mvLightPos);
+	float lightDir[3];
+	lightDir[0] = -m_lightPosition[0];
+	lightDir[1] = -m_lightPosition[1];
+	lightDir[2] = -m_lightPosition[2];
+	m_shader.SetUniformValue3("lightDir", 1, lightDir);
+	glActiveTexture(GL_TEXTURE0);
+}
+
+void CGameView::DrawShadowMap()
+{
+	if (!m_shadowMap) return;
+	glEnable(GL_DEPTH_TEST);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glViewport(0, 0, m_shadowMapSize, m_shadowMapSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(2.0, 500.0);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(m_shadowAngle, 1.0, 3.0, 300.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+	// Сохраняем эти матрицы, они нам понадобятся для расчёта матрицы источника света
+	glGetFloatv(GL_PROJECTION_MATRIX, m_lightProjectionMatrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, m_lightModelViewMatrix);
+
+	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
+	for (unsigned long i = 0; i < countObjects; i++)
+	{
+		shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		glPushMatrix();
+		glTranslated(object->GetX(), object->GetY(), 0);
+		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
+		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes());
+		glPopMatrix();
+	}
+
+	glDisable(GL_POLYGON_OFFSET_FILL);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDisable(GL_DEPTH_TEST);
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 void CGameView::OnReshape(int width, int height) 
@@ -399,10 +496,36 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 	}
 	double worldX, worldY;
 	WindowCoordsToWorldCoords(x, y, worldX, worldY, m_selectedObjectCapturePoint.z);
+	CVector3d old(object->GetCoords());
 	if (m_table->isCoordsOnTable(worldX, worldY))
 	{
 		object->SetCoords(worldX - m_selectedObjectCapturePoint.x, worldY - m_selectedObjectCapturePoint.y, 0);
 	}
+	if (IsObjectInteresectSomeObjects(object))
+	{
+		object->SetCoords(old);
+	}
+}
+
+bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
+{
+	return false;
+	CGameModel * model = CGameModel::GetIntanse().lock().get();
+	std::shared_ptr<IBounding> curBox = m_modelManager.GetBoundingBox(current->GetPathToModel());
+	CVector3d curPos(current->GetCoords());
+	float curAngle = current->GetRotation();
+	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
+	{
+		std::shared_ptr<IObject> object = model->Get3DObject(i);
+		std::shared_ptr<IBounding> bounding = m_modelManager.GetBoundingBox(object->GetPathToModel());
+		CVector3d pos(object->GetCoords());
+		float angle = object->GetRotation();
+		if (current != object && IsInteresect(curBox.get(), curPos, curAngle, bounding.get(), pos, angle))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 bool CGameView::UILeftMouseButtonDown(int x, int y)
@@ -458,4 +581,56 @@ void CGameView::ResizeWindow(int height, int width)
 void CGameView::NewShaderProgram(std::string const& vertex, std::string const& fragment, std::string const& geometry)
 {
 	m_shader.NewProgram(vertex, fragment, geometry);
+}
+
+void CGameView::EnableShadowMap(int size, float angle)
+{
+	if (m_shadowMap) return;
+	if (!GLEW_ARB_depth_buffer_float)
+	{
+		CLogWriter::WriteLine("GL_ARB_depth_buffer_float is not supported, shadow maps cannot be enabled");
+		return;
+	}
+	if (!GLEW_EXT_framebuffer_object)
+	{
+		CLogWriter::WriteLine("GL_EXT_framebuffer_object is not supported, shadow maps cannot be enabled");
+		return;
+	}
+	glActiveTexture(GL_TEXTURE1);
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &m_shadowMapTexture);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMapTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, size, size,
+		0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE, 0);
+	glGenFramebuffers(1, &m_shadowMapFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMapTexture, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glActiveTexture(GL_TEXTURE0);
+	m_shadowMap = true;
+	m_shadowMapSize = size;
+	m_shadowAngle = angle;
+}
+
+void CGameView::DisableShadowMap()
+{
+	if (!m_shadowMap) return;
+	glDeleteTextures(1, &m_shadowMapTexture);
+	glDeleteFramebuffersEXT(1, &m_shadowMapFBO);
+	m_shadowMap = false;
+}
+
+void CGameView::SetLightPosition(int index, float* pos)
+{
+	glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
+	if(index == 0) memcpy(m_lightPosition, pos, sizeof(float)* 3);
 }

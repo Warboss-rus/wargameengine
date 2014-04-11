@@ -87,8 +87,8 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 	}
 	glLinkProgram(m_program);
 	glUseProgram(m_program);
-	int texture = glGetUniformLocation(m_program, "texture");
-	glUniform1i(texture, 0);
+	int unfrm = glGetUniformLocation(m_program, "unfrm");
+	glUniform1i(unfrm, 0);
 	glDeleteShader(vertexShader);
 	glDetachShader(m_program, vertexShader);
 	glDeleteShader(framgentShader);
@@ -98,27 +98,62 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 template<>
 void CShaderManager::SetUniformValue<int>(std::string const& uniform, int value)
 {
-	int texture = glGetUniformLocation(m_program, "texture");
-	glUniform1i(texture, value);
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform1i(unfrm, value);
 }
 
 template<>
 void CShaderManager::SetUniformValue<float>(std::string const& uniform, float value)
 {
-	int texture = glGetUniformLocation(m_program, "texture");
-	glUniform1f(texture, value);
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform1f(unfrm, value);
+}
+
+template<>
+void CShaderManager::SetUniformValue<float*>(std::string const& uniform, int count, float* value)
+{
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform1fv(unfrm, count, value);
+}
+
+template<>
+void CShaderManager::SetUniformValue2<float*>(std::string const& uniform, int count, float* value)
+{
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform2fv(unfrm, count, value);
+}
+
+template<>
+void CShaderManager::SetUniformValue3<float*>(std::string const& uniform, int count, float* value)
+{
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform3fv(unfrm, count, value);
+}
+
+template<>
+void CShaderManager::SetUniformValue4<float*>(std::string const& uniform, int count, float* value)
+{
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform4fv(unfrm, count, value);
 }
 
 template<>
 void CShaderManager::SetUniformValue<double>(std::string const& uniform, double value)
 {
-	int texture = glGetUniformLocation(m_program, "texture");
-	glUniform1i(texture, value);
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform1i(unfrm, value);
 }
 
 template<>
 void CShaderManager::SetUniformValue<unsigned int>(std::string const& uniform, unsigned int value)
 {
-	int texture = glGetUniformLocation(m_program, "texture");
-	glUniform1ui(texture, value);
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform1ui(unfrm, value);
+}
+
+template<>
+void CShaderManager::SetUniformMatrix4<float*>(std::string const& uniform, int count, float* value)
+{
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniformMatrix4fvARB(unfrm, count, false, value);
 }

@@ -172,3 +172,11 @@ void CTextureManager::SetTexture(std::string const& path)
 	}
 	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
 }
+
+CTextureManager::~CTextureManager()
+{
+	for (auto i = m_textures.begin(); i != m_textures.end(); ++i)
+	{
+		glDeleteTextures(1, &i->second);
+	}
+}

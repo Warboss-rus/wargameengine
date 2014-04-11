@@ -20,6 +20,17 @@ void CObjectGroup::SetCoords(double x, double y, double z)
 	}
 }
 
+void CObjectGroup::SetCoords(CVector3d const& coords)
+{
+	double x = coords.x - GetX();
+	double y = coords.y - GetY();
+	double z = coords.z - GetZ();
+	for (auto i = m_children.begin(); i != m_children.end(); ++i)
+	{
+		i->get()->Move(x, y, z);
+	}
+}
+
 void CObjectGroup::Rotate(double rotation)
 {
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)

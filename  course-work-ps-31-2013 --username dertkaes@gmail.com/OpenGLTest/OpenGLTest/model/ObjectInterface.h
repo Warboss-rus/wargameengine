@@ -11,6 +11,7 @@ public:
 	virtual ~IObject() {}
 	virtual void Move(double x, double y, double z) = 0;
 	virtual void SetCoords(double x, double y, double z) = 0;
+	virtual void SetCoords(CVector3d const& coords) = 0;
 	virtual void Rotate(double rotation) = 0;
 	virtual double GetX() const = 0;
 	virtual double GetY() const = 0;
