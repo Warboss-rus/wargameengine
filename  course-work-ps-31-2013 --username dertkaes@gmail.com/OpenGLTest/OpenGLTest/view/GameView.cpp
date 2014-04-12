@@ -12,6 +12,7 @@
 #include "..\model\ObjectGroup.h"
 #include "..\LogWriter.h"
 #include "..\ThreadPool.h"
+#include "..\Module.h"
 
 using namespace std;
 
@@ -107,7 +108,7 @@ void CGameView::Init()
 	RegisterFunctions(*m_lua.get());
 	RegisterUI(*m_lua.get());
 	RegisterObject(*m_lua.get());
-	m_lua->RunScript("main.lua");
+	m_lua->RunScript(sModule::script);
 
 	glutMainLoop();
 }
@@ -207,17 +208,145 @@ void CGameView::DrawObjects(void)
 	glDisable(GL_DEPTH_TEST);
 }
 
+bool gluInvertMatrix(const float m[16], float invOut[16])
+{
+	float inv[16], det;
+	int i;
+
+	inv[0] = m[5] * m[10] * m[15] -
+		m[5] * m[11] * m[14] -
+		m[9] * m[6] * m[15] +
+		m[9] * m[7] * m[14] +
+		m[13] * m[6] * m[11] -
+		m[13] * m[7] * m[10];
+
+	inv[4] = -m[4] * m[10] * m[15] +
+		m[4] * m[11] * m[14] +
+		m[8] * m[6] * m[15] -
+		m[8] * m[7] * m[14] -
+		m[12] * m[6] * m[11] +
+		m[12] * m[7] * m[10];
+
+	inv[8] = m[4] * m[9] * m[15] -
+		m[4] * m[11] * m[13] -
+		m[8] * m[5] * m[15] +
+		m[8] * m[7] * m[13] +
+		m[12] * m[5] * m[11] -
+		m[12] * m[7] * m[9];
+
+	inv[12] = -m[4] * m[9] * m[14] +
+		m[4] * m[10] * m[13] +
+		m[8] * m[5] * m[14] -
+		m[8] * m[6] * m[13] -
+		m[12] * m[5] * m[10] +
+		m[12] * m[6] * m[9];
+
+	inv[1] = -m[1] * m[10] * m[15] +
+		m[1] * m[11] * m[14] +
+		m[9] * m[2] * m[15] -
+		m[9] * m[3] * m[14] -
+		m[13] * m[2] * m[11] +
+		m[13] * m[3] * m[10];
+
+	inv[5] = m[0] * m[10] * m[15] -
+		m[0] * m[11] * m[14] -
+		m[8] * m[2] * m[15] +
+		m[8] * m[3] * m[14] +
+		m[12] * m[2] * m[11] -
+		m[12] * m[3] * m[10];
+
+	inv[9] = -m[0] * m[9] * m[15] +
+		m[0] * m[11] * m[13] +
+		m[8] * m[1] * m[15] -
+		m[8] * m[3] * m[13] -
+		m[12] * m[1] * m[11] +
+		m[12] * m[3] * m[9];
+
+	inv[13] = m[0] * m[9] * m[14] -
+		m[0] * m[10] * m[13] -
+		m[8] * m[1] * m[14] +
+		m[8] * m[2] * m[13] +
+		m[12] * m[1] * m[10] -
+		m[12] * m[2] * m[9];
+
+	inv[2] = m[1] * m[6] * m[15] -
+		m[1] * m[7] * m[14] -
+		m[5] * m[2] * m[15] +
+		m[5] * m[3] * m[14] +
+		m[13] * m[2] * m[7] -
+		m[13] * m[3] * m[6];
+
+	inv[6] = -m[0] * m[6] * m[15] +
+		m[0] * m[7] * m[14] +
+		m[4] * m[2] * m[15] -
+		m[4] * m[3] * m[14] -
+		m[12] * m[2] * m[7] +
+		m[12] * m[3] * m[6];
+
+	inv[10] = m[0] * m[5] * m[15] -
+		m[0] * m[7] * m[13] -
+		m[4] * m[1] * m[15] +
+		m[4] * m[3] * m[13] +
+		m[12] * m[1] * m[7] -
+		m[12] * m[3] * m[5];
+
+	inv[14] = -m[0] * m[5] * m[14] +
+		m[0] * m[6] * m[13] +
+		m[4] * m[1] * m[14] -
+		m[4] * m[2] * m[13] -
+		m[12] * m[1] * m[6] +
+		m[12] * m[2] * m[5];
+
+	inv[3] = -m[1] * m[6] * m[11] +
+		m[1] * m[7] * m[10] +
+		m[5] * m[2] * m[11] -
+		m[5] * m[3] * m[10] -
+		m[9] * m[2] * m[7] +
+		m[9] * m[3] * m[6];
+
+	inv[7] = m[0] * m[6] * m[11] -
+		m[0] * m[7] * m[10] -
+		m[4] * m[2] * m[11] +
+		m[4] * m[3] * m[10] +
+		m[8] * m[2] * m[7] -
+		m[8] * m[3] * m[6];
+
+	inv[11] = -m[0] * m[5] * m[11] +
+		m[0] * m[7] * m[9] +
+		m[4] * m[1] * m[11] -
+		m[4] * m[3] * m[9] -
+		m[8] * m[1] * m[7] +
+		m[8] * m[3] * m[5];
+
+	inv[15] = m[0] * m[5] * m[10] -
+		m[0] * m[6] * m[9] -
+		m[4] * m[1] * m[10] +
+		m[4] * m[2] * m[9] +
+		m[8] * m[1] * m[6] -
+		m[8] * m[2] * m[5];
+
+	det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
+
+	if (det == 0)
+		return false;
+
+	det = 1.0 / det;
+
+	for (i = 0; i < 16; i++)
+		invOut[i] = inv[i] * det;
+
+	return true;
+}
+
 void CGameView::SetUpShadowMapDraw()
 {
 	// Сохраняем матрицы, они нам нужны для вычисления освещения
 	// Инвертированная матрица используется в расчёте матрицы источника света
-	float cameraProjectionMatrix[16];
 	float cameraModelViewMatrix[16];
 	float cameraInverseModelViewMatrix[16];
 	float lightMatrix[16];
-	glGetFloatv(GL_PROJECTION_MATRIX, cameraProjectionMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, cameraModelViewMatrix);
-	m_shader.SetUniformMatrix4("cameraModelViewMatrix", 1, cameraModelViewMatrix);
+	gluInvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
 
 	// Вычисляем матрицу источника света
 	glPushMatrix();
@@ -226,26 +355,11 @@ void CGameView::SetUpShadowMapDraw()
 	glScalef(0.5, 0.5, 0.5); // * 0.5
 	glMultMatrixf(m_lightProjectionMatrix);
 	glMultMatrixf(m_lightModelViewMatrix);
+	glMultMatrixf(cameraInverseModelViewMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, lightMatrix);
 	glPopMatrix();
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_shadowMapTexture);
-
-	// Биндим шейдер и передаём юниформы необходимые для расчёта освещения и светового пятна
-	m_shader.SetUniformValue("shadowMap", 1);
 	m_shader.SetUniformMatrix4("lightMatrix", 1, lightMatrix);
-	float mvLightPos[3];
-	mvLightPos[0] = cameraModelViewMatrix[0] * m_lightPosition[0] + cameraModelViewMatrix[4] * m_lightPosition[1] + cameraModelViewMatrix[8] * m_lightPosition[2] + cameraModelViewMatrix[12];
-	mvLightPos[1] = cameraModelViewMatrix[1] * m_lightPosition[0] + cameraModelViewMatrix[5] * m_lightPosition[1] + cameraModelViewMatrix[9] * m_lightPosition[2] + cameraModelViewMatrix[13];
-	mvLightPos[2] = cameraModelViewMatrix[2] * m_lightPosition[0] + cameraModelViewMatrix[6] * m_lightPosition[1] + cameraModelViewMatrix[10] * m_lightPosition[2] + cameraModelViewMatrix[14];
-	m_shader.SetUniformValue3("lightPos", 1, mvLightPos);
-	float lightDir[3];
-	lightDir[0] = -m_lightPosition[0];
-	lightDir[1] = -m_lightPosition[1];
-	lightDir[2] = -m_lightPosition[2];
-	m_shader.SetUniformValue3("lightDir", 1, lightDir);
-	glActiveTexture(GL_TEXTURE0);
 }
 
 void CGameView::DrawShadowMap()
@@ -401,7 +515,10 @@ shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
-		if(m_modelManager.GetBoundingBox(object->GetPathToModel())->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
+		if (!object) continue;
+		std::shared_ptr<IBounding> bounding = m_modelManager.GetBoundingBox(object->GetPathToModel());
+		if (!bounding) continue;
+		if(bounding->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
 			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + object->GetZ() * object->GetZ());
 			if(distance < minDistance)
@@ -509,7 +626,6 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 
 bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 {
-	return false;
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	std::shared_ptr<IBounding> curBox = m_modelManager.GetBoundingBox(current->GetPathToModel());
 	CVector3d curPos(current->GetCoords());
@@ -517,7 +633,9 @@ bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
+		if (!object) continue;
 		std::shared_ptr<IBounding> bounding = m_modelManager.GetBoundingBox(object->GetPathToModel());
+		if (!bounding) continue;
 		CVector3d pos(object->GetCoords());
 		float angle = object->GetRotation();
 		if (current != object && IsInteresect(curBox.get(), curPos, curAngle, bounding.get(), pos, angle))
@@ -613,7 +731,7 @@ void CGameView::EnableShadowMap(int size, float angle)
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMapTexture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMapTexture, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glActiveTexture(GL_TEXTURE0);
 	m_shadowMap = true;

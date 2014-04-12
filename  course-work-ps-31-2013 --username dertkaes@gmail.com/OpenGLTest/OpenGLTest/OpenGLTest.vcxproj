@@ -102,6 +102,7 @@
     <ClCompile Include="model\GameModel.cpp" />
     <ClCompile Include="model\MovementLimiter.cpp" />
     <ClCompile Include="model\ObjectGroup.cpp" />
+    <ClCompile Include="Module.cpp" />
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="model\MovementLimiter.h" />
     <ClInclude Include="model\ObjectGroup.h" />
     <ClInclude Include="model\ObjectInterface.h" />
+    <ClInclude Include="Module.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="ThreadPoolWindows.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />

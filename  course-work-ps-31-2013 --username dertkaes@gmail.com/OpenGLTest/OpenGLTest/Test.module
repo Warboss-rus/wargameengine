@@ -1,0 +1,10 @@
+Name = Test
+Version = 123
+Author = Warboss-rus
+Site = galaxyinfire.ucoz.ru ; comment here
+Playable = 1
+Folder = Killteam
+Script = test.lua
+Models = models
+Textures = texture
+Shaders = 

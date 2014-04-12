@@ -1,6 +1,7 @@
 #include "ThreadPoolWindows.h"
 #include <fstream>
 #include <Windows.h>
+#include "LogWriter.h"
 
 std::list<void (*)()> CThreadPool::m_callbacks;
 std::list<std::pair<void (*)(void*), void*>> CThreadPool::m_callbacks2;
@@ -76,6 +77,12 @@ DWORD WINAPI ReadData(LPVOID param)
 {
 	sAsyncRead* run = (sAsyncRead*)param;
 	FILE * file = fopen(run->path.c_str(), "rb");
+	if (!file)
+	{
+		CLogWriter::WriteLine("Cannot open file " + run->path);
+		delete run;
+		return 0;
+	}
 	fseek(file, 0L, SEEK_END);
 	unsigned int size = ftell(file);
 	fseek(file, 0L, SEEK_SET);
@@ -93,6 +100,12 @@ DWORD WINAPI ReadData2(LPVOID param)
 {
 	sAsyncRead2* run = ((sAsyncRead2*)param);
 	FILE * file = fopen(run->path.c_str(), "rb");
+	if (!file)
+	{
+		CLogWriter::WriteLine("Cannot open file " + run->path);
+		delete run;
+		return 0;
+	}
 	fseek(file, 0L, SEEK_END);
 	unsigned int size = ftell(file);
 	fseek(file, 0L, SEEK_SET);

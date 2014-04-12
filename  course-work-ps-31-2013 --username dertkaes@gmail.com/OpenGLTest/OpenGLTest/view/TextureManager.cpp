@@ -3,6 +3,7 @@
 #include "..\picopng.h"
 #include "..\LogWriter.h"
 #include "..\ThreadPool.h"
+#include "..\Module.h"
 
 CTextureManager * CTextureManager::m_manager = NULL;
 
@@ -168,7 +169,7 @@ void CTextureManager::SetTexture(std::string const& path)
 	}
 	if(m_textures.find(path) == m_textures.end())
 	{
-		m_textures[path] = LoadTexture("texture\\" + path);
+		m_textures[path] = LoadTexture(sModule::textures + path);
 	}
 	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
 }

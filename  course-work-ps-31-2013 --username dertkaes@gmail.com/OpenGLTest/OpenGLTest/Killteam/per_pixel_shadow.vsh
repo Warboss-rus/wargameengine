@@ -1,5 +1,4 @@
 uniform mat4 lightMatrix;
-uniform mat4 cameraModelViewMatrix;
 
 varying vec3 normal;
 varying vec3 eyeDir;	// eye direction
@@ -22,5 +21,5 @@ void main()
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	
 	vec4 vpos = gl_ModelViewMatrix * gl_Vertex;
-	lpos = lightMatrix * inverse(cameraModelViewMatrix) * vpos;
+	lpos = lightMatrix * vpos;
 }

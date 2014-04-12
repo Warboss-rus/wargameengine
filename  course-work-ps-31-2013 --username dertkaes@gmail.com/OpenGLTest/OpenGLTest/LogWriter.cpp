@@ -12,7 +12,7 @@ void CLogWriter::WriteLine(std::string const& line)
 		struct tm * now = localtime( & t );
 		char date[30];
 		strftime(date, sizeof(date), "%x.%H-%M-%S_log.txt", now);
-		filename = date;
+		filename = /*std::string("..\\") + */date;
 	}
 	std::ofstream oFile(filename, std::ofstream::app);
 	time_t t = time(0);

@@ -4,6 +4,7 @@
 #include <GL\glut.h>
 #include <fstream>
 #include "..\LogWriter.h"
+#include "..\Module.h"
 
 void CShaderManager::BindProgram() const
 {
@@ -51,7 +52,7 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 		return;
 	}
 	m_program = glCreateProgram();
-	GLuint vertexShader(0), framgentShader(0);
+	GLuint vertexShader(0), framgentShader(0), geometryShader(0);
 	if(!vertex.empty())
 	{
 		if (!GLEW_ARB_vertex_shader)
@@ -60,7 +61,7 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 		}
 		else
 		{
-			vertexShader = CompileShader(vertex, m_program, GL_VERTEX_SHADER);
+			vertexShader = CompileShader(sModule::shaders + vertex, m_program, GL_VERTEX_SHADER);
 		}
 	}
 	if(!fragment.empty())
@@ -71,7 +72,7 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 		}
 		else
 		{
-			framgentShader = CompileShader(fragment, m_program, GL_FRAGMENT_SHADER);
+			framgentShader = CompileShader(sModule::shaders + fragment, m_program, GL_FRAGMENT_SHADER);
 		}
 	}
 	if(!geometry.empty())
@@ -82,13 +83,15 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 		}
 		else
 		{
-			framgentShader = CompileShader(fragment, m_program, GL_GEOMETRY_SHADER);
+			geometryShader = CompileShader(sModule::shaders + geometry, m_program, GL_GEOMETRY_SHADER);
 		}
 	}
 	glLinkProgram(m_program);
 	glUseProgram(m_program);
-	int unfrm = glGetUniformLocation(m_program, "unfrm");
+	int unfrm = glGetUniformLocation(m_program, "texture");
 	glUniform1i(unfrm, 0);
+	unfrm = glGetUniformLocation(m_program, "shadowMap");
+	glUniform1i(unfrm, 1);
 	glDeleteShader(vertexShader);
 	glDetachShader(m_program, vertexShader);
 	glDeleteShader(framgentShader);

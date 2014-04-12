@@ -4,6 +4,7 @@
 #include "DecalFactory.h"
 #include <string>
 #include "..\ThreadPool.h"
+#include "..\Module.h"
 
 void UseModel(void* data)
 {
@@ -22,12 +23,12 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		{
 			m_models[path] = new C3DModel();
 			sOBJLoader * obj = new sOBJLoader();
-			obj->path = "models\\" + path;
+			obj->path = sModule::models + path;
 			obj->oldmodel = m_models[path];
-			CThreadPool::AsyncReadFile("models\\" + path, LoadObjModel, obj, UseModel);
+			CThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
 		}
 		if(extension == "wbm")
-			m_models[path] = LoadWbmModel("models\\" + path);
+			m_models[path] = LoadWbmModel(sModule::models + path);
 		if(extension == "bmp" || extension == "tga" || extension == "png")
 			m_models[path] = LoadDecal(path);
 	}

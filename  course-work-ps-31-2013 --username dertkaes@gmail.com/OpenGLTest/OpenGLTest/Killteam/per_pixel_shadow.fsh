@@ -46,21 +46,16 @@ void main()
 	vec4 specularMaterial = gl_FrontMaterial.specular;
 	
 	// calculate diffuse lighting
-	vec3 n = normalize(normal);
-	
 	vec3 l = normalize(lightDir);
-	
 	vec4 diffuseColor = CalculateDiffuseColor(
-		n, 
+		normal, 
 		l, 
 		gl_LightSource[0].diffuse, 
 		diffuseMaterial, 1.0);	
 	
 	// normalized eye direction
 	vec3 eye = normalize(eyeDir);
-	
-	vec3 reflectedLight = reflect(-l, n);
-	
+	vec3 reflectedLight = reflect(-l, normal);
 	vec4 specularColor = CalculateSpecularColor(
 		reflectedLight, 
 		eye, 
@@ -70,10 +65,8 @@ void main()
 		1.0);
 	
 	vec4 ambientColor = gl_LightSource[0].ambient * diffuseMaterial;
-
-	vec4 colorWithLight = vec4(color.xyz * ( diffuseColor + ambientColor + clamp(specularColor, 0.0, 1.0)).xyz, 1.0);
-    
-    float shadow = shadow2DProj(shadowMap, lpos).x;
-	
-	gl_FragColor =	 vec4(color.xyz * shadow, 1.0);
+	float shadow = shadow2DProj(shadowMap, lpos).x;
+	vec4 diffuseSpecShadow = (diffuseColor + clamp(specularColor, 0.0, 1.0)) * shadow;
+	vec4 colorWithLight = vec4(color.xyz * (ambientColor + diffuseSpecShadow).xyz, 1.0);
+	gl_FragColor =	 colorWithLight;
 }

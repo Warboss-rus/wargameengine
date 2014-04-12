@@ -1,0 +1,10 @@
+Name = Killteam
+Version = 1
+Author = Warboss-rus
+Site = galaxyinfire.ucoz.ru ; comment here
+Playable = 1
+Folder = Killteam
+Script = main.lua
+Models = models
+Textures = texture
+Shaders = 
