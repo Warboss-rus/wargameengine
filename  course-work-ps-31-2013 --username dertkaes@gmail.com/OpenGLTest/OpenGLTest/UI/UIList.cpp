@@ -34,12 +34,24 @@ void CUIList::Draw() const
 		glEnd();
 	}
 	glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
-	for(size_t i = 0; i < m_items.size(); ++i)
+	for (size_t i = m_scrollbar.GetPosition() / m_theme.list.elementSize; i < m_items.size(); ++i)
 	{
-		PrintText(m_theme.list.borderSize, m_theme.list.borderSize + m_theme.list.elementSize * i, GetWidth(), m_theme.list.text.fontSize, m_items[i], m_theme.text);
+		if (m_theme.list.borderSize + m_theme.list.elementSize * (i - m_scrollbar.GetPosition() / m_theme.list.elementSize) > GetHeight()) break;
+		PrintText(m_theme.list.borderSize, m_theme.list.borderSize + m_theme.list.elementSize * (i - m_scrollbar.GetPosition() / m_theme.list.elementSize), GetWidth(), m_theme.list.text.fontSize, m_items[i], m_theme.text);
 	}
+	m_scrollbar.Draw();
 	CUIElement::Draw();
 	glPopMatrix();
+}
+
+bool CUIList::LeftMouseButtonDown(int x, int y)
+{
+	if (!m_visible) return false;
+	if (CUIElement::LeftMouseButtonDown(x, y))
+	{
+		return true;
+	}
+	return m_scrollbar.LeftMouseButtonDown(x - GetX(), y - GetY());
 }
 
 bool CUIList::LeftMouseButtonUp(int x, int y)
@@ -49,6 +61,7 @@ bool CUIList::LeftMouseButtonUp(int x, int y)
 	{
 		return true;
 	}
+	if (m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY())) return true;
 	if(PointIsOnElement(x, y))
 	{
 		unsigned int index = (y - GetY()) / m_theme.list.elementSize;
@@ -67,6 +80,7 @@ void CUIList::AddItem(std::string const& str)
 	{
 		m_selected = 0;
 	}
+	m_scrollbar.Update(GetHeight(), m_theme.list.elementSize * m_items.size(), GetWidth(), m_theme.list.elementSize);
 }
 
 std::string const CUIList::GetText() const
@@ -84,6 +98,7 @@ void CUIList::DeleteItem(size_t index)
 	m_items.erase(m_items.begin() + index);
 	if(m_selected == index) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
+	m_scrollbar.Update(GetHeight(), m_theme.list.elementSize * m_items.size(), GetWidth(), m_theme.list.elementSize);
 }
 
 void CUIList::SetText(std::string const& text)
@@ -96,4 +111,10 @@ void CUIList::SetText(std::string const& text)
 			return;
 		}
 	}
+}
+
+void CUIList::Resize(int windowHeight, int windowWidth)
+{
+	CUIElement::Resize(windowHeight, windowWidth);
+	m_scrollbar.Update(GetHeight(), m_theme.list.elementSize * m_items.size(), GetWidth(), m_theme.list.elementSize);
 }

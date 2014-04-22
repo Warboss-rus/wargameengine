@@ -4,7 +4,7 @@
 
 #ifndef GL_CLAMP_TO_EDGE_EXT 
 #define GL_CLAMP_TO_EDGE_EXT 0x812F 
-#endif 
+#endif
 
 CTextWriter::CTextWriter()
 {
@@ -75,20 +75,26 @@ void CTextWriter::DrawBitmap(int & x, int & y, sGlyph symbol)
     int y2 = y - symbol.bitmap_top;
     int w = symbol.width;
     int h = symbol.rows;
-	glBegin(GL_TRIANGLE_STRIP);
-	glTexCoord2f(0.0f, 0.0f);
-	glVertex2i(x2, y2);
-	glTexCoord2f(1.0f, 0.0f);
-	glVertex2i(x2 + w, y2);
-	glTexCoord2f(0.0f, 1.0f);
-	glVertex2i(x2, y2+h);
-	glTexCoord2f(1.0f, 1.0f);
-	glVertex2i(x2+w, y2+h);
-	glEnd();
+	int vert[] = {
+		x2, y2,
+		x2 + w, y2,
+		x2, y2 + h,
+		x2 + w, y2 + h};
+	float tex[] = {
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		0.0f, 1.0f,
+		1.0f, 1.0f };
+	
+	glVertexPointer(2, GL_INT, 0, vert);
+	glTexCoordPointer(2, GL_FLOAT, 0, tex);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int size, std::string const& text, int width, int height)
 {
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	int newx = x;
 	for (size_t i = 0; i < text.size(); ++i)
 	{
@@ -108,9 +114,11 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 			glBindTexture(GL_TEXTURE_2D, glyph.texture);
 			DrawBitmap(newx, y, glyph);
 			newx += glyph.advancex;
-			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 bool sSymbol::operator< (const sSymbol &other) const

@@ -6,7 +6,7 @@ class CUIComboBox : public CUIElement
 {
 public:
 	CUIComboBox(int x, int y, int height, int width, IUIElement * parent): CUIElement(x, y, height, width, parent), 
-		m_selected(-1), m_expanded(false), m_pressed(false) { }
+		m_selected(-1), m_expanded(false), m_pressed(false), m_scrollbar(m_theme) { }
 	void Draw() const;
 	bool LeftMouseButtonDown(int x, int y);
 	bool LeftMouseButtonUp(int x, int y);
@@ -21,6 +21,7 @@ public:
 	bool PointIsOnElement(int x, int y) const;
 	void SetText(std::string const& text);
 	void SetOnChangeCallback(callback(onChange)) { m_onChange = onChange; }
+	void Resize(int windowHeight, int windowWidth);
 private:
 	std::vector<std::string> m_items;
 	int m_selected;

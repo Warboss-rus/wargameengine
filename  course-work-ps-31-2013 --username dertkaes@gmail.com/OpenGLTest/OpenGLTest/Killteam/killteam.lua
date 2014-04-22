@@ -607,6 +607,8 @@ function LoadMap(filename)
 		local splitted = Split(line)
 		if(splitted[1] == "object") then
 			Object:New(splitted[2], splitted[3], splitted[4], splitted[5]):SetSelectable(false)
+		elseif(splitted[1] == "decal") then
+			Object:NewDecal(splitted[2], splitted[3], splitted[4], splitted[5], splitted[6], splitted[7]):SetSelectable(false)
 		elseif(splitted[1] == "skybox") then
 			CreateSkybox(80, splitted[2])
 		elseif(splitted[1] == "table") then

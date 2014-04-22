@@ -14,7 +14,7 @@ C3DModel * LoadDecal(std::string const& path)
 	float width = atof(temp.substr(0, index).c_str());
 	temp = temp.substr(index + 1, temp.size() - index - 1);
 	index = temp.find_last_of(' ');
-	float height = atof(temp.substr(0, index).c_str());
+	float height = (float)atof(temp.substr(0, index).c_str());
 	temp = temp.substr(index + 1, temp.size() - index - 1);
 	vertices.push_back(CVector3f(0.0f, 0.0f, 0.01f));
 	vertices.push_back(CVector3f(width, 0.0f, 0.01f));

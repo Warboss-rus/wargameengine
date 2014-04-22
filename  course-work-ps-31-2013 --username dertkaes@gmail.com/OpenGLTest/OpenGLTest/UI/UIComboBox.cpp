@@ -43,16 +43,20 @@ void CUIComboBox::Draw() const
 		glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 		glBegin(GL_QUADS);
 			glVertex2i(0, GetHeight());
-			glVertex2i(0, GetHeight() * (m_items.size() + 1));
-			glVertex2i(GetWidth(), GetHeight() * (m_items.size() + 1));
+			glVertex2i(0, GetHeight() + m_theme.combobox.elementSize * m_items.size());
+			glVertex2i(GetWidth(), GetHeight() + m_theme.combobox.elementSize * m_items.size());
 			glVertex2i(GetWidth(), GetHeight());
 		glEnd();
 		glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
-		for(size_t i = 0; i < m_items.size(); ++i)
+		for (size_t i = m_scrollbar.GetPosition() / m_theme.combobox.elementSize; i < m_items.size(); ++i)
 		{
-			PrintText(m_theme.combobox.borderSize, GetHeight() * (i + 1), GetWidth(), GetHeight(), m_items[i], m_theme.combobox.text);
+			if (GetHeight() + m_theme.list.elementSize * (i - m_scrollbar.GetPosition() / m_theme.list.elementSize) > GetHeight()) break;
+			PrintText(m_theme.combobox.borderSize, GetHeight() + m_theme.combobox.elementSize * (i - m_scrollbar.GetPosition() / m_theme.combobox.elementSize), GetWidth(), m_theme.combobox.elementSize, m_items[i], m_theme.combobox.text);
 		}
-		//m_scrollbar.Draw();
+		glPushMatrix();
+		glTranslatef(0.0f, GetHeight(), 0.0f);
+		m_scrollbar.Draw();
+		glPopMatrix();
 	}
 	CUIElement::Draw();
 	glPopMatrix();
@@ -61,16 +65,17 @@ void CUIComboBox::Draw() const
 bool CUIComboBox::LeftMouseButtonDown(int x, int y)
 {
 	if(!m_visible) return false;
-	if(CUIElement::LeftMouseButtonUp(x, y))
+	if(CUIElement::LeftMouseButtonDown(x, y))
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		if(m_expanded && m_scrollbar.IsOnElement(x, y))
+		if (m_expanded)
 		{
-			m_scrollbar.LeftMouseButtonDown(x, y);
+			if (m_scrollbar.LeftMouseButtonDown(x - GetX(), y - GetY() - GetHeight())) return true;
 		}
 		m_pressed = true;
 		return true;
+
 	}
 	return false;
 }
@@ -83,16 +88,13 @@ bool CUIComboBox::LeftMouseButtonUp(int x, int y)
 		m_pressed = false;
 		return true;
 	}
+	if (m_expanded && m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY() - GetHeight())) return true;
 	if(PointIsOnElement(x, y))
 	{
 		if(m_pressed)
 		{
 			if(m_expanded && PointIsOnElement(x, y))
 			{
-				if(m_expanded && m_scrollbar.IsOnElement(x, y))
-				{
-					m_scrollbar.LeftMouseButtonDown(x, y);
-				}
 				int index = (y - m_y) / GetHeight();
 				if(index > 0) m_selected = index - 1;
 				if(m_onChange) m_onChange();
@@ -118,7 +120,7 @@ void CUIComboBox::AddItem(std::string const& str)
 	{
 		m_selected = 0;
 	}
-	m_scrollbar.Update(GetHeight() * 10, GetHeight() * (m_items.size() + 1), GetWidth());
+	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme.combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme.combobox.elementSize);
 }
 
 std::string const CUIComboBox::GetText() const
@@ -148,6 +150,7 @@ void CUIComboBox::DeleteItem(size_t index)
 	m_items.erase(m_items.begin() + index);
 	if(m_selected == index) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
+	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme.combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme.combobox.elementSize);
 }
 
 void CUIComboBox::SetText(std::string const& text)
@@ -160,4 +163,10 @@ void CUIComboBox::SetText(std::string const& text)
 			return;
 		}
 	}
+}
+
+void CUIComboBox::Resize(int windowHeight, int windowWidth) 
+{
+	CUIElement::Resize(windowHeight, windowWidth);
+	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme.combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme.combobox.elementSize);
 }

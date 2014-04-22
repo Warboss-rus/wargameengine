@@ -47,7 +47,7 @@ AABB GetAABB(CBoundingBox const& bounding)
 	return AABB(minVector, maxVector);
 }
 
-OBB GetOBB(const CBoundingBox const& bounding, float3 translate, float angle)
+OBB GetOBB(const CBoundingBox const& bounding, float3 translate, double angle)
 {
 	OBB res( GetAABB(bounding) );
 	float z = res.r.z;
@@ -55,9 +55,9 @@ OBB GetOBB(const CBoundingBox const& bounding, float3 translate, float angle)
 	res.Translate(float3(0, 0, res.r.z - z));
 
 	float3x3 rotateMatrix(
-		cos(angle), -sin(angle), 0,
-		sin(angle), cos(angle), 0,
-		0, 0, 1
+		cos(angle), -sin(angle), 0.0f,
+		sin(angle), cos(angle), 0.0f,
+		0.0f, 0.0f, 1.0f
 	);
 	res.Transform(rotateMatrix);
 	res.Translate(translate);
@@ -141,7 +141,7 @@ void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 	glPopMatrix();
 }
 
-bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, float angle1, CBoundingBox const& bounding2, CVector3d const& translate2, float angle2)
+bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, double angle1, CBoundingBox const& bounding2, CVector3d const& translate2, double angle2)
 {
 	float3 tr1(translate1[0], translate1[1], translate1[2]);
 	float3 tr2(translate2[0], translate2[1], translate2[2]);
@@ -150,7 +150,7 @@ bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, fl
 	return ob1.Intersects(ob2);
 }
 
-bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, float angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, float angle2)
+bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, double angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, double angle2)
 {
 	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
 	{
@@ -162,7 +162,7 @@ bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, fl
 	return false;
 }
 
-bool IsInteresect(CBoundingCompound const& bounding1, CVector3d const& translate1, float angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, float angle2)
+bool IsInteresect(CBoundingCompound const& bounding1, CVector3d const& translate1, double angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, double angle2)
 {
 	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
 	{
@@ -174,7 +174,7 @@ bool IsInteresect(CBoundingCompound const& bounding1, CVector3d const& translate
 	return false;
 }
 
-bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, float angle1, const IBounding* bounding2, CVector3d const& translate2, float angle2)
+bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, double angle1, const IBounding* bounding2, CVector3d const& translate2, double angle2)
 {
 	const CBoundingBox * b1 = dynamic_cast<const CBoundingBox*>(bounding1);
 	if (b1)

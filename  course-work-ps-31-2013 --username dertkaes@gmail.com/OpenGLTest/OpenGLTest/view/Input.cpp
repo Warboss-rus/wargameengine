@@ -1,5 +1,5 @@
 #include "Input.h"
-#include <GL\glut.h>
+#include <GL\freeglut.h>
 #include "GameView.h"
 #include "..\SelectionTools.h"
 #include "..\controller\CommandHandler.h"
@@ -103,8 +103,14 @@ void CInput::OnKeyboard(unsigned char key, int x, int y)
 		case BACKSPACE_BUTTON_ID:
 		{
 			CGameView::GetIntanse().lock()->CameraReset();
+		} break;
+		case 13:
+		{
+			if (glutGetModifiers() == GLUT_ACTIVE_ALT)
+			{
+				glutFullScreenToggle();
+			}
 		}
-		break;
 	}
 	sKeyBind keybind(key, glutGetModifiers() == GLUT_ACTIVE_SHIFT, glutGetModifiers() == GLUT_ACTIVE_CTRL, glutGetModifiers() == GLUT_ACTIVE_ALT);
 	if(m_keyBindings.find(keybind) != m_keyBindings.end())

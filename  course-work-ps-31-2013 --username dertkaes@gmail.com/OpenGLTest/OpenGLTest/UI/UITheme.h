@@ -36,7 +36,7 @@ public:
 		float expandedTexCoord[4];
 		float buttonWidthCoeff;
 		int borderSize;
-		int spacing;
+		int elementSize;
 		sText text;
 	};
 	struct sList
@@ -60,6 +60,7 @@ public:
 		int borderSize;
 		sText text;
 	};
+	sEdit edit;
 	struct sRadioGroup
 	{
 		float texCoord[4];
@@ -69,6 +70,13 @@ public:
 		sText text;
 	};
 	sRadioGroup radiogroup;
-	sEdit edit;
+	struct sScrollBar
+	{
+		float texCoord[4];
+		float pressedTexCoord[4];
+		int width;
+		int buttonHeight;
+	};
+	sScrollBar sbar;
 	static CUITheme defaultTheme;
 };

@@ -30,10 +30,7 @@ vec4 CalculateSpecularColor(
 {
 	float specularFactor = max(dot(reflectedLight, eye), 0.0);	
 	float specularIntensity = pow(specularFactor, shininess) * attenuation;
-	if (dot(reflectedLight, eye) < 0)
-        {
-             return vec4(0.4, 0.4, 0.4, 1.0);
-        }
+	
 	return specularLight * specularIntensity * specularMaterial;
 }
 
@@ -62,11 +59,10 @@ void main()
 		gl_LightSource[0].specular, 
 		specularMaterial, 
 		gl_FrontMaterial.shininess, 
-		1.0);
+		0.7);
 	
 	vec4 ambientColor = gl_LightSource[0].ambient * diffuseMaterial;
 	float shadow = shadow2DProj(shadowMap, lpos).x;
 	vec4 diffuseSpecShadow = (diffuseColor + clamp(specularColor, 0.0, 1.0)) * shadow;
-	vec4 colorWithLight = vec4(color.xyz * (ambientColor + diffuseSpecShadow).xyz, 1.0);
-	gl_FragColor =	 colorWithLight;
+	gl_FragColor =	 vec4(color.xyz * (ambientColor + diffuseSpecShadow).xyz, color.w);
 }

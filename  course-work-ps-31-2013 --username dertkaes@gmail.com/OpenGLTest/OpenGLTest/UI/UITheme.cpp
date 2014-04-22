@@ -39,7 +39,7 @@ CUITheme::CUITheme()
 	combobox.expandedTexCoord[3] = 0.80469f;
 	combobox.buttonWidthCoeff = 0.66f;
 	combobox.borderSize = 2;
-	combobox.spacing = 2;
+	combobox.elementSize = 25;
 	combobox.text = text;
 	//list
 	list.borderSize = 2;
@@ -71,4 +71,14 @@ CUITheme::CUITheme()
 	radiogroup.buttonSize = 15.0f;
 	radiogroup.elementSize = 22.0f;
 	radiogroup.text = text;
+	sbar.texCoord[0] = 0.07f;
+	sbar.texCoord[1] = 0.984f;
+	sbar.texCoord[2] = 0.117f;
+	sbar.texCoord[3] = 0.953f;
+	sbar.pressedTexCoord[0] = 0.121f;
+	sbar.pressedTexCoord[1] = 0.984f;
+	sbar.pressedTexCoord[2] = 0.168f;
+	sbar.pressedTexCoord[3] = 0.953f;
+	sbar.buttonHeight = 20;
+	sbar.width = 20;
 }

@@ -48,4 +48,4 @@ private:
 };
 
 std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale);
-bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, float angle1, const IBounding* bounding2, CVector3d const& translate2, float angle2);
+bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, double angle1, const IBounding* bounding2, CVector3d const& translate2, double angle2);

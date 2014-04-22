@@ -86,8 +86,8 @@ public:
 	CModelManager* GetModelManager() { return &m_modelManager; }
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
-	void EnableVertexLightning() { m_vertexLightning = true; }
-	void DisableVertexLightning() { m_vertexLightning = false; }
+	void EnableVertexLightning();
+	void DisableVertexLightning();
 	void EnableShadowMap(int size, float angle);
 	void DisableShadowMap();
 	void SetLightPosition(int index, float* pos);

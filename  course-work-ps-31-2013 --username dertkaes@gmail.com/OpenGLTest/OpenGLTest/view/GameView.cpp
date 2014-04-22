@@ -78,7 +78,6 @@ void CGameView::Init()
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitWindowSize(600, 600);
 	glutCreateWindow("GLUT test");
-	glEnable(GL_NORMALIZE);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -173,6 +172,7 @@ void CGameView::Update()
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
 	}
+	CThreadPool::Update();
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	DrawObjects();
@@ -184,6 +184,7 @@ void CGameView::Update()
 void CGameView::DrawObjects(void)
 {
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 	if(m_vertexLightning)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -330,7 +331,7 @@ bool gluInvertMatrix(const float m[16], float invOut[16])
 	if (det == 0)
 		return false;
 
-	det = 1.0 / det;
+	det = 1.0f / det;
 
 	for (i = 0; i < 16; i++)
 		invOut[i] = inv[i] * det;
@@ -371,6 +372,7 @@ void CGameView::DrawShadowMap()
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glMatrixMode(GL_MODELVIEW);
+	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0, 0, m_shadowMapSize, m_shadowMapSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -406,7 +408,7 @@ void CGameView::DrawShadowMap()
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
-	glViewport(0, 0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+	glPopAttrib();
 }
 
 void CGameView::OnReshape(int width, int height) 
@@ -629,7 +631,7 @@ bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	std::shared_ptr<IBounding> curBox = m_modelManager.GetBoundingBox(current->GetPathToModel());
 	CVector3d curPos(current->GetCoords());
-	float curAngle = current->GetRotation();
+	double curAngle = current->GetRotation();
 	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
@@ -637,7 +639,7 @@ bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 		std::shared_ptr<IBounding> bounding = m_modelManager.GetBoundingBox(object->GetPathToModel());
 		if (!bounding) continue;
 		CVector3d pos(object->GetCoords());
-		float angle = object->GetRotation();
+		double angle = object->GetRotation();
 		if (current != object && IsInteresect(curBox.get(), curPos, curAngle, bounding.get(), pos, angle))
 		{
 			return true;
@@ -699,6 +701,17 @@ void CGameView::ResizeWindow(int height, int width)
 void CGameView::NewShaderProgram(std::string const& vertex, std::string const& fragment, std::string const& geometry)
 {
 	m_shader.NewProgram(vertex, fragment, geometry);
+}
+
+void CGameView::EnableVertexLightning()
+{ 
+	m_vertexLightning = true;
+	glEnable(GL_NORMALIZE);
+}
+void CGameView::DisableVertexLightning()
+{ 
+	m_vertexLightning = false;
+	glDisable(GL_NORMALIZE);
 }
 
 void CGameView::EnableShadowMap(int size, float angle)

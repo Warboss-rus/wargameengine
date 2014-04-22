@@ -144,7 +144,7 @@ template<>
 void CShaderManager::SetUniformValue<double>(std::string const& uniform, double value)
 {
 	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
-	glUniform1i(unfrm, value);
+	glUniform1d(unfrm, value);
 }
 
 template<>

@@ -161,7 +161,6 @@ void CTextureManager::FreeInstance()
 
 void CTextureManager::SetTexture(std::string const& path)
 {
-	CThreadPool::Update();
 	if(path.empty()) 
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);

@@ -97,7 +97,6 @@ ui:NewButton("Button5", 10, 50, 30, 80, "Undo", "UndoAction")
 ui:NewButton("Button6", 100, 50, 30, 80, "Redo", "RedoAction")
 ui:NewButton("Button7", 200, 50, 30, 80, "LoS", "LineOfSight")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
-Object:NewDecal("asphalt.bmp", 0, 0, 0, 5, 5)--Creates a decal(image, x, y, rotation, width, height)
 
 local panel = ui:NewPanel("Panel1", 390, 40, 150, 120)
 panel:SetVisible(false)--Sets visibility of objects and all its children

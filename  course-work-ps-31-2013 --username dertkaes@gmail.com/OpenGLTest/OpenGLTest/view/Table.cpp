@@ -4,18 +4,25 @@
 
 void CTable::Draw() const
 {
+	float vert[] = {
+		-m_width, -m_height,
+		m_width, -m_height,
+		-m_width, m_height,
+		m_width, m_height,};
+	float tex[] = {
+		0.0f, 0.0f,
+		m_width, 0.0f,
+		0.0f, m_height,
+		m_width, m_height };
 	CTextureManager * texManager = CTextureManager::GetInstance();
 	texManager->SetTexture(m_texture);
-	glBegin(GL_TRIANGLE_STRIP);
-	glTexCoord2f(0.0, 0.0);
-	glVertex3f(-m_width, -m_height, 0.0);
-	glTexCoord2f(m_width, 0.0);
-	glVertex3f(m_width, -m_height, 0.0);
-	glTexCoord2f(0.0, m_height);
-	glVertex3f(-m_width, m_height, 0.0);
-	glTexCoord2f(m_width, m_height);
-	glVertex3f(m_width, m_height, 0.0);
-	glEnd();
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glVertexPointer(2, GL_FLOAT, 0, vert);
+	glTexCoordPointer(2, GL_FLOAT, 0, tex);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 	texManager->SetTexture("");
 }
 
