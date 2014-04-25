@@ -1,114 +1,63 @@
 #include "view\GameView.h"
-#include <vector>
 
-void GetCoordinateBount(std::vector<double*> & coordinate, IBounding* bount)
+bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 {
-	if(dynamic_cast<CBoundingCompound *>(bount)!= NULL)
-	{
-		CBoundingCompound* bountCompound = (CBoundingCompound*)bount;
-		for(size_t i = 0; i < bountCompound->GetChildCount(); ++i)
-		{
-			GetCoordinateBount(coordinate, bountCompound->GetChild(i));
-		}
-	}
-	CBoundingBox* box = (CBoundingBox*)bount;
-	double *min = new double[3];
-	double *max = new double[3];
-	memcpy(min, box->GetMin(), sizeof(double) * 3);
-	memcpy(max, box->GetMax(), sizeof(double) * 3);
-	coordinate.push_back(min);
-	coordinate.push_back(max);
-}
-
-bool TestIntersetion(IObject* shootingModel,IObject* target, CVector3d & mass)
-{
-	CVector3d intersectionCoords;
-	//CVector3d coordinateShootingModel = shootingModel->GetCoords();
-	std::vector<double *> coordinate1;
+	CGameModel* model = CGameModel::GetIntanse().lock().get();
 	CModelManager* modelManager = CGameView::GetIntanse().lock()->GetModelManager();
-	IBounding* bount1 = modelManager->GetBoundingBox(shootingModel->GetPathToModel()).get();
-	GetCoordinateBount(coordinate1, bount1);
-	double min1[3];
-	memcpy(&min1[0], coordinate1[0], sizeof(double) * 3);
-	double max1[3];
-	memcpy(&max1[0], coordinate1[1], sizeof(double) * 3);
-	CVector3d coordinateShootingModel((min1[0]+max1[0])/2, (min1[1]+max1[1])/2, (min1[2]+max1[2])/2);
-	for(size_t i = 0; i < CGameModel::GetIntanse().lock()->GetObjectCount(); i++)
+	CVector3d coords;
+	for (int i = 0; i < model->GetObjectCount(); ++i)
 	{
-		IObject * object = CGameModel::GetIntanse().lock()->Get3DObject(i).get();
-		if(object == shootingModel || object == target) continue;
-		if(CGameView::GetIntanse().lock()->GetModelManager()->GetBoundingBox(object->GetPathToModel())->
-			IsIntersectsRay((double*)&coordinateShootingModel, (double*)&mass, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), intersectionCoords))
+		IObject * current = model->Get3DObject(i).get();
+		if (current == shooter || current == target) continue;
+		IBounding * box = modelManager->GetBoundingBox(current->GetPathToModel()).get();
+		if (!box) continue;
+		if (box->IsIntersectsRay(origin, dir, current->GetX(), current->GetY(), current->GetZ(), current->GetRotation(), coords))
 		{
 			return false;
-		}	
+		}
 	}
 	return true;
 }
 
-int Los(IObject* shootingModel,IObject* target)
+int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject)
 {
-	int los = 0;
-	std::vector<double *> coordinate;
-	std::vector<double *> coordinate1;
-	CModelManager* modelManager = CGameView::GetIntanse().lock()->GetModelManager();
-	IBounding* bount = modelManager->GetBoundingBox(target->GetPathToModel()).get();
-	GetCoordinateBount(coordinate, bount);
-	IBounding* bount1 = modelManager->GetBoundingBox(shootingModel->GetPathToModel()).get();
-	GetCoordinateBount(coordinate1, bount1);
-	double min1[3];
-	memcpy(&min1[0], coordinate1[0], sizeof(double) * 3);
-	double max1[3];
-	memcpy(&max1[0], coordinate1[1], sizeof(double) * 3);
-	CVector3d coordinateShootingModel((min1[0]+max1[0])/2, (min1[1]+max1[1])/2, (min1[2]+max1[2])/2);
-	double min[3];
-	memcpy(&min[0], coordinate[0], sizeof(double) * 3);
-	double max[3];
-	memcpy(&max[0], coordinate[1], sizeof(double) * 3);
-	CVector3d mass[100];
-	CVector3d centre((min[0]+max[0])/2, (min[1]+max[1])/2, (min[2]+max[2])/2);
-	if(((centre.x > coordinateShootingModel.x) && (centre.y < coordinateShootingModel.y))||
-		((centre.x < coordinateShootingModel.x) && (centre.y > coordinateShootingModel.y)))
+	int result = 0;
+	int total = 0;
+	CBoundingBox * tarBox = dynamic_cast<CBoundingBox *>(target);
+	if (!tarBox)
 	{
-		CVector3d w(min[0], max[1], min[2]);
-		CVector3d w1(max[0], min[1], max[2]);
-		double deltaX = max[0] - min[0];
-		double deltaY = max[1] - min[1];
-		double deltaZ = (max[2] - min[2]) / 100;
-		for(int i = 0; i < 100; i++)
+		CBoundingCompound * compound = (CBoundingCompound*)target;
+		for (int i = 0; i < compound->GetChildCount(); ++i)
 		{
-			mass[i].x = w.x + i * (deltaX/100);
-			mass[i].y = w.y + i * (deltaY/100);
-			if((i% 10 == 0) && (i != 0))
-			{
-				deltaZ = deltaZ * i;
-			}
-			mass[i].z = deltaZ;
+			result += BBoxlos(origin, compound->GetChild(i), shooter, targetObject);
 		}
+		result /= compound->GetChildCount();
+		total = 100;
 	}
 	else
 	{
-		double deltaX = max[0] - min[0];
-		double deltaY = max[1] - min[1];
-		double deltaZ = (max[2] - min[2]) / 100;
-		for(int i = 0; i < 100; i++)
+		double dir[3];
+		for (dir[0] = tarBox->GetMin()[0] + targetObject->GetX(); dir[0] < tarBox->GetMax()[0] + targetObject->GetX(); dir[0] += (tarBox->GetMax()[0] - tarBox->GetMin()[0]) / 10.0 + 0.0001)
 		{
-			mass[i].x = min[0] + i * (deltaX/100);
-			mass[i].y = min[1] +i * (deltaY/100);
-			if((i% 10 == 0) && (i != 0))
+			for (dir[1] = tarBox->GetMin()[1] + targetObject->GetY(); dir[1] < tarBox->GetMax()[1] + targetObject->GetY(); dir[1] += (tarBox->GetMax()[1] - tarBox->GetMin()[1]) / 10.0 + 0.0001)
 			{
-				deltaZ = deltaZ * i;
+				for (dir[2] = tarBox->GetMin()[2] + targetObject->GetZ(); dir[2] < tarBox->GetMax()[2] + targetObject->GetZ(); dir[2] += (tarBox->GetMax()[2] - tarBox->GetMin()[2]) / 10.0 + 0.0001)
+				{
+					total++;
+					if (TestRay(origin, dir, shooter, targetObject))
+						result++;
+				}
 			}
-			mass[i].z = deltaZ;
 		}
 	}
-	
-	for(int j = 0; j < 100; j++)
-	{
-		if(TestIntersetion(shootingModel, target, mass[j]))
-		{
-			los++;
-		}
-	}
-	return los;
+	return result * 100 / total;
+}
+
+int Los(IObject * shooter, IObject * target)
+{
+	if (!shooter || !target) return -1;
+	CModelManager* modelManager = CGameView::GetIntanse().lock()->GetModelManager();
+	IBounding * targetBound = modelManager->GetBoundingBox(target->GetPathToModel()).get();
+	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
+	return BBoxlos(center, targetBound, shooter, target);
 }

@@ -50,7 +50,7 @@ void CUIComboBox::Draw() const
 		glColor3f(m_theme.text.color[0], m_theme.text.color[1], m_theme.text.color[2]);
 		for (size_t i = m_scrollbar.GetPosition() / m_theme.combobox.elementSize; i < m_items.size(); ++i)
 		{
-			if (GetHeight() + m_theme.list.elementSize * (i - m_scrollbar.GetPosition() / m_theme.list.elementSize) > GetHeight()) break;
+			//if (GetHeight() + m_theme.list.elementSize * (i - m_scrollbar.GetPosition() / m_theme.list.elementSize) > GetHeight()) break;
 			PrintText(m_theme.combobox.borderSize, GetHeight() + m_theme.combobox.elementSize * (i - m_scrollbar.GetPosition() / m_theme.combobox.elementSize), GetWidth(), m_theme.combobox.elementSize, m_items[i], m_theme.combobox.text);
 		}
 		glPushMatrix();
@@ -95,7 +95,7 @@ bool CUIComboBox::LeftMouseButtonUp(int x, int y)
 		{
 			if(m_expanded && PointIsOnElement(x, y))
 			{
-				int index = (y - m_y) / GetHeight();
+				int index = (y - GetHeight()) / m_theme.combobox.elementSize;
 				if(index > 0) m_selected = index - 1;
 				if(m_onChange) m_onChange();
 			}
