@@ -69,7 +69,7 @@ end
 IncludeLibrary("math")--Includes the following library
 IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
-EnableShadowMap(4096, 53)
+EnableShadowMap(1024, 53)
 SetShaders("shadow.vsh", "shadow.fsh")
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)

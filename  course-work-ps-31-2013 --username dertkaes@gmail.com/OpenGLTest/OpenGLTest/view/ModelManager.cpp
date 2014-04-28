@@ -9,7 +9,7 @@
 void UseModel(void* data)
 {
 	sOBJLoader * loader = (sOBJLoader*)data;
-	std::swap(*loader->oldmodel, *loader->newModel);
+	loader->model->SetModel(loader->vertices, loader->textureCoords, loader->normals, loader->indexes, loader->materialManager, loader->meshes);
 	delete loader;
 }
 
@@ -19,12 +19,14 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	{
 		unsigned int dotCoord = path.find_last_of('.') + 1;
 		std::string extension = path.substr(dotCoord, path.length() - dotCoord);
+		std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
+		double scale = 1.0;
+		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
+		m_models[path] = new C3DModel(bounding, scale);
 		if(extension == "obj")
 		{
-			m_models[path] = new C3DModel();
 			sOBJLoader * obj = new sOBJLoader();
-			obj->path = sModule::models + path;
-			obj->oldmodel = m_models[path];
+			obj->model = m_models[path];
 			CThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
 		}
 		if(extension == "wbm")
@@ -34,10 +36,10 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes)
+void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes, bool vertexOnly)
 {
 	LoadIfNotExist(path);
-	m_models[path]->Draw(hideMeshes);
+	m_models[path]->Draw(hideMeshes, vertexOnly);
 }
 
 std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path)

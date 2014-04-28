@@ -40,10 +40,6 @@ FaceIndex ParseFaceIndex(std::string const& str)
 void * LoadObjModel(void* data, unsigned int size, void* param)
 {
 	sOBJLoader * loader = (sOBJLoader*)param;
-	std::string boundingPath = loader->path.substr(0, loader->path.find_last_of('.')) + ".txt";
-	double scale = 1.0;
-	std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
-	loader->oldmodel->SetBounding(bounding, scale);
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
@@ -57,12 +53,6 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
-	std::vector<CVector3f> newVertices;
-	std::vector<CVector2f> newTextureCoords;
-	std::vector<CVector3f> newNormals;
-	std::vector<unsigned int> indexes;
-	CMaterialManager materialManager;
-	std::vector<sMesh> meshes;
 	while(iFile.good())
 	{
 		iFile >> type;
@@ -101,30 +91,30 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 				iFile >> index3;
 				if(faces.find(index3) != faces.end()) //This vertex/texture coord/normal already exist
 				{
-					indexes.push_back(faces[index3]);
+					loader->indexes.push_back(faces[index3]);
 				}
 				else//New vertex/texcoord/normal
 				{
 					FaceIndex faceIndex  = ParseFaceIndex(index3);
-					newVertices.push_back(vertices[faceIndex.vertex - 1]);
+					loader->vertices.push_back(vertices[faceIndex.vertex - 1]);
 					if(faceIndex.textureCoord != 0)
 					{
-						newTextureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
+						loader->textureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
 					}
 					else
 					{
-						newTextureCoords.push_back(CVector2f());
+						loader->textureCoords.push_back(CVector2f());
 					}
 					if(faceIndex.normal != 0)
 					{
-						newNormals.push_back(normals[faceIndex.normal - 1]);
+						loader->normals.push_back(normals[faceIndex.normal - 1]);
 					}
 					else
 					{
-						newNormals.push_back(CVector3f());
+						loader->normals.push_back(CVector3f());
 					}
-					indexes.push_back(newVertices.size() - 1);
-					faces[index3] = newVertices.size() - 1;
+					loader->indexes.push_back(loader->vertices.size() - 1);
+					faces[index3] = loader->vertices.size() - 1;
 				}
 			}
 		}
@@ -132,19 +122,19 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 		{
 			std::string path;
 			iFile >> path;
-			materialManager.LoadMTL(path);
+			loader->materialManager.LoadMTL(path);
 		}
 		if(type == "usemtl")//apply material
 		{
 			iFile >> mesh.materialName;
-			mesh.polygonIndex = indexes.size();
-			if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
+			mesh.polygonIndex = loader->indexes.size();
+			if(!loader->meshes.empty() && mesh.polygonIndex == loader->meshes.back().polygonIndex)
 			{
-				meshes.back() = mesh;
+				loader->meshes.back() = mesh;
 			}
 			else
 			{
-				meshes.push_back(mesh);
+				loader->meshes.push_back(mesh);
 			}
 		}
 		if(type == "g")//apply material
@@ -155,33 +145,32 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 			if(!name.empty())
 			{
 				mesh.name = name;
-				mesh.polygonIndex = indexes.size();
-				if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
+				mesh.polygonIndex = loader->indexes.size();
+				if(!loader->meshes.empty() && mesh.polygonIndex == loader->meshes.back().polygonIndex)
 				{
-					meshes.back() = mesh;
+					loader->meshes.back() = mesh;
 				}
 				else
 				{
-					meshes.push_back(mesh);
+					loader->meshes.push_back(mesh);
 				}
 			}
 		}
 	}
 	if(!useNormals)
 	{
-		newNormals.clear();
+		loader->normals.clear();
 	}
 	if(!useUVs)
 	{
-		newTextureCoords.clear();
+		loader->textureCoords.clear();
 	}
 	delete [] data;
 	if(!useFaces)
 	{
-		newVertices.swap(vertices);
-		newTextureCoords.swap(textureCoords);
-		newNormals.swap(normals);
+		loader->vertices.swap(vertices);
+		loader->textureCoords.swap(textureCoords);
+		loader->normals.swap(normals);
 	}
-	loader->newModel = new C3DModel(newVertices, newTextureCoords, newNormals, indexes, materialManager, meshes, bounding, scale);
 	return loader;
 }

@@ -1,17 +1,47 @@
 #include "3dModel.h"
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include <GL\glut.h>
+
+C3DModel::C3DModel(std::shared_ptr<IBounding> bounding, double scale)
+{ 
+	m_bounding = bounding; 
+	m_scale = scale; 
+}
 
 C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 				   CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale)
 {
+	SetModel(vertices, textureCoords, normals, indexes, materials, meshes);
+	m_bounding = bounding;
+	m_scale = scale;
+}
+C3DModel::~C3DModel()
+{
+	if (m_vbo) glDeleteBuffersARB(1, &m_vbo);
+}
+
+void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
+	CMaterialManager & materials, std::vector<sMesh> & meshes)
+{
+	m_vbo = NULL;
+	if (GLEW_ARB_vertex_buffer_object)
+	{
+		glGenBuffersARB(1, &m_vbo);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertices.size() * 3 * sizeof(float) + normals.size() * 3 * sizeof(float) + textureCoords.size() * 2 * sizeof(float), NULL, GL_STATIC_DRAW_ARB);
+		glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, vertices.size() * 3 * sizeof(float), &vertices[0]);
+		glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, vertices.size() * 3 * sizeof(float), normals.size() * 3 * sizeof(float), &normals[0]);
+		glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, vertices.size() * 3 * sizeof(float)+normals.size() * 3 * sizeof(float), textureCoords.size() * 2 * sizeof(float), &textureCoords[0]);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	}
 	m_vertices.swap(vertices);
 	m_textureCoords.swap(textureCoords);
 	m_normals.swap(normals);
+	m_count = (indexes.empty())?vertices.size():indexes.size();
 	m_indexes.swap(indexes);
 	std::swap(m_materials, materials);
 	m_meshes.swap(meshes);
-	m_bounding = bounding;
-	m_scale = scale;
 }
 
 void C3DModel::SetBounding(std::shared_ptr<IBounding> bounding, double scale)
@@ -34,24 +64,46 @@ void SetMaterial(sMaterial * material)
 	texManager->SetTexture(material->texture);
 }
 
-void C3DModel::Draw(const std::set<std::string> * hideMeshes)
+void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly)
 {
 	glPushMatrix();
 	glScaled(m_scale, m_scale, m_scale);
-	if(!m_vertices.empty())
+	if (m_vbo)
 	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, &m_vertices[0]);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
+		if (!m_vertices.empty())
+		{
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glVertexPointer(3, GL_FLOAT, 0, 0);
+		}
+		if (!m_normals.empty() && !vertexOnly)
+		{
+			glEnableClientState(GL_NORMAL_ARRAY);
+			glNormalPointer(GL_FLOAT, 0, (void*)(m_vertices.size() * 3 * sizeof(float)));
+		}
+		if (!m_textureCoords.empty() && !vertexOnly)
+		{
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glTexCoordPointer(2, GL_FLOAT, 0, (void*)(m_vertices.size() * 3 * sizeof(float) + m_normals.size() * 3 * sizeof(float)));
+		}
 	}
-	if(!m_normals.empty())
+	else
 	{
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_FLOAT, 0, &m_normals[0]);
-	}
-	if(!m_textureCoords.empty())
-	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, GL_FLOAT, 0, &m_textureCoords[0]);
+		if (!m_vertices.empty())
+		{
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glVertexPointer(3, GL_FLOAT, 0, &m_vertices[0]);
+		}
+		if (!m_normals.empty() && !vertexOnly)
+		{
+			glEnableClientState(GL_NORMAL_ARRAY);
+			glNormalPointer(GL_FLOAT, 0, &m_normals[0]);
+		}
+		if (!m_textureCoords.empty() && !vertexOnly)
+		{
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			glTexCoordPointer(2, GL_FLOAT, 0, &m_textureCoords[0]);
+		}
 	}
 	if(!m_indexes.empty()) //Draw by meshes;
 	{
@@ -59,17 +111,24 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes)
 		unsigned int end;
 		for(unsigned int i = 0; i < m_meshes.size(); ++i)
 		{
-			if(hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
+			if (hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
 			{
-				begin = (i + 1 == m_meshes.size())?m_indexes.size():m_meshes[i + 1].polygonIndex;
+				end = m_meshes[i].polygonIndex;
+				glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
+				SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
+				begin = (i + 1 == m_meshes.size()) ? m_count : m_meshes[i + 1].polygonIndex;
+				continue;
+			}
+			if ((i > 0 && m_meshes[i].materialName == m_meshes[i - 1].materialName) || vertexOnly)
+			{
 				continue;
 			}
 			end = m_meshes[i].polygonIndex;
 			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-			SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
+			if(!vertexOnly) SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
 			begin = end;
 		}
-		end = m_indexes.size();
+		end = m_count;
 		if(begin != end)
 		{
 			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
@@ -77,8 +136,9 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes)
 	}
 	else //Draw in a row
 	{
-		glDrawArrays(GL_TRIANGLES, 0, m_vertices.size());
+		glDrawArrays(GL_TRIANGLES, 0, m_count);
 	}
+	if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);

@@ -37,11 +37,7 @@ void CGameView::FreeInstance()
 
 CGameView::~CGameView()
 {
-	if (m_shadowMap)
-	{
-		glDeleteTextures(1, &m_shadowMapTexture);
-		glDeleteFramebuffersEXT(1, &m_shadowMapFBO);
-	}
+	DisableShadowMap();
 	CTextureManager::FreeInstance();
 	CCommandHandler::FreeInstance();
 	CGameModel::FreeInstance();
@@ -66,7 +62,7 @@ CGameView::CGameView(void)
 void CGameView::OnTimer(int value)
 {
 	glutPostRedisplay();
-	glutTimerFunc(10, OnTimer, 0);
+	glutTimerFunc(1, OnTimer, 0);
 }
 
 void CGameView::Init()
@@ -80,14 +76,13 @@ void CGameView::Init()
 	glutCreateWindow("GLUT test");
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glutDisplayFunc(CGameView::OnDrawScene);
-	glutTimerFunc(10, OnTimer, 0);
+	glutTimerFunc(1, OnTimer, 0);
 	glutReshapeFunc(&OnReshape);
 	glutKeyboardFunc(&CInput::OnKeyboard);
 	glutSpecialFunc(&CInput::OnSpecialKeyPress);
@@ -115,7 +110,7 @@ void CGameView::Init()
 void CGameView::OnDrawScene()
 {
 	CGameView::GetIntanse().lock()->DrawShadowMap();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	CGameView::GetIntanse().lock()->Update();
 	glutSwapBuffers();
 }
@@ -209,136 +204,6 @@ void CGameView::DrawObjects(void)
 	glDisable(GL_DEPTH_TEST);
 }
 
-bool gluInvertMatrix(const float m[16], float invOut[16])
-{
-	float inv[16], det;
-	int i;
-
-	inv[0] = m[5] * m[10] * m[15] -
-		m[5] * m[11] * m[14] -
-		m[9] * m[6] * m[15] +
-		m[9] * m[7] * m[14] +
-		m[13] * m[6] * m[11] -
-		m[13] * m[7] * m[10];
-
-	inv[4] = -m[4] * m[10] * m[15] +
-		m[4] * m[11] * m[14] +
-		m[8] * m[6] * m[15] -
-		m[8] * m[7] * m[14] -
-		m[12] * m[6] * m[11] +
-		m[12] * m[7] * m[10];
-
-	inv[8] = m[4] * m[9] * m[15] -
-		m[4] * m[11] * m[13] -
-		m[8] * m[5] * m[15] +
-		m[8] * m[7] * m[13] +
-		m[12] * m[5] * m[11] -
-		m[12] * m[7] * m[9];
-
-	inv[12] = -m[4] * m[9] * m[14] +
-		m[4] * m[10] * m[13] +
-		m[8] * m[5] * m[14] -
-		m[8] * m[6] * m[13] -
-		m[12] * m[5] * m[10] +
-		m[12] * m[6] * m[9];
-
-	inv[1] = -m[1] * m[10] * m[15] +
-		m[1] * m[11] * m[14] +
-		m[9] * m[2] * m[15] -
-		m[9] * m[3] * m[14] -
-		m[13] * m[2] * m[11] +
-		m[13] * m[3] * m[10];
-
-	inv[5] = m[0] * m[10] * m[15] -
-		m[0] * m[11] * m[14] -
-		m[8] * m[2] * m[15] +
-		m[8] * m[3] * m[14] +
-		m[12] * m[2] * m[11] -
-		m[12] * m[3] * m[10];
-
-	inv[9] = -m[0] * m[9] * m[15] +
-		m[0] * m[11] * m[13] +
-		m[8] * m[1] * m[15] -
-		m[8] * m[3] * m[13] -
-		m[12] * m[1] * m[11] +
-		m[12] * m[3] * m[9];
-
-	inv[13] = m[0] * m[9] * m[14] -
-		m[0] * m[10] * m[13] -
-		m[8] * m[1] * m[14] +
-		m[8] * m[2] * m[13] +
-		m[12] * m[1] * m[10] -
-		m[12] * m[2] * m[9];
-
-	inv[2] = m[1] * m[6] * m[15] -
-		m[1] * m[7] * m[14] -
-		m[5] * m[2] * m[15] +
-		m[5] * m[3] * m[14] +
-		m[13] * m[2] * m[7] -
-		m[13] * m[3] * m[6];
-
-	inv[6] = -m[0] * m[6] * m[15] +
-		m[0] * m[7] * m[14] +
-		m[4] * m[2] * m[15] -
-		m[4] * m[3] * m[14] -
-		m[12] * m[2] * m[7] +
-		m[12] * m[3] * m[6];
-
-	inv[10] = m[0] * m[5] * m[15] -
-		m[0] * m[7] * m[13] -
-		m[4] * m[1] * m[15] +
-		m[4] * m[3] * m[13] +
-		m[12] * m[1] * m[7] -
-		m[12] * m[3] * m[5];
-
-	inv[14] = -m[0] * m[5] * m[14] +
-		m[0] * m[6] * m[13] +
-		m[4] * m[1] * m[14] -
-		m[4] * m[2] * m[13] -
-		m[12] * m[1] * m[6] +
-		m[12] * m[2] * m[5];
-
-	inv[3] = -m[1] * m[6] * m[11] +
-		m[1] * m[7] * m[10] +
-		m[5] * m[2] * m[11] -
-		m[5] * m[3] * m[10] -
-		m[9] * m[2] * m[7] +
-		m[9] * m[3] * m[6];
-
-	inv[7] = m[0] * m[6] * m[11] -
-		m[0] * m[7] * m[10] -
-		m[4] * m[2] * m[11] +
-		m[4] * m[3] * m[10] +
-		m[8] * m[2] * m[7] -
-		m[8] * m[3] * m[6];
-
-	inv[11] = -m[0] * m[5] * m[11] +
-		m[0] * m[7] * m[9] +
-		m[4] * m[1] * m[11] -
-		m[4] * m[3] * m[9] -
-		m[8] * m[1] * m[7] +
-		m[8] * m[3] * m[5];
-
-	inv[15] = m[0] * m[5] * m[10] -
-		m[0] * m[6] * m[9] -
-		m[4] * m[1] * m[10] +
-		m[4] * m[2] * m[9] +
-		m[8] * m[1] * m[6] -
-		m[8] * m[2] * m[5];
-
-	det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
-
-	if (det == 0)
-		return false;
-
-	det = 1.0f / det;
-
-	for (i = 0; i < 16; i++)
-		invOut[i] = inv[i] * det;
-
-	return true;
-}
-
 void CGameView::SetUpShadowMapDraw()
 {
 	// Сохраняем матрицы, они нам нужны для вычисления освещения
@@ -397,7 +262,7 @@ void CGameView::DrawShadowMap()
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes());
+		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), true);
 		glPopMatrix();
 	}
 
@@ -743,13 +608,19 @@ void CGameView::EnableShadowMap(int size, float angle)
 	glGenFramebuffers(1, &m_shadowMapFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
 	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMapTexture, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glActiveTexture(GL_TEXTURE0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		CLogWriter::WriteLine("Cannot enable shadowmaps. Error creating framebuffer.");
+		glDeleteTextures(1, &m_shadowMapTexture);
+		return;
+	}
 	m_shadowMap = true;
 	m_shadowMapSize = size;
 	m_shadowAngle = angle;
+	
 }
 
 void CGameView::DisableShadowMap()
