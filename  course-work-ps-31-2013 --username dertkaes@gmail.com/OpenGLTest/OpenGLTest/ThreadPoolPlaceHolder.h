@@ -1,9 +1,9 @@
 #include <string>
 
-class CThreadPool
+class CThreadPoolPlaceHolder
 {
 public:
-	CThreadPool() {}
+	CThreadPoolPlaceHolder() {}
 	//Runs function in separate thread.
 	static void RunFunc(void (* func)(void*), void* param);
 	//Runs function in separate thread. doneCallback will be called in main thread when finished

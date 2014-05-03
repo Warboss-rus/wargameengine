@@ -31,7 +31,7 @@ FT_Face CTextWriter::GetFace(std::string const& name)
 	return m_faces[name];
 }
 
-sGlyph CTextWriter::CreateSymbol(sSymbol s)
+sGlyph CTextWriter::CreateSymbol(sSymbol  const& s)
 {
 	sGlyph symbol;
 	FT_Face face = s.face;
@@ -56,10 +56,10 @@ sGlyph CTextWriter::CreateSymbol(sSymbol s)
 	return symbol;
 }
 
-sGlyph CTextWriter::GetSymbol(std::string const& font, unsigned int size, char symbol)
+sGlyph CTextWriter::GetSymbol(FT_Face font, unsigned int size, char symbol)
 {
 	sSymbol s;
-	s.face = GetFace(font);
+	s.face = font;
 	s.size = size;
 	s.symbol = symbol;
 	if(m_symbols.find(s) == m_symbols.end())
@@ -69,7 +69,7 @@ sGlyph CTextWriter::GetSymbol(std::string const& font, unsigned int size, char s
 	return m_symbols[s];
 }
 
-void CTextWriter::DrawBitmap(int & x, int & y, sGlyph symbol)
+void CTextWriter::DrawBitmap(int & x, int & y, sGlyph const& symbol)
 {
 	int x2 = x + symbol.bitmap_left;
     int y2 = y - symbol.bitmap_top;
@@ -96,6 +96,7 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	int newx = x;
+	FT_Face face = GetFace(font);
 	for (size_t i = 0; i < text.size(); ++i)
 	{
 		if(text[i] == '\n')
@@ -105,7 +106,7 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 		}
 		else
 		{
-			sGlyph glyph = GetSymbol(font, size, text[i]);
+			sGlyph glyph = GetSymbol(face, size, text[i]);
 			if(width > 0 && newx + glyph.advancex > x + width)
 			{
 				newx += glyph.advancex;
@@ -123,21 +124,16 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 
 bool sSymbol::operator< (const sSymbol &other) const
 {
-	if(symbol < other.symbol) return true;
-	if(symbol > other.symbol) return false;
-	if(size < other.size) return true;
-	if(size > other.size) return false;
-	if(face < other.face) return true;
-	if(face > other.face) return false;
-	return false;
+	return (symbol < other.symbol || size < other.size || face < other.face);
 }
 
 int CTextWriter::GetStringHeight(std::string const& font, unsigned int size, std::string const& text)
 {
 	int height = 0;
+	FT_Face face = GetFace(font);
 	for(size_t i = 0; i < text.size(); ++i)
 	{
-		int temp = GetSymbol(font, size, text[i]).rows;
+		int temp = GetSymbol(face, size, text[i]).rows;
 		if(temp > height)
 		{
 			height = temp;
@@ -149,9 +145,10 @@ int CTextWriter::GetStringHeight(std::string const& font, unsigned int size, std
 int CTextWriter::GetStringWidth(std::string const& font, unsigned int size, std::string const& text)
 {
 	int width = 0;
+	FT_Face face = GetFace(font);
 	for(size_t i = 0; i < text.size(); ++i)
 	{
-		width += GetSymbol(font, size, text[i]).advancex;
+		width += GetSymbol(face, size, text[i]).advancex;
 	}
 	return width;
 }

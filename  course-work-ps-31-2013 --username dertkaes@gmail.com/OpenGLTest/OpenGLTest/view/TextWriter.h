@@ -32,9 +32,9 @@ public:
 	int GetStringWidth(std::string const& font, unsigned int size, std::string const& text);
 private:
 	FT_Face GetFace(std::string const& name);
-	sGlyph GetSymbol(std::string const& font, unsigned int size, char symbol);
-	void DrawBitmap(int & x, int & y, sGlyph symbol);
-	sGlyph CreateSymbol(sSymbol s);
+	sGlyph GetSymbol(FT_Face font, unsigned int size, char symbol);
+	void DrawBitmap(int & x, int & y, sGlyph  const& symbol);
+	sGlyph CreateSymbol(sSymbol  const& s);
 	FT_Library m_ft;
 	std::map<std::string, FT_Face> m_faces;
 	std::map<sSymbol, sGlyph> m_symbols;

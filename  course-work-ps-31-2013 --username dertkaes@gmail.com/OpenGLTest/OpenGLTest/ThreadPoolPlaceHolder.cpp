@@ -1,23 +1,23 @@
 #include "ThreadPoolPlaceHolder.h"
 
-void CThreadPool::RunFunc(void (* func)(void*), void* param)
+void CThreadPoolPlaceHolder::RunFunc(void(*func)(void*), void* param)
 {
 	func(param);
 }
 
-void CThreadPool::RunFunc(void (* func)(void*), void* param, void (* doneCallback)())
+void CThreadPoolPlaceHolder::RunFunc(void(*func)(void*), void* param, void(*doneCallback)())
 {
 	func(param);
 	doneCallback();
 }
 
-void CThreadPool::RunFunc(void* (* func)(void*), void* param, void (* doneCallback)(void*))
+void CThreadPoolPlaceHolder::RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*))
 {
 	void* result = func(param);
 	doneCallback(result);
 }
 
-void CThreadPool::AsyncReadFile(std::string const& path, void (* func)(void*, unsigned int, void*), void* param, void (* doneCallback)())
+void CThreadPoolPlaceHolder::AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)())
 {
 	FILE * file = fopen(path.c_str(), "rb");
 	fseek(file, 0L, SEEK_END);
@@ -31,7 +31,7 @@ void CThreadPool::AsyncReadFile(std::string const& path, void (* func)(void*, un
 		doneCallback();
 }
 
-void CThreadPool::AsyncReadFile(std::string const& path, void* (* func)(void*, unsigned int, void*), void* param, void (* doneCallback)(void*))
+void CThreadPoolPlaceHolder::AsyncReadFile(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*))
 {
 	FILE * file = fopen(path.c_str(), "rb");
 	fseek(file, 0L, SEEK_END);

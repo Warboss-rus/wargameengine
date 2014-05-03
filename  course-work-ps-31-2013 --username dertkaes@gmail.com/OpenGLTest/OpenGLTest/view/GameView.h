@@ -12,6 +12,7 @@
 #include "..\UI\UIElement.h"
 #include "..\LUA\LUAScriptHandler.h"
 #include "ShaderManager.h"
+#include "..\CNetSocket.h"
 
 class CGameView
 {
@@ -28,6 +29,7 @@ private:
 	std::shared_ptr<IUIElement> m_ui;
 	std::shared_ptr<CLUAScript> m_lua;
 	CShaderManager m_shader;
+	std::shared_ptr<CNetSocket> m_socket;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
@@ -46,6 +48,8 @@ private:
 	float m_lightModelViewMatrix[16];
 	float m_lightPosition[3];
 	float m_shadowAngle;
+	static bool m_visible;
+	unsigned int m_updateTime;
 public:
 	static std::weak_ptr<CGameView> GetIntanse();
 	~CGameView();
@@ -92,6 +96,12 @@ public:
 	void DisableShadowMap();
 	void SetLightPosition(int index, float* pos);
 
+	void NetHost(unsigned short port);
+	void NetClient(std::string const& ip, unsigned short port);
+	void NetSendMessage(std::string const& message);
+	void SendState() const;
+	void SetState(char* data);
+
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));
 	void SetSingleCallback(callback(onSingleUpdate));
@@ -99,6 +109,7 @@ public:
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);
 	static void OnTimer(int value);
+	static void OnChangeState(int state);
 
 	static void FreeInstance();
 };

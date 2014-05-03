@@ -1,11 +1,11 @@
 #include <string>
 #include <list>
 
-class CThreadPool
+class CThreadPoolWindows
 {
 public:
-	CThreadPool();
-	~CThreadPool();
+	CThreadPoolWindows();
+	~CThreadPoolWindows();
 	//Runs function in separate thread.
 	static void RunFunc(void (* func)(void*), void* param);
 	//Runs function in separate thread. doneCallback will be called in main thread when finished

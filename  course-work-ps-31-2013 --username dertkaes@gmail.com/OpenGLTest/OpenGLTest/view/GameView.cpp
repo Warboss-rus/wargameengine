@@ -17,6 +17,7 @@
 using namespace std;
 
 shared_ptr<CGameView> CGameView::m_instanse = NULL;
+bool CGameView::m_visible = true;
 
 weak_ptr<CGameView> CGameView::GetIntanse()
 {
@@ -61,8 +62,13 @@ CGameView::CGameView(void)
 
 void CGameView::OnTimer(int value)
 {
-	glutPostRedisplay();
+	if(m_visible) glutPostRedisplay();
 	glutTimerFunc(1, OnTimer, 0);
+}
+
+void CGameView::OnChangeState(int state)
+{
+	CGameView::m_visible = (state == GLUT_VISIBLE);
 }
 
 void CGameView::Init()
@@ -91,12 +97,12 @@ void CGameView::Init()
 	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
 	glutMotionFunc(&CInput::OnMouseMove);
 	glutCloseFunc(&CGameView::FreeInstance);
+	glutWindowStatusFunc(OnChangeState);
 
 	glewInit();
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float)* 3);
-	CThreadPool tpool;
 
 	m_lua.reset(new CLUAScript());
 	RegisterFunctions(*m_lua.get());
@@ -161,11 +167,33 @@ void CGameView::DrawBoundingBox()
 
 void CGameView::Update()
 {
+	m_updateTime--;
+	if (!m_updateTime)
+	{
+		SendState();
+		m_updateTime = 1000;
+	}
 	if(m_updateCallback) m_updateCallback();
 	if(m_singleCallback)
 	{
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
+	}
+	if (m_socket)
+	{
+		char data[65536];
+		int result = m_socket->RecieveData(data, 65536);
+		if (result > 0)
+		{
+			if (data[0] == 0)
+				MessageBoxA(NULL, data + 1, "Recieved message", 0);
+			else if (data[0] == 1)
+				SetState(data + 1);
+		}
+		if (result == 0)
+		{
+			m_socket.reset();
+		}
 	}
 	CThreadPool::Update();
 	m_camera.Update();
@@ -180,14 +208,14 @@ void CGameView::DrawObjects(void)
 {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	if(m_vertexLightning)
+	m_shader.BindProgram();
+	if (m_shadowMap) SetUpShadowMapDraw();
+	if (m_table) m_table->Draw();
+	if (m_vertexLightning)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glEnable(GL_LIGHTING);
 	}
-	m_shader.BindProgram();
-	if (m_shadowMap) SetUpShadowMapDraw();
-	if (m_table) m_table->Draw();
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
@@ -199,6 +227,7 @@ void CGameView::DrawObjects(void)
 		glPopMatrix();
 	}
 	m_shader.UnBindProgram();
+	glDisable(GL_BLEND);
 	glDisable(GL_LIGHTING);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glDisable(GL_DEPTH_TEST);
@@ -602,7 +631,7 @@ void CGameView::EnableShadowMap(int size, float angle)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, size, size,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size, size,
 		0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE, 0);
 	glGenFramebuffers(1, &m_shadowMapFBO);
@@ -635,4 +664,73 @@ void CGameView::SetLightPosition(int index, float* pos)
 {
 	glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
 	if(index == 0) memcpy(m_lightPosition, pos, sizeof(float)* 3);
+}
+
+void CGameView::NetHost(unsigned short port)
+{
+	m_socket.reset(new CNetSocket(port));
+	m_updateTime = 1000;
+}
+
+void CGameView::NetClient(std::string const& ip, unsigned short port)
+{
+	m_socket.reset(new CNetSocket(ip.c_str(), port));
+}
+
+void CGameView::NetSendMessage(std::string const& message)
+{
+	char * data = new char[message.size() + 2];
+	data[0] = 0;//0 for text message
+	memcpy(&data[1], message.c_str(), message.size() + 1);
+	if (m_socket) m_socket->SendData(data, message.size() + 2);
+	else CLogWriter::WriteLine("Net error. Socket is not yet created or connection has been lost.");
+	delete [] data;
+}
+
+void CGameView::SendState() const
+{
+	if (!m_socket) return;
+	std::vector<char> result;
+	result.resize(5);
+	result[0] = 1;
+	unsigned int count = m_gameModel.lock()->GetObjectCount();
+	*((unsigned int*)&result[1]) = count;
+	for (unsigned int i = 0; i < count; ++i)
+	{
+		IObject * object = m_gameModel.lock()->Get3DObject(i).get();
+		std::vector<char> current;
+		std::string path = object->GetPathToModel();
+		current.resize(36+path.size() + 1, 0);
+		*((double*)&current[0]) = object->GetX();
+		*((double*)&current[8]) = object->GetY();
+		*((double*)&current[16]) = object->GetZ();
+		*((double*)&current[24]) = object->GetRotation();
+		*((unsigned int*)&current[32]) = path.size() + 1;
+		memcpy(&current[36], path.c_str(), path.size() + 1);
+		result.insert(result.end(), current.begin(), current.end());
+	}
+	if (m_socket) m_socket->SendData(&result[0], result.size());//1 For full dump
+}
+
+void CGameView::SetState(char* data)
+{
+	CLogWriter::WriteLine("Net OK. Full dump recieved.");
+	unsigned int count = *(unsigned int*)&data[0];
+	unsigned int current = 4;
+	CGameModel * model = CGameModel::GetIntanse().lock().get();
+	model->Clear();
+	for (unsigned int i = 0; i < count; ++i)
+	{
+		double x = *((double*)&data[current]);
+		double y = *((double*)&data[current + 8]);
+		double z = *((double*)&data[current + 16]);
+		double rotation = *((double*)&data[current + 24]);
+		unsigned int pathSize = *((unsigned int*)&data[current + 32]);
+		char * path = new char[pathSize];
+		memcpy(path, &data[current + 36], pathSize);
+		IObject* object = new C3DObject(path, x, y, rotation);
+		CGameModel::GetIntanse().lock()->AddObject(std::shared_ptr<IObject>(object));
+		delete[] path;
+		current += 36 + pathSize;
+	}
 }

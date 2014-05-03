@@ -82,6 +82,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CNetSocket.cpp" />
     <ClCompile Include="controller\CommandChangeGlobalProperty.cpp" />
     <ClCompile Include="controller\CommandChangeProperty.cpp" />
     <ClCompile Include="controller\CommandCompound.cpp" />
@@ -106,6 +107,7 @@
     <ClCompile Include="picopng.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
+    <ClCompile Include="ThreadPoolPlaceHolder.cpp" />
     <ClCompile Include="ThreadPoolWindows.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
@@ -137,6 +139,7 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CNetSocket.h" />
     <ClInclude Include="controller\CommandChangeGlobalProperty.h" />
     <ClInclude Include="controller\CommandChangeProperty.h" />
     <ClInclude Include="controller\CommandCompound.h" />
@@ -150,6 +153,7 @@
     <ClInclude Include="model\ObjectInterface.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="ThreadPoolPlaceHolder.h" />
     <ClInclude Include="ThreadPoolWindows.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />

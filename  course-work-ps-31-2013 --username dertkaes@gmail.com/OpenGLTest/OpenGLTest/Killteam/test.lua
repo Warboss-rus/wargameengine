@@ -66,11 +66,32 @@ function OnSelection()
 	hunter = nil
 end
 
+function Host()
+	local ui = UI:Get()
+	NetHost(50000)
+	ui:GetChild("Button8"):SetVisible(false)
+	ui:DeleteChild("Button9")
+	ui:DeleteChild("Edit2")
+end
+
+function Client()
+	local ui = UI:Get()
+	NetClient(ui:GetChild("Edit2"):GetText(), 50000)
+	ui:GetChild("Button9"):SetVisible(false)
+	ui:DeleteChild("Button8")
+	ui:DeleteChild("Edit2")
+end
+
+function Send()
+	NetSendMessage(UI:Get():GetChild("Edit3"):GetText())
+end
+
 IncludeLibrary("math")--Includes the following library
 IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
 EnableShadowMap(1024, 53)
 SetShaders("shadow.vsh", "shadow.fsh")
+--EnableVertexLightning()
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 CameraSetLimits(15, 6, 5, 0.4)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
@@ -96,6 +117,11 @@ ui:NewButton("Button4", 510, 10, 30, 80, "Ruler", "SetRuler")
 ui:NewButton("Button5", 10, 50, 30, 80, "Undo", "UndoAction")
 ui:NewButton("Button6", 100, 50, 30, 80, "Redo", "RedoAction")
 ui:NewButton("Button7", 200, 50, 30, 80, "LoS", "LineOfSight")
+ui:NewButton("Button8", 300, 50, 30, 80, "Host", "Host")
+ui:NewEdit("Edit2", 400, 50, 30, 80, "127.0.0.1")
+ui:NewButton("Button9", 500, 50, 30, 80, "Client", "Client")
+ui:NewEdit("Edit3", 10, 550, 30, 200, "Text")
+ui:NewButton("Button10", 230, 550, 30, 80, "Send", "Send")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
 
 local panel = ui:NewPanel("Panel1", 390, 40, 150, 120)
@@ -111,3 +137,4 @@ list2:AddItem(3)
 list2:AddItem(12)
 list2:AddItem(20)
 SetSelectionCallback("OnSelection")
+Object:NewDecal("chaos_crater_02.tga", 0, 0, 0, 5, 5)

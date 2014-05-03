@@ -345,6 +345,33 @@ int EndActionCompound(lua_State* L)
 	return 0;
 }
 
+int NetHost(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (port)");
+	int port = CLUAScript::GetArgument<int>(1);
+	CGameView::GetIntanse().lock()->NetHost(port);
+	return 0;
+}
+
+int NetClient(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 argument expected (ip, port)");
+	std::string ip = CLUAScript::GetArgument<const char*>(1);
+	int port = CLUAScript::GetArgument<int>(2);
+	CGameView::GetIntanse().lock()->NetClient(ip, port);
+	return 0;
+}
+
+int NetSendMessage(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 arguments expected (message)");
+	std::string message = CLUAScript::GetArgument<const char*>(1);
+	CGameView::GetIntanse().lock()->NetSendMessage(message);
+	return 0;
+}
 
 void RegisterFunctions(CLUAScript & lua)
 {
@@ -379,4 +406,7 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(DisableShadowMap, "DisableShadowMap");
 	lua.RegisterConstant(BeginActionCompound, "BeginActionCompound");
 	lua.RegisterConstant(EndActionCompound, "EndActionCompound");
+	lua.RegisterConstant(NetHost, "NetHost");
+	lua.RegisterConstant(NetClient, "NetClient");
+	lua.RegisterConstant(NetSendMessage, "NetSendMessage");
 }

@@ -3,16 +3,17 @@
 #include <Windows.h>
 #include "LogWriter.h"
 
-std::list<void (*)()> CThreadPool::m_callbacks;
-std::list<std::pair<void (*)(void*), void*>> CThreadPool::m_callbacks2;
+std::list<void(*)()> CThreadPoolWindows::m_callbacks;
+std::list<std::pair<void(*)(void*), void*>> CThreadPoolWindows::m_callbacks2;
 CRITICAL_SECTION cs;
+CThreadPoolWindows tpool;
 
-CThreadPool::CThreadPool()
+CThreadPoolWindows::CThreadPoolWindows()
 {
 	InitializeCriticalSection(&cs);
 }
 
-CThreadPool::~CThreadPool()
+CThreadPoolWindows::~CThreadPoolWindows()
 {
 	DeleteCriticalSection(&cs);
 }
@@ -59,7 +60,7 @@ DWORD WINAPI Func(LPVOID param)
 {
 	((sRunFunc*)param)->func(((sRunFunc*)param)->param);
 	if(((sRunFunc*)param)->callback)
-		CThreadPool::QueueCallback(((sRunFunc*)param)->callback);
+		CThreadPoolWindows::QueueCallback(((sRunFunc*)param)->callback);
 	delete (sRunFunc*)param;
 	return 0;
 }
@@ -68,7 +69,7 @@ DWORD WINAPI Func2(LPVOID param)
 {
 	void * result = ((sRunFunc2*)param)->func(((sRunFunc2*)param)->param);
 	if(((sRunFunc*)param)->callback)
-		CThreadPool::QueueCallback(((sRunFunc2*)param)->callback, result);
+		CThreadPoolWindows::QueueCallback(((sRunFunc2*)param)->callback, result);
 	delete (sRunFunc*)param;
 	return 0;
 }
@@ -91,7 +92,7 @@ DWORD WINAPI ReadData(LPVOID param)
 	fclose(file);
 	run->func(data, size, run->param);
 	if(run->callback)
-		CThreadPool::QueueCallback(run->callback);
+		CThreadPoolWindows::QueueCallback(run->callback);
 	delete run;
 	return 0;
 }
@@ -114,51 +115,51 @@ DWORD WINAPI ReadData2(LPVOID param)
 	fclose(file);
 	void * result = run->func(data, size, run->param);
 	if(run->callback)
-		CThreadPool::QueueCallback(run->callback, result);
+		CThreadPoolWindows::QueueCallback(run->callback, result);
 	delete run;
 	return 0;
 }
 
-void CThreadPool::RunFunc(void (* func)(void*), void* param) 
+void CThreadPoolWindows::RunFunc(void(*func)(void*), void* param)
 {
 	HANDLE thread = CreateThread(NULL, 65536, (LPTHREAD_START_ROUTINE)func, param, 0, NULL);
 }
 
-void CThreadPool::RunFunc(void (* func)(void*), void* param, void (* doneCallback)())
+void CThreadPoolWindows::RunFunc(void(*func)(void*), void* param, void(*doneCallback)())
 {
 	HANDLE thread = CreateThread(NULL, 65536, Func, new sRunFunc(func, param, doneCallback), 0, NULL);
 }
 
-void CThreadPool::RunFunc(void* (* func)(void*), void* param, void (* doneCallback)(void*))
+void CThreadPoolWindows::RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*))
 {
 	HANDLE thread = CreateThread(NULL, 65536, Func, new sRunFunc2(func, param, doneCallback), 0, NULL);
 }
 
-void CThreadPool::AsyncReadFile(std::string const& path, void (* func)(void*, unsigned int, void*), void* param, void (* doneCallback)())
+void CThreadPoolWindows::AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)())
 {
 	HANDLE thread = CreateThread(NULL, 65536, ReadData, new sAsyncRead(path, func, param, doneCallback), 0, NULL);
 }
 
-void CThreadPool::AsyncReadFile(std::string const& path, void* (* func)(void*, unsigned int, void*), void* param, void (* doneCallback)(void*))
+void CThreadPoolWindows::AsyncReadFile(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*))
 {
 	HANDLE thread = CreateThread(NULL, 65536, ReadData2, new sAsyncRead2(path, func, param, doneCallback), 0, NULL);
 }
 
-void CThreadPool::QueueCallback(void (*callback)()) 
+void CThreadPoolWindows::QueueCallback(void(*callback)())
 { 
 	EnterCriticalSection(&cs);
 	m_callbacks.push_back(callback);
 	LeaveCriticalSection(&cs);
 }
 
-void CThreadPool::QueueCallback(void (*callback)(void*), void *params) 
+void CThreadPoolWindows::QueueCallback(void(*callback)(void*), void *params)
 { 
 	EnterCriticalSection(&cs);
 	m_callbacks2.push_back(std::pair<void (*)(void*), void*>(callback, params)); 
 	LeaveCriticalSection(&cs);
 }
 
-void CThreadPool::Update()
+void CThreadPoolWindows::Update()
 {
 	if(m_callbacks.empty() && m_callbacks2.empty()) return;
 	EnterCriticalSection(&cs);

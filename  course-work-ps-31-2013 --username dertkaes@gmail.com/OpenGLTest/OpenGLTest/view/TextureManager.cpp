@@ -133,6 +133,7 @@ unsigned int LoadTexture(std::string const& path)
 {
 	sImage* img = new sImage;
 	glGenTextures(1, &img->id);
+	unsigned int id = img->id;
 	unsigned int dotCoord = path.find_last_of('.') + 1;
 	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
 	if(extension == "bmp")
@@ -141,7 +142,7 @@ unsigned int LoadTexture(std::string const& path)
 		CThreadPool::AsyncReadFile(path, LoadTGA, img, UseTexture);
 	if(extension == "png")
 		CThreadPool::AsyncReadFile(path, LoadPNG, img, UseTexture);
-	return img->id;
+	return id;
 }
 
 CTextureManager * CTextureManager::GetInstance()
