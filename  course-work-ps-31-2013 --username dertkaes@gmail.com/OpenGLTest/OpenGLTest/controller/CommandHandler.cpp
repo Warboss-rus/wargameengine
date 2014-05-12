@@ -21,7 +21,7 @@ void CCommandHandler::AddNewCommand(ICommand * command)
 	}
 	else
 	{
-		m_commands.push_back(command);
+		m_commands.push_back(std::shared_ptr<ICommand>(command));
 	}
 	m_current = m_commands.size() - 1;
 }
@@ -47,16 +47,6 @@ void CCommandHandler::FreeInstance()
 {
 	m_instance.reset();
 }
-
-CCommandHandler::~CCommandHandler()
-{
-	m_compound.reset();
-	for(auto i = m_commands.begin(); i != m_commands.end(); ++i)
-	{
-//		delete *i;
-	}
-}
-
 
 void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object)
 {
@@ -114,7 +104,7 @@ void CCommandHandler::EndCompound()
 {
 	if(m_compound)
 	{
-		m_commands.push_back(m_compound.get());
+		m_commands.push_back(m_compound);
 	}
 	m_compound.reset();
 }

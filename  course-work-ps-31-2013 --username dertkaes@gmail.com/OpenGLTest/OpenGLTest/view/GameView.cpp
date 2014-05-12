@@ -103,6 +103,7 @@ void CGameView::Init()
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float)* 3);
+	m_updateTime = 0;
 
 	m_lua.reset(new CLUAScript());
 	RegisterFunctions(*m_lua.get());
@@ -167,18 +168,17 @@ void CGameView::DrawBoundingBox()
 
 void CGameView::Update()
 {
-	m_updateTime--;
-	if (!m_updateTime)
+	if (m_updateTime > 0)
 	{
-		SendState();
-		m_updateTime = 1000;
+		m_updateTime--;
+		if (m_updateTime == 0 && m_socket)
+		{
+			std::vector<char> result = GetState();
+			m_socket->SendData(&result[0], result.size());//1 For full dump
+			m_updateTime = 1000;
+		}
 	}
-	if(m_updateCallback) m_updateCallback();
-	if(m_singleCallback)
-	{
-		m_singleCallback();
-		m_singleCallback = std::function<void()>();
-	}
+	
 	if (m_socket)
 	{
 		char data[65536];
@@ -188,12 +188,21 @@ void CGameView::Update()
 			if (data[0] == 0)
 				MessageBoxA(NULL, data + 1, "Recieved message", 0);
 			else if (data[0] == 1)
+			{
+				CLogWriter::WriteLine("SettingState.");
 				SetState(data + 1);
+			}
 		}
 		if (result == 0)
 		{
 			m_socket.reset();
 		}
+	}
+	if (m_updateCallback) m_updateCallback();
+	if (m_singleCallback)
+	{
+		m_singleCallback();
+		m_singleCallback = std::function<void()>();
 	}
 	CThreadPool::Update();
 	m_camera.Update();
@@ -524,6 +533,7 @@ bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 {
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	std::shared_ptr<IBounding> curBox = m_modelManager.GetBoundingBox(current->GetPathToModel());
+	if (!curBox) return false;
 	CVector3d curPos(current->GetCoords());
 	double curAngle = current->GetRotation();
 	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
@@ -687,9 +697,26 @@ void CGameView::NetSendMessage(std::string const& message)
 	delete [] data;
 }
 
-void CGameView::SendState() const
+std::vector<char> PackProperties(std::map<std::string, std::string> const&properties)
 {
-	if (!m_socket) return;
+	std::vector<char> result;
+	result.resize(4);
+	*((unsigned int*)&result[0]) = properties.size();
+	for (auto i = properties.begin(); i != properties.end(); ++i)
+	{
+		unsigned int begin = result.size();
+		result.resize(begin + 10 + i->first.size() + i->second.size());
+		*((unsigned int*)&result[begin]) = i->first.size() + 1;
+		memcpy(&result[begin + 4], i->first.c_str(), i->first.size() + 1);
+		begin += i->first.size() + 5;
+		*((unsigned int*)&result[begin]) = i->second.size() + 1;
+		memcpy(&result[begin + 4], i->second.c_str(), i->second.size() + 1);
+	}
+	return result;
+}
+
+std::vector<char> CGameView::GetState() const
+{
 	std::vector<char> result;
 	result.resize(5);
 	result[0] = 1;
@@ -707,14 +734,17 @@ void CGameView::SendState() const
 		*((double*)&current[24]) = object->GetRotation();
 		*((unsigned int*)&current[32]) = path.size() + 1;
 		memcpy(&current[36], path.c_str(), path.size() + 1);
+		std::vector<char> properties = PackProperties(object->GetAllProperties());
+		current.insert(current.end(), properties.begin(), properties.end());
 		result.insert(result.end(), current.begin(), current.end());
 	}
-	if (m_socket) m_socket->SendData(&result[0], result.size());//1 For full dump
+	std::vector<char> globalProperties = PackProperties(m_gameModel.lock()->GetAllProperties());
+	result.insert(result.end(), globalProperties.begin(), globalProperties.end());
+	return result;
 }
 
 void CGameView::SetState(char* data)
 {
-	CLogWriter::WriteLine("Net OK. Full dump recieved.");
 	unsigned int count = *(unsigned int*)&data[0];
 	unsigned int current = 4;
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
@@ -729,8 +759,62 @@ void CGameView::SetState(char* data)
 		char * path = new char[pathSize];
 		memcpy(path, &data[current + 36], pathSize);
 		IObject* object = new C3DObject(path, x, y, rotation);
-		CGameModel::GetIntanse().lock()->AddObject(std::shared_ptr<IObject>(object));
+		model->AddObject(std::shared_ptr<IObject>(object));
 		delete[] path;
 		current += 36 + pathSize;
+		unsigned int propertiesCount = *((unsigned int*)&data[current]);
+		current += 4;
+		for (unsigned int i = 0; i < propertiesCount; ++i)
+		{
+			unsigned int firstSize = *((unsigned int*)&data[current]);
+			char * first = new char[firstSize];
+			memcpy(first, &data[current + 4], firstSize);
+			current += firstSize + 4;
+			unsigned int secondSize = *((unsigned int*)&data[current]);
+			char * second = new char[secondSize];
+			memcpy(second, &data[current + 4], secondSize);
+			current += secondSize + 4;
+			object->SetProperty(first, second);
+		}
 	}
+	unsigned int globalPropertiesCount = *((unsigned int*)&data[current]);
+	current += 4;
+	for (unsigned int i = 0; i < globalPropertiesCount; ++i)
+	{
+		unsigned int firstSize = *((unsigned int*)&data[current]);
+		char * first = new char[firstSize];
+		memcpy(first, &data[current + 4], firstSize);
+		current += firstSize + 4;
+		unsigned int secondSize = *((unsigned int*)&data[current]);
+		char * second = new char[secondSize];
+		memcpy(second, &data[current + 4], secondSize);
+		current += secondSize + 4;
+		model->SetProperty(first, second);
+	}
+}
+
+void CGameView::Save(std::string const& filename)
+{
+	FILE* file = fopen(filename.c_str(), "wb");
+	std::vector<char> state = GetState();
+	fwrite(&state[0], 1, state.size(), file);
+	fclose(file);
+}
+
+void CGameView::Load(std::string const& filename)
+{
+	FILE* file = fopen(filename.c_str(), "rb");
+	if (!file)
+	{
+		CLogWriter::WriteLine("LoadState. Cannot find file " + filename);
+		return;
+	}
+	fseek(file, 0L, SEEK_END);
+	unsigned int size = ftell(file);
+	fseek(file, 0L, SEEK_SET);
+	char* data = new char[size];
+	fread(data, 1, size, file);
+	fclose(file);
+	SetState(data+1);
+	delete[] data;
 }

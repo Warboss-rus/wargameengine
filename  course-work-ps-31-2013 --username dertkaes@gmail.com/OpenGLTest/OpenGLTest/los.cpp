@@ -5,7 +5,7 @@ bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 	CGameModel* model = CGameModel::GetIntanse().lock().get();
 	CModelManager* modelManager = CGameView::GetIntanse().lock()->GetModelManager();
 	CVector3d coords;
-	for (int i = 0; i < model->GetObjectCount(); ++i)
+	for (unsigned int i = 0; i < model->GetObjectCount(); ++i)
 	{
 		IObject * current = model->Get3DObject(i).get();
 		if (current == shooter || current == target) continue;
@@ -27,7 +27,7 @@ int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * t
 	if (!tarBox)
 	{
 		CBoundingCompound * compound = (CBoundingCompound*)target;
-		for (int i = 0; i < compound->GetChildCount(); ++i)
+		for (unsigned int i = 0; i < compound->GetChildCount(); ++i)
 		{
 			result += BBoxlos(origin, compound->GetChild(i), shooter, targetObject);
 		}

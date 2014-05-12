@@ -120,7 +120,7 @@ DWORD WINAPI ReadData2(LPVOID param)
 	return 0;
 }
 
-void CThreadPoolWindows::RunFunc(void(*func)(void*), void* param)
+void CThreadPoolWindows::RunFunc(void* (*func)(void*), void* param)
 {
 	HANDLE thread = CreateThread(NULL, 65536, (LPTHREAD_START_ROUTINE)func, param, 0, NULL);
 }

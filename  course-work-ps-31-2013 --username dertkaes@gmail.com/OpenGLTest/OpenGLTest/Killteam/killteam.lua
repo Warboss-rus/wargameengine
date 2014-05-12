@@ -28,6 +28,8 @@ function Init()
 	ui:NewButton("Button5", 380, 10, 30, 80, "Shoot", "Fire"):SetVisible(false)
 	ui:NewButton("Button6", 470, 10, 30, 80, "Run", "Run"):SetVisible(false)
 	ui:NewButton("Button7", 380, 10, 30, 80, "Strike", "Strike"):SetVisible(false)
+	ui:NewButton("Button8", 380, 50, 30, 80, "Save", "Save")
+	ui:NewButton("Button9", 470, 50, 30, 80, "Load", "Load")
 	ui:NewStaticText("Label1", 10, 40, 30, 180, "Deployment Phase")
 	ui:NewStaticText("Label2", 10, 570, 30, 200, "")
 	SetGlobalProperty("Turn", 0)
@@ -615,4 +617,14 @@ function LoadMap(filename)
 			CreateTable(60, 30, splitted[2])
 		end
 	end
+end
+
+function Save()
+	SaveGame("killteam.sav")
+end
+
+function Load()
+	LoadGame("killteam.sav")
+	UI:Get():GetChild("Label1"):SetText("Turn " .. GetGlobalProperty("Turn") .. " Player" .. GetGlobalProperty("Player") .. " " .. GetGlobalProperty("Phase") .. " Phase ")
+	OnSelection()
 end

@@ -204,10 +204,7 @@
     <ClCompile Include="Module.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadPoolPlaceHolder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CNetSocket.cpp">
+    <ClCompile Include="NetSocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -389,10 +386,7 @@
     <ClInclude Include="Module.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadPoolPlaceHolder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CNetSocket.h">
+    <ClInclude Include="NetSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

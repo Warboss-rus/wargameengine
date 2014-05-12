@@ -27,6 +27,7 @@ public:
 	bool IsSelectable() const { return m_isSelectable; }
 	void SetSelectable(bool selectable) { m_isSelectable = selectable; }
 	void SetMovementLimiter(IMoveLimiter * limiter) { m_movelimiter.reset(limiter); }
+	std::map<std::string, std::string> const& GetAllProperties() const { return m_properties; }
 private:
 	std::string m_model;
 	double m_x;

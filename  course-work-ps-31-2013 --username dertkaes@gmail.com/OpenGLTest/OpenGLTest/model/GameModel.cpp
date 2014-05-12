@@ -79,3 +79,26 @@ bool CGameModel::IsGroup(IObject* object)
 {
 	return dynamic_cast<CObjectGroup *>(object) != NULL;
 }
+
+void CGameModel::Clear()
+{
+	m_objects.clear();
+	m_properties.clear();
+}
+
+std::string const CGameModel::GetProperty(std::string const& key) 
+{
+	if (m_properties.find(key) != m_properties.end())
+		return m_properties.find(key)->second;
+	return "";
+}
+
+void CGameModel::SetProperty(std::string const& key, std::string const& value)
+{ 
+	m_properties[key] = value; 
+}
+
+std::map<std::string, std::string> const&  CGameModel::GetAllProperties() const
+{ 
+	return m_properties; 
+}

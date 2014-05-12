@@ -20,7 +20,7 @@ public:
 	static std::weak_ptr<CGameModel> GetIntanse();
 	static void FreeInstance();
 	unsigned long GetObjectCount() const;
-	void Clear() { m_objects.clear(); }
+	void Clear();
 	std::shared_ptr<const IObject> Get3DObject(unsigned long number) const;
 	std::shared_ptr<IObject> Get3DObject(unsigned long number);
 	void AddObject(std::shared_ptr<IObject> pObject);
@@ -29,10 +29,8 @@ public:
 	std::shared_ptr<const IObject> GetSelectedObject() const;
 	std::shared_ptr<IObject> GetSelectedObject();
 	static bool IsGroup(IObject* object);
-	void SetProperty(std::string const& key, std::string const& value) { m_properties[key] = value; }
-	std::string const GetProperty(std::string const& key) {
-		if(m_properties.find(key) != m_properties.end())
-			return m_properties.find(key)->second;
-		return "";	}
+	void SetProperty(std::string const& key, std::string const& value);
+	std::string const GetProperty(std::string const& key);
+	std::map<std::string, std::string> const& GetAllProperties() const;
 };
 

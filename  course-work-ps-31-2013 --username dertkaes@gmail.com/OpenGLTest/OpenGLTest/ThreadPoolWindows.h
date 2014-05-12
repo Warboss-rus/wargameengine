@@ -7,7 +7,7 @@ public:
 	CThreadPoolWindows();
 	~CThreadPoolWindows();
 	//Runs function in separate thread.
-	static void RunFunc(void (* func)(void*), void* param);
+	static void RunFunc(void* (* func)(void*), void* param);
 	//Runs function in separate thread. doneCallback will be called in main thread when finished
 	static void RunFunc(void (* func)(void*), void* param, void (* doneCallback)());
 	//Runs function in separate thread. doneCallback will be called in main thread when finished with initial function result as the parameter

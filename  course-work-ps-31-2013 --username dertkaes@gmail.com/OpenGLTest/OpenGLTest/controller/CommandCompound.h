@@ -12,7 +12,6 @@ public:
 	size_t GetChildrenCount() const;
 	void Execute();
 	void Rollback();
-	~CCommandCompound();
 private:
-	std::vector<ICommand*> m_children;
+	std::vector<std::shared_ptr<ICommand>> m_children;
 };

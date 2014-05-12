@@ -48,7 +48,7 @@ void sModule::Load(std::string const& filename)
 		else if (key == "Version") version = atoi(value.c_str());
 		else if (key == "Author") author = value;
 		else if (key == "Site") site = value;
-		else if (key == "Playable") playable = atoi(value.c_str());
+		else if (key == "Playable") playable = atoi(value.c_str()) != 0;
 		else if (key == "Folder") folder = AddSlash(value);
 		else if (key == "Script") script = value;
 		else if (key == "Models") models = AddSlash(value);

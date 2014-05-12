@@ -373,6 +373,24 @@ int NetSendMessage(lua_State* L)
 	return 0;
 }
 
+int SaveGame(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 arguments expected (filename)");
+	std::string path = CLUAScript::GetArgument<const char*>(1);
+	CGameView::GetIntanse().lock()->Save(path);
+	return 0;
+}
+
+int LoadGame(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 arguments expected (filename)");
+	std::string path = CLUAScript::GetArgument<const char*>(1);
+	CGameView::GetIntanse().lock()->Load(path);
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -409,4 +427,6 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(NetHost, "NetHost");
 	lua.RegisterConstant(NetClient, "NetClient");
 	lua.RegisterConstant(NetSendMessage, "NetSendMessage");
+	lua.RegisterConstant(SaveGame, "SaveGame");
+	lua.RegisterConstant(LoadGame, "LoadGame");
 }

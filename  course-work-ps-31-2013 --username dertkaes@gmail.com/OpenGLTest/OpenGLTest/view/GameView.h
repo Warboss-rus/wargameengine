@@ -12,7 +12,7 @@
 #include "..\UI\UIElement.h"
 #include "..\LUA\LUAScriptHandler.h"
 #include "ShaderManager.h"
-#include "..\CNetSocket.h"
+#include "..\NetSocket.h"
 
 class CGameView
 {
@@ -99,8 +99,10 @@ public:
 	void NetHost(unsigned short port);
 	void NetClient(std::string const& ip, unsigned short port);
 	void NetSendMessage(std::string const& message);
-	void SendState() const;
+	std::vector<char> GetState() const;
 	void SetState(char* data);
+	void Save(std::string const& filename);
+	void Load(std::string const& filename);
 
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));

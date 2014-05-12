@@ -18,23 +18,15 @@ void CCommandCompound::Rollback()
 
 void CCommandCompound::AddChildren(ICommand* child) 
 { 
-	m_children.push_back(child); 
+	m_children.push_back(std::shared_ptr<ICommand>(child)); 
 }
 
 ICommand* CCommandCompound::GetChild(size_t index) 
 { 
-	return m_children[index]; 
+	return (m_children[index]).get(); 
 }
 
-size_t CCommandCompound::GetChildrenCount() const 
-{ 
-	return m_children.size(); 
-}
-
-CCommandCompound::~CCommandCompound()
+size_t CCommandCompound::GetChildrenCount() const
 {
-	for(auto i = m_children.begin(); i != m_children.end(); ++i)
-	{
-		//delete *i;
-	}
+	return m_children.size();
 }

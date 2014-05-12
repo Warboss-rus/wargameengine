@@ -32,6 +32,7 @@ public:
 	bool IsSelectable() const { return true; }
 	void SetSelectable(bool selectable);
 	void SetMovementLimiter(IMoveLimiter * limiter);
+	std::map<std::string, std::string> const& GetAllProperties() const { return m_children[0]->GetAllProperties(); }
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;
