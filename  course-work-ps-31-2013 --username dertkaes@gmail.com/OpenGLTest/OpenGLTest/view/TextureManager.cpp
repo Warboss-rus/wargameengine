@@ -137,11 +137,11 @@ unsigned int LoadTexture(std::string const& path)
 	unsigned int dotCoord = path.find_last_of('.') + 1;
 	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
 	if(extension == "bmp")
-		CThreadPool::AsyncReadFile(path, LoadBMP, img, UseTexture);
+		ThreadPool::AsyncReadFile(path, LoadBMP, img, UseTexture);
 	if(extension == "tga")
-		CThreadPool::AsyncReadFile(path, LoadTGA, img, UseTexture);
+		ThreadPool::AsyncReadFile(path, LoadTGA, img, UseTexture);
 	if(extension == "png")
-		CThreadPool::AsyncReadFile(path, LoadPNG, img, UseTexture);
+		ThreadPool::AsyncReadFile(path, LoadPNG, img, UseTexture);
 	return id;
 }
 

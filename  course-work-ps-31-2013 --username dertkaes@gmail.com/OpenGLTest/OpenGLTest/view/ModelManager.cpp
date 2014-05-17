@@ -22,17 +22,17 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
 		double scale = 1.0;
 		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
-		m_models[path] = new C3DModel(bounding, scale);
+		m_models[path] = std::shared_ptr<C3DModel>(new C3DModel(bounding, scale));
 		if(extension == "obj")
 		{
 			sOBJLoader * obj = new sOBJLoader();
-			obj->model = m_models[path];
-			CThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
+			obj->model = m_models[path].get();
+			ThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
 		}
 		if(extension == "wbm")
-			m_models[path] = LoadWbmModel(sModule::models + path);
+			m_models[path] = std::shared_ptr<C3DModel>(LoadWbmModel(sModule::models + path));
 		if(extension == "bmp" || extension == "tga" || extension == "png")
-			m_models[path] = LoadDecal(path);
+			m_models[path] = std::shared_ptr<C3DModel>(LoadDecal(path));
 	}
 }
 
@@ -46,12 +46,4 @@ std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path
 {
 	LoadIfNotExist(path);
 	return m_models[path]->GetBounding();
-}
-
-CModelManager::~CModelManager()
-{
-	for(auto i = m_models.begin(); i != m_models.end(); ++i)
-	{
-		delete i->second;
-	}
 }

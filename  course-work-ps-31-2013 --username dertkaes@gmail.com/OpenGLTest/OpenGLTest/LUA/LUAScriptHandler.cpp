@@ -170,6 +170,19 @@ void CLUAScript::CallFunction(std::string const& funcName)
 	}
 }
 
+template<>
+static void CLUAScript::CallFunction<const char*>(std::string const& funcName, const char* param)
+{
+	lua_getglobal(m_lua_state, funcName.c_str());
+	SetArgument(param);
+	int result = lua_pcall(m_lua_state, 1, 0, 0);
+	if (result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+}
+
 void * CLUAScript::GetClassInstance(std::string const& className)
 {
 	void* ud = 0;

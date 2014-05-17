@@ -92,10 +92,10 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 	glUniform1i(unfrm, 0);
 	unfrm = glGetUniformLocation(m_program, "shadowMap");
 	glUniform1i(unfrm, 1);
-	glDeleteShader(vertexShader);
 	glDetachShader(m_program, vertexShader);
-	glDeleteShader(framgentShader);
+	glDeleteShader(vertexShader);
 	glDetachShader(m_program, framgentShader);
+	glDeleteShader(framgentShader);
 }
 
 template<>

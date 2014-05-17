@@ -86,6 +86,10 @@ function Send()
 	NetSendMessage(UI:Get():GetChild("Edit3"):GetText())
 end
 
+function StringRecieved(str)
+	MessageBox(str)
+end
+
 IncludeLibrary("math")--Includes the following library
 IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
@@ -138,3 +142,4 @@ list2:AddItem(12)
 list2:AddItem(20)
 SetSelectionCallback("OnSelection")
 Object:NewDecal("chaos_crater_02.tga", 0, 0, 0, 5, 5)
+SetOnStringRecievedCallback("StringRecieved")

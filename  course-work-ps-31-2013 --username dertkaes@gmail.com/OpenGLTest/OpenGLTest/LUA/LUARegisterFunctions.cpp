@@ -158,6 +158,40 @@ int SetUpdateCallback(lua_State* L)
 	return 0;
 }
 
+int SetOnStateRecievedCallback(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (funcName)");
+	std::string func = CLUAScript::GetArgument<char*>(1);
+	std::function<void()> function;
+	if (!func.empty())
+	{
+		function = [func]()
+		{
+			CLUAScript::CallFunction(func);
+		};
+	}
+	CGameView::GetIntanse().lock()->SetStateRecievedCallback(function);
+	return 0;
+}
+
+int SetOnStringRecievedCallback(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (funcName)");
+	std::string func = CLUAScript::GetArgument<char*>(1);
+	std::function<void(const char*)> function;
+	if (!func.empty())
+	{
+		function = [func](const char* param)
+		{
+			CLUAScript::CallFunction(func, param);
+		};
+	}
+	CGameView::GetIntanse().lock()->SetStringRecievedCallback(function);
+	return 0;
+}
+
 int SetTimedCallback(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 3)
@@ -406,6 +440,8 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(IncludeLibrary, "IncludeLibrary");
 	lua.RegisterConstant(SetSelectionCallback, "SetSelectionCallback");
 	lua.RegisterConstant(SetUpdateCallback, "SetUpdateCallback");
+	lua.RegisterConstant(SetOnStateRecievedCallback, "SetOnStateRecievedCallback");
+	lua.RegisterConstant(SetOnStringRecievedCallback, "SetOnStringRecievedCallback");
 	lua.RegisterConstant(SetTimedCallback, "SetTimedCallback");
 	lua.RegisterConstant(DeleteTimedCallback, "DeleteTimedCallback");
 	lua.RegisterConstant(LoS, "LoS");

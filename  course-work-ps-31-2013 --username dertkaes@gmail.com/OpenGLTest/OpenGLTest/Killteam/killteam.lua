@@ -35,6 +35,7 @@ function Init()
 	SetGlobalProperty("Turn", 0)
 	SetGlobalProperty("Player", "2")
 	SetGlobalProperty("Phase", "NULL")
+	SetOnStateRecievedCallback("OnStateRecieved")
 end
 
 function IsLockedInCombat(unit)
@@ -625,6 +626,44 @@ end
 
 function Load()
 	LoadGame("killteam.sav")
-	UI:Get():GetChild("Label1"):SetText("Turn " .. GetGlobalProperty("Turn") .. " Player" .. GetGlobalProperty("Player") .. " " .. GetGlobalProperty("Phase") .. " Phase ")
+end
+
+function OnStateRecieved()
+	Player1 = {}
+	Player2 = {}
+	Player1index = 1
+	Player2index = 1
+	for i = 1, Object:GetCount() do
+		object = Object:GetAt(i)
+		if object:GetProperty("Owner") == "1" then
+			Player1[Player1index] = object
+			Player1index = Player1index + 1
+		elseif object:GetProperty("Owner") == "2" then
+			Player2[Player2index] = object
+			Player2index = Player2index + 1
+		end
+	end
+	EndTurn()
+	if(GetGlobalProperty("Phase") == "Move") then
+		MovePhase(GetGlobalProperty("Player"))
+	elseif(GetGlobalProperty("Phase") == "Shooting") then
+		ShootingPhase(GetGlobalProperty("Player"))
+	elseif(GetGlobalProperty("Phase") == "Melee") then
+		MeleePhase(GetGlobalProperty("Player"))
+	end
+	if(GetGlobalProperty("Phase") == "NULL") then
+		UI:Get():GetChild("Label1"):SetText("Deployment Phase")
+		for i = 1, #Player1 do
+			Player1[i]:SetSelectable(true)
+			Player1[i]:SetMoveLimit("rectangle", 15, 15, 30, -15)
+			
+		end
+		for i = 1, #Player2 do
+			Player2[i]:SetSelectable(true)
+			Player2[i]:SetMoveLimit("rectangle", -15, 15, -30, -15)
+		end
+	else
+		UI:Get():GetChild("Label1"):SetText("Turn " .. GetGlobalProperty("Turn") .. " Player" .. GetGlobalProperty("Player") .. " " .. GetGlobalProperty("Phase") .. " Phase ")
+	end
 	OnSelection()
 end

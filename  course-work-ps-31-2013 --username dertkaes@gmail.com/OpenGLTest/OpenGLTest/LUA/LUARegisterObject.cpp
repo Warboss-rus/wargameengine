@@ -45,6 +45,21 @@ int GetSelectedObject(lua_State* L)
 	return CLUAScript::NewInstanceClass(object, "Object");
 }
 
+int GetCount(lua_State* L)
+{
+	CLUAScript::SetArgument((int)CGameModel::GetIntanse().lock()->GetObjectCount());
+	return 1;
+}
+
+int GetAt(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "1 argument expected(index)");
+	size_t index = CLUAScript::GetArgument<int>(2);
+	if (index > CGameModel::GetIntanse().lock()->GetObjectCount()) CLUAScript::NewInstanceClass(NULL, "Object");
+	return CLUAScript::NewInstanceClass(CGameModel::GetIntanse().lock()->Get3DObject(index - 1).get(), "Object");
+}
+
 int DeleteObject(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
@@ -273,6 +288,8 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "New", NewObject },
 	{ "NewDecal", NewDecal },
 	{ "GetSelected", GetSelectedObject },
+	{ "GetCount", GetCount },
+	{ "GetAt", GetAt },
 	{ "Delete", DeleteObject },
 	{ "Null", ObjectNull },
 	{ "GetModel", GetObjectModel },

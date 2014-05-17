@@ -198,13 +198,16 @@
     <ClCompile Include="LUA\TimedCallback.cpp">
       <Filter>Source Files\LUA</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadPoolWindows.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Module.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NetSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Threading.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -380,13 +383,16 @@
     <ClInclude Include="ThreadPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadPoolWindows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Module.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NetSocket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Threading.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

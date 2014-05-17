@@ -32,5 +32,7 @@ public:
 	void SetProperty(std::string const& key, std::string const& value);
 	std::string const GetProperty(std::string const& key);
 	std::map<std::string, std::string> const& GetAllProperties() const;
+	std::vector<char> GetState() const;
+	void SetState(char* data);
 };
 

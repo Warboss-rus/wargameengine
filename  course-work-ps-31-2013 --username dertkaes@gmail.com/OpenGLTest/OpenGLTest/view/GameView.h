@@ -39,6 +39,8 @@ private:
 	callback(m_selectionCallback);
 	callback(m_updateCallback);
 	callback(m_singleCallback);
+	callback(m_stateRecievedCallback);
+	std::function<void(const char*)>m_stringRecievedCallback;
 	bool m_vertexLightning;
 	bool m_shadowMap;
 	unsigned int m_shadowMapTexture;
@@ -50,6 +52,10 @@ private:
 	float m_shadowAngle;
 	static bool m_visible;
 	unsigned int m_updateTime;
+
+	int m_netRecievedSize;
+	int m_netTotalSize;
+	char * m_netData;
 public:
 	static std::weak_ptr<CGameView> GetIntanse();
 	~CGameView();
@@ -99,14 +105,15 @@ public:
 	void NetHost(unsigned short port);
 	void NetClient(std::string const& ip, unsigned short port);
 	void NetSendMessage(std::string const& message);
-	std::vector<char> GetState() const;
-	void SetState(char* data);
+	
 	void Save(std::string const& filename);
 	void Load(std::string const& filename);
 
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));
 	void SetSingleCallback(callback(onSingleUpdate));
+	void SetStateRecievedCallback(callback(onStateRecieved));
+	void SetStringRecievedCallback(std::function<void(const char*)> onStringRecieved);
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

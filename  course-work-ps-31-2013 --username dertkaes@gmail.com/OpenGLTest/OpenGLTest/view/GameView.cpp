@@ -14,19 +14,17 @@
 #include "..\ThreadPool.h"
 #include "..\Module.h"
 
-using namespace std;
-
-shared_ptr<CGameView> CGameView::m_instanse = NULL;
+std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
 
-weak_ptr<CGameView> CGameView::GetIntanse()
+std::weak_ptr<CGameView> CGameView::GetIntanse()
 {
 	if (!m_instanse.get())
 	{
 		m_instanse.reset(new CGameView());
 		m_instanse->Init();
 	}
-	weak_ptr<CGameView> pView(m_instanse);
+	std::weak_ptr<CGameView> pView(m_instanse);
 
 	return pView;
 }
@@ -104,6 +102,9 @@ void CGameView::Init()
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float)* 3);
 	m_updateTime = 0;
+	m_netData = NULL;
+	m_netRecievedSize = 0;
+	m_netTotalSize = 0;
 
 	m_lua.reset(new CLUAScript());
 	RegisterFunctions(*m_lua.get());
@@ -173,29 +174,58 @@ void CGameView::Update()
 		m_updateTime--;
 		if (m_updateTime == 0 && m_socket)
 		{
-			std::vector<char> result = GetState();
+			std::vector<char> result = m_gameModel.lock()->GetState();
 			m_socket->SendData(&result[0], result.size());//1 For full dump
 			m_updateTime = 1000;
 		}
 	}
-	
 	if (m_socket)
 	{
-		char data[65536];
-		int result = m_socket->RecieveData(data, 65536);
-		if (result > 0)
+		int result;
+		if (m_netData)
 		{
-			if (data[0] == 0)
-				MessageBoxA(NULL, data + 1, "Recieved message", 0);
-			else if (data[0] == 1)
+			result = m_socket->RecieveData(m_netData + m_netRecievedSize, m_netTotalSize - m_netRecievedSize);
+			m_netRecievedSize += result;
+		}
+		else
+		{
+			char data[128];
+			result = m_socket->RecieveData(data, 128);
+			if (result > 0)
 			{
-				CLogWriter::WriteLine("SettingState.");
-				SetState(data + 1);
+				m_netTotalSize = *(unsigned int*)&data[1];
+				m_netData = new char[m_netTotalSize];
+				m_netRecievedSize = result;
+				memcpy(m_netData, data, result);
 			}
 		}
 		if (result == 0)
 		{
 			m_socket.reset();
+		}
+		if (m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
+		{
+			if (m_netData[0] == 0)
+			{
+				if (m_stringRecievedCallback) 
+					m_stringRecievedCallback(m_netData + 5);
+				char* str = new char[12 + m_netTotalSize];
+				sprintf(str, "String recieved:%s", (const char*)(m_netData+5));
+				CLogWriter::WriteLine(str);
+				delete [] str;
+			}
+			else if (m_netData[0] == 1)
+			{
+				char state[30];
+				sprintf(state, "State Recieved. Size=%d.", m_netRecievedSize);
+				CLogWriter::WriteLine(state);
+				m_gameModel.lock()->SetState(m_netData + 5);
+				if (m_stateRecievedCallback) m_stateRecievedCallback();
+			}
+			delete[] m_netData;
+			m_netData = NULL;
+			m_netTotalSize = 0;
+			m_netRecievedSize = 0;
 		}
 	}
 	if (m_updateCallback) m_updateCallback();
@@ -204,7 +234,7 @@ void CGameView::Update()
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
 	}
-	CThreadPool::Update();
+	ThreadPool::Update();
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	DrawObjects();
@@ -228,7 +258,7 @@ void CGameView::DrawObjects(void)
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
-		shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
@@ -296,7 +326,7 @@ void CGameView::DrawShadowMap()
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
-		shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
@@ -383,7 +413,7 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 	CGameModel * model = CGameModel::GetIntanse().lock().get();
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
-		shared_ptr<IObject> object = model->Get3DObject(i);
+		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		if(object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY && object->IsSelectable())
 		{
 			group->AddChildren(object);
@@ -409,7 +439,7 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 	if(m_selectionCallback) m_selectionCallback();
 }
 
-shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
+std::shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 {
 	std::shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
@@ -597,6 +627,16 @@ void CGameView::SetSingleCallback(callback(onSingleUpdate))
 	m_singleCallback = onSingleUpdate;
 }
 
+void CGameView::SetStateRecievedCallback(callback(onStateRecieved))
+{
+	m_stateRecievedCallback = onStateRecieved;
+}
+
+void CGameView::SetStringRecievedCallback(std::function<void(const char*)> onStringRecieved)
+{
+	m_stringRecievedCallback = onStringRecieved;
+}
+
 void CGameView::ResizeWindow(int height, int width)
 {
 	glutReshapeWindow(width, height);
@@ -689,114 +729,19 @@ void CGameView::NetClient(std::string const& ip, unsigned short port)
 
 void CGameView::NetSendMessage(std::string const& message)
 {
-	char * data = new char[message.size() + 2];
+	char * data = new char[message.size() + 6];
 	data[0] = 0;//0 for text message
-	memcpy(&data[1], message.c_str(), message.size() + 1);
-	if (m_socket) m_socket->SendData(data, message.size() + 2);
+	*(unsigned int*)&data[1] = message.size() + 6;
+	memcpy(&data[5], message.c_str(), message.size() + 1);
+	if (m_socket) m_socket->SendData(data, message.size() + 6);
 	else CLogWriter::WriteLine("Net error. Socket is not yet created or connection has been lost.");
 	delete [] data;
-}
-
-std::vector<char> PackProperties(std::map<std::string, std::string> const&properties)
-{
-	std::vector<char> result;
-	result.resize(4);
-	*((unsigned int*)&result[0]) = properties.size();
-	for (auto i = properties.begin(); i != properties.end(); ++i)
-	{
-		unsigned int begin = result.size();
-		result.resize(begin + 10 + i->first.size() + i->second.size());
-		*((unsigned int*)&result[begin]) = i->first.size() + 1;
-		memcpy(&result[begin + 4], i->first.c_str(), i->first.size() + 1);
-		begin += i->first.size() + 5;
-		*((unsigned int*)&result[begin]) = i->second.size() + 1;
-		memcpy(&result[begin + 4], i->second.c_str(), i->second.size() + 1);
-	}
-	return result;
-}
-
-std::vector<char> CGameView::GetState() const
-{
-	std::vector<char> result;
-	result.resize(5);
-	result[0] = 1;
-	unsigned int count = m_gameModel.lock()->GetObjectCount();
-	*((unsigned int*)&result[1]) = count;
-	for (unsigned int i = 0; i < count; ++i)
-	{
-		IObject * object = m_gameModel.lock()->Get3DObject(i).get();
-		std::vector<char> current;
-		std::string path = object->GetPathToModel();
-		current.resize(36+path.size() + 1, 0);
-		*((double*)&current[0]) = object->GetX();
-		*((double*)&current[8]) = object->GetY();
-		*((double*)&current[16]) = object->GetZ();
-		*((double*)&current[24]) = object->GetRotation();
-		*((unsigned int*)&current[32]) = path.size() + 1;
-		memcpy(&current[36], path.c_str(), path.size() + 1);
-		std::vector<char> properties = PackProperties(object->GetAllProperties());
-		current.insert(current.end(), properties.begin(), properties.end());
-		result.insert(result.end(), current.begin(), current.end());
-	}
-	std::vector<char> globalProperties = PackProperties(m_gameModel.lock()->GetAllProperties());
-	result.insert(result.end(), globalProperties.begin(), globalProperties.end());
-	return result;
-}
-
-void CGameView::SetState(char* data)
-{
-	unsigned int count = *(unsigned int*)&data[0];
-	unsigned int current = 4;
-	CGameModel * model = CGameModel::GetIntanse().lock().get();
-	model->Clear();
-	for (unsigned int i = 0; i < count; ++i)
-	{
-		double x = *((double*)&data[current]);
-		double y = *((double*)&data[current + 8]);
-		double z = *((double*)&data[current + 16]);
-		double rotation = *((double*)&data[current + 24]);
-		unsigned int pathSize = *((unsigned int*)&data[current + 32]);
-		char * path = new char[pathSize];
-		memcpy(path, &data[current + 36], pathSize);
-		IObject* object = new C3DObject(path, x, y, rotation);
-		model->AddObject(std::shared_ptr<IObject>(object));
-		delete[] path;
-		current += 36 + pathSize;
-		unsigned int propertiesCount = *((unsigned int*)&data[current]);
-		current += 4;
-		for (unsigned int i = 0; i < propertiesCount; ++i)
-		{
-			unsigned int firstSize = *((unsigned int*)&data[current]);
-			char * first = new char[firstSize];
-			memcpy(first, &data[current + 4], firstSize);
-			current += firstSize + 4;
-			unsigned int secondSize = *((unsigned int*)&data[current]);
-			char * second = new char[secondSize];
-			memcpy(second, &data[current + 4], secondSize);
-			current += secondSize + 4;
-			object->SetProperty(first, second);
-		}
-	}
-	unsigned int globalPropertiesCount = *((unsigned int*)&data[current]);
-	current += 4;
-	for (unsigned int i = 0; i < globalPropertiesCount; ++i)
-	{
-		unsigned int firstSize = *((unsigned int*)&data[current]);
-		char * first = new char[firstSize];
-		memcpy(first, &data[current + 4], firstSize);
-		current += firstSize + 4;
-		unsigned int secondSize = *((unsigned int*)&data[current]);
-		char * second = new char[secondSize];
-		memcpy(second, &data[current + 4], secondSize);
-		current += secondSize + 4;
-		model->SetProperty(first, second);
-	}
 }
 
 void CGameView::Save(std::string const& filename)
 {
 	FILE* file = fopen(filename.c_str(), "wb");
-	std::vector<char> state = GetState();
+	std::vector<char> state = m_gameModel.lock()->GetState();
 	fwrite(&state[0], 1, state.size(), file);
 	fclose(file);
 }
@@ -815,6 +760,7 @@ void CGameView::Load(std::string const& filename)
 	char* data = new char[size];
 	fread(data, 1, size, file);
 	fclose(file);
-	SetState(data+1);
+	m_gameModel.lock()->SetState(data+5);
 	delete[] data;
+	if (m_stateRecievedCallback) m_stateRecievedCallback();
 }
