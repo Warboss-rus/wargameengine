@@ -1,9 +1,12 @@
 #include "TextureManager.h"
+#define GLEW_STATIC
+#include <GL/glew.h>
 #include <GL\glut.h>
-#include "..\picopng.h"
 #include "..\LogWriter.h"
 #include "..\ThreadPool.h"
 #include "..\Module.h"
+#include "..\stb_image.c"
+#include "..\nv_dds.h"
 
 CTextureManager * CTextureManager::m_manager = NULL;
 
@@ -90,28 +93,40 @@ void* LoadTGA(void * data, unsigned int size, void* param)
 	return img;
 }
 
-void * LoadPNG(void * data, unsigned int size, void* param)
+void* UnpackTexture(void * data, unsigned int size, void* param)
 {
 	sImage* img = (sImage*)param;
-	unsigned char* imgData = (unsigned char*) data;
-
-	std::vector<unsigned char> uncompressedData;
-	unsigned long lheight, lwidth;
-	decodePNG(uncompressedData, lwidth, lheight, imgData, size, true);
-	img->height = lheight;
-	img->width = lwidth;
-	delete [] imgData;
-
-	img->bpp = 32;
-	long imageSize = img->height * img->width * img->bpp / 8;
-	img->format = GL_RGBA;
-	img->data = new unsigned char [imageSize];
-	img->headerSize = 0;
-	for(unsigned long y = 0; y < img->height; ++y)
+	int width, height, bpp;
+	unsigned char * newData = stbi_load_from_memory((const unsigned char*)data, size, &width, &height, &bpp, 4);
+	delete[] data;
+	img->data = new unsigned char[width * height * 4];
+	for (unsigned long y = 0; y < height; ++y)
 	{
-		memcpy(&img->data[y * img->width * 4], &uncompressedData[(img->height - y - 1) * img->width * 4], sizeof(unsigned char) * 4 * img->width);
+		memcpy(&img->data[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
 	}
+	stbi_image_free(newData);
+	img->width = width;
+	img->height = height;
+	img->bpp = 32;
+	img->format = GL_RGBA;
+	img->headerSize = 0;
 	return img;
+}
+
+void LoadDDS(std::string const& path, sImage* img)
+{
+	glBindTexture(GL_TEXTURE_2D, img->id);
+	delete img;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	nv_dds::CDDSImage image;
+	image.load(path);
+	if (image.get_num_mipmaps() == 0)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	else
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	image.upload_texture2D(0, GL_TEXTURE_2D);
 }
 
 void UseTexture(void* data)
@@ -140,8 +155,10 @@ unsigned int LoadTexture(std::string const& path)
 		ThreadPool::AsyncReadFile(path, LoadBMP, img, UseTexture);
 	if(extension == "tga")
 		ThreadPool::AsyncReadFile(path, LoadTGA, img, UseTexture);
-	if(extension == "png")
-		ThreadPool::AsyncReadFile(path, LoadPNG, img, UseTexture);
+	if (extension == "dds")
+		LoadDDS(path, img);
+	if (extension == "png" || extension == "psd" || extension == "jpg" || extension == "jpeg" || extension == "gif" || extension == "hdr" || extension == "pic")
+		ThreadPool::AsyncReadFile(path, UnpackTexture, img, UseTexture);
 	return id;
 }
 

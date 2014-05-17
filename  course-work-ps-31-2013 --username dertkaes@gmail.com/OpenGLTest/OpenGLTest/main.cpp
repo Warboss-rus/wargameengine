@@ -6,6 +6,7 @@
 #include "UI\UIElement.h"
 #ifdef _WINDOWS
 #include <windows.h>
+#include "Task.h"
 	
 void ChangeDir(std::string const& path)
 {

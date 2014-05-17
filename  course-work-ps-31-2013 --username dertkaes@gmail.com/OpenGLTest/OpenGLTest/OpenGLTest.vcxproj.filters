@@ -57,9 +57,6 @@
     <ClCompile Include="Ruler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="picopng.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="UI\UIButton.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
@@ -210,6 +207,9 @@
     <ClCompile Include="ThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="nv_dds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="controller\GameController.h">
@@ -219,9 +219,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Ruler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="picopng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UI\IUI.h">
@@ -393,6 +390,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Task.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nv_dds.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

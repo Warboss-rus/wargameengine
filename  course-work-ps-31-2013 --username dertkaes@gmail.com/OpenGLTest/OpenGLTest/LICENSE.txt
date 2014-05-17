@@ -150,3 +150,8 @@ All Rights Reserved.
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
+
+Software uses stb_image (Sean Barrett, 2011)
+
+Software uses nv_dds
+Copyright (C) 2002-2003 NVIDIA 

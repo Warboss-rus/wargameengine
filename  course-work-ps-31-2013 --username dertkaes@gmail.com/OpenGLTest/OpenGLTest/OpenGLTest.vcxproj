@@ -104,7 +104,7 @@
     <ClCompile Include="model\MovementLimiter.cpp" />
     <ClCompile Include="model\ObjectGroup.cpp" />
     <ClCompile Include="Module.cpp" />
-    <ClCompile Include="picopng.cpp" />
+    <ClCompile Include="nv_dds.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
     <ClCompile Include="Threading.cpp" />
@@ -152,6 +152,7 @@
     <ClInclude Include="model\ObjectGroup.h" />
     <ClInclude Include="model\ObjectInterface.h" />
     <ClInclude Include="Module.h" />
+    <ClInclude Include="nv_dds.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="ThreadPool.h" />
@@ -173,7 +174,6 @@
     <ClInclude Include="LUA\LUARegisterUI.h" />
     <ClInclude Include="LUA\LUAScriptHandler.h" />
     <ClInclude Include="model\GameModel.h" />
-    <ClInclude Include="picopng.h" />
     <ClInclude Include="Ruler.h" />
     <ClInclude Include="SelectionTools.h" />
     <ClInclude Include="UI\IUI.h" />
