@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{525B45EF-5FB2-495E-8F33-27363E097E50}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>WargameEngine</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Debug;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freetype251.lib;LUA.lib;glew32s.lib;MathLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>freetype251.lib;LUA.lib;glew32s.lib;MathLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="NetSocket.cpp" />
+    <ClCompile Include="controller\CommandChangeGlobalProperty.cpp" />
+    <ClCompile Include="controller\CommandChangeProperty.cpp" />
+    <ClCompile Include="controller\CommandCompound.cpp" />
+    <ClCompile Include="controller\CommandCreateObject.cpp" />
+    <ClCompile Include="controller\CommandDeleteObject.cpp" />
+    <ClCompile Include="controller\CommandHandler.cpp" />
+    <ClCompile Include="controller\CommandMoveObject.cpp" />
+    <ClCompile Include="controller\CommandRotateObject.cpp" />
+    <ClCompile Include="controller\GameController.cpp" />
+    <ClCompile Include="LogWriter.cpp" />
+    <ClCompile Include="los.cpp" />
+    <ClCompile Include="LUA\LUARegisterFunctions.cpp" />
+    <ClCompile Include="LUA\LUARegisterObject.cpp" />
+    <ClCompile Include="LUA\LUARegisterUI.cpp" />
+    <ClCompile Include="LUA\LUAScriptHandler.cpp" />
+    <ClCompile Include="LUA\TimedCallback.cpp" />
+    <ClCompile Include="model\3dObject.cpp" />
+    <ClCompile Include="model\GameModel.cpp" />
+    <ClCompile Include="model\MovementLimiter.cpp" />
+    <ClCompile Include="model\ObjectGroup.cpp" />
+    <ClCompile Include="Module.cpp" />
+    <ClCompile Include="nv_dds.cpp" />
+    <ClCompile Include="Ruler.cpp" />
+    <ClCompile Include="SelectionTools.cpp" />
+    <ClCompile Include="Threading.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
+    <ClCompile Include="UI\UIButton.cpp" />
+    <ClCompile Include="UI\UICheckBox.cpp" />
+    <ClCompile Include="UI\UIEdit.cpp" />
+    <ClCompile Include="UI\UIElement.cpp" />
+    <ClCompile Include="UI\UIList.cpp" />
+    <ClCompile Include="UI\UIComboBox.cpp" />
+    <ClCompile Include="UI\UIPanel.cpp" />
+    <ClCompile Include="UI\UIRadioGroup.cpp" />
+    <ClCompile Include="UI\UIScrollBar.cpp" />
+    <ClCompile Include="UI\UIStaticText.cpp" />
+    <ClCompile Include="UI\UIText.cpp" />
+    <ClCompile Include="UI\UITheme.cpp" />
+    <ClCompile Include="view\3dModel.cpp" />
+    <ClCompile Include="view\Bounding.cpp" />
+    <ClCompile Include="view\Camera.cpp" />
+    <ClCompile Include="view\DecalFactory.cpp" />
+    <ClCompile Include="view\GameView.cpp" />
+    <ClCompile Include="view\Input.cpp" />
+    <ClCompile Include="view\MaterialManager.cpp" />
+    <ClCompile Include="view\ModelManager.cpp" />
+    <ClCompile Include="view\OBJModelFactory.cpp" />
+    <ClCompile Include="view\ShaderManager.cpp" />
+    <ClCompile Include="view\SkyBox.cpp" />
+    <ClCompile Include="view\Table.cpp" />
+    <ClCompile Include="view\TextureManager.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="view\TextWriter.cpp" />
+    <ClCompile Include="view\WBMModelFactory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NetSocket.h" />
+    <ClInclude Include="controller\CommandChangeGlobalProperty.h" />
+    <ClInclude Include="controller\CommandChangeProperty.h" />
+    <ClInclude Include="controller\CommandCompound.h" />
+    <ClInclude Include="controller\CommandRotateObject.h" />
+    <ClInclude Include="LogWriter.h" />
+    <ClInclude Include="los.h" />
+    <ClInclude Include="LUA\TimedCallback.h" />
+    <ClInclude Include="model\3dObject.h" />
+    <ClInclude Include="model\MovementLimiter.h" />
+    <ClInclude Include="model\ObjectGroup.h" />
+    <ClInclude Include="model\ObjectInterface.h" />
+    <ClInclude Include="Module.h" />
+    <ClInclude Include="nv_dds.h" />
+    <ClInclude Include="Task.h" />
+    <ClInclude Include="Threading.h" />
+    <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="UI\UIRadioGroup.h" />
+    <ClInclude Include="UI\UIScrollBar.h" />
+    <ClInclude Include="view\DecalFactory.h" />
+    <ClInclude Include="view\ShaderManager.h" />
+    <ClInclude Include="view\TextWriter.h" />
+    <ClInclude Include="view\Vector2.h" />
+    <ClInclude Include="view\Vector3.h" />
+    <ClInclude Include="controller\CommandCreateObject.h" />
+    <ClInclude Include="controller\CommandDeleteObject.h" />
+    <ClInclude Include="controller\CommandHandler.h" />
+    <ClInclude Include="controller\CommandMoveObject.h" />
+    <ClInclude Include="controller\GameController.h" />
+    <ClInclude Include="controller\ICommand.h" />
+    <ClInclude Include="LUA\LUARegisterFunctions.h" />
+    <ClInclude Include="LUA\LUARegisterObject.h" />
+    <ClInclude Include="LUA\LUARegisterUI.h" />
+    <ClInclude Include="LUA\LUAScriptHandler.h" />
+    <ClInclude Include="model\GameModel.h" />
+    <ClInclude Include="Ruler.h" />
+    <ClInclude Include="SelectionTools.h" />
+    <ClInclude Include="UI\IUI.h" />
+    <ClInclude Include="UI\UIButton.h" />
+    <ClInclude Include="UI\UICheckBox.h" />
+    <ClInclude Include="UI\UIEdit.h" />
+    <ClInclude Include="UI\UIElement.h" />
+    <ClInclude Include="UI\UIList.h" />
+    <ClInclude Include="UI\UIComboBox.h" />
+    <ClInclude Include="UI\UIPanel.h" />
+    <ClInclude Include="UI\UIStaticText.h" />
+    <ClInclude Include="UI\UIText.h" />
+    <ClInclude Include="UI\UITheme.h" />
+    <ClInclude Include="view\3dModel.h" />
+    <ClInclude Include="view\Bounding.h" />
+    <ClInclude Include="view\Camera.h" />
+    <ClInclude Include="view\GameView.h" />
+    <ClInclude Include="view\Input.h" />
+    <ClInclude Include="view\Material.h" />
+    <ClInclude Include="view\MaterialManager.h" />
+    <ClInclude Include="view\ModelManager.h" />
+    <ClInclude Include="view\OBJModelFactory.h" />
+    <ClInclude Include="view\SkyBox.h" />
+    <ClInclude Include="view\Table.h" />
+    <ClInclude Include="view\TextureManager.h" />
+    <ClInclude Include="view\WBMModelFactory.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
