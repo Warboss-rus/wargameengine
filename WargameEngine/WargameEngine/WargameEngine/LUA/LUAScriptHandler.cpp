@@ -243,3 +243,54 @@ void CLUAScript::IncludeLibrary(std::string const& libName)
 		}
     }
 }
+
+template<>
+std::vector<int> CLUAScript::GetArray<int>(int index)
+{
+	luaL_checktype(m_lua_state, index, LUA_TTABLE);
+	int n = 0;
+	std::vector<int> result;
+	while(true) 
+	{
+		lua_rawgeti(m_lua_state, index, ++n);
+		if (lua_isnil(m_lua_state, -1)) break;
+		result.push_back(GetArgument<int>(-1));
+		lua_pop(m_lua_state, 1);
+	}
+	lua_pop(m_lua_state, 1);
+	return result;
+}
+
+template<>
+std::vector<float> CLUAScript::GetArray<float>(int index)
+{
+	luaL_checktype(m_lua_state, index, LUA_TTABLE);
+	int n = 0;
+	std::vector<float> result;
+	while (true)
+	{
+		lua_rawgeti(m_lua_state, index, ++n);
+		if (lua_isnil(m_lua_state, -1)) break;
+		result.push_back(GetArgument<float>(-1));
+		lua_pop(m_lua_state, 1);
+	}
+	lua_pop(m_lua_state, 1);
+	return result;
+}
+
+template<>
+std::vector<std::string> CLUAScript::GetArray<std::string>(int index)
+{
+	luaL_checktype(m_lua_state, index, LUA_TTABLE);
+	int n = 0;
+	std::vector<std::string> result;
+	while (true)
+	{
+		lua_rawgeti(m_lua_state, index, ++n);
+		if (lua_isnil(m_lua_state, -1)) break;
+		result.push_back(GetArgument<const char*>(-1));
+		lua_pop(m_lua_state, 1);
+	}
+	lua_pop(m_lua_state, 1);
+	return result;
+}

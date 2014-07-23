@@ -1,6 +1,7 @@
 #pragma comment(lib,"lua.lib")
 #include <lua.hpp>
 #include <string>
+#include <vector>
 #pragma once
 
 class CLUAScript
@@ -23,6 +24,8 @@ public:
 	static void * GetClassInstance(std::string const& className);
 	static int NewInstanceClass(void* instance, std::string const& className);
 	static void IncludeLibrary(std::string const& libName);
+	template<class T>
+	static std::vector<T> GetArray(int index);
 private:
 	static lua_State* m_lua_state;
 };

@@ -213,6 +213,15 @@ void CTextureManager::SetTexture(std::string const& path)
 	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
 }
 
+void CTextureManager::SetAnisotropyLevel(float level)
+{
+	for (auto i = m_textures.begin(); i != m_textures.end(); ++i)
+	{
+		if (GLEW_EXT_texture_filter_anisotropic)
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, level);
+	}
+}
+
 CTextureManager::~CTextureManager()
 {
 	for (auto i = m_textures.begin(); i != m_textures.end(); ++i)

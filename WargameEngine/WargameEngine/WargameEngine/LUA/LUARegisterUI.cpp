@@ -318,7 +318,7 @@ static const luaL_Reg UIFuncs[] = {
 	{ "GetItemsCount", GetItemsCount },
 	{ "GetItem", GetItem },
 	{ "ClearItems", ClearItems },
-	{ "Set", Set },
+	//{ "Set", Set },
 	{ "Get", Get },
 	{ "ClearChildren", ClearChildren },
 	{ "DeleteChild", DeleteChild },

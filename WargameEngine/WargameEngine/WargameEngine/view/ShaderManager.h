@@ -8,17 +8,17 @@ public:
 	void BindProgram() const;
 	void UnBindProgram() const;
 	template<class T>
-	void SetUniformValue(std::string const& uniform, T value);
+	void SetUniformValue(std::string const& uniform, T value) const;
 	template<class T>
-	void SetUniformValue(std::string const& uniform, int count, T value);
+	void SetUniformValue(std::string const& uniform, int count, T value) const;
 	template<class T>
-	void SetUniformValue2(std::string const& uniform, int count, T value);
+	void SetUniformValue2(std::string const& uniform, int count, T value) const;
 	template<class T>
-	void SetUniformValue3(std::string const& uniform, int count, T value);
+	void SetUniformValue3(std::string const& uniform, int count, T value) const;
 	template<class T>
-	void SetUniformValue4(std::string const& uniform, int count, T value);
+	void SetUniformValue4(std::string const& uniform, int count, T value) const;
 	template<class T>
-	void SetUniformMatrix4(std::string const& uniform, int count, T value);
+	void SetUniformMatrix4(std::string const& uniform, int count, T value) const;
 private:
 	unsigned int m_program;
 };

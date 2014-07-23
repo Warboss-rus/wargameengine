@@ -108,6 +108,8 @@ public:
 	float GetAnisotropyLevel() const;
 	void SetAnisotropy(float maxAnisotropy);
 	void ClearResources();
+	void SetWindowTitle(std::string const& title) const;
+	const CShaderManager * GetShaderManager() const;
 
 	void NetHost(unsigned short port);
 	void NetClient(std::string const& ip, unsigned short port);

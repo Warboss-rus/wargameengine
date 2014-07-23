@@ -802,6 +802,7 @@ float CGameView::GetMaxAnisotropy()
 void CGameView::SetAnisotropy(float maxAnisotropy)
 {
 	m_anisoptropy = maxAnisotropy;
+	CTextureManager::GetInstance()->SetAnisotropyLevel(maxAnisotropy);
 }
 
 void CGameView::ClearResources()
@@ -811,4 +812,14 @@ void CGameView::ClearResources()
 	CTextureManager::GetInstance();
 	m_skybox->ResetList();
 	m_table->ResetList();
+}
+
+void CGameView::SetWindowTitle(std::string const& title) const
+{
+	glutSetWindowTitle((title + " - Wargame Engine").c_str());
+}
+
+const CShaderManager const* CGameView::GetShaderManager() const
+{
+	return &m_shader;
 }

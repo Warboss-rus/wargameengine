@@ -466,6 +466,95 @@ int ClearResources(lua_State* L)
 	return 0;
 }
 
+int SetWindowTitle(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 arguments expected (title)");
+	std::string title = CLUAScript::GetArgument<const char*>(1);
+	CGameView::GetIntanse().lock()->SetWindowTitle(title);
+	return 0;
+}
+
+int Uniform1i(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 arguments expected (uniform name, value)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	int value = CLUAScript::GetArgument<int>(2);
+	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue(name, value);
+	return 0;
+}
+
+int Uniform1f(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 arguments expected (uniform name, value)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	float value = CLUAScript::GetArgument<float>(2);
+	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue(name, value);
+	return 0;
+}
+
+int Uniform1fv(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	int count = CLUAScript::GetArgument<int>(2);
+	std::vector<float> value = CLUAScript::GetArray<float>(3);
+	if (value.size() < count) return luaL_error(L, "Not enough elements in the array");
+	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue(name, count, &value[0]);
+	return 0;
+}
+
+int Uniform2fv(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	int count = CLUAScript::GetArgument<int>(2);
+	std::vector<float> value = CLUAScript::GetArray<float>(3);
+	if (value.size() < count * 2) return luaL_error(L, "Not enough elements in the array");
+	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue2(name, count, &value[0]);
+	return 0;
+}
+
+int Uniform3fv(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	int count = CLUAScript::GetArgument<int>(2);
+	std::vector<float> value = CLUAScript::GetArray<float>(3);
+	if (value.size() < count * 3) return luaL_error(L, "Not enough elements in the array");
+	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue3(name, count, &value[0]);
+	return 0;
+}
+
+int Uniform4fv(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	int count = CLUAScript::GetArgument<int>(2);
+	std::vector<float> value = CLUAScript::GetArray<float>(3);
+	if (value.size() < count * 4) return luaL_error(L, "Not enough elements in the array");
+	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue4(name, count, &value[0]);
+	return 0;
+}
+
+int UniformMatrix4fv(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	int count = CLUAScript::GetArgument<int>(2);
+	std::vector<float> value = CLUAScript::GetArray<float>(3);
+	if (value.size() < count * 16) return luaL_error(L, "Not enough elements in the array");
+	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformMatrix4(name, count, &value[0]);
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -511,4 +600,12 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(SaveGame, "SaveGame");
 	lua.RegisterConstant(LoadGame, "LoadGame");
 	lua.RegisterConstant(ClearResources, "ClearResources");
+	lua.RegisterConstant(SetWindowTitle, "SetWindowTitle");
+	lua.RegisterConstant(Uniform1i, "Uniform1i");
+	lua.RegisterConstant(Uniform1f, "Uniform1f");
+	lua.RegisterConstant(Uniform1fv, "Uniform1fv");
+	lua.RegisterConstant(Uniform2fv, "Uniform2fv");
+	lua.RegisterConstant(Uniform3fv, "Uniform3fv");
+	lua.RegisterConstant(Uniform4fv, "Uniform4fv");
+	lua.RegisterConstant(UniformMatrix4fv, "UniformMatrix4fv");
 }
