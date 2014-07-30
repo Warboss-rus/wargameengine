@@ -1,7 +1,7 @@
 #include "3dModel.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <GL\glut.h>
+#include <GL/glut.h>
 
 C3DModel::C3DModel(std::shared_ptr<IBounding> bounding, double scale)
 { 

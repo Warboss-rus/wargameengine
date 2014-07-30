@@ -1,6 +1,6 @@
 #include "UIButton.h"
-#include <GL\glut.h>
-#include "..\view\TextureManager.h"
+#include <GL/glut.h>
+#include "../view/TextureManager.h"
 #include "UIText.h"
 
 void CUIButton::Draw() const

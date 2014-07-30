@@ -2,7 +2,7 @@
 #include <string>
 #include <set>
 #include <map>
-#include "..\view\Vector3.h"
+#include "../view/Vector3.h"
 #include "MovementLimiter.h"
 
 class IObject

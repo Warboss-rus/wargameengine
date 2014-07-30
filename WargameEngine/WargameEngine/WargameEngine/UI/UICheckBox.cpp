@@ -1,6 +1,6 @@
 #include "UICheckBox.h"
-#include <GL\glut.h>
-#include "..\view\TextureManager.h"
+#include <GL/glut.h>
+#include "../view/TextureManager.h"
 #include "UIText.h"
 
 void CUICheckBox::Draw() const

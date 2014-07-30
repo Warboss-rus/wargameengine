@@ -1,12 +1,12 @@
 #include "TextureManager.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <GL\glut.h>
-#include "..\LogWriter.h"
-#include "..\ThreadPool.h"
-#include "..\Module.h"
-#include "..\stb_image.c"
-#include "..\nv_dds.h"
+#include <GL/glut.h>
+#include "../LogWriter.h"
+#include "../ThreadPool.h"
+#include "../Module.h"
+#include "../stb_image.c"
+#include "../nv_dds.h"
 #include "GameView.h"
 
 CTextureManager * CTextureManager::m_manager = NULL;

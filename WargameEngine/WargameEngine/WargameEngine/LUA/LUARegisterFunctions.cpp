@@ -1,10 +1,13 @@
 #include "LUAScriptHandler.h"
-#include "..\view\GameView.h"
-#include "..\controller\CommandHandler.h"
-#include "..\view\Input.h"
-#include <Windows.h>
-#include "..\los.h"
-#include <gl\glut.h>
+#include "../view/GameView.h"
+#include "../controller/CommandHandler.h"
+#include "../view/Input.h"
+#include "../LogWriter.h"
+#ifdef _WINDOWS
+    #include <Windows.h>
+#endif
+#include "../los.h"
+#include <GL/glut.h>
 #include "TimedCallback.h"
 
 int CreateTable(lua_State* L)
@@ -43,7 +46,7 @@ int CameraSetLimits(lua_State* L)
 int LoS(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
-        return luaL_error(L, "2 argument expected (max trans x, max trans y, max scale, min scale)");
+        return luaL_error(L, "2 argument expected (source, target)");
 	IObject* shootingModel = (IObject*)CLUAScript::GetArgument<void*>(1);
 	IObject* target = (IObject*)CLUAScript::GetArgument<void*>(2);
 	int los = Los(shootingModel, target);
@@ -78,12 +81,17 @@ int Redo(lua_State* L)
 int ShowMessageBox(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() < 1 || CLUAScript::GetArgumentCount() > 2)
-        return luaL_error(L, "1 or 2 argument expected (caption, text)");
+        return luaL_error(L, "1 or 2 argument expected (text, caption)");
 	char* text =  CLUAScript::GetArgument<char*>(1);
 	char* caption = "";
 	if(CLUAScript::GetArgumentCount() == 2)
 		caption = CLUAScript::GetArgument<char*>(2);
+#ifdef _WINDOWS
 	MessageBoxA(NULL, text, caption,0);
+#else
+        CLogWriter::WriteLine(caption);
+        CLogWriter::WriteLine(text);
+#endif
 	return 0;
 }
 

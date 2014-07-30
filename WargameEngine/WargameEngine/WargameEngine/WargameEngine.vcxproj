@@ -5,6 +5,10 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-XP|Win32">
+      <Configuration>Release-XP</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -29,6 +33,13 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -38,16 +49,24 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.1\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.1\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -60,7 +79,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>freetype251.lib;LUA.lib;glew32s.lib;MathLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype253.lib;LUA.lib;glew32s.lib;MathLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -78,7 +97,25 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>freetype251.lib;LUA.lib;glew32s.lib;MathLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype253.lib;LUA.lib;glew32s.lib;MathLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>freetype253.lib;LUA.lib;glew32s.lib;MathLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

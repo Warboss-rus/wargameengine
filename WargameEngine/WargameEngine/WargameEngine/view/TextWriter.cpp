@@ -1,5 +1,5 @@
 #include "TextWriter.h"
-#include <GL\glut.h>
+#include <GL/glut.h>
 #include <exception>
 
 #ifndef GL_CLAMP_TO_EDGE_EXT 
@@ -10,7 +10,7 @@ CTextWriter::CTextWriter()
 {
 	if(FT_Init_FreeType(&m_ft))
 	{
-		throw std::exception("Cannot initialize FreeType library");
+		throw std::exception();
 	}
 }
 
@@ -23,14 +23,14 @@ FT_Face CTextWriter::GetFace(std::string const& name)
 {
 	if(m_faces.find(name) == m_faces.end())
 	{
-		if(FT_New_Face(m_ft, name.c_str(), 0, &m_faces[name]) && 
+		if(FT_New_Face(m_ft, name.c_str(), 0, &m_faces[name]) 
 #ifdef _WIN32
-			FT_New_Face(m_ft, (std::string(getenv("windir")) + "\\fonts\\" + name).c_str(), 0, &m_faces[name]))
+			 && FT_New_Face(m_ft, (std::string(getenv("windir")) + "\\fonts\\" + name).c_str(), 0, &m_faces[name]))
 #else
-			true)
+			)
 #endif
 		{
-			throw std::exception("Cannot get face");
+			throw std::exception();
 		}
 	}
 	return m_faces[name];

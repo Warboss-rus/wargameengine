@@ -7,7 +7,7 @@ class CTextureManager
 public:
 	static CTextureManager * GetInstance();
 	static void FreeInstance();
-	void CTextureManager::SetTexture(std::string const& path);
+	void SetTexture(std::string const& path);
 	void SetAnisotropyLevel(float level);
 	~CTextureManager();
 protected:

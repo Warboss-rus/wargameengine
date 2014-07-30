@@ -1,6 +1,6 @@
 #include "UIScrollBar.h"
-#include <GL\glut.h>
-#include "..\view\TextureManager.h"
+#include <GL/glut.h>
+#include "../view/TextureManager.h"
 
 void CUIScrollBar::Update(int size, int contentSize, int width, int step)
 {

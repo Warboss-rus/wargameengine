@@ -1,5 +1,5 @@
 #include "TimedCallback.h"
-#include <gl\glut.h>
+#include <GL/glut.h>
 #include "LUAScriptHandler.h"
 
 CTimedCallback * CTimedCallback::m_self = NULL;
@@ -29,7 +29,7 @@ unsigned int CTimedCallback::AddCallback(std::string const& callback, unsigned i
 			return i;
 		}
 	}
-	throw std::exception("Too many callbacks");
+	throw std::exception();
 }
 
 void CTimedCallback::DeleteCallback(unsigned int index)

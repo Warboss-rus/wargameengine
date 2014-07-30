@@ -1,4 +1,4 @@
-#include "view\GameView.h"
+#include "view/GameView.h"
 
 bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 {

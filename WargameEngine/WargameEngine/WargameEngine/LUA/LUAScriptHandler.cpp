@@ -1,5 +1,6 @@
 #include "LUAScriptHandler.h"
-#include "..\LogWriter.h"
+#include "../LogWriter.h"
+#include <exception>
 
 lua_State* CLUAScript::m_lua_state;
 
@@ -7,7 +8,7 @@ int luaError( lua_State *L )
 {
     const char* str = lua_tostring( L, -1 );
     lua_pop(L, 1);
-	throw std::exception(str);
+	throw std::exception();
     return 0;
 }
 
@@ -171,7 +172,7 @@ void CLUAScript::CallFunction(std::string const& funcName)
 }
 
 template<>
-static void CLUAScript::CallFunction<const char*>(std::string const& funcName, const char* param)
+void CLUAScript::CallFunction<const char*>(std::string const& funcName, const char* param)
 {
 	lua_getglobal(m_lua_state, funcName.c_str());
 	SetArgument(param);

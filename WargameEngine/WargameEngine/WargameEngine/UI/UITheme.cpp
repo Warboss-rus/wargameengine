@@ -1,5 +1,5 @@
 #include "UITheme.h"
-#include <GL\glut.h>
+#include <GL/glut.h>
 #include <memory>
 
 CUITheme CUITheme::defaultTheme;

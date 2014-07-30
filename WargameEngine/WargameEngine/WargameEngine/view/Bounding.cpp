@@ -1,6 +1,6 @@
 #include "Bounding.h"
 #include <cstring>
-#include <GL\glut.h>
+#include <GL/glut.h>
 #include <fstream>
 #include <string>
 #include "Vector3.h"
@@ -47,7 +47,7 @@ AABB GetAABB(CBoundingBox const& bounding)
 	return AABB(minVector, maxVector);
 }
 
-OBB GetOBB(const CBoundingBox const& bounding, float3 translate, double angle)
+OBB GetOBB(CBoundingBox const& bounding, float3 translate, double angle)
 {
 	OBB res( GetAABB(bounding) );
 	float z = res.r.z;

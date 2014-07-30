@@ -3,8 +3,8 @@
 #include "WBMModelFactory.h"
 #include "DecalFactory.h"
 #include <string>
-#include "..\ThreadPool.h"
-#include "..\Module.h"
+#include "../ThreadPool.h"
+#include "../Module.h"
 
 void UseModel(void* data)
 {

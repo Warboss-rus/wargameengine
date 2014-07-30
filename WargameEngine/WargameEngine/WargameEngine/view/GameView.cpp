@@ -1,18 +1,19 @@
 #include "GameView.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <GL\freeglut.h>
+#include <GL/freeglut.h>
 #include <string>
-#include "..\SelectionTools.h"
-#include "..\UI\UICheckBox.h"
-#include "..\controller\CommandHandler.h"
-#include "..\LUA\LUARegisterFunctions.h"
-#include "..\LUA\LUARegisterUI.h"
-#include "..\LUA\LUARegisterObject.h"
-#include "..\model\ObjectGroup.h"
-#include "..\LogWriter.h"
-#include "..\ThreadPool.h"
-#include "..\Module.h"
+#include <cstring>
+#include "../SelectionTools.h"
+#include "../UI/UICheckBox.h"
+#include "../controller/CommandHandler.h"
+#include "../LUA/LUARegisterFunctions.h"
+#include "../LUA/LUARegisterUI.h"
+#include "../LUA/LUARegisterObject.h"
+#include "../model/ObjectGroup.h"
+#include "../LogWriter.h"
+#include "../ThreadPool.h"
+#include "../Module.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
@@ -81,7 +82,7 @@ void CGameView::Init()
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.01f);
+        glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -275,15 +276,15 @@ void CGameView::DrawObjects(void)
 
 void CGameView::SetUpShadowMapDraw()
 {
-	// Сохраняем матрицы, они нам нужны для вычисления освещения
-	// Инвертированная матрица используется в расчёте матрицы источника света
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	float cameraModelViewMatrix[16];
 	float cameraInverseModelViewMatrix[16];
 	float lightMatrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, cameraModelViewMatrix);
 	gluInvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
 
-	// Вычисляем матрицу источника света
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef(0.5, 0.5, 0.5); // + 0.5
@@ -320,7 +321,7 @@ void CGameView::DrawShadowMap()
 	glLoadIdentity();
 	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-	// Сохраняем эти матрицы, они нам понадобятся для расчёта матрицы источника света
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 	glGetFloatv(GL_PROJECTION_MATRIX, m_lightProjectionMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, m_lightModelViewMatrix);
 
@@ -819,7 +820,7 @@ void CGameView::SetWindowTitle(std::string const& title) const
 	glutSetWindowTitle((title + " - Wargame Engine").c_str());
 }
 
-const CShaderManager const* CGameView::GetShaderManager() const
+CShaderManager const* CGameView::GetShaderManager() const
 {
 	return &m_shader;
 }

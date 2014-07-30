@@ -1,0 +1,712 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="94">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <logicalFolder name="controller" displayName="controller" projectFiles="true">
+        <itemPath>controller/CommandChangeGlobalProperty.h</itemPath>
+        <itemPath>controller/CommandChangeProperty.h</itemPath>
+        <itemPath>controller/CommandCompound.h</itemPath>
+        <itemPath>controller/CommandCreateObject.h</itemPath>
+        <itemPath>controller/CommandDeleteObject.h</itemPath>
+        <itemPath>controller/CommandHandler.h</itemPath>
+        <itemPath>controller/CommandMoveObject.h</itemPath>
+        <itemPath>controller/CommandRotateObject.h</itemPath>
+        <itemPath>controller/GameController.h</itemPath>
+        <itemPath>controller/ICommand.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="LUA" displayName="LUA" projectFiles="true">
+        <itemPath>LUA/LUARegisterFunctions.h</itemPath>
+        <itemPath>LUA/LUARegisterObject.h</itemPath>
+        <itemPath>LUA/LUARegisterUI.h</itemPath>
+        <itemPath>LUA/LUAScriptHandler.h</itemPath>
+        <itemPath>LUA/TimedCallback.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="model" displayName="model" projectFiles="true">
+        <itemPath>model/3dObject.h</itemPath>
+        <itemPath>model/GameModel.h</itemPath>
+        <itemPath>model/MovementLimiter.h</itemPath>
+        <itemPath>model/ObjectGroup.h</itemPath>
+        <itemPath>model/ObjectInterface.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="UI" displayName="UI" projectFiles="true">
+        <itemPath>UI/IUI.h</itemPath>
+        <itemPath>UI/UIButton.h</itemPath>
+        <itemPath>UI/UICheckBox.h</itemPath>
+        <itemPath>UI/UIComboBox.h</itemPath>
+        <itemPath>UI/UIEdit.h</itemPath>
+        <itemPath>UI/UIElement.h</itemPath>
+        <itemPath>UI/UIList.h</itemPath>
+        <itemPath>UI/UIPanel.h</itemPath>
+        <itemPath>UI/UIRadioGroup.h</itemPath>
+        <itemPath>UI/UIScrollBar.h</itemPath>
+        <itemPath>UI/UIStaticText.h</itemPath>
+        <itemPath>UI/UIText.h</itemPath>
+        <itemPath>UI/UITheme.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="view" displayName="view" projectFiles="true">
+        <itemPath>view/3dModel.h</itemPath>
+        <itemPath>view/Bounding.h</itemPath>
+        <itemPath>view/Camera.h</itemPath>
+        <itemPath>view/DecalFactory.h</itemPath>
+        <itemPath>view/GameView.h</itemPath>
+        <itemPath>view/Input.h</itemPath>
+        <itemPath>view/Material.h</itemPath>
+        <itemPath>view/MaterialManager.h</itemPath>
+        <itemPath>view/ModelManager.h</itemPath>
+        <itemPath>view/OBJModelFactory.h</itemPath>
+        <itemPath>view/ShaderManager.h</itemPath>
+        <itemPath>view/SkyBox.h</itemPath>
+        <itemPath>view/Table.h</itemPath>
+        <itemPath>view/TextWriter.h</itemPath>
+        <itemPath>view/TextureManager.h</itemPath>
+        <itemPath>view/Vector2.h</itemPath>
+        <itemPath>view/Vector3.h</itemPath>
+        <itemPath>view/WBMModelFactory.h</itemPath>
+      </logicalFolder>
+      <itemPath>LogWriter.h</itemPath>
+      <itemPath>Module.h</itemPath>
+      <itemPath>NetSocket.h</itemPath>
+      <itemPath>Ruler.h</itemPath>
+      <itemPath>SelectionTools.h</itemPath>
+      <itemPath>Task.h</itemPath>
+      <itemPath>ThreadPool.h</itemPath>
+      <itemPath>Threading.h</itemPath>
+      <itemPath>los.h</itemPath>
+      <itemPath>nv_dds.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="controller" displayName="controller" projectFiles="true">
+        <itemPath>controller/CommandChangeGlobalProperty.cpp</itemPath>
+        <itemPath>controller/CommandChangeProperty.cpp</itemPath>
+        <itemPath>controller/CommandCompound.cpp</itemPath>
+        <itemPath>controller/CommandCreateObject.cpp</itemPath>
+        <itemPath>controller/CommandDeleteObject.cpp</itemPath>
+        <itemPath>controller/CommandHandler.cpp</itemPath>
+        <itemPath>controller/CommandMoveObject.cpp</itemPath>
+        <itemPath>controller/CommandRotateObject.cpp</itemPath>
+        <itemPath>controller/GameController.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="LUA" displayName="LUA" projectFiles="true">
+        <itemPath>LUA/LUARegisterFunctions.cpp</itemPath>
+        <itemPath>LUA/LUARegisterObject.cpp</itemPath>
+        <itemPath>LUA/LUARegisterUI.cpp</itemPath>
+        <itemPath>LUA/LUAScriptHandler.cpp</itemPath>
+        <itemPath>LUA/TimedCallback.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="model" displayName="model" projectFiles="true">
+        <itemPath>model/3dObject.cpp</itemPath>
+        <itemPath>model/GameModel.cpp</itemPath>
+        <itemPath>model/MovementLimiter.cpp</itemPath>
+        <itemPath>model/ObjectGroup.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="UI" displayName="UI" projectFiles="true">
+        <itemPath>UI/UIButton.cpp</itemPath>
+        <itemPath>UI/UICheckBox.cpp</itemPath>
+        <itemPath>UI/UIComboBox.cpp</itemPath>
+        <itemPath>UI/UIEdit.cpp</itemPath>
+        <itemPath>UI/UIElement.cpp</itemPath>
+        <itemPath>UI/UIList.cpp</itemPath>
+        <itemPath>UI/UIPanel.cpp</itemPath>
+        <itemPath>UI/UIRadioGroup.cpp</itemPath>
+        <itemPath>UI/UIScrollBar.cpp</itemPath>
+        <itemPath>UI/UIStaticText.cpp</itemPath>
+        <itemPath>UI/UIText.cpp</itemPath>
+        <itemPath>UI/UITheme.cpp</itemPath>
+      </logicalFolder>
+      <logicalFolder name="view" displayName="view" projectFiles="true">
+        <itemPath>view/3dModel.cpp</itemPath>
+        <itemPath>view/Bounding.cpp</itemPath>
+        <itemPath>view/Camera.cpp</itemPath>
+        <itemPath>view/DecalFactory.cpp</itemPath>
+        <itemPath>view/GameView.cpp</itemPath>
+        <itemPath>view/Input.cpp</itemPath>
+        <itemPath>view/MaterialManager.cpp</itemPath>
+        <itemPath>view/ModelManager.cpp</itemPath>
+        <itemPath>view/OBJModelFactory.cpp</itemPath>
+        <itemPath>view/ShaderManager.cpp</itemPath>
+        <itemPath>view/SkyBox.cpp</itemPath>
+        <itemPath>view/Table.cpp</itemPath>
+        <itemPath>view/TextWriter.cpp</itemPath>
+        <itemPath>view/TextureManager.cpp</itemPath>
+        <itemPath>view/WBMModelFactory.cpp</itemPath>
+      </logicalFolder>
+      <itemPath>LogWriter.cpp</itemPath>
+      <itemPath>Module.cpp</itemPath>
+      <itemPath>NetSocket.cpp</itemPath>
+      <itemPath>Ruler.cpp</itemPath>
+      <itemPath>SelectionTools.cpp</itemPath>
+      <itemPath>ThreadPool.cpp</itemPath>
+      <itemPath>Threading.cpp</itemPath>
+      <itemPath>los.cpp</itemPath>
+      <itemPath>main.cpp</itemPath>
+      <itemPath>nv_dds.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <ccTool>
+          <standard>8</standard>
+          <incDir>
+            <pElem>../../LUA/LUA</pElem>
+            <pElem>../../MathLib/MathLib</pElem>
+            <pElem>/usr/include/freetype2</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibFileItem>../../LUA/LUA/liblua.a</linkerLibFileItem>
+            <linkerLibFileItem>../../MathLib/MathLib/dist/Debug/GNU-Linux-x86/libmathlib.a</linkerLibFileItem>
+          </linkerLibItems>
+          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs`</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="LUA/LUARegisterFunctions.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterFunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterUI.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterUI.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/LUAScriptHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUAScriptHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/TimedCallback.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/TimedCallback.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LogWriter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LogWriter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Module.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Module.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="NetSocket.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="NetSocket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Ruler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Ruler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="SelectionTools.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="SelectionTools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Task.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ThreadPool.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ThreadPool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Threading.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Threading.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/IUI.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIButton.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIButton.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UICheckBox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UICheckBox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIComboBox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIComboBox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIEdit.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIEdit.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIElement.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIElement.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIList.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIList.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIPanel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIPanel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIRadioGroup.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIRadioGroup.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIScrollBar.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIScrollBar.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIStaticText.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIStaticText.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIText.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIText.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UITheme.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UITheme.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandChangeGlobalProperty.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="controller/CommandChangeGlobalProperty.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="controller/CommandChangeProperty.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="controller/CommandChangeProperty.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandCompound.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandCompound.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandCreateObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandCreateObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandDeleteObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandDeleteObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandMoveObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandMoveObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandRotateObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandRotateObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/GameController.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/GameController.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/ICommand.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="los.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="los.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/3dObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/3dObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/GameModel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/GameModel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/MovementLimiter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/MovementLimiter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/ObjectGroup.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/ObjectGroup.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/ObjectInterface.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nv_dds.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nv_dds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/3dModel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/3dModel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Bounding.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Bounding.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Camera.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Camera.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/DecalFactory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/DecalFactory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/GameView.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/GameView.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Input.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Input.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Material.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/MaterialManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/MaterialManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ModelManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ModelManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/OBJModelFactory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/OBJModelFactory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ShaderManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ShaderManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/SkyBox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/SkyBox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Table.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Table.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/TextWriter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/TextWriter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/TextureManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/TextureManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Vector2.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Vector3.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/WBMModelFactory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/WBMModelFactory.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <standard>8</standard>
+          <incDir>
+            <pElem>../../LUA/LUA</pElem>
+            <pElem>../../MathLib/MathLib</pElem>
+            <pElem>/usr/include/freetype2</pElem>
+          </incDir>
+          <warningLevel>0</warningLevel>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wargameengine</output>
+          <linkerLibItems>
+            <linkerLibFileItem>../../MathLib/MathLib/dist/Debug/GNU-Linux-x86/libmathlib.a</linkerLibFileItem>
+            <linkerLibFileItem>../../LUA/LUA/liblua.a</linkerLibFileItem>
+          </linkerLibItems>
+          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs`</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="LUA/LUARegisterFunctions.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterFunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterUI.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUARegisterUI.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/LUAScriptHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/LUAScriptHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LUA/TimedCallback.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LUA/TimedCallback.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="LogWriter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="LogWriter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Module.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Module.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="NetSocket.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="NetSocket.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Ruler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Ruler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="SelectionTools.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="SelectionTools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Task.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="ThreadPool.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ThreadPool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Threading.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Threading.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/IUI.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIButton.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIButton.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UICheckBox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UICheckBox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIComboBox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIComboBox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIEdit.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIEdit.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIElement.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIElement.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIList.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIList.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIPanel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIPanel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIRadioGroup.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIRadioGroup.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIScrollBar.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIScrollBar.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIStaticText.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIStaticText.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UIText.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UIText.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UI/UITheme.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="UI/UITheme.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandChangeGlobalProperty.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="controller/CommandChangeGlobalProperty.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="controller/CommandChangeProperty.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="controller/CommandChangeProperty.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandCompound.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandCompound.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandCreateObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandCreateObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandDeleteObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandDeleteObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandMoveObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandMoveObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/CommandRotateObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/CommandRotateObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/GameController.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/GameController.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/ICommand.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="los.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="los.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/3dObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/3dObject.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/GameModel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/GameModel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/MovementLimiter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/MovementLimiter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/ObjectGroup.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/ObjectGroup.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/ObjectInterface.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nv_dds.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="nv_dds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/3dModel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/3dModel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Bounding.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Bounding.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Camera.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Camera.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/DecalFactory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/DecalFactory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/GameView.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/GameView.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Input.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Input.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Material.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/MaterialManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/MaterialManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ModelManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ModelManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/OBJModelFactory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/OBJModelFactory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ShaderManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ShaderManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/SkyBox.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/SkyBox.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Table.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/Table.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/TextWriter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/TextWriter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/TextureManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/TextureManager.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Vector2.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/Vector3.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/WBMModelFactory.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/WBMModelFactory.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

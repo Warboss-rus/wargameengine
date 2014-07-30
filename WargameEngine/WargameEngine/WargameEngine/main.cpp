@@ -1,9 +1,10 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include "view\GameView.h"
+#include "view/GameView.h"
 #include "LogWriter.h"
 #include "Module.h"
-#include "UI\UIElement.h"
+#include "UI/UIElement.h"
+#include <cstring>
 #ifdef _WINDOWS
 #include <windows.h>
 #include "Task.h"
@@ -18,10 +19,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int argc = __argc;
 	char** argv = __argv;
 #else
+#include <unistd.h>
 
 void ChangeDir(std::string const& path)
 {
-	chdir(path.c_str())
+	chdir(path.c_str());
 }
 
 int main(int argc, char* argv[])

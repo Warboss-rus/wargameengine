@@ -1,6 +1,6 @@
 #pragma once
 #include "ICommand.h"
-#include "..\model\ObjectInterface.h"
+#include "../model/ObjectInterface.h"
 #include <vector>
 #include <memory>
 #include "CommandCompound.h"

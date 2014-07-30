@@ -31,7 +31,7 @@ private:
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
-	std::vector<size_t> m_indexes;
+	std::vector<unsigned int> m_indexes;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
 	std::shared_ptr<IBounding> m_bounding;

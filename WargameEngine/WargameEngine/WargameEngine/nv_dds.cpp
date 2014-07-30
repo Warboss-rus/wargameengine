@@ -160,7 +160,7 @@
 #  define GET_EXT_POINTER(name, type) \
       name = (type)wglGetProcAddress(#name)
 
-#elif defined(LINUX)
+#elif defined(__linux)
 #  include <GL/glx.h>
 
 
@@ -192,6 +192,7 @@ extern "C" void(*glXGetProcAddressARB(const GLubyte *procName))(void);
 
 #include <stdio.h>
 #include <assert.h>
+#include <cstring>
 #include "nv_dds.h"
 
 using namespace std;

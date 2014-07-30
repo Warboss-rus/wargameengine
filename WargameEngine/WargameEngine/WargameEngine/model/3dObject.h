@@ -3,7 +3,7 @@
 #include <string>
 #include <map>
 #include <memory>
-#include "..\view\Vector3.h"
+#include "../view/Vector3.h"
 
 class C3DObject : public IObject
 {

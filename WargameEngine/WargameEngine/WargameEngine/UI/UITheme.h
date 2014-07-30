@@ -39,6 +39,7 @@ public:
 		int elementSize;
 		sText text;
 	};
+        sComboBox combobox;
 	struct sList
 	{
 		int borderSize;
@@ -46,7 +47,6 @@ public:
 		sText text;
 	};
 	sList list;
-	sComboBox combobox;
 	struct sCheckBox
 	{
 		float texCoord[4];

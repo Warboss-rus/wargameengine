@@ -1,5 +1,5 @@
 #include "UIStaticText.h"
-#include <GL\glut.h>
+#include <GL/glut.h>
 #include "UIText.h"
 
 void CUIStaticText::Draw() const

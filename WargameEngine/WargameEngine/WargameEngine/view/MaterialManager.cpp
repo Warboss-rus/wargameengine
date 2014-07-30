@@ -2,8 +2,8 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-#include <GL\glut.h>
-#include "..\LogWriter.h"
+#include <GL/glut.h>
+#include "../LogWriter.h"
 
 sMaterial * CMaterialManager::GetMaterial(std::string const& name)
 {

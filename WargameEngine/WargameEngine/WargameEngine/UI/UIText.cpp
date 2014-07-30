@@ -1,7 +1,7 @@
 #include "UIText.h"
-#include <GL\glut.h>
+#include <GL/glut.h>
 #include "UITheme.h"
-#include "..\view\TextWriter.h"
+#include "../view/TextWriter.h"
 
 CTextWriter text;
 

@@ -1,4 +1,6 @@
+#ifdef _WINDOWS
 #pragma comment(lib,"lua.lib")
+#endif
 #include <lua.hpp>
 #include <string>
 #include <vector>

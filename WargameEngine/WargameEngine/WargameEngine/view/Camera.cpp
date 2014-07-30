@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include <GL\glut.h>
+#include <GL/glut.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
 

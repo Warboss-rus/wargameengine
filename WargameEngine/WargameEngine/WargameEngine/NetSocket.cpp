@@ -1,13 +1,31 @@
 #include "NetSocket.h"
+#ifdef _WINDOWS
 #include <winsock2.h>
 #pragma comment(lib, "Ws2_32.lib")
+#define GET_ERROR WSAGetLastError();
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
+#define SOCKET int
+#define WSAEWOULDBLOCK EWOULDBLOCK
+#define WSAECONNRESET ECONNRESET
+#define GET_ERROR errno
+#endif
 #include "LogWriter.h"
+#include <cstring>
 
 void LogError()
 {
-	int wsError = WSAGetLastError();
+        int wsError = GET_ERROR;
 	switch (wsError)
 	{
+#ifdef _WINDOWS
 	case WSANOTINITIALISED:   CLogWriter::WriteLine("Net Error. Either the application has not called WSAStartup, or WSAStartup failed.");
 		break;
 	case WSAENETDOWN:      CLogWriter::WriteLine("Net Error. A socket operation encountered a dead network.");
@@ -66,15 +84,17 @@ void LogError()
 		break;
 	case WSAEADDRINUSE:    CLogWriter::WriteLine("Net Error. Only one usage of each socket address (protocol/network address/port) is normally permitted.");
 		break;
-	default:        CLogWriter::WriteLine("Net Error. Unknown error.");// такая ситуация не должна возникать вообще
+#endif
+	default:        CLogWriter::WriteLine("Net Error. Unknown error.");
 		break;
 	}
+
 }
 
 CNetSocket::CNetSocket(unsigned short port)//Server
 {
 	if(!InitSocket()) return;
-	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	m_socket = socket(AF_INET, SOCK_STREAM, 0/*IPPROTO_TCP*/);
 	if (m_socket == INVALID_SOCKET)   // winsock2.h: #define INVALID_SOCKET (SOCKET)(~0)
 	{
 		LogError();
@@ -86,6 +106,9 @@ CNetSocket::CNetSocket(unsigned short port)//Server
 	listen(m_socket, 10);
 	CLogWriter::WriteLine("Net OK. Host is up and running.");
 	sockaddr_in addr;
+#ifdef __unix 
+	unsigned 
+#endif 
 	int size = sizeof(struct sockaddr_in);
 	SOCKET socket = accept(m_socket, (struct sockaddr *)&addr, &size);
 	if (socket == INVALID_SOCKET)
@@ -93,10 +116,19 @@ CNetSocket::CNetSocket(unsigned short port)//Server
 		LogError();
 		return;
 	}
+#ifdef _WINDOWS
 	closesocket(m_socket);
+#else
+        int err = close(m_socket);
+#endif
 	m_socket = socket;
 	unsigned long iMode = 1UL;
-	int error = ioctlsocket(m_socket, FIONBIO, &iMode);
+#ifdef _WINDOWS
+        int error = ioctlsocket(m_socket, FIONBIO, &iMode);
+#else
+        int error = ioctl(m_socket, FIONBIO, &iMode);
+#endif
+	
 	if (error == SOCKET_ERROR)
 	{
 		LogError();
@@ -128,7 +160,11 @@ CNetSocket::CNetSocket(const char * ip, unsigned short port)//Client
 		return;
 	}
 	unsigned long iMode = 1UL;
-	error = ioctlsocket(m_socket, FIONBIO, &iMode);
+#ifdef _WINDOWS
+        error = ioctlsocket(m_socket, FIONBIO, &iMode);
+#else
+        error = ioctl(m_socket, FIONBIO, &iMode);
+#endif
 	if (error == SOCKET_ERROR)
 	{
 		LogError();
@@ -154,7 +190,7 @@ bool CNetSocket::ChangeAddress(unsigned short port)
 	addr->sin_family = AF_INET;
 	addr->sin_port = htons(port);
 	addr->sin_addr.s_addr = INADDR_ANY;
-	int serror = bind(m_socket, (SOCKADDR*)addr, sizeof (*addr));
+	int serror = bind(m_socket, (const struct sockaddr *)addr, sizeof (*addr));
 	if (serror == SOCKET_ERROR)
 	{
 		LogError();
@@ -165,23 +201,29 @@ bool CNetSocket::ChangeAddress(unsigned short port)
 
 bool CNetSocket::InitSocket()
 {
-	WORD wVersion;          // запрашиваемая версия winsock-интерфейса
-	WSADATA wsaData;        // сюда записываются данные о сокете
-	wVersion = MAKEWORD(2, 2);      // задаем версию winsock
-
-	int wsaInitError = WSAStartup(wVersion, &wsaData);    // инициализируем winsock
+#ifdef _WINDOWS
+    WORD wVersion;
+	WSADATA wsaData;
+	wVersion = MAKEWORD(2, 2);
+	int wsaInitError = WSAStartup(wVersion, &wsaData);
 	if (wsaInitError != 0)
 	{
 		CLogWriter::WriteLine("Net Error. Error initalizing WSA.");
 		return false;
 	}
 	else
-		return true;// если инициализация прошла успешно, то пора создавать сокет
+		return true;
+#else
+        return true;
+#endif
 }
 
 const char* CNetSocket::GetIP() const
 {
 	struct sockaddr_in name;
+#ifndef _WINDOWS
+	unsigned
+#endif 
 	int namelen = sizeof (struct sockaddr_in);
 	int error = getsockname(m_socket, (struct sockaddr *) &name, &namelen);
 	if (error == SOCKET_ERROR)
@@ -194,6 +236,9 @@ const char* CNetSocket::GetIP() const
 unsigned short CNetSocket::GetPort() const
 {
 	struct sockaddr_in name;
+#ifdef __unix 
+	unsigned
+#endif 
 	int namelen = sizeof (struct sockaddr_in);
 	int error = getsockname(m_socket, (struct sockaddr *) &name, &namelen);
 	if (error == SOCKET_ERROR)
@@ -222,8 +267,8 @@ int CNetSocket::RecieveData(char * data, int maxLength)
 		CLogWriter::WriteLine("Net OK. Connection is closed by the other side.");
 	}
 	if (count == SOCKET_ERROR)
-	{
-		int wsError = WSAGetLastError();
+	{	
+                int wsError = GET_ERROR;
 		if (wsError != WSAEWOULDBLOCK)
 		{
 			LogError();
@@ -238,10 +283,14 @@ int CNetSocket::RecieveData(char * data, int maxLength)
 
 CNetSocket::~CNetSocket()
 {
+#ifdef _WINDOWS
 	int wsError = closesocket(m_socket);
 	if (wsError) LogError();
 	wsError = WSACleanup();
 	if (wsError) LogError();
+#else
+        int err = close (m_socket);
+#endif
 	delete (struct sockaddr_in*) m_sockAddr;
 	CLogWriter::WriteLine("Net OK. Socket is closed.");
 }

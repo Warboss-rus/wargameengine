@@ -23,7 +23,7 @@
 #include <vector>
 #include <assert.h>
 
-#if defined(WIN32) || defined(LINUX)
+#if defined(WIN32) || defined(__linux)
 #include <GL/gl.h>
 #include <GL/glext.h>
 #else

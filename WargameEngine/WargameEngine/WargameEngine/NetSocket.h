@@ -13,6 +13,6 @@ public:
 	~CNetSocket();
 private:
 	bool InitSocket();
-	unsigned int m_socket;
+    unsigned int m_socket;
 	void * m_sockAddr;
 };

@@ -1,5 +1,9 @@
 #include "ThreadPool.h"
 #include "LogWriter.h"
+#ifndef _WINDOWS
+#include <unistd.h>
+#define Sleep sleep
+#endif
 
 std::list<void(*)()> ThreadPool::m_callbacks;
 std::list<std::pair<void(*)(void*), void*>> ThreadPool::m_callbacks2;

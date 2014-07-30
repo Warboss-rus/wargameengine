@@ -1,8 +1,8 @@
 #include "Input.h"
-#include <GL\freeglut.h>
+#include <GL/freeglut.h>
 #include "GameView.h"
-#include "..\SelectionTools.h"
-#include "..\controller\CommandHandler.h"
+#include "../SelectionTools.h"
+#include "../controller/CommandHandler.h"
 
 bool CInput::m_isLMBDown = false;
 bool CInput::m_isRMBDown = false;

@@ -1,6 +1,6 @@
 #include "CommandCreateObject.h"
-#include "..\model\GameModel.h"
-#include "..\model\3dObject.h"
+#include "../model/GameModel.h"
+#include "../model/3dObject.h"
 
 
 CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object):m_pObject(object) {}

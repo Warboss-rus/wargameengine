@@ -1,7 +1,7 @@
 #include "UIList.h"
 #include "UIText.h"
-#include <GL\glut.h>
-#include "..\view\TextureManager.h"
+#include <GL/glut.h>
+#include "../view/TextureManager.h"
 
 void CUIList::Draw() const
 {

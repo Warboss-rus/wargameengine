@@ -1,7 +1,8 @@
 #include "GameModel.h"
-#include "..\view\ModelManager.h"
-#include "..\model\ObjectGroup.h"
+#include "../view/ModelManager.h"
+#include "../model/ObjectGroup.h"
 #include "3dObject.h"
+#include <cstring>
 
 std::shared_ptr<CGameModel> CGameModel::m_instanse = NULL;
 

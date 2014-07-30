@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 
 #include <memory>
 #include "../model/3dObject.h"
@@ -8,11 +8,11 @@
 #include "SkyBox.h"
 #include "Camera.h"
 #include "Input.h"
-#include "..\Ruler.h"
-#include "..\UI\UIElement.h"
-#include "..\LUA\LUAScriptHandler.h"
+#include "../Ruler.h"
+#include "../UI/UIElement.h"
+#include "../LUA/LUAScriptHandler.h"
 #include "ShaderManager.h"
-#include "..\NetSocket.h"
+#include "../NetSocket.h"
 
 class CGameView
 {

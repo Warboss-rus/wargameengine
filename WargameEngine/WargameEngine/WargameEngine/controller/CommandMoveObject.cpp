@@ -1,5 +1,5 @@
 #include "CommandMoveObject.h"
-#include "..\model\GameModel.h"
+#include "../model/GameModel.h"
 
 
 CCommandMoveObject::CCommandMoveObject(double deltaX, double deltaY):
