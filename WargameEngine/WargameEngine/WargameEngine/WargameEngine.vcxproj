@@ -142,6 +142,7 @@
     <ClCompile Include="model\ObjectGroup.cpp" />
     <ClCompile Include="Module.cpp" />
     <ClCompile Include="nv_dds.cpp" />
+    <ClCompile Include="OSSpecific.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SelectionTools.cpp" />
     <ClCompile Include="Threading.cpp" />
@@ -176,6 +177,7 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="OSSpecific.h" />
     <ClInclude Include="NetSocket.h" />
     <ClInclude Include="controller\CommandChangeGlobalProperty.h" />
     <ClInclude Include="controller\CommandChangeProperty.h" />
@@ -195,7 +197,6 @@
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
-    <ClInclude Include="view\DecalFactory.h" />
     <ClInclude Include="view\ShaderManager.h" />
     <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />
@@ -236,7 +237,6 @@
     <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\Table.h" />
     <ClInclude Include="view\TextureManager.h" />
-    <ClInclude Include="view\WBMModelFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

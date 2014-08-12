@@ -2,6 +2,8 @@
 #include "3dModel.h"
 
 void * LoadObjModel(void* data, unsigned int size, void* param);
+void * LoadWbmModel(void* data, unsigned int dataSize, void* param);
+C3DModel * LoadDecal(std::string const& path);
 
 struct sOBJLoader
 {

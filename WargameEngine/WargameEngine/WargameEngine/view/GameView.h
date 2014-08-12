@@ -110,6 +110,9 @@ public:
 	void ClearResources();
 	void SetWindowTitle(std::string const& title) const;
 	const CShaderManager * GetShaderManager() const;
+	void Preload(std::string const& image);
+	void LoadModule(std::string const& module);
+	void ResetLUA();
 
 	void NetHost(unsigned short port);
 	void NetClient(std::string const& ip, unsigned short port);

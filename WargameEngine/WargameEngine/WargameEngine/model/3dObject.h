@@ -8,7 +8,7 @@
 class C3DObject : public IObject
 {
 public:
-	C3DObject(std::string const& model, double x, double y, double rotation);
+	C3DObject(std::string const& model, double x, double y, double rotation, bool hasShadow = true);
 	std::string GetPathToModel() const { return m_model; }
 	void Move(double x, double y, double z);
 	void SetCoords(double x, double y, double z);
@@ -28,6 +28,7 @@ public:
 	void SetSelectable(bool selectable) { m_isSelectable = selectable; }
 	void SetMovementLimiter(IMoveLimiter * limiter) { m_movelimiter.reset(limiter); }
 	std::map<std::string, std::string> const& GetAllProperties() const { return m_properties; }
+	bool CastsShadow() const { return m_castsShadow; }
 private:
 	std::string m_model;
 	double m_x;
@@ -38,4 +39,5 @@ private:
 	std::map<std::string, std::string> m_properties;
 	bool m_isSelectable;
 	std::shared_ptr<IMoveLimiter> m_movelimiter;
+	bool m_castsShadow;
 };

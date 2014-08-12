@@ -5,13 +5,13 @@
 #include <GL/glut.h>
 #include "../LogWriter.h"
 
-sMaterial * CMaterialManager::GetMaterial(std::string const& name)
+const sMaterial * CMaterialManager::GetMaterial(std::string const& name) const
 {
 	if(m_materials.find(name) == m_materials.end())
 	{
 		return NULL;
 	}
-	return &m_materials[name];
+	return &m_materials.find(name)->second;
 }
 
 void CMaterialManager::LoadMTL(std::string const& path)

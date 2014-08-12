@@ -295,3 +295,80 @@ std::vector<std::string> CLUAScript::GetArray<std::string>(int index)
 	lua_pop(m_lua_state, 1);
 	return result;
 }
+
+template<>
+void CLUAScript::SetArray<int>(std::vector<int> arr)
+{
+	lua_createtable(m_lua_state, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		lua_pushinteger(m_lua_state, arr[i]);
+		lua_rawseti(m_lua_state, -2, i);
+	}
+}
+
+template<>
+void CLUAScript::SetArray<bool>(std::vector<bool> arr)
+{
+	lua_createtable(m_lua_state, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		lua_pushboolean(m_lua_state, arr[i]);
+		lua_rawseti(m_lua_state, -2, i);
+	}
+}
+
+template<>
+void CLUAScript::SetArray<unsigned int>(std::vector<unsigned int> arr)
+{
+	lua_createtable(m_lua_state, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		lua_pushunsigned(m_lua_state, arr[i]);
+		lua_rawseti(m_lua_state, -2, i);
+	}
+}
+
+template<>
+void CLUAScript::SetArray<float>(std::vector<float> arr)
+{
+	lua_createtable(m_lua_state, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		lua_pushnumber(m_lua_state, arr[i]);
+		lua_rawseti(m_lua_state, -2, i);
+	}
+}
+
+template<>
+void CLUAScript::SetArray<double>(std::vector<double> arr)
+{
+	lua_createtable(m_lua_state, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		lua_pushnumber(m_lua_state, arr[i]);
+		lua_rawseti(m_lua_state, -2, i);
+	}
+}
+
+template<>
+void CLUAScript::SetArray<std::string>(std::vector<std::string> arr)
+{
+	lua_createtable(m_lua_state, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i) 
+	{
+		lua_pushstring(m_lua_state, arr[i].c_str());
+		lua_rawseti(m_lua_state, -2, i+1);
+	}
+}
+
+template<>
+void CLUAScript::SetArray<const char*>(std::vector<const char*> arr)
+{
+	lua_createtable(m_lua_state, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		lua_pushstring(m_lua_state, arr[i]);
+		lua_rawseti(m_lua_state, -2, i);
+	}
+}

@@ -26,6 +26,7 @@ public:
 	void Draw(const std::set<std::string>* hideMeshes = NULL, bool vertexOnly=false);
 	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 	void SetBounding(std::shared_ptr<IBounding> bounding, double scale);
+	void Preload() const;
 private:
 	void NewList(unsigned int & list, const std::set<std::string> * hideMeshes, bool vertexOnly);
 	std::vector<CVector3f> m_vertices;

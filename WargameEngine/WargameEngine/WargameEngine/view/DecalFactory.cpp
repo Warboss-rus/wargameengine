@@ -1,4 +1,4 @@
-#include "DecalFactory.h"
+#include "OBJModelFactory.h"
 #include <stdlib.h>
 
 C3DModel * LoadDecal(std::string const& path)

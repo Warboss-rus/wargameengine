@@ -210,6 +210,9 @@
     <ClCompile Include="nv_dds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OSSpecific.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="controller\GameController.h">
@@ -308,9 +311,6 @@
     <ClInclude Include="view\Camera.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\WBMModelFactory.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="UI\UIStaticText.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
@@ -356,9 +356,6 @@
     <ClInclude Include="LogWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\DecalFactory.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\ShaderManager.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
@@ -393,6 +390,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nv_dds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OSSpecific.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

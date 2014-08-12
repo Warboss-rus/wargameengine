@@ -3,6 +3,8 @@
 void SerializeToWBM(C3DModel * model, std::string const& path)
 {
 	FILE* oFile = fopen(path.c_str(), "wb");
+	unsigned int version = 0;
+	fwrite(&version, sizeof(size_t), 1, oFile);
 	unsigned int size = model->m_vertices.size() * sizeof(CVector3f);
 	fwrite(&size, sizeof(size_t), 1, oFile);
 	fwrite(&model->m_vertices[0], size, 1, oFile);

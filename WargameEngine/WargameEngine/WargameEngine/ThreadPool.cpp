@@ -20,40 +20,44 @@ CCriticalSection cstp;
 
 struct sRunFunc
 {
-	sRunFunc(void(*f)(void*), void* p, void(*c)()) :func(f), param(p), callback(c) {}
+	sRunFunc(void(*f)(void*), void* p, void(*c)(), unsigned int fl) :func(f), param(p), callback(c), flags(fl) {}
 	void(*func)(void*);
 	void* param;
 	void(*callback)();
+	unsigned int flags;
 };
 
 struct sRunFunc2
 {
-	sRunFunc2(void* (*f)(void*), void* p, void(*c)(void*)) :func(f), param(p), callback(c) {}
+	sRunFunc2(void* (*f)(void*), void* p, void(*c)(void*), unsigned int fl) :func(f), param(p), callback(c), flags(fl) {}
 	void* (*func)(void*);
 	void* param;
 	void(*callback)(void*);
+	unsigned int flags;
 };
 
 struct sAsyncRead
 {
-	sAsyncRead(std::string const& p, void(*f)(void*, unsigned int, void*), void* par, void(*c)()) :path(p), func(f), param(par), callback(c) {}
+	sAsyncRead(std::string const& p, void(*f)(void*, unsigned int, void*), void* par, void(*c)(), unsigned int fl) :path(p), func(f), param(par), callback(c), flags(fl) {}
 	std::string path;
 	unsigned char* data;
 	unsigned int size;
 	void(*func)(void*, unsigned int, void*);
 	void* param;
 	void(*callback)();
+	unsigned int flags;
 };
 
 struct sAsyncRead2
 {
-	sAsyncRead2(std::string const& p, void* (*f)(void*, unsigned int, void*), void* par, void(*c)(void*)) :path(p), func(f), param(par), callback(c) {}
+	sAsyncRead2(std::string const& p, void* (*f)(void*, unsigned int, void*), void* par, void(*c)(void*), unsigned int fl) :path(p), func(f), param(par), callback(c), flags(fl) {}
 	std::string path;
 	unsigned char* data;
 	unsigned int size;
 	void* (*func)(void*, unsigned int, void*);
 	void* param;
 	void(*callback)(void*);
+	unsigned int flags;
 };
 
 void* ThreadPool::Func(void* param)
@@ -92,14 +96,17 @@ void* ThreadPool::ReadData(void* param)
 	run->data = new unsigned char[run->size];
 	fread(run->data, 1, run->size, file);
 	fclose(file);
-#ifdef _SPEED_HACK
-	run->func(run->data, run->size, run->param);
-	if (run->callback)
-		QueueCallback(run->callback);
-	delete run;
-#else
-	QueueFunc(new sRunFunc(ProcessData, run, run->callback));
-#endif
+	if (run->flags & FLAG_FAST_FUNCTION)
+	{
+		run->func(run->data, run->size, run->param);
+		if (run->callback)
+			QueueCallback(run->callback);
+		delete run;
+	}
+	else
+	{
+		QueueFunc(new sRunFunc(ProcessData, run, run->callback, run->flags));
+	}
 	return 0;
 }
 
@@ -119,14 +126,17 @@ void* ThreadPool::ReadData2(void* param)
 	run->data = new unsigned char[run->size];
 	fread(run->data, 1, run->size, file);
 	fclose(file);
-#ifdef _SPEED_HACK
-	void * result = run->func(run->data, run->size, run->param);
-	if (run->callback)
-		QueueCallback(run->callback, result);
-	delete run;
-#else
-	QueueFunc(new sRunFunc2(ProcessData2, run, run->callback));
-#endif
+	if (run->flags & FLAG_FAST_FUNCTION)
+	{
+		void * result = run->func(run->data, run->size, run->param);
+		if (run->callback)
+			QueueCallback(run->callback, result);
+		delete run;
+	}
+	else
+	{
+		QueueFunc(new sRunFunc2(ProcessData2, run, run->callback, run->flags));
+	}
 	return 0;
 }
 
@@ -179,29 +189,29 @@ void* ThreadPool::WorkerThread(void* param)
 	return NULL;
 }
 
-void ThreadPool::RunFunc(void* (*func)(void*), void* param)
+void ThreadPool::RunFunc(void* (*func)(void*), void* param, unsigned int flags)
 {
-	QueueFunc(new sRunFunc2(func, param, NULL));
+	QueueFunc(new sRunFunc2(func, param, NULL, flags));
 }
 
-void ThreadPool::RunFunc(void(*func)(void*), void* param, void(*doneCallback)())
+void ThreadPool::RunFunc(void(*func)(void*), void* param, void(*doneCallback)(), unsigned int flags)
 {
-	QueueFunc(new sRunFunc(func, param, doneCallback));
+	QueueFunc(new sRunFunc(func, param, doneCallback, flags));
 }
 
-void ThreadPool::RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*))
+void ThreadPool::RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*), unsigned int flags)
 {
-	QueueFunc(new sRunFunc2(func, param, doneCallback));
+	QueueFunc(new sRunFunc2(func, param, doneCallback, flags));
 }
 
-void ThreadPool::AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)())
+void ThreadPool::AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(), unsigned int flags)
 {
-	StartThread(ReadData, new sAsyncRead(path, func, param, doneCallback));
+	StartThread(ReadData, new sAsyncRead(path, func, param, doneCallback, flags));
 }
 
-void ThreadPool::AsyncReadFile(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*))
+void ThreadPool::AsyncReadFile(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*), unsigned int flags)
 {
-	StartThread(ReadData2, new sAsyncRead2(path, func, param, doneCallback));
+	StartThread(ReadData2, new sAsyncRead2(path, func, param, doneCallback, flags));
 }
 
 void ThreadPool::QueueCallback(void(*callback)())
@@ -218,17 +228,31 @@ void ThreadPool::QueueCallback(void(*callback)(void*), void *params)
 	cscallback2.Leave();
 }
 
-void ThreadPool::QueueFunc(sRunFunc * func)
+void ThreadPool::QueueFunc(sRunFunc * func, unsigned int flags)
 {
 	csfunc.Enter();
-	m_funcs.push_back(func);
+	if (flags & FLAG_HIGH_PRIORITY)
+	{
+		m_funcs.push_front(func);
+	}
+	else
+	{
+		m_funcs.push_back(func);
+	}
 	csfunc.Leave();
 }
 
-void ThreadPool::QueueFunc(sRunFunc2 * func)
+void ThreadPool::QueueFunc(sRunFunc2 * func, unsigned int flags)
 {
 	csfunc2.Enter();
-	m_funcs2.push_back(func);
+	if (flags & FLAG_HIGH_PRIORITY)
+	{
+		m_funcs2.push_front(func);
+	}
+	else
+	{
+		m_funcs2.push_back(func);
+	}
 	csfunc2.Leave();
 }
 
@@ -269,4 +293,41 @@ void ThreadPool::Update()
 		m_callbacks2.pop_front();
 		if (last) cscallback2.Leave();
 	}
+}
+
+void ThreadPool::WaitAll()
+{
+	int timeout = GetWorkerTimeout();
+	ThreadPool::SetWorkerTimeout(0);
+	while (m_currentThreads > 0 || !m_funcs.empty() || !m_funcs2.empty())
+	{
+		csfunc.Enter();
+		if (!m_funcs.empty())
+		{
+			auto func = m_funcs.front();
+			m_funcs.pop_front();
+			csfunc.Leave();
+			func->func(func->param);
+			if (func->callback) QueueCallback(func->callback);
+		}
+		csfunc.Leave();
+		csfunc2.Enter();
+		if (!m_funcs2.empty())
+		{
+			auto func = m_funcs2.front();
+			m_funcs2.pop_front();
+			csfunc2.Leave();
+			void* result = func->func(func->param);
+			if (func->callback) QueueCallback(func->callback, result);
+		}
+		csfunc2.Leave();
+		Update();
+		Sleep(1);
+	}
+	ThreadPool::SetWorkerTimeout(timeout);
+}
+
+void ThreadPool::SetWorkerTimeout(int timeout)
+{
+	m_threadsTimeout = timeout;
 }

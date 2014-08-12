@@ -3,12 +3,10 @@
 #include "../controller/CommandHandler.h"
 #include "../view/Input.h"
 #include "../LogWriter.h"
-#ifdef _WINDOWS
-    #include <Windows.h>
-#endif
 #include "../los.h"
 #include <GL/glut.h>
 #include "TimedCallback.h"
+#include "../OSSpecific.h"
 
 int CreateTable(lua_State* L)
 {
@@ -78,20 +76,15 @@ int Redo(lua_State* L)
 	return 0;
 }
 
-int ShowMessageBox(lua_State* L)
+int ShMessageBox(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() < 1 || CLUAScript::GetArgumentCount() > 2)
         return luaL_error(L, "1 or 2 argument expected (text, caption)");
-	char* text =  CLUAScript::GetArgument<char*>(1);
-	char* caption = "";
+	std::string text =  CLUAScript::GetArgument<char*>(1);
+	std::string caption = "";
 	if(CLUAScript::GetArgumentCount() == 2)
 		caption = CLUAScript::GetArgument<char*>(2);
-#ifdef _WINDOWS
-	MessageBoxA(NULL, text, caption,0);
-#else
-        CLogWriter::WriteLine(caption);
-        CLogWriter::WriteLine(text);
-#endif
+	ShowMessageBox(text, caption);
 	return 0;
 }
 
@@ -269,6 +262,7 @@ int EnableLight(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (index)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
+	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	glEnable(GL_LIGHT0 + i);
 	return 0;
 }
@@ -278,6 +272,7 @@ int DisableLight(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (index)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
+	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	glDisable(GL_LIGHT0 + i);
 	return 0;
 }
@@ -287,6 +282,7 @@ int SetLightPosition(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 4)
 		return luaL_error(L, "4 argument expected (index, x, y, z)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
+	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	float pos[4] = {0.0f, 0.0f, 0.0f, 1.0f};
 	pos[0] = CLUAScript::GetArgument<float>(2);
 	pos[1] = CLUAScript::GetArgument<float>(3);
@@ -300,6 +296,7 @@ int SetLightAmbient(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 5)
 		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
 	int i = CLUAScript::GetArgument<int>(1) -1;
+	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
 	color[1] = CLUAScript::GetArgument<float>(3);
@@ -314,6 +311,7 @@ int SetLightDiffuse(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 5)
 		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
+	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
 	color[1] = CLUAScript::GetArgument<float>(3);
@@ -328,6 +326,7 @@ int SetLightSpecular(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 5)
 		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
+	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
 	color[1] = CLUAScript::GetArgument<float>(3);
@@ -337,7 +336,7 @@ int SetLightSpecular(lua_State* L)
 	return 0;
 }
 
-int EnableVertexLightning(lua_State* L)
+int EnableVertexLighting(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
@@ -345,7 +344,7 @@ int EnableVertexLightning(lua_State* L)
 	return 0;
 }
 
-int DisableVertexLightning(lua_State* L)
+int DisableVertexLighting(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
@@ -483,6 +482,45 @@ int SetWindowTitle(lua_State* L)
 	return 0;
 }
 
+int Preload(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (image path)");
+	std::string image = CLUAScript::GetArgument<const char*>(1);
+	CGameView::GetIntanse().lock()->Preload(image);
+	return 0;
+}
+
+int PreloadModel(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (model name)");
+	std::string model = CLUAScript::GetArgument<const char*>(1);
+	CGameView::GetIntanse().lock()->GetModelManager()->LoadIfNotExist(model);
+	return 0;
+}
+
+int LoadModuleFile(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (module file)");
+	std::string module = CLUAScript::GetArgument<const char*>(1);
+	CGameView::GetIntanse().lock()->LoadModule(module);
+	return 0;
+}
+
+int GetFilesList(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "3 arguments expected (path, mask, recursive)");
+	std::string path = CLUAScript::GetArgument<const char*>(1);
+	std::string mask = CLUAScript::GetArgument<const char*>(2);
+	bool recursive = CLUAScript::GetArgument<bool>(3);
+	std::vector<std::string> files = GetFiles(path, mask, recursive);
+	CLUAScript::SetArray(files);
+	return 1;
+}
+
 int Uniform1i(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
@@ -571,7 +609,7 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(Ruler, "Ruler");
 	lua.RegisterConstant(Undo, "Undo");
 	lua.RegisterConstant(Redo, "Redo");
-	lua.RegisterConstant(ShowMessageBox, "MessageBox");
+	lua.RegisterConstant(ShMessageBox, "MessageBox");
 	lua.RegisterConstant(RunScript, "RunScript");
 	lua.RegisterConstant(GetGlobalProperty, "GetGlobalProperty");
 	lua.RegisterConstant(SetGlobalProperty, "SetGlobalProperty");
@@ -592,8 +630,8 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(SetLightAmbient, "SetLightAmbient");
 	lua.RegisterConstant(SetLightDiffuse, "SetLightDiffuse");
 	lua.RegisterConstant(SetLightSpecular, "SetLightSpecular");
-	lua.RegisterConstant(EnableVertexLightning, "EnableVertexLightning");
-	lua.RegisterConstant(DisableVertexLightning, "DisableVertexLightning");
+	lua.RegisterConstant(EnableVertexLighting, "EnableVertexLighting");
+	lua.RegisterConstant(DisableVertexLighting, "DisableVertexLighting");
 	lua.RegisterConstant(EnableShadowMap, "EnableShadowMap");
 	lua.RegisterConstant(DisableShadowMap, "DisableShadowMap");
 	lua.RegisterConstant(EnableMSAA, "EnableMSAA");
@@ -609,6 +647,10 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(LoadGame, "LoadGame");
 	lua.RegisterConstant(ClearResources, "ClearResources");
 	lua.RegisterConstant(SetWindowTitle, "SetWindowTitle");
+	lua.RegisterConstant(Preload, "Preload");
+	lua.RegisterConstant(PreloadModel, "PreloadModel");
+	lua.RegisterConstant(LoadModuleFile, "LoadModule");
+	lua.RegisterConstant(GetFilesList, "GetFilesList");
 	lua.RegisterConstant(Uniform1i, "Uniform1i");
 	lua.RegisterConstant(Uniform1f, "Uniform1f");
 	lua.RegisterConstant(Uniform1fv, "Uniform1fv");

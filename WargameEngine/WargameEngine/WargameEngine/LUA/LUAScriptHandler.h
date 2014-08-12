@@ -28,6 +28,8 @@ public:
 	static void IncludeLibrary(std::string const& libName);
 	template<class T>
 	static std::vector<T> GetArray(int index);
+	template<class T>
+	static void SetArray(std::vector<T> arr);
 private:
 	static lua_State* m_lua_state;
 };

@@ -1,63 +1,71 @@
-#include "WBMModelFactory.h"
+#include "OBJModelFactory.h"
 #include <string>
 #include <map>
 #include <vector>
+#include <cstring>
 
-C3DModel * LoadWbmModel(std::string const& path)
+void* LoadWbmModel(void* data, unsigned int dataSize, void* param)
 {
-	std::vector<CVector3f> newVertices;
-	std::vector<CVector2f> newTextureCoords;
-	std::vector<CVector3f> newNormals;
-	std::vector<unsigned int> indexes;
+	sOBJLoader * loader = (sOBJLoader*)param;
 	std::map<std::string, sMaterial> materials;
 	std::vector<sMesh> meshes;
-	FILE* iFile = fopen(path.c_str(), "rb");
-	unsigned int size;
 	unsigned int count;
-	fread(&size, sizeof(size_t), 1, iFile);
-	newVertices.resize(size / sizeof(CVector3f));
-	fread(&newVertices[0], size, 1, iFile);
-	fread(&size, sizeof(size_t), 1, iFile);
-	newTextureCoords.resize(size / sizeof(CVector2f));
-	fread(&newTextureCoords[0], size, 1, iFile);
-	fread(&size, sizeof(size_t), 1, iFile);
-	newNormals.resize(size / sizeof(CVector3f));
-	fread(&newNormals[0], size, 1, iFile);
-	fread(&size, sizeof(size_t), 1, iFile);
-	indexes.resize(size / sizeof(size_t));
-	fread(&indexes[0], size, 1, iFile);
-	fread(&count, sizeof(size_t), 1, iFile);
-	for(size_t i = 0; i < count; ++i)
+	unsigned int size;
+	unsigned int version;
+	memcpy(&version, data, sizeof(unsigned int));
+	memcpy(&size, &((char*)data)[4], sizeof(unsigned int));
+	loader->vertices.resize(size / sizeof(CVector3f));
+	memcpy(&loader->vertices[0], &((char*)data)[8], size);
+	unsigned int position = size + 8;
+	memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
+	loader->textureCoords.resize(size / sizeof(CVector2f));
+	memcpy(&loader->textureCoords[0], &((char*)data)[position + 4], size);
+	position += size + 4;
+	memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
+	loader->normals.resize(size / sizeof(CVector3f));
+	memcpy(&loader->normals[0], &((char*)data)[position + 4], size);
+	position += size + 4;
+	memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
+	loader->indexes.resize(size / sizeof(unsigned int));
+	memcpy(&loader->indexes[0], &((char*)data)[position + 4], size);
+	position += size + 4;
+	memcpy(&count, &((char*)data)[position], sizeof(unsigned int));
+	position += 4;
+	for(unsigned int i = 0; i < count; ++i)
 	{
 		sMesh mesh;
-		fread(&size, sizeof(size_t), 1, iFile);
+		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
 		mesh.name.resize(size);
-		fread(&mesh.name[0], size, 1, iFile);
-		fread(&size, sizeof(size_t), 1, iFile);
+		memcpy(&mesh.name[0], &((char*)data)[position + 4], size);
+		position += size + 4;
+		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
 		mesh.materialName.resize(size);
-		fread(&mesh.materialName[0], size, 1, iFile);
-		fread(&mesh.polygonIndex, sizeof(size_t), 1, iFile);
-		meshes.push_back(mesh);
+		memcpy(&mesh.materialName[0], &((char*)data)[position + 4], size);
+		position += size + 4;
+		memcpy(&mesh.polygonIndex, &((char*)data)[position], sizeof(unsigned int));
+		position += 4;
+		loader->meshes.push_back(mesh);
 	}
-	fread(&count, sizeof(size_t), 1, iFile);
-	for(size_t i = 0; i < count; ++i)
+	memcpy(&count, &((char*)data)[position], sizeof(unsigned int));
+	position += 4;
+	for(unsigned int i = 0; i < count; ++i)
 	{
 		std::string key;
-		fread(&size, sizeof(size_t), 1, iFile);
+		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
 		key.resize(size);
-		fread(&key[0], size, 1, iFile);
-		fread(&materials[key].ambient[0], sizeof(float) * 3, 1, iFile);
-		fread(&materials[key].diffuse[0], sizeof(float) * 3, 1, iFile);
-		fread(&materials[key].specular[0], sizeof(float) * 3, 1, iFile);
-		fread(&materials[key].shininess, sizeof(float), 1, iFile);
-		fread(&size, sizeof(size_t), 1, iFile);
+		memcpy(&key[0], &((char*)data)[position + 4], size);
+		position += size + 4;
+		memcpy(&materials[key].ambient[0], &((char*)data)[position + 4], sizeof(float) * 3);
+		memcpy(&materials[key].diffuse[0], &((char*)data)[position + 4 + sizeof(float) * 3], sizeof(float) * 3);
+		memcpy(&materials[key].specular[0], &((char*)data)[position + 4 + sizeof(float) * 6], sizeof(float) * 3);
+		memcpy(&materials[key].shininess, &((char*)data)[position + 4 + sizeof(float) * 9], sizeof(float));
+		position += sizeof(float) * 10;
+		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
 		materials[key].texture.resize(size);
-		fread(&materials[key].texture[0], size, 1, iFile);
+		memcpy(&materials[key].texture[0], &((char*)data)[position + 4], size);
+		position += size + 4;
 	}
-	fclose(iFile);
-	CMaterialManager materialManager(materials);
-	std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
-	double scale = 1.0;
-	std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(boundingPath, scale);
-	return new C3DModel(newVertices, newTextureCoords, newNormals, indexes, materialManager, meshes, bounding, scale);
+	loader->materialManager =  CMaterialManager(materials);
+	delete [] data;
+	return loader;
 }

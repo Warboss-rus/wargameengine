@@ -19,7 +19,7 @@ void CUIEdit::Draw() const
 	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2i(m_theme.edit.borderSize, m_theme.edit.borderSize);
-		glVertex2i(m_theme.edit.borderSize, m_height - m_theme.edit.borderSize);
+		glVertex2i(m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
 		glVertex2i(GetWidth() - m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
 		glVertex2i(GetWidth() - m_theme.edit.borderSize, m_theme.edit.borderSize);
 	glEnd();

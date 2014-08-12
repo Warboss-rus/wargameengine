@@ -32,7 +32,7 @@ int NewDecal(lua_State* L)
 	model = std::string(temp) + ' ' + model;
 	sprintf(temp, "%f", width);
 	model = std::string(temp) + ' ' + model;
-	IObject* object = new C3DObject(model, x, y, rotation);
+	IObject* object = new C3DObject(model, x, y, rotation, false);
 	CCommandHandler::GetInstance().lock()->AddNewCreateObject(std::shared_ptr<IObject>(object));
 	return CLUAScript::NewInstanceClass(object, "Object");
 }

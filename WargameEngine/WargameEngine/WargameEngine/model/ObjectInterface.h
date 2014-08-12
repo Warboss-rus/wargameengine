@@ -28,4 +28,5 @@ public:
 	virtual void SetSelectable(bool selectable) = 0;
 	virtual void SetMovementLimiter(IMoveLimiter * limiter) = 0;
 	virtual std::map<std::string, std::string> const& GetAllProperties() const = 0;
+	virtual bool CastsShadow() const = 0;
 };

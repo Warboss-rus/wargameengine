@@ -1,7 +1,7 @@
 #include "3dObject.h"
 
-C3DObject::C3DObject(std::string const& model, double x, double y, double rotation)
-	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation), m_isSelectable(true) {}
+C3DObject::C3DObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
+	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow) {}
 
 void C3DObject::Move(double x, double y, double z) 
 { 

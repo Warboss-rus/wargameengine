@@ -65,7 +65,7 @@ void C3DModel::SetBounding(std::shared_ptr<IBounding> bounding, double scale)
 	m_scale = scale;
 }
 
-void SetMaterial(sMaterial * material)
+void SetMaterial(const sMaterial * material)
 {
 	if(!material)
 	{
@@ -176,4 +176,12 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly)
 		NewList(m_lists[*hideMeshes], hideMeshes, false);
 	}
 	if (vertexOnly) glCallList(m_vertexLists[*hideMeshes]); else glCallList(m_lists[*hideMeshes]); 
+}
+
+void C3DModel::Preload() const
+{
+	for (unsigned int i = 0; i < m_meshes.size(); ++i)
+	{
+		SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
+	}
 }

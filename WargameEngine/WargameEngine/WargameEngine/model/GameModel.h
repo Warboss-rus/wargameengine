@@ -35,4 +35,3 @@ public:
 	std::vector<char> GetState() const;
 	void SetState(char* data);
 };
-

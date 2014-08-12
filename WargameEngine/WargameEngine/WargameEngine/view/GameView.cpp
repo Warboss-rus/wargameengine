@@ -14,6 +14,7 @@
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
+#include "../OSSpecific.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
@@ -276,15 +277,12 @@ void CGameView::DrawObjects(void)
 
 void CGameView::SetUpShadowMapDraw()
 {
-	// ��������� �������, ��� ��� ����� ��� ���������� ���������
-	// ��������������� ������� ������������ � ������� ������� ��������� �����
 	float cameraModelViewMatrix[16];
 	float cameraInverseModelViewMatrix[16];
 	float lightMatrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, cameraModelViewMatrix);
 	gluInvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
 
-	// ��������� ������� ��������� �����
 	glPushMatrix();
 	glLoadIdentity();
 	glTranslatef(0.5, 0.5, 0.5); // + 0.5
@@ -321,7 +319,6 @@ void CGameView::DrawShadowMap()
 	glLoadIdentity();
 	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-	// ��������� ��� �������, ��� ��� ����������� ��� ������� ������� ��������� �����
 	glGetFloatv(GL_PROJECTION_MATRIX, m_lightProjectionMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, m_lightModelViewMatrix);
 
@@ -329,6 +326,7 @@ void CGameView::DrawShadowMap()
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
 		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		if (!object->CastsShadow()) continue;
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
@@ -823,4 +821,83 @@ void CGameView::SetWindowTitle(std::string const& title) const
 CShaderManager const* CGameView::GetShaderManager() const
 {
 	return &m_shader;
+}
+
+void CGameView::Preload(std::string const& image)
+{
+	if (!image.empty())
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glPushMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		CTextureManager::GetInstance()->SetTexture(image);
+		ThreadPool::WaitAll();
+		glBegin(GL_TRIANGLE_STRIP);
+		glTexCoord2d(0.0, 0.0);
+		glVertex2d(0.0, 0.0);
+		glTexCoord2d(0.0, 1.0);
+		glVertex2d(0.0, glutGet(GLUT_WINDOW_HEIGHT));
+		glTexCoord2d(1.0, 0.0);
+		glVertex2d(glutGet(GLUT_WINDOW_WIDTH), 0.0);
+		glTexCoord2d(1.0, 1.0);
+		glVertex2d(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
+		glutSwapBuffers();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+		glPopMatrix();
+	}
+	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
+	for (unsigned long i = 0; i < countObjects; i++)
+	{
+		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		m_modelManager.LoadIfNotExist(object->GetPathToModel());
+	}
+	ThreadPool::WaitAll();
+	CTextureManager::GetInstance()->SetTexture("");
+}
+
+void LoadModuleCallback(int)
+{
+	CGameView::GetIntanse().lock()->ResetLUA();
+}
+
+void CGameView::ResetLUA()
+{
+	m_ui.reset(new CUIElement());
+	m_lua.reset();
+	m_lua.reset(new CLUAScript());
+	RegisterFunctions(*m_lua.get());
+	RegisterUI(*m_lua.get());
+	RegisterObject(*m_lua.get());
+	m_lua->RunScript(sModule::script);
+}
+
+void CGameView::LoadModule(std::string const& module)
+{
+	//ThreadPool::WaitAll();
+	CLogWriter::WriteLine("Launching a new module " + module);
+	sModule::Load(module);
+	ChangeDir(sModule::folder);
+	CGameModel::FreeInstance();
+	m_gameModel = CGameModel::GetIntanse();
+	CTextureManager::FreeInstance();
+	m_modelManager = CModelManager();
+	CCommandHandler::FreeInstance();
+	m_table.reset();
+	m_skybox.reset();
+	m_vertexLightning = false;
+	m_shadowMap = false;
+	memset(m_lightPosition, 0, sizeof(float) * 3);
+	m_updateTime = 0;
+	m_netData = NULL;
+	m_netRecievedSize = 0;
+	m_netTotalSize = 0;
+	m_anisoptropy = 1.0f;
+	glutTimerFunc(1, LoadModuleCallback, 0);
 }
