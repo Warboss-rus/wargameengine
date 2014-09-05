@@ -41,13 +41,13 @@ int GetSelectedObject(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no argument expected");
-	IObject * object = CGameModel::GetIntanse().lock()->GetSelectedObject().get();
+	IObject * object = CGameModel::GetInstance().lock()->GetSelectedObject().get();
 	return CLUAScript::NewInstanceClass(object, "Object");
 }
 
 int GetCount(lua_State* L)
 {
-	CLUAScript::SetArgument((int)CGameModel::GetIntanse().lock()->GetObjectCount());
+	CLUAScript::SetArgument((int)CGameModel::GetInstance().lock()->GetObjectCount());
 	return 1;
 }
 
@@ -56,8 +56,8 @@ int GetAt(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
 		return luaL_error(L, "1 argument expected(index)");
 	size_t index = CLUAScript::GetArgument<int>(2);
-	if (index > CGameModel::GetIntanse().lock()->GetObjectCount()) CLUAScript::NewInstanceClass(NULL, "Object");
-	return CLUAScript::NewInstanceClass(CGameModel::GetIntanse().lock()->Get3DObject(index - 1).get(), "Object");
+	if (index > CGameModel::GetInstance().lock()->GetObjectCount()) CLUAScript::NewInstanceClass(NULL, "Object");
+	return CLUAScript::NewInstanceClass(CGameModel::GetInstance().lock()->Get3DObject(index - 1).get(), "Object");
 }
 
 int DeleteObject(lua_State* L)
@@ -177,7 +177,8 @@ int SetProperty(lua_State* L)
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	char* key = CLUAScript::GetArgument<char*>(2);
 	char* value = CLUAScript::GetArgument<char*>(3);
-	object->SetProperty(key, value);
+	std::shared_ptr<IObject> obj = CGameModel::GetInstance().lock()->Get3DObject(object);
+	CCommandHandler::GetInstance().lock()->AddNewChangeProperty(obj, key, value);
 	return 0;
 }
 
@@ -236,7 +237,7 @@ int SelectNull(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no argument expected");
 	std::shared_ptr<IObject> object = NULL;
-	CGameModel::GetIntanse().lock()->SelectObject(object);
+	CGameModel::GetInstance().lock()->SelectObject(object);
 	return 0;
 }
 

@@ -17,12 +17,13 @@ private:
 	CGameModel(CGameModel const&){};
 public:
 	~CGameModel(void);
-	static std::weak_ptr<CGameModel> GetIntanse();
+	static std::weak_ptr<CGameModel> GetInstance();
 	static void FreeInstance();
 	unsigned long GetObjectCount() const;
 	void Clear();
 	std::shared_ptr<const IObject> Get3DObject(unsigned long number) const;
 	std::shared_ptr<IObject> Get3DObject(unsigned long number);
+	std::shared_ptr<IObject> Get3DObject(IObject * obj);
 	void AddObject(std::shared_ptr<IObject> pObject);
 	void DeleteObjectByPtr(std::shared_ptr<IObject> pObject);
 	void SelectObject(std::shared_ptr<IObject> pObject);

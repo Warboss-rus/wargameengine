@@ -2,8 +2,8 @@
 
 bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 {
-	CGameModel* model = CGameModel::GetIntanse().lock().get();
-	CModelManager* modelManager = CGameView::GetIntanse().lock()->GetModelManager();
+	CGameModel* model = CGameModel::GetInstance().lock().get();
+	CModelManager* modelManager = CGameView::GetInstance().lock()->GetModelManager();
 	CVector3d coords;
 	for (unsigned int i = 0; i < model->GetObjectCount(); ++i)
 	{
@@ -56,7 +56,7 @@ int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * t
 int Los(IObject * shooter, IObject * target)
 {
 	if (!shooter || !target) return -1;
-	CModelManager* modelManager = CGameView::GetIntanse().lock()->GetModelManager();
+	CModelManager* modelManager = CGameView::GetInstance().lock()->GetModelManager();
 	IBounding * targetBound = modelManager->GetBoundingBox(target->GetPathToModel()).get();
 	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
 	return BBoxlos(center, targetBound, shooter, target);

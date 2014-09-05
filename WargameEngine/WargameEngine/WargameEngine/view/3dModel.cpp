@@ -36,7 +36,7 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 	CMaterialManager & materials, std::vector<sMesh> & meshes)
 {
 	m_vbo = NULL;
-	if (GLEW_ARB_vertex_buffer_object)
+	if (NULL && GLEW_ARB_vertex_buffer_object)//will be needed for animation
 	{
 		glGenBuffersARB(1, &m_vbo);
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
@@ -81,10 +81,6 @@ void SetMaterial(const sMaterial * material)
 
 void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMeshes, bool vertexOnly)
 {
-	list = glGenLists(1);
-	glNewList(list, GL_COMPILE);
-	glPushMatrix();
-	glScaled(m_scale, m_scale, m_scale);
 	if (m_vbo)
 	{
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
@@ -122,6 +118,10 @@ void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMe
 			glTexCoordPointer(2, GL_FLOAT, 0, &m_textureCoords[0]);
 		}
 	}
+	list = glGenLists(1);
+	glNewList(list, GL_COMPILE);
+	glPushMatrix();
+	glScaled(m_scale, m_scale, m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{
 		unsigned int begin = 0;
@@ -155,7 +155,6 @@ void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMe
 	{
 		glDrawArrays(GL_TRIANGLES, 0, m_count);
 	}
-	if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -163,6 +162,7 @@ void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMe
 	SetMaterial(&empty);
 	glPopMatrix();
 	glEndList();
+	if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 }
 
 void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly)
@@ -175,13 +175,22 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly)
 	{
 		NewList(m_lists[*hideMeshes], hideMeshes, false);
 	}
-	if (vertexOnly) glCallList(m_vertexLists[*hideMeshes]); else glCallList(m_lists[*hideMeshes]); 
+	if (vertexOnly)
+	{
+		glCallList(m_vertexLists[*hideMeshes]);
+	}
+	else
+	{
+		glCallList(m_lists[*hideMeshes]);
+	}
 }
 
 void C3DModel::Preload() const
 {
+	CTextureManager * texManager = CTextureManager::GetInstance();
 	for (unsigned int i = 0; i < m_meshes.size(); ++i)
 	{
-		SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
+		if (!m_materials.GetMaterial(m_meshes[i].materialName)) continue;
+		texManager->SetTexture(m_materials.GetMaterial(m_meshes[i].materialName)->texture);
 	}
 }

@@ -38,6 +38,6 @@ int main(int argc, char* argv[])
 		sModule::textures = "texture\\";
 		sModule::models = "models\\";
 	}
-	CGameView::GetIntanse();
+	CGameView::GetInstance();
 	return 0;
 }

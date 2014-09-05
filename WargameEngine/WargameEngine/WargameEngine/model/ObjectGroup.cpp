@@ -135,7 +135,7 @@ std::shared_ptr<IObject> CObjectGroup::GetChild(size_t index)
 
 void CObjectGroup::DeleteAll()
 {
-	CGameModel* model = CGameModel::GetIntanse().lock().get();
+	CGameModel* model = CGameModel::GetInstance().lock().get();
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
 		model->DeleteObjectByPtr(*i);

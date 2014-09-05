@@ -213,6 +213,9 @@
     <ClCompile Include="OSSpecific.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="controller\GameController.h">
@@ -393,6 +396,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OSSpecific.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

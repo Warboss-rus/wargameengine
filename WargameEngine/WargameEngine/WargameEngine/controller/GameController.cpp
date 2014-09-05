@@ -2,7 +2,7 @@
 
 std::shared_ptr<CGameController> CGameController::m_instanse = NULL;
 
-std::weak_ptr<CGameController> CGameController::GetIntanse()
+std::weak_ptr<CGameController> CGameController::GetInstance()
 {
 	if (!m_instanse)
 	{

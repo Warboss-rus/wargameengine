@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <vector>
 
 #pragma once
 
@@ -34,7 +35,7 @@ public:
 private:
 	FT_Face GetFace(std::string const& name);
 	sGlyph GetSymbol(FT_Face font, unsigned int size, char symbol);
-	void DrawBitmap(int & x, int & y, sGlyph  const& symbol);
+	void DrawBitmap(int x, int y, sGlyph  const& symbol);
 	sGlyph CreateSymbol(sSymbol  const& s);
 	FT_Library m_ft;
 	std::map<std::string, FT_Face> m_faces;

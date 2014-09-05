@@ -11,6 +11,7 @@ public:
 	CommandChangeGlobalProperty(std::string const& key, std::string const& value);
 	void Execute();
 	void Rollback();
+	std::vector<char> Serialize() const;
 private:
 	std::string m_key;
 	std::string m_oldValue;

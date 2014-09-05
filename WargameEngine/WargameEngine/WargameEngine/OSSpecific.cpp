@@ -50,7 +50,8 @@ void ShowMessageBox(std::string const& text, std::string const& caption)
 }
 #else
 #include <unistd.h>
-#include <dirent.h> 
+#include <dirent.h>
+#include <cstring>
 
 void ChangeDir(std::string const& path)
 {
@@ -60,20 +61,37 @@ void ChangeDir(std::string const& path)
 std::vector<std::string> GetFiles(std::string const& path, std::string const& mask, bool recursive)
 {
 	std::vector<std::string> result;
-	DIR           *d;
+	std::vector<std::string> dirs;
+	DIR *d = opendir(path);
 	struct dirent *dir;
-	d = opendir(path);
 	if (d)
 	{
 		while ((dir = readdir(d)) != NULL)
 		{
-			if (dir->d_type == DT_REG)
+			if (!strcmp(dir->d_name, "")) continue;
+			if (hFile->d_name[0] == '.') continue;
+
+			if (dir->d_type == DT_DIR)
+			{
+				dirs.push_back(path + "/" + dir->d_name);
+			}
+			else
 			{
 				result.push_back(dir->d_name);
 			}
 		}
-
 		closedir(d);
+	}
+	if (recursive)
+	{
+		for (size_t i = 0; i < dirs.size(); ++i)
+		{
+			std::vector<std::string> temp = GetFiles(dirs[i], mask, recursive);
+			for (auto i = temp.begin(); i != temp.end(); ++i)
+			{
+				result.push_back(path + "/" + *i);
+			}
+		}
 	}
 	return result;
 }

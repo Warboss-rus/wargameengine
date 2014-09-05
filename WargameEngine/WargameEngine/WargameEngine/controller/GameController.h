@@ -9,7 +9,7 @@ private:
 	CGameController(void){};
 	CGameController(CGameController const&){};
 public:
-	static std::weak_ptr<CGameController> GetIntanse();
+	static std::weak_ptr<CGameController> GetInstance();
 	~CGameController(void);
 };
 

@@ -15,11 +15,12 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../OSSpecific.h"
+#include "../Network.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
 
-std::weak_ptr<CGameView> CGameView::GetIntanse()
+std::weak_ptr<CGameView> CGameView::GetInstance()
 {
 	if (!m_instanse.get())
 	{
@@ -38,6 +39,8 @@ void CGameView::FreeInstance()
 
 CGameView::~CGameView()
 {
+	ThreadPool::WaitAll();
+	CNetwork::FreeInstance();
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
 	CCommandHandler::FreeInstance();
@@ -56,7 +59,7 @@ void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 
 CGameView::CGameView(void)
 {
-	m_gameModel = CGameModel::GetIntanse();
+	m_gameModel = CGameModel::GetInstance();
 	m_ui.reset(new CUIElement());
 }
 
@@ -103,10 +106,6 @@ void CGameView::Init()
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float)* 3);
-	m_updateTime = 0;
-	m_netData = NULL;
-	m_netRecievedSize = 0;
-	m_netTotalSize = 0;
 	m_anisoptropy = 1.0f;
 
 	m_lua.reset(new CLUAScript());
@@ -120,9 +119,9 @@ void CGameView::Init()
 
 void CGameView::OnDrawScene()
 {
-	CGameView::GetIntanse().lock()->DrawShadowMap();
+	CGameView::GetInstance().lock()->DrawShadowMap();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	CGameView::GetIntanse().lock()->Update();
+	CGameView::GetInstance().lock()->Update();
 	glutSwapBuffers();
 }
 
@@ -172,65 +171,7 @@ void CGameView::DrawBoundingBox()
 
 void CGameView::Update()
 {
-	if (m_updateTime > 0)
-	{
-		m_updateTime--;
-		if (m_updateTime == 0 && m_socket)
-		{
-			std::vector<char> result = m_gameModel.lock()->GetState();
-			m_socket->SendData(&result[0], result.size());//1 For full dump
-			m_updateTime = 1000;
-		}
-	}
-	if (m_socket)
-	{
-		int result;
-		if (m_netData)
-		{
-			result = m_socket->RecieveData(m_netData + m_netRecievedSize, m_netTotalSize - m_netRecievedSize);
-			m_netRecievedSize += result;
-		}
-		else
-		{
-			char data[128];
-			result = m_socket->RecieveData(data, 128);
-			if (result > 0)
-			{
-				m_netTotalSize = *(unsigned int*)&data[1];
-				m_netData = new char[m_netTotalSize];
-				m_netRecievedSize = result;
-				memcpy(m_netData, data, result);
-			}
-		}
-		if (result == 0)
-		{
-			m_socket.reset();
-		}
-		if (m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
-		{
-			if (m_netData[0] == 0)
-			{
-				if (m_stringRecievedCallback) 
-					m_stringRecievedCallback(m_netData + 5);
-				char* str = new char[12 + m_netTotalSize];
-				sprintf(str, "String recieved:%s", (const char*)(m_netData+5));
-				CLogWriter::WriteLine(str);
-				delete [] str;
-			}
-			else if (m_netData[0] == 1)
-			{
-				char state[30];
-				sprintf(state, "State Recieved. Size=%d.", m_netRecievedSize);
-				CLogWriter::WriteLine(state);
-				m_gameModel.lock()->SetState(m_netData + 5);
-				if (m_stateRecievedCallback) m_stateRecievedCallback();
-			}
-			delete[] m_netData;
-			m_netData = NULL;
-			m_netTotalSize = 0;
-			m_netRecievedSize = 0;
-		}
-	}
+	if (CNetwork::GetInstance().lock()->IsConnected()) CNetwork::GetInstance().lock()->Update();
 	if (m_updateCallback) m_updateCallback();
 	if (m_singleCallback)
 	{
@@ -352,7 +293,7 @@ void CGameView::OnReshape(int width, int height)
 	GLdouble aspect = (GLdouble)width / (GLdouble)height;
 	gluPerspective(60, aspect, 0.5, 100.0);
 	glMatrixMode(GL_MODELVIEW);
-	CGameView::GetIntanse().lock()->m_ui->Resize(height, width);
+	CGameView::GetInstance().lock()->m_ui->Resize(height, width);
 }
 
 void CGameView::CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale)
@@ -410,7 +351,7 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 	double minY = (beginWorldY < endWorldY)?beginWorldY:endWorldY;
 	double maxY = (beginWorldY > endWorldY)?beginWorldY:endWorldY;
 	CObjectGroup* group = new CObjectGroup();
-	CGameModel * model = CGameModel::GetIntanse().lock().get();
+	CGameModel * model = CGameModel::GetInstance().lock().get();
 	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
@@ -443,7 +384,7 @@ std::shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
 {
 	std::shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
-	CGameModel * model = CGameModel::GetIntanse().lock().get();
+	CGameModel * model = CGameModel::GetInstance().lock().get();
 	double start[3];
 	double end[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
@@ -539,9 +480,8 @@ void CGameView::RulerHide()
 	m_ruler.Hide();
 }
 
-void CGameView::TryMoveSelectedObject(int x, int y)
+void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y)
 {
-	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
 	if (!object)
 	{
 		return;
@@ -561,7 +501,7 @@ void CGameView::TryMoveSelectedObject(int x, int y)
 
 bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 {
-	CGameModel * model = CGameModel::GetIntanse().lock().get();
+	CGameModel * model = CGameModel::GetInstance().lock().get();
 	std::shared_ptr<IBounding> curBox = m_modelManager.GetBoundingBox(current->GetPathToModel());
 	if (!curBox) return false;
 	CVector3d curPos(current->GetCoords());
@@ -718,24 +658,17 @@ void CGameView::SetLightPosition(int index, float* pos)
 
 void CGameView::NetHost(unsigned short port)
 {
-	m_socket.reset(new CNetSocket(port));
-	m_updateTime = 1000;
+	CNetwork::GetInstance().lock()->Host(port);
 }
 
 void CGameView::NetClient(std::string const& ip, unsigned short port)
 {
-	m_socket.reset(new CNetSocket(ip.c_str(), port));
+	CNetwork::GetInstance().lock()->Client(ip.c_str(), port);
 }
 
 void CGameView::NetSendMessage(std::string const& message)
 {
-	char * data = new char[message.size() + 6];
-	data[0] = 0;//0 for text message
-	*(unsigned int*)&data[1] = message.size() + 6;
-	memcpy(&data[5], message.c_str(), message.size() + 1);
-	if (m_socket) m_socket->SendData(data, message.size() + 6);
-	else CLogWriter::WriteLine("Net error. Socket is not yet created or connection has been lost.");
-	delete [] data;
+	CNetwork::GetInstance().lock()->SendMessag(message);
 }
 
 void CGameView::Save(std::string const& filename)
@@ -864,7 +797,7 @@ void CGameView::Preload(std::string const& image)
 
 void LoadModuleCallback(int)
 {
-	CGameView::GetIntanse().lock()->ResetLUA();
+	CGameView::GetInstance().lock()->ResetLUA();
 }
 
 void CGameView::ResetLUA()
@@ -881,23 +814,19 @@ void CGameView::ResetLUA()
 void CGameView::LoadModule(std::string const& module)
 {
 	//ThreadPool::WaitAll();
-	CLogWriter::WriteLine("Launching a new module " + module);
 	sModule::Load(module);
 	ChangeDir(sModule::folder);
 	CGameModel::FreeInstance();
-	m_gameModel = CGameModel::GetIntanse();
+	m_gameModel = CGameModel::GetInstance();
 	CTextureManager::FreeInstance();
 	m_modelManager = CModelManager();
 	CCommandHandler::FreeInstance();
+	CNetwork::FreeInstance();
 	m_table.reset();
 	m_skybox.reset();
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float) * 3);
-	m_updateTime = 0;
-	m_netData = NULL;
-	m_netRecievedSize = 0;
-	m_netTotalSize = 0;
 	m_anisoptropy = 1.0f;
 	glutTimerFunc(1, LoadModuleCallback, 0);
 }

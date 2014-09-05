@@ -270,13 +270,13 @@ int SetOnChangeCallback(lua_State* L)
 int Set(lua_State* L)
 {
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	CGameView::GetIntanse().lock()->SetUI(c);
+	CGameView::GetInstance().lock()->SetUI(c);
 	return 0;
 }
 
 int Get(lua_State* L)
 {
-	return CLUAScript::NewInstanceClass(CGameView::GetIntanse().lock()->GetUI(), "UI");
+	return CLUAScript::NewInstanceClass(CGameView::GetInstance().lock()->GetUI(), "UI");
 }
 
 int ClearChildren(lua_State* L)
@@ -293,6 +293,18 @@ int DeleteChild(lua_State* L)
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	c->DeleteChild(name);
+	return 0;
+}
+
+int ApplyTheme(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "1 argument expected (theme file)");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	std::string file = CLUAScript::GetArgument<char*>(2);
+	CUITheme theme;
+	theme.Load(file);
+	c->SetTheme(theme);
 	return 0;
 }
 
@@ -323,6 +335,7 @@ static const luaL_Reg UIFuncs[] = {
 	{ "ClearChildren", ClearChildren },
 	{ "DeleteChild", DeleteChild },
 	{ "SetOnChangeCallback", SetOnChangeCallback },
+	{ "ApplyTheme", ApplyTheme },
 	{ NULL, NULL }
 };
 

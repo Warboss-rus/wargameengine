@@ -55,18 +55,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\MathLib\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.10.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.10.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\MathLib\MathLib;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\MathLib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -141,6 +141,7 @@
     <ClCompile Include="model\MovementLimiter.cpp" />
     <ClCompile Include="model\ObjectGroup.cpp" />
     <ClCompile Include="Module.cpp" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="nv_dds.cpp" />
     <ClCompile Include="OSSpecific.cpp" />
     <ClCompile Include="Ruler.cpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Network.h" />
     <ClInclude Include="OSSpecific.h" />
     <ClInclude Include="NetSocket.h" />
     <ClInclude Include="controller\CommandChangeGlobalProperty.h" />

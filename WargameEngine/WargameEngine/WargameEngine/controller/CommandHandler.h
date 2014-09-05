@@ -11,18 +11,18 @@ public:
 	CCommandHandler():m_current(-1), m_compound(NULL) {}
 	static std::weak_ptr<CCommandHandler> GetInstance();
 	static void FreeInstance();
-	void AddNewCreateObject(std::shared_ptr<IObject> object);
-	void AddNewDeleteObject(std::shared_ptr<IObject> object);
-	void AddNewMoveObject(double deltaX, double deltaY);
-	void AddNewRotateObject(double deltaRotation);
-	void AddNewChangeProperty(std::string const& key, std::string const& value);
-	void AddNewChangeGlobalProperty(std::string const& key, std::string const& value);
+	void AddNewCreateObject(std::shared_ptr<IObject> object, bool local = true);
+	void AddNewDeleteObject(std::shared_ptr<IObject> object, bool local = true);
+	void AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY, bool local = true);
+	void AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation, bool local = true);
+	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value, bool local = true);
+	void AddNewChangeGlobalProperty(std::string const& key, std::string const& value, bool local = true);
 	void Undo();
 	void Redo();
 	void BeginCompound();
 	void EndCompound();
 private:
-	void AddNewCommand(ICommand * command);
+	void AddNewCommand(ICommand * command, bool local);
 	static std::shared_ptr<CCommandHandler> m_instance;
 	std::shared_ptr<CCommandCompound> m_compound;
 	std::vector<std::shared_ptr<ICommand>> m_commands;

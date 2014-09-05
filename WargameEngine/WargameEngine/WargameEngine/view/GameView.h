@@ -52,13 +52,8 @@ private:
 	float m_shadowAngle;
 	float m_anisoptropy;
 	static bool m_visible;
-	unsigned int m_updateTime;
-
-	int m_netRecievedSize;
-	int m_netTotalSize;
-	char * m_netData;
 public:
-	static std::weak_ptr<CGameView> GetIntanse();
+	static std::weak_ptr<CGameView> GetInstance();
 	~CGameView();
 
 	void Update();
@@ -89,7 +84,7 @@ public:
 	void RulerBegin(double x, double y);
 	void RulerEnd(double x, double y);
 	void RulerHide();
-	void TryMoveSelectedObject(int x, int y);
+	void TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y);
 	bool UILeftMouseButtonDown(int x, int y);
 	bool UILeftMouseButtonUp(int x, int y);
 	bool UIKeyPress(unsigned char key);

@@ -15,7 +15,7 @@ int CreateTable(lua_State* L)
 	float width = CLUAScript::GetArgument<float>(1);
 	float height = CLUAScript::GetArgument<float>(2);
 	std::string texture = CLUAScript::GetArgument<char*>(3);
-	CGameView::GetIntanse().lock()->CreateTable(width, height, texture);
+	CGameView::GetInstance().lock()->CreateTable(width, height, texture);
 	return 0;
 }
 
@@ -25,7 +25,7 @@ int CreateSkybox(lua_State* L)
         return luaL_error(L, "2 argument expected (size, texture folder)");
 	double size = CLUAScript::GetArgument<double>(1);
 	std::string texture = CLUAScript::GetArgument<char*>(2);
-	CGameView::GetIntanse().lock()->CreateSkybox(size, texture);
+	CGameView::GetInstance().lock()->CreateSkybox(size, texture);
 	return 0;
 }
 
@@ -37,7 +37,7 @@ int CameraSetLimits(lua_State* L)
 	double maxTransY = CLUAScript::GetArgument<double>(2);
 	double maxScale = CLUAScript::GetArgument<double>(3);
 	double minScale = CLUAScript::GetArgument<double>(4);
-	CGameView::GetIntanse().lock()->CameraSetLimits(maxTransX, maxTransY, maxScale, minScale);
+	CGameView::GetInstance().lock()->CameraSetLimits(maxTransX, maxTransY, maxScale, minScale);
 	return 0;
 }
 
@@ -102,7 +102,7 @@ int GetGlobalProperty(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (key)");
 	char* key = CLUAScript::GetArgument<char*>(1);
-	CLUAScript::SetArgument(CGameModel::GetIntanse().lock()->GetProperty(key).c_str());
+	CLUAScript::SetArgument(CGameModel::GetInstance().lock()->GetProperty(key).c_str());
 	return 1;
 }
 
@@ -112,7 +112,7 @@ int SetGlobalProperty(lua_State* L)
 		return luaL_error(L, "2 arguments expected (key, value)");
 	char* key = CLUAScript::GetArgument<char*>(1);
 	char* value = CLUAScript::GetArgument<char*>(2);
-	CGameModel::GetIntanse().lock()->SetProperty(key, value);
+	CGameModel::GetInstance().lock()->SetProperty(key, value);
 	return 0;
 }
 
@@ -138,7 +138,7 @@ int SetSelectionCallback(lua_State* L)
 			CLUAScript::CallFunction(func);
 		};
 	}
-	CGameView::GetIntanse().lock()->SetSelectionCallback(function);
+	CGameView::GetInstance().lock()->SetSelectionCallback(function);
 	return 0;
 }
 
@@ -155,7 +155,7 @@ int SetUpdateCallback(lua_State* L)
 			CLUAScript::CallFunction(func);
 		};
 	}
-	CGameView::GetIntanse().lock()->SetUpdateCallback(function);
+	CGameView::GetInstance().lock()->SetUpdateCallback(function);
 	return 0;
 }
 
@@ -172,7 +172,7 @@ int SetOnStateRecievedCallback(lua_State* L)
 			CLUAScript::CallFunction(func);
 		};
 	}
-	CGameView::GetIntanse().lock()->SetStateRecievedCallback(function);
+	CGameView::GetInstance().lock()->SetStateRecievedCallback(function);
 	return 0;
 }
 
@@ -189,7 +189,7 @@ int SetOnStringRecievedCallback(lua_State* L)
 			CLUAScript::CallFunction(func, param);
 		};
 	}
-	CGameView::GetIntanse().lock()->SetStringRecievedCallback(function);
+	CGameView::GetInstance().lock()->SetStringRecievedCallback(function);
 	return 0;
 }
 
@@ -220,7 +220,7 @@ int ResizeWindow(lua_State* L)
 		return luaL_error(L, "2 argument expected (height, width)");
 	int height = CLUAScript::GetArgument<int>(1);
 	int width = CLUAScript::GetArgument<int>(2);
-	CGameView::GetIntanse().lock()->ResizeWindow(height, width);
+	CGameView::GetInstance().lock()->ResizeWindow(height, width);
 	return 0;
 }
 
@@ -253,7 +253,7 @@ int SetShaders(lua_State* L)
 	if(n > 1) fragment = CLUAScript::GetArgument<const char*>(2);
 	if(n > 2) geometry = CLUAScript::GetArgument<const char*>(3);
 	if(n > 3) return luaL_error(L, "up to 3 argument expected (vertex shader, fragment shader, geometry shader)");
-	CGameView::GetIntanse().lock()->NewShaderProgram(vertex, fragment, geometry);
+	CGameView::GetInstance().lock()->NewShaderProgram(vertex, fragment, geometry);
 	return 0;
 }
 
@@ -287,7 +287,7 @@ int SetLightPosition(lua_State* L)
 	pos[0] = CLUAScript::GetArgument<float>(2);
 	pos[1] = CLUAScript::GetArgument<float>(3);
 	pos[2] = CLUAScript::GetArgument<float>(4);
-	CGameView::GetIntanse().lock()->SetLightPosition(i, pos);
+	CGameView::GetInstance().lock()->SetLightPosition(i, pos);
 	return 0;
 }
 
@@ -340,7 +340,7 @@ int EnableVertexLighting(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetIntanse().lock()->EnableVertexLightning();
+	CGameView::GetInstance().lock()->EnableVertexLightning();
 	return 0;
 }
 
@@ -348,7 +348,7 @@ int DisableVertexLighting(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetIntanse().lock()->DisableVertexLightning();
+	CGameView::GetInstance().lock()->DisableVertexLightning();
 	return 0;
 }
 
@@ -358,7 +358,7 @@ int EnableShadowMap(lua_State* L)
 		return luaL_error(L, "2 arguments (shadowMap size, shadow max Angle) expected");
 	int size = CLUAScript::GetArgument<int>(1);
 	float angle = CLUAScript::GetArgument<float>(2);
-	CGameView::GetIntanse().lock()->EnableShadowMap(size, angle);
+	CGameView::GetInstance().lock()->EnableShadowMap(size, angle);
 	return 0;
 }
 
@@ -366,7 +366,7 @@ int DisableShadowMap(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetIntanse().lock()->DisableShadowMap();
+	CGameView::GetInstance().lock()->DisableShadowMap();
 	return 0;
 }
 
@@ -374,7 +374,7 @@ int EnableMSAA(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetIntanse().lock()->EnableMSAA();
+	CGameView::GetInstance().lock()->EnableMSAA();
 	return 0;
 }
 
@@ -382,7 +382,7 @@ int DisableMSAA(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetIntanse().lock()->DisableMSAA();
+	CGameView::GetInstance().lock()->DisableMSAA();
 	return 0;
 }
 
@@ -391,7 +391,7 @@ int SetAnisotropy(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected");
 	float a = CLUAScript::GetArgument<float>(1);
-	CGameView::GetIntanse().lock()->SetAnisotropy(a);
+	CGameView::GetInstance().lock()->SetAnisotropy(a);
 	return 0;
 }
 
@@ -424,7 +424,7 @@ int NetHost(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (port)");
 	int port = CLUAScript::GetArgument<int>(1);
-	CGameView::GetIntanse().lock()->NetHost(port);
+	CGameView::GetInstance().lock()->NetHost(port);
 	return 0;
 }
 
@@ -434,7 +434,7 @@ int NetClient(lua_State* L)
 		return luaL_error(L, "2 argument expected (ip, port)");
 	std::string ip = CLUAScript::GetArgument<const char*>(1);
 	int port = CLUAScript::GetArgument<int>(2);
-	CGameView::GetIntanse().lock()->NetClient(ip, port);
+	CGameView::GetInstance().lock()->NetClient(ip, port);
 	return 0;
 }
 
@@ -443,7 +443,7 @@ int NetSendMessage(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (message)");
 	std::string message = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetIntanse().lock()->NetSendMessage(message);
+	CGameView::GetInstance().lock()->NetSendMessage(message);
 	return 0;
 }
 
@@ -452,7 +452,7 @@ int SaveGame(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (filename)");
 	std::string path = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetIntanse().lock()->Save(path);
+	CGameView::GetInstance().lock()->Save(path);
 	return 0;
 }
 
@@ -461,7 +461,7 @@ int LoadGame(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (filename)");
 	std::string path = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetIntanse().lock()->Load(path);
+	CGameView::GetInstance().lock()->Load(path);
 	return 0;
 }
 
@@ -469,7 +469,7 @@ int ClearResources(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetIntanse().lock()->ClearResources();
+	CGameView::GetInstance().lock()->ClearResources();
 	return 0;
 }
 
@@ -478,7 +478,7 @@ int SetWindowTitle(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (title)");
 	std::string title = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetIntanse().lock()->SetWindowTitle(title);
+	CGameView::GetInstance().lock()->SetWindowTitle(title);
 	return 0;
 }
 
@@ -487,7 +487,7 @@ int Preload(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (image path)");
 	std::string image = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetIntanse().lock()->Preload(image);
+	CGameView::GetInstance().lock()->Preload(image);
 	return 0;
 }
 
@@ -496,7 +496,7 @@ int PreloadModel(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (model name)");
 	std::string model = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetIntanse().lock()->GetModelManager()->LoadIfNotExist(model);
+	CGameView::GetInstance().lock()->GetModelManager()->LoadIfNotExist(model);
 	return 0;
 }
 
@@ -505,7 +505,7 @@ int LoadModuleFile(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (module file)");
 	std::string module = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetIntanse().lock()->LoadModule(module);
+	CGameView::GetInstance().lock()->LoadModule(module);
 	return 0;
 }
 
@@ -527,7 +527,7 @@ int Uniform1i(lua_State* L)
 		return luaL_error(L, "2 arguments expected (uniform name, value)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
 	int value = CLUAScript::GetArgument<int>(2);
-	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue(name, value);
+	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue(name, value);
 	return 0;
 }
 
@@ -537,7 +537,7 @@ int Uniform1f(lua_State* L)
 		return luaL_error(L, "2 arguments expected (uniform name, value)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
 	float value = CLUAScript::GetArgument<float>(2);
-	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue(name, value);
+	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue(name, value);
 	return 0;
 }
 
@@ -549,7 +549,7 @@ int Uniform1fv(lua_State* L)
 	int count = CLUAScript::GetArgument<int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue(name, count, &value[0]);
 	return 0;
 }
 
@@ -561,7 +561,7 @@ int Uniform2fv(lua_State* L)
 	int count = CLUAScript::GetArgument<int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 2) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue2(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue2(name, count, &value[0]);
 	return 0;
 }
 
@@ -573,7 +573,7 @@ int Uniform3fv(lua_State* L)
 	int count = CLUAScript::GetArgument<int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 3) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue3(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue3(name, count, &value[0]);
 	return 0;
 }
 
@@ -585,7 +585,7 @@ int Uniform4fv(lua_State* L)
 	int count = CLUAScript::GetArgument<int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 4) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformValue4(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue4(name, count, &value[0]);
 	return 0;
 }
 
@@ -597,7 +597,7 @@ int UniformMatrix4fv(lua_State* L)
 	int count = CLUAScript::GetArgument<int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 16) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetIntanse().lock()->GetShaderManager()->SetUniformMatrix4(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformMatrix4(name, count, &value[0]);
 	return 0;
 }
 

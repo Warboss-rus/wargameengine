@@ -12,6 +12,8 @@ struct sMesh
 	std::string name;
 	std::string materialName;
 	size_t polygonIndex;
+	bool operator== (sMesh const& other) { return name == other.name && materialName == other.materialName && polygonIndex == other.polygonIndex; }
+	bool operator!= (sMesh const& other) { return !operator==(other); }
 };
 
 class C3DModel

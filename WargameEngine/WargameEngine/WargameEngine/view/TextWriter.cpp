@@ -17,6 +17,10 @@ CTextWriter::CTextWriter()
 CTextWriter::~CTextWriter()
 {
 	FT_Done_FreeType(m_ft);
+	for (auto i = m_symbols.begin(); i != m_symbols.end(); ++i)
+	{
+		glDeleteTextures(1, &i->second.texture);
+	}
 }
 
 FT_Face CTextWriter::GetFace(std::string const& name)
@@ -24,8 +28,12 @@ FT_Face CTextWriter::GetFace(std::string const& name)
 	if(m_faces.find(name) == m_faces.end())
 	{
 		if(FT_New_Face(m_ft, name.c_str(), 0, &m_faces[name]) 
-#ifdef _WIN32
+#ifndef _WIN32
 			 && FT_New_Face(m_ft, (std::string(getenv("windir")) + "\\fonts\\" + name).c_str(), 0, &m_faces[name]))
+#elif _WINDOWS
+			&& FT_New_Face(m_ft, ("/usr/share/fonts" + name).c_str(), 0, &m_faces[name])
+			&& FT_New_Face(m_ft, ("/usr/local/share/fonts" + name).c_str(), 0, &m_faces[name])
+			&& FT_New_Face(m_ft, ("~/.fonts" + name).c_str(), 0, &m_faces[name]))
 #else
 			)
 #endif
@@ -52,6 +60,7 @@ sGlyph CTextWriter::CreateSymbol(sSymbol  const& s)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
+
 	symbol.texture = textureID;
 	symbol.bitmap_left = face->glyph->bitmap_left;
 	symbol.bitmap_top = face->glyph->bitmap_top;
@@ -74,7 +83,7 @@ sGlyph CTextWriter::GetSymbol(FT_Face font, unsigned int size, char symbol)
 	return m_symbols[s];
 }
 
-void CTextWriter::DrawBitmap(int & x, int & y, sGlyph const& symbol)
+void CTextWriter::DrawBitmap(int x, int y, sGlyph const& symbol)
 {
 	int x2 = x + symbol.bitmap_left;
     int y2 = y - symbol.bitmap_top;
@@ -102,6 +111,7 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	int newx = x;
 	FT_Face face = GetFace(font);
+	
 	for (size_t i = 0; i < text.size(); ++i)
 	{
 		if(text[i] == '\n')

@@ -5,6 +5,7 @@ class CUITheme
 {
 public:
 	CUITheme();
+	void Load(std::string const& filename);
 	std::string texture;
 	float defaultColor[3];
 	float textfieldColor[3];

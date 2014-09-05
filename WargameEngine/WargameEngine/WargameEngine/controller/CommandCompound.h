@@ -12,6 +12,7 @@ public:
 	size_t GetChildrenCount() const;
 	void Execute();
 	void Rollback();
+	std::vector<char> Serialize() const { return std::vector<char>(); }
 private:
 	std::vector<std::shared_ptr<ICommand>> m_children;
 };

@@ -10,7 +10,7 @@ CGameModel::~CGameModel(void)
 {
 }
 
-std::weak_ptr<CGameModel> CGameModel::GetIntanse()
+std::weak_ptr<CGameModel> CGameModel::GetInstance()
 {
 	if (!m_instanse)
 	{
@@ -37,6 +37,18 @@ std::shared_ptr<const IObject> CGameModel::Get3DObject(unsigned long number) con
 std::shared_ptr<IObject> CGameModel::Get3DObject(unsigned long number)
 {
 	return m_objects[number];
+}
+
+std::shared_ptr<IObject> CGameModel::Get3DObject(IObject * object)
+{
+	for (auto i = m_objects.begin(); i != m_objects.end(); ++i)
+	{
+		if (i->get() == object)
+		{
+			return *i;
+		}
+	}
+	return std::shared_ptr<IObject>();
 }
 
 void CGameModel::AddObject(std::shared_ptr<IObject> pObject)
@@ -156,7 +168,7 @@ void CGameModel::SetState(char* data)
 {
 	unsigned int count = *(unsigned int*)&data[0];
 	unsigned int current = 4;
-	CGameModel * model = CGameModel::GetIntanse().lock().get();
+	CGameModel * model = CGameModel::GetInstance().lock().get();
 	model->Clear();
 	for (unsigned int i = 0; i < count; ++i)
 	{
