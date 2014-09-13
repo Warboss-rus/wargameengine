@@ -28,6 +28,8 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
 		if(extension == "wbm")
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadWbmModel, obj, UseModel);
+		if (extension == "dae")
+			ThreadPool::AsyncReadFile(sModule::models + path, LoadColladaModel, obj, UseModel);
 		if(extension == "bmp" || extension == "tga" || extension == "png")
 			m_models[path] = std::shared_ptr<C3DModel>(LoadDecal(path));
 	}

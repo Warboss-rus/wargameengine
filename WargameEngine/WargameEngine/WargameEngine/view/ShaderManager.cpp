@@ -1,7 +1,7 @@
 #include "ShaderManager.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include "../gl.h"
 #include <fstream>
 #include "../LogWriter.h"
 #include "../Module.h"

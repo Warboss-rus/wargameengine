@@ -108,6 +108,7 @@ public:
 	void Preload(std::string const& image);
 	void LoadModule(std::string const& module);
 	void ResetLUA();
+	void ToggleFullscreen() const;
 
 	void NetHost(unsigned short port);
 	void NetClient(std::string const& ip, unsigned short port);

@@ -31,6 +31,7 @@ void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool l
 {
 	ICommand* action = new CCommandCreateObject(object);
 	action->Execute();
+	if (local)CNetwork::GetInstance().lock()->AddAddressLocal(object);
 	AddNewCommand(action, local);
 }
 

@@ -1,5 +1,9 @@
 #include "Input.h"
-#include <GL/freeglut.h>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
 #include "GameView.h"
 #include "../SelectionTools.h"
 #include "../controller/CommandHandler.h"
@@ -122,7 +126,7 @@ void CInput::OnKeyboard(unsigned char key, int x, int y)
 		{
 			if (glutGetModifiers() == GLUT_ACTIVE_ALT)
 			{
-				glutFullScreenToggle();
+				CGameView::GetInstance().lock()->ToggleFullscreen();
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 #include "Bounding.h"
 #include <cstring>
-#include <GL/glut.h>
+#include "../gl.h"
 #include <fstream>
 #include <string>
 #include "Vector3.h"

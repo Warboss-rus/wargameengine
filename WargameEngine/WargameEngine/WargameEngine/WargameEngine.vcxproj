@@ -148,6 +148,10 @@
     <ClCompile Include="SelectionTools.cpp" />
     <ClCompile Include="Threading.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
+    <ClCompile Include="tinystr.cpp" />
+    <ClCompile Include="tinyxml.cpp" />
+    <ClCompile Include="tinyxmlerror.cpp" />
+    <ClCompile Include="tinyxmlparser.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
     <ClCompile Include="UI\UIEdit.cpp" />
@@ -163,6 +167,7 @@
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\Bounding.cpp" />
     <ClCompile Include="view\Camera.cpp" />
+    <ClCompile Include="view\ColladaModelFactory.cpp" />
     <ClCompile Include="view\DecalFactory.cpp" />
     <ClCompile Include="view\GameView.cpp" />
     <ClCompile Include="view\Input.cpp" />
@@ -178,6 +183,7 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="gl.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="OSSpecific.h" />
     <ClInclude Include="NetSocket.h" />
@@ -197,6 +203,8 @@
     <ClInclude Include="Task.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="ThreadPool.h" />
+    <ClInclude Include="tinystr.h" />
+    <ClInclude Include="tinyxml.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
     <ClInclude Include="view\ShaderManager.h" />

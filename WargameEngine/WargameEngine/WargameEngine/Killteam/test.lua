@@ -102,20 +102,20 @@ CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to textu
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 CameraSetLimits(15, 6, 5, 0.4)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 local ui = UI:Get()--Get current UI
+ui:ApplyTheme("ui.uit")
 local list = ui:NewCombobox("ComboBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
-list:AddItem("Angel_of_Death.wbm")
-list:AddItem("SM_Melta.wbm")
-list:AddItem("SM_HB.wbm")
-list:AddItem("assault_marine.wbm")
-list:AddItem("rhino.wbm")
-list:AddItem("CSM.wbm")
-list:AddItem("CSM_melta.wbm")
-list:AddItem("CSM_HB.wbm")
-list:AddItem("raptor.wbm")
-list:AddItem("Terminator_SB+PF.wbm")
-list:AddItem("Terminator_LC.wbm")
-list:AddItem("Chaos_terminator_SB+PF.wbm")
-list:AddItem("Chaos_terminator_LC.wbm")
+local files = GetFilesList("models", "*.wbm", false)--Find all models and add them into list
+for i = 1, #files do
+	list:AddItem(files[i])
+end
+files = GetFilesList("models", "*.dae", false)
+for i = 1, #files do
+	list:AddItem(files[i])
+end
+files = GetFilesList("models", "*.obj", false)
+for i = 1, #files do
+	list:AddItem(files[i])
+end
 ui:NewButton("Button1", 220, 10, 30, 80, "Create", "NewObject")--Adds new button to UI (name, x, y, width, height, caption, callback function name)
 ui:NewButton("Button2", 310, 10, 30, 80, "Delete", "DeleteSelectedObject")
 ui:NewButton("Button3", 400, 10, 30, 100, "Roll Dices", "SetDicePanelVisibility")

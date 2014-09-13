@@ -1,5 +1,5 @@
 #include "UIButton.h"
-#include <GL/glut.h>
+#include "../gl.h"
 #include "../view/TextureManager.h"
 #include "UIText.h"
 

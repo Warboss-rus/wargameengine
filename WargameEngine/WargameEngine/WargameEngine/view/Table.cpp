@@ -1,5 +1,5 @@
 #include "Table.h"
-#include <GL/glut.h>
+#include "../gl.h"
 #include "TextureManager.h"
 
 CTable::CTable(float width, float height, std::string const& texture) :m_height(height / 2), m_width(width / 2), m_texture(texture)

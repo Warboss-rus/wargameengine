@@ -1,5 +1,5 @@
 #include "TextWriter.h"
-#include <GL/glut.h>
+#include "../gl.h"
 #include <exception>
 
 #ifndef GL_CLAMP_TO_EDGE_EXT 
@@ -17,10 +17,10 @@ CTextWriter::CTextWriter()
 CTextWriter::~CTextWriter()
 {
 	FT_Done_FreeType(m_ft);
-	for (auto i = m_symbols.begin(); i != m_symbols.end(); ++i)
+	/*for (auto i = m_symbols.begin(); i != m_symbols.end(); ++i)//causes a crash
 	{
 		glDeleteTextures(1, &i->second.texture);
-	}
+	}*/
 }
 
 FT_Face CTextWriter::GetFace(std::string const& name)

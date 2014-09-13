@@ -1,7 +1,7 @@
 #include "TextureManager.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include "../gl.h"
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"

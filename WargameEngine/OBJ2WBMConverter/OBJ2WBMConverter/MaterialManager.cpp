@@ -63,3 +63,8 @@ void CMaterialManager::LoadMTL(std::string const& path)
 	}
 	iFile.close();
 }
+
+void CMaterialManager::AddMaterial(std::string const& name, sMaterial const& material)
+{
+	m_materials[name] = material;
+}

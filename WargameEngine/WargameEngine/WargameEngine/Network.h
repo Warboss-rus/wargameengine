@@ -22,6 +22,7 @@ public:
 	bool IsConnected() { return m_socket.get(); }
 	unsigned int GetAddress(std::shared_ptr<IObject> obj);
 	std::shared_ptr<IObject> GetObject(unsigned int address);
+	void AddAddressLocal(std::shared_ptr<IObject> obj);
 private:
 	CNetwork() :m_host(true), m_netData(NULL), m_netRecievedSize(0), m_netTotalSize(0) {}
 	static std::shared_ptr<CNetwork> m_instance;

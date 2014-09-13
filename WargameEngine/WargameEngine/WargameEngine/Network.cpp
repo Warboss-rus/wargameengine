@@ -1,7 +1,7 @@
 #include "Network.h"
 #include "LogWriter.h"
-#include "model\GameModel.h"
-#include "model\3dObject.h"
+#include "model/GameModel.h"
+#include "model/3dObject.h"
 
 std::shared_ptr<CNetwork> CNetwork::m_instance;
 
@@ -113,7 +113,7 @@ void CNetwork::Update()
 				memcpy(&path[0], data + 34, size);
 				std::shared_ptr<IObject> obj = std::shared_ptr<IObject>(new C3DObject(path, pos[0], pos[1], pos[2], true));
 				CCommandHandler::GetInstance().lock()->AddNewCreateObject(obj, false);
-				if(!IsHost()) m_translator[address] = obj;
+				m_translator[address] = obj;
 				CLogWriter::WriteLine("CreateObject received");
 			}break;
 			case 1://DeleteObject
@@ -121,7 +121,7 @@ void CNetwork::Update()
 				unsigned int address;
 				memcpy(&address, data + 2, 4);
 				CCommandHandler::GetInstance().lock()->AddNewDeleteObject(GetObject(address), false);
-				if(!IsHost()) m_translator.erase(address);
+				m_translator.erase(address);
 				CLogWriter::WriteLine("DeleteObject received");
 			}break;
 			case 2://MoveObject
@@ -245,7 +245,6 @@ void CNetwork::SendAction(ICommand* command, bool execute)
 
 unsigned int CNetwork::GetAddress(std::shared_ptr<IObject> object)
 {
-	if (IsHost()) return (unsigned int)object.get();
 	for (auto i = m_translator.begin(); i != m_translator.end(); ++i)
 	{
 		if (i->second == object)
@@ -258,6 +257,10 @@ unsigned int CNetwork::GetAddress(std::shared_ptr<IObject> object)
 
 std::shared_ptr<IObject> CNetwork::GetObject(unsigned int address)
 {
-	if (IsHost()) return CGameModel::GetInstance().lock()->Get3DObject((IObject*)address);
 	return m_translator[address];
+}
+
+void CNetwork::AddAddressLocal(std::shared_ptr<IObject> obj)
+{
+	m_translator[(unsigned int)obj.get()] = obj;
 }

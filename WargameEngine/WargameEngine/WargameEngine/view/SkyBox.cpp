@@ -1,5 +1,5 @@
 #include "SkyBox.h"
-#include <GL/glut.h>
+#include "../gl.h"
 #include "TextureManager.h"
 
 #ifndef GL_CLAMP_TO_EDGE_EXT 

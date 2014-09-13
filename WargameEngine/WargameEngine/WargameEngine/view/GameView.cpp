@@ -39,7 +39,7 @@ void CGameView::FreeInstance()
 
 CGameView::~CGameView()
 {
-	ThreadPool::WaitAll();
+	//ThreadPool::WaitAll();
 	CNetwork::FreeInstance();
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
@@ -77,6 +77,7 @@ void CGameView::OnChangeState(int state)
 void CGameView::Init()
 {
 	setlocale(LC_ALL, ""); 
+	setlocale(LC_NUMERIC, "english");
 	int argc = 0;
 	char* argv[] = {""};
 	glutInit(&argc, argv);
@@ -156,15 +157,15 @@ void CGameView::DrawBoundingBox()
 				object = group->GetChild(i);
 				if(object)
 				{
-					m_modelManager.GetBoundingBox(object->GetPathToModel())->Draw(object->GetX(), 
-						object->GetY(), object->GetZ(), object->GetRotation());
+					auto bbox = m_modelManager.GetBoundingBox(object->GetPathToModel());
+					if(bbox) bbox->Draw(object->GetX(),	object->GetY(), object->GetZ(), object->GetRotation());
 				}
 			}
 		}
 		else
 		{
-			m_modelManager.GetBoundingBox(object->GetPathToModel())->Draw(object->GetX(), 
-				object->GetY(), object->GetZ(), object->GetRotation());
+			auto bbox = m_modelManager.GetBoundingBox(object->GetPathToModel());
+			if(bbox) bbox->Draw(object->GetX(),	object->GetY(), object->GetZ(), object->GetRotation());
 		}
 	}
 }
@@ -829,4 +830,9 @@ void CGameView::LoadModule(std::string const& module)
 	memset(m_lightPosition, 0, sizeof(float) * 3);
 	m_anisoptropy = 1.0f;
 	glutTimerFunc(1, LoadModuleCallback, 0);
+}
+
+void CGameView::ToggleFullscreen() const 
+{
+	glutFullScreenToggle();
 }

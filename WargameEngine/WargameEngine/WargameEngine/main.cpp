@@ -1,5 +1,3 @@
-#define GLEW_STATIC
-#include <GL/glew.h>
 #include "view/GameView.h"
 #include "LogWriter.h"
 #include "Module.h"
