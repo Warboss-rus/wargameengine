@@ -1,161 +1,148 @@
-Chaos = {}
-
-function Chaos:New()
-	newObj = {}
-	self.__index = self
-	return setmetatable(newObj, self)
-end
-
-function Chaos:GetUnitList()
-	return {
-		"Chaos Marine(15)",
-		"Raptor(20)",
-		"Chaos Terminator(40)"
+races["Chaos"] = {
+	racename = "Chaos",
+	units = {
+		["Chaos Marine"] = {
+			SupportedWeapons = {
+				"Bolter",
+				"Melta gun",
+				"Heavy Bolter"
+			},
+			Cost = 15,
+			RangedWeapon = "Bolter",
+			MeleeWeapon = "Knife",
+			Model = "CSM.wbm",
+			WS = 4,
+			BS = 4,
+			T = 4,
+			Attacks = 1,
+			Sv = 3,
+			InvSv = 7,
+			MovementSpeed = 6
+		},
+		["Raptor"] = {
+			SupportedWeapons = {
+				"Bolt-pistol"
+			},
+			Cost = 20,
+			RangedWeapon = "Bolt-pistol",
+			MeleeWeapon = "Knife",
+			Model = "raptor.wbm",
+			WS = 4,
+			BS = 4,
+			T = 4,
+			Attacks = 3,
+			Sv = 3,
+			InvSv = 7,
+			MovementSpeed = 12
+		},
+		["Chaos Terminator"] = {
+			SupportedWeapons = {
+				"Power Fist",
+				"Lightning claws"
+			},
+			Cost = 40,
+			RangedWeapon = "Combi Bolter",
+			MeleeWeapon = "Power Fist",
+			Model = "Chaos_terminator_SB+PF.wbm",
+			WS = 4,
+			BS = 4,
+			T = 4,
+			Attacks = 2,
+			Sv = 2,
+			InvSv = 5,
+			MovementSpeed = 6
+		},
+	},
+	weapons = {
+		["Knife"] = {
+			S = 4,
+			Melee = true,
+			Cost = 0,
+			MeleeAP = 7,
+			Model = "",
+			AdditionalAttacks = 0,
+			NoRanged = false,
+			RerollFailed2Wound = false
+		},
+		["Power Fist"] = {
+			S = 8,
+			Melee = true,
+			Cost = 0,
+			MeleeAP = 2,
+			Model = "Chaos_terminator_SB+PF.wbm",
+			AdditionalAttacks = 0,
+			NoRanged = false,
+			RerollFailed2Wound = false
+		},
+		["Lightning claws"] = {
+			S = 4,
+			Melee = true,
+			Cost = 0,
+			MeleeAP = 3,
+			Model = "Chaos_terminator_LC.wbm",
+			AdditionalAttacks = 2,
+			NoRanged = true,
+			RerollFailed2Wound = true
+		},
+		["none"] = {
+			Range = 0,
+			Melee = false,
+			Cost = 0,
+			Model = "",
+			S = 0,
+			AP = 0,
+			Type = "",
+			Shots = 0
+		},
+		["Bolter"] = {
+			Range = 24,
+			Melee = false,
+			Cost = 0,
+			Model = "CSM.wbm",
+			S = 4,
+			AP = 5,
+			Type = "RapidFire",
+			Shots = 2
+		},
+		["Heavy Bolter"] = {
+			Range = 36,
+			Melee = false,
+			Cost = 10,
+			Model = "CSM_HB.wbm",
+			S = 5,
+			AP = 4,
+			Type = "Heavy",
+			Shots = 3
+		},
+		["Melta gun"] = {
+			Range = 12,
+			Melee = false,
+			Cost = 15,
+			Model = "CSM_melta.wbm",
+			S = 8,
+			AP = 1,
+			Type = "Assault",
+			Shots = 1
+		},
+		["Bolt-pistol"] = {
+			Range = 12,
+			Melee = false,
+			Cost = 0,
+			Model = "",
+			S = 4,
+			AP = 5,
+			Type = "Pistol",
+			Shots = 1
+		},
+		["Combi Bolter"] = {
+			Range = 24,
+			Melee = false,
+			Cost = 0,
+			Model = "",
+			S = 4,
+			AP = 5,
+			Type = "Assault",
+			Shots = 2
+		}
 	}
-end
-
-function Chaos:GetUnitWeapons(unit)
-	if(unit == "Chaos Marine") then
-		return {
-			"Bolter(0)",
-			"Melta gun(15)",
-			"Heavy Bolter(10)"
-		}
-	elseif(unit == "Raptor") then
-		return {
-			"Bolt-pistol(0)"
-		}
-	elseif(unit == "Chaos Terminator") then
-		return {
-			"Combi Bolter(0)",
-			"Lightning claws(0)"
-		}
-	end
-end
-
-function Chaos:GetDefaultWeapon(unit)
-	if(unit == "Chaos Marine") then
-		return "Bolter(0)"
-	elseif(unit == "Raptor") then
-		return "Bolt-pistol(0)"
-	elseif(unit == "Chaos Terminator") then
-		return "Combi Bolter(0)"
-	end
-end
-
-function Chaos:GetUnitModel(rosterItem)
-	if(rosterItem.Name == "Chaos Marine" and (rosterItem.Weapon == "Bolter(0)")) then
-		return "CSM.wbm"
-	elseif(rosterItem.Name == "Chaos Marine" and rosterItem.Weapon == "Melta gun(15)") then
-		return "CSM_melta.wbm"
-	elseif(rosterItem.Name == "Chaos Marine" and rosterItem.Weapon == "Heavy Bolter(10)") then
-		return "CSM_HB.wbm"
-	elseif(rosterItem.Name == "Raptor") then
-		return "raptor.wbm"
-	elseif(rosterItem.Name == "Chaos Terminator" and rosterItem.Weapon == "Combi Bolter(0)") then
-		return "Chaos_terminator_SB+PF.wbm"
-	elseif(rosterItem.Name == "Chaos Terminator" and rosterItem.Weapon == "Lightning claws(0)") then
-		return "Chaos_terminator_LC.wbm"
-	end
-	return ""
-end
-
-function Chaos:SetUnitStats(object, rosterItem)
-	if(rosterItem.Name == "Chaos Marine" and rosterItem.Weapon == "Bolter(0)") then
-		object:SetProperty("WS", "4")
-		object:SetProperty("BS", "4")
-		object:SetProperty("S", "4")
-		object:SetProperty("T", "4")
-		object:SetProperty("Attacks", "1")
-		object:SetProperty("Sv", "3")
-		object:SetProperty("InvSv", "7")
-		object:SetProperty("MeleeAP", "7")
-		object:SetProperty("RerollFailed2Wound", "0")
-		object:SetProperty("MovementSpeed", "6")
-		object:SetProperty("WeaponRange", "24")
-		object:SetProperty("WeaponS", "4")
-		object:SetProperty("WeaponAP", "5")
-		object:SetProperty("WeaponType", "RapidFire")
-		object:SetProperty("WeaponShots", "2")
-	elseif(rosterItem.Name == "Chaos Marine" and rosterItem.Weapon == "Melta gun(15)") then
-		object:SetProperty("WS", "4")
-		object:SetProperty("BS", "4")
-		object:SetProperty("S", "4")
-		object:SetProperty("T", "4")
-		object:SetProperty("Attacks", "1")
-		object:SetProperty("Sv", "3")
-		object:SetProperty("InvSv", "7")
-		object:SetProperty("MeleeAP", "7")
-		object:SetProperty("RerollFailed2Wound", "0")
-		object:SetProperty("MovementSpeed", "6")
-		object:SetProperty("WeaponRange", "12")
-		object:SetProperty("WeaponS", "8")
-		object:SetProperty("WeaponAP", "1")
-		object:SetProperty("WeaponType", "Assault")
-		object:SetProperty("WeaponShots", "1")
-	elseif(rosterItem.Name == "Chaos Marine" and rosterItem.Weapon == "Heavy Bolter(10)") then
-		object:SetProperty("WS", "4")
-		object:SetProperty("BS", "4")
-		object:SetProperty("S", "4")
-		object:SetProperty("T", "4")
-		object:SetProperty("Attacks", "1")
-		object:SetProperty("Sv", "3")
-		object:SetProperty("InvSv", "7")
-		object:SetProperty("MeleeAP", "7")
-		object:SetProperty("RerollFailed2Wound", "0")
-		object:SetProperty("MovementSpeed", "6")
-		object:SetProperty("WeaponRange", "36")
-		object:SetProperty("WeaponS", "5")
-		object:SetProperty("WeaponAP", "4")
-		object:SetProperty("WeaponType", "Heavy")
-		object:SetProperty("WeaponShots", "3")
-	elseif(rosterItem.Name == "Raptor") then
-		object:SetProperty("WS", "4")
-		object:SetProperty("BS", "4")
-		object:SetProperty("S", "4")
-		object:SetProperty("T", "4")
-		object:SetProperty("Attacks", "3")
-		object:SetProperty("Sv", "3")
-		object:SetProperty("InvSv", "7")
-		object:SetProperty("MeleeAP", "7")
-		object:SetProperty("RerollFailed2Wound", "0")
-		object:SetProperty("MovementSpeed", "12")
-		object:SetProperty("WeaponRange", "12")
-		object:SetProperty("WeaponS", "4")
-		object:SetProperty("WeaponAP", "5")
-		object:SetProperty("WeaponType", "Pistol")
-		object:SetProperty("WeaponShots", "1")
-	elseif(rosterItem.Name == "Chaos Terminator" and rosterItem.Weapon == "Combi Bolter(0)") then
-		object:SetProperty("WS", "4")
-		object:SetProperty("BS", "4")
-		object:SetProperty("S", "8")
-		object:SetProperty("T", "4")
-		object:SetProperty("Attacks", "2")
-		object:SetProperty("Sv", "2")
-		object:SetProperty("InvSv", "5")
-		object:SetProperty("MeleeAP", "2")
-		object:SetProperty("RerollFailed2Wound", "0")
-		object:SetProperty("MovementSpeed", "6")
-		object:SetProperty("WeaponRange", "24")
-		object:SetProperty("WeaponS", "4")
-		object:SetProperty("WeaponAP", "5")
-		object:SetProperty("WeaponType", "Assault")
-		object:SetProperty("WeaponShots", "2")
-	elseif(rosterItem.Name == "Chaos Terminator" and rosterItem.Weapon == "Lightning claws(0)") then
-		object:SetProperty("WS", "4")
-		object:SetProperty("BS", "4")
-		object:SetProperty("S", "4")
-		object:SetProperty("T", "4")
-		object:SetProperty("Attacks", "4")
-		object:SetProperty("Sv", "2")
-		object:SetProperty("InvSv", "5")
-		object:SetProperty("MeleeAP", "3")
-		object:SetProperty("RerollFailed2Wound", "1")
-		object:SetProperty("MovementSpeed", "6")
-		object:SetProperty("WeaponRange", "0")
-		object:SetProperty("WeaponS", "0")
-		object:SetProperty("WeaponAP", "0")
-		object:SetProperty("WeaponType", "")
-		object:SetProperty("WeaponShots", "0")
-	end
-end
+}

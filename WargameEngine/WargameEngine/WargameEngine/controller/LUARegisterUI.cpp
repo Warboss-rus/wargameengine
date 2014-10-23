@@ -267,13 +267,6 @@ int SetOnChangeCallback(lua_State* L)
 	return 0;
 }
 
-int Set(lua_State* L)
-{
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	CGameView::GetInstance().lock()->SetUI(c);
-	return 0;
-}
-
 int Get(lua_State* L)
 {
 	return CLUAScript::NewInstanceClass(CGameView::GetInstance().lock()->GetUI(), "UI");
@@ -330,7 +323,6 @@ static const luaL_Reg UIFuncs[] = {
 	{ "GetItemsCount", GetItemsCount },
 	{ "GetItem", GetItem },
 	{ "ClearItems", ClearItems },
-	//{ "Set", Set },
 	{ "Get", Get },
 	{ "ClearChildren", ClearChildren },
 	{ "DeleteChild", DeleteChild },

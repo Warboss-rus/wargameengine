@@ -1,13 +1,15 @@
 #include "Ruler.h"
+#include "view\GameView.h"
 #include <GL/glut.h>
 #include <math.h>
 #include <string>
 #include <cstring>
 
-CRuler::CRuler() 
-{ 
-	Hide(); 
-}
+bool CRuler::m_isVisible = false;
+double CRuler::m_worldBeginX = 0.0;
+double CRuler::m_worldBeginY = 0.0;
+double CRuler::m_worldEndX = 0.0;
+double CRuler::m_worldEndY = 0.0;
 
 void CRuler::SetBegin(double x, double y)
 {
@@ -24,21 +26,16 @@ void CRuler::SetEnd(double x, double y)
 	m_worldEndY = y;
 }
 
-void CRuler::Draw() const
+void CRuler::Draw()
 {
 	if(!m_isVisible) return;
-	glColor3d(255.0, 255.0, 0.0);
-	glBegin(GL_LINES);
-	glVertex3d(m_worldBeginX, m_worldBeginY, 0.0);
-	glVertex3d(m_worldEndX, m_worldEndY, 0.0);
-	glEnd();
-	glColor3d(255.0, 255.0, 255.0);
+	CGameView::GetInstance().lock()->DrawLine(m_worldBeginX, m_worldBeginY, 0.0, m_worldEndX, m_worldEndY, 0.0, 255, 255, 0);
 	char str[10];
 	sprintf(str, "%0.2f", GetDistance());
-	PrintText(m_worldEndX, m_worldEndY, str);
+	CGameView::GetInstance().lock()->DrawText3D(m_worldEndX, m_worldEndY, 0.0, str);
 }
 
-double CRuler::GetDistance() const
+double CRuler::GetDistance()
 {
 	double deltaX = m_worldEndX - m_worldBeginX;
 	double deltaY = m_worldEndY - m_worldBeginY;
@@ -52,16 +49,4 @@ void CRuler::Hide()
 	m_worldBeginY = 0.0;
 	m_worldEndX = 0.0;
 	m_worldEndY = 0.0;
-}
-
-void CRuler::PrintText( double x, double y, const char *st) const
-{
-	int l,i;
-
-	l=strlen( st ); // see how many characters are in text string.
-	glRasterPos2d( x, y); // location to start printing text
-	for( i=0; i < l; i++) // loop until i is greater then l
-	{
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, st[i]); // Print a character on the screen
-	}
 }

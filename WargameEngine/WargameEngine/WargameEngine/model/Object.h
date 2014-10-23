@@ -5,10 +5,10 @@
 #include <memory>
 #include "../view/Vector3.h"
 
-class C3DObject : public IObject
+class CObject : public IObject
 {
 public:
-	C3DObject(std::string const& model, double x, double y, double rotation, bool hasShadow = true);
+	CObject(std::string const& model, double x, double y, double rotation, bool hasShadow = true);
 	std::string GetPathToModel() const { return m_model; }
 	void Move(double x, double y, double z);
 	void SetCoords(double x, double y, double z);

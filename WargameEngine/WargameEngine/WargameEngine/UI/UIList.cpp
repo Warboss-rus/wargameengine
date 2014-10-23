@@ -1,6 +1,6 @@
 #include "UIList.h"
 #include "UIText.h"
-#include "../gl.h"
+#include "../view/gl.h"
 #include "../view/TextureManager.h"
 
 void CUIList::Draw() const

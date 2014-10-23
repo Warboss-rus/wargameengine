@@ -1,17 +1,17 @@
+
+
 class CRuler
 {
 public:
-	CRuler();
-	void SetBegin(double x, double y);
-	void SetEnd(double x, double y);
-	void Draw() const;
-	double GetDistance() const;
-	void Hide();
-	void PrintText( double x, double y, const char *st) const;
+	static void SetBegin(double x, double y);
+	static void SetEnd(double x, double y);
+	static void Draw();
+	static void Hide();
+	static double GetDistance();
 private:
-	bool m_isVisible;
-	double m_worldBeginX;
-	double m_worldBeginY;
-	double m_worldEndX;
-	double m_worldEndY;
+	static bool m_isVisible;
+	static double m_worldBeginX;
+	static double m_worldBeginY;
+	static double m_worldEndX;
+	static double m_worldEndY;
 };

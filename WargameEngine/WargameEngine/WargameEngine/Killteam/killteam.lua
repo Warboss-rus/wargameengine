@@ -65,7 +65,9 @@ function MovePhase(player)
 			Player1[i]:SetProperty("MovementX", Player1[i]:GetX())
 			Player1[i]:SetProperty("MovementY", Player1[i]:GetY())
 			if(not IsLockedInCombat(Player1[i])) then
-				Player1[i]:SetMoveLimit("circle", Player1[i]:GetX(), Player1[i]:GetY(), Player1[i]:GetProperty("MovementSpeed"))
+				local race = races[Player1[i]:GetProperty("Race")]
+				local unit = race.units[Player1[i]:GetProperty("Name")]
+				Player1[i]:SetMoveLimit("circle", Player1[i]:GetX(), Player1[i]:GetY(), unit.MovementSpeed)
 			end
 		end
 	else
@@ -74,7 +76,9 @@ function MovePhase(player)
 			Player2[i]:SetProperty("MovementX", Player2[i]:GetX())
 			Player2[i]:SetProperty("MovementY", Player2[i]:GetY())
 			if(not IsLockedInCombat(Player2[i])) then
-				Player2[i]:SetMoveLimit("circle", Player2[i]:GetX(), Player2[i]:GetY(), Player2[i]:GetProperty("MovementSpeed"))
+				local race = races[Player2[i]:GetProperty("Race")]
+				local unit = race.units[Player2[i]:GetProperty("Name")]
+				Player2[i]:SetMoveLimit("circle", Player2[i]:GetX(), Player2[i]:GetY(), unit.MovementSpeed)
 			end
 		end
 	end
@@ -262,7 +266,7 @@ function Fire2(prey)
 		return
 	end
 	if(hunter:GetProperty("Shooted") ~= "0") then
-		MessageBox("This unit already shooted or runned")
+		MessageBox("This unit had already shooted or runned")
 		NextHunter()
 		return
 	end
@@ -275,17 +279,19 @@ function Fire2(prey)
 		MessageBox("Cannot shoot at enemy locked in melee combat")
 		return
 	end
+	local army = races[hunter:GetProperty("Race")]
+	local weapon = army.weapons[hunter:GetProperty("RangedWeapon")]
 	local range = math.sqrt((hunter:GetX() - prey:GetX()) * (hunter:GetX() - prey:GetX()) + (hunter:GetY() - prey:GetY()) * (hunter:GetY() - prey:GetY()))
-	local weaponRange = 0 + hunter:GetProperty("WeaponRange")
+	local weaponRange = weapon.Range
 	if(range > weaponRange) then
 		MessageBox("Target is out of range of this weapon(range=" .. range .. "; weaponRange=" .. weaponRange .. ")")
 		return
 	end
-	local numShots = 0 + hunter:GetProperty("WeaponShots")
-	if((hunter:GetProperty("WeaponType") == "RapidFire") and (range > (weaponRange / 2))) then
+	local numShots = weapon.Shots
+	if((weapon.Type == "RapidFire") and (range > (weaponRange / 2))) then
 		numShots = numShots / 2
 	end
-	local toHit = 7 - hunter:GetProperty("BS")
+	local toHit = 7 - army.units[hunter:GetProperty("Name")].BS
 	if(toHit < 2) then
 		toHit = 2
 	end
@@ -309,20 +315,22 @@ function Fire2(prey)
 	if(toHit > 6) then
 		toHit = 6
 	end
-	if(hunter:GetProperty("WeaponType") == "Heavy") then
+	if(weapon.Type == "Heavy") then
 		local deltaX = hunter:GetProperty("MovementX") - hunter:GetX()
 		local deltaY = hunter:GetProperty("MovementY") - hunter:GetY()
 		if((math.sqrt(deltaX * deltaX + deltaY * deltaY) > 0.25)) then
 			toHit = 6
 		end
 	end
-	local toWound = GetToWound(hunter:GetProperty("WeaponS"), prey:GetProperty("T"))
-	local save = 0 + prey:GetProperty("Sv")
-	if(0 + hunter:GetProperty("WeaponAP") <= save) then
+	local preyArmy = races[prey:GetProperty("Race")]
+	local preyUnit = preyArmy.units[prey:GetProperty("Name")]
+	local toWound = GetToWound(weapon.S, preyUnit.T)
+	local save = preyUnit.Sv
+	if(weapon.AP <= save) then
 		save = 7
 	end
-	if(0 + prey:GetProperty("InvSv") < save) then
-		save = 0 + prey:GetProperty("InvSv")
+	if(preyUnit.InvSv < save) then
+		save = preyUnit.InvSv
 	end
 	local result = "Rolls to hit (".. numShots .. " dice, " .. toHit .. "+): "
 	local hits = 0
@@ -441,20 +449,25 @@ function Strike2(prey)
 		MessageBox("Target is not in base contact with striker(range=" .. range .. "; baseContact=3)")
 		return
 	end
-	local numStrikes = 0 + hunter:GetProperty("Attacks")
-	local toHit = 8 - hunter:GetProperty("WS")
+	local army = races[hunter:GetProperty("Race")]
+	local weapon = army.weapons[hunter:GetProperty("MeleeWeapon")]
+	local unit = army.units[hunter:GetProperty("Name")]
+	local numStrikes = unit.Attacks + weapon.AdditionalAttacks
+	local toHit = 8 - unit.WS
 	if(toHit < 2) then
 		toHit = 2
 	elseif(toHit > 6) then
 		toHit = 6
 	end
-	local toWound = GetToWound(hunter:GetProperty("S"), prey:GetProperty("T"))
-	local save = 0 + prey:GetProperty("Sv")
-	if(0 + hunter:GetProperty("MeleeAP") <= save) then
+	local preyArmy = races[prey:GetProperty("Race")]
+	local preyUnit = preyArmy.units[prey:GetProperty("Name")]
+	local toWound = GetToWound(weapon.S, preyUnit.T)
+	local save = preyUnit.Sv
+	if(weapon.AP <= save) then
 		save = 7
 	end
-	if(0 + prey:GetProperty("InvSv") < save) then
-		save = 0 + prey:GetProperty("InvSv")
+	if(preyUnit.InvSv < save) then
+		save = preyUnit.InvSv
 	end
 	local result = "Rolls to hit (".. numStrikes .. " dice, " .. toHit .. "+): "
 	local hits = 0
@@ -475,7 +488,7 @@ function Strike2(prey)
 		end
 		result = result .. rand .. " "
 	end
-	if(hunter:GetProperty("RerollFailed2Wound") == "1") then
+	if(weapon.RerollFailed2Wound == true) then
 		result = result .. "\nRerolls failed to wound(" .. hits - wounds .. " dice, " .. toWound .. "+): "
 		for i = 1, hits - wounds do
 			local rand = math.random(1, 6)

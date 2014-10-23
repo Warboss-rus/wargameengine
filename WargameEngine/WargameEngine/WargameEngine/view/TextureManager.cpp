@@ -1,7 +1,7 @@
 #include "TextureManager.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
-#include "../gl.h"
+#include "gl.h"
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
@@ -108,7 +108,7 @@ void* UnpackTexture(void * data, unsigned int size, void* param)
 	unsigned char * newData = stbi_load_from_memory((const unsigned char*)data, size, &width, &height, &bpp, 4);
 	delete[] data;
 	img->data = new unsigned char[width * height * 4];
-	for (unsigned long y = 0; y < height; ++y)
+	for (int y = 0; y < height; ++y)
 	{
 		memcpy(&img->data[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
 	}

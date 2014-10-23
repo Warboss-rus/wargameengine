@@ -1,5 +1,5 @@
 #include "UIRadioGroup.h"
-#include "../gl.h"
+#include "../view/gl.h"
 #include "../view/TextureManager.h"
 #include "UIText.h"
 

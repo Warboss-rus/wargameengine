@@ -21,8 +21,14 @@ public:
     static void RegisterConstant(T value, char* constantname);
 	static void RegisterClass(const luaL_Reg funcs[], std::string const& className);
 	static void CallFunction(std::string const& funcName);
-	template<class T>
-	static void CallFunction(std::string const& funcName, T param);
+	template<class X>
+	static void CallFunction(std::string const& funcName, X param);
+	static void CallFunction(std::string const& funcName, void* param, std::string const& className);
+	static void CallFunction(std::string const& funcName, void* param, std::string const& className, double x, double y, double z);
+	template<class U>
+	static U CallFunctionReturn(std::string const& funcName);
+	template<class U, class T>
+	static U CallFunctionReturn(std::string const& funcName, T param);
 	static void * GetClassInstance(std::string const& className);
 	static int NewInstanceClass(void* instance, std::string const& className);
 	static void IncludeLibrary(std::string const& libName);

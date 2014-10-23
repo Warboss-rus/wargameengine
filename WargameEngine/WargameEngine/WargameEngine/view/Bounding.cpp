@@ -1,9 +1,8 @@
 #include "Bounding.h"
 #include <cstring>
-#include "../gl.h"
+#include "gl.h"
 #include <fstream>
 #include <string>
-#include "Vector3.h"
 #include <algorithm>
 #include "Geometry/Ray.h"
 #include "Geometry/Polyhedron.h"
@@ -107,7 +106,7 @@ void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 	RotateScaleTranslate(box[18], box[19], box[20], rotation, m_scale, x, y, z);
 	RotateScaleTranslate(box[21], box[22], box[23], rotation, m_scale, x, y, z);
 
-	glPushMatrix();
+	//glPushMatrix();
 	glColor3d(0.0, 0.0, 255.0);
 	//Left
 	glBegin(GL_LINE_LOOP);
@@ -138,7 +137,7 @@ void CBoundingBox::Draw(double x, double y, double z, double rotation) const
 	glVertex3d(box[15], box[16], box[17]);
 	glEnd();
 	glColor3d(255.0, 255.0, 255.0);
-	glPopMatrix();
+	//glPopMatrix();
 }
 
 bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, double angle1, CBoundingBox const& bounding2, CVector3d const& translate2, double angle2)

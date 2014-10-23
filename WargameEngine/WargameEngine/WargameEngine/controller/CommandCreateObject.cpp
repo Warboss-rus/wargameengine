@@ -1,13 +1,13 @@
 #include "CommandCreateObject.h"
 #include "../model/GameModel.h"
-#include "../model/3dObject.h"
+#include "../model/Object.h"
 #include "../Network.h"
 
 CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object):m_pObject(object) {}
 
 void CCommandCreateObject::Execute()
 {
-	//m_pObject.reset(new C3DObject(m_model, m_x, m_y, m_rotation)); 
+	//m_pObject.reset(new CObject(m_model, m_x, m_y, m_rotation)); 
 	CGameModel::GetInstance().lock()->AddObject(m_pObject);
 }
 

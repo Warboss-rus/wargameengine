@@ -5,7 +5,6 @@
 #include <cstring>
 #ifdef _WINDOWS
 #include <windows.h>
-#include "Task.h"
 #include "OSSpecific.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)

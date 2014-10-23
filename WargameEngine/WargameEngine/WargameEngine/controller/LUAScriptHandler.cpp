@@ -184,6 +184,64 @@ void CLUAScript::CallFunction<const char*>(std::string const& funcName, const ch
 	}
 }
 
+void CLUAScript::CallFunction(std::string const& funcName, void* param, std::string const& className)
+{
+	lua_getglobal(m_lua_state, funcName.c_str());
+	NewInstanceClass(param, className);
+	int result = lua_pcall(m_lua_state, 1, 0, 0);
+	if (result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+}
+
+void CLUAScript::CallFunction(std::string const& funcName, void* param, std::string const& className, double x, double y, double z)
+{
+	lua_getglobal(m_lua_state, funcName.c_str());
+	NewInstanceClass(param, className);
+	SetArgument(x);
+	SetArgument(y);
+	SetArgument(z);
+	int result = lua_pcall(m_lua_state, 4, 0, 0);
+	if (result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+}
+
+template<>
+int CLUAScript::CallFunctionReturn<int>(std::string const& funcName)
+{
+	lua_getglobal(m_lua_state, funcName.c_str());
+	int result = lua_pcall(m_lua_state, 0, 1, 0);
+	if (result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+	result = GetArgument<int>(1);
+	lua_pop(m_lua_state, 1);
+	return result;
+}
+
+template<>
+int CLUAScript::CallFunctionReturn<int, const char*>(std::string const& funcName, const char* param)
+{
+	lua_getglobal(m_lua_state, funcName.c_str());
+	SetArgument(param);
+	int result = lua_pcall(m_lua_state, 1, 1, 0);
+	if (result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+	result = GetArgument<int>(1);
+	lua_pop(m_lua_state, 1);
+	return result;
+}
+
 void * CLUAScript::GetClassInstance(std::string const& className)
 {
 	void* ud = 0;

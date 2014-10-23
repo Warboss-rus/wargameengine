@@ -1,5 +1,4 @@
 #include <GL/glut.h>
-#include "model/ObjectInterface.h"
 #include <vector>
 
 void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, double & startz, double & endx, double & endy, double & endz)

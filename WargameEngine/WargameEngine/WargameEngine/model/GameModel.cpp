@@ -1,8 +1,9 @@
 #include "GameModel.h"
 #include "../view/ModelManager.h"
 #include "../model/ObjectGroup.h"
-#include "3dObject.h"
+#include "Object.h"
 #include <cstring>
+#include "../Network.h"
 
 std::shared_ptr<CGameModel> CGameModel::m_instanse = NULL;
 
@@ -135,7 +136,7 @@ std::vector<char> PackProperties(std::map<std::string, std::string> const&proper
 	return result;
 }
 
-std::vector<char> CGameModel::GetState() const
+std::vector<char> CGameModel::GetState(bool hasAdresses) const
 {
 	std::vector<char> result;
 	result.resize(9);
@@ -154,6 +155,13 @@ std::vector<char> CGameModel::GetState() const
 		*((double*)&current[24]) = object->GetRotation();
 		*((unsigned int*)&current[32]) = path.size() + 1;
 		memcpy(&current[36], path.c_str(), path.size() + 1);
+		if (hasAdresses)
+		{
+			std::vector<char> address;
+			address.resize(4);
+			*((unsigned int*)&address[0]) = (unsigned int)object;
+			current.insert(current.end(), address.begin(), address.end());
+		}
 		std::vector<char> properties = PackProperties(object->GetAllProperties());
 		current.insert(current.end(), properties.begin(), properties.end());
 		result.insert(result.end(), current.begin(), current.end());
@@ -164,7 +172,7 @@ std::vector<char> CGameModel::GetState() const
 	return result;
 }
 
-void CGameModel::SetState(char* data)
+void CGameModel::SetState(char* data, bool hasAdresses)
 {
 	unsigned int count = *(unsigned int*)&data[0];
 	unsigned int current = 4;
@@ -179,10 +187,16 @@ void CGameModel::SetState(char* data)
 		unsigned int pathSize = *((unsigned int*)&data[current + 32]);
 		char * path = new char[pathSize];
 		memcpy(path, &data[current + 36], pathSize);
-		IObject* object = new C3DObject(path, x, y, rotation);
-		model->AddObject(std::shared_ptr<IObject>(object));
+		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, x, y, rotation));
+		model->AddObject(object);
 		delete[] path;
 		current += 36 + pathSize;
+		if (hasAdresses)
+		{
+			unsigned int address = *((unsigned int*)&data[current]);
+			current += 4;
+			CNetwork::GetInstance().lock()->AddAddress(object, address);
+		}
 		unsigned int propertiesCount = *((unsigned int*)&data[current]);
 		current += 4;
 		for (unsigned int i = 0; i < propertiesCount; ++i)

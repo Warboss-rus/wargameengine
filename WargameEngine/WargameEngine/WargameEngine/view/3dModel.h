@@ -16,6 +16,21 @@ struct sMesh
 	bool operator!= (sMesh const& other) { return !operator==(other); }
 };
 
+struct sWeight
+{
+	std::vector<unsigned int> indexes;
+	std::vector<float> weights;
+};
+
+struct sJoint
+{
+	std::string name;
+	std::string bone;
+	int parentIndex;
+	float matrix[16];
+	float invBindMatrix[16];
+};
+
 class C3DModel
 {
 public:
@@ -35,6 +50,8 @@ private:
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
 	std::vector<unsigned int> m_indexes;
+	std::vector<sWeight> m_weights;
+	std::vector<sJoint> m_skeleton;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
 	std::shared_ptr<IBounding> m_bounding;

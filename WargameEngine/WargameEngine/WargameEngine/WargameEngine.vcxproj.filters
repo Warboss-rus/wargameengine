@@ -25,33 +25,21 @@
     <Filter Include="Source Files\view">
       <UniqueIdentifier>{0ef7c67f-d75f-417d-b16d-1f3bf064e45c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\actions">
-      <UniqueIdentifier>{7fcd2ea5-c4a3-4bc6-82d0-4ac3c86d605f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\actions">
-      <UniqueIdentifier>{bbfc768f-9356-4e40-bfa4-23e779379293}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\LUA">
-      <UniqueIdentifier>{cda6e00c-b34a-4ac9-8f0b-8aef3d443092}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\LUA">
-      <UniqueIdentifier>{b2113b92-b917-4410-aed7-a0ae5d5e44a9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\model">
       <UniqueIdentifier>{0948a43f-f393-42e0-bf26-3155fbcd0809}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\model">
       <UniqueIdentifier>{636ee3a0-8baf-4c83-94b5-ae1f908c9261}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\controller">
+      <UniqueIdentifier>{7fcd2ea5-c4a3-4bc6-82d0-4ac3c86d605f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\controller">
+      <UniqueIdentifier>{bbfc768f-9356-4e40-bfa4-23e779379293}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\GameController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SelectionTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Ruler.cpp">
@@ -115,28 +103,16 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandCreateObject.cpp">
-      <Filter>Source Files\actions</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandDeleteObject.cpp">
-      <Filter>Source Files\actions</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandHandler.cpp">
-      <Filter>Source Files\actions</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandMoveObject.cpp">
-      <Filter>Source Files\actions</Filter>
-    </ClCompile>
-    <ClCompile Include="LUA\LUARegisterFunctions.cpp">
-      <Filter>Source Files\LUA</Filter>
-    </ClCompile>
-    <ClCompile Include="LUA\LUARegisterUI.cpp">
-      <Filter>Source Files\LUA</Filter>
-    </ClCompile>
-    <ClCompile Include="LUA\LUAScriptHandler.cpp">
-      <Filter>Source Files\LUA</Filter>
-    </ClCompile>
-    <ClCompile Include="LUA\LUARegisterObject.cpp">
-      <Filter>Source Files\LUA</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="view\WBMModelFactory.cpp">
       <Filter>Source Files\view</Filter>
@@ -147,14 +123,8 @@
     <ClCompile Include="UI\UIComboBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="los.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="view\TextWriter.cpp">
       <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="model\3dObject.cpp">
-      <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="model\GameModel.cpp">
       <Filter>Source Files\model</Filter>
@@ -169,7 +139,7 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandRotateObject.cpp">
-      <Filter>Source Files\actions</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="LogWriter.cpp">
       <Filter>Source Files</Filter>
@@ -181,19 +151,16 @@
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandCompound.cpp">
-      <Filter>Source Files\actions</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandChangeProperty.cpp">
-      <Filter>Source Files\actions</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandChangeGlobalProperty.cpp">
-      <Filter>Source Files\actions</Filter>
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="UI\UIScrollBar.cpp">
       <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="LUA\TimedCallback.cpp">
-      <Filter>Source Files\LUA</Filter>
     </ClCompile>
     <ClCompile Include="Module.cpp">
       <Filter>Source Files</Filter>
@@ -231,14 +198,32 @@
     <ClCompile Include="tinyxmlparser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="view\SelectionTools.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\GameController.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\LUARegisterFunctions.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\LUARegisterObject.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\LUARegisterUI.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\LUAScriptHandler.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\TimedCallback.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="model\Object.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="controller\GameController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SelectionTools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Ruler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -291,31 +276,19 @@
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandCreateObject.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandDeleteObject.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandHandler.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandMoveObject.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\ICommand.h">
-      <Filter>Header Files\actions</Filter>
-    </ClInclude>
-    <ClInclude Include="LUA\LUARegisterFunctions.h">
-      <Filter>Header Files\LUA</Filter>
-    </ClInclude>
-    <ClInclude Include="LUA\LUARegisterUI.h">
-      <Filter>Header Files\LUA</Filter>
-    </ClInclude>
-    <ClInclude Include="LUA\LUAScriptHandler.h">
-      <Filter>Header Files\LUA</Filter>
-    </ClInclude>
-    <ClInclude Include="LUA\LUARegisterObject.h">
-      <Filter>Header Files\LUA</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="view\Material.h">
       <Filter>Header Files\view</Filter>
@@ -335,26 +308,14 @@
     <ClInclude Include="UI\UIList.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="view\Vector2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Vector3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UI\UIComboBox.h">
       <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="los.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIRadioGroup.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\TextWriter.h">
       <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="model\3dObject.h">
-      <Filter>Header Files\model</Filter>
     </ClInclude>
     <ClInclude Include="model\GameModel.h">
       <Filter>Header Files\model</Filter>
@@ -369,7 +330,7 @@
       <Filter>Header Files\model</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandRotateObject.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="LogWriter.h">
       <Filter>Header Files</Filter>
@@ -378,19 +339,16 @@
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandCompound.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandChangeProperty.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandChangeGlobalProperty.h">
-      <Filter>Header Files\actions</Filter>
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIScrollBar.h">
       <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="LUA\TimedCallback.h">
-      <Filter>Header Files\LUA</Filter>
     </ClInclude>
     <ClInclude Include="ThreadPool.h">
       <Filter>Header Files</Filter>
@@ -416,14 +374,38 @@
     <ClInclude Include="Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="gl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tinystr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tinyxml.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\SelectionTools.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Vector2.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Vector3.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\GameController.h">
+      <Filter>Header Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\LUARegisterFunctions.h">
+      <Filter>Header Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\LUAScriptHandler.h">
+      <Filter>Header Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\TimedCallback.h">
+      <Filter>Header Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Object.h">
+      <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\gl.h">
+      <Filter>Header Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

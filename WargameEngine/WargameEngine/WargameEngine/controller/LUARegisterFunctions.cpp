@@ -1,12 +1,12 @@
 #include "LUAScriptHandler.h"
 #include "../view/GameView.h"
-#include "../controller/CommandHandler.h"
+#include "../controller/GameController.h"
 #include "../view/Input.h"
 #include "../LogWriter.h"
-#include "../los.h"
 #include <GL/glut.h>
 #include "TimedCallback.h"
 #include "../OSSpecific.h"
+#include "../Network.h"
 
 int CreateTable(lua_State* L)
 {
@@ -37,7 +37,7 @@ int CameraSetLimits(lua_State* L)
 	double maxTransY = CLUAScript::GetArgument<double>(2);
 	double maxScale = CLUAScript::GetArgument<double>(3);
 	double minScale = CLUAScript::GetArgument<double>(4);
-	CGameView::GetInstance().lock()->CameraSetLimits(maxTransX, maxTransY, maxScale, minScale);
+	CGameView::GetInstance().lock()->GetCamera()->SetLimits(maxTransX, maxTransY, maxScale, minScale);
 	return 0;
 }
 
@@ -47,7 +47,7 @@ int LoS(lua_State* L)
         return luaL_error(L, "2 argument expected (source, target)");
 	IObject* shootingModel = (IObject*)CLUAScript::GetArgument<void*>(1);
 	IObject* target = (IObject*)CLUAScript::GetArgument<void*>(2);
-	int los = Los(shootingModel, target);
+	int los = CGameController::GetInstance().lock()->GetLineOfSight(shootingModel, target);
 	CLUAScript::SetArgument(los);
 	return 1;
 }
@@ -172,7 +172,7 @@ int SetOnStateRecievedCallback(lua_State* L)
 			CLUAScript::CallFunction(func);
 		};
 	}
-	CGameView::GetInstance().lock()->SetStateRecievedCallback(function);
+	CNetwork::GetInstance().lock()->SetStateRecievedCallback(function);
 	return 0;
 }
 
@@ -189,7 +189,7 @@ int SetOnStringRecievedCallback(lua_State* L)
 			CLUAScript::CallFunction(func, param);
 		};
 	}
-	CGameView::GetInstance().lock()->SetStringRecievedCallback(function);
+	CNetwork::GetInstance().lock()->SetStringRecievedCallback(function);
 	return 0;
 }
 
@@ -211,6 +211,26 @@ int DeleteTimedCallback(lua_State* L)
 		return luaL_error(L, "1 argument expected (ID)");
 	unsigned int id = CLUAScript::GetArgument<unsigned int>(1);
 	CTimedCallback::GetInstance()->DeleteCallback(id);
+	return 0;
+}
+
+int SetLMBCallback(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 argument expected (function name, disable default behavior)");
+	std::string func = CLUAScript::GetArgument<char*>(1);
+	bool disable = CLUAScript::GetArgument<bool>(2);
+	CInput::SetLMBCallback(func, disable);
+	return 0;
+}
+
+int SetRMBCallback(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "2 argument expected (function name, disable default behavior)");
+	std::string func = CLUAScript::GetArgument<char*>(1);
+	bool disable = CLUAScript::GetArgument<bool>(2);
+	CInput::SetRMBCallback(func, disable);
 	return 0;
 }
 
@@ -424,7 +444,7 @@ int NetHost(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (port)");
 	int port = CLUAScript::GetArgument<int>(1);
-	CGameView::GetInstance().lock()->NetHost(port);
+	CNetwork::GetInstance().lock()->Host(port);
 	return 0;
 }
 
@@ -434,7 +454,7 @@ int NetClient(lua_State* L)
 		return luaL_error(L, "2 argument expected (ip, port)");
 	std::string ip = CLUAScript::GetArgument<const char*>(1);
 	int port = CLUAScript::GetArgument<int>(2);
-	CGameView::GetInstance().lock()->NetClient(ip, port);
+	CNetwork::GetInstance().lock()->Client(ip.c_str(), port);
 	return 0;
 }
 
@@ -443,7 +463,7 @@ int NetSendMessage(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (message)");
 	std::string message = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetInstance().lock()->NetSendMessage(message);
+	CNetwork::GetInstance().lock()->SendMessag(message);
 	return 0;
 }
 
@@ -546,7 +566,7 @@ int Uniform1fv(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 3)
 		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
-	int count = CLUAScript::GetArgument<int>(2);
+	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count) return luaL_error(L, "Not enough elements in the array");
 	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue(name, count, &value[0]);
@@ -558,7 +578,7 @@ int Uniform2fv(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 3)
 		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
-	int count = CLUAScript::GetArgument<int>(2);
+	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 2) return luaL_error(L, "Not enough elements in the array");
 	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue2(name, count, &value[0]);
@@ -570,7 +590,7 @@ int Uniform3fv(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 3)
 		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
-	int count = CLUAScript::GetArgument<int>(2);
+	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 3) return luaL_error(L, "Not enough elements in the array");
 	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue3(name, count, &value[0]);
@@ -582,7 +602,7 @@ int Uniform4fv(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 3)
 		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
-	int count = CLUAScript::GetArgument<int>(2);
+	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 4) return luaL_error(L, "Not enough elements in the array");
 	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue4(name, count, &value[0]);
@@ -594,7 +614,7 @@ int UniformMatrix4fv(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 3)
 		return luaL_error(L, "3 arguments expected (uniform name, values count, values array)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
-	int count = CLUAScript::GetArgument<int>(2);
+	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 16) return luaL_error(L, "Not enough elements in the array");
 	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformMatrix4(name, count, &value[0]);
@@ -658,4 +678,6 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(Uniform3fv, "Uniform3fv");
 	lua.RegisterConstant(Uniform4fv, "Uniform4fv");
 	lua.RegisterConstant(UniformMatrix4fv, "UniformMatrix4fv");
+	lua.RegisterConstant(SetLMBCallback, "SetLMBCallback");
+	lua.RegisterConstant(SetRMBCallback, "SetRMBCallback");
 }

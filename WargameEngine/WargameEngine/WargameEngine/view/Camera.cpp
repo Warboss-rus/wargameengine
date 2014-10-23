@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include "../gl.h"
+#include "gl.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 

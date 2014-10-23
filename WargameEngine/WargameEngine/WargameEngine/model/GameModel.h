@@ -33,6 +33,6 @@ public:
 	void SetProperty(std::string const& key, std::string const& value);
 	std::string const GetProperty(std::string const& key);
 	std::map<std::string, std::string> const& GetAllProperties() const;
-	std::vector<char> GetState() const;
-	void SetState(char* data);
+	std::vector<char> GetState(bool hasAdresses = false) const;
+	void SetState(char* data, bool hasAdresses = false);
 };

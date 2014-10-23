@@ -1,7 +1,7 @@
 #include <map>
 #include <functional>
 #pragma once
-
+#include <string>
 class CInput
 {
 private:
@@ -25,6 +25,10 @@ private:
 	static double startY;
 	static double m_oldRotation;
 	static std::map<sKeyBind, std::function<void()>> m_keyBindings;
+	static std::string m_LMBclickCallback;
+	static std::string m_RMBclickCallback;
+	static bool m_disableDefaultLMB;
+	static bool m_disableDefaultRMB;
 public:
 
 	static void EnableRuler() { m_ruler = true; }
@@ -35,6 +39,8 @@ public:
 	static void OnPassiveMouseMove(int x, int y);
 	static void OnMouseMove(int x, int y);
 	static void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);
+	static void SetLMBCallback(std::string const& callback, bool disableDefault);
+	static void SetRMBCallback(std::string const& callback, bool disableDefault);
 };
 
 inline bool operator< (CInput::sKeyBind const& one, CInput::sKeyBind const& two) { return one.key < two.key; }

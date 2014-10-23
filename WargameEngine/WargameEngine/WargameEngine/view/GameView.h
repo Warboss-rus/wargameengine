@@ -1,23 +1,20 @@
 //#pragma once
 
 #include <memory>
-#include "../model/3dObject.h"
+#include "../model/Object.h"
 #include "ModelManager.h"
 #include "../model/GameModel.h"
 #include "Table.h"
 #include "SkyBox.h"
 #include "Camera.h"
 #include "Input.h"
-#include "../Ruler.h"
 #include "../UI/UIElement.h"
-#include "../LUA/LUAScriptHandler.h"
 #include "ShaderManager.h"
 #include "../NetSocket.h"
 
 class CGameView
 {
 private:
-	CVector3d m_selectedObjectCapturePoint;
 	CModelManager m_modelManager;
 	std::weak_ptr<CGameModel> m_gameModel;
 
@@ -25,22 +22,18 @@ private:
 	std::shared_ptr<CTable> m_table;
 	std::shared_ptr<CSkyBox> m_skybox;
 	CCamera m_camera;
-	CRuler m_ruler;
 	std::shared_ptr<IUIElement> m_ui;
-	std::shared_ptr<CLUAScript> m_lua;
+	
 	CShaderManager m_shader;
 	std::shared_ptr<CNetSocket> m_socket;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
 	CGameView& operator=(const CGameView&){};
-	void DrawUI() const;
 
 	callback(m_selectionCallback);
 	callback(m_updateCallback);
 	callback(m_singleCallback);
-	callback(m_stateRecievedCallback);
-	std::function<void(const char*)>m_stringRecievedCallback;
 	bool m_vertexLightning;
 	bool m_shadowMap;
 	unsigned int m_shadowMapTexture;
@@ -52,43 +45,26 @@ private:
 	float m_shadowAngle;
 	float m_anisoptropy;
 	static bool m_visible;
-public:
-	static std::weak_ptr<CGameView> GetInstance();
-	~CGameView();
 
+	void DrawUI() const;
 	void Update();
 	void DrawObjects(void);
 	void DrawBoundingBox();
 	void DrawShadowMap();
 	void SetUpShadowMapDraw();
 	void Init();
+public:
+	static std::weak_ptr<CGameView> GetInstance();
+	~CGameView();
 
 	void CreateTable(float width, float height, std::string const& texture);
 	void CreateSkybox(double size, std::string const& textureFolder);
-	void SetUI(IUIElement * ui);
 	IUIElement * GetUI() const;
 
-	std::shared_ptr<IObject> GetNearestObject(int x, int y);
 	void SelectObject(int x, int y, bool shiftPressed);
 	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
-	bool IsObjectInteresectSomeObjects(std::shared_ptr<IObject> object);
-	void CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale);
-	void CameraZoomIn();
-	void CameraZoomOut();
-	void CameraRotate(int rotZ, int rotX);
-	void CameraReset();
-	void CameraTranslateLeft();
-	void CameraTranslateRight();
-	void CameraTranslateDown();
-	void CameraTranslateUp();
-	void RulerBegin(double x, double y);
-	void RulerEnd(double x, double y);
-	void RulerHide();
+	CCamera * GetCamera();
 	void TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y);
-	bool UILeftMouseButtonDown(int x, int y);
-	bool UILeftMouseButtonUp(int x, int y);
-	bool UIKeyPress(unsigned char key);
-	bool UISpecialKeyPress(int key);
 	CModelManager* GetModelManager() { return &m_modelManager; }
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
@@ -107,12 +83,10 @@ public:
 	const CShaderManager * GetShaderManager() const;
 	void Preload(std::string const& image);
 	void LoadModule(std::string const& module);
-	void ResetLUA();
 	void ToggleFullscreen() const;
 
-	void NetHost(unsigned short port);
-	void NetClient(std::string const& ip, unsigned short port);
-	void NetSendMessage(std::string const& message);
+	void DrawLine(double beginX, double beginY, double beginZ, double endX, double endY, double endZ, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
+	void DrawText3D(double x, double y, double z, std::string const& text);
 	
 	void Save(std::string const& filename);
 	void Load(std::string const& filename);
@@ -120,8 +94,6 @@ public:
 	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));
 	void SetSingleCallback(callback(onSingleUpdate));
-	void SetStateRecievedCallback(callback(onStateRecieved));
-	void SetStringRecievedCallback(std::function<void(const char*)> onStringRecieved);
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

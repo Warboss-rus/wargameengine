@@ -4,18 +4,15 @@
 #include <GL/freeglut.h>
 #include <string>
 #include <cstring>
-#include "../SelectionTools.h"
-#include "../UI/UICheckBox.h"
-#include "../controller/CommandHandler.h"
-#include "../LUA/LUARegisterFunctions.h"
-#include "../LUA/LUARegisterUI.h"
-#include "../LUA/LUARegisterObject.h"
+#include "SelectionTools.h"
+#include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../OSSpecific.h"
 #include "../Network.h"
+#include "../Ruler.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
@@ -43,18 +40,8 @@ CGameView::~CGameView()
 	CNetwork::FreeInstance();
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
-	CCommandHandler::FreeInstance();
+	CGameController::FreeInstance();
 	CGameModel::FreeInstance();
-}
-
-void CGameView::CreateTable(float width, float height, std::string const& texture)
-{
-	m_table.reset(new CTable(width, height, texture));
-}
-
-void CGameView::CreateSkybox(double size, std::string const& textureFolder)
-{
-	m_skybox.reset(new CSkyBox(size, size, size, textureFolder));
 }
 
 CGameView::CGameView(void)
@@ -87,7 +74,7 @@ void CGameView::Init()
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_ALPHA_TEST);
-        glAlphaFunc(GL_GREATER, 0.01f);
+    glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -109,11 +96,7 @@ void CGameView::Init()
 	memset(m_lightPosition, 0, sizeof(float)* 3);
 	m_anisoptropy = 1.0f;
 
-	m_lua.reset(new CLUAScript());
-	RegisterFunctions(*m_lua.get());
-	RegisterUI(*m_lua.get());
-	RegisterObject(*m_lua.get());
-	m_lua->RunScript(sModule::script);
+	CGameController::GetInstance();
 
 	glutMainLoop();
 }
@@ -184,7 +167,7 @@ void CGameView::Update()
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	DrawObjects();
 	DrawBoundingBox();
-	m_ruler.Draw();
+	CRuler::Draw();
 	DrawUI();
 }
 
@@ -297,49 +280,19 @@ void CGameView::OnReshape(int width, int height)
 	CGameView::GetInstance().lock()->m_ui->Resize(height, width);
 }
 
-void CGameView::CameraSetLimits(double maxTransX, double maxTransY, double maxScale, double minScale)
+void CGameView::CreateTable(float width, float height, std::string const& texture)
 {
-	m_camera.SetLimits(maxTransX, maxTransY, maxScale, minScale);
+	m_table.reset(new CTable(width, height, texture));
 }
 
-void CGameView::CameraZoomIn()
+void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 {
-	m_camera.ZoomIn();
+	m_skybox.reset(new CSkyBox(size, size, size, textureFolder));
 }
 
-void CGameView::CameraZoomOut()
+CCamera * CGameView::GetCamera()
 {
-	m_camera.ZoomOut();
-}
-
-void CGameView::CameraRotate(int rotZ, int rotX)
-{
-	m_camera.Rotate((double)rotZ / 10, (double)rotX / 5);
-}
-
-void CGameView::CameraReset()
-{
-	m_camera.Reset();
-}
-
-void CGameView::CameraTranslateLeft()
-{
-	m_camera.Translate(CCamera::TRANSLATE, 0.0);
-}
-
-void CGameView::CameraTranslateRight()
-{
-	m_camera.Translate(-CCamera::TRANSLATE, 0.0);
-}
-
-void CGameView::CameraTranslateDown()
-{
-	m_camera.Translate(0.0, CCamera::TRANSLATE);
-}
-
-void CGameView::CameraTranslateUp()
-{
-	m_camera.Translate(0.0, -CCamera::TRANSLATE);
+	return &m_camera;
 }
 
 void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//Works only for Z = 0 plane and select object only if its center is within selection rectangle, needs better algorithm
@@ -347,138 +300,17 @@ void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//W
 	double beginWorldX, beginWorldY, endWorldX, endWorldY;
 	WindowCoordsToWorldCoords(beginX, beginY, beginWorldX, beginWorldY);
 	WindowCoordsToWorldCoords(endX, endY, endWorldX, endWorldY);
-	double minX = (beginWorldX < endWorldX)?beginWorldX:endWorldX;
-	double maxX = (beginWorldX > endWorldX)?beginWorldX:endWorldX;
-	double minY = (beginWorldY < endWorldY)?beginWorldY:endWorldY;
-	double maxY = (beginWorldY > endWorldY)?beginWorldY:endWorldY;
-	CObjectGroup* group = new CObjectGroup();
-	CGameModel * model = CGameModel::GetInstance().lock().get();
-	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
-	{
-		std::shared_ptr<IObject> object = model->Get3DObject(i);
-		if(object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY && object->IsSelectable())
-		{
-			group->AddChildren(object);
-		}
-	}
-	switch(group->GetCount())
-	{
-	case 0:
-		{
-			model->SelectObject(NULL);
-			delete group;
-		}break;
-	case 1:
-		{
-			model->SelectObject(group->GetChild(0));
-			delete group;
-		}break;
-	default:
-		{
-			model->SelectObject(std::shared_ptr<IObject>(group));
-		}break;
-	}
+	CGameController::GetInstance().lock()->SelectObjectGroup(beginWorldX, beginWorldY, endWorldX, endWorldY);
 	if(m_selectionCallback) m_selectionCallback();
-}
-
-std::shared_ptr<IObject> CGameView::GetNearestObject(int x, int y)
-{
-	std::shared_ptr<IObject> selectedObject = NULL;
-	double minDistance = 10000000.0;
-	CGameModel * model = CGameModel::GetInstance().lock().get();
-	double start[3];
-	double end[3];
-	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
-	for(unsigned long i = 0; i < model->GetObjectCount(); ++i)
-	{
-		std::shared_ptr<IObject> object = model->Get3DObject(i);
-		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = m_modelManager.GetBoundingBox(object->GetPathToModel());
-		if (!bounding) continue;
-		if(bounding->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
-		{
-			double distance = sqrt(object->GetX() * object->GetX() + object->GetY() * object->GetY() + object->GetZ() * object->GetZ());
-			if(distance < minDistance)
-			{
-				selectedObject = object;
-				minDistance = distance;
-				m_selectedObjectCapturePoint.x -= selectedObject->GetX();
-				m_selectedObjectCapturePoint.y -= selectedObject->GetY();
-				m_selectedObjectCapturePoint.z -= selectedObject->GetZ();
-			}
-		}
-	}
-	return selectedObject;
 }
 
 void CGameView::SelectObject(int x, int y, bool shiftPressed)
 {
-	std::shared_ptr<IObject> selectedObject = GetNearestObject(x, y);
-	if(selectedObject && !selectedObject->IsSelectable())
-	{
-		return;
-	}
-	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
-	if(CGameModel::IsGroup(object.get()))
-	{
-		CObjectGroup * group = (CObjectGroup *)object.get();
-		if(shiftPressed)
-		{
-			if(group->ContainsChildren(selectedObject))
-			{
-				group->RemoveChildren(selectedObject);
-				if(group->GetCount() == 1)//Destroy group
-				{
-					m_gameModel.lock()->SelectObject(group->GetChild(0));
-				}
-			}
-			else
-			{
-				group->AddChildren(selectedObject);
-			}
-		}
-		else
-		{
-			if(!group->ContainsChildren(selectedObject))
-			{
-				m_gameModel.lock()->SelectObject(selectedObject);
-			}
-			else
-			{
-				group->SetCurrent(selectedObject);
-			}
-		}
-	}
-	else
-	{
-		if(shiftPressed && object != NULL)
-		{
-			CObjectGroup * group = new CObjectGroup();
-			group->AddChildren(object);
-			group->AddChildren(selectedObject);
-			m_gameModel.lock()->SelectObject(std::shared_ptr<IObject>(group));
-		}
-		else
-		{
-			m_gameModel.lock()->SelectObject(selectedObject);
-		}
-	}
+	double start[3];
+	double end[3];
+	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
+	CGameController::GetInstance().lock()->SelectObject(start, end, shiftPressed);
 	if(m_selectionCallback) m_selectionCallback();
-}
-
-void CGameView::RulerBegin(double x, double y)
-{
-	m_ruler.SetBegin(x, y);
-}
-
-void CGameView::RulerEnd(double x, double y)
-{
-	m_ruler.SetEnd(x, y);
-}
-
-void CGameView::RulerHide()
-{
-	m_ruler.Hide();
 }
 
 void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y)
@@ -488,64 +320,17 @@ void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, in
 		return;
 	}
 	double worldX, worldY;
-	WindowCoordsToWorldCoords(x, y, worldX, worldY, m_selectedObjectCapturePoint.z);
+	const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
+	WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
 	CVector3d old(object->GetCoords());
 	if (m_table->isCoordsOnTable(worldX, worldY))
 	{
-		object->SetCoords(worldX - m_selectedObjectCapturePoint.x, worldY - m_selectedObjectCapturePoint.y, 0);
+		object->SetCoords(worldX - capturePoint->x, worldY - capturePoint->y, 0);
 	}
-	if (IsObjectInteresectSomeObjects(object))
+	if (CGameController::GetInstance().lock()->IsObjectInteresectSomeObjects(object))
 	{
 		object->SetCoords(old);
 	}
-}
-
-bool CGameView::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
-{
-	CGameModel * model = CGameModel::GetInstance().lock().get();
-	std::shared_ptr<IBounding> curBox = m_modelManager.GetBoundingBox(current->GetPathToModel());
-	if (!curBox) return false;
-	CVector3d curPos(current->GetCoords());
-	double curAngle = current->GetRotation();
-	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
-	{
-		std::shared_ptr<IObject> object = model->Get3DObject(i);
-		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = m_modelManager.GetBoundingBox(object->GetPathToModel());
-		if (!bounding) continue;
-		CVector3d pos(object->GetCoords());
-		double angle = object->GetRotation();
-		if (current != object && IsInteresect(curBox.get(), curPos, curAngle, bounding.get(), pos, angle))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool CGameView::UILeftMouseButtonDown(int x, int y)
-{
-	return m_ui->LeftMouseButtonDown(x, y);
-}
-
-bool CGameView::UILeftMouseButtonUp(int x, int y)
-{
-	return m_ui->LeftMouseButtonUp(x, y);
-}
-
-bool CGameView::UIKeyPress(unsigned char key)
-{
-	return m_ui->OnKeyPress(key);
-}
-
-bool CGameView::UISpecialKeyPress(int key)
-{
-	return m_ui->OnSpecialKeyPress(key);
-}
-
-void CGameView::SetUI(IUIElement * ui)
-{
-	m_ui.reset(ui);
 }
 
 IUIElement * CGameView::GetUI() const
@@ -566,16 +351,6 @@ void CGameView::SetUpdateCallback(callback(onUpdate))
 void CGameView::SetSingleCallback(callback(onSingleUpdate))
 {
 	m_singleCallback = onSingleUpdate;
-}
-
-void CGameView::SetStateRecievedCallback(callback(onStateRecieved))
-{
-	m_stateRecievedCallback = onStateRecieved;
-}
-
-void CGameView::SetStringRecievedCallback(std::function<void(const char*)> onStringRecieved)
-{
-	m_stringRecievedCallback = onStringRecieved;
 }
 
 void CGameView::ResizeWindow(int height, int width)
@@ -657,21 +432,6 @@ void CGameView::SetLightPosition(int index, float* pos)
 	if(index == 0) memcpy(m_lightPosition, pos, sizeof(float)* 3);
 }
 
-void CGameView::NetHost(unsigned short port)
-{
-	CNetwork::GetInstance().lock()->Host(port);
-}
-
-void CGameView::NetClient(std::string const& ip, unsigned short port)
-{
-	CNetwork::GetInstance().lock()->Client(ip.c_str(), port);
-}
-
-void CGameView::NetSendMessage(std::string const& message)
-{
-	CNetwork::GetInstance().lock()->SendMessag(message);
-}
-
 void CGameView::Save(std::string const& filename)
 {
 	FILE* file = fopen(filename.c_str(), "wb");
@@ -696,7 +456,7 @@ void CGameView::Load(std::string const& filename)
 	fclose(file);
 	m_gameModel.lock()->SetState(data+5);
 	delete[] data;
-	if (m_stateRecievedCallback) m_stateRecievedCallback();
+	CNetwork::GetInstance().lock()->CallStateRecievedCallback();
 }
 
 void CGameView::EnableMSAA() const
@@ -798,18 +558,9 @@ void CGameView::Preload(std::string const& image)
 
 void LoadModuleCallback(int)
 {
-	CGameView::GetInstance().lock()->ResetLUA();
-}
-
-void CGameView::ResetLUA()
-{
-	m_ui.reset(new CUIElement());
-	m_lua.reset();
-	m_lua.reset(new CLUAScript());
-	RegisterFunctions(*m_lua.get());
-	RegisterUI(*m_lua.get());
-	RegisterObject(*m_lua.get());
-	m_lua->RunScript(sModule::script);
+	CGameController::FreeInstance();
+	CGameView::GetInstance().lock()->GetUI()->ClearChildren();
+	CGameController::GetInstance();
 }
 
 void CGameView::LoadModule(std::string const& module)
@@ -821,7 +572,6 @@ void CGameView::LoadModule(std::string const& module)
 	m_gameModel = CGameModel::GetInstance();
 	CTextureManager::FreeInstance();
 	m_modelManager = CModelManager();
-	CCommandHandler::FreeInstance();
 	CNetwork::FreeInstance();
 	m_table.reset();
 	m_skybox.reset();
@@ -835,4 +585,23 @@ void CGameView::LoadModule(std::string const& module)
 void CGameView::ToggleFullscreen() const 
 {
 	glutFullScreenToggle();
+}
+
+void CGameView::DrawLine(double beginX, double beginY, double beginZ, double endX, double endY, double endZ, unsigned char colorR, unsigned char colorG, unsigned char colorB) const
+{
+	glColor3ub(colorR, colorG, colorB);
+	glBegin(GL_LINES);
+	glVertex3d(beginX, beginY, 0.0);
+	glVertex3d(endX, endY, 0.0);
+	glEnd();
+	glColor3d(255.0, 255.0, 255.0);
+}
+
+void CGameView::DrawText3D(double x, double y, double z, std::string const& text)
+{
+	glRasterPos3d(x, y, z); // location to start printing text
+	for (unsigned int i = 0; i < text.size(); i++) // loop until i is greater then l
+	{
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]); // Print a character on the screen
+	}
 }

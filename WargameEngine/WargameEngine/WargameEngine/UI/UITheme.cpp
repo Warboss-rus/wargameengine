@@ -1,7 +1,7 @@
 #include "UITheme.h"
 #include <memory>
 #include <fstream>
-#include "..\LogWriter.h"
+#include "../LogWriter.h"
 #include <algorithm>
 #include <sstream>
 

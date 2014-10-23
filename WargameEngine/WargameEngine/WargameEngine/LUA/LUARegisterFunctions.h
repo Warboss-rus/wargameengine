@@ -1,1 +1,0 @@
-void RegisterFunctions(CLUAScript & lua);

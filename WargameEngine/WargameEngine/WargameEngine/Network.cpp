@@ -1,7 +1,7 @@
 #include "Network.h"
 #include "LogWriter.h"
 #include "model/GameModel.h"
-#include "model/3dObject.h"
+#include "model/Object.h"
 
 std::shared_ptr<CNetwork> CNetwork::m_instance;
 
@@ -28,6 +28,7 @@ void CNetwork::Host(unsigned int port)
 	}
 	m_socket.reset(new CNetSocket(port));
 	m_host = true;
+	SendState();
 }
 
 void CNetwork::Client(const char * ip, unsigned short port)
@@ -79,8 +80,8 @@ void CNetwork::Update()
 	{
 		if (m_netData[0] == 0) //string
 		{
-			/*if (m_stringRecievedCallback)
-				m_stringRecievedCallback(m_netData + 5);*/
+			if (m_stringRecievedCallback)
+				m_stringRecievedCallback(m_netData + 5);
 			char* str = new char[12 + m_netTotalSize];
 			sprintf(str, "String recieved:%s", (const char*)(m_netData + 5));
 			CLogWriter::WriteLine(str);
@@ -91,8 +92,8 @@ void CNetwork::Update()
 			char state[30];
 			sprintf(state, "State Recieved. Size=%d.", m_netRecievedSize);
 			CLogWriter::WriteLine(state);
-			CGameModel::GetInstance().lock()->SetState(m_netData + 5);
-			//if (m_stateRecievedCallback) m_stateRecievedCallback();
+			CGameModel::GetInstance().lock()->SetState(m_netData + 5, true);
+			if (m_stateRecievedCallback) m_stateRecievedCallback();
 		}
 		else if (m_netData[0] == 2) //command
 		{
@@ -111,7 +112,7 @@ void CNetwork::Update()
 				std::string path;
 				path.resize(size);
 				memcpy(&path[0], data + 34, size);
-				std::shared_ptr<IObject> obj = std::shared_ptr<IObject>(new C3DObject(path, pos[0], pos[1], pos[2], true));
+				std::shared_ptr<IObject> obj = std::shared_ptr<IObject>(new CObject(path, pos[0], pos[1], pos[2], true));
 				CCommandHandler::GetInstance().lock()->AddNewCreateObject(obj, false);
 				m_translator[address] = obj;
 				CLogWriter::WriteLine("CreateObject received");
@@ -205,7 +206,7 @@ void CNetwork::SendState()
 		CLogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
-	std::vector<char> result = CGameModel::GetInstance().lock()->GetState();
+	std::vector<char> result = CGameModel::GetInstance().lock()->GetState(true);
 	m_socket->SendData(&result[0], result.size());//1 For full dump
 }
 
@@ -263,4 +264,24 @@ std::shared_ptr<IObject> CNetwork::GetObject(unsigned int address)
 void CNetwork::AddAddressLocal(std::shared_ptr<IObject> obj)
 {
 	m_translator[(unsigned int)obj.get()] = obj;
+}
+
+void CNetwork::AddAddress(std::shared_ptr<IObject> obj, unsigned int address)
+{
+	m_translator[address] = obj;
+}
+
+void CNetwork::SetStateRecievedCallback(callback(onStateRecieved))
+{
+	m_stateRecievedCallback = onStateRecieved;
+}
+
+void CNetwork::SetStringRecievedCallback(std::function<void(const char*)> onStringRecieved)
+{
+	m_stringRecievedCallback = onStringRecieved;
+}
+
+void CNetwork::CallStateRecievedCallback()
+{
+	if (m_stateRecievedCallback) m_stateRecievedCallback();
 }
