@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include "../LogWriter.h"
+#include <algorithm>
 
 std::vector<float> GetFloats(TiXmlElement* data)
 {
@@ -80,12 +81,13 @@ void LoadJoints(TiXmlElement * element, std::vector<sJoint> & arr, int parent)
 	sJoint joint;
 	joint.name = element->Attribute("name");
 	joint.bone = element->Attribute("sid");
+	joint.id = element->Attribute("id");
 	joint.parentIndex = parent;
 	TiXmlElement * matrix = element->FirstChildElement("matrix");
 	if (matrix)
 	{
 		std::vector<float> mat = GetFloats(matrix);
-		memcpy(joint.matrix, &mat[0], sizeof(float) * 4);
+		memcpy(joint.matrix, &mat[0], sizeof(float) * 16);
 	}
 	else//todo: matrix from translation and rotation
 	{
@@ -142,7 +144,6 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 		}
 	}
 	std::map<std::string, std::string> materialTranslator;
-	std::vector<sJoint> joints;
 	//Materials step 1: Nodes to materials
 	TiXmlElement* library_visual_scenes = root->FirstChildElement("library_visual_scenes");
 	if (library_visual_scenes)
@@ -153,7 +154,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			TiXmlElement* node = scene->FirstChildElement("node");
 			while (node)
 			{
-				if (node->Attribute("type") == std::string("NODE"))
+				if (node->Attribute("type") == NULL || node->Attribute("type") == std::string("NODE"))
 				{
 					TiXmlElement* temp = node->FirstChildElement("instance_controller");
 					if (!temp) temp = node->FirstChildElement("instance_geometry");
@@ -176,7 +177,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 				}
 				else if (node->Attribute("type") == std::string("JOINT"))
 				{
-					LoadJoints(node, joints, -1);
+					LoadJoints(node, loader->joints, -1);
 				}
 				node = node->NextSiblingElement("node");
 			}
@@ -231,6 +232,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 				while (technique)
 				{
 					std::string sid = technique->Attribute("sid");
+					std::transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
 					if (sid == "common" || sid == "standard")
 					{
 						TiXmlElement* phong = technique->FirstChildElement("phong");
@@ -261,9 +263,9 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 								{
 									std::string image = texture->Attribute("texture");
 									material.texture = imageTranslator[GetImagePath(image, common)];
-									if (material.texture.size() > 7 && (material.texture.substr(0, 7) == "file://" || material.texture.substr(0, 7) == "file:\\\\"))
+									if (material.texture.size() > 7 && ((material.texture.substr(0, 7) == "file://" || material.texture.substr(0, 7) == "file:\\\\")))
 									{
-										material.texture.erase(0, 7);
+										material.texture.erase(0, 8);
 									}
 								}
 							}
@@ -315,94 +317,201 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 		CLogWriter::WriteLine("Model loading warning. No effects found.");
 	}
 	//Animation step1: Process weights
+	std::map<std::string, std::vector<unsigned int>> weightCount;
+	std::map<std::string, std::vector<unsigned int>> weightIndexes;
+	std::map<std::string, std::vector<float>> weights;
 	TiXmlElement* controllerLib = root->FirstChildElement("library_controllers");
-	std::vector<sWeight> weights;
-	TiXmlElement* controller = controllerLib->FirstChildElement("controller");
-	while (controller != NULL)
+	if (controllerLib)
 	{
-		TiXmlElement * skin = controller->FirstChildElement("skin");
-		if (skin)
+		TiXmlElement* controller = controllerLib->FirstChildElement("controller");
+		while (controller != NULL)
 		{
-			std::map<std::string, TiXmlElement*> sources;
-			TiXmlElement * source = skin->FirstChildElement("source");
-			while (source)
+			TiXmlElement * skin = controller->FirstChildElement("skin");
+			if (skin)
 			{
+				std::string geometryId = std::string(skin->Attribute("source")).substr(1);
+				std::map<std::string, TiXmlElement*> sources;
+				TiXmlElement * source = skin->FirstChildElement("source");
+				while (source)
+				{
+					TiXmlElement* data = source->FirstChildElement("float_array");
+					if (!data) data = source->FirstChildElement("Name_array");
+					sources[source->Attribute("id")] = data;
+					source = source->NextSiblingElement("source");
+				}
+				TiXmlElement * j = skin->FirstChildElement("joints");
+				TiXmlElement * jointSource = NULL;
+				TiXmlElement * invMatrices = NULL;
+				if (j)
+				{
+					TiXmlElement * input = j->FirstChildElement("input");
+					while (input)
+					{
+						if (input->Attribute("semantic") == std::string("JOINT"))
+						{
+							jointSource = sources[std::string(input->Attribute("source")).substr(1)];
+						}
+						if (input->Attribute("semantic") == std::string("INV_BIND_MATRIX"))
+						{
+							invMatrices = sources[std::string(input->Attribute("source")).substr(1)];
+						}
+						input = input->NextSiblingElement("input");
+					}
+				}
+				if (jointSource && invMatrices)//Assing inv_bind_matricies
+				{
+					std::vector<float> inv = GetFloats(invMatrices);
+					std::vector<float> bsm = GetFloats(skin->FirstChildElement("bind_shape_matrix"));
+					unsigned int index = 0;
+					char * fl = strtok((char*)jointSource->GetText(), " \n\t");
+					while (fl != NULL)
+					{
+						for (unsigned int i = 0; i < loader->joints.size(); ++i)
+						{
+							if (loader->joints[i].bone == fl)
+							{
+								memcpy(loader->joints[i].invBindMatrix, &inv[index * 16], sizeof(float) * 16);
+								memcpy(loader->joints[i].bindShapeMatrix, &bsm[0], sizeof(float) * 16);
+							}
+						}
+						index++;
+						fl = strtok(NULL, " \n\t");
+					}
+				}
+				TiXmlElement * vertex_weights = skin->FirstChildElement("vertex_weights");
+				if (vertex_weights)
+				{
+					TiXmlElement * weightsSource = NULL;
+					TiXmlElement * input = vertex_weights->FirstChildElement("input");
+					while (input)
+					{
+						if (input->Attribute("semantic") == std::string("JOINT") && !jointSource)
+						{
+							jointSource = sources[std::string(input->Attribute("source")).substr(1)];
+						}
+						if (input->Attribute("semantic") == std::string("WEIGHT"))
+						{
+							weightsSource = sources[std::string(input->Attribute("source")).substr(1)];
+						}
+						input = input->NextSiblingElement("input");
+					}
+					std::vector<unsigned int> vcount = GetUIntegers(vertex_weights->FirstChildElement("vcount"));
+					std::vector<unsigned int> v = GetUIntegers(vertex_weights->FirstChildElement("v"));
+					std::vector<std::string> jointNames;
+					std::string sname = jointSource->FirstChild()->ValueStr();
+					for (int i = 0; i < sname.size(); ++i)
+					{
+						if (sname[i] == '\0') sname[i] = ' ';
+					}
+					char* name = strtok((char*)sname.c_str(), " ");
+					while (name != NULL)
+					{
+						jointNames.push_back(name);
+						name = strtok(NULL, " \n\t");
+					}
+					std::vector<float> weightArray = GetFloats(weightsSource);
+					int j = 0;
+					for (unsigned int i = 0; i < vcount.size(); ++i)
+					{
+						weightCount[geometryId].push_back(vcount[i]);
+						for (unsigned int k = 0; k < vcount[i]; k++)
+						{
+							unsigned int jointIndex = v[j + k * 2];
+							if (jointIndex >= jointNames.size())
+							{
+								//CLogWriter::WriteLine("Model loading warning. Error parsing joints information");
+								continue;
+							}
+							unsigned int weightIndex = v[j + k * 2 + 1];
+							for (unsigned int i = 0; i < loader->joints.size(); ++i)
+							{
+								if (loader->joints[i].bone == jointNames[jointIndex])
+								{
+									weightIndexes[geometryId].push_back(i);
+									weights[geometryId].push_back(weightArray[weightIndex]);
+									break;
+								}
+							}
+						}
+						j += vcount[i] * 2;
+					}
+					vertex_weights = vertex_weights->NextSiblingElement("vertex_weights");
+				}
+			}
+			controller = controller->NextSiblingElement("controller");
+		}
+	}
+	//Load Animations
+	TiXmlElement* animationLib = root->FirstChildElement("library_animations");
+	if (animationLib && controllerLib)
+	{
+		TiXmlElement* animation = animationLib->FirstChildElement("animation");
+		while (animation)
+		{
+			std::map<std::string, TiXmlElement*> sources;//Parse sources;
+			TiXmlElement* source = animation->FirstChildElement("source");
+			while (source != NULL)
+			{
+				std::string id = source->Attribute("id");
 				TiXmlElement* data = source->FirstChildElement("float_array");
-				if (!data) data = source->FirstChildElement("Name_array");
-				sources[source->Attribute("id")] = data;
+				//if (!data) data = source->FirstChildElement("Name_array");
+				sources["#" + id] = data;
 				source = source->NextSiblingElement("source");
 			}
-			TiXmlElement * j = skin->FirstChildElement("joints");
-			TiXmlElement * jointSource = NULL;
-			TiXmlElement * invMatrices = NULL;
-			if (j)
+			sAnimation anim;
+			anim.id = animation->Attribute("id");
+			std::vector<float> timeStamps;
+			std::vector<float> matrices;
+			TiXmlElement* sampler = animation->FirstChildElement("sampler");
+			if (sampler)
 			{
-				TiXmlElement * input = j->FirstChildElement("input");
+				TiXmlElement* input = sampler->FirstChildElement("input");
 				while (input)
 				{
-					if (input->Attribute("semantic") == std::string("JOINT"))
+					if (input->Attribute("semantic") == std::string("INPUT"))
 					{
-						jointSource = sources[std::string(input->Attribute("source")).substr(1)];
+						anim.keyframes = GetFloats(sources[input->Attribute("source")]);
 					}
-					if (input->Attribute("semantic") == std::string("INV_BIND_MATRIX"))
+					if (input->Attribute("semantic") == std::string("OUTPUT"))
 					{
-						invMatrices = sources[std::string(input->Attribute("source")).substr(1)];
+						anim.matrices = GetFloats(sources[input->Attribute("source")]);
 					}
 					input = input->NextSiblingElement("input");
 				}
 			}
-			if (jointSource && invMatrices)//Assing inv_bind_matricies
+			TiXmlElement* channel = animation->FirstChildElement("channel");
+			if (channel)
 			{
-				std::vector<float> inv = GetFloats(invMatrices);
-				unsigned int index = 0;
-				char * fl = strtok((char*)jointSource->GetText(), " \n\t");
-				while (fl != NULL)
+				std::string bone = channel->Attribute("target");
+				bone = bone.substr(0, bone.find('/'));
+				for (int i = 0; i < loader->joints.size(); ++i)
 				{
-					for (unsigned int i = 0; i < joints.size(); ++i)
+					if (bone == loader->joints[i].id)
 					{
-						if (joints[i].name == fl)
-						{
-							memcpy(joints[i].invBindMatrix, &inv[index * 16], sizeof(float) * 16);
-						}
+						anim.boneIndex = i;
+						loader->animations.push_back(anim);
+						break;
 					}
-					index++;
-					fl = strtok(NULL, " \n\t");
 				}
 			}
-			TiXmlElement * vertex_weights = skin->FirstChildElement("vertex_weights");
-			if (vertex_weights)
-			{
-				TiXmlElement * weightsSource = NULL;
-				TiXmlElement * input = vertex_weights->FirstChildElement("input");
-				while (input)
-				{
-					if (input->Attribute("semantic") == std::string("JOINT") && !jointSource)
-					{
-						jointSource = sources[std::string(input->Attribute("source")).substr(1)];
-					}
-					if (input->Attribute("semantic") == std::string("WEIGHT"))
-					{
-						weightsSource = sources[std::string(input->Attribute("source")).substr(1)];
-					}
-					input = input->NextSiblingElement("input");
-				}
-				std::vector<unsigned int> vcount = GetUIntegers(vertex_weights->FirstChildElement("vcount"));
-				std::vector<unsigned int> v = GetUIntegers(vertex_weights->FirstChildElement("v"));
-				int j = 0;
-				for (unsigned int i = 0; i < vcount.size(); ++i)
-				{
-					sWeight weight;
-					for (unsigned int k = 0; k < vcount[i]; k++)
-					{
-						weight.indexes.push_back(j + k * 2);
-						weight.weights.push_back(j + k * 2 + 1);
-					}
-					j += vcount[i] * 2;
-				}
-				vertex_weights = vertex_weights->NextSiblingElement("vertex_weights");
-			}
+			animation = animation->NextSiblingElement("animation");
 		}
-		controller = controller->NextSiblingElement("controller");
+	}
+	TiXmlElement* clipsLib = root->FirstChildElement("library_animation_clips");
+	if (clipsLib)
+	{
+		TiXmlElement* clip = clipsLib->FirstChildElement("animation_clip");
+		while (clip)
+		{
+			TiXmlElement* animation = clipsLib->FirstChildElement("instance_animation");
+			while (animation)
+			{
+				std::string animName = animation->Attribute("url");
+				animName = animName.substr(1);
+				animation = animation->FirstChildElement("instance_animation");
+			}
+			clip = clip->NextSiblingElement("animation_clip");
+		}
 	}
 	//Geometry: Process geometry
 	TiXmlElement* geometry = root->FirstChildElement("library_geometries");
@@ -411,7 +520,10 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	while (geometryElement != NULL)
 	{
 		sMesh m;
-		m.name = geometryElement->Attribute("name");
+		if (geometryElement->Attribute("name"))
+			m.name = geometryElement->Attribute("name");
+		else
+			m.name = geometryElement->Attribute("id");
 		TiXmlElement* mesh = geometryElement->FirstChildElement("mesh");
 		while (mesh != NULL)//Parse a mesh
 		{
@@ -428,6 +540,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			}
 			TiXmlElement* triangles = mesh->FirstChildElement("triangles");
 			if (!triangles) triangles = mesh->FirstChildElement("polygons");
+			if (!triangles) triangles = mesh->FirstChildElement("polylist");
 			if (triangles)
 			{
 				m.materialName = triangles->Attribute("material");
@@ -441,6 +554,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 				std::vector<float> vert;
 				std::vector<float> normal;
 				std::vector<float> texcoord;
+				unsigned int texCoordStride = 2;
 				bool simple = true;
 				while (input)
 				{
@@ -468,6 +582,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 								else if (type == "TEXCOORD")
 								{
 									texcoord = GetFloats(sources[vertEntry->Attribute("source")]);
+									
 								}
 								vertEntry = vertEntry->NextSiblingElement("input");
 							}
@@ -484,6 +599,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 						texcoordOffset = atoi(input->Attribute("offset"));
 						simple = false;
 						texcoord = GetFloats(sources[input->Attribute("source")]);
+						texCoordStride = atoi(sources[input->Attribute("source")]->NextSiblingElement("technique_common")->FirstChildElement("accessor")->Attribute("stride"));
 					}
 					if (atoi(input->Attribute("offset")) > maxOffset) maxOffset = atoi(input->Attribute("offset"));
 					input = input->NextSiblingElement("input");
@@ -500,7 +616,9 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 					oldSize = loader->textureCoords.size();
 					loader->textureCoords.resize(oldSize + texcoord.size() / 2);
 					memcpy(&loader->textureCoords[oldSize], &texcoord[0], texcoord.size() * sizeof(float));
-					//save weights
+					loader->weightsCount.insert(loader->weightsCount.end(), weightCount[geometryElement->Attribute("id")].begin(), weightCount[geometryElement->Attribute("id")].end());
+					loader->weightsIndexes.insert(loader->weightsIndexes.end(), weightIndexes[geometryElement->Attribute("id")].begin(), weightIndexes[geometryElement->Attribute("id")].end());
+					loader->weights.insert(loader->weights.end(), weights[geometryElement->Attribute("id")].begin(), weights[geometryElement->Attribute("id")].end());
 				}
 				std::vector<unsigned int> indexes;
 				TiXmlElement* data = triangles->FirstChildElement("p");
@@ -521,9 +639,23 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 							{
 								loader->vertices.push_back(CVector3f(vert[indexes[vertexOffset] * 3], vert[indexes[vertexOffset] * 3 + 1], vert[indexes[vertexOffset] * 3 + 2]));
 								loader->normals.push_back(CVector3f(normal[indexes[normalOffset] * 3], normal[indexes[normalOffset] * 3 + 1], normal[indexes[normalOffset] * 3 + 2]));
-								loader->textureCoords.push_back(CVector2f(texcoord[indexes[texcoordOffset] * 2], texcoord[indexes[texcoordOffset] * 2 + 1]));
+								loader->textureCoords.push_back(CVector2f(texcoord[indexes[texcoordOffset] * texCoordStride], texcoord[indexes[texcoordOffset] * texCoordStride + 1]));
 								loader->indexes.push_back(loader->vertices.size() - 1);
-								//save weights
+								if (controllerLib)
+								{
+									unsigned int count = weightCount[geometryElement->Attribute("id")][indexes[vertexOffset]];
+									loader->weightsCount.push_back(count);
+									unsigned int start = 0;
+									for (unsigned int i = 0; i < indexes[vertexOffset]; ++i)//Get the starting index of the current vertex weight
+									{
+										start += weightCount[geometryElement->Attribute("id")][i];
+									}
+									for (unsigned int i = 0; i < count; ++i)
+									{
+										loader->weightsIndexes.push_back(weightIndexes[geometryElement->Attribute("id")][start + i]);
+										loader->weights.push_back(weights[geometryElement->Attribute("id")][start + i]);
+									}
+								}
 								indexes.clear();
 							}
 						}

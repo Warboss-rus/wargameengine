@@ -295,22 +295,12 @@ CCamera * CGameView::GetCamera()
 	return &m_camera;
 }
 
-void CGameView::SelectObjectGroup(int beginX, int beginY, int endX, int endY)//Works only for Z = 0 plane and select object only if its center is within selection rectangle, needs better algorithm
-{
-	double beginWorldX, beginWorldY, endWorldX, endWorldY;
-	WindowCoordsToWorldCoords(beginX, beginY, beginWorldX, beginWorldY);
-	WindowCoordsToWorldCoords(endX, endY, endWorldX, endWorldY);
-	CGameController::GetInstance().lock()->SelectObjectGroup(beginWorldX, beginWorldY, endWorldX, endWorldY);
-	if(m_selectionCallback) m_selectionCallback();
-}
-
 void CGameView::SelectObject(int x, int y, bool shiftPressed)
 {
 	double start[3];
 	double end[3];
 	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
 	CGameController::GetInstance().lock()->SelectObject(start, end, shiftPressed);
-	if(m_selectionCallback) m_selectionCallback();
 }
 
 void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y)
@@ -336,11 +326,6 @@ void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, in
 IUIElement * CGameView::GetUI() const
 {
 	return m_ui.get();
-}
-
-void CGameView::SetSelectionCallback(callback(onSelect))
-{
-	m_selectionCallback = onSelect;
 }
 
 void CGameView::SetUpdateCallback(callback(onUpdate))
@@ -593,6 +578,18 @@ void CGameView::DrawLine(double beginX, double beginY, double beginZ, double end
 	glBegin(GL_LINES);
 	glVertex3d(beginX, beginY, 0.0);
 	glVertex3d(endX, endY, 0.0);
+	glEnd();
+	glColor3d(255.0, 255.0, 255.0);
+}
+
+void CGameView::DrawLineLoop(double * points, unsigned int size, unsigned char colorR, unsigned char colorG, unsigned char colorB) const
+{
+	glColor3ub(colorR, colorG, colorB);
+	glBegin(GL_LINE_LOOP);
+	for (unsigned int i = 0; i < size; i += 3)
+	{
+		glVertex3d(points[i], points[i + 1], points[i + 2]);
+	}
 	glEnd();
 	glColor3d(255.0, 255.0, 255.0);
 }

@@ -8,6 +8,7 @@ void UseModel(void* data)
 {
 	sOBJLoader * loader = (sOBJLoader*)data;
 	loader->model->SetModel(loader->vertices, loader->textureCoords, loader->normals, loader->indexes, loader->materialManager, loader->meshes);
+	if(loader->animations.size() > 0) loader->model->SetAnimation(loader->weightsCount, loader->weightsIndexes, loader->weights, loader->joints, loader->animations);
 	loader->model->Preload();
 	delete loader;
 }

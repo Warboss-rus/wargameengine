@@ -15,5 +15,9 @@ struct sOBJLoader
 	std::vector<unsigned int> indexes;
 	CMaterialManager materialManager;
 	std::vector<sMesh> meshes;
-	std::vector<sWeight> weights;
+	std::vector<unsigned int> weightsCount;
+	std::vector<unsigned int> weightsIndexes;
+	std::vector<float> weights;
+	std::vector<sJoint> joints;
+	std::vector<sAnimation> animations;
 };

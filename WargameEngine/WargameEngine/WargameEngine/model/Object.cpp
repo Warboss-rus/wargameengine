@@ -1,4 +1,5 @@
 #include "Object.h"
+#include <sys\timeb.h> 
 
 CObject::CObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
 	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow) {}
@@ -54,4 +55,24 @@ std::string const CObject::GetProperty(std::string const& key) const
 	{
 		return "";	
 	}
+}
+
+void CObject::PlayAnimation(std::string const& animation)
+{
+	m_animation = animation;
+	struct timeb time;
+	ftime(&time);
+	m_animationBegin = 1000 * time.time + time.millitm;
+}
+
+std::string CObject::GetAnimation()
+{
+	return m_animation;
+}
+
+long CObject::GetAnimationTime()
+{
+	struct timeb time;
+	ftime(&time);
+	return 1000 * time.time + time.millitm - m_animationBegin;
 }

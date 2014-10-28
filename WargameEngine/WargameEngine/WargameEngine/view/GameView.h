@@ -31,7 +31,6 @@ private:
 	CGameView(CGameView const&){};
 	CGameView& operator=(const CGameView&){};
 
-	callback(m_selectionCallback);
 	callback(m_updateCallback);
 	callback(m_singleCallback);
 	bool m_vertexLightning;
@@ -62,7 +61,6 @@ public:
 	IUIElement * GetUI() const;
 
 	void SelectObject(int x, int y, bool shiftPressed);
-	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
 	CCamera * GetCamera();
 	void TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y);
 	CModelManager* GetModelManager() { return &m_modelManager; }
@@ -86,12 +84,12 @@ public:
 	void ToggleFullscreen() const;
 
 	void DrawLine(double beginX, double beginY, double beginZ, double endX, double endY, double endZ, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
+	void DrawLineLoop(double * points, unsigned int size, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
 	void DrawText3D(double x, double y, double z, std::string const& text);
 	
 	void Save(std::string const& filename);
 	void Load(std::string const& filename);
 
-	void SetSelectionCallback(callback(onSelect));
 	void SetUpdateCallback(callback(onUpdate));
 	void SetSingleCallback(callback(onSingleUpdate));
 	

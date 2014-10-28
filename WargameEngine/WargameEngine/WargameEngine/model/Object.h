@@ -29,6 +29,9 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter) { m_movelimiter.reset(limiter); }
 	std::map<std::string, std::string> const& GetAllProperties() const { return m_properties; }
 	bool CastsShadow() const { return m_castsShadow; }
+	void PlayAnimation(std::string const& animation);
+	std::string GetAnimation();
+	long GetAnimationTime();
 private:
 	std::string m_model;
 	double m_x;
@@ -40,4 +43,6 @@ private:
 	bool m_isSelectable;
 	std::shared_ptr<IMoveLimiter> m_movelimiter;
 	bool m_castsShadow;
+	std::string m_animation;
+	long m_animationBegin;
 };

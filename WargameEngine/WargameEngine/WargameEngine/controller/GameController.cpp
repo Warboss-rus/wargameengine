@@ -12,11 +12,16 @@ std::weak_ptr<CGameController> CGameController::GetInstance()
 	if (!m_instanse)
 	{
 		m_instanse.reset(new CGameController());
+		m_instanse->Init();
 	}
 	return std::weak_ptr<CGameController>(m_instanse);
 }
 
 CGameController::CGameController()
+{
+}
+
+void CGameController::Init()
 {
 	CCommandHandler::GetInstance();
 	m_lua.reset(new CLUAScript());
@@ -69,6 +74,7 @@ void CGameController::SelectObjectGroup(int beginX, int beginY, int endX, int en
 		model->SelectObject(std::shared_ptr<IObject>(group));
 	}break;
 	}
+	if (m_selectionCallback) m_selectionCallback();
 }
 
 std::shared_ptr<IObject> CGameController::GetNearestObject(double * start, double * end)
@@ -150,6 +156,7 @@ void CGameController::SelectObject(double * begin, double * end, bool add)
 			CGameModel::GetInstance().lock()->SelectObject(selectedObject);
 		}
 	}
+	if (m_selectionCallback) m_selectionCallback();
 }
 
 const CVector3d * CGameController::GetCapturePoint() const
@@ -239,4 +246,9 @@ int CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 	IBounding * targetBound = CGameView::GetInstance().lock()->GetModelManager()->GetBoundingBox(target->GetPathToModel()).get();
 	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
 	return BBoxlos(center, targetBound, shooter, target);
+}
+
+void CGameController::SetSelectionCallback(callback(onSelect))
+{
+	m_selectionCallback = onSelect;
 }

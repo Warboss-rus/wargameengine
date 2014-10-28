@@ -16,12 +16,6 @@ struct sMesh
 	bool operator!= (sMesh const& other) { return !operator==(other); }
 };
 
-struct sWeight
-{
-	std::vector<unsigned int> indexes;
-	std::vector<float> weights;
-};
-
 struct sJoint
 {
 	std::string name;
@@ -29,6 +23,16 @@ struct sJoint
 	int parentIndex;
 	float matrix[16];
 	float invBindMatrix[16];
+	float bindShapeMatrix[16];//one for each controller
+	std::string id;//needed only for collada
+};
+
+struct sAnimation
+{
+	std::string id;
+	std::vector<float> keyframes;
+	std::vector<float> matrices;
+	unsigned int boneIndex;
 };
 
 class C3DModel
@@ -40,6 +44,7 @@ public:
 	~C3DModel();
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes);
+	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);
 	void Draw(const std::set<std::string>* hideMeshes = NULL, bool vertexOnly=false);
 	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 	void SetBounding(std::shared_ptr<IBounding> bounding, double scale);
@@ -50,8 +55,11 @@ private:
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
 	std::vector<unsigned int> m_indexes;
-	std::vector<sWeight> m_weights;
+	std::vector<unsigned int> m_weightsCount;
+	std::vector<unsigned int> m_weightsIndexes;
+	std::vector<float> m_weights;
 	std::vector<sJoint> m_skeleton;
+	std::vector<sAnimation> m_animations;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
 	std::shared_ptr<IBounding> m_bounding;

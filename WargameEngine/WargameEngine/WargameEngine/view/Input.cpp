@@ -65,17 +65,21 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			std::shared_ptr<IObject> obj = CGameModel::GetInstance().lock()->GetSelectedObject();
 			if(!m_ruler && obj && !m_disableDefaultLMB)
 			{
-				double worldX, worldY;
-				WindowCoordsToWorldCoords(x, y, worldX, worldY);
 				CGameView::GetInstance().lock()->TryMoveSelectedObject(obj, x, y);
-				CCommandHandler::GetInstance().lock()->AddNewMoveObject(obj, worldX - startX, worldY - startY);
+				double newX = obj->GetX();
+				double newY = obj->GetY();
+				CCommandHandler::GetInstance().lock()->AddNewMoveObject(obj, newX - startX, newY - startY);
 				startX = -1;
 				startY = -1;
 				CRuler::Hide();
 			}
 			if (!obj && !m_disableDefaultLMB)
 			{
-				CGameView::GetInstance().lock()->SelectObjectGroup(startX, startY, x, y);
+				//needs to be fixed
+				double beginWorldX, beginWorldY, endWorldX, endWorldY;
+				WindowCoordsToWorldCoords(startX, startY, beginWorldX, beginWorldY);
+				WindowCoordsToWorldCoords(x, y, endWorldX, endWorldY);
+				CGameController::GetInstance().lock()->SelectObjectGroup(beginWorldX, beginWorldY, endWorldX, endWorldY);
 			}
 			if (!m_LMBclickCallback.empty())
 			{

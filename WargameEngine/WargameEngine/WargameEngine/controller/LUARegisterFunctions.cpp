@@ -138,7 +138,7 @@ int SetSelectionCallback(lua_State* L)
 			CLUAScript::CallFunction(func);
 		};
 	}
-	CGameView::GetInstance().lock()->SetSelectionCallback(function);
+	CGameController::GetInstance().lock()->SetSelectionCallback(function);
 	return 0;
 }
 

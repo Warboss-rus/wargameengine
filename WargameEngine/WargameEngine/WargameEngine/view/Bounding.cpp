@@ -39,8 +39,8 @@ AABB GetAABB(CBoundingBox const& bounding)
 {
 	const double *min = bounding.GetMin();
 	const double *max = bounding.GetMax();
-	float min1[] = {min[0], min[1], min[2]};
-	float max1[] = {max[0], max[1], max[2]};
+	float min1[3] = {min[0], min[1], min[2]};
+	float max1[3] = {max[0], max[1], max[2]};
 	math::float3 minVector(min1);
 	math::float3 maxVector(max1);
 	return AABB(minVector, maxVector);
@@ -65,7 +65,7 @@ OBB GetOBB(CBoundingBox const& bounding, float3 translate, double angle)
 
 bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
-	float origin1[] = {origin[0], origin[1], origin[2]};
+	float origin1[3] = {origin[0], origin[1], origin[2]};
 	float3 pos(origin1);
 	float3 dir(end[0] - origin[0], end[1] - origin[1], end[2] - origin[2]);
 	Line l(pos, dir);
@@ -75,7 +75,7 @@ bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, do
 	if ( object.Intersects(l) )
 	{
 		Polyhedron polyhedron = object.ToPolyhedron();
-		float end1[] = {end[0], end[1], end[2]};
+		float end1[3] = {end[0], end[1], end[2]};
 		float3 endPont(end1);
 		LineSegment line(pos, endPont);
 		float3 interesectPoint = polyhedron.ClosestPoint(line);

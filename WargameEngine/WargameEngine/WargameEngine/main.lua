@@ -1,10 +1,5 @@
 function OnClick()
 	LoadModule(list:GetText())
-	--SetTimedCallback("Callback", 10, false)
-end
-
-function Callback()
-	
 end
 
 local ui = UI:Get()
