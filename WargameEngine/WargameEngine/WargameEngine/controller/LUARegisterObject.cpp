@@ -3,6 +3,7 @@
 #include "LUAScriptHandler.h"
 #include "../model/Object.h"
 #include "../model/ObjectGroup.h"
+#include "../view/GameView.h"
 
 int NewObject(lua_State* L)
 {
@@ -285,6 +286,30 @@ int GetGroupChildrenAt(lua_State* L)
 	return 1;
 }
 
+int PlayAnimation(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "1 argument expected (animation)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	char* anim = CLUAScript::GetArgument<char*>(2);
+	if (!object)
+	{
+		luaL_error(L, "needs to be called on valid object");
+	}
+	object->PlayAnimation(anim);
+	return 0;
+}
+
+int GetAnimations(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "no arguments expected");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	std::vector<std::string> anims = CGameView::GetInstance().lock()->GetModelManager()->GetAnimations(object->GetPathToModel());
+	CLUAScript::SetArray(anims);
+	return 1;
+}
+
 static const luaL_Reg ObjectFuncs[] = {
 	{ "New", NewObject },
 	{ "NewDecal", NewDecal },
@@ -311,6 +336,8 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "IsGroup", IsGroup },
 	{ "GetGroupChildrenCount", GetGroupChildrenCount },
 	{ "GetGroupChildrenAt", GetGroupChildrenAt },
+	{ "PlayAnimation", PlayAnimation },
+	{ "GetAnimations", GetAnimations },
 	{ NULL, NULL }
 };
 

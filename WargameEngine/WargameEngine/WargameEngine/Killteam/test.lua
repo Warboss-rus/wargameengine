@@ -90,6 +90,10 @@ function StringRecieved(str)
 	MessageBox(str)
 end
 
+function PlayAnim()
+	Object:GetSelected():PlayAnimation("AnimationClip")
+end
+
 IncludeLibrary("math")--Includes the following library
 IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
@@ -128,6 +132,7 @@ ui:NewEdit("Edit2", 400, 50, 30, 80, "127.0.0.1")
 ui:NewButton("Button9", 500, 50, 30, 80, "Client", "Client")
 ui:NewEdit("Edit3", 10, 550, 30, 200, "Text")
 ui:NewButton("Button10", 230, 550, 30, 80, "Send", "Send")
+ui:NewButton("Button11", 10, 100, 30, 80, "Animation", "PlayAnim")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
 
 local panel = ui:NewPanel("Panel1", 390, 40, 150, 120)

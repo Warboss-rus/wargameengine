@@ -79,7 +79,6 @@ std::string GetImagePath(std::string const& samplerID, TiXmlElement* effect)
 void LoadJoints(TiXmlElement * element, std::vector<sJoint> & arr, int parent)
 {
 	sJoint joint;
-	joint.name = element->Attribute("name");
 	joint.bone = element->Attribute("sid");
 	joint.id = element->Attribute("id");
 	joint.parentIndex = parent;
@@ -113,6 +112,86 @@ void LoadJoints(TiXmlElement * element, std::vector<sJoint> & arr, int parent)
 			LoadJoints(child, arr, index);
 		}
 		child = child->NextSiblingElement("node");
+	}
+}
+
+void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, std::vector<sAnimation> & anims, int parent)
+{
+	TiXmlElement* animation = element->FirstChildElement("animation");
+	while (animation)
+	{
+		std::map<std::string, TiXmlElement*> sources;//Parse sources;
+		TiXmlElement* source = animation->FirstChildElement("source");
+		while (source != NULL)
+		{
+			std::string id = source->Attribute("id");
+			TiXmlElement* data = source->FirstChildElement("float_array");
+			//if (!data) data = source->FirstChildElement("Name_array");
+			sources["#" + id] = data;
+			source = source->NextSiblingElement("source");
+		}
+		sAnimation anim;
+		anim.id = animation->Attribute("id");
+		std::vector<float> timeStamps;
+		std::vector<float> matrices;
+		TiXmlElement* sampler = animation->FirstChildElement("sampler");
+		if (sampler)
+		{
+			TiXmlElement* input = sampler->FirstChildElement("input");
+			while (input)
+			{
+				if (input->Attribute("semantic") == std::string("INPUT"))
+				{
+					anim.keyframes = GetFloats(sources[input->Attribute("source")]);
+				}
+				if (input->Attribute("semantic") == std::string("OUTPUT"))
+				{
+					anim.matrices = GetFloats(sources[input->Attribute("source")]);
+				}
+				input = input->NextSiblingElement("input");
+			}
+		}
+		TiXmlElement* channel = animation->FirstChildElement("channel");
+		while (channel)
+		{
+			std::string bone = channel->Attribute("target");
+			std::string mode = bone.substr(bone.find('/') + 1);
+			bone = bone.substr(0, bone.find('/'));
+			for (int i = 0; i < joints.size(); ++i)
+			{
+				if (bone == joints[i].id)
+				{
+					if (mode != "transform")
+					{
+						std::vector<float> result;
+						if (mode.substr(0, 9) == "transform")
+						{
+							char x = mode[10] - '0';
+							char y = mode[13] - '0';
+							float matrix[16];
+							memcpy(matrix, joints[i].matrix, sizeof(float) * 16);
+							for (unsigned int i = 0; i < anim.matrices.size(); ++i)
+							{
+								matrix[y * 4 + x] = anim.matrices[i];
+								for (unsigned int j = 0; j < 16; ++j)
+								{
+									result.push_back(matrix[j]);
+								}
+							}
+						}
+						anim.matrices = result;
+					}
+					anim.boneIndex = i;
+					anims.push_back(anim);
+					if (parent != -1)
+						anims[parent].children.push_back(anims.size() - 1);
+					break;
+				}
+			}
+			channel = channel->NextSiblingElement("channel");
+		}
+		LoadAnimations(animation, joints, anims, anims.size() - 1);
+		animation = animation->NextSiblingElement("animation");
 	}
 }
 
@@ -445,57 +524,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	TiXmlElement* animationLib = root->FirstChildElement("library_animations");
 	if (animationLib && controllerLib)
 	{
-		TiXmlElement* animation = animationLib->FirstChildElement("animation");
-		while (animation)
-		{
-			std::map<std::string, TiXmlElement*> sources;//Parse sources;
-			TiXmlElement* source = animation->FirstChildElement("source");
-			while (source != NULL)
-			{
-				std::string id = source->Attribute("id");
-				TiXmlElement* data = source->FirstChildElement("float_array");
-				//if (!data) data = source->FirstChildElement("Name_array");
-				sources["#" + id] = data;
-				source = source->NextSiblingElement("source");
-			}
-			sAnimation anim;
-			anim.id = animation->Attribute("id");
-			std::vector<float> timeStamps;
-			std::vector<float> matrices;
-			TiXmlElement* sampler = animation->FirstChildElement("sampler");
-			if (sampler)
-			{
-				TiXmlElement* input = sampler->FirstChildElement("input");
-				while (input)
-				{
-					if (input->Attribute("semantic") == std::string("INPUT"))
-					{
-						anim.keyframes = GetFloats(sources[input->Attribute("source")]);
-					}
-					if (input->Attribute("semantic") == std::string("OUTPUT"))
-					{
-						anim.matrices = GetFloats(sources[input->Attribute("source")]);
-					}
-					input = input->NextSiblingElement("input");
-				}
-			}
-			TiXmlElement* channel = animation->FirstChildElement("channel");
-			if (channel)
-			{
-				std::string bone = channel->Attribute("target");
-				bone = bone.substr(0, bone.find('/'));
-				for (int i = 0; i < loader->joints.size(); ++i)
-				{
-					if (bone == loader->joints[i].id)
-					{
-						anim.boneIndex = i;
-						loader->animations.push_back(anim);
-						break;
-					}
-				}
-			}
-			animation = animation->NextSiblingElement("animation");
-		}
+		LoadAnimations(animationLib, loader->joints, loader->animations, -1);
 	}
 	TiXmlElement* clipsLib = root->FirstChildElement("library_animation_clips");
 	if (clipsLib)
@@ -503,12 +532,27 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 		TiXmlElement* clip = clipsLib->FirstChildElement("animation_clip");
 		while (clip)
 		{
-			TiXmlElement* animation = clipsLib->FirstChildElement("instance_animation");
+			sAnimation anim;
+			anim.id = clip->Attribute("id");
+			anim.boneIndex = -1;
+			TiXmlElement* animation = clip->FirstChildElement("instance_animation");
 			while (animation)
 			{
 				std::string animName = animation->Attribute("url");
 				animName = animName.substr(1);
-				animation = animation->FirstChildElement("instance_animation");
+				for (unsigned int i = 0; i < loader->animations.size(); ++i)
+				{
+					if (loader->animations[i].id == animName)
+					{
+						anim.children.push_back(i);
+						break;
+					}
+				}
+				animation = animation->NextSiblingElement("instance_animation");
+			}
+			if (anim.children.size() > 0)
+			{
+				loader->animations.push_back(anim);
 			}
 			clip = clip->NextSiblingElement("animation_clip");
 		}

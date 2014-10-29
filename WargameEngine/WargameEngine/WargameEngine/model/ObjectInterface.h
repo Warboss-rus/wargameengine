@@ -29,4 +29,7 @@ public:
 	virtual void SetMovementLimiter(IMoveLimiter * limiter) = 0;
 	virtual std::map<std::string, std::string> const& GetAllProperties() const = 0;
 	virtual bool CastsShadow() const = 0;
+	virtual void PlayAnimation(std::string const& animation) = 0;
+	virtual std::string GetAnimation() const = 0;
+	virtual long GetAnimationTime() const = 0;
 };

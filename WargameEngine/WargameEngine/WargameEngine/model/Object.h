@@ -30,8 +30,8 @@ public:
 	std::map<std::string, std::string> const& GetAllProperties() const { return m_properties; }
 	bool CastsShadow() const { return m_castsShadow; }
 	void PlayAnimation(std::string const& animation);
-	std::string GetAnimation();
-	long GetAnimationTime();
+	std::string GetAnimation() const;
+	long GetAnimationTime() const;
 private:
 	std::string m_model;
 	double m_x;

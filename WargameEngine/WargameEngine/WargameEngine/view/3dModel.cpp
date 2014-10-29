@@ -173,26 +173,6 @@ void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMe
 	glEndList();
 	if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 }
-/*Disabled due to animation test
-void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly)
-{
-	if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
-	{
-		NewList(m_vertexLists[*hideMeshes], hideMeshes, true);
-	}
-	if (!vertexOnly && m_lists.find(*hideMeshes) == m_lists.end())
-	{
-		NewList(m_lists[*hideMeshes], hideMeshes, false);
-	}
-	if (vertexOnly)
-	{
-		glCallList(m_vertexLists[*hideMeshes]);
-	}
-	else
-	{
-		glCallList(m_lists[*hideMeshes]);
-	}
-}*/
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
 {
@@ -232,44 +212,72 @@ void MultiplyMatrices(float * a, float * b)
 	memcpy(a, c, sizeof(float) * 16);
 }
 
-void MultiplyWithParents(std::vector<sJoint> & joints, unsigned int current, float * matrix, std::vector<sAnimation> & animations)
+void AddAllChildren(std::vector<sAnimation> const& anims, unsigned int current, std::vector<sAnimation> & set)
 {
-	if (joints[current].parentIndex != -1)
+	set.push_back(anims[current]);
+	for (unsigned int i = 0; i < anims[current].children.size(); ++i)
 	{
-		MultiplyWithParents(joints, joints[current].parentIndex, matrix, animations);
+		AddAllChildren(anims, anims[current].children[i], set);
 	}
-	MultiplyMatrices(matrix, joints[current].matrix);
-	/*for (int i = 0; i < animations.size(); ++i)//looks bad
-	{
-		if (animations[i].boneIndex == current && animations[i].matrices.size() == animations[i].keyframes.size() * 16)
-		{
-			float time = 0.0f;//1000.0f;//currently const
-			MultiplyMatrices(matrix, &animations[i].matrices[0]);
-		}
-	}*/
 }
 
-void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly)
+void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, long time)
 {
-	std::vector<float> matrices;
-	for (unsigned int i = 0; i < m_skeleton.size(); ++i)
-	{
-		float result[16];
-		memcpy(result, m_skeleton[i].bindShapeMatrix, sizeof(float) * 16);
-		MultiplyMatrices(result, m_skeleton[i].invBindMatrix);
-		float matrix[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 };
-		MultiplyWithParents(m_skeleton, i, matrix, m_animations);
-		MultiplyMatrices(result, matrix);
-		for (int j = 0; j < 16; ++j)
-		{
-			matrices.push_back(result[j]);
-		}
-	}
 	std::vector<CVector3f> vertices;
 	unsigned int k = 0;//weightIndex
 	//Apply animation transormations for each vertex
 	if (!m_weightsCount.empty())
 	{
+		//get animations that are need to be played
+		std::vector<sAnimation> animsToPlay;
+		for (unsigned int i = 0; i < m_animations.size(); ++i)
+		{
+			if (m_animations[i].id == animationToPlay)
+			{
+				AddAllChildren(m_animations, i, animsToPlay);
+				break;
+			}
+		}
+		//copy all matrices
+		std::vector<float> jointMatrices;
+		for (unsigned int i = 0; i < m_skeleton.size(); ++i)
+		{
+			for (unsigned int j = 0; j < 16; ++j)
+			{
+				jointMatrices.push_back(m_skeleton[i].matrix[j]);
+			}
+		}
+		//replace affected joints with animation matrices
+		float t = ((double)time) / 1000.0f;
+		for (unsigned int i = 0; i < animsToPlay.size(); ++i)
+		{
+			unsigned int k;
+			for (k = 0; k < animsToPlay[i].keyframes.size(); ++k)
+			{
+				if (t <= animsToPlay[i].keyframes[k] && (k == 0 || t > animsToPlay[i].keyframes[k - 1]))
+				{
+					break;
+				}
+			}
+			if (k < animsToPlay[i].keyframes.size())
+			{
+				for (unsigned int j = 0; j < 16; ++j)
+				{
+					jointMatrices[animsToPlay[i].boneIndex * 16 + j] = animsToPlay[i].matrices[k * 16 + j];
+				}
+			}
+		}
+		//cycle through all joints and multiply them to their parents
+		for (unsigned int i = 0; i < m_skeleton.size(); ++i)
+		{
+			if (m_skeleton[i].parentIndex != -1)
+			{
+				float parent[16];
+				memcpy(parent, &jointMatrices[m_skeleton[i].parentIndex * 16], sizeof(float) * 16);
+				MultiplyMatrices(parent, &jointMatrices[i * 16]);
+				memcpy(&jointMatrices[i * 16], parent, sizeof(float) * 16);
+			}
+		}
 		for (unsigned int i = 0; i < m_vertices.size(); ++i)
 		{
 			CVector3f v(0.0f, 0.0f, 0.0f);
@@ -281,18 +289,34 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly)
 				sJoint * joint = &m_skeleton[m_weightsIndexes[k]];
 				MultiplyVectorToMatrix(cur, joint->bindShapeMatrix);
 				MultiplyVectorToMatrix(cur, joint->invBindMatrix);
-				float matrix[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0 };
-				MultiplyWithParents(m_skeleton, m_weightsIndexes[k], matrix, m_animations);
-				//calculate joint result matrix using animation
-				MultiplyVectorToMatrix(cur, matrix);
-				//MultiplyVectorToMatrix(cur, &matrices[m_weightsIndexes[k] * 16]);
+				MultiplyVectorToMatrix(cur, &jointMatrices[m_weightsIndexes[k] * 16]);
 				cur *= m_weights[k];
 				v += cur;
 			}
 			vertices.push_back(v);
 		}
 	}
-	if (!vertices.empty() && !m_vertices.empty())
+	else
+	{
+		if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
+		{
+			NewList(m_vertexLists[*hideMeshes], hideMeshes, true);
+		}
+		if (!vertexOnly && m_lists.find(*hideMeshes) == m_lists.end())
+		{
+			NewList(m_lists[*hideMeshes], hideMeshes, false);
+		}
+		if (vertexOnly)
+		{
+			glCallList(m_vertexLists[*hideMeshes]);
+		}
+		else
+		{
+			glCallList(m_lists[*hideMeshes]);
+		}
+		return;
+	}
+	if (!vertices.empty())
 	{
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(3, GL_FLOAT, 0, !vertices.empty()?&vertices[0]:&m_vertices[0]);
@@ -358,4 +382,14 @@ void C3DModel::Preload() const
 		if (!m_materials.GetMaterial(m_meshes[i].materialName)) continue;
 		texManager->SetTexture(m_materials.GetMaterial(m_meshes[i].materialName)->texture);
 	}
+}
+
+std::vector<std::string> C3DModel::GetAnimations() const
+{
+	std::vector<std::string> result;
+	for (unsigned int i = 0; i < m_animations.size(); ++i)
+	{
+		result.push_back(m_animations[i].id);
+	}
+	return result;
 }

@@ -18,13 +18,12 @@ struct sMesh
 
 struct sJoint
 {
-	std::string name;
-	std::string bone;
+	std::string bone;//needed for collada loader
 	int parentIndex;
 	float matrix[16];
 	float invBindMatrix[16];
-	float bindShapeMatrix[16];//one for each controller
-	std::string id;//needed only for collada
+	float bindShapeMatrix[16];//one for each controller in collada
+	std::string id;//needed for collada loader
 };
 
 struct sAnimation
@@ -33,6 +32,7 @@ struct sAnimation
 	std::vector<float> keyframes;
 	std::vector<float> matrices;
 	unsigned int boneIndex;
+	std::vector<unsigned int> children;
 };
 
 class C3DModel
@@ -45,10 +45,11 @@ public:
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes);
 	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);
-	void Draw(const std::set<std::string>* hideMeshes = NULL, bool vertexOnly=false);
+	void Draw(const std::set<std::string>* hideMeshes = NULL, bool vertexOnly = false, std::string const& animationToPlay = "", long time = 0L);
 	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 	void SetBounding(std::shared_ptr<IBounding> bounding, double scale);
 	void Preload() const;
+	std::vector<std::string> GetAnimations() const;
 private:
 	void NewList(unsigned int & list, const std::set<std::string> * hideMeshes, bool vertexOnly);
 	std::vector<CVector3f> m_vertices;

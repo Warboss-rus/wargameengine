@@ -36,14 +36,19 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes, bool vertexOnly)
+void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, long time)
 {
 	LoadIfNotExist(path);
-	m_models[path]->Draw(hideMeshes, vertexOnly);
+	m_models[path]->Draw(hideMeshes, vertexOnly, animationToPlay, time);
 }
 
 std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path)
 {
 	LoadIfNotExist(path);
 	return m_models[path]->GetBounding();
+}
+
+std::vector<std::string> CModelManager::GetAnimations(std::string const& path)
+{
+	return m_models[path]->GetAnimations();
 }

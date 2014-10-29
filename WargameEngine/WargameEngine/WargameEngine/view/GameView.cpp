@@ -190,7 +190,7 @@ void CGameView::DrawObjects(void)
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes());
+		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime());
 		glPopMatrix();
 	}
 	m_shader.UnBindProgram();
@@ -255,7 +255,7 @@ void CGameView::DrawShadowMap()
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), true);
+		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), true, object->GetAnimation(), object->GetAnimationTime());
 		glPopMatrix();
 	}
 

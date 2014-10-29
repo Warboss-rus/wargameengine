@@ -6,8 +6,9 @@ public:
 	CTable(float width, float height, std::string const& texture);
 	~CTable();
 	void Draw() const;
-	float GetWidth() const { return m_width * 2; }
-	float GetHeight() const { return m_height * 2; }
+	const float GetWidth() const { return m_width * 2; }
+	const float GetHeight() const { return m_height * 2; }
+	std::string const& GetTexture() const { return m_texture; }
     bool isCoordsOnTable(double worldX, double worldY) const;
 	void ResetList();
 private:

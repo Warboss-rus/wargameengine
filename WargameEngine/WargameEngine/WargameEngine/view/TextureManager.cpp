@@ -131,6 +131,12 @@ void* LoadDDS(void* param)
 void UseDDS(void* param)
 {
 	sDDS* img = (sDDS*)param;
+	if (!img->image.is_valid())
+	{
+		CLogWriter::WriteLine("Cannot open file " + img->path);
+		delete img;
+		return;
+	}
 	glBindTexture(GL_TEXTURE_2D, img->id);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

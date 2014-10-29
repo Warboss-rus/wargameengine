@@ -2,7 +2,7 @@
 #include <sys\timeb.h> 
 
 CObject::CObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
-	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow) {}
+	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L){}
 
 void CObject::Move(double x, double y, double z) 
 { 
@@ -65,13 +65,14 @@ void CObject::PlayAnimation(std::string const& animation)
 	m_animationBegin = 1000 * time.time + time.millitm;
 }
 
-std::string CObject::GetAnimation()
+std::string CObject::GetAnimation() const
 {
 	return m_animation;
 }
 
-long CObject::GetAnimationTime()
+long CObject::GetAnimationTime() const
 {
+	if (m_animationBegin == 0L) return 0L;
 	struct timeb time;
 	ftime(&time);
 	return 1000 * time.time + time.millitm - m_animationBegin;

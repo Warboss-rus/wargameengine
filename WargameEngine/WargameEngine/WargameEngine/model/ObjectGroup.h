@@ -34,6 +34,9 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter);
 	std::map<std::string, std::string> const& GetAllProperties() const { return m_children[0]->GetAllProperties(); }
 	bool CastsShadow() const { return true; }
+	void PlayAnimation(std::string const& animation) {}
+	std::string GetAnimation() const { return ""; }
+	long GetAnimationTime() const { return 0L; }
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;
