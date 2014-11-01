@@ -146,6 +146,7 @@ void UseDDS(void* param)
 	else
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	img->image.upload_texture2D(0, GL_TEXTURE_2D);
+	CTextureManager::GetInstance()->SetTextureSize(img->id, img->image.get_width(), img->image.get_height());
 	delete img;
 }
 
@@ -163,6 +164,7 @@ void UseTexture(void* data)
 	if (GLEW_EXT_texture_filter_anisotropic)
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, CGameView::GetInstance().lock()->GetAnisotropyLevel());
 	delete [] img->data;
+	CTextureManager::GetInstance()->SetTextureSize(img->id, img->width, img->height);
 	delete img;
 }
 
@@ -215,6 +217,13 @@ void CTextureManager::SetTexture(std::string const& path)
 	if(m_textures.find(path) == m_textures.end())
 	{
 		m_textures[path] = LoadTexture(sModule::textures + path);
+		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
+		if (shader)
+		{
+			auto size = m_size[m_textures[path]];
+			float arr[2] = { size.first, size.second };
+			shader->SetUniformValue2("textureSize", 2, arr);
+		}
 	}
 	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
 }
@@ -234,4 +243,9 @@ CTextureManager::~CTextureManager()
 	{
 		glDeleteTextures(1, &i->second);
 	}
+}
+
+void CTextureManager::SetTextureSize(unsigned int id, unsigned int width, unsigned int height)
+{
+	m_size[id] = std::pair<unsigned int, unsigned int>(width, height);
 }

@@ -95,6 +95,7 @@ void CGameView::Init()
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float)* 3);
 	m_anisoptropy = 1.0f;
+	m_gpuSkinning = false;
 
 	CGameController::GetInstance();
 
@@ -190,7 +191,12 @@ void CGameView::DrawObjects(void)
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime());
+		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+		unsigned int secondaryModels = object->GetSecondaryModelsCount();
+		for (unsigned int i = 0; i < secondaryModels; ++i)
+		{
+			m_modelManager.DrawModel(object->GetSecondaryModel(i), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+		}
 		glPopMatrix();
 	}
 	m_shader.UnBindProgram();
@@ -255,7 +261,12 @@ void CGameView::DrawShadowMap()
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), true, object->GetAnimation(), object->GetAnimationTime());
+		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), true, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+		unsigned int secondaryModels = object->GetSecondaryModelsCount();
+		for (unsigned int i = 0; i < secondaryModels; ++i)
+		{
+			m_modelManager.DrawModel(object->GetSecondaryModel(i), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+		}
 		glPopMatrix();
 	}
 
@@ -601,4 +612,14 @@ void CGameView::DrawText3D(double x, double y, double z, std::string const& text
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]); // Print a character on the screen
 	}
+}
+
+void CGameView::EnableGPUSkinning()
+{
+	m_gpuSkinning = true;
+}
+
+void CGameView::DisableGPUSkinning()
+{
+	m_gpuSkinning = false;
 }

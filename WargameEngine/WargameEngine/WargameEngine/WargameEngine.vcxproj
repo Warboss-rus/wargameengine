@@ -199,7 +199,6 @@
     <ClInclude Include="model\ObjectInterface.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="nv_dds.h" />
-    <ClInclude Include="Task.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="tinystr.h" />

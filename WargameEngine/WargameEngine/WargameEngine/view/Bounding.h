@@ -36,7 +36,7 @@ private:
 class CBoundingCompound : public IBounding
 {
 public:
-	void AddChild(std::shared_ptr<IBounding> child);
+	void AddChild(std::unique_ptr<IBounding> child);
 	bool IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const;
 	void Draw(double x, double y, double z, double rotation) const;
 	void SetScale(double scale);
@@ -44,8 +44,8 @@ public:
 	IBounding * GetChild(unsigned int index) { return m_children[index].get(); }
 	const IBounding * GetChild(unsigned int index) const { return m_children[index].get(); }
 private:
-	std::vector<std::shared_ptr<IBounding>> m_children;
+	std::vector<std::unique_ptr<IBounding>> m_children;
 };
 
-std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale);
+std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale);
 bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, double angle1, const IBounding* bounding2, CVector3d const& translate2, double angle2);

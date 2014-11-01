@@ -36,7 +36,11 @@ public:
 	bool CastsShadow() const { return true; }
 	void PlayAnimation(std::string const& animation) {}
 	std::string GetAnimation() const { return ""; }
-	long GetAnimationTime() const { return 0L; }
+	float GetAnimationTime() const { return 0.0f; }
+	void AddSecondaryModel(std::string const& model) {}
+	void RemoveSecondaryModel(std::string const& model) {}
+	unsigned int GetSecondaryModelsCount() const { return 0; }
+	std::string GetSecondaryModel(unsigned int index) const { return ""; }
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

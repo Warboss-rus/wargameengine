@@ -362,9 +362,6 @@
     <ClInclude Include="Threading.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Task.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="nv_dds.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -205,9 +205,9 @@ bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, doubl
 	}
 }
 
-void CBoundingCompound::AddChild(std::shared_ptr<IBounding> child)
+void CBoundingCompound::AddChild(std::unique_ptr<IBounding> child)
 {
-	m_children.push_back(child);
+	m_children.push_back(std::move(child));
 }
 
 void CBoundingCompound::Draw(double x, double y, double z, double rotation) const
@@ -237,10 +237,10 @@ void CBoundingCompound::SetScale(double scale)
 	}
 }
 
-std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale)
+std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale)
 {
 	std::ifstream iFile(path);
-	std::shared_ptr<IBounding> bounding (new CBoundingCompound());
+	std::unique_ptr<IBounding> bounding(new CBoundingCompound());
 	std::string line;
 	unsigned int count = 0;
 	if (!iFile.good()) return NULL;
@@ -251,9 +251,8 @@ std::shared_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double 
 		{
 			double min[3], max[3];
 			iFile >> min[0] >> min[1] >> min[2] >> max[0] >> max[1] >> max[2];
-			std::shared_ptr<IBounding> current(new CBoundingBox(min, max));
 			CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
-			compound->AddChild(current);
+			compound->AddChild(std::unique_ptr<IBounding>(new CBoundingBox(min, max)));
 		}
 		if(line == "scale")
 		{

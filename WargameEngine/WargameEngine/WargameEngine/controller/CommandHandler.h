@@ -8,7 +8,7 @@
 class CCommandHandler
 {
 public:
-	CCommandHandler():m_current(-1), m_compound(NULL) {}
+	CCommandHandler():m_current(-1) {}
 	static std::weak_ptr<CCommandHandler> GetInstance();
 	static void FreeInstance();
 	void AddNewCreateObject(std::shared_ptr<IObject> object, bool local = true);
@@ -24,8 +24,8 @@ public:
 private:
 	void AddNewCommand(ICommand * command, bool local);
 	static std::shared_ptr<CCommandHandler> m_instance;
-	std::shared_ptr<CCommandCompound> m_compound;
-	std::vector<std::shared_ptr<ICommand>> m_commands;
+	std::unique_ptr<CCommandCompound> m_compound;
+	std::vector<std::unique_ptr<ICommand>> m_commands;
 	int m_current;
 };
 

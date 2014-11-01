@@ -86,6 +86,8 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 			geometryShader = CompileShader(sModule::shaders + geometry, m_program, GL_GEOMETRY_SHADER);
 		}
 	}
+	glBindAttribLocation(m_program, 16, "weights");
+	glBindAttribLocation(m_program, 17, "weightIndices");
 	glLinkProgram(m_program);
 	glUseProgram(m_program);
 	int unfrm = glGetUniformLocation(m_program, "texture");
@@ -96,6 +98,8 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 	glDeleteShader(vertexShader);
 	glDetachShader(m_program, framgentShader);
 	glDeleteShader(framgentShader);
+	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	glVertexAttrib4fv(16, def);
 }
 
 template<>
@@ -158,5 +162,47 @@ template<>
 void CShaderManager::SetUniformMatrix4<float*>(std::string const& uniform, int count, float* value) const
 {
 	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
-	glUniformMatrix4fvARB(unfrm, count, false, value);
+	glUniformMatrix4fv(unfrm, count, false, value);
+}
+
+template<>
+void CShaderManager::SetVertexAttrib4<float*>(unsigned int index, float * value) const
+{
+	glEnableVertexAttribArray(index);
+	glVertexAttribPointer(index, 4, GL_FLOAT, false, 0, value);
+}
+
+template<>
+void CShaderManager::SetVertexAttrib4<int*>(unsigned int index, int * value) const
+{
+	glEnableVertexAttribArray(index);
+	glVertexAttribIPointer(index, 4, GL_INT, 0, value);
+}
+
+template<>
+void CShaderManager::SetVertexAttrib4<unsigned int*>(unsigned int index, unsigned int * value) const
+{
+	glEnableVertexAttribArray(index);
+	glVertexAttribIPointer(index, 4, GL_UNSIGNED_INT, 0, value);
+}
+
+template<>
+void CShaderManager::DisableVertexAttrib4<float*>(unsigned int index, float * defaultValue) const
+{
+	glDisableVertexAttribArray(index);
+	glVertexAttrib4fv(index, defaultValue);
+}
+
+template<>
+void CShaderManager::DisableVertexAttrib4<int*>(unsigned int index, int * defaultValue) const
+{
+	glDisableVertexAttribArray(index);
+	glVertexAttrib4iv(index, defaultValue);
+}
+
+template<>
+void CShaderManager::DisableVertexAttrib4<unsigned int*>(unsigned int index, unsigned int * defaultValue) const
+{
+	glDisableVertexAttribArray(index);
+	glVertexAttrib4uiv(index, defaultValue);
 }

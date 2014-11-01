@@ -1,7 +1,6 @@
 #pragma once
 #include "ObjectInterface.h"
-#include <string>
-#include <map>
+#include <vector>
 #include <memory>
 #include "../view/Vector3.h"
 
@@ -31,9 +30,14 @@ public:
 	bool CastsShadow() const { return m_castsShadow; }
 	void PlayAnimation(std::string const& animation);
 	std::string GetAnimation() const;
-	long GetAnimationTime() const;
+	float GetAnimationTime() const;
+	void AddSecondaryModel(std::string const& model) { m_secondaryModels.push_back(model); }
+	void RemoveSecondaryModel(std::string const& model);
+	unsigned int GetSecondaryModelsCount() const { return m_secondaryModels.size(); }
+	std::string GetSecondaryModel(unsigned int index) const { return m_secondaryModels[index]; }
 private:
 	std::string m_model;
+	std::vector<std::string> m_secondaryModels;
 	double m_x;
 	double m_y;
 	double m_z;

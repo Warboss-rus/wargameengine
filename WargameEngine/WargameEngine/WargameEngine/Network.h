@@ -32,7 +32,7 @@ public:
 private:
 	CNetwork() :m_host(true), m_netData(NULL), m_netRecievedSize(0), m_netTotalSize(0) {}
 	static std::shared_ptr<CNetwork> m_instance;
-	std::shared_ptr<CNetSocket> m_socket;
+	std::unique_ptr<CNetSocket> m_socket;
 	std::vector<CNetSocket> m_childs;
 	std::map<unsigned int, std::shared_ptr<IObject>> m_translator;
 	bool m_host;

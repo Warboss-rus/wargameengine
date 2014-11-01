@@ -31,15 +31,15 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadWbmModel, obj, UseModel);
 		if (extension == "dae")
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadColladaModel, obj, UseModel);
-		if(extension == "bmp" || extension == "tga" || extension == "png")
+		if (extension == "bmp" || extension == "tga" || extension == "png")
 			m_models[path] = std::shared_ptr<C3DModel>(LoadDecal(path));
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, long time)
+void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, float time, bool gpuSkinning)
 {
 	LoadIfNotExist(path);
-	m_models[path]->Draw(hideMeshes, vertexOnly, animationToPlay, time);
+	m_models[path]->Draw(hideMeshes, vertexOnly, animationToPlay, time, gpuSkinning);
 }
 
 std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path)

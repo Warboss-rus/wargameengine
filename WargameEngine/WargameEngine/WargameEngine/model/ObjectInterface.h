@@ -31,5 +31,9 @@ public:
 	virtual bool CastsShadow() const = 0;
 	virtual void PlayAnimation(std::string const& animation) = 0;
 	virtual std::string GetAnimation() const = 0;
-	virtual long GetAnimationTime() const = 0;
+	virtual float GetAnimationTime() const = 0;
+	virtual void AddSecondaryModel(std::string const& model) = 0;
+	virtual void RemoveSecondaryModel(std::string const& model) = 0;
+	virtual unsigned int GetSecondaryModelsCount() const = 0;
+	virtual std::string GetSecondaryModel(unsigned int index) const = 0;
 };

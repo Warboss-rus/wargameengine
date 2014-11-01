@@ -21,7 +21,7 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 	}
 	else
 	{
-		m_commands.push_back(std::shared_ptr<ICommand>(command));
+		m_commands.push_back(std::unique_ptr<ICommand>(command));
 	}
 	m_current = m_commands.size() - 1;
 	if (CNetwork::GetInstance().lock()->IsConnected() && local) CNetwork::GetInstance().lock()->SendAction(command, true);
@@ -108,7 +108,7 @@ void CCommandHandler::EndCompound()
 {
 	if(m_compound)
 	{
-		m_commands.push_back(m_compound);
+		m_commands.push_back(std::unique_ptr<ICommand>(m_compound.get()));
 	}
 	m_compound.reset();
 }

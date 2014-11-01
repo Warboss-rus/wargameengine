@@ -399,6 +399,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	std::map<std::string, std::vector<unsigned int>> weightCount;
 	std::map<std::string, std::vector<unsigned int>> weightIndexes;
 	std::map<std::string, std::vector<float>> weights;
+	std::map<std::string, std::vector<float>> bindShapeMatrices;
 	TiXmlElement* controllerLib = root->FirstChildElement("library_controllers");
 	if (controllerLib)
 	{
@@ -408,6 +409,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			TiXmlElement * skin = controller->FirstChildElement("skin");
 			if (skin)
 			{
+				bindShapeMatrices[std::string(skin->Attribute("source")).substr(1)] = GetFloats(skin->FirstChildElement("bind_shape_matrix"));
 				std::string geometryId = std::string(skin->Attribute("source")).substr(1);
 				std::map<std::string, TiXmlElement*> sources;
 				TiXmlElement * source = skin->FirstChildElement("source");
@@ -440,7 +442,6 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 				if (jointSource && invMatrices)//Assing inv_bind_matricies
 				{
 					std::vector<float> inv = GetFloats(invMatrices);
-					std::vector<float> bsm = GetFloats(skin->FirstChildElement("bind_shape_matrix"));
 					unsigned int index = 0;
 					char * fl = strtok((char*)jointSource->GetText(), " \n\t");
 					while (fl != NULL)
@@ -450,7 +451,6 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 							if (loader->joints[i].bone == fl)
 							{
 								memcpy(loader->joints[i].invBindMatrix, &inv[index * 16], sizeof(float) * 16);
-								memcpy(loader->joints[i].bindShapeMatrix, &bsm[0], sizeof(float) * 16);
 							}
 						}
 						index++;
@@ -651,6 +651,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 				maxOffset++;
 				if (simple)
 				{
+					//temp
 					unsigned int oldSize = loader->vertices.size();
 					loader->vertices.resize(oldSize + vert.size() / 3);
 					memcpy(&loader->vertices[oldSize], &vert[0], vert.size() * sizeof(float));
@@ -681,7 +682,9 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 							indexes.push_back(i);
 							if (indexes.size() == maxOffset)
 							{
-								loader->vertices.push_back(CVector3f(vert[indexes[vertexOffset] * 3], vert[indexes[vertexOffset] * 3 + 1], vert[indexes[vertexOffset] * 3 + 2]));
+								CVector3f vert(vert[indexes[vertexOffset] * 3], vert[indexes[vertexOffset] * 3 + 1], vert[indexes[vertexOffset] * 3 + 2]);
+								MultiplyVectorToMatrix(vert, &bindShapeMatrices[geometryElement->Attribute("id")][0]);
+								loader->vertices.push_back(vert);
 								loader->normals.push_back(CVector3f(normal[indexes[normalOffset] * 3], normal[indexes[normalOffset] * 3 + 1], normal[indexes[normalOffset] * 3 + 2]));
 								loader->textureCoords.push_back(CVector2f(texcoord[indexes[texcoordOffset] * texCoordStride], texcoord[indexes[texcoordOffset] * texCoordStride + 1]));
 								loader->indexes.push_back(loader->vertices.size() - 1);

@@ -70,10 +70,22 @@ std::string CObject::GetAnimation() const
 	return m_animation;
 }
 
-long CObject::GetAnimationTime() const
+float CObject::GetAnimationTime() const
 {
-	if (m_animationBegin == 0L) return 0L;
+	if (m_animationBegin == 0L) return 0.0f;
 	struct timeb time;
 	ftime(&time);
-	return 1000 * time.time + time.millitm - m_animationBegin;
+	long delta = 1000 * time.time + time.millitm - m_animationBegin;
+	return (double)delta / 1000.0f;
+}
+
+void CObject::RemoveSecondaryModel(std::string const& model)
+{
+	for (auto i = m_secondaryModels.begin(); i != m_secondaryModels.end(); ++i)
+	{
+		if (*i == model)
+		{
+			m_secondaryModels.erase(i);
+		}
+	}
 }

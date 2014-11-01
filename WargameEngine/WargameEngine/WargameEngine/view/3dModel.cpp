@@ -2,6 +2,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include "gl.h"
+#include "GameView.h"
 
 C3DModel::C3DModel(std::shared_ptr<IBounding> bounding, double scale)
 { 
@@ -66,6 +67,10 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_weights.swap(weights);
 	m_skeleton.swap(skeleton);
 	m_animations.swap(animations);
+	DeleteList(m_lists);
+	DeleteList(m_vertexLists);
+	m_lists.clear();
+	m_vertexLists.clear();
 }
 
 void C3DModel::SetBounding(std::shared_ptr<IBounding> bounding, double scale)
@@ -88,38 +93,45 @@ void SetMaterial(const sMaterial * material)
 	texManager->SetTexture(material->texture);
 }
 
-void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMeshes, bool vertexOnly)
+void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUskinning)
 {
+	if (useGPUskinning)
+	{
+		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
+		shader->SetUniformMatrix4("invBindMatrices", m_skeleton.size(), &m_gpuInverseMatrices[0]);
+		shader->SetVertexAttrib4(16, &m_gpuWeight[0]);
+		shader->SetVertexAttrib4(17, &m_gpuWeightIndexes[0]);
+	}
 	if (m_vbo)
 	{
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
-		if (!m_vertices.empty())
+		if (!vertices.empty())
 		{
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glVertexPointer(3, GL_FLOAT, 0, 0);
 		}
-		if (!m_normals.empty() && !vertexOnly)
+		if (!normals.empty() && !vertexOnly)
 		{
 			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, 0, (void*)(m_vertices.size() * 3 * sizeof(float)));
+			glNormalPointer(GL_FLOAT, 0, (void*)(vertices.size() * 3 * sizeof(float)));
 		}
 		if (!m_textureCoords.empty() && !vertexOnly)
 		{
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glTexCoordPointer(2, GL_FLOAT, 0, (void*)(m_vertices.size() * 3 * sizeof(float)+m_normals.size() * 3 * sizeof(float)));
+			glTexCoordPointer(2, GL_FLOAT, 0, (void*)(vertices.size() * 3 * sizeof(float)+normals.size() * 3 * sizeof(float)));
 		}
 	}
 	else
 	{
-		if (!m_vertices.empty())
+		if (!vertices.empty())
 		{
 			glEnableClientState(GL_VERTEX_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, &m_vertices[0]);
+			glVertexPointer(3, GL_FLOAT, 0, &vertices[0]);
 		}
-		if (!m_normals.empty() && !vertexOnly)
+		if (!normals.empty() && !vertexOnly)
 		{
 			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, 0, &m_normals[0]);
+			glNormalPointer(GL_FLOAT, 0, &normals[0]);
 		}
 		if (!m_textureCoords.empty() && !vertexOnly)
 		{
@@ -127,8 +139,6 @@ void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMe
 			glTexCoordPointer(2, GL_FLOAT, 0, &m_textureCoords[0]);
 		}
 	}
-	list = glGenLists(1);
-	glNewList(list, GL_COMPILE);
 	glPushMatrix();
 	glScaled(m_scale, m_scale, m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
@@ -170,8 +180,49 @@ void C3DModel::NewList(unsigned int & list, const std::set<std::string> * hideMe
 	sMaterial empty;
 	SetMaterial(&empty);
 	glPopMatrix();
-	glEndList();
 	if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	if (useGPUskinning)
+	{
+		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
+		float def[1] = { 0.0f };
+		shader->DisableVertexAttrib4(16, def);
+		int idef = 0;
+		shader->DisableVertexAttrib4(17, &idef);
+	}
+}
+
+//GPU skinning is limited to 4 weights per vertex (no more, no less). So we will add some empty weights if there is less or delete exceeding if there is more
+void C3DModel::CalculateGPUWeights()
+{
+	unsigned int k = 0;
+	for (unsigned int i = 0; i < m_weightsCount.size(); ++i)
+	{
+		unsigned int j = 0;
+		double sum = 0.0;
+		for (j; j < m_weightsCount[i]; ++j, ++k)
+		{
+			if (j < 4)
+			{
+				m_gpuWeight.push_back(m_weights[k]);
+				m_gpuWeightIndexes.push_back(m_weightsIndexes[k]);
+			}
+			sum += m_weights[k];
+		}
+		for (j; j < 4; ++j)
+		{
+			m_gpuWeight.push_back(0.0f);
+			m_gpuWeightIndexes.push_back(0);
+		}
+		for (j = 0; j < 4; ++j)
+		{
+			m_gpuWeight[i * 4 + j] /= sum;
+		}
+	}
+	m_gpuInverseMatrices.resize(m_skeleton.size() * 16);
+	for (unsigned int i = 0; i < m_skeleton.size(); ++i)
+	{
+		memcpy(&m_gpuInverseMatrices[i * 16], m_skeleton[i].invBindMatrix, sizeof(float) * 16);
+	}
 }
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
@@ -212,99 +263,162 @@ void MultiplyMatrices(float * a, float * b)
 	memcpy(a, c, sizeof(float) * 16);
 }
 
-void AddAllChildren(std::vector<sAnimation> const& anims, unsigned int current, std::vector<sAnimation> & set)
+void AddAllChildren(std::vector<sAnimation> const& anims, unsigned int current, std::vector<unsigned int> & set)
 {
-	set.push_back(anims[current]);
+	set.push_back(current);
 	for (unsigned int i = 0; i < anims[current].children.size(); ++i)
 	{
 		AddAllChildren(anims, anims[current].children[i], set);
 	}
 }
 
-void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, long time)
+std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, float time)
 {
-	std::vector<CVector3f> vertices;
-	unsigned int k = 0;//weightIndex
-	//Apply animation transormations for each vertex
-	if (!m_weightsCount.empty())
+	//copy all matrices
+	std::vector<float> jointMatrices;
+	jointMatrices.resize(skeleton.size() * 16);
+	for (unsigned int i = 0; i < skeleton.size(); ++i)
+	{
+		memcpy(&jointMatrices[i * 16], skeleton[i].matrix, sizeof(float) * 16);
+	}
+	//apply animations
+	if (!animationToPlay.empty())
 	{
 		//get animations that are need to be played
-		std::vector<sAnimation> animsToPlay;
-		for (unsigned int i = 0; i < m_animations.size(); ++i)
+		std::vector<unsigned int> animsToPlay;
+		for (unsigned int i = 0; i < animations.size(); ++i)
 		{
-			if (m_animations[i].id == animationToPlay)
+			if (animations[i].id == animationToPlay)
 			{
-				AddAllChildren(m_animations, i, animsToPlay);
+				AddAllChildren(animations, i, animsToPlay);
 				break;
 			}
 		}
-		//copy all matrices
-		std::vector<float> jointMatrices;
-		for (unsigned int i = 0; i < m_skeleton.size(); ++i)
-		{
-			for (unsigned int j = 0; j < 16; ++j)
-			{
-				jointMatrices.push_back(m_skeleton[i].matrix[j]);
-			}
-		}
 		//replace affected joints with animation matrices
-		float t = ((double)time) / 1000.0f;
 		for (unsigned int i = 0; i < animsToPlay.size(); ++i)
 		{
+			const sAnimation * anim = &animations[animsToPlay[i]];
 			unsigned int k;
-			for (k = 0; k < animsToPlay[i].keyframes.size(); ++k)
+			for (k = 0; k < anim->keyframes.size(); ++k)
 			{
-				if (t <= animsToPlay[i].keyframes[k] && (k == 0 || t > animsToPlay[i].keyframes[k - 1]))
+				if (time <= anim->keyframes[k] && (k == 0 || time > anim->keyframes[k - 1]))
 				{
 					break;
 				}
 			}
-			if (k < animsToPlay[i].keyframes.size())
+			if (k < anim->keyframes.size())
 			{
 				for (unsigned int j = 0; j < 16; ++j)
 				{
-					jointMatrices[animsToPlay[i].boneIndex * 16 + j] = animsToPlay[i].matrices[k * 16 + j];
+					jointMatrices[anim->boneIndex * 16 + j] = anim->matrices[k * 16 + j];
 				}
 			}
 		}
-		//cycle through all joints and multiply them to their parents
-		for (unsigned int i = 0; i < m_skeleton.size(); ++i)
+	}
+	//cycle through all joints and multiply them to their parents
+	for (unsigned int i = 0; i < skeleton.size(); ++i)
+	{
+		if (skeleton[i].parentIndex != -1)
 		{
-			if (m_skeleton[i].parentIndex != -1)
-			{
-				float parent[16];
-				memcpy(parent, &jointMatrices[m_skeleton[i].parentIndex * 16], sizeof(float) * 16);
-				MultiplyMatrices(parent, &jointMatrices[i * 16]);
-				memcpy(&jointMatrices[i * 16], parent, sizeof(float) * 16);
-			}
+			float parent[16];
+			memcpy(parent, &jointMatrices[skeleton[i].parentIndex * 16], sizeof(float) * 16);
+			MultiplyMatrices(parent, &jointMatrices[i * 16]);
+			memcpy(&jointMatrices[i * 16], parent, sizeof(float) * 16);
 		}
+	}
+	return jointMatrices;
+}
+
+void C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, float time, bool gpuSkinning)
+{
+	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, time);
+	if (gpuSkinning)
+	{
+		if (m_gpuWeight.empty())
+		{
+			CalculateGPUWeights();
+		}
+		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
+		shader->SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
+		DrawModel(hideMeshes, vertexOnly, m_vertices, m_normals, true);
+	}
+	else
+	{
+		std::vector<CVector3f> vertices;
+		vertices.resize(m_vertices.size());
+		unsigned int k = 0;
 		for (unsigned int i = 0; i < m_vertices.size(); ++i)
 		{
-			CVector3f v(0.0f, 0.0f, 0.0f);
-			CVector3f old = m_vertices[i];
-			//for each animation that has influence on this vertex perform an action;
+			//recalculate vertex using bones
 			for (unsigned int j = 0; j < m_weightsCount[i]; ++j, ++k)
 			{
 				CVector3f cur = m_vertices[i];
 				sJoint * joint = &m_skeleton[m_weightsIndexes[k]];
-				MultiplyVectorToMatrix(cur, joint->bindShapeMatrix);
 				MultiplyVectorToMatrix(cur, joint->invBindMatrix);
 				MultiplyVectorToMatrix(cur, &jointMatrices[m_weightsIndexes[k] * 16]);
 				cur *= m_weights[k];
-				v += cur;
+				vertices[i] += cur;
 			}
-			vertices.push_back(v);
+		}
+		DrawModel(hideMeshes, vertexOnly, vertices, m_normals);
+	}
+}
+
+void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, float time, bool gpuSkinning)
+{
+	unsigned int k = 0;//weightIndex
+	//Apply animation transormations for each vertex
+	if (!m_weightsCount.empty())
+	{
+		if (animationToPlay.empty())
+		{
+			if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
+			{
+				unsigned int id = glGenLists(1);
+				glNewList(id, GL_COMPILE);
+				DrawSkinned(hideMeshes, true, "", time, gpuSkinning);
+				glEndList();
+				m_vertexLists[*hideMeshes] = id;
+			}
+			if (!vertexOnly && m_lists.find(*hideMeshes) == m_lists.end())
+			{
+				unsigned int id = glGenLists(1);
+				glNewList(id, GL_COMPILE);
+				DrawSkinned(hideMeshes, false, "", time, gpuSkinning);
+				glEndList();
+				m_lists[*hideMeshes] = id;
+			}
+			if (vertexOnly)
+			{
+				glCallList(m_vertexLists[*hideMeshes]);
+			}
+			else
+			{
+				glCallList(m_lists[*hideMeshes]);
+			}
+		}
+		else
+		{
+			DrawSkinned(hideMeshes, false, animationToPlay, time, gpuSkinning);
 		}
 	}
 	else
 	{
 		if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
 		{
-			NewList(m_vertexLists[*hideMeshes], hideMeshes, true);
+			unsigned int id = glGenLists(1);
+			glNewList(id, GL_COMPILE);
+			DrawModel(hideMeshes, true, m_vertices, m_normals);
+			glEndList();
+			m_vertexLists[*hideMeshes] = id;
 		}
 		if (!vertexOnly && m_lists.find(*hideMeshes) == m_lists.end())
 		{
-			NewList(m_lists[*hideMeshes], hideMeshes, false);
+			unsigned int id = glGenLists(1);
+			glNewList(id, GL_COMPILE);
+			DrawModel(hideMeshes, false, m_vertices, m_normals);
+			glEndList();
+			m_lists[*hideMeshes] = id;
 		}
 		if (vertexOnly)
 		{
@@ -314,64 +428,7 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, s
 		{
 			glCallList(m_lists[*hideMeshes]);
 		}
-		return;
 	}
-	if (!vertices.empty())
-	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, !vertices.empty()?&vertices[0]:&m_vertices[0]);
-	}
-	if (!m_normals.empty() && !vertexOnly)
-	{
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_FLOAT, 0, &m_normals[0]);
-	}
-	if (!m_textureCoords.empty() && !vertexOnly)
-	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, GL_FLOAT, 0, &m_textureCoords[0]);
-	}
-	glPushMatrix();
-	glScaled(m_scale, m_scale, m_scale);
-	if (!m_indexes.empty()) //Draw by meshes;
-	{
-		unsigned int begin = 0;
-		unsigned int end;
-		for (unsigned int i = 0; i < m_meshes.size(); ++i)
-		{
-			if (hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
-			{
-				end = m_meshes[i].polygonIndex;
-				glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-				SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
-				begin = (i + 1 == m_meshes.size()) ? m_count : m_meshes[i + 1].polygonIndex;
-				continue;
-			}
-			if (vertexOnly || (i > 0 && m_meshes[i].materialName == m_meshes[i - 1].materialName))
-			{
-				continue;
-			}
-			end = m_meshes[i].polygonIndex;
-			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-			if (!vertexOnly) SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
-			begin = end;
-		}
-		end = m_count;
-		if (begin != end)
-		{
-			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-		}
-	}
-	else //Draw in a row
-	{
-		glDrawArrays(GL_TRIANGLES, 0, m_count);
-	}
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	sMaterial empty;
-	SetMaterial(&empty);
-	glPopMatrix();
 }
 
 void C3DModel::Preload() const

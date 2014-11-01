@@ -19,13 +19,13 @@ private:
 	std::weak_ptr<CGameModel> m_gameModel;
 
 	static std::shared_ptr<CGameView> m_instanse;
-	std::shared_ptr<CTable> m_table;
-	std::shared_ptr<CSkyBox> m_skybox;
+	std::unique_ptr<CTable> m_table;
+	std::unique_ptr<CSkyBox> m_skybox;
 	CCamera m_camera;
-	std::shared_ptr<IUIElement> m_ui;
+	std::unique_ptr<IUIElement> m_ui;
 	
 	CShaderManager m_shader;
-	std::shared_ptr<CNetSocket> m_socket;
+	std::unique_ptr<CNetSocket> m_socket;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
@@ -44,6 +44,7 @@ private:
 	float m_shadowAngle;
 	float m_anisoptropy;
 	static bool m_visible;
+	bool m_gpuSkinning;
 
 	void DrawUI() const;
 	void Update();
@@ -68,6 +69,8 @@ public:
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning();
 	void DisableVertexLightning();
+	void EnableGPUSkinning();
+	void DisableGPUSkinning();
 	void EnableShadowMap(int size, float angle);
 	void DisableShadowMap();
 	void SetLightPosition(int index, float* pos);

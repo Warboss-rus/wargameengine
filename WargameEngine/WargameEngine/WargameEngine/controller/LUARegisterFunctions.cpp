@@ -621,6 +621,22 @@ int UniformMatrix4fv(lua_State* L)
 	return 0;
 }
 
+int EnableGPUSkinning(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 0)
+		return luaL_error(L, "no arguments expected");
+	CGameView::GetInstance().lock()->EnableGPUSkinning();
+	return 0;
+}
+
+int DisableGPUSkinning(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 0)
+		return luaL_error(L, "no arguments expected");
+	CGameView::GetInstance().lock()->DisableGPUSkinning();
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -680,4 +696,6 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(UniformMatrix4fv, "UniformMatrix4fv");
 	lua.RegisterConstant(SetLMBCallback, "SetLMBCallback");
 	lua.RegisterConstant(SetRMBCallback, "SetRMBCallback");
+	lua.RegisterConstant(EnableGPUSkinning, "EnableGPUSkinning");
+	lua.RegisterConstant(DisableGPUSkinning, "DisableGPUSkinning");
 }

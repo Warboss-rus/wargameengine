@@ -310,6 +310,24 @@ int GetAnimations(lua_State* L)
 	return 1;
 }
 
+int AdditionalModel(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "1 argument expected(model)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	object->AddSecondaryModel(CLUAScript::GetArgument<const char*>(2));
+	return 0;
+}
+
+int RemoveAdditionalModel(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 2)
+		return luaL_error(L, "1 argument expected(model)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	object->RemoveSecondaryModel(CLUAScript::GetArgument<const char*>(2));
+	return 0;
+}
+
 static const luaL_Reg ObjectFuncs[] = {
 	{ "New", NewObject },
 	{ "NewDecal", NewDecal },
@@ -338,6 +356,8 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "GetGroupChildrenAt", GetGroupChildrenAt },
 	{ "PlayAnimation", PlayAnimation },
 	{ "GetAnimations", GetAnimations },
+	{ "AdditionalModel", AdditionalModel },
+	{ "RemoveAdditionalModel", RemoveAdditionalModel },
 	{ NULL, NULL }
 };
 
