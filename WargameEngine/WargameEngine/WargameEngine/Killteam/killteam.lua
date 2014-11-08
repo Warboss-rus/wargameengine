@@ -227,7 +227,7 @@ end
 
 function Fire()
 	hunter = Object:GetSelected()
-	if(hunter:Null()) then
+	if(hunter ~= nil) then
 		MessageBox("Choose one of your models to shoot")
 		hunter = nil
 		return
@@ -393,7 +393,7 @@ end
 
 function Strike()
 	hunter = Object:GetSelected()
-	if(hunter:Null()) then
+	if(hunter ~= nil) then
 		MessageBox("Choose one of your models to strike")
 		hunter = nil
 		return
@@ -543,7 +543,7 @@ function OnSelection()
 	UI:Get():GetChild("Button6"):SetVisible(false)
 	UI:Get():GetChild("Button7"):SetVisible(false)
 	local selected = Object:GetSelected()
-	if(selected:Null()) then
+	if(selected ~= nil) then
 		UI:Get():GetChild("Label2"):SetText("")
 		return
 	else
@@ -569,7 +569,7 @@ end
 
 function Run()
 	local object = Object:GetSelected()
-	if(object:Null()) then
+	if(object ~= nil) then
 		MessageBox("Choose one of your models to run")
 		return
 	end

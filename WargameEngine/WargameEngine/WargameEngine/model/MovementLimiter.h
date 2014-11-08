@@ -1,4 +1,5 @@
 #include <math.h>
+#include <string>
 #pragma once
 class IMoveLimiter
 {
@@ -40,4 +41,19 @@ private:
 	double m_y;
 	double m_z;
 	double m_rotation;
+};
+
+class CMoveLimiterTiles : public IMoveLimiter
+{
+public:
+	void FixPosition(double & x, double & y, double & z, double & rotation) const;
+};
+
+class CCustomMoveLimiter : public IMoveLimiter
+{
+public:
+	CCustomMoveLimiter(std::string const& function);
+	void FixPosition(double & x, double & y, double & z, double & rotation) const;
+private:
+	std::string m_function;
 };

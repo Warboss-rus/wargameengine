@@ -57,12 +57,13 @@ std::string const CObject::GetProperty(std::string const& key) const
 	}
 }
 
-void CObject::PlayAnimation(std::string const& animation)
+void CObject::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop)
 {
 	m_animation = animation;
 	struct timeb time;
 	ftime(&time);
 	m_animationBegin = 1000 * time.time + time.millitm;
+	m_animationLoop = loop;
 }
 
 std::string CObject::GetAnimation() const

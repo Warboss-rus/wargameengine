@@ -211,6 +211,25 @@ void CLUAScript::CallFunction(std::string const& funcName, void* param, std::str
 	}
 }
 
+void CLUAScript::CallFunctionReturn4(std::string const& funcName, double x, double y, double z, double w, double & x1, double & y1, double & z1, double & w1)
+{
+	lua_getglobal(m_lua_state, funcName.c_str());
+	SetArgument(x);
+	SetArgument(y);
+	SetArgument(z);
+	SetArgument(w);
+	int result = lua_pcall(m_lua_state, 4, 2, 0);
+	x1 = GetArgument<double>(1);
+	y1 = GetArgument<double>(2);
+	z1 = GetArgument<double>(3);
+	w1 = GetArgument<double>(4);
+	if (result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+}
+
 template<>
 int CLUAScript::CallFunctionReturn<int>(std::string const& funcName)
 {
@@ -254,6 +273,12 @@ void * CLUAScript::GetClassInstance(std::string const& className)
 
 int CLUAScript::NewInstanceClass(void* instance, std::string const& className)
 {
+	if (!instance)
+	{
+		lua_pushnil(m_lua_state);
+		return 1;
+	}
+	
 	luaL_checktype(m_lua_state, 1, LUA_TTABLE);
     
     lua_newtable(m_lua_state);      // Create table to represent instance

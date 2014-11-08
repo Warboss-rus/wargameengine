@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include "gl.h"
 #include "GameView.h"
+#include "../model/Object.h"
 
 C3DModel::C3DModel(std::shared_ptr<IBounding> bounding, double scale)
 { 
@@ -198,7 +199,7 @@ void C3DModel::CalculateGPUWeights()
 	for (unsigned int i = 0; i < m_weightsCount.size(); ++i)
 	{
 		unsigned int j = 0;
-		double sum = 0.0;
+		float sum = 0.0f;
 		for (j; j < m_weightsCount[i]; ++j, ++k)
 		{
 			if (j < 4)
@@ -272,8 +273,17 @@ void AddAllChildren(std::vector<sAnimation> const& anims, unsigned int current, 
 	}
 }
 
-std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, float time)
+void InterpolateMatrices(float * m1, const float * m2, float t)//works bad if matrices are strongly differ
 {
+	for (unsigned int i = 0; i < 16; ++i)
+	{
+		m1[i] = m1[i] * t + m2[i] * (1.0f - t);
+	}
+}
+
+std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool & animationIsEnded)
+{
+	animationIsEnded = false;
 	//copy all matrices
 	std::vector<float> jointMatrices;
 	jointMatrices.resize(skeleton.size() * 16);
@@ -291,6 +301,21 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 			if (animations[i].id == animationToPlay)
 			{
 				AddAllChildren(animations, i, animsToPlay);
+				if (time > animations[i].duration)
+				{
+					if (loop == sAnimation::LOOPING)
+					{
+						time = fmod(time, animations[i].duration);
+					}
+					else if (loop == sAnimation::HOLDEND)
+					{
+						time = animations[i].duration;
+					}
+					else
+					{
+						animationIsEnded = true;
+					}
+				}
 				break;
 			}
 		}
@@ -312,6 +337,10 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 				{
 					jointMatrices[anim->boneIndex * 16 + j] = anim->matrices[k * 16 + j];
 				}
+				if (k > 0)
+				{
+					InterpolateMatrices(&jointMatrices[anim->boneIndex * 16], &anim->matrices[(k - 1) * 16], (time - anim->keyframes[k - 1]) / (anim->keyframes[k] - anim->keyframes[k - 1]));
+				}
 			}
 		}
 	}
@@ -329,54 +358,62 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 	return jointMatrices;
 }
 
-void C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, float time, bool gpuSkinning)
+bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning)
 {
-	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, time);
+	bool result;
+	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);
 	if (gpuSkinning)
 	{
 		if (m_gpuWeight.empty())
 		{
 			CalculateGPUWeights();
 		}
-		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
-		shader->SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
+		CGameView::GetInstance().lock()->GetShaderManager()->SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
 		DrawModel(hideMeshes, vertexOnly, m_vertices, m_normals, true);
 	}
 	else
 	{
 		std::vector<CVector3f> vertices;
+		std::vector<CVector3f> normals;
 		vertices.resize(m_vertices.size());
+		normals.resize(m_normals.size());
 		unsigned int k = 0;
 		for (unsigned int i = 0; i < m_vertices.size(); ++i)
 		{
 			//recalculate vertex using bones
 			for (unsigned int j = 0; j < m_weightsCount[i]; ++j, ++k)
 			{
-				CVector3f cur = m_vertices[i];
+				CVector3f vertex = m_vertices[i];
 				sJoint * joint = &m_skeleton[m_weightsIndexes[k]];
-				MultiplyVectorToMatrix(cur, joint->invBindMatrix);
-				MultiplyVectorToMatrix(cur, &jointMatrices[m_weightsIndexes[k] * 16]);
-				cur *= m_weights[k];
-				vertices[i] += cur;
+				MultiplyVectorToMatrix(vertex, joint->invBindMatrix);
+				MultiplyVectorToMatrix(vertex, &jointMatrices[m_weightsIndexes[k] * 16]);
+				vertex *= m_weights[k];
+				vertices[i] += vertex;
+				CVector3f normal = m_normals[i];
+				MultiplyVectorToMatrix(normal, joint->invBindMatrix);
+				MultiplyVectorToMatrix(normal, &jointMatrices[m_weightsIndexes[k] * 16]);
+				normal *= m_weights[k];
+				normals[i] += normal;
 			}
 		}
-		DrawModel(hideMeshes, vertexOnly, vertices, m_normals);
+		DrawModel(hideMeshes, vertexOnly, vertices, normals);
 	}
+	return result;
 }
 
-void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, float time, bool gpuSkinning)
+void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
 {
-	unsigned int k = 0;//weightIndex
-	//Apply animation transormations for each vertex
-	if (!m_weightsCount.empty())
+	const std::set<std::string> * hideMeshes = &object->GetHiddenMeshes();
+	unsigned int k = 0;//current index of weight and weightIndex arrays
+	if (!m_weightsCount.empty())//object needs to be skinned
 	{
-		if (animationToPlay.empty())
+		if (object->GetAnimation().empty())//no animation is playing, default pose
 		{
 			if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
 			{
 				unsigned int id = glGenLists(1);
 				glNewList(id, GL_COMPILE);
-				DrawSkinned(hideMeshes, true, "", time, gpuSkinning);
+				DrawSkinned(hideMeshes, true, "", sAnimation::NONLOOPING, object->GetAnimationTime(), gpuSkinning);
 				glEndList();
 				m_vertexLists[*hideMeshes] = id;
 			}
@@ -384,7 +421,7 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, s
 			{
 				unsigned int id = glGenLists(1);
 				glNewList(id, GL_COMPILE);
-				DrawSkinned(hideMeshes, false, "", time, gpuSkinning);
+				DrawSkinned(hideMeshes, false, "", sAnimation::NONLOOPING, object->GetAnimationTime(), gpuSkinning);
 				glEndList();
 				m_lists[*hideMeshes] = id;
 			}
@@ -397,12 +434,15 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, s
 				glCallList(m_lists[*hideMeshes]);
 			}
 		}
-		else
+		else//animation is playing, full computation
 		{
-			DrawSkinned(hideMeshes, false, animationToPlay, time, gpuSkinning);
+			if (DrawSkinned(hideMeshes, false, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime(), gpuSkinning))
+			{
+				object->PlayAnimation("");
+			}
 		}
 	}
-	else
+	else//static object
 	{
 		if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
 		{
@@ -431,7 +471,7 @@ void C3DModel::Draw(const std::set<std::string> * hideMeshes, bool vertexOnly, s
 	}
 }
 
-void C3DModel::Preload() const
+void C3DModel::PreloadTextures() const
 {
 	CTextureManager * texManager = CTextureManager::GetInstance();
 	for (unsigned int i = 0; i < m_meshes.size(); ++i)

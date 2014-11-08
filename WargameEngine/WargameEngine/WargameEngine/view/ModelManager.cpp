@@ -3,13 +3,14 @@
 #include <string>
 #include "../ThreadPool.h"
 #include "../Module.h"
+#include "../model/Object.h"
 
 void UseModel(void* data)
 {
 	sOBJLoader * loader = (sOBJLoader*)data;
 	loader->model->SetModel(loader->vertices, loader->textureCoords, loader->normals, loader->indexes, loader->materialManager, loader->meshes);
 	if(loader->animations.size() > 0) loader->model->SetAnimation(loader->weightsCount, loader->weightsIndexes, loader->weights, loader->joints, loader->animations);
-	loader->model->Preload();
+	loader->model->PreloadTextures();
 	delete loader;
 }
 
@@ -36,10 +37,10 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, float time, bool gpuSkinning)
+void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
 {
 	LoadIfNotExist(path);
-	m_models[path]->Draw(hideMeshes, vertexOnly, animationToPlay, time, gpuSkinning);
+	m_models[path]->Draw(object, vertexOnly, gpuSkinning);
 }
 
 std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path)

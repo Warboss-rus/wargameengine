@@ -157,7 +157,7 @@ void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, s
 			std::string bone = channel->Attribute("target");
 			std::string mode = bone.substr(bone.find('/') + 1);
 			bone = bone.substr(0, bone.find('/'));
-			for (int i = 0; i < joints.size(); ++i)
+			for (unsigned int i = 0; i < joints.size(); ++i)
 			{
 				if (bone == joints[i].id)
 				{
@@ -182,6 +182,14 @@ void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, s
 						anim.matrices = result;
 					}
 					anim.boneIndex = i;
+					anim.duration = 0.0f;
+					for (unsigned int j = 0; j < anim.keyframes.size(); ++j)
+					{
+						if (anim.keyframes[j] > anim.duration)
+						{
+							anim.duration = anim.keyframes[j];
+						}
+					}
 					anims.push_back(anim);
 					if (parent != -1)
 						anims[parent].children.push_back(anims.size() - 1);
@@ -478,7 +486,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 					std::vector<unsigned int> v = GetUIntegers(vertex_weights->FirstChildElement("v"));
 					std::vector<std::string> jointNames;
 					std::string sname = jointSource->FirstChild()->ValueStr();
-					for (int i = 0; i < sname.size(); ++i)
+					for (unsigned int i = 0; i < sname.size(); ++i)
 					{
 						if (sname[i] == '\0') sname[i] = ' ';
 					}
@@ -535,6 +543,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			sAnimation anim;
 			anim.id = clip->Attribute("id");
 			anim.boneIndex = -1;
+			anim.duration = atof(clip->Attribute("end")) - atof(clip->Attribute("start"));
 			TiXmlElement* animation = clip->FirstChildElement("instance_animation");
 			while (animation)
 			{

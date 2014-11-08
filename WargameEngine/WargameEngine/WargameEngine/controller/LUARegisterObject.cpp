@@ -4,6 +4,7 @@
 #include "../model/Object.h"
 #include "../model/ObjectGroup.h"
 #include "../view/GameView.h"
+#include <algorithm>
 
 int NewObject(lua_State* L)
 {
@@ -69,15 +70,6 @@ int DeleteObject(lua_State* L)
 	CCommandHandler::GetInstance().lock()->AddNewDeleteObject(std::shared_ptr<IObject>(object));
 	object = nullptr;
 	return 0;
-}
-
-int ObjectNull(lua_State* L)
-{
-	if (CLUAScript::GetArgumentCount() != 1)
-        return luaL_error(L, "no argument expected");
-	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	CLUAScript::SetArgument(object == NULL);
-	return 1;
 }
 
 int GetObjectModel(lua_State* L)
@@ -230,6 +222,21 @@ int SetMoveLimit(lua_State* L)
 		double y2 = CLUAScript::GetArgument<double>(6);
 		object->SetMovementLimiter(new CMoveLimiterRectangle(x1, y1, x2, y2));
 	}
+	if (limiterType == "tiles")
+	{
+		int n = CLUAScript::GetArgumentCount();
+		if (CLUAScript::GetArgumentCount() != 3)
+			return luaL_error(L, "1 argument expected(moveLimiterType)");
+		object->SetMovementLimiter(new CMoveLimiterTiles());
+	}
+	if (limiterType == "custom")
+	{
+		int n = CLUAScript::GetArgumentCount();
+		if (CLUAScript::GetArgumentCount() != 4)
+			return luaL_error(L, "1 argument expected(moveLimiterType, functionName)");
+		std::string function = CLUAScript::GetArgument<const char*>(3);
+		object->SetMovementLimiter(new CCustomMoveLimiter(function));
+	}
 	return 0;
 }
 
@@ -288,15 +295,22 @@ int GetGroupChildrenAt(lua_State* L)
 
 int PlayAnimation(lua_State* L)
 {
-	if (CLUAScript::GetArgumentCount() != 2)
-		return luaL_error(L, "1 argument expected (animation)");
+	int n = CLUAScript::GetArgumentCount();
+	if (n < 2 || n > 3)
+		return luaL_error(L, "1 or 2 argument expected (animation, loop mode)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	char* anim = CLUAScript::GetArgument<char*>(2);
+	std::string sloop = "nonlooping";
+	if (n == 3) sloop = CLUAScript::GetArgument<char*>(3);
+	transform(sloop.begin(), sloop.end(), sloop.begin(), ::tolower);
+	sAnimation::eLoopMode loop = sAnimation::NONLOOPING;
+	if (sloop == "looping") loop = sAnimation::LOOPING;
+	if (sloop == "holdend") loop = sAnimation::HOLDEND;
 	if (!object)
 	{
 		luaL_error(L, "needs to be called on valid object");
 	}
-	object->PlayAnimation(anim);
+	object->PlayAnimation(anim, loop);
 	return 0;
 }
 
@@ -335,7 +349,6 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "GetCount", GetCount },
 	{ "GetAt", GetAt },
 	{ "Delete", DeleteObject },
-	{ "Null", ObjectNull },
 	{ "GetModel", GetObjectModel },
 	{ "GetX", GetObjectX },
 	{ "GetY", GetObjectY },

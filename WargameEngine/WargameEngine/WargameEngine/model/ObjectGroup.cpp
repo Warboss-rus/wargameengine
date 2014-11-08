@@ -185,3 +185,11 @@ void CObjectGroup::SetMovementLimiter(IMoveLimiter * limiter)
 		m_children[i]->SetMovementLimiter(limiter);
 	}
 }
+
+void CObjectGroup::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop)
+{
+	for (unsigned int i = 0; i < m_children.size(); ++i)
+	{
+		m_children[i]->PlayAnimation(animation, loop);
+	}
+}

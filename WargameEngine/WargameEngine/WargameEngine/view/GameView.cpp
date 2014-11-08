@@ -187,15 +187,15 @@ void CGameView::DrawObjects(void)
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_gpuSkinning);
 		unsigned int secondaryModels = object->GetSecondaryModelsCount();
 		for (unsigned int i = 0; i < secondaryModels; ++i)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(i), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+			m_modelManager.DrawModel(object->GetSecondaryModel(i), object, false, m_gpuSkinning);
 		}
 		glPopMatrix();
 	}
@@ -256,16 +256,16 @@ void CGameView::DrawShadowMap()
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
 		if (!object->CastsShadow()) continue;
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), &object->GetHiddenMeshes(), true, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, true, m_gpuSkinning);
 		unsigned int secondaryModels = object->GetSecondaryModelsCount();
 		for (unsigned int i = 0; i < secondaryModels; ++i)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(i), &object->GetHiddenMeshes(), false, object->GetAnimation(), object->GetAnimationTime(), m_gpuSkinning);
+			m_modelManager.DrawModel(object->GetSecondaryModel(i), object, true, m_gpuSkinning);
 		}
 		glPopMatrix();
 	}

@@ -7,6 +7,8 @@
 #include "Bounding.h"
 #pragma once
 
+class IObject;
+
 struct sMesh
 {
 	std::string name;
@@ -32,6 +34,12 @@ struct sAnimation
 	std::vector<float> matrices;
 	unsigned int boneIndex;
 	std::vector<unsigned int> children;
+	float duration;
+	enum eLoopMode {
+		NONLOOPING,
+		LOOPING,
+		HOLDEND
+	};
 };
 
 class C3DModel
@@ -44,15 +52,15 @@ public:
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes);
 	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);
-	void Draw(const std::set<std::string>* hideMeshes = NULL, bool vertexOnly = false, std::string const& animationToPlay = "", float time = 0.0f, bool gpuSkinning = false);
+	void Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning);
 	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
 	void SetBounding(std::shared_ptr<IBounding> bounding, double scale);
-	void Preload() const;
+	void PreloadTextures() const;
 	std::vector<std::string> GetAnimations() const;
 private:
 	void DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false);
 	void CalculateGPUWeights();
-	void DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, float time, bool gpuSkinning);
+	bool DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;

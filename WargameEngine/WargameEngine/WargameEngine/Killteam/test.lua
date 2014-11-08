@@ -91,7 +91,10 @@ function StringRecieved(str)
 end
 
 function PlayAnim()
-	Object:GetSelected():PlayAnimation("AnimationClip")
+	local selected = Object:GetSelected()
+	if(selected ~= nil) then
+		selected:PlayAnimation("AnimationClip")
+	end
 end
 
 IncludeLibrary("math")--Includes the following library

@@ -1,4 +1,5 @@
 #include "MovementLimiter.h"
+#include "../controller/LUAScriptHandler.h"
 
 void CMoveLimiterRectangle::FixPosition(double & x, double & y, double & z, double & rotation) const
 { 
@@ -24,4 +25,20 @@ void CMoveLimiterStatic::FixPosition(double & x, double & y, double & z, double 
 	y = m_y;
 	z = m_z;
 	rotation = m_rotation;
+}
+
+void CMoveLimiterTiles::FixPosition(double & x, double & y, double & z, double & rotation) const
+{
+	x = floor(x);
+	y = floor(y);
+	z = floor(z);
+}
+
+CCustomMoveLimiter::CCustomMoveLimiter(std::string const& function) :m_function(function)
+{
+}
+
+void CCustomMoveLimiter::FixPosition(double & x, double & y, double & z, double & rotation) const
+{
+	CLUAScript::CallFunctionReturn4(m_function, x, y, z, rotation, x, y, z, rotation);
 }

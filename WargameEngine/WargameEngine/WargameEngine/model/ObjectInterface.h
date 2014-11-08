@@ -4,6 +4,7 @@
 #include <map>
 #include "../view/Vector3.h"
 #include "MovementLimiter.h"
+#include "../view/3dModel.h"
 
 class IObject
 {
@@ -29,11 +30,12 @@ public:
 	virtual void SetMovementLimiter(IMoveLimiter * limiter) = 0;
 	virtual std::map<std::string, std::string> const& GetAllProperties() const = 0;
 	virtual bool CastsShadow() const = 0;
-	virtual void PlayAnimation(std::string const& animation) = 0;
+	virtual void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop = sAnimation::NONLOOPING) = 0;
 	virtual std::string GetAnimation() const = 0;
 	virtual float GetAnimationTime() const = 0;
 	virtual void AddSecondaryModel(std::string const& model) = 0;
 	virtual void RemoveSecondaryModel(std::string const& model) = 0;
 	virtual unsigned int GetSecondaryModelsCount() const = 0;
 	virtual std::string GetSecondaryModel(unsigned int index) const = 0;
+	virtual sAnimation::eLoopMode GetAnimationLoop() const = 0;
 };

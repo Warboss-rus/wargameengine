@@ -34,13 +34,14 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter);
 	std::map<std::string, std::string> const& GetAllProperties() const { return m_children[0]->GetAllProperties(); }
 	bool CastsShadow() const { return true; }
-	void PlayAnimation(std::string const& animation) {}
+	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop);
 	std::string GetAnimation() const { return ""; }
 	float GetAnimationTime() const { return 0.0f; }
 	void AddSecondaryModel(std::string const& model) {}
 	void RemoveSecondaryModel(std::string const& model) {}
 	unsigned int GetSecondaryModelsCount() const { return 0; }
 	std::string GetSecondaryModel(unsigned int index) const { return ""; }
+	sAnimation::eLoopMode GetAnimationLoop() const { return sAnimation::NONLOOPING; }
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;
