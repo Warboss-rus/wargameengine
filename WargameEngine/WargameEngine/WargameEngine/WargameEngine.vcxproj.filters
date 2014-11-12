@@ -222,6 +222,15 @@
     <ClCompile Include="model\Object.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
+    <ClCompile Include="view\ParticleEffect.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ParticleModel.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ParticleSystem.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ruler.h">
@@ -402,6 +411,18 @@
       <Filter>Header Files\model</Filter>
     </ClInclude>
     <ClInclude Include="view\gl.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleEffect.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleSystem.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleModel.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Particle.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
   </ItemGroup>

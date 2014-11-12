@@ -11,12 +11,12 @@ public:
 	std::string GetPathToModel() const { return m_model; }
 	void Move(double x, double y, double z);
 	void SetCoords(double x, double y, double z);
-	void SetCoords(CVector3d const& coords) { m_x = coords.x; m_y = coords.y; m_z = coords.z; }
+	void SetCoords(CVector3d const& coords) { m_coords = coords;}
 	void Rotate(double rotation);
-	double GetX() const { return m_x; }
-	double GetY() const { return m_y; }
-	double GetZ() const { return m_z; }
-	CVector3d GetCoords() const { return CVector3d(m_x, m_y, m_z); }
+	double GetX() const { return m_coords.x; }
+	double GetY() const { return m_coords.y; }
+	double GetZ() const { return m_coords.z; }
+	CVector3d GetCoords() const { return m_coords; }
 	double GetRotation() const { return m_rotation; }
 	std::set<std::string> const& GetHiddenMeshes() const { return m_hiddenMeshes; }
 	void HideMesh(std::string const& meshName);
@@ -39,14 +39,12 @@ public:
 private:
 	std::string m_model;
 	std::vector<std::string> m_secondaryModels;
-	double m_x;
-	double m_y;
-	double m_z;
+	CVector3d m_coords;
 	double m_rotation;
 	std::set<std::string> m_hiddenMeshes;
 	std::map<std::string, std::string> m_properties;
 	bool m_isSelectable;
-	std::shared_ptr<IMoveLimiter> m_movelimiter;
+	std::unique_ptr<IMoveLimiter> m_movelimiter;
 	bool m_castsShadow;
 	std::string m_animation;
 	long m_animationBegin;

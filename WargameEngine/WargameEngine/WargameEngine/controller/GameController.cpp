@@ -86,7 +86,7 @@ std::shared_ptr<IObject> CGameController::GetNearestObject(double * start, doubl
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = CGameView::GetInstance().lock()->GetModelManager()->GetBoundingBox(object->GetPathToModel());
+		std::shared_ptr<IBounding> bounding = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(object->GetPathToModel());
 		if (!bounding) continue;
 		if (bounding->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
@@ -167,7 +167,7 @@ const CVector3d * CGameController::GetCapturePoint() const
 bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 {
 	CGameModel * model = CGameModel::GetInstance().lock().get();
-	std::shared_ptr<IBounding> curBox = CGameView::GetInstance().lock()->GetModelManager()->GetBoundingBox(current->GetPathToModel());
+	std::shared_ptr<IBounding> curBox = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(current->GetPathToModel());
 	if (!curBox) return false;
 	CVector3d curPos(current->GetCoords());
 	double curAngle = current->GetRotation();
@@ -175,7 +175,7 @@ bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> cur
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = CGameView::GetInstance().lock()->GetModelManager()->GetBoundingBox(object->GetPathToModel());
+		std::shared_ptr<IBounding> bounding = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(object->GetPathToModel());
 		if (!bounding) continue;
 		CVector3d pos(object->GetCoords());
 		double angle = object->GetRotation();
@@ -190,13 +190,13 @@ bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> cur
 bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 {
 	CGameModel* model = CGameModel::GetInstance().lock().get();
-	CModelManager* modelManager = CGameView::GetInstance().lock()->GetModelManager();
+	CModelManager& modelManager = CGameView::GetInstance().lock()->GetModelManager();
 	CVector3d coords;
 	for (unsigned int i = 0; i < model->GetObjectCount(); ++i)
 	{
 		IObject * current = model->Get3DObject(i).get();
 		if (current == shooter || current == target) continue;
-		IBounding * box = modelManager->GetBoundingBox(current->GetPathToModel()).get();
+		IBounding * box = modelManager.GetBoundingBox(current->GetPathToModel()).get();
 		if (!box) continue;
 		if (box->IsIntersectsRay(origin, dir, current->GetX(), current->GetY(), current->GetZ(), current->GetRotation(), coords))
 		{
@@ -243,7 +243,7 @@ int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * t
 int CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 {
 	if (!shooter || !target) return -1;
-	IBounding * targetBound = CGameView::GetInstance().lock()->GetModelManager()->GetBoundingBox(target->GetPathToModel()).get();
+	IBounding * targetBound = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(target->GetPathToModel()).get();
 	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
 	return BBoxlos(center, targetBound, shooter, target);
 }

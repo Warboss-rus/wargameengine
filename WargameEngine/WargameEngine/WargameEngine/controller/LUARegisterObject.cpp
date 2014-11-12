@@ -319,7 +319,7 @@ int GetAnimations(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "no arguments expected");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	std::vector<std::string> anims = CGameView::GetInstance().lock()->GetModelManager()->GetAnimations(object->GetPathToModel());
+	std::vector<std::string> anims = CGameView::GetInstance().lock()->GetModelManager().GetAnimations(object->GetPathToModel());
 	CLUAScript::SetArray(anims);
 	return 1;
 }

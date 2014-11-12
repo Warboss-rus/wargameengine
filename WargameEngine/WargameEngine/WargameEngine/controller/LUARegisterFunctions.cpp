@@ -516,7 +516,7 @@ int PreloadModel(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (model name)");
 	std::string model = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetInstance().lock()->GetModelManager()->LoadIfNotExist(model);
+	CGameView::GetInstance().lock()->GetModelManager().LoadIfNotExist(model);
 	return 0;
 }
 
@@ -637,6 +637,20 @@ int DisableGPUSkinning(lua_State* L)
 	return 0;
 }
 
+int NewParticleEffect(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 7)
+		return luaL_error(L, "7 arguments expected (effect file, x, y, z coordinates, rotation, scale, lifetime)");
+	std::string file = CLUAScript::GetArgument<const char*>(1);
+	double x = CLUAScript::GetArgument<double>(2);
+	double y = CLUAScript::GetArgument<double>(3);
+	double z = CLUAScript::GetArgument<double>(4);
+	double rot = CLUAScript::GetArgument<double>(5);
+	double scale = CLUAScript::GetArgument<double>(6);
+	float lifetime = CLUAScript::GetArgument<float>(7);
+	CGameView::GetInstance().lock()->GetParticleSystem().AddEffect(file, x, y, z, rot, scale, lifetime);
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -698,4 +712,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(SetRMBCallback, "SetRMBCallback");
 	lua.RegisterConstant(EnableGPUSkinning, "EnableGPUSkinning");
 	lua.RegisterConstant(DisableGPUSkinning, "DisableGPUSkinning");
+	lua.RegisterConstant(NewParticleEffect, "NewParticleEffect");
 }

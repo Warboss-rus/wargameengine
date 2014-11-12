@@ -8,6 +8,7 @@
 #include "SkyBox.h"
 #include "Camera.h"
 #include "Input.h"
+#include "ParticleSystem.h"
 #include "../UI/UIElement.h"
 #include "ShaderManager.h"
 #include "../NetSocket.h"
@@ -15,17 +16,18 @@
 class CGameView
 {
 private:
-	CModelManager m_modelManager;
-	std::weak_ptr<CGameModel> m_gameModel;
-
 	static std::shared_ptr<CGameView> m_instanse;
+	CModelManager m_modelManager;
+	CCamera m_camera;
+	CShaderManager m_shader;
+	CParticleSystem m_particles;
+
 	std::unique_ptr<CTable> m_table;
 	std::unique_ptr<CSkyBox> m_skybox;
-	CCamera m_camera;
 	std::unique_ptr<IUIElement> m_ui;
-	
-	CShaderManager m_shader;
 	std::unique_ptr<CNetSocket> m_socket;
+
+	std::weak_ptr<CGameModel> m_gameModel;
 
 	CGameView(void);
 	CGameView(CGameView const&){};
@@ -64,7 +66,8 @@ public:
 	void SelectObject(int x, int y, bool shiftPressed);
 	CCamera * GetCamera();
 	void TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y);
-	CModelManager* GetModelManager() { return &m_modelManager; }
+	CModelManager& GetModelManager() { return m_modelManager; }
+	CParticleSystem& GetParticleSystem() { return m_particles; }
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning();

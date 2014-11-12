@@ -172,6 +172,9 @@
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
+    <ClCompile Include="view\ParticleEffect.cpp" />
+    <ClCompile Include="view\ParticleModel.cpp" />
+    <ClCompile Include="view\ParticleSystem.cpp" />
     <ClCompile Include="view\SelectionTools.cpp" />
     <ClCompile Include="view\ShaderManager.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
@@ -206,6 +209,10 @@
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
     <ClInclude Include="view\gl.h" />
+    <ClInclude Include="view\Particle.h" />
+    <ClInclude Include="view\ParticleEffect.h" />
+    <ClInclude Include="view\ParticleModel.h" />
+    <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\SelectionTools.h" />
     <ClInclude Include="view\ShaderManager.h" />
     <ClInclude Include="view\TextWriter.h" />

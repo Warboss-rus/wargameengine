@@ -2,28 +2,26 @@
 #include <sys\timeb.h> 
 
 CObject::CObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
-	:m_model(model), m_x(x), m_y(y), m_z(0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L){}
+	:m_model(model), m_coords(x, y, 0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L){}
 
 void CObject::Move(double x, double y, double z) 
 { 
-	m_x += x; 
-	m_y += y; 
-	m_z += z; 
-	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
+	m_coords.x += x; 
+	m_coords.y += y;
+	m_coords.z += z;
+	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
 }
 
 void CObject::SetCoords(double x, double y, double z) 
 { 
-	m_x = x; 
-	m_y = y; 
-	m_z = z;
-	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
+	m_coords = CVector3d(x, y, z);
+	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
 }
 
 void CObject::Rotate(double rotation) 
 { 
 	m_rotation = fmod(m_rotation + rotation + 360.0, 360); 
-	if(m_movelimiter) m_movelimiter->FixPosition(m_x, m_y, m_z, m_rotation);
+	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
 }
 
 void CObject::ShowMesh(std::string const& meshName) 

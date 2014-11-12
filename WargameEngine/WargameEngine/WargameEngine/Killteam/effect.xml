@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<effect duration="2.0">
+	<materials>
+		<material id="material1" texture="particle.bmp" vertex_shader="" fragment_shader=""/>
+	</materials>
+	<particles>
+		<particle id="particle1" width="0.15" height="0.15" material="material1">
+			<keyframes>0.0 0.5 1.0 1.5 2.0</keyframes>
+			<positions>
+				0.0 0.0 0.0
+				1.0 1.0 1.0
+				2.0 2.0 2.0
+				3.0 3.0 3.0
+				4.0 4.0 4.0
+			</positions>
+		</particle>
+	</particles>
+	<instances>
+		<instance particle="particle1" x="0" y="0" z="0" start="0.0" speed="1.0" scale="1.0" rotation="0.0"/>
+		<instance particle="particle1" x="1"/>
+		<instance particle="particle1" x="2"/>
+	</instances>
+</effect>

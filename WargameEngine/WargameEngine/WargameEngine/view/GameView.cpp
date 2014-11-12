@@ -167,6 +167,7 @@ void CGameView::Update()
 	m_camera.Update();
 	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
 	DrawObjects();
+	m_particles.DrawParticles();
 	DrawBoundingBox();
 	CRuler::Draw();
 	DrawUI();
@@ -189,7 +190,7 @@ void CGameView::DrawObjects(void)
 	{
 		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
 		glPushMatrix();
-		glTranslated(object->GetX(), object->GetY(), 0);
+		glTranslated(object->GetX(), object->GetY(), 0.0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_gpuSkinning);
 		unsigned int secondaryModels = object->GetSecondaryModelsCount();
