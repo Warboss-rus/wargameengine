@@ -97,6 +97,13 @@ function PlayAnim()
 	end
 end
 
+function RMB(object, x, y, z)
+	local selected = Object:GetSelected()
+	if(selected ~= nil) then
+		selected:GoTo(x, y, 2.0, "AnimationClip", 1.0)
+	end
+end
+
 IncludeLibrary("math")--Includes the following library
 IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
@@ -153,4 +160,7 @@ list2:AddItem(20)
 SetSelectionCallback("OnSelection")
 Object:NewDecal("chaos_crater_02.tga", 0, 0, 0, 5, 5)
 SetOnStringRecievedCallback("StringRecieved")
+SetRMBCallback("RMB", false)
+PlaySound("music_warhammer40ktheme.wav")
+--NewParticleEffect("effect.xml", 0, 0, 0, 0, 0, -1)
 --Preload("asphalt.bmp")

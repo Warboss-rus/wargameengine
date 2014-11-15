@@ -296,12 +296,14 @@ int GetGroupChildrenAt(lua_State* L)
 int PlayAnimation(lua_State* L)
 {
 	int n = CLUAScript::GetArgumentCount();
-	if (n < 2 || n > 3)
-		return luaL_error(L, "1 or 2 argument expected (animation, loop mode)");
+	if (n < 2 || n > 4)
+		return luaL_error(L, "1 to 3 argument expected (animation, loop mode, speed)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	char* anim = CLUAScript::GetArgument<char*>(2);
 	std::string sloop = "nonlooping";
+	float speed = 1.0f;
 	if (n == 3) sloop = CLUAScript::GetArgument<char*>(3);
+	if (n == 4) speed = CLUAScript::GetArgument<float>(4);
 	transform(sloop.begin(), sloop.end(), sloop.begin(), ::tolower);
 	sAnimation::eLoopMode loop = sAnimation::NONLOOPING;
 	if (sloop == "looping") loop = sAnimation::LOOPING;
@@ -310,7 +312,7 @@ int PlayAnimation(lua_State* L)
 	{
 		luaL_error(L, "needs to be called on valid object");
 	}
-	object->PlayAnimation(anim, loop);
+	object->PlayAnimation(anim, loop, speed);
 	return 0;
 }
 
@@ -339,6 +341,20 @@ int RemoveAdditionalModel(lua_State* L)
 		return luaL_error(L, "1 argument expected(model)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	object->RemoveSecondaryModel(CLUAScript::GetArgument<const char*>(2));
+	return 0;
+}
+
+int GoTo(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 6)
+		return luaL_error(L, "5 argument expected(x, y, speed, animation, animationSpeed)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	double x = CLUAScript::GetArgument<double>(2);
+	double y = CLUAScript::GetArgument<double>(3);
+	double speed = CLUAScript::GetArgument<double>(4);
+	std::string anim = CLUAScript::GetArgument<const char*>(5);
+	float animSpeed = CLUAScript::GetArgument<float>(6);
+	object->GoTo(CVector3d(x, y, 0.0), speed, anim, animSpeed);
 	return 0;
 }
 
@@ -371,6 +387,7 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "GetAnimations", GetAnimations },
 	{ "AdditionalModel", AdditionalModel },
 	{ "RemoveAdditionalModel", RemoveAdditionalModel },
+	{ "GoTo", GoTo },
 	{ NULL, NULL }
 };
 

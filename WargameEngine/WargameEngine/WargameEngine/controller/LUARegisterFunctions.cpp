@@ -7,6 +7,7 @@
 #include "TimedCallback.h"
 #include "../OSSpecific.h"
 #include "../Network.h"
+#include "../SoundPlayer.h"
 
 int CreateTable(lua_State* L)
 {
@@ -649,6 +650,16 @@ int NewParticleEffect(lua_State* L)
 	double scale = CLUAScript::GetArgument<double>(6);
 	float lifetime = CLUAScript::GetArgument<float>(7);
 	CGameView::GetInstance().lock()->GetParticleSystem().AddEffect(file, x, y, z, rot, scale, lifetime);
+	return 0;
+}
+
+int PlaySound(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (file)");
+	std::string file = CLUAScript::GetArgument<const char*>(1);
+	CSoundPlayer::GetInstance().lock()->PlaySound(file);
+	return 0;
 }
 
 void RegisterFunctions(CLUAScript & lua)
@@ -713,4 +724,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(EnableGPUSkinning, "EnableGPUSkinning");
 	lua.RegisterConstant(DisableGPUSkinning, "DisableGPUSkinning");
 	lua.RegisterConstant(NewParticleEffect, "NewParticleEffect");
+	lua.RegisterConstant(PlaySound, "PlaySound");
 }

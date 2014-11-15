@@ -28,7 +28,7 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter) { m_movelimiter.reset(limiter); }
 	std::map<std::string, std::string> const& GetAllProperties() const { return m_properties; }
 	bool CastsShadow() const { return m_castsShadow; }
-	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop);
+	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed);
 	std::string GetAnimation() const;
 	float GetAnimationTime() const;
 	void AddSecondaryModel(std::string const& model) { m_secondaryModels.push_back(model); }
@@ -36,6 +36,9 @@ public:
 	unsigned int GetSecondaryModelsCount() const { return m_secondaryModels.size(); }
 	std::string GetSecondaryModel(unsigned int index) const { return m_secondaryModels[index]; }
 	sAnimation::eLoopMode GetAnimationLoop() const { return m_animationLoop; }
+	float GetAnimationSpeed() const { return m_animationSpeed; }
+	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed);
+	void Update();
 private:
 	std::string m_model;
 	std::vector<std::string> m_secondaryModels;
@@ -49,4 +52,8 @@ private:
 	std::string m_animation;
 	long m_animationBegin;
 	sAnimation::eLoopMode m_animationLoop;
+	float m_animationSpeed;
+	CVector3d m_goTarget;
+	float m_goSpeed;
+	long m_lastUpdateTime;
 };

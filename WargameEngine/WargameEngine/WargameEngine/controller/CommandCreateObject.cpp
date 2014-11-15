@@ -1,7 +1,6 @@
 #include "CommandCreateObject.h"
 #include "../model/GameModel.h"
 #include "../model/Object.h"
-#include "../Network.h"
 
 CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object):m_pObject(object) {}
 
@@ -22,7 +21,7 @@ std::vector<char> CCommandCreateObject::Serialize() const
 	std::vector<char> result;
 	result.resize(path.size() + 33);
 	result[0] = 0;//This is a CCommandCreateObject action
-	unsigned int address = CNetwork::GetInstance().lock()->GetAddress(m_pObject);
+	IObject* address = m_pObject.get();
 	memcpy(&result[1], &address, 4);
 	double pos = m_pObject->GetX();
 	memcpy(&result[5], &pos, 8);

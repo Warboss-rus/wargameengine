@@ -2,7 +2,12 @@
 #include <sys\timeb.h> 
 
 CObject::CObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
-	:m_model(model), m_coords(x, y, 0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L){}
+	:m_model(model), m_coords(x, y, 0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
+{
+	struct timeb time;
+	ftime(&time);
+	m_lastUpdateTime = 1000 * time.time + time.millitm;
+}
 
 void CObject::Move(double x, double y, double z) 
 { 
@@ -55,13 +60,14 @@ std::string const CObject::GetProperty(std::string const& key) const
 	}
 }
 
-void CObject::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop)
+void CObject::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed)
 {
 	m_animation = animation;
+	m_animationLoop = loop;
+	m_animationSpeed = speed;
 	struct timeb time;
 	ftime(&time);
 	m_animationBegin = 1000 * time.time + time.millitm;
-	m_animationLoop = loop;
 }
 
 std::string CObject::GetAnimation() const
@@ -86,5 +92,35 @@ void CObject::RemoveSecondaryModel(std::string const& model)
 		{
 			m_secondaryModels.erase(i);
 		}
+	}
+}
+
+void CObject::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)
+{
+	m_goTarget = coords;
+	m_goSpeed = speed;
+	PlayAnimation(animation, sAnimation::LOOPING, animationSpeed);
+}
+
+void CObject::Update()
+{
+	struct timeb time;
+	ftime(&time);
+	long current = 1000 * time.time + time.millitm;
+	if (m_goSpeed == 0.0f)
+	{
+		m_lastUpdateTime = current;
+		return;
+	}
+	CVector3d dir = m_goTarget - m_coords;
+	dir.Normalize();
+	dir = dir * (current - m_lastUpdateTime) / 1000.0f * m_goSpeed;
+	if (dir.GetLength() > (m_goTarget - m_coords).GetLength()) dir = (m_goTarget - m_coords);
+	m_coords += dir;
+	m_lastUpdateTime = current;
+	if ((m_coords - m_goTarget).GetLength() < 0.0001)
+	{
+		m_goSpeed = 0.0f;
+		PlayAnimation("", sAnimation::NONLOOPING, 0.0f);
 	}
 }

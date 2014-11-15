@@ -20,9 +20,8 @@ public:
 	void Stop();
 	void SendState();
 	void SendMessag(std::string const& message);
-	void SendAction(ICommand* command, bool execute);
+	void SendAction(std::vector<char> const& command, bool execute);
 	bool IsConnected() { return m_socket.get() != NULL; }
-	unsigned int GetAddress(std::shared_ptr<IObject> obj);
 	std::shared_ptr<IObject> GetObject(unsigned int address);
 	void AddAddressLocal(std::shared_ptr<IObject> obj);
 	void AddAddress(std::shared_ptr<IObject> obj, unsigned int address);
@@ -31,6 +30,8 @@ public:
 	void CallStateRecievedCallback();
 private:
 	CNetwork() :m_host(true), m_netData(NULL), m_netRecievedSize(0), m_netTotalSize(0) {}
+	unsigned int GetAddress(std::shared_ptr<IObject> obj);
+	unsigned int GetAddress(IObject* obj);
 	static std::shared_ptr<CNetwork> m_instance;
 	std::shared_ptr<CNetSocket> m_socket;
 	std::vector<CNetSocket> m_childs;

@@ -12,6 +12,7 @@ public:
 	virtual std::string GetPathToModel() const = 0;
 	virtual ~IObject() {}
 	virtual void Move(double x, double y, double z) = 0;
+	virtual void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) = 0;
 	virtual void SetCoords(double x, double y, double z) = 0;
 	virtual void SetCoords(CVector3d const& coords) = 0;
 	virtual void Rotate(double rotation) = 0;
@@ -30,7 +31,7 @@ public:
 	virtual void SetMovementLimiter(IMoveLimiter * limiter) = 0;
 	virtual std::map<std::string, std::string> const& GetAllProperties() const = 0;
 	virtual bool CastsShadow() const = 0;
-	virtual void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop = sAnimation::NONLOOPING) = 0;
+	virtual void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop = sAnimation::NONLOOPING, float speed = 1.0f) = 0;
 	virtual std::string GetAnimation() const = 0;
 	virtual float GetAnimationTime() const = 0;
 	virtual void AddSecondaryModel(std::string const& model) = 0;
@@ -38,4 +39,6 @@ public:
 	virtual unsigned int GetSecondaryModelsCount() const = 0;
 	virtual std::string GetSecondaryModel(unsigned int index) const = 0;
 	virtual sAnimation::eLoopMode GetAnimationLoop() const = 0;
+	virtual float GetAnimationSpeed() const = 0;
+	virtual void Update() = 0;
 };

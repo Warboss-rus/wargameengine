@@ -186,10 +186,26 @@ void CObjectGroup::SetMovementLimiter(IMoveLimiter * limiter)
 	}
 }
 
-void CObjectGroup::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop)
+void CObjectGroup::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed)
 {
 	for (unsigned int i = 0; i < m_children.size(); ++i)
 	{
-		m_children[i]->PlayAnimation(animation, loop);
+		m_children[i]->PlayAnimation(animation, loop, speed);
+	}
+}
+
+void CObjectGroup::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)//needs to be reworked
+{
+	for (unsigned int i = 0; i < m_children.size(); ++i)
+	{
+		m_children[i]->GoTo(coords, speed, animation, animationSpeed);
+	}
+}
+
+void CObjectGroup::Update()
+{
+	for (unsigned int i = 0; i < m_children.size(); ++i)
+	{
+		m_children[i]->Update();
 	}
 }

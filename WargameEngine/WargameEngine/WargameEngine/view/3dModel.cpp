@@ -413,7 +413,7 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 			{
 				unsigned int id = glGenLists(1);
 				glNewList(id, GL_COMPILE);
-				DrawSkinned(hideMeshes, true, "", sAnimation::NONLOOPING, object->GetAnimationTime(), gpuSkinning);
+				DrawSkinned(hideMeshes, true, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning);
 				glEndList();
 				m_vertexLists[*hideMeshes] = id;
 			}
@@ -421,7 +421,7 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 			{
 				unsigned int id = glGenLists(1);
 				glNewList(id, GL_COMPILE);
-				DrawSkinned(hideMeshes, false, "", sAnimation::NONLOOPING, object->GetAnimationTime(), gpuSkinning);
+				DrawSkinned(hideMeshes, false, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning);
 				glEndList();
 				m_lists[*hideMeshes] = id;
 			}
@@ -436,7 +436,7 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 		}
 		else//animation is playing, full computation
 		{
-			if (DrawSkinned(hideMeshes, false, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime(), gpuSkinning))
+			if (DrawSkinned(hideMeshes, false, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), gpuSkinning))
 			{
 				object->PlayAnimation("");
 			}

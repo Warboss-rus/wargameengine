@@ -34,7 +34,7 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter);
 	std::map<std::string, std::string> const& GetAllProperties() const { return m_children[0]->GetAllProperties(); }
 	bool CastsShadow() const { return true; }
-	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop);
+	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed);
 	std::string GetAnimation() const { return ""; }
 	float GetAnimationTime() const { return 0.0f; }
 	void AddSecondaryModel(std::string const& model) {}
@@ -42,6 +42,9 @@ public:
 	unsigned int GetSecondaryModelsCount() const { return 0; }
 	std::string GetSecondaryModel(unsigned int index) const { return ""; }
 	sAnimation::eLoopMode GetAnimationLoop() const { return sAnimation::NONLOOPING; }
+	float GetAnimationSpeed() const { return 1.0f; }
+	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed);
+	void Update();
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

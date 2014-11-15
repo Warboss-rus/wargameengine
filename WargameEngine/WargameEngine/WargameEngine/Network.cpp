@@ -225,7 +225,7 @@ void CNetwork::SendMessag(std::string const& message)
 	delete[] data;
 }
 
-void CNetwork::SendAction(ICommand* command, bool execute)
+void CNetwork::SendAction(std::vector<char> const& command, bool execute)
 {
 	if (!m_socket)
 	{
@@ -235,7 +235,14 @@ void CNetwork::SendAction(ICommand* command, bool execute)
 	std::vector<char> result;
 	result.resize(5);
 	result[0] = 2;//2 for action;
-	std::vector<char> msg = command->Serialize();
+	std::vector<char> msg = command;
+	if (msg[0] < 5 && msg[0] > 0)//it is delete, move, rotate or change object property action, so it contains an object adresses that needs to be translated
+	{
+		unsigned int addr;
+		memcpy(&addr, &msg[1], 4);
+		unsigned int newAddr = GetAddress((IObject*)addr);
+		memcpy(&msg[1], &newAddr, 4);
+	}
 	if (!execute) msg[0] = -msg[0];
 	unsigned int size = msg.size() + 5;
 	memcpy(&result[1], &size, 4);
@@ -249,6 +256,18 @@ unsigned int CNetwork::GetAddress(std::shared_ptr<IObject> object)
 	for (auto i = m_translator.begin(); i != m_translator.end(); ++i)
 	{
 		if (i->second == object)
+		{
+			return i->first;
+		}
+	}
+	return 0;
+}
+
+unsigned int CNetwork::GetAddress(IObject* object)
+{
+	for (auto i = m_translator.begin(); i != m_translator.end(); ++i)
+	{
+		if (i->second.get() == object)
 		{
 			return i->first;
 		}

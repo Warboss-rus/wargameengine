@@ -13,6 +13,7 @@
 #include "../OSSpecific.h"
 #include "../Network.h"
 #include "../Ruler.h"
+#include "../SoundPlayer.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
@@ -37,6 +38,7 @@ void CGameView::FreeInstance()
 CGameView::~CGameView()
 {
 	//ThreadPool::WaitAll();
+	CSoundPlayer::FreeInstance();
 	CNetwork::FreeInstance();
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
@@ -189,6 +191,7 @@ void CGameView::DrawObjects(void)
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
 		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
+		object->Update();
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0.0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);

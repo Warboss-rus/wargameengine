@@ -24,7 +24,7 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 		m_commands.push_back(std::unique_ptr<ICommand>(command));
 	}
 	m_current = m_commands.size() - 1;
-	if (CNetwork::GetInstance().lock()->IsConnected() && local) CNetwork::GetInstance().lock()->SendAction(command, true);
+	if (local && CNetwork::GetInstance().lock()->IsConnected()) CNetwork::GetInstance().lock()->SendAction(command->Serialize(), true);
 }
 
 void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool local)

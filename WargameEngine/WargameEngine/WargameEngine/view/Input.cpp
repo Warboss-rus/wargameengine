@@ -23,13 +23,15 @@ bool CInput::m_disableDefaultRMB = false;
 
 void CInput::OnMouse(int button, int state, int x, int y)
 {
+	std::shared_ptr<CGameView> view = CGameView::GetInstance().lock();
+	std::shared_ptr<CGameModel> model = CGameModel::GetInstance().lock();
 	switch(button)
 	{
 	case GLUT_LEFT_BUTTON: 
 		if (state == GLUT_DOWN)
 		{
 			m_isLMBDown = true;
-			if(CGameView::GetInstance().lock()->GetUI()->LeftMouseButtonDown(x, y)) return;
+			if(view->GetUI()->LeftMouseButtonDown(x, y)) return;
 			if(m_ruler)
 			{
 				double worldX, worldY;
@@ -41,8 +43,8 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				CRuler::Hide();
 				if (!m_disableDefaultLMB)
 				{
-					CGameView::GetInstance().lock()->SelectObject(x, y, glutGetModifiers() == GLUT_ACTIVE_SHIFT);
-					std::shared_ptr<IObject> obj = CGameModel::GetInstance().lock()->GetSelectedObject();
+					view->SelectObject(x, y, glutGetModifiers() == GLUT_ACTIVE_SHIFT);
+					std::shared_ptr<IObject> obj = model->GetSelectedObject();
 					if (obj)//drag object
 					{
 						startX = obj->GetX();
@@ -61,11 +63,11 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			if (!m_isLMBDown) break;
 			m_isLMBDown = false;
-			if (CGameView::GetInstance().lock()->GetUI()->LeftMouseButtonUp(x, y)) return;
-			std::shared_ptr<IObject> obj = CGameModel::GetInstance().lock()->GetSelectedObject();
+			if (view->GetUI()->LeftMouseButtonUp(x, y)) return;
+			std::shared_ptr<IObject> obj = model->GetSelectedObject();
 			if(!m_ruler && obj && !m_disableDefaultLMB)
 			{
-				CGameView::GetInstance().lock()->TryMoveSelectedObject(obj, x, y);
+				view->TryMoveSelectedObject(obj, x, y);
 				double newX = obj->GetX();
 				double newY = obj->GetY();
 				CCommandHandler::GetInstance().lock()->AddNewMoveObject(obj, newX - startX, newY - startY);
@@ -85,10 +87,10 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
-				std::shared_ptr<IObject> prev = CGameModel::GetInstance().lock()->GetSelectedObject();
-				CGameView::GetInstance().lock()->SelectObject(x, y, false);
-				CLUAScript::CallFunction(m_LMBclickCallback, CGameModel::GetInstance().lock()->GetSelectedObject().get(), "Object", worldX, worldY, 0.0);
-				CGameModel::GetInstance().lock()->SelectObject(prev);
+				std::shared_ptr<IObject> prev = model->GetSelectedObject();
+				view->SelectObject(x, y, false);
+				CLUAScript::CallFunction(m_LMBclickCallback, model->GetSelectedObject().get(), "Object", worldX, worldY, 0.0);
+				model->SelectObject(prev);
 			}
 			m_ruler = false;
 		}break;
@@ -98,9 +100,11 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			m_isRMBDown = true;
 			if (!m_disableDefaultRMB)
 			{
-				CGameView::GetInstance().lock()->SelectObject(x, y, false);
+				std::shared_ptr<IObject> prev = model->GetSelectedObject();
+				view->SelectObject(x, y, false);
 				WindowCoordsToWorldCoords(x, y, startX, startY);
-				IObject * object = CGameModel::GetInstance().lock()->GetSelectedObject().get();
+				IObject * object = model->GetSelectedObject().get();
+				if (!object) model->SelectObject(prev);
 				m_oldRotation = (object) ? object->GetRotation() : 0;
 			}
 		}
@@ -108,25 +112,26 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			if (!m_isRMBDown) break;
 			m_isRMBDown = false;
-			std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->GetSelectedObject();
+			std::shared_ptr<IObject> object = model->GetSelectedObject();
 			if (object && !m_disableDefaultRMB)
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
-				double rot = CGameModel::GetInstance().lock()->GetSelectedObject()->GetRotation();
+				double rot = model->GetSelectedObject()->GetRotation();
 				double rotation = 90 + (atan2(worldY - startY, worldX - startX) * 180 / 3.1417);
 				if (sqrt((worldX - startX) * (worldX - startX) + (worldY - startY) * (worldY - startY)) > 0.2)
-					CGameModel::GetInstance().lock()->GetSelectedObject()->Rotate(rotation - rot);
+					model->GetSelectedObject()->Rotate(rotation - rot);
 				CCommandHandler::GetInstance().lock()->AddNewRotateObject(object, object->GetRotation() - m_oldRotation);
 			}
 			if (!m_RMBclickCallback.empty())
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
-				std::shared_ptr<IObject> prev = CGameModel::GetInstance().lock()->GetSelectedObject();
-				CGameView::GetInstance().lock()->SelectObject(x, y, false);
-				CLUAScript::CallFunction(m_RMBclickCallback, CGameModel::GetInstance().lock()->GetSelectedObject().get(), "Object", worldX, worldY, 0.0);
-				CGameModel::GetInstance().lock()->SelectObject(prev);
+				std::shared_ptr<IObject> prev = model->GetSelectedObject();
+				view->SelectObject(x, y, false);
+				std::shared_ptr<IObject> object = model->GetSelectedObject();
+				model->SelectObject(prev);
+				CLUAScript::CallFunction(m_RMBclickCallback, object.get(), "Object", worldX, worldY, 0.0);
 			}
 			startX = 0;
 			startY = 0;
@@ -134,12 +139,12 @@ void CInput::OnMouse(int button, int state, int x, int y)
 	case SCROLL_UP:
 		if (state == GLUT_UP)
 		{
-			CGameView::GetInstance().lock()->GetCamera()->ZoomIn();
+			view->GetCamera()->ZoomIn();
 		}break;
 	case SCROLL_DOWN:
 		if (state == GLUT_UP)
 		{
-			CGameView::GetInstance().lock()->GetCamera()->ZoomOut();
+			view->GetCamera()->ZoomOut();
 		}break;
 	}
 }
