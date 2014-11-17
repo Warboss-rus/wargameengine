@@ -133,7 +133,7 @@ void UseDDS(void* param)
 	sDDS* img = (sDDS*)param;
 	if (!img->image.is_valid())
 	{
-		CLogWriter::WriteLine("Cannot open file " + img->path);
+		LogWriter::WriteLine("Cannot open file " + img->path);
 		delete img;
 		return;
 	}

@@ -20,7 +20,7 @@ void CMaterialManager::LoadMTL(std::string const& path)
 	if(!iFile.good())
 	{
 		iFile.close();
-		CLogWriter::WriteLine("Error loading MTL " + path);
+		LogWriter::WriteLine("Error loading MTL " + path);
 		return;
 	}
 	std::string line;

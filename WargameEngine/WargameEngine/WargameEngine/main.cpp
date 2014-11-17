@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 			i++;
 			if (i == argc)
 			{
-				CLogWriter::WriteLine("Module filename expected");
+				LogWriter::WriteLine("Module filename expected");
 				return 1;
 			}
 			sModule::Load(argv[i]);

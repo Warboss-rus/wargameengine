@@ -26,66 +26,66 @@ void LogError()
 	switch (wsError)
 	{
 #ifdef _WINDOWS
-	case WSANOTINITIALISED:   CLogWriter::WriteLine("Net Error. Either the application has not called WSAStartup, or WSAStartup failed.");
+	case WSANOTINITIALISED:   LogWriter::WriteLine("Net Error. Either the application has not called WSAStartup, or WSAStartup failed.");
 		break;
-	case WSAENETDOWN:      CLogWriter::WriteLine("Net Error. A socket operation encountered a dead network.");
+	case WSAENETDOWN:      LogWriter::WriteLine("Net Error. A socket operation encountered a dead network.");
 		break;
-	case WSAEAFNOSUPPORT:    CLogWriter::WriteLine("Net Error. An address incompatible with the requested protocol was used.");
+	case WSAEAFNOSUPPORT:    LogWriter::WriteLine("Net Error. An address incompatible with the requested protocol was used.");
 		break;
-	case WSAEINPROGRESS:    CLogWriter::WriteLine("Net Error. A blocking operation is currently executing.");
+	case WSAEINPROGRESS:    LogWriter::WriteLine("Net Error. A blocking operation is currently executing.");
 		break;
-	case WSAEMFILE:      CLogWriter::WriteLine("Net Error. Too many open sockets.");
+	case WSAEMFILE:      LogWriter::WriteLine("Net Error. Too many open sockets.");
 		break;
-	case WSAENOBUFS:      CLogWriter::WriteLine("Net Error. An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full.");
+	case WSAENOBUFS:      LogWriter::WriteLine("Net Error. An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full.");
 		break;
-	case WSAEPROTONOSUPPORT:  CLogWriter::WriteLine("Net Error. The requested protocol has not been configured into the system, or no implementation for it exists.");
+	case WSAEPROTONOSUPPORT:  LogWriter::WriteLine("Net Error. The requested protocol has not been configured into the system, or no implementation for it exists.");
 		break;
-	case WSAEPROTOTYPE:    CLogWriter::WriteLine("Net Error. A protocol was specified in the socket function call that does not support the semantics of the socket type requested.");
+	case WSAEPROTOTYPE:    LogWriter::WriteLine("Net Error. A protocol was specified in the socket function call that does not support the semantics of the socket type requested.");
 		break;
-	case WSAESOCKTNOSUPPORT:  CLogWriter::WriteLine("Net Error. The support for the specified socket type does not exist in this address family.");
+	case WSAESOCKTNOSUPPORT:  LogWriter::WriteLine("Net Error. The support for the specified socket type does not exist in this address family.");
 		break;
-	case WSAEINTR:      CLogWriter::WriteLine("Net Error. A blocking operation was interrupted by a call to WSACancelBlockingCall.");
+	case WSAEINTR:      LogWriter::WriteLine("Net Error. A blocking operation was interrupted by a call to WSACancelBlockingCall.");
 		break;
-	case WSAENOTSOCK:    CLogWriter::WriteLine("Net Error. An operation was attempted on something that is not a socket.");
+	case WSAENOTSOCK:    LogWriter::WriteLine("Net Error. An operation was attempted on something that is not a socket.");
 		break;
-	case WSAEWOULDBLOCK:    CLogWriter::WriteLine("Net Error. A non-blocking socket operation could not be completed immediately.");
+	case WSAEWOULDBLOCK:    LogWriter::WriteLine("Net Error. A non-blocking socket operation could not be completed immediately.");
 		break;
-	case WSAEFAULT:    CLogWriter::WriteLine("Net Error. The system detected an invalid pointer address in attempting to use a pointer argument in a call.");
+	case WSAEFAULT:    LogWriter::WriteLine("Net Error. The system detected an invalid pointer address in attempting to use a pointer argument in a call.");
 		break;
-	case WSAEINVAL:    CLogWriter::WriteLine("Net Error. An invalid argument was supplied.");
+	case WSAEINVAL:    LogWriter::WriteLine("Net Error. An invalid argument was supplied.");
 		break;
-	case WSAEISCONN:    CLogWriter::WriteLine("Net Error. A connect request was made on an already connected socket.");
+	case WSAEISCONN:    LogWriter::WriteLine("Net Error. A connect request was made on an already connected socket.");
 		break;
-	case WSAENETRESET:    CLogWriter::WriteLine("Net Error. The connection has been broken due to keep-alive activity detecting a failure while the operation was in progress.");
+	case WSAENETRESET:    LogWriter::WriteLine("Net Error. The connection has been broken due to keep-alive activity detecting a failure while the operation was in progress.");
 		break;
-	case WSAEOPNOTSUPP:    CLogWriter::WriteLine("Net Error. The attempted operation is not supported for the type of object referenced.");
+	case WSAEOPNOTSUPP:    LogWriter::WriteLine("Net Error. The attempted operation is not supported for the type of object referenced.");
 		break;
-	case WSAESHUTDOWN:    CLogWriter::WriteLine("Net Error. A request to send or receive data was disallowed because the socket had already been shut down in that direction with a previous shutdown call.");
+	case WSAESHUTDOWN:    LogWriter::WriteLine("Net Error. A request to send or receive data was disallowed because the socket had already been shut down in that direction with a previous shutdown call.");
 		break;
-	case WSAEMSGSIZE:    CLogWriter::WriteLine("Net Error. A message sent on a datagram socket was larger than the internal message buffer or some other network limit, or the buffer used to receive a datagram into was smaller than the datagram itself.");
+	case WSAEMSGSIZE:    LogWriter::WriteLine("Net Error. A message sent on a datagram socket was larger than the internal message buffer or some other network limit, or the buffer used to receive a datagram into was smaller than the datagram itself.");
 		break;
-	case WSAETIMEDOUT:    CLogWriter::WriteLine("Net Error. A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.");
+	case WSAETIMEDOUT:    LogWriter::WriteLine("Net Error. A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.");
 		break;
-	case WSAECONNRESET:    CLogWriter::WriteLine("Net Error. An existing connection was forcibly closed by the remote host.");
+	case WSAECONNRESET:    LogWriter::WriteLine("Net Error. An existing connection was forcibly closed by the remote host.");
 		break;
-	case WSAEACCES:    CLogWriter::WriteLine("Net Error. An attempt was made to access a socket in a way forbidden by its access permissions.");
+	case WSAEACCES:    LogWriter::WriteLine("Net Error. An attempt was made to access a socket in a way forbidden by its access permissions.");
 		break;
-	case WSAENOTCONN:    CLogWriter::WriteLine("Net Error. A request to send or receive data was disallowed because the socket is not connected and (when sending on a datagram socket using a sendto call) no address was supplied.");
+	case WSAENOTCONN:    LogWriter::WriteLine("Net Error. A request to send or receive data was disallowed because the socket is not connected and (when sending on a datagram socket using a sendto call) no address was supplied.");
 		break;
-	case WSAEHOSTUNREACH:    CLogWriter::WriteLine("Net Error. A socket operation was attempted to an unreachable host.");
+	case WSAEHOSTUNREACH:    LogWriter::WriteLine("Net Error. A socket operation was attempted to an unreachable host.");
 		break;
-	case WSAECONNABORTED:    CLogWriter::WriteLine("Net Error. An established connection was aborted by the software in your host machine.");
+	case WSAECONNABORTED:    LogWriter::WriteLine("Net Error. An established connection was aborted by the software in your host machine.");
 		break;
-	case WSAEADDRNOTAVAIL:    CLogWriter::WriteLine("Net Error. The requested address is not valid in its context.");
+	case WSAEADDRNOTAVAIL:    LogWriter::WriteLine("Net Error. The requested address is not valid in its context.");
 		break;
-	case WSAEDESTADDRREQ:    CLogWriter::WriteLine("Net Error. A required address was omitted from an operation on a socket.");
+	case WSAEDESTADDRREQ:    LogWriter::WriteLine("Net Error. A required address was omitted from an operation on a socket.");
 		break;
-	case WSAENETUNREACH:    CLogWriter::WriteLine("Net Error. A socket operation was attempted to an unreachable network.");
+	case WSAENETUNREACH:    LogWriter::WriteLine("Net Error. A socket operation was attempted to an unreachable network.");
 		break;
-	case WSAEADDRINUSE:    CLogWriter::WriteLine("Net Error. Only one usage of each socket address (protocol/network address/port) is normally permitted.");
+	case WSAEADDRINUSE:    LogWriter::WriteLine("Net Error. Only one usage of each socket address (protocol/network address/port) is normally permitted.");
 		break;
 #endif
-	default:        CLogWriter::WriteLine("Net Error. Unknown error.");
+	default:        LogWriter::WriteLine("Net Error. Unknown error.");
 		break;
 	}
 
@@ -102,9 +102,9 @@ CNetSocket::CNetSocket(unsigned short port)//Server
 	}
 	m_sockAddr = new struct sockaddr_in;
 	memset(m_sockAddr, 0, sizeof (struct sockaddr_in));
-	if (!ChangeAddress(port)) CLogWriter::WriteLine("Net error. Cannot bind to port");
+	if (!ChangeAddress(port)) LogWriter::WriteLine("Net error. Cannot bind to port");
 	listen(m_socket, 10);
-	CLogWriter::WriteLine("Net OK. Host is up and running.");
+	LogWriter::WriteLine("Net OK. Host is up and running.");
 	sockaddr_in addr;
 #ifdef __unix 
 	unsigned 
@@ -136,7 +136,7 @@ CNetSocket::CNetSocket(unsigned short port)//Server
 	}
 	char text[255];
 	sprintf(text, "Net OK. Client %s is accepted by the host.", inet_ntoa(addr.sin_addr));
-	CLogWriter::WriteLine(text);
+	LogWriter::WriteLine(text);
 }
 
 CNetSocket::CNetSocket(const char * ip, unsigned short port)//Client
@@ -152,7 +152,7 @@ CNetSocket::CNetSocket(const char * ip, unsigned short port)//Client
 	m_sockAddr = new struct sockaddr_in;
 	memset(m_sockAddr, 0, sizeof (struct sockaddr_in));
 	ChangeAddress(ip, port);
-	CLogWriter::WriteLine("Net OK. Trying to connect host.");
+	LogWriter::WriteLine("Net OK. Trying to connect host.");
 	int error = connect(m_socket, (struct sockaddr *)m_sockAddr, sizeof(struct sockaddr_in));
 	if (error == SOCKET_ERROR)
 	{
@@ -170,7 +170,7 @@ CNetSocket::CNetSocket(const char * ip, unsigned short port)//Client
 		LogError();
 		return;
 	}
-	CLogWriter::WriteLine("Net OK. Client is connected to the host.");
+	LogWriter::WriteLine("Net OK. Client is connected to the host.");
 }
 
 CNetSocket::CNetSocket(unsigned int socket, void* sockAddr) :m_socket(socket), m_sockAddr(sockAddr){}
@@ -208,7 +208,7 @@ bool CNetSocket::InitSocket()
 	int wsaInitError = WSAStartup(wVersion, &wsaData);
 	if (wsaInitError != 0)
 	{
-		CLogWriter::WriteLine("Net Error. Error initalizing WSA.");
+		LogWriter::WriteLine("Net Error. Error initalizing WSA.");
 		return false;
 	}
 	else
@@ -264,7 +264,7 @@ int CNetSocket::RecieveData(char * data, int maxLength)
 	int count = recv(m_socket, data, maxLength, 0);
 	if (count == 0)
 	{
-		CLogWriter::WriteLine("Net OK. Connection is closed by the other side.");
+		LogWriter::WriteLine("Net OK. Connection is closed by the other side.");
 	}
 	if (count == SOCKET_ERROR)
 	{	
@@ -292,5 +292,5 @@ CNetSocket::~CNetSocket()
         int err = close (m_socket);
 #endif
 	delete (struct sockaddr_in*) m_sockAddr;
-	CLogWriter::WriteLine("Net OK. Socket is closed.");
+	LogWriter::WriteLine("Net OK. Socket is closed.");
 }

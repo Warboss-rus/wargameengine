@@ -86,7 +86,7 @@ void* ThreadPool::ReadData(void* param)
 	FILE * file = fopen(run->path.c_str(), "rb");
 	if (!file)
 	{
-		CLogWriter::WriteLine("Cannot open file " + run->path);
+		LogWriter::WriteLine("Cannot open file " + run->path);
 		delete run;
 		return 0;
 	}
@@ -116,7 +116,7 @@ void* ThreadPool::ReadData2(void* param)
 	FILE * file = fopen(run->path.c_str(), "rb");
 	if (!file)
 	{
-		CLogWriter::WriteLine("Cannot open file " + run->path);
+		LogWriter::WriteLine("Cannot open file " + run->path);
 		delete run;
 		return 0;
 	}

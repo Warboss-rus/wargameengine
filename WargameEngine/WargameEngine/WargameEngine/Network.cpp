@@ -23,7 +23,7 @@ void CNetwork::Host(unsigned int port)
 {
 	if (m_socket)
 	{
-		CLogWriter::WriteLine("Net error. Already connected");
+		LogWriter::WriteLine("Net error. Already connected");
 		return;
 	}
 	m_socket.reset(new CNetSocket(port));
@@ -35,7 +35,7 @@ void CNetwork::Client(const char * ip, unsigned short port)
 {
 	if (m_socket)
 	{
-		CLogWriter::WriteLine("Net error. Already connected");
+		LogWriter::WriteLine("Net error. Already connected");
 		return;
 	}
 	m_socket.reset(new CNetSocket(ip, port));
@@ -84,14 +84,14 @@ void CNetwork::Update()
 				m_stringRecievedCallback(m_netData + 5);
 			char* str = new char[12 + m_netTotalSize];
 			sprintf(str, "String recieved:%s", (const char*)(m_netData + 5));
-			CLogWriter::WriteLine(str);
+			LogWriter::WriteLine(str);
 			delete[] str;
 		}
 		else if (m_netData[0] == 1) //state
 		{
 			char state[30];
 			sprintf(state, "State Recieved. Size=%d.", m_netRecievedSize);
-			CLogWriter::WriteLine(state);
+			LogWriter::WriteLine(state);
 			CGameModel::GetInstance().lock()->SetState(m_netData + 5, true);
 			if (m_stateRecievedCallback) m_stateRecievedCallback();
 		}
@@ -115,7 +115,7 @@ void CNetwork::Update()
 				std::shared_ptr<IObject> obj = std::shared_ptr<IObject>(new CObject(path, pos[0], pos[1], pos[2], true));
 				CCommandHandler::GetInstance().lock()->AddNewCreateObject(obj, false);
 				m_translator[address] = obj;
-				CLogWriter::WriteLine("CreateObject received");
+				LogWriter::WriteLine("CreateObject received");
 			}break;
 			case 1://DeleteObject
 			{
@@ -123,7 +123,7 @@ void CNetwork::Update()
 				memcpy(&address, data + 2, 4);
 				CCommandHandler::GetInstance().lock()->AddNewDeleteObject(GetObject(address), false);
 				m_translator.erase(address);
-				CLogWriter::WriteLine("DeleteObject received");
+				LogWriter::WriteLine("DeleteObject received");
 			}break;
 			case 2://MoveObject
 			{
@@ -133,7 +133,7 @@ void CNetwork::Update()
 				memcpy(&x, data + 6, 8);
 				memcpy(&y, data + 14, 8);
 				CCommandHandler::GetInstance().lock()->AddNewMoveObject(GetObject(address), x, y, false);
-				CLogWriter::WriteLine("MoveObject received");
+				LogWriter::WriteLine("MoveObject received");
 			}break;
 			case 3://RotateObject
 			{
@@ -142,7 +142,7 @@ void CNetwork::Update()
 				memcpy(&address, data + 2, 4);
 				memcpy(&rot, data + 6, 8);
 				CCommandHandler::GetInstance().lock()->AddNewRotateObject(GetObject(address), rot, false);
-				CLogWriter::WriteLine("RotateObject received");
+				LogWriter::WriteLine("RotateObject received");
 			}break;
 			case 4://ChangeProperty
 			{
@@ -161,7 +161,7 @@ void CNetwork::Update()
 				oldvalue.resize(size);
 				memcpy(&oldvalue[0], data + begin + 4, size);
 				CCommandHandler::GetInstance().lock()->AddNewChangeProperty(GetObject(address), key, newvalue, false);
-				CLogWriter::WriteLine("ChangeProperty received");
+				LogWriter::WriteLine("ChangeProperty received");
 			}break;
 			case 5://ChangeGlobalProperty
 			{
@@ -179,18 +179,18 @@ void CNetwork::Update()
 				oldvalue.resize(size);
 				memcpy(&oldvalue[0], data + begin + 4, size);
 				CCommandHandler::GetInstance().lock()->AddNewChangeGlobalProperty(key, newvalue, false);
-				CLogWriter::WriteLine("CreateGlobalProperty received");
+				LogWriter::WriteLine("CreateGlobalProperty received");
 			}break;
 			default:
 			{
-				CLogWriter::WriteLine("Net error. Unknown action.");
+				LogWriter::WriteLine("Net error. Unknown action.");
 			}break;
 			}
 			
 		}
 		else
 		{
-			CLogWriter::WriteLine("Net error. Invalid data received.");
+			LogWriter::WriteLine("Net error. Invalid data received.");
 		}
 		delete[] m_netData;
 		m_netData = NULL;
@@ -203,7 +203,7 @@ void CNetwork::SendState()
 {
 	if (!m_socket)
 	{
-		CLogWriter::WriteLine("Net error. No connection established.");
+		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
 	std::vector<char> result = CGameModel::GetInstance().lock()->GetState(true);
@@ -214,7 +214,7 @@ void CNetwork::SendMessag(std::string const& message)
 {
 	if (!m_socket)
 	{
-		CLogWriter::WriteLine("Net error. No connection established.");
+		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
 	char * data = new char[message.size() + 6];
@@ -229,7 +229,7 @@ void CNetwork::SendAction(std::vector<char> const& command, bool execute)
 {
 	if (!m_socket)
 	{
-		CLogWriter::WriteLine("Net error. No connection established.");
+		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
 	std::vector<char> result;
@@ -248,7 +248,7 @@ void CNetwork::SendAction(std::vector<char> const& command, bool execute)
 	memcpy(&result[1], &size, 4);
 	result.insert(result.end(), msg.begin(), msg.end());
 	m_socket->SendData(&result[0], result.size());
-	CLogWriter::WriteLine("Action sent.");
+	LogWriter::WriteLine("Action sent.");
 }
 
 unsigned int CNetwork::GetAddress(std::shared_ptr<IObject> object)

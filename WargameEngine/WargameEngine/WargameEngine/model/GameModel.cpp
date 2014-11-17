@@ -7,10 +7,6 @@
 
 std::shared_ptr<CGameModel> CGameModel::m_instanse = NULL;
 
-CGameModel::~CGameModel(void)
-{
-}
-
 std::weak_ptr<CGameModel> CGameModel::GetInstance()
 {
 	if (!m_instanse)

@@ -1,5 +1,3 @@
-
-
 class CRuler
 {
 public:

@@ -3,13 +3,17 @@
 class CNetSocket
 {
 public:
-	CNetSocket(unsigned short port = 0);//Server
-	CNetSocket(const char * ip, unsigned short port = 0);//Client
-	CNetSocket(unsigned int socket, void* sockAddr);//serverToClient 
+	//Server
+	CNetSocket(unsigned short port = 0);
+	//Client
+	CNetSocket(const char * ip, unsigned short port = 0);
+	//serverToClient 
+	CNetSocket(unsigned int socket, void* sockAddr);
 	bool ChangeAddress(const char* ip, unsigned short port = 0);
 	bool ChangeAddress(unsigned short port = 0);
 	bool SendData(const char * data, int len) const;
-	int RecieveData(char* data, int maxLength);//Return -1 then error occures, 0 then connection is closed by other side or number of bytes recieved.
+	//Return -1 then error occures, 0 then connection is closed by other side or number of bytes recieved.
+	int RecieveData(char* data, int maxLength);
 	const char* GetIP() const;
 	unsigned short GetPort() const;
 	~CNetSocket();

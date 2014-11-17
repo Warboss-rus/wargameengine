@@ -7,7 +7,7 @@
 class CCommandCompound : public ICommand
 {
 public:
-	void AddChildren(ICommand* child);
+	void AddChild(ICommand* child);
 	ICommand* GetChild(size_t index);
 	size_t GetChildrenCount() const;
 	void Execute();

@@ -39,7 +39,7 @@ GLuint CompileShader(std::string const& path, GLuint program, GLenum type)
 		char buffer[1000];
 		int size = 0;
 		glGetShaderInfoLog(shader, 1000, &size, buffer);
-		CLogWriter::WriteLine(std::string("Shader error: ") + buffer);
+		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
 	}
 	return shader;
 }
@@ -48,7 +48,7 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 {
 	if (!GLEW_ARB_shader_objects)
 	{
-		CLogWriter::WriteLine("Shader objects(GL_ARB_shader_objects) are not supported");
+		LogWriter::WriteLine("Shader objects(GL_ARB_shader_objects) are not supported");
 		return;
 	}
 	m_program = glCreateProgram();
@@ -57,7 +57,7 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 	{
 		if (!GLEW_ARB_vertex_shader)
 		{
-			CLogWriter::WriteLine("Vertex Shaders(GL_ARB_vertex_shader) are not supported");
+			LogWriter::WriteLine("Vertex Shaders(GL_ARB_vertex_shader) are not supported");
 		}
 		else
 		{
@@ -68,7 +68,7 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 	{
 		if (!GLEW_ARB_fragment_shader)
 		{
-			CLogWriter::WriteLine("Fragment Shaders(GL_ARB_fragment_shader) are not supported");
+			LogWriter::WriteLine("Fragment Shaders(GL_ARB_fragment_shader) are not supported");
 		}
 		else
 		{
@@ -79,7 +79,7 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 	{
 		if (!GLEW_ARB_geometry_shader4)
 		{
-			CLogWriter::WriteLine("Geometry Shaders(GL_ARB_geometry_shader4) are not supported");
+			LogWriter::WriteLine("Geometry Shaders(GL_ARB_geometry_shader4) are not supported");
 		}
 		else
 		{

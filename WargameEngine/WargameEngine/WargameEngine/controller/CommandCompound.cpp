@@ -16,7 +16,7 @@ void CCommandCompound::Rollback()
 	}
 }
 
-void CCommandCompound::AddChildren(ICommand* child) 
+void CCommandCompound::AddChild(ICommand* child)
 { 
 	m_children.push_back(std::shared_ptr<ICommand>(child)); 
 }

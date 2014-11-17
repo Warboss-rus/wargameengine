@@ -1,16 +1,22 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include "view/Vector3.h"
 
 class CSoundPlayer
 {
 public:
 	static std::weak_ptr<CSoundPlayer> GetInstance();
 	static void FreeInstance();
-	void PlaySound(std::string const& file);
+	void PlaySound(std::string const& file, float volume = 1.0f);
+	void PlaySoundPosition(std::string const& file, CVector3d const& position, float volume = 1.0f);
+	void PlaySoundPlaylist(std::vector<std::string> const& files, float volume = 1.0f, bool shuffle = true, bool repeat = false);
+	void SetListenerPosition(CVector3d const& position, CVector3d const& center);
+	void Update();
 	~CSoundPlayer();
 private:
-	CSoundPlayer();
+	CSoundPlayer() {}
+	void Init();
 	static std::shared_ptr<CSoundPlayer> m_instance;
 	void ReadWav(std::string const& file);
 	void * m_device;

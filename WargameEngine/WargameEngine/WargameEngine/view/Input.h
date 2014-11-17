@@ -2,6 +2,7 @@
 #include <functional>
 #pragma once
 #include <string>
+
 class CInput
 {
 private:

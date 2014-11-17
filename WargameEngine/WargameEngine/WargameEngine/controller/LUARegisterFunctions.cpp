@@ -655,10 +655,34 @@ int NewParticleEffect(lua_State* L)
 
 int PlaySound(lua_State* L)
 {
-	if (CLUAScript::GetArgumentCount() != 1)
-		return luaL_error(L, "1 argument expected (file)");
+	if (CLUAScript::GetArgumentCount() < 1 || CLUAScript::GetArgumentCount() > 2)
+		return luaL_error(L, "1 or 2 arguments expected (file, volume)");
 	std::string file = CLUAScript::GetArgument<const char*>(1);
-	CSoundPlayer::GetInstance().lock()->PlaySound(file);
+	float volume = CLUAScript::GetArgument<float>(2);
+	CSoundPlayer::GetInstance().lock()->PlaySound(file, volume);
+	return 0;
+}
+
+int PlaySoundPosition(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() < 4 || CLUAScript::GetArgumentCount() > 5)
+		return luaL_error(L, "4 or 5 arguments expected (file, x, y, z, volume)");
+	std::string file = CLUAScript::GetArgument<const char*>(1);
+	double x = CLUAScript::GetArgument<double>(2);
+	double y = CLUAScript::GetArgument<double>(3);
+	double z = CLUAScript::GetArgument<double>(4);
+	float volume = CLUAScript::GetArgument<float>(5);
+	CSoundPlayer::GetInstance().lock()->PlaySoundPosition(file, CVector3d(x, y, z), volume);
+	return 0;
+}
+
+int PlaySoundPlaylist(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() < 1 || CLUAScript::GetArgumentCount() > 2)
+		return luaL_error(L, "1 or 2 arguments expected (list or tracks, volume)");
+	std::vector<std::string> files = CLUAScript::GetArray<std::string>(1);
+	float volume = CLUAScript::GetArgument<float>(2);
+	CSoundPlayer::GetInstance().lock()->PlaySoundPlaylist(files, volume);
 	return 0;
 }
 
@@ -725,4 +749,6 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(DisableGPUSkinning, "DisableGPUSkinning");
 	lua.RegisterConstant(NewParticleEffect, "NewParticleEffect");
 	lua.RegisterConstant(PlaySound, "PlaySound");
+	lua.RegisterConstant(PlaySoundPosition, "PlaySoundPosition");
+	lua.RegisterConstant(PlaySoundPlaylist, "PlaySoundPlaylist");
 }

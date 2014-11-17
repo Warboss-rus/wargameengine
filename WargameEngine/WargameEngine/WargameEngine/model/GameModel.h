@@ -1,22 +1,15 @@
 #pragma once
 #include <memory>
-#include "ObjectInterface.h"
 #include <vector>
 #include <string>
 #include <map>
+#include "ObjectInterface.h"
+#include "ObjectStatic.h"
+#include "Projectile.h"
 
 class CGameModel
 {
-private:
-	std::vector<std::shared_ptr<IObject>> m_objects;
-	std::shared_ptr<IObject> m_selectedObject;
-	static std::shared_ptr<CGameModel> m_instanse;
-	std::map<std::string, std::string> m_properties;
-
-	CGameModel(void):m_selectedObject(NULL){};
-	CGameModel(CGameModel const&){};
 public:
-	~CGameModel(void);
 	static std::weak_ptr<CGameModel> GetInstance();
 	static void FreeInstance();
 	unsigned long GetObjectCount() const;
@@ -35,4 +28,21 @@ public:
 	std::map<std::string, std::string> const& GetAllProperties() const;
 	std::vector<char> GetState(bool hasAdresses = false) const;
 	void SetState(char* data, bool hasAdresses = false);
+	void AddStaticObject(std::shared_ptr<CStaticObject> object) { m_staticObjects.push_back(object); }
+	void AddProjectile(std::shared_ptr<CProjectile> projectile) { m_projectiles.push_back(projectile); }
+	unsigned int GetStaticObjectCount() const { return m_staticObjects.size(); }
+	std::shared_ptr<CStaticObject> GetStaticObject(unsigned int index) const { return m_staticObjects[index]; }
+	unsigned int GetProjectileCount() const { return m_projectiles.size(); }
+	std::shared_ptr<CProjectile> GetProjectile(unsigned int index) const { return m_projectiles[index]; }
+	void RemoveProjectile(unsigned int index) { m_projectiles.erase(m_projectiles.begin() + index); }
+private:
+	CGameModel(void) :m_selectedObject(NULL){};
+	CGameModel(CGameModel const&){};
+
+	std::vector<std::shared_ptr<IObject>> m_objects;
+	std::vector<std::shared_ptr<CStaticObject>> m_staticObjects;
+	std::vector<std::shared_ptr<CProjectile>> m_projectiles;
+	std::shared_ptr<IObject> m_selectedObject;
+	static std::shared_ptr<CGameModel> m_instanse;
+	std::map<std::string, std::string> m_properties;
 };

@@ -2,7 +2,7 @@
 #include <memory>
 #pragma once
 
-class CLogWriter
+class LogWriter
 {
 public:
 	static void WriteLine(std::string const& line);

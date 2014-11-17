@@ -122,7 +122,7 @@ void CUITheme::Load(std::string const& filename)
 	std::string line;
 	if (!iFile.good())
 	{
-		CLogWriter::WriteLine("Cannot load UI theme " + filename);
+		LogWriter::WriteLine("Cannot load UI theme " + filename);
 		return;
 	}
 	while (std::getline(iFile, line))

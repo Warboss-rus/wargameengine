@@ -17,7 +17,7 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 	}
 	if(m_compound)
 	{
-		m_compound->AddChildren(command);
+		m_compound->AddChild(command);
 	}
 	else
 	{

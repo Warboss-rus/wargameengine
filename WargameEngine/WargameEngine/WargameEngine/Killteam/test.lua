@@ -104,6 +104,10 @@ function RMB(object, x, y, z)
 	end
 end
 
+function Music()
+	PlaySoundPlaylist({"music_warhammer40ktheme.wav", "music_warhammer40ktheme.wav"}, 1.0)
+end
+
 IncludeLibrary("math")--Includes the following library
 IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
@@ -143,6 +147,7 @@ ui:NewButton("Button9", 500, 50, 30, 80, "Client", "Client")
 ui:NewEdit("Edit3", 10, 550, 30, 200, "Text")
 ui:NewButton("Button10", 230, 550, 30, 80, "Send", "Send")
 ui:NewButton("Button11", 10, 100, 30, 80, "Animation", "PlayAnim")
+ui:NewButton("Button12", 110, 100, 30, 80, "PlayMusic", "Music")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
 
 local panel = ui:NewPanel("Panel1", 390, 40, 150, 120)
@@ -161,6 +166,5 @@ SetSelectionCallback("OnSelection")
 Object:NewDecal("chaos_crater_02.tga", 0, 0, 0, 5, 5)
 SetOnStringRecievedCallback("StringRecieved")
 SetRMBCallback("RMB", false)
-PlaySound("music_warhammer40ktheme.wav")
 --NewParticleEffect("effect.xml", 0, 0, 0, 0, 0, -1)
 --Preload("asphalt.bmp")

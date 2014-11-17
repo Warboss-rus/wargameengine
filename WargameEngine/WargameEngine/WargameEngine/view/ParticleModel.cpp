@@ -5,6 +5,7 @@
 #include "../tinyxml.h"
 #include "gl.h"
 #include "TextureManager.h"
+#include <cstring>
 
 std::vector<float> GetFloatsArray(TiXmlElement* data)
 {
@@ -26,7 +27,17 @@ std::vector<float> GetFloatsArray(TiXmlElement* data)
 float StrToFloat(const char* str, float default)
 {
 	if (str == NULL) return default;
-	return atof(str);
+	std::string value = str;
+	if (value.substr(0, 5) == "rand(")
+	{
+		double from = atof(value.substr(5, value.find(',') - 5).c_str());
+		double to = atof(value.substr(value.find(',') + 1).c_str());
+		return from + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (to - from)));
+	}
+	else
+	{
+		return atof(str);
+	}
 }
 
 CParticleModel::CParticleModel(std::string const& file)
@@ -77,6 +88,25 @@ CParticleModel::CParticleModel(std::string const& file)
 		pinstance.particle = particleIDs[instance->Attribute("particle")];
 		m_instances.push_back(std::move(pinstance));
 		instance = instance->NextSiblingElement("instance");
+	}
+	TiXmlElement * randomInstance = instances->FirstChildElement("random_instance");
+	while (randomInstance)
+	{
+		int count = atoi(randomInstance->Attribute("count"));
+		for (int i = 0; i < count; ++i)
+		{
+			sParticleInstance pinstance;
+			pinstance.position.x = StrToFloat(randomInstance->Attribute("x"), 0.0f);
+			pinstance.position.y = StrToFloat(randomInstance->Attribute("y"), 0.0f);
+			pinstance.position.z = StrToFloat(randomInstance->Attribute("z"), 0.0f);
+			pinstance.rotation = StrToFloat(randomInstance->Attribute("rotation"), 0.0f);
+			pinstance.speed = StrToFloat(randomInstance->Attribute("speed"), 1.0f);
+			pinstance.scale = StrToFloat(randomInstance->Attribute("scale"), 1.0f);
+			pinstance.start = StrToFloat(randomInstance->Attribute("start"), 0.0f);
+			pinstance.particle = particleIDs[randomInstance->Attribute("particle")];
+			m_instances.push_back(std::move(pinstance));
+			randomInstance = randomInstance->NextSiblingElement("random_instance");
+		}
 	}
 	doc.Clear();
 }

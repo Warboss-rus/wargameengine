@@ -125,6 +125,7 @@
     <ClCompile Include="controller\LUARegisterUI.cpp" />
     <ClCompile Include="controller\LUAScriptHandler.cpp" />
     <ClCompile Include="controller\TimedCallback.cpp" />
+    <ClCompile Include="model\Projectile.cpp" />
     <ClCompile Include="NetSocket.cpp" />
     <ClCompile Include="controller\CommandChangeGlobalProperty.cpp" />
     <ClCompile Include="controller\CommandChangeProperty.cpp" />
@@ -189,6 +190,8 @@
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />
+    <ClInclude Include="model\ObjectStatic.h" />
+    <ClInclude Include="model\Projectile.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="OSSpecific.h" />
     <ClInclude Include="NetSocket.h" />
@@ -203,6 +206,7 @@
     <ClInclude Include="model\ObjectInterface.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="nv_dds.h" />
+    <ClInclude Include="Projectile.h" />
     <ClInclude Include="SoundPlayer.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="ThreadPool.h" />

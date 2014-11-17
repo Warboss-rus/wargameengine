@@ -98,7 +98,7 @@ std::vector<std::string> GetFiles(std::string const& path, std::string const& ma
 
 void ShowMessageBox(std::string const& text, std::string const& caption)
 {
-	CLogWriter::WriteLine(caption);
-	CLogWriter::WriteLine(text);
+	LogWriter::WriteLine(caption);
+	LogWriter::WriteLine(text);
 }
 #endif

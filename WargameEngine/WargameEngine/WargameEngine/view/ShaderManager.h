@@ -20,11 +20,11 @@ public:
 	void SetUniformValue4(std::string const& uniform, int count, T value) const;
 	template<class T>
 	void SetUniformMatrix4(std::string const& uniform, int count, T value) const;
-	//Automaticly enables the array
 	template<class T>
+	//Automaticly enables vertexAttribs
 	void SetVertexAttrib4(unsigned int index, T value) const;
-	//Disables the array and sets the default value
 	template<class T>
+	//Disables the vertexAttribs and sets the default value
 	void DisableVertexAttrib4(unsigned int index, T defaultValue) const;
 private:
 	unsigned int m_program;

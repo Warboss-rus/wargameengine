@@ -2,7 +2,6 @@
 #include "ObjectInterface.h"
 #include <vector>
 #include <memory>
-#include "../view/Vector3.h"
 
 class CObject : public IObject
 {

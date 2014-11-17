@@ -2,9 +2,9 @@
 #include <time.h>
 #include <fstream>
 
-std::string CLogWriter::filename;
+std::string LogWriter::filename;
 
-void CLogWriter::WriteLine(std::string const& line)
+void LogWriter::WriteLine(std::string const& line)
 {
 	if(filename.empty())
 	{

@@ -379,12 +379,12 @@ void CGameView::EnableShadowMap(int size, float angle)
 	if (m_shadowMap) return;
 	if (!GLEW_ARB_depth_buffer_float)
 	{
-		CLogWriter::WriteLine("GL_ARB_depth_buffer_float is not supported, shadow maps cannot be enabled");
+		LogWriter::WriteLine("GL_ARB_depth_buffer_float is not supported, shadow maps cannot be enabled");
 		return;
 	}
 	if (!GLEW_EXT_framebuffer_object)
 	{
-		CLogWriter::WriteLine("GL_EXT_framebuffer_object is not supported, shadow maps cannot be enabled");
+		LogWriter::WriteLine("GL_EXT_framebuffer_object is not supported, shadow maps cannot be enabled");
 		return;
 	}
 	glActiveTexture(GL_TEXTURE1);
@@ -408,7 +408,7 @@ void CGameView::EnableShadowMap(int size, float angle)
 	glActiveTexture(GL_TEXTURE0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		CLogWriter::WriteLine("Cannot enable shadowmaps. Error creating framebuffer.");
+		LogWriter::WriteLine("Cannot enable shadowmaps. Error creating framebuffer.");
 		glDeleteTextures(1, &m_shadowMapTexture);
 		return;
 	}
@@ -445,7 +445,7 @@ void CGameView::Load(std::string const& filename)
 	FILE* file = fopen(filename.c_str(), "rb");
 	if (!file)
 	{
-		CLogWriter::WriteLine("LoadState. Cannot find file " + filename);
+		LogWriter::WriteLine("LoadState. Cannot find file " + filename);
 		return;
 	}
 	fseek(file, 0L, SEEK_END);
@@ -467,7 +467,7 @@ void CGameView::EnableMSAA() const
 	}
 	else
 	{
-		CLogWriter::WriteLine("MSAA is not supported");
+		LogWriter::WriteLine("MSAA is not supported");
 	}
 }
 

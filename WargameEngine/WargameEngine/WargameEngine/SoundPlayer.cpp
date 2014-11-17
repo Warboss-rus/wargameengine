@@ -2,8 +2,23 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include "LogWriter.h"
+#include "Threading.h"
+#define STREAM_BUFFERS 5
+#define WAV_FILE_HEADER_SIZE 44
+#define WAV_FILE_NUMCHANNELS_POSITION 22
+#define PlaySound PlaySound
 
 std::shared_ptr<CSoundPlayer> CSoundPlayer::m_instance;
+
+void* StreamThread(void* param);
+
+struct sStreamProps
+{
+	std::vector<std::string> files;
+	bool shuffle;
+	bool repeat;
+	float volume;
+};
 
 std::string GetALError(ALenum error)
 {
@@ -41,6 +56,7 @@ std::weak_ptr<CSoundPlayer> CSoundPlayer::GetInstance()
 	if (!m_instance.get())
 	{
 		m_instance.reset(new CSoundPlayer());
+		m_instance->Init();
 	}
 	std::weak_ptr<CSoundPlayer> pView(m_instance);
 
@@ -51,20 +67,20 @@ void CSoundPlayer::FreeInstance()
 	m_instance.reset();
 }
 
-CSoundPlayer::CSoundPlayer()
+void CSoundPlayer::Init()
 {
 	ALCdevice *dev;
 	ALCcontext *ctx;
 	dev = alcOpenDevice(NULL);
 	if (!dev)
 	{
-		CLogWriter::WriteLine("AL error. Cannot initialize device");
+		LogWriter::WriteLine("AL error. Cannot initialize device");
 		return;
 	}
 	ctx = alcCreateContext(dev, NULL);
 	if (!ctx)
 	{
-		CLogWriter::WriteLine("AL error. Cannot initialize context");
+		LogWriter::WriteLine("AL error. Cannot initialize context");
 		return;
 	}
 	alcMakeContextCurrent(ctx);
@@ -76,6 +92,7 @@ CSoundPlayer::CSoundPlayer()
 	alListenerfv(AL_POSITION, ListenerPos);
 	alListenerfv(AL_VELOCITY, ListenerVel);
 	alListenerfv(AL_ORIENTATION, ListenerOri);
+	//alDistanceModel(AL_LINEAR_DISTANCE);
 }
 
 CSoundPlayer::~CSoundPlayer()
@@ -91,7 +108,7 @@ CSoundPlayer::~CSoundPlayer()
 	alcCloseDevice((ALCdevice *)m_device);
 }
 
-void CSoundPlayer::PlaySound(std::string const& file)
+void CSoundPlayer::PlaySound(std::string const& file, float volume)
 {
 	if (m_buffers.find(file) == m_buffers.end())
 	{
@@ -99,16 +116,59 @@ void CSoundPlayer::PlaySound(std::string const& file)
 	}
 	ALuint source;
 	alGenSources(1, &source);
+	alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSourcef(source, AL_GAIN, volume);
 	int error = alGetError();
 	if (error != AL_NO_ERROR)
 	{
 		alDeleteSources(1, &source);
-		CLogWriter::WriteLine("AL error. Error creating a source. " + GetALError(error));
+		LogWriter::WriteLine("AL error. Error creating a source. " + GetALError(error));
 		return;
 	}
 	alSourcei(source, AL_BUFFER, m_buffers[file]);
 	alSourcePlay(source);
 	m_sources.push_back(source);
+}
+
+void CSoundPlayer::PlaySoundPosition(std::string const& file, CVector3d const& position, float volume)
+{
+	if (m_buffers.find(file) == m_buffers.end())
+	{
+		ReadWav(file);
+	}
+	ALuint source;
+	alGenSources(1, &source);
+	alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE);
+	int error = alGetError();
+	if (error != AL_NO_ERROR)
+	{
+		alDeleteSources(1, &source);
+		LogWriter::WriteLine("AL error. Error creating a source. " + GetALError(error));
+		return;
+	}
+	alSource3f(source, AL_POSITION, position.x, position.y, position.z);
+	alSourcef(source, AL_GAIN, volume);
+	error = alGetError();
+	if (error != AL_NO_ERROR)
+	{
+		alDeleteSources(1, &source);
+		LogWriter::WriteLine("AL error. Error creating a source. " + GetALError(error));
+		return;
+	}
+	alSourcei(source, AL_BUFFER, m_buffers[file]);
+	alSourcePlay(source);
+	m_sources.push_back(source);
+}
+
+void CSoundPlayer::PlaySoundPlaylist(std::vector<std::string> const& files, float volume, bool shuffle, bool repeat)
+{
+	sStreamProps * props = new sStreamProps;
+	props->files = files;
+	props->volume = volume;
+	props->repeat = repeat;
+	props->shuffle = shuffle;
+	StartThread(StreamThread, props);
 }
 
 void CSoundPlayer::ReadWav(std::string const& file)
@@ -119,7 +179,7 @@ void CSoundPlayer::ReadWav(std::string const& file)
 	if (error != AL_NO_ERROR)
 	{
 		alDeleteBuffers(1, &buffer);
-		CLogWriter::WriteLine("AL error. Error creating a buffer. " + GetALError(error));
+		LogWriter::WriteLine("AL error. Error creating a buffer. " + GetALError(error));
 		return;
 	}
 	FILE * f = fopen(file.c_str(), "rb");
@@ -132,9 +192,9 @@ void CSoundPlayer::ReadWav(std::string const& file)
 	unsigned short numChannels, bitsPerSample;
 	unsigned int frequency;
 	ALsizei dataSize;
-	memcpy(&numChannels, data + 22, 2);
-	memcpy(&frequency, data + 24, 4);
-	memcpy(&bitsPerSample, data + 34, 2);
+	memcpy(&numChannels, data + WAV_FILE_NUMCHANNELS_POSITION, sizeof(numChannels));
+	memcpy(&frequency, data + 24, sizeof(frequency));
+	memcpy(&bitsPerSample, data + 34, sizeof(bitsPerSample));
 	memcpy(&dataSize, data + 0x44, sizeof(ALsizei));
 	ALenum format;
 	if (numChannels == 1 && bitsPerSample == 8) format = AL_FORMAT_MONO8;
@@ -146,9 +206,106 @@ void CSoundPlayer::ReadWav(std::string const& file)
 	error = alGetError();
 	if (error != AL_NO_ERROR)
 	{
-		CLogWriter::WriteLine("AL error. Error filling a buffer. " + GetALError(error));
+		LogWriter::WriteLine("AL error. Error filling a buffer. " + GetALError(error));
 		return;
 	}
 	delete[] data;
 	return;
+}
+
+void CSoundPlayer::SetListenerPosition(CVector3d const& position, CVector3d const& center)
+{
+	alListener3f(AL_POSITION, position.x, position.y, position.z);
+	float ori[6] = {center.x, center.y, center.z, 0.0, 1.0, 0.0};
+	alListenerfv(AL_ORIENTATION, ori);
+}
+
+void CSoundPlayer::Update()
+{
+	for (unsigned int i = 0; i < m_sources.size(); ++i)
+	{
+
+	}
+}
+
+void* StreamThread(void* param)
+{
+	sStreamProps & sparam = *reinterpret_cast<sStreamProps*>(param);
+	ALuint buffers[STREAM_BUFFERS];
+	alGenBuffers(STREAM_BUFFERS, buffers);
+	ALuint source;
+	alGenSources(1, &source);
+	alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
+	alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	alSourcei(source, AL_LOOPING, AL_FALSE);
+	alSourcef(source, AL_GAIN, sparam.volume);
+	unsigned int curBuffer = 0;//index of the buffer to be filled
+	bool firstRun = true;
+	do
+	{
+		for (unsigned int i = 0; i < sparam.files.size(); ++i)
+		{
+			//open the file and read the header
+			FILE * f = fopen(sparam.files[i].c_str(), "rb");
+			fseek(f, 0L, SEEK_END);
+			unsigned int fileSize = ftell(f);
+			fseek(f, 0L, SEEK_SET);
+			unsigned char * header = new unsigned char[WAV_FILE_HEADER_SIZE];
+			fread(header, 1, WAV_FILE_HEADER_SIZE, f);
+			unsigned short numChannels, bitsPerSample;
+			unsigned int frequency;
+			fseek(f, WAV_FILE_NUMCHANNELS_POSITION, SEEK_SET);
+			fread(&numChannels, sizeof(numChannels), 1, f);
+			fread(&frequency, sizeof(frequency), 1, f);
+			fseek(f, 34L, SEEK_SET);
+			fread(&bitsPerSample, sizeof(bitsPerSample), 1, f);
+			fseek(f, 44L, SEEK_SET);
+			delete[] header;
+			ALenum format;
+			if (numChannels == 1 && bitsPerSample == 8) format = AL_FORMAT_MONO8;
+			else if (numChannels == 1 && bitsPerSample == 16) format = AL_FORMAT_MONO16;
+			else if (numChannels == 2 && bitsPerSample == 8) format = AL_FORMAT_STEREO8;
+			else if (numChannels == 2 && bitsPerSample == 16) format = AL_FORMAT_STEREO16;
+			unsigned int pieceSize = frequency * numChannels * bitsPerSample / 8;
+			unsigned int bytesRead = 44;
+			unsigned char * data = new unsigned char[pieceSize];
+			while (bytesRead < fileSize)
+			{
+				if (bytesRead + pieceSize > fileSize) pieceSize = fileSize - bytesRead;
+				ALint processed;
+				alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+				if (processed > 0 || firstRun)
+				{
+					alSourceUnqueueBuffers(source, 1, &buffers[curBuffer]);
+					fread(data, 1, pieceSize, f);
+					alBufferData(buffers[curBuffer], format, data, pieceSize, frequency);
+					alSourceQueueBuffers(source, 1, &buffers[curBuffer]);
+					bytesRead += pieceSize;
+					curBuffer++;
+					if (curBuffer == STREAM_BUFFERS) curBuffer = 0;
+					alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+				}
+				if (firstRun && curBuffer == 0)
+				{
+					alSourcePlay(source);
+					firstRun = false;
+					curBuffer = 0;
+				}
+				_sleep(10);
+			}
+			delete[] data;
+			fclose(f);
+		}
+	} while (sparam.repeat);
+	ALint processed;
+	alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+	while (processed < STREAM_BUFFERS)
+	{
+		_sleep(10);
+		alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
+	}
+	alDeleteSources(1, &source);
+	alDeleteBuffers(STREAM_BUFFERS, buffers);
+	delete reinterpret_cast<sStreamProps*>(param);
+	return NULL;
 }

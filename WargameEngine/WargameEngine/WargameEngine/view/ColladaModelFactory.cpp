@@ -211,7 +211,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	TiXmlElement* root = doc.RootElement();
 	if (!root)//No root
 	{
-		CLogWriter::WriteLine("Cannot load model. No root.");
+		LogWriter::WriteLine("Cannot load model. No root.");
 		return loader;
 	}
 	std::map<std::string, std::string> imageTranslator;
@@ -273,7 +273,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	}
 	else
 	{
-		CLogWriter::WriteLine("Model loading warning. No visual scenes found.");
+		LogWriter::WriteLine("Model loading warning. No visual scenes found.");
 	}
 	//Materials step 2: materials to effects
 	TiXmlElement* library_materials = root->FirstChildElement("library_materials");
@@ -302,7 +302,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	}
 	else
 	{
-		CLogWriter::WriteLine("Model loading warning. No materials found.");
+		LogWriter::WriteLine("Model loading warning. No materials found.");
 	}
 	//Materials step 3: Load effects properties
 	TiXmlElement* library_effects = root->FirstChildElement("library_effects");
@@ -401,7 +401,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	}
 	else
 	{
-		CLogWriter::WriteLine("Model loading warning. No effects found.");
+		LogWriter::WriteLine("Model loading warning. No effects found.");
 	}
 	//Animation step1: Process weights
 	std::map<std::string, std::vector<unsigned int>> weightCount;
@@ -506,7 +506,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 							unsigned int jointIndex = v[j + k * 2];
 							if (jointIndex >= jointNames.size())
 							{
-								//CLogWriter::WriteLine("Model loading warning. Error parsing joints information");
+								//LogWriter::WriteLine("Model loading warning. Error parsing joints information");
 								continue;
 							}
 							unsigned int weightIndex = v[j + k * 2 + 1];

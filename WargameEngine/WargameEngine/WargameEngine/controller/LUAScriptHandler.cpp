@@ -111,7 +111,7 @@ int CLUAScript::RunScript(std::string const& file)
 	if(result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 	return lua_tointeger(m_lua_state, lua_gettop(m_lua_state));
 }
@@ -167,7 +167,7 @@ void CLUAScript::CallFunction(std::string const& funcName)
 	if(result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 }
 
@@ -180,7 +180,7 @@ void CLUAScript::CallFunction<const char*>(std::string const& funcName, const ch
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 }
 
@@ -192,7 +192,7 @@ void CLUAScript::CallFunction(std::string const& funcName, void* param, std::str
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 }
 
@@ -207,7 +207,7 @@ void CLUAScript::CallFunction(std::string const& funcName, void* param, std::str
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 }
 
@@ -226,7 +226,7 @@ void CLUAScript::CallFunctionReturn4(std::string const& funcName, double x, doub
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 }
 
@@ -238,7 +238,7 @@ int CLUAScript::CallFunctionReturn<int>(std::string const& funcName)
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 	result = GetArgument<int>(1);
 	lua_pop(m_lua_state, 1);
@@ -254,7 +254,7 @@ int CLUAScript::CallFunctionReturn<int, const char*>(std::string const& funcName
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
-		CLogWriter::WriteLine(std::string("LUA Error: ") + err);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
 	result = GetArgument<int>(1);
 	lua_pop(m_lua_state, 1);
