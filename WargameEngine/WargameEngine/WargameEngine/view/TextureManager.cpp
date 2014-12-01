@@ -249,3 +249,26 @@ void CTextureManager::SetTextureSize(unsigned int id, unsigned int width, unsign
 {
 	m_size[id] = std::pair<unsigned int, unsigned int>(width, height);
 }
+
+void CTextureManager::SetTexture(std::string const& path, eTextureSlot slot)
+{
+	glActiveTexture(GL_TEXTURE0 + slot);
+	if (path.empty())
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+		return;
+	}
+	if (m_textures.find(path) == m_textures.end())
+	{
+		m_textures[path] = LoadTexture(sModule::textures + path);
+		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
+		if (shader)
+		{
+			auto size = m_size[m_textures[path]];
+			float arr[2] = { size.first, size.second };
+			shader->SetUniformValue2("textureSize", 2, arr);
+		}
+	}
+	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
+	glActiveTexture(GL_TEXTURE0);
+}

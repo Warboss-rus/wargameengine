@@ -18,7 +18,7 @@ void CCommandCompound::Rollback()
 
 void CCommandCompound::AddChild(ICommand* child)
 { 
-	m_children.push_back(std::shared_ptr<ICommand>(child)); 
+	m_children.push_back(std::unique_ptr<ICommand>(child)); 
 }
 
 ICommand* CCommandCompound::GetChild(size_t index) 

@@ -6,6 +6,7 @@
 #include "ObjectInterface.h"
 #include "ObjectStatic.h"
 #include "Projectile.h"
+#include "Landscape.h"
 
 class CGameModel
 {
@@ -35,6 +36,8 @@ public:
 	unsigned int GetProjectileCount() const { return m_projectiles.size(); }
 	std::shared_ptr<CProjectile> GetProjectile(unsigned int index) const { return m_projectiles[index]; }
 	void RemoveProjectile(unsigned int index) { m_projectiles.erase(m_projectiles.begin() + index); }
+	const CLandscape & GetLandscape() { return m_landscape; }
+	void ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
 private:
 	CGameModel(void) :m_selectedObject(NULL){};
 	CGameModel(CGameModel const&){};
@@ -45,4 +48,5 @@ private:
 	std::shared_ptr<IObject> m_selectedObject;
 	static std::shared_ptr<CGameModel> m_instanse;
 	std::map<std::string, std::string> m_properties;
+	CLandscape m_landscape;
 };

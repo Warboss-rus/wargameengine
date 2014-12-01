@@ -38,7 +38,7 @@ void CGameController::FreeInstance()
 
 CGameController::~CGameController(void)
 {
-	CCommandHandler::FreeInstance();//sometimes causes crash
+	CCommandHandler::FreeInstance();//causes crash on CommandDeleteObject being destroyed
 }
 
 void CGameController::SelectObjectGroup(int beginX, int beginY, int endX, int endY)

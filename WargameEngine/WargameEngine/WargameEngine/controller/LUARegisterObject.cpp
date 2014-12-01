@@ -67,7 +67,8 @@ int DeleteObject(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no argument expected");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	CCommandHandler::GetInstance().lock()->AddNewDeleteObject(std::shared_ptr<IObject>(object));
+	std::shared_ptr<IObject> shared_object = CGameModel::GetInstance().lock()->Get3DObject(object);
+	CCommandHandler::GetInstance().lock()->AddNewDeleteObject(shared_object);
 	object = nullptr;
 	return 0;
 }

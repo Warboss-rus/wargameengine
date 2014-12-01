@@ -94,6 +94,12 @@ void CShaderManager::NewProgram(std::string const& vertex, std::string const& fr
 	glUniform1i(unfrm, 0);
 	unfrm = glGetUniformLocation(m_program, "shadowMap");
 	glUniform1i(unfrm, 1);
+	unfrm = glGetUniformLocation(m_program, "specular");
+	glUniform1i(unfrm, 2);
+	unfrm = glGetUniformLocation(m_program, "normal");
+	glUniform1i(unfrm, 3);
+	unfrm = glGetUniformLocation(m_program, "bump");
+	glUniform1i(unfrm, 4);
 	glDetachShader(m_program, vertexShader);
 	glDeleteShader(vertexShader);
 	glDetachShader(m_program, framgentShader);
@@ -114,6 +120,13 @@ void CShaderManager::SetUniformValue<float>(std::string const& uniform, float va
 {
 	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
 	glUniform1f(unfrm, value);
+}
+
+template<>
+void CShaderManager::SetUniformValue<const float*>(std::string const& uniform, int count, const float* value) const
+{
+	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
+	glUniform1fv(unfrm, count, value);
 }
 
 template<>

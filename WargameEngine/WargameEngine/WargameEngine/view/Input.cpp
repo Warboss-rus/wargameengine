@@ -139,12 +139,12 @@ void CInput::OnMouse(int button, int state, int x, int y)
 	case SCROLL_UP:
 		if (state == GLUT_UP)
 		{
-			view->GetCamera()->ZoomIn();
+			view->GetCamera()->OnMouseWheelUp();
 		}break;
 	case SCROLL_DOWN:
 		if (state == GLUT_UP)
 		{
-			view->GetCamera()->ZoomOut();
+			view->GetCamera()->OnMouseWheelDown();
 		}break;
 	}
 }
@@ -178,29 +178,7 @@ void CInput::OnSpecialKeyPress(int key, int x, int y)
 {
 	if (CGameView::GetInstance().lock()->GetUI()->OnSpecialKeyPress(key))
 		return;
-	switch (key) 
-	{
-		case GLUT_KEY_LEFT:
-		{
-			CGameView::GetInstance().lock()->GetCamera()->Translate(CCamera::TRANSLATE, 0.0);
-		}
-		break;
-		case GLUT_KEY_RIGHT:
-		{
-			CGameView::GetInstance().lock()->GetCamera()->Translate(-CCamera::TRANSLATE, 0.0);
-		}
-		break;
-		case GLUT_KEY_DOWN:
-		{
-			CGameView::GetInstance().lock()->GetCamera()->Translate(0.0, CCamera::TRANSLATE);
-		}
-		break;
-		case GLUT_KEY_UP:
-		{
-			CGameView::GetInstance().lock()->GetCamera()->Translate(0.0, -CCamera::TRANSLATE);
-		}
-		break;
-	}
+	CGameView::GetInstance().lock()->GetCamera()->OnSpecialKeyPress(key);
 }
 
 void CInput::OnPassiveMouseMove(int x, int y)
@@ -213,11 +191,14 @@ void CInput::OnPassiveMouseMove(int x, int y)
         just_warped = false;
         return;
     }
-	if(glutGetModifiers() == GLUT_ACTIVE_ALT)
+	bool isShiftPressed = glutGetModifiers() == GLUT_ACTIVE_SHIFT;
+	bool isCtrlPressed = glutGetModifiers() == GLUT_ACTIVE_CTRL;
+	bool isAltPressed = glutGetModifiers() == GLUT_ACTIVE_ALT;
+	CGameView::GetInstance().lock()->GetCamera()->OnMouseMove(x - prevMouseX, prevMouseY - y, m_isLMBDown, m_isRMBDown, isShiftPressed, isCtrlPressed, isAltPressed);
+	if (CGameView::GetInstance().lock()->GetCamera()->HidePointer())
 	{
 		glutSetCursor(GLUT_CURSOR_NONE);
 		glutWarpPointer(prevMouseX, prevMouseY);
-		CGameView::GetInstance().lock()->GetCamera()->Rotate(x - prevMouseX, prevMouseY - y);
 		just_warped = true;
 	}
 	else

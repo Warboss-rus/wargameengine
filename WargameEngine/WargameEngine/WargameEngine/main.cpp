@@ -3,9 +3,9 @@
 #include "Module.h"
 #include "UI/UIElement.h"
 #include <cstring>
+#include "OSSpecific.h"
 #ifdef _WINDOWS
 #include <windows.h>
-#include "OSSpecific.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {

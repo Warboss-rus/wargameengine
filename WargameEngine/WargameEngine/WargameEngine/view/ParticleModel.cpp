@@ -86,6 +86,12 @@ CParticleModel::CParticleModel(std::string const& file)
 		pinstance.scale = StrToFloat(instance->Attribute("scale"), 1.0f);
 		pinstance.start = StrToFloat(instance->Attribute("start"), 0.0f);
 		pinstance.particle = particleIDs[instance->Attribute("particle")];
+		TiXmlElement* uniform = instance->FirstChildElement("uniform");
+		while (uniform)
+		{
+			pinstance.uniforms[uniform->Attribute("key")] = GetFloatsArray(uniform);
+			uniform = uniform->NextSiblingElement("uniform");
+		}
 		m_instances.push_back(std::move(pinstance));
 		instance = instance->NextSiblingElement("instance");
 	}
@@ -187,7 +193,15 @@ void CParticleModel::Draw(float time) const
 			}
 			CTextureManager::GetInstance()->SetTexture(m_textures[particle.GetMaterial()]);
 			m_shaders[particle.GetMaterial()].BindProgram();
+			for (auto j = m_instances[i].uniforms.begin(); j != m_instances[i].uniforms.end(); ++j)
+			{
+				m_shaders[particle.GetMaterial()].SetUniformValue(j->first, j->second.size(), &j->second[0]);
+			}
 			DrawParticle(position, particle.GetWidth(), particle.GetHeight());
+			for (auto j = m_instances[i].uniforms.begin(); j != m_instances[i].uniforms.end(); ++j)
+			{
+				m_shaders[particle.GetMaterial()].SetUniformValue(j->first, 0, (float*)nullptr);
+			}
 			m_shaders[particle.GetMaterial()].UnBindProgram();
 			CTextureManager::GetInstance()->SetTexture("");
 			glPopMatrix();

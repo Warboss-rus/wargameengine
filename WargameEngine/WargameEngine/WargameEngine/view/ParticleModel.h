@@ -1,4 +1,5 @@
 #include <string>
+#include <map>
 #include "Particle.h"
 #include "ShaderManager.h"
 
@@ -9,6 +10,7 @@ struct sParticleInstance {
 	double speed;
 	double scale;
 	float start;
+	std::map<std::string, std::vector<float>> uniforms;
 };
 
 class CParticleModel

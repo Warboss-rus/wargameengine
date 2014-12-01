@@ -118,7 +118,7 @@ SetShaders("gpu_skinning.vsh", "gpu_skinning.fsh")
 --EnableVertexLightning()
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
-CameraSetLimits(15, 6, 5, 0.4)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
+CameraStrategy(15, 6, 5, 0.5)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 local ui = UI:Get()--Get current UI
 ui:ApplyTheme("ui.uit")
 local list = ui:NewCombobox("ComboBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)

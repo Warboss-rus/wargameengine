@@ -1,5 +1,4 @@
-#pragma once
-#include "icommand.h"
+#include "Icommand.h"
 #include <string>
 #include <memory>
 

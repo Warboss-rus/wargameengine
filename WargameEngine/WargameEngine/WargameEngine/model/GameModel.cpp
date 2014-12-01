@@ -45,7 +45,7 @@ std::shared_ptr<IObject> CGameModel::Get3DObject(IObject * object)
 			return *i;
 		}
 	}
-	return std::shared_ptr<IObject>();
+	return nullptr;
 }
 
 void CGameModel::AddObject(std::shared_ptr<IObject> pObject)
@@ -75,13 +75,13 @@ void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 		CObjectGroup* group = (CObjectGroup*)pObject.get();
 		group->DeleteAll();
 	}
-	if(pObject == m_selectedObject) m_selectedObject = NULL;
-	for(unsigned int i = 0; i < m_objects.size(); ++i)
+	if(pObject == m_selectedObject) m_selectedObject = nullptr;
+	for(auto i = m_objects.begin(); i != m_objects.end(); ++i)
 	{
-		if(m_objects[i].get() == pObject.get())
+		if(i->get() == pObject.get())
 		{
-			
-			m_objects.erase(m_objects.begin() + i);
+			m_objects.erase(i);
+			return;
 		}
 	}
 }
@@ -226,4 +226,8 @@ void CGameModel::SetState(char* data, bool hasAdresses)
 		delete[] first;
 		delete[] second;
 	}
+}
+void CGameModel::ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+{
+	m_landscape = CLandscape(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }

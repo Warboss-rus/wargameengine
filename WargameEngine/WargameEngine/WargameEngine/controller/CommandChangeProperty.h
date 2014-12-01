@@ -1,4 +1,3 @@
-#pragma once
 #include "ICommand.h"
 #include <string>
 #include <memory>

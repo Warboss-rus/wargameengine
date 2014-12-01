@@ -6,9 +6,19 @@
 class CTextureManager
 {
 public:
+	enum eTextureSlot
+	{
+		eDiffuse=0,
+		//1 is reserved for shadowmap
+		eSpecular=2,
+		eNormal,
+		//uses different UVs
+		eBump,
+	};
 	static CTextureManager * GetInstance();
 	static void FreeInstance();
 	void SetTexture(std::string const& path);
+	void SetTexture(std::string const& path, eTextureSlot slot);
 	void SetAnisotropyLevel(float level);
 	void SetTextureSize(unsigned int id, unsigned int width, unsigned int height);
 	~CTextureManager();

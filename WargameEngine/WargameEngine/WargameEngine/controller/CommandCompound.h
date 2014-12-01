@@ -1,4 +1,3 @@
-#pragma once
 #include "ICommand.h"
 #include <string>
 #include <memory>
@@ -14,5 +13,5 @@ public:
 	void Rollback();
 	std::vector<char> Serialize() const { return std::vector<char>(); }
 private:
-	std::vector<std::shared_ptr<ICommand>> m_children;
+	std::vector<std::unique_ptr<ICommand>> m_children;
 };

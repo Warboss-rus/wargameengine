@@ -1,17 +1,13 @@
-//#pragma once
-
 #include <memory>
 #include "../model/Object.h"
 #include "ModelManager.h"
 #include "../model/GameModel.h"
-#include "Table.h"
 #include "SkyBox.h"
-#include "Camera.h"
+#include "ICamera.h"
 #include "Input.h"
 #include "ParticleSystem.h"
 #include "../UI/UIElement.h"
 #include "ShaderManager.h"
-#include "../NetSocket.h"
 
 class CGameView
 {
@@ -20,11 +16,12 @@ public:
 	static void FreeInstance();
 	~CGameView();
 
-	void CreateTable(float width, float height, std::string const& texture);
+	void ResetTable();
 	void CreateSkybox(double size, std::string const& textureFolder);
 	IUIElement * GetUI() const;
 	void SelectObject(int x, int y, bool shiftPressed);
-	CCamera * GetCamera();
+	ICamera * GetCamera();
+	void SetCamera(ICamera * camera);
 	void TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y);
 	CModelManager& GetModelManager() { return m_modelManager; }
 	CParticleSystem& GetParticleSystem() { return m_particles; }
@@ -64,6 +61,7 @@ public:
 	static void OnTimer(int value);
 	static void OnChangeState(int state);
 private:
+	void DrawTable();
 	void DrawUI() const;
 	void Update();
 	void DrawObjects(void);
@@ -77,13 +75,11 @@ private:
 
 	static std::shared_ptr<CGameView> m_instanse;
 	CModelManager m_modelManager;
-	CCamera m_camera;
 	CShaderManager m_shader;
 	CParticleSystem m_particles;
-	std::unique_ptr<CTable> m_table;
+	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
-	std::unique_ptr<CNetSocket> m_socket;
 
 	std::weak_ptr<CGameModel> m_gameModel;
 	callback(m_updateCallback);
@@ -100,4 +96,6 @@ private:
 	float m_anisoptropy;
 	static bool m_visible;
 	bool m_gpuSkinning;
+
+	unsigned int m_tableList;
 };

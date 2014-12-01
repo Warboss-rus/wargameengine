@@ -14,6 +14,7 @@
 #include "../Network.h"
 #include "../Ruler.h"
 #include "../SoundPlayer.h"
+#include "CameraStrategy.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
@@ -42,8 +43,8 @@ CGameView::~CGameView()
 	CNetwork::FreeInstance();
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
-	CGameController::FreeInstance();
 	CGameModel::FreeInstance();
+	CGameController::FreeInstance();
 }
 
 CGameView::CGameView(void)
@@ -98,6 +99,8 @@ void CGameView::Init()
 	memset(m_lightPosition, 0, sizeof(float)* 3);
 	m_anisoptropy = 1.0f;
 	m_gpuSkinning = false;
+	m_camera.reset(new CCameraStrategy(0.0, 0.0, 2.8, 0.5));
+	m_tableList = 0;
 
 	CGameController::GetInstance();
 
@@ -166,13 +169,51 @@ void CGameView::Update()
 		m_singleCallback = std::function<void()>();
 	}
 	ThreadPool::Update();
-	m_camera.Update();
-	if(m_skybox) m_skybox->Draw(m_camera.GetTranslationX(), m_camera.GetTranslationY(), 0, m_camera.GetScale());
+	const double * position = m_camera->GetPosition();
+	const double * direction = m_camera->GetDirection();
+	const double * up = m_camera->GetUpVector();
+	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
+	glLoadIdentity();
+	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
 	DrawObjects();
 	m_particles.DrawParticles();
 	DrawBoundingBox();
 	CRuler::Draw();
 	DrawUI();
+}
+
+void CGameView::ResetTable()
+{
+	m_tableList = 0;
+}
+
+void CGameView::DrawTable()
+{
+	m_tableList = glGenLists(1);
+	glNewList(m_tableList, GL_COMPILE);
+	CLandscape const& landscape = CGameModel::GetInstance().lock()->GetLandscape();
+	double x1 = -landscape.GetWidth() / 2.0;
+	double x2 = landscape.GetWidth() / 2.0;
+	double y1 = -landscape.GetDepth() / 2.0;
+	double y2 = landscape.GetDepth() / 2.0;
+	double xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
+	double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
+	CTextureManager::GetInstance()->SetTexture(landscape.GetTexture());
+	unsigned int k = 0;
+	for (double x = x1; x <= x2 - xstep; x += xstep)
+	{
+		glBegin(GL_TRIANGLE_STRIP);
+		for (double y = y1; y <= y2; y += ystep, k++)
+		{
+			glTexCoord2d((x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale());
+			glVertex3d(x, y, landscape.GetHeight(k));
+			glTexCoord2d((x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale());
+			glVertex3d(x + xstep, y, landscape.GetHeight(k + 1));
+		}
+		glEnd();
+	}
+	CTextureManager::GetInstance()->SetTexture("");
+	glEndList();
 }
 
 void CGameView::DrawObjects(void)
@@ -181,7 +222,8 @@ void CGameView::DrawObjects(void)
 	glEnable(GL_BLEND);
 	m_shader.BindProgram();
 	if (m_shadowMap) SetUpShadowMapDraw();
-	if (m_table) m_table->Draw();
+	if (m_tableList == 0) DrawTable();
+	else glCallList(m_tableList);
 	if (m_vertexLightning)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -295,19 +337,19 @@ void CGameView::OnReshape(int width, int height)
 	CGameView::GetInstance().lock()->m_ui->Resize(height, width);
 }
 
-void CGameView::CreateTable(float width, float height, std::string const& texture)
-{
-	m_table.reset(new CTable(width, height, texture));
-}
-
 void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 {
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder));
 }
 
-CCamera * CGameView::GetCamera()
+ICamera * CGameView::GetCamera()
 {
-	return &m_camera;
+	return m_camera.get();
+}
+
+void CGameView::SetCamera(ICamera * camera)
+{
+	m_camera.reset(camera);
 }
 
 void CGameView::SelectObject(int x, int y, bool shiftPressed)
@@ -328,7 +370,7 @@ void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, in
 	const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
 	WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
 	CVector3d old(object->GetCoords());
-	if (m_table->isCoordsOnTable(worldX, worldY))
+	if (CGameModel::GetInstance().lock()->GetLandscape().isCoordsOnTable(worldX, worldY))
 	{
 		object->SetCoords(worldX - capturePoint->x, worldY - capturePoint->y, 0);
 	}
@@ -504,7 +546,7 @@ void CGameView::ClearResources()
 	m_modelManager = CModelManager();
 	CTextureManager::GetInstance();
 	m_skybox->ResetList();
-	m_table->ResetList();
+	ResetTable();
 }
 
 void CGameView::SetWindowTitle(std::string const& title) const
@@ -573,7 +615,6 @@ void CGameView::LoadModule(std::string const& module)
 	CTextureManager::FreeInstance();
 	m_modelManager = CModelManager();
 	CNetwork::FreeInstance();
-	m_table.reset();
 	m_skybox.reset();
 	m_vertexLightning = false;
 	m_shadowMap = false;

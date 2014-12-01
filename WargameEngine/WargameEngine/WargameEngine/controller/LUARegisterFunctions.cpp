@@ -8,6 +8,7 @@
 #include "../OSSpecific.h"
 #include "../Network.h"
 #include "../SoundPlayer.h"
+#include "../view/CameraStrategy.h"
 
 int CreateTable(lua_State* L)
 {
@@ -16,7 +17,8 @@ int CreateTable(lua_State* L)
 	float width = CLUAScript::GetArgument<float>(1);
 	float height = CLUAScript::GetArgument<float>(2);
 	std::string texture = CLUAScript::GetArgument<char*>(3);
-	CGameView::GetInstance().lock()->CreateTable(width, height, texture);
+	CGameModel::GetInstance().lock()->ResetLandscape(width, height, texture, 2, 2);
+	CGameView::GetInstance().lock()->ResetTable();
 	return 0;
 }
 
@@ -30,7 +32,7 @@ int CreateSkybox(lua_State* L)
 	return 0;
 }
 
-int CameraSetLimits(lua_State* L)
+int CameraStrategy(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 4)
         return luaL_error(L, "4 argument expected (max trans x, max trans y, max scale, min scale)");
@@ -38,7 +40,7 @@ int CameraSetLimits(lua_State* L)
 	double maxTransY = CLUAScript::GetArgument<double>(2);
 	double maxScale = CLUAScript::GetArgument<double>(3);
 	double minScale = CLUAScript::GetArgument<double>(4);
-	CGameView::GetInstance().lock()->GetCamera()->SetLimits(maxTransX, maxTransY, maxScale, minScale);
+	CGameView::GetInstance().lock()->SetCamera(new CCameraStrategy(maxTransX, maxTransY, maxScale, minScale));
 	return 0;
 }
 
@@ -690,7 +692,7 @@ void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
 	lua.RegisterConstant(CreateSkybox, "CreateSkybox");
-	lua.RegisterConstant(CameraSetLimits, "CameraSetLimits");
+	lua.RegisterConstant(CameraStrategy, "CameraStrategy");
 	lua.RegisterConstant(Ruler, "Ruler");
 	lua.RegisterConstant(Undo, "Undo");
 	lua.RegisterConstant(Redo, "Redo");

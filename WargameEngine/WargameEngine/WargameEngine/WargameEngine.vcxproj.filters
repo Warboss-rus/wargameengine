@@ -60,9 +60,6 @@
     <ClCompile Include="view\3dModel.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="view\Camera.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="view\GameView.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -76,9 +73,6 @@
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\SkyBox.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\Table.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\TextureManager.cpp">
@@ -234,6 +228,18 @@
     <ClCompile Include="model\Projectile.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
+    <ClCompile Include="view\CameraStrategy.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="model\Landscape.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PluginManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ruler.h">
@@ -261,9 +267,6 @@
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\OBJModelFactory.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Table.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\TextureManager.h">
@@ -309,9 +312,6 @@
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\SkyBox.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Camera.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIStaticText.h">
@@ -436,6 +436,21 @@
     </ClInclude>
     <ClInclude Include="model\Projectile.h">
       <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ICamera.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\CameraStrategy.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Landscape.h">
+      <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Plugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

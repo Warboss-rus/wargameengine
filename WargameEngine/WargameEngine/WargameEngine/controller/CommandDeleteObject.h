@@ -1,12 +1,9 @@
-#pragma once
-#include "icommand.h"
+#include "ICommand.h"
 #include <string>
 #include <memory>
+#include "../model/ObjectInterface.h"
 
-class IObject;
-
-class CCommandDeleteObject :
-	public ICommand
+class CCommandDeleteObject : public ICommand
 {
 public:
 	CCommandDeleteObject(std::shared_ptr<IObject> object);
