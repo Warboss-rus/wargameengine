@@ -41,4 +41,6 @@ public:
 	virtual sAnimation::eLoopMode GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;
 	virtual void Update() = 0;
+	virtual std::map<std::string, unsigned char[3]> const& GetTeamColor() const = 0;
+	virtual void ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b) = 0;
 };

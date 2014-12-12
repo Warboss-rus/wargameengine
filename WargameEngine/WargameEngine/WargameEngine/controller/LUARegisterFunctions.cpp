@@ -475,7 +475,7 @@ int SaveGame(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (filename)");
 	std::string path = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetInstance().lock()->Save(path);
+	CGameController::GetInstance().lock()->Save(path);
 	return 0;
 }
 
@@ -484,7 +484,7 @@ int LoadGame(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (filename)");
 	std::string path = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetInstance().lock()->Load(path);
+	CGameController::GetInstance().lock()->Load(path);
 	return 0;
 }
 
@@ -688,6 +688,34 @@ int PlaySoundPlaylist(lua_State* L)
 	return 0;
 }
 
+int NewDecal(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 6)
+		return luaL_error(L, "6 argument expected (decal, x, y, rotation, width, height)");
+	sDecal decal;
+	decal.texture = CLUAScript::GetArgument<char*>(1);
+	decal.x = CLUAScript::GetArgument<double>(2);
+	decal.y = CLUAScript::GetArgument<double>(3);
+	decal.rotation = CLUAScript::GetArgument<double>(4);
+	decal.width = CLUAScript::GetArgument<double>(5);
+	decal.depth = CLUAScript::GetArgument<double>(6);
+	CGameModel::GetInstance().lock()->GetLandscape().AddNewDecal(decal);
+	return 0;
+}
+
+int NewStaticObject(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 4)
+		return luaL_error(L, "4 argument expected (model, x, y, rotation)");
+	std::string model = CLUAScript::GetArgument<char*>(1);
+	double x = CLUAScript::GetArgument<double>(2);
+	double y = CLUAScript::GetArgument<double>(3);
+	double rotation = CLUAScript::GetArgument<double>(4);
+	IObject* object = new CObject(model, x, y, rotation);
+	CGameModel::GetInstance().lock()->GetLandscape().AddStaticObject(CStaticObject(model, x, y, rotation));
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -753,4 +781,6 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(PlaySound, "PlaySound");
 	lua.RegisterConstant(PlaySoundPosition, "PlaySoundPosition");
 	lua.RegisterConstant(PlaySoundPlaylist, "PlaySoundPlaylist");
+	lua.RegisterConstant(NewDecal, "NewDecal");
+	lua.RegisterConstant(NewStaticObject, "NewStaticObject");
 }

@@ -1,7 +1,6 @@
 #include "CameraStrategy.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "../SoundPlayer.h"
 #define TRANSLATE					  0.3
 #define SCALE						  1.1
 #define  GLUT_KEY_LEFT                      0x0064

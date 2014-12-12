@@ -17,8 +17,9 @@ public:
 	};
 	static CTextureManager * GetInstance();
 	static void FreeInstance();
-	void SetTexture(std::string const& path);
-	void SetTexture(std::string const& path, eTextureSlot slot);
+	void SetTexture(std::string const& path, std::map<std::string, unsigned char[3]> * teamcolor = nullptr);
+	//doesn't set textureSize uniform
+	void SetTexture(std::string const& path, eTextureSlot slot, std::map<std::string, unsigned char[3]> * teamcolor = nullptr);
 	void SetAnisotropyLevel(float level);
 	void SetTextureSize(unsigned int id, unsigned int width, unsigned int height);
 	~CTextureManager();

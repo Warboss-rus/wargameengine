@@ -3,9 +3,6 @@ Player2Roster = {}
 Player1Army = nil
 Player2Army = nil
 races = {}
---dofile all your races here
-dofile("Chaos.lua")
-dofile("SpaceMarines.lua")
 
 function getKeysSorted(tbl, func)
   local keys = {}
@@ -234,6 +231,9 @@ IncludeLibrary("table")
 IncludeLibrary("string")
 --ResizeWindow(600, 600)
 dofile("killteam.lua")
+--dofile all your races here
+dofile("Chaos.lua")
+dofile("SpaceMarines.lua")
 local ui = UI:Get():NewPanel("Panel1", 0, 0, 640, 640)
 local cbox = ui:NewCombobox("CBox1", 10, 0, 30, 180)
 local raceslist = getKeysSorted(races, function(a, b) return a < b end)

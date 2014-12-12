@@ -32,3 +32,8 @@ void CParticleSystem::AddEffect(std::string const& file, double x, double y, dou
 	}
 	m_effects.push_back(CParticleEffect(file, x, y, z, rotation, scale, lifetime));
 }
+
+void CParticleSystem::DrawEffect(std::string const& effectFile, float time)
+{
+	m_models[effectFile].Draw(time);
+}

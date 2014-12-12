@@ -10,6 +10,7 @@ public:
 	bool Update();
 	const std::string GetParticle() const { return m_particle; }
 	void CallOnCollision() const { m_onCollision(); }
+	float GetTime() const { return (double)m_lastUpdateTime / 1000.0; }
 private:
 	CVector3d m_target;
 	double m_speed;

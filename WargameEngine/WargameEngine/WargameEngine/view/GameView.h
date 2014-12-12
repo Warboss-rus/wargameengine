@@ -50,9 +50,6 @@ public:
 	void DrawLineLoop(double * points, unsigned int size, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
 	void DrawText3D(double x, double y, double z, std::string const& text);
 	
-	void Save(std::string const& filename);
-	void Load(std::string const& filename);
-
 	void SetUpdateCallback(callback(onUpdate));
 	void SetSingleCallback(callback(onSingleUpdate));
 	
@@ -61,8 +58,8 @@ public:
 	static void OnTimer(int value);
 	static void OnChangeState(int state);
 private:
-	void DrawTable();
-	void DrawUI() const;
+	void DrawTable(bool shadowOnly = false);
+	void DrawUI();
 	void Update();
 	void DrawObjects(void);
 	void DrawBoundingBox();
@@ -98,4 +95,5 @@ private:
 	bool m_gpuSkinning;
 
 	unsigned int m_tableList;
+	unsigned int m_tableListShadow;
 };

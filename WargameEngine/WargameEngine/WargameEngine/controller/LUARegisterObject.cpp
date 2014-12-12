@@ -19,26 +19,6 @@ int NewObject(lua_State* L)
 	return CLUAScript::NewInstanceClass(object, "Object");
 }
 
-int NewDecal(lua_State* L)
-{
-	if (CLUAScript::GetArgumentCount() != 7)
-        return luaL_error(L, "6 argument expected (decal, x, y, rotation, width, height)");
-	std::string model =  CLUAScript::GetArgument<char*>(2);
-	double x = CLUAScript::GetArgument<double>(3);
-	double y = CLUAScript::GetArgument<double>(4);
-	double rotation = CLUAScript::GetArgument<double>(5);
-	double width = CLUAScript::GetArgument<double>(6);
-	double height = CLUAScript::GetArgument<double>(7);
-	char temp[10];
-	sprintf(temp, "%f", height);
-	model = std::string(temp) + ' ' + model;
-	sprintf(temp, "%f", width);
-	model = std::string(temp) + ' ' + model;
-	IObject* object = new CObject(model, x, y, rotation, false);
-	CCommandHandler::GetInstance().lock()->AddNewCreateObject(std::shared_ptr<IObject>(object));
-	return CLUAScript::NewInstanceClass(object, "Object");
-}
-
 int GetSelectedObject(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
@@ -361,7 +341,6 @@ int GoTo(lua_State* L)
 
 static const luaL_Reg ObjectFuncs[] = {
 	{ "New", NewObject },
-	{ "NewDecal", NewDecal },
 	{ "GetSelected", GetSelectedObject },
 	{ "GetCount", GetCount },
 	{ "GetAt", GetAt },

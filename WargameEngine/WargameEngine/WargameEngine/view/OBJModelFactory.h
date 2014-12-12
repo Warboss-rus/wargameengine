@@ -4,7 +4,6 @@
 void * LoadObjModel(void* data, unsigned int size, void* param);
 void * LoadWbmModel(void* data, unsigned int dataSize, void* param);
 void * LoadColladaModel(void* data, unsigned int size, void* param);
-C3DModel * LoadDecal(std::string const& path);
 
 struct sOBJLoader
 {

@@ -138,9 +138,6 @@
     <ClCompile Include="LogWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view\DecalFactory.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="view\ShaderManager.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -431,9 +428,6 @@
     <ClInclude Include="model\ObjectStatic.h">
       <Filter>Header Files\model</Filter>
     </ClInclude>
-    <ClInclude Include="Projectile.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="model\Projectile.h">
       <Filter>Header Files\model</Filter>
     </ClInclude>
@@ -448,6 +442,9 @@
     </ClInclude>
     <ClInclude Include="Plugin.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImagePluginInterface.h">
+      <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="PluginManager.h">
       <Filter>Header Files</Filter>

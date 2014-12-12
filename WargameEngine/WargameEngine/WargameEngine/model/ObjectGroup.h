@@ -45,6 +45,8 @@ public:
 	float GetAnimationSpeed() const { return 1.0f; }
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed);
 	void Update();
+	std::map<std::string, unsigned char[3]> const& GetTeamColor() const;
+	void ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b);
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

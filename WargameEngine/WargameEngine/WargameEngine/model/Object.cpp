@@ -124,3 +124,10 @@ void CObject::Update()
 		PlayAnimation("", sAnimation::NONLOOPING, 0.0f);
 	}
 }
+
+void CObject::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b)
+{
+	m_teamColor[suffix][0] = r;
+	m_teamColor[suffix][1] = g;
+	m_teamColor[suffix][2] = b;
+}

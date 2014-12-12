@@ -403,9 +403,10 @@ bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertex
 
 void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
 {
-	const std::set<std::string> * hideMeshes = &object->GetHiddenMeshes();
+	static std::set<std::string> empty;
+	const std::set<std::string> * hideMeshes = object ? &object->GetHiddenMeshes() : &empty;
 	unsigned int k = 0;//current index of weight and weightIndex arrays
-	if (!m_weightsCount.empty())//object needs to be skinned
+	if (!m_weightsCount.empty() && object)//object needs to be skinned
 	{
 		if (object->GetAnimation().empty())//no animation is playing, default pose
 		{

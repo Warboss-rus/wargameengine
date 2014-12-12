@@ -27,6 +27,8 @@ public:
 	static int GetWorkerTimeout();
 	//Sets the time before thread closed if it has no work to do.
 	static void SetWorkerTimeout(int timeout);
+	//Removes all queued operations and callbacks
+	static void CancelAll();
 	enum flags
 	{
 		//Functions with this flag will be added to the beginning of the queue, not the end
@@ -55,4 +57,5 @@ private:
 	static int m_currentThreads;
 	static int m_maxThreads;
 	static int m_threadsTimeout;
+	static bool m_cancelled;
 };

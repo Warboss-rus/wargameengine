@@ -4,6 +4,7 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../model/Object.h"
+#include "../LogWriter.h"
 
 void UseModel(void* data)
 {
@@ -28,12 +29,12 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		m_models[path] = std::shared_ptr<C3DModel>(obj->model);
 		if(extension == "obj")
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
-		if(extension == "wbm")
+		else if(extension == "wbm")
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadWbmModel, obj, UseModel);
-		if (extension == "dae")
+		else if (extension == "dae")
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadColladaModel, obj, UseModel);
-		if (extension == "bmp" || extension == "tga" || extension == "png")
-			m_models[path] = std::shared_ptr<C3DModel>(LoadDecal(path));
+		else
+			LogWriter::WriteLine("Cannot load model " + path + ". Unknown extension " + extension);
 	}
 }
 

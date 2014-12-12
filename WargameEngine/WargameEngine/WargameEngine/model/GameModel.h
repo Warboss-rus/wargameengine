@@ -4,7 +4,6 @@
 #include <string>
 #include <map>
 #include "ObjectInterface.h"
-#include "ObjectStatic.h"
 #include "Projectile.h"
 #include "Landscape.h"
 
@@ -27,24 +26,19 @@ public:
 	void SetProperty(std::string const& key, std::string const& value);
 	std::string const GetProperty(std::string const& key);
 	std::map<std::string, std::string> const& GetAllProperties() const;
-	std::vector<char> GetState(bool hasAdresses = false) const;
-	void SetState(char* data, bool hasAdresses = false);
-	void AddStaticObject(std::shared_ptr<CStaticObject> object) { m_staticObjects.push_back(object); }
-	void AddProjectile(std::shared_ptr<CProjectile> projectile) { m_projectiles.push_back(projectile); }
-	unsigned int GetStaticObjectCount() const { return m_staticObjects.size(); }
-	std::shared_ptr<CStaticObject> GetStaticObject(unsigned int index) const { return m_staticObjects[index]; }
+	void AddProjectile(CProjectile const& projectile) { m_projectiles.push_back(projectile); }
 	unsigned int GetProjectileCount() const { return m_projectiles.size(); }
-	std::shared_ptr<CProjectile> GetProjectile(unsigned int index) const { return m_projectiles[index]; }
+	CProjectile const& GetProjectile(unsigned int index) const { return m_projectiles[index]; }
+	void Update();
 	void RemoveProjectile(unsigned int index) { m_projectiles.erase(m_projectiles.begin() + index); }
-	const CLandscape & GetLandscape() { return m_landscape; }
+	CLandscape & GetLandscape() { return m_landscape; }
 	void ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
 private:
 	CGameModel(void) :m_selectedObject(NULL){};
 	CGameModel(CGameModel const&){};
 
 	std::vector<std::shared_ptr<IObject>> m_objects;
-	std::vector<std::shared_ptr<CStaticObject>> m_staticObjects;
-	std::vector<std::shared_ptr<CProjectile>> m_projectiles;
+	std::vector<CProjectile> m_projectiles;
 	std::shared_ptr<IObject> m_selectedObject;
 	static std::shared_ptr<CGameModel> m_instanse;
 	std::map<std::string, std::string> m_properties;

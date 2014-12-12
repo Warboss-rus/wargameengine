@@ -21,6 +21,11 @@ public:
 	const CVector3d * GetCapturePoint() const;
 	int GetLineOfSight(IObject * shooter, IObject * target);
 	void SetSelectionCallback(callback(onSelect));
+	std::vector<char> GetState(bool hasAdresses = false) const;
+	void SetState(char* data, bool hasAdresses = false);
+	void Save(std::string const& filename);
+	void Load(std::string const& filename);
+	void TryMoveSelectedObject(std::shared_ptr<IObject> object, double x, double y, double z);
 private:
 	CGameController(void);
 	CGameController(CGameController const&){};

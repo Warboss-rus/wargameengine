@@ -12,6 +12,7 @@ std::list<sRunFunc2*> ThreadPool::m_funcs2;
 int ThreadPool::m_currentThreads = 0;
 int ThreadPool::m_maxThreads = CoresCount();
 int ThreadPool::m_threadsTimeout = 2000;
+bool ThreadPool::m_cancelled = false;
 CCriticalSection cscallback;
 CCriticalSection cscallback2;
 CCriticalSection csfunc;
@@ -96,6 +97,7 @@ void* ThreadPool::ReadData(void* param)
 	run->data = new unsigned char[run->size];
 	fread(run->data, 1, run->size, file);
 	fclose(file);
+	if (m_cancelled) return 0;
 	if (run->flags & FLAG_FAST_FUNCTION)
 	{
 		run->func(run->data, run->size, run->param);
@@ -126,6 +128,7 @@ void* ThreadPool::ReadData2(void* param)
 	run->data = new unsigned char[run->size];
 	fread(run->data, 1, run->size, file);
 	fclose(file);
+	if (m_cancelled) return 0;
 	if (run->flags & FLAG_FAST_FUNCTION)
 	{
 		void * result = run->func(run->data, run->size, run->param);
@@ -160,6 +163,7 @@ void* ThreadPool::WorkerThread(void* param)
 	int timeUntilExit = GetWorkerTimeout();
 	while (timeUntilExit > 0)
 	{
+		if (m_cancelled) return 0;
 		timeUntilExit--;
 		csfunc.Enter();
 		if (!m_funcs.empty())
@@ -191,26 +195,31 @@ void* ThreadPool::WorkerThread(void* param)
 
 void ThreadPool::RunFunc(void* (*func)(void*), void* param, unsigned int flags)
 {
+	m_cancelled = false;
 	QueueFunc(new sRunFunc2(func, param, NULL, flags));
 }
 
 void ThreadPool::RunFunc(void(*func)(void*), void* param, void(*doneCallback)(), unsigned int flags)
 {
+	m_cancelled = false;
 	QueueFunc(new sRunFunc(func, param, doneCallback, flags));
 }
 
 void ThreadPool::RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*), unsigned int flags)
 {
+	m_cancelled = false;
 	QueueFunc(new sRunFunc2(func, param, doneCallback, flags));
 }
 
 void ThreadPool::AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(), unsigned int flags)
 {
+	m_cancelled = false;
 	StartThread(ReadData, new sAsyncRead(path, func, param, doneCallback, flags));
 }
 
 void ThreadPool::AsyncReadFile(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*), unsigned int flags)
 {
+	m_cancelled = false;
 	StartThread(ReadData2, new sAsyncRead2(path, func, param, doneCallback, flags));
 }
 
@@ -330,4 +339,21 @@ void ThreadPool::WaitAll()
 void ThreadPool::SetWorkerTimeout(int timeout)
 {
 	m_threadsTimeout = timeout;
+}
+
+void ThreadPool::CancelAll()
+{
+	m_cancelled = true;
+	csfunc.Enter();
+	m_funcs.clear();
+	csfunc.Leave();
+	csfunc2.Enter();
+	m_funcs2.clear();
+	csfunc2.Leave();
+	cscallback.Enter();
+	m_callbacks.clear();
+	cscallback.Leave();
+	cscallback2.Enter();
+	m_callbacks2.clear();
+	cscallback2.Leave();
 }

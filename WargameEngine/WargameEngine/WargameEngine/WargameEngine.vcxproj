@@ -171,7 +171,6 @@
     <ClCompile Include="view\Bounding.cpp" />
     <ClCompile Include="view\CameraStrategy.cpp" />
     <ClCompile Include="view\ColladaModelFactory.cpp" />
-    <ClCompile Include="view\DecalFactory.cpp" />
     <ClCompile Include="view\GameView.cpp" />
     <ClCompile Include="view\Input.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
@@ -192,6 +191,7 @@
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />
+    <ClInclude Include="ImagePluginInterface.h" />
     <ClInclude Include="model\Landscape.h" />
     <ClInclude Include="model\ObjectStatic.h" />
     <ClInclude Include="model\Projectile.h" />
@@ -211,7 +211,6 @@
     <ClInclude Include="nv_dds.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="PluginManager.h" />
-    <ClInclude Include="Projectile.h" />
     <ClInclude Include="SoundPlayer.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="ThreadPool.h" />

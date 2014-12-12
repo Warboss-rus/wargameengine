@@ -37,13 +37,8 @@ double CLandscape::GetHeight(double x, double y) const
 	return m_heights[(m_width / 2 + x) / (m_width / m_pointsPerWidth) + (m_depth / 2 + y) / (m_depth / m_pointsPerDepth)];
 }
 
-void CLandscape::AddNewDecal(std::string const& texture, float width, float depth, float rotation)
+void CLandscape::AddNewDecal(sDecal const& decal)
 {
-	sDecal decal;
-	decal.texture = texture;
-	decal.width = width;
-	decal.depth = depth;
-	decal.rotation = rotation;
 	m_decals.push_back(decal);
 	CGameView::GetInstance().lock()->ResetTable();
 }
@@ -76,4 +71,10 @@ double CLandscape::GetVerticalTextureScale() const
 	{
 		return m_verticalTextureScale;
 	}
+}
+
+void CLandscape::AddStaticObject(CStaticObject const& object)
+{ 
+	m_staticObjects.push_back(object); 
+	CGameView::GetInstance().lock()->ResetTable();
 }

@@ -2,6 +2,7 @@
 #include "LogWriter.h"
 #include "model/GameModel.h"
 #include "model/Object.h"
+#include "controller/GameController.h"
 
 std::shared_ptr<CNetwork> CNetwork::m_instance;
 
@@ -92,7 +93,7 @@ void CNetwork::Update()
 			char state[30];
 			sprintf(state, "State Recieved. Size=%d.", m_netRecievedSize);
 			LogWriter::WriteLine(state);
-			CGameModel::GetInstance().lock()->SetState(m_netData + 5, true);
+			CGameController::GetInstance().lock()->SetState(m_netData + 5, true);
 			if (m_stateRecievedCallback) m_stateRecievedCallback();
 		}
 		else if (m_netData[0] == 2) //command
@@ -206,7 +207,7 @@ void CNetwork::SendState()
 		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
-	std::vector<char> result = CGameModel::GetInstance().lock()->GetState(true);
+	std::vector<char> result = CGameController::GetInstance().lock()->GetState(true);
 	m_socket->SendData(&result[0], result.size());//1 For full dump
 }
 

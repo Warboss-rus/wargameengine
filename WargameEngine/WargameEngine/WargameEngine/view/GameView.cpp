@@ -38,7 +38,7 @@ void CGameView::FreeInstance()
 
 CGameView::~CGameView()
 {
-	//ThreadPool::WaitAll();
+	ThreadPool::CancelAll();
 	CSoundPlayer::FreeInstance();
 	CNetwork::FreeInstance();
 	DisableShadowMap();
@@ -101,6 +101,7 @@ void CGameView::Init()
 	m_gpuSkinning = false;
 	m_camera.reset(new CCameraStrategy(0.0, 0.0, 2.8, 0.5));
 	m_tableList = 0;
+	m_tableListShadow = 0;
 
 	CGameController::GetInstance();
 
@@ -115,7 +116,7 @@ void CGameView::OnDrawScene()
 	glutSwapBuffers();
 }
 
-void CGameView::DrawUI() const
+void CGameView::DrawUI()
 {
 	glEnable(GL_BLEND);
 	glPushMatrix();
@@ -172,11 +173,12 @@ void CGameView::Update()
 	const double * position = m_camera->GetPosition();
 	const double * direction = m_camera->GetDirection();
 	const double * up = m_camera->GetUpVector();
+	CSoundPlayer::GetInstance().lock()->SetListenerPosition(CVector3d(position), CVector3d(direction));
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
 	glLoadIdentity();
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
+	m_gameModel.lock()->Update();
 	DrawObjects();
-	m_particles.DrawParticles();
 	DrawBoundingBox();
 	CRuler::Draw();
 	DrawUI();
@@ -184,13 +186,25 @@ void CGameView::Update()
 
 void CGameView::ResetTable()
 {
+	if (m_tableList) glDeleteLists(m_tableList, 1);
+	if (m_tableListShadow) glDeleteLists(m_tableListShadow, 1);
 	m_tableList = 0;
+	m_tableListShadow = 0;
 }
 
-void CGameView::DrawTable()
+void CGameView::DrawTable(bool shadowOnly)
 {
-	m_tableList = glGenLists(1);
-	glNewList(m_tableList, GL_COMPILE);
+	if (shadowOnly)
+	{
+		m_tableListShadow = glGenLists(1);
+		glNewList(m_tableListShadow, GL_COMPILE);
+	}
+	else
+	{
+		m_tableList = glGenLists(1);
+		glNewList(m_tableList, GL_COMPILE);
+	}
+	
 	CLandscape const& landscape = CGameModel::GetInstance().lock()->GetLandscape();
 	double x1 = -landscape.GetWidth() / 2.0;
 	double x2 = landscape.GetWidth() / 2.0;
@@ -213,6 +227,38 @@ void CGameView::DrawTable()
 		glEnd();
 	}
 	CTextureManager::GetInstance()->SetTexture("");
+	for (unsigned long i = 0; i < landscape.GetStaticObjectCount(); i++)
+	{
+		CStaticObject const& object = landscape.GetStaticObject(i);
+		glPushMatrix();
+		glTranslated(object.GetX(), object.GetY(), 0.0);
+		glRotated(object.GetRotation(), 0.0, 0.0, 1.0);
+		m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_gpuSkinning);
+		glPopMatrix();
+	}
+	if (!shadowOnly)//Down't draw decals because they don't cast shadows
+	{
+		for (unsigned int i = 0; i < landscape.GetNumberOfDecals(); ++i)
+		{
+			sDecal const& decal = landscape.GetDecal(i);
+			CTextureManager::GetInstance()->SetTexture(decal.texture);
+			glPushMatrix();
+			glTranslated(decal.x, decal.y, 0.0);
+			glRotated(decal.rotation, 0.0, 0.0, 1.0);
+			glBegin(GL_TRIANGLE_STRIP);
+			glTexCoord2d(0.0, 0.0);
+			glVertex3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.0001);
+			glTexCoord2d(0.0, 1.0);
+			glVertex3d(-decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.0001);
+			glTexCoord2d(1.0, 0.0);
+			glVertex3d(decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.0001);
+			glTexCoord2d(1.0, 1.0);
+			glVertex3d(decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.0001);
+			glEnd();
+			glPopMatrix();
+		}
+	}
+	CTextureManager::GetInstance()->SetTexture("");
 	glEndList();
 }
 
@@ -221,19 +267,18 @@ void CGameView::DrawObjects(void)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	m_shader.BindProgram();
-	if (m_shadowMap) SetUpShadowMapDraw();
-	if (m_tableList == 0) DrawTable();
-	else glCallList(m_tableList);
 	if (m_vertexLightning)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glEnable(GL_LIGHTING);
 	}
+	if (m_shadowMap) SetUpShadowMapDraw();
+	if (m_tableList == 0) DrawTable(false);
+	else glCallList(m_tableList);
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
 	{
 		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
-		object->Update();
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0.0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
@@ -248,6 +293,19 @@ void CGameView::DrawObjects(void)
 	m_shader.UnBindProgram();
 	glDisable(GL_BLEND);
 	glDisable(GL_LIGHTING);
+	for (unsigned long i = 0; i < m_gameModel.lock()->GetProjectileCount(); i++)
+	{
+		CProjectile const& projectile = m_gameModel.lock()->GetProjectile(i);
+		glPushMatrix();
+		glTranslated(projectile.GetX(), projectile.GetY(), projectile.GetZ());
+		glRotated(projectile.GetRotation(), 0.0, 0.0, 1.0);
+		if (!projectile.GetPathToModel().empty())
+			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_gpuSkinning);
+		if (!projectile.GetParticle().empty())
+			m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
+		glPopMatrix();
+	}
+	m_particles.DrawParticles();
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glDisable(GL_DEPTH_TEST);
 }
@@ -298,6 +356,9 @@ void CGameView::DrawShadowMap()
 
 	glGetFloatv(GL_PROJECTION_MATRIX, m_lightProjectionMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, m_lightModelViewMatrix);
+
+	if (m_tableListShadow == 0) DrawTable(true);
+	else glCallList(m_tableListShadow);
 
 	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
 	for (unsigned long i = 0; i < countObjects; i++)
@@ -362,22 +423,10 @@ void CGameView::SelectObject(int x, int y, bool shiftPressed)
 
 void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y)
 {
-	if (!object)
-	{
-		return;
-	}
 	double worldX, worldY;
 	const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
 	WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
-	CVector3d old(object->GetCoords());
-	if (CGameModel::GetInstance().lock()->GetLandscape().isCoordsOnTable(worldX, worldY))
-	{
-		object->SetCoords(worldX - capturePoint->x, worldY - capturePoint->y, 0);
-	}
-	if (CGameController::GetInstance().lock()->IsObjectInteresectSomeObjects(object))
-	{
-		object->SetCoords(old);
-	}
+	CGameController::GetInstance().lock()->TryMoveSelectedObject(object, worldX, worldY, 0.0);
 }
 
 IUIElement * CGameView::GetUI() const
@@ -472,33 +521,6 @@ void CGameView::SetLightPosition(int index, float* pos)
 {
 	glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
 	if(index == 0) memcpy(m_lightPosition, pos, sizeof(float)* 3);
-}
-
-void CGameView::Save(std::string const& filename)
-{
-	FILE* file = fopen(filename.c_str(), "wb");
-	std::vector<char> state = m_gameModel.lock()->GetState();
-	fwrite(&state[0], 1, state.size(), file);
-	fclose(file);
-}
-
-void CGameView::Load(std::string const& filename)
-{
-	FILE* file = fopen(filename.c_str(), "rb");
-	if (!file)
-	{
-		LogWriter::WriteLine("LoadState. Cannot find file " + filename);
-		return;
-	}
-	fseek(file, 0L, SEEK_END);
-	unsigned int size = ftell(file);
-	fseek(file, 0L, SEEK_SET);
-	char* data = new char[size];
-	fread(data, 1, size, file);
-	fclose(file);
-	m_gameModel.lock()->SetState(data+5);
-	delete[] data;
-	CNetwork::GetInstance().lock()->CallStateRecievedCallback();
 }
 
 void CGameView::EnableMSAA() const

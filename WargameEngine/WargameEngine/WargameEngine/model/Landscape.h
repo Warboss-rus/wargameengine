@@ -1,7 +1,18 @@
 #include <vector>
 #include <string>
-
+#include <memory>
+#include "ObjectStatic.h"
 #pragma once
+
+struct sDecal
+{
+	std::string texture;
+	double width;
+	double depth;
+	double rotation;
+	double x;
+	double y;
+};
 
 class CLandscape
 {
@@ -14,26 +25,19 @@ public:
 	double GetHeight(unsigned int index) const { return m_heights[index]; }
 	double GetWidth() const { return m_width; }
 	double GetDepth() const { return m_depth; }
+	double GetHorizontalTextureScale() const;
+	double GetVerticalTextureScale() const;
 	std::string const& GetTexture() const { return m_texture; }
 	unsigned int GetPointsPerWidth() const { return m_pointsPerWidth; }
 	unsigned int GetPointsPerDepth() const { return m_pointsPerDepth; }
 	bool isCoordsOnTable(double worldX, double worldY) const;
-	void AddNewDecal(std::string const& texture, float width, float depth, float rotation);
+	void AddNewDecal(sDecal const& decal);
 	unsigned int GetNumberOfDecals() const { return m_decals.size(); }
-	std::string const& GetDecalTexture(unsigned int index) { return m_decals[index].texture; }
-	float GetDecalWidth(unsigned int index) { return m_decals[index].width; }
-	float GetDecalDepth(unsigned int index) { return m_decals[index].depth; }
-	float GetDecalRotation(unsigned int index) { return m_decals[index].rotation; }
-	double GetHorizontalTextureScale() const;
-	double GetVerticalTextureScale() const;
+	sDecal const& GetDecal(unsigned int index) const { return m_decals[index]; }
+	void AddStaticObject(CStaticObject const& object);
+	unsigned int GetStaticObjectCount() const { return m_staticObjects.size(); }
+	CStaticObject const& GetStaticObject(unsigned int index) const { return m_staticObjects[index]; }
 private:
-	struct sDecal
-	{
-		std::string texture;
-		float width;
-		float depth;
-		float rotation;
-	};
 	double m_width;
 	double m_depth;
 	double m_deltaX;
@@ -46,4 +50,5 @@ private:
 	bool m_stretchTexture;
 	double m_horizontalTextureScale;
 	double m_verticalTextureScale;
+	std::vector<CStaticObject> m_staticObjects;
 };
