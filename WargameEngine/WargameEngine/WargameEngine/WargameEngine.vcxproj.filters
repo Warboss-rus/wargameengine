@@ -443,11 +443,11 @@
     <ClInclude Include="Plugin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ImagePluginInterface.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="PluginManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ImageDecoderInterface.h">
+      <Filter>Header Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

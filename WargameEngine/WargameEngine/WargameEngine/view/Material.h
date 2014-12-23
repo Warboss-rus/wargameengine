@@ -18,6 +18,5 @@ struct sMaterial
 	float shininess;
 	std::string texture;
 	std::string specularMap;
-	std::string normalMap;
 	std::string bumpMap;
 };

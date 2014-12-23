@@ -191,7 +191,6 @@
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />
-    <ClInclude Include="ImagePluginInterface.h" />
     <ClInclude Include="model\Landscape.h" />
     <ClInclude Include="model\ObjectStatic.h" />
     <ClInclude Include="model\Projectile.h" />
@@ -220,6 +219,7 @@
     <ClInclude Include="view\CameraStrategy.h" />
     <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
+    <ClInclude Include="view\ImageDecoderInterface.h" />
     <ClInclude Include="view\Particle.h" />
     <ClInclude Include="view\ParticleEffect.h" />
     <ClInclude Include="view\ParticleModel.h" />

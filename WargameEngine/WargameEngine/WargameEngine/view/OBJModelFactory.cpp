@@ -4,6 +4,7 @@
 #include <sstream>
 #include <map>
 #include <vector>
+#include "../LogWriter.h"
 
 struct FaceIndex
 {
@@ -35,6 +36,87 @@ FaceIndex ParseFaceIndex(std::string const& str)
 	res.textureCoord = ParseStringUntilSlash(indexStream, '/');
 	res.normal = ParseStringUntilSlash(indexStream);
 	return res;
+}
+
+std::map<std::string, sMaterial> LoadMTL(std::string const& path)
+{
+	std::map<std::string, sMaterial> materials;
+	std::ifstream iFile("models\\" + path);
+	if (!iFile.good())
+	{
+		iFile.close();
+		LogWriter::WriteLine("Error loading MTL " + path);
+		return materials;
+	}
+	std::string line;
+	std::string type;
+	float dvalue;
+	sMaterial * lastMaterial = NULL;
+	while (std::getline(iFile, line))
+	{
+		if (line.empty() || line[0] == '#')//Empty line or commentary
+			continue;
+
+		std::istringstream lineStream(line);
+		lineStream >> type;
+
+		if (type == "newmtl") //name
+		{
+			lineStream >> type;
+			materials[type] = sMaterial();
+			lastMaterial = &materials[type];
+		}
+
+		if (type == "Ka") //ambient color
+		{
+			for (unsigned int i = 0; i < 3; ++i)
+			{
+				lineStream >> dvalue;
+				lastMaterial->ambient[i] = dvalue;
+			}
+		}
+		if (type == "Kd") //diffuse color
+		{
+			for (unsigned int i = 0; i < 3; ++i)
+			{
+				lineStream >> dvalue;
+				lastMaterial->diffuse[i] = dvalue;
+			}
+		}
+		if (type == "Ks") //specular color
+		{
+			for (unsigned int i = 0; i < 3; ++i)
+			{
+				lineStream >> dvalue;
+				lastMaterial->specular[i] = dvalue;
+			}
+		}
+		if (type == "Ns") //specular coefficient
+		{
+			lineStream >> dvalue;
+			lastMaterial->shininess = dvalue;
+		}
+		if (type == "map_Kd") //texture
+		{
+			std::string path;
+			lineStream >> path;
+			lastMaterial->texture = path;
+		}
+		if (type == "map_bump" || type == "bump") //bump texture
+		{
+			std::string path;
+			lineStream >> path;
+			lastMaterial->bumpMap = path;
+		}
+		if (type == "map_specular") //custom specular map extension
+		{
+			std::string path;
+			lineStream >> path;
+			lastMaterial->texture = path;
+		}
+	}
+	iFile.close();
+	return materials;
 }
 
 void * LoadObjModel(void* data, unsigned int size, void* param)
@@ -122,7 +204,7 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 		{
 			std::string path;
 			iFile >> path;
-			loader->materialManager.LoadMTL(path);
+			loader->materialManager.InsertMaterials(LoadMTL(path));
 		}
 		if(type == "usemtl")//apply material
 		{

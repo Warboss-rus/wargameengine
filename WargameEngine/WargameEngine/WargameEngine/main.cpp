@@ -6,6 +6,7 @@
 #include "OSSpecific.h"
 #ifdef _WINDOWS
 #include <windows.h>
+#include "Plugin.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {

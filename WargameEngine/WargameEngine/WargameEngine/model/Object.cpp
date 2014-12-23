@@ -127,7 +127,22 @@ void CObject::Update()
 
 void CObject::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
-	m_teamColor[suffix][0] = r;
-	m_teamColor[suffix][1] = g;
-	m_teamColor[suffix][2] = b;
+	sTeamColor tc;
+	tc.suffix = suffix;
+	tc.color[0] = r;
+	tc.color[1] = g;
+	tc.color[2] = b;
+	m_teamColor.push_back(tc);
+}
+
+void CObject::ReplaceTexture(std::string const& oldTexture, std::string const& newTexture)
+{
+	if (newTexture.empty())
+	{
+		m_replaceTextures.erase(oldTexture);
+	}
+	else
+	{
+		m_replaceTextures[oldTexture] = newTexture;
+	}
 }

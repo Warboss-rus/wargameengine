@@ -210,16 +210,18 @@ void CObjectGroup::Update()
 	}
 }
 
-std::map<std::string, unsigned char[3]> const& CObjectGroup::GetTeamColor() const
-{
-	static std::map<std::string, unsigned char[3]> empty;
-	return empty;
-}
-
 void CObjectGroup::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
 	for (unsigned int i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->ApplyTeamColor(suffix, r, g, b);
+	}
+}
+
+void CObjectGroup::ReplaceTexture(std::string const& oldTexture, std::string const& newTexture)
+{
+	for (unsigned int i = 0; i < m_children.size(); ++i)
+	{
+		m_children[i]->ReplaceTexture(oldTexture, newTexture);
 	}
 }

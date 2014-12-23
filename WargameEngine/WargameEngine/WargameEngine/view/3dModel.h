@@ -42,6 +42,16 @@ struct sAnimation
 	};
 };
 
+struct sModelCallListKey
+{
+	std::set<std::string> hiddenMeshes;
+	bool vertexOnly;
+	std::vector<sTeamColor> teamcolor;
+	std::map<std::string, std::string> replaceTextures;
+};
+
+bool operator< (sModelCallListKey const& one, sModelCallListKey const& two);
+
 class C3DModel
 {
 public:
@@ -58,9 +68,9 @@ public:
 	void PreloadTextures() const;
 	std::vector<std::string> GetAnimations() const;
 private:
-	void DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false);
+	void DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
 	void CalculateGPUWeights();
-	bool DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning);
+	bool DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
@@ -73,8 +83,7 @@ private:
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
 	std::shared_ptr<IBounding> m_bounding;
-	std::map<std::set<std::string>, unsigned int> m_lists;
-	std::map<std::set<std::string>, unsigned int> m_vertexLists;
+	std::map<sModelCallListKey, unsigned int> m_lists;
 	double m_scale;
 	unsigned int m_vbo;
 	int m_count;

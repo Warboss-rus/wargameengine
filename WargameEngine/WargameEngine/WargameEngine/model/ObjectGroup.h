@@ -45,8 +45,10 @@ public:
 	float GetAnimationSpeed() const { return 1.0f; }
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed);
 	void Update();
-	std::map<std::string, unsigned char[3]> const& GetTeamColor() const;
+	std::vector<sTeamColor> const& GetTeamColor() const { return std::vector<sTeamColor>(); }
 	void ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b);
+	void ReplaceTexture(std::string const& oldTexture, std::string const& newTexture);
+	std::map<std::string, std::string> const& GetReplaceTextures() const { return std::map<std::string, std::string>(); }
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

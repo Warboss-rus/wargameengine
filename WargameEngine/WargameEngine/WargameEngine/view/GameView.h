@@ -27,14 +27,12 @@ public:
 	CParticleSystem& GetParticleSystem() { return m_particles; }
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
-	void EnableVertexLightning();
-	void DisableVertexLightning();
-	void EnableGPUSkinning();
-	void DisableGPUSkinning();
+	void EnableVertexLightning(bool enable);
+	void EnableGPUSkinning(bool enable);
 	void EnableShadowMap(int size, float angle);
 	void DisableShadowMap();
 	void SetLightPosition(int index, float* pos);
-	void EnableMSAA() const;
+	void EnableMSAA(bool enable) const;
 	void DisableMSAA() const;
 	static float GetMaxAnisotropy();
 	float GetAnisotropyLevel() const;

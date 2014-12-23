@@ -5,6 +5,7 @@
 #include "../view/Vector3.h"
 #include "MovementLimiter.h"
 #include "../view/3dModel.h"
+#include "../view/TextureManager.h"
 
 class IObject
 {
@@ -41,6 +42,8 @@ public:
 	virtual sAnimation::eLoopMode GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;
 	virtual void Update() = 0;
-	virtual std::map<std::string, unsigned char[3]> const& GetTeamColor() const = 0;
+	virtual std::vector<sTeamColor> const& GetTeamColor() const = 0;
 	virtual void ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b) = 0;
+	virtual void ReplaceTexture(std::string const& oldTexture, std::string const& newTexture) = 0;
+	virtual std::map<std::string, std::string> const& GetReplaceTextures() const = 0;
 };

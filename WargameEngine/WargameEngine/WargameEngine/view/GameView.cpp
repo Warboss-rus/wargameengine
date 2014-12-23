@@ -454,15 +454,13 @@ void CGameView::NewShaderProgram(std::string const& vertex, std::string const& f
 	m_shader.NewProgram(vertex, fragment, geometry);
 }
 
-void CGameView::EnableVertexLightning()
+void CGameView::EnableVertexLightning(bool enable)
 { 
-	m_vertexLightning = true;
-	glEnable(GL_NORMALIZE);
-}
-void CGameView::DisableVertexLightning()
-{ 
-	m_vertexLightning = false;
-	glDisable(GL_NORMALIZE);
+	m_vertexLightning = enable;
+	if (enable)
+		glEnable(GL_NORMALIZE);
+	else
+		glDisable(GL_NORMALIZE);
 }
 
 void CGameView::EnableShadowMap(int size, float angle)
@@ -523,23 +521,18 @@ void CGameView::SetLightPosition(int index, float* pos)
 	if(index == 0) memcpy(m_lightPosition, pos, sizeof(float)* 3);
 }
 
-void CGameView::EnableMSAA() const
+void CGameView::EnableMSAA(bool enable) const
 {
 	if (GLEW_ARB_multisample)
 	{
-		glEnable(GL_MULTISAMPLE_ARB);
+		if (enable)
+			glEnable(GL_MULTISAMPLE_ARB);
+		else
+			glDisable(GL_MULTISAMPLE_ARB);
 	}
 	else
 	{
 		LogWriter::WriteLine("MSAA is not supported");
-	}
-}
-
-void CGameView::DisableMSAA() const
-{
-	if (GLEW_ARB_multisample)
-	{
-		glDisable(GL_MULTISAMPLE_ARB);
 	}
 }
 
@@ -681,12 +674,7 @@ void CGameView::DrawText3D(double x, double y, double z, std::string const& text
 	}
 }
 
-void CGameView::EnableGPUSkinning()
+void CGameView::EnableGPUSkinning(bool enable)
 {
-	m_gpuSkinning = true;
-}
-
-void CGameView::DisableGPUSkinning()
-{
-	m_gpuSkinning = false;
+	m_gpuSkinning = enable;
 }

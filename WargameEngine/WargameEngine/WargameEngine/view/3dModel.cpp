@@ -30,8 +30,10 @@ void DeleteList(std::map<std::set<std::string>, unsigned int> const& list)
 C3DModel::~C3DModel()
 {
 	if (m_vbo) glDeleteBuffersARB(1, &m_vbo);
-	DeleteList(m_lists);
-	DeleteList(m_vertexLists);
+	for (auto i = m_lists.begin(); i != m_lists.end(); ++i)
+	{
+		glDeleteLists(i->second, 1);
+	}
 }
 
 void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
@@ -55,10 +57,11 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 	m_indexes.swap(indexes);
 	std::swap(m_materials, materials);
 	m_meshes.swap(meshes);
-	DeleteList(m_lists);
-	DeleteList(m_vertexLists);
+	for (auto i = m_lists.begin(); i != m_lists.end(); ++i)
+	{
+		glDeleteLists(i->second, 1);
+	}
 	m_lists.clear();
-	m_vertexLists.clear();
 }
 
 void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations)
@@ -68,10 +71,11 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_weights.swap(weights);
 	m_skeleton.swap(skeleton);
 	m_animations.swap(animations);
-	DeleteList(m_lists);
-	DeleteList(m_vertexLists);
+	for (auto i = m_lists.begin(); i != m_lists.end(); ++i)
+	{
+		glDeleteLists(i->second, 1);
+	}
 	m_lists.clear();
-	m_vertexLists.clear();
 }
 
 void C3DModel::SetBounding(std::shared_ptr<IBounding> bounding, double scale)
@@ -80,7 +84,7 @@ void C3DModel::SetBounding(std::shared_ptr<IBounding> bounding, double scale)
 	m_scale = scale;
 }
 
-void SetMaterial(const sMaterial * material)
+void SetMaterial(const sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures = nullptr)
 {
 	if(!material)
 	{
@@ -91,12 +95,19 @@ void SetMaterial(const sMaterial * material)
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, material->specular);
 	glMaterialf(GL_FRONT,GL_SHININESS, material->shininess);
 	CTextureManager * texManager = CTextureManager::GetInstance();
-	texManager->SetTexture(material->texture);
+	std::string texture = material->texture;
+	if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
+	{
+		texture = replaceTextures->at(texture);
+	}
+	texManager->SetTexture(texture, teamcolor);
+	texManager->SetTexture(material->specularMap, CTextureManager::eSpecular);
+	texManager->SetTexture(material->bumpMap, CTextureManager::eBump);
 }
 
-void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUskinning)
+void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
 {
-	if (useGPUskinning)
+	if (useGPUskinning && m_skeleton.size() > 0)
 	{
 		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
 		shader->SetUniformMatrix4("invBindMatrices", m_skeleton.size(), &m_gpuInverseMatrices[0]);
@@ -152,7 +163,7 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 			{
 				end = m_meshes[i].polygonIndex;
 				glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-				SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
+				SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
 				begin = (i + 1 == m_meshes.size()) ? m_count : m_meshes[i + 1].polygonIndex;
 				continue;
 			}
@@ -162,7 +173,7 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 			}
 			end = m_meshes[i].polygonIndex;
 			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-			if (!vertexOnly) SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName));
+			if (!vertexOnly) SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
 			begin = end;
 		}
 		end = m_count;
@@ -179,7 +190,7 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	sMaterial empty;
-	SetMaterial(&empty);
+	SetMaterial(&empty, nullptr);
 	glPopMatrix();
 	if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	if (useGPUskinning)
@@ -358,7 +369,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 	return jointMatrices;
 }
 
-bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning)
+bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
 {
 	bool result;
 	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);
@@ -369,7 +380,7 @@ bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertex
 			CalculateGPUWeights();
 		}
 		CGameView::GetInstance().lock()->GetShaderManager()->SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
-		DrawModel(hideMeshes, vertexOnly, m_vertices, m_normals, true);
+		DrawModel(hideMeshes, vertexOnly, m_vertices, m_normals, true, teamcolor, replaceTextures);
 	}
 	else
 	{
@@ -396,48 +407,39 @@ bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertex
 				normals[i] += normal;
 			}
 		}
-		DrawModel(hideMeshes, vertexOnly, vertices, normals);
+		DrawModel(hideMeshes, vertexOnly, vertices, normals, false, teamcolor, replaceTextures);
 	}
 	return result;
 }
 
 void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
 {
-	static std::set<std::string> empty;
-	const std::set<std::string> * hideMeshes = object ? &object->GetHiddenMeshes() : &empty;
+	sModelCallListKey key;
+	if (object)
+	{
+		key.hiddenMeshes = object->GetHiddenMeshes();
+		key.teamcolor = object->GetTeamColor();
+		key.replaceTextures = object->GetReplaceTextures();
+	}
+	key.vertexOnly = vertexOnly;
 	unsigned int k = 0;//current index of weight and weightIndex arrays
 	if (!m_weightsCount.empty() && object)//object needs to be skinned
 	{
 		if (object->GetAnimation().empty())//no animation is playing, default pose
 		{
-			if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
+			if (m_lists.find(key) == m_lists.end())
 			{
 				unsigned int id = glGenLists(1);
 				glNewList(id, GL_COMPILE);
-				DrawSkinned(hideMeshes, true, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning);
+				DrawSkinned(&key.hiddenMeshes, true, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning, &key.teamcolor, &key.replaceTextures);
 				glEndList();
-				m_vertexLists[*hideMeshes] = id;
+				m_lists[key] = id;
 			}
-			if (!vertexOnly && m_lists.find(*hideMeshes) == m_lists.end())
-			{
-				unsigned int id = glGenLists(1);
-				glNewList(id, GL_COMPILE);
-				DrawSkinned(hideMeshes, false, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning);
-				glEndList();
-				m_lists[*hideMeshes] = id;
-			}
-			if (vertexOnly)
-			{
-				glCallList(m_vertexLists[*hideMeshes]);
-			}
-			else
-			{
-				glCallList(m_lists[*hideMeshes]);
-			}
+			else glCallList(m_lists[key]);
 		}
 		else//animation is playing, full computation
 		{
-			if (DrawSkinned(hideMeshes, false, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), gpuSkinning))
+			if (DrawSkinned(&key.hiddenMeshes, false, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), gpuSkinning, &key.teamcolor, &key.replaceTextures))
 			{
 				object->PlayAnimation("");
 			}
@@ -445,35 +447,24 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 	}
 	else//static object
 	{
-		if (vertexOnly && m_vertexLists.find(*hideMeshes) == m_vertexLists.end())
+		if (m_lists.find(key) == m_lists.end())
 		{
 			unsigned int id = glGenLists(1);
 			glNewList(id, GL_COMPILE);
-			DrawModel(hideMeshes, true, m_vertices, m_normals);
+			DrawModel(&key.hiddenMeshes, false, m_vertices, m_normals, false, &key.teamcolor, &key.replaceTextures);
 			glEndList();
-			m_vertexLists[*hideMeshes] = id;
-		}
-		if (!vertexOnly && m_lists.find(*hideMeshes) == m_lists.end())
-		{
-			unsigned int id = glGenLists(1);
-			glNewList(id, GL_COMPILE);
-			DrawModel(hideMeshes, false, m_vertices, m_normals);
-			glEndList();
-			m_lists[*hideMeshes] = id;
-		}
-		if (vertexOnly)
-		{
-			glCallList(m_vertexLists[*hideMeshes]);
+			m_lists[key] = id;
 		}
 		else
 		{
-			glCallList(m_lists[*hideMeshes]);
+			glCallList(m_lists[key]);
 		}
 	}
 }
 
 void C3DModel::PreloadTextures() const
 {
+	return;
 	CTextureManager * texManager = CTextureManager::GetInstance();
 	for (unsigned int i = 0; i < m_meshes.size(); ++i)
 	{
@@ -490,4 +481,15 @@ std::vector<std::string> C3DModel::GetAnimations() const
 		result.push_back(m_animations[i].id);
 	}
 	return result;
+}
+
+bool operator< (sModelCallListKey const& one, sModelCallListKey const& two) 
+{ 
+	if (one.hiddenMeshes < two.hiddenMeshes) return true;
+	if (one.hiddenMeshes > two.hiddenMeshes) return false;
+	if (one.teamcolor < two.teamcolor) return true;
+	if (one.teamcolor > two.teamcolor) return false;
+	if (one.replaceTextures < two.replaceTextures) return true;
+	if (one.replaceTextures > two.replaceTextures) return false;
+	return one.vertexOnly < two.vertexOnly;
 }

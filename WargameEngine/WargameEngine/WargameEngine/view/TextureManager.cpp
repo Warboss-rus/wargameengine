@@ -13,6 +13,7 @@ CTextureManager * CTextureManager::m_manager = NULL;
 
 struct sImage
 {
+	std::string filename;
 	unsigned int width;
 	unsigned int height;
 	unsigned int bpp;
@@ -20,7 +21,10 @@ struct sImage
 	unsigned int headerSize;
 	GLenum format;
 	GLuint id;
+	std::vector<sTeamColor> teamcolor;
 };
+
+void ApplyTeamcolor(sImage* image, std::string const& maskFile, unsigned char color[3]);
 
 struct sDDS
 {
@@ -42,6 +46,10 @@ void* LoadBMP(void * data, unsigned int size, void* param)
 	if (img->headerSize==0)  // Some BMP files are misformatted, guess missing information
 		img->headerSize=54;
 	img->data = imgData;
+	for (unsigned int i = 0; i < img->teamcolor.size(); ++i)
+	{
+		ApplyTeamcolor(img, img->teamcolor[i].suffix, img->teamcolor[i].color);
+	}
 	return img;
 }
 
@@ -98,6 +106,10 @@ void* LoadTGA(void * data, unsigned int size, void* param)
 		img->headerSize = 0;
 	}
 	img->data = imgData;
+	for (unsigned int i = 0; i < img->teamcolor.size(); ++i)
+	{
+		ApplyTeamcolor(img, img->teamcolor[i].suffix, img->teamcolor[i].color);
+	}
 	return img;
 }
 
@@ -118,6 +130,10 @@ void* UnpackTexture(void * data, unsigned int size, void* param)
 	img->bpp = 32;
 	img->format = GL_RGBA;
 	img->headerSize = 0;
+	for (unsigned int i = 0; i < img->teamcolor.size(); ++i)
+	{
+		ApplyTeamcolor(img, img->teamcolor[i].suffix, img->teamcolor[i].color);
+	}
 	return img;
 }
 
@@ -146,7 +162,6 @@ void UseDDS(void* param)
 	else
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	img->image.upload_texture2D(0, GL_TEXTURE_2D);
-	CTextureManager::GetInstance()->SetTextureSize(img->id, img->image.get_width(), img->image.get_height());
 	delete img;
 }
 
@@ -164,17 +179,18 @@ void UseTexture(void* data)
 	if (GLEW_EXT_texture_filter_anisotropic)
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, CGameView::GetInstance().lock()->GetAnisotropyLevel());
 	delete [] img->data;
-	CTextureManager::GetInstance()->SetTextureSize(img->id, img->width, img->height);
 	delete img;
 }
 
-unsigned int LoadTexture(std::string const& path)
+unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor)
 {
 	sImage* img = new sImage;
+	img->filename = path;
 	glGenTextures(1, &img->id);
 	unsigned int id = img->id;
 	unsigned int dotCoord = path.find_last_of('.') + 1;
 	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
+	img->teamcolor = teamcolor;
 	if(extension == "bmp")
 		ThreadPool::AsyncReadFile(path, LoadBMP, img, UseTexture, ThreadPool::FLAG_FAST_FUNCTION);
 	if(extension == "tga")
@@ -207,25 +223,19 @@ void CTextureManager::FreeInstance()
 	m_manager = NULL;
 }
 
-void CTextureManager::SetTexture(std::string const& path, std::map<std::string, unsigned char[3]> * teamcolor)
+void CTextureManager::SetTexture(std::string const& path, const std::vector<sTeamColor> * teamcolor)
 {
 	if(path.empty()) 
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);
 		return;	
 	}
-	if(m_textures.find(path) == m_textures.end())
+	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
+	if(m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[path] = LoadTexture(sModule::textures + path);
-		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
-		if (shader)
-		{
-			auto size = m_size[m_textures[path]];
-			float arr[2] = { size.first, size.second };
-			shader->SetUniformValue2("textureSize", 2, arr);
-		}
+		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second);
 	}
-	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
+	glBindTexture(GL_TEXTURE_2D, m_textures[pair]);
 }
 
 void CTextureManager::SetAnisotropyLevel(float level)
@@ -247,12 +257,7 @@ CTextureManager::~CTextureManager()
 	}
 }
 
-void CTextureManager::SetTextureSize(unsigned int id, unsigned int width, unsigned int height)
-{
-	m_size[id] = std::pair<unsigned int, unsigned int>(width, height);
-}
-
-void CTextureManager::SetTexture(std::string const& path, eTextureSlot slot, std::map<std::string, unsigned char[3]> * teamcolor)
+void CTextureManager::SetTexture(std::string const& path, eTextureSlot slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	if (path.empty())
@@ -260,20 +265,22 @@ void CTextureManager::SetTexture(std::string const& path, eTextureSlot slot, std
 		glBindTexture(GL_TEXTURE_2D, 0);
 		return;
 	}
-	if (m_textures.find(path) == m_textures.end())
+	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, std::vector<sTeamColor>());
+	if (m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[path] = LoadTexture(sModule::textures + path);
+		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second);
 	}
-	glBindTexture(GL_TEXTURE_2D, m_textures[path]);
+	glBindTexture(GL_TEXTURE_2D, m_textures[pair]);
 	glActiveTexture(GL_TEXTURE0);
 }
 
 void ApplyTeamcolor(sImage* image, std::string const& maskFile, unsigned char color[3])
 {
-	FILE * fmask = fopen(maskFile.c_str(), "rb");
+	std::string path = image->filename.substr(0, image->filename.find_last_of('.')) + maskFile + ".bmp";
+	FILE * fmask = fopen(path.c_str(), "rb");
 	if (!fmask)
 	{
-		LogWriter::WriteLine("Texture manager: Cannot open mask file " + maskFile);
+		LogWriter::WriteLine("Texture manager: Cannot open mask file " + path);
 		return;
 	}
 	fseek(fmask, 0L, SEEK_END);
@@ -285,6 +292,10 @@ void ApplyTeamcolor(sImage* image, std::string const& maskFile, unsigned char co
 	int maskHeight = *(int*)&(maskData[0x12]);
 	int maskWidth = *(int*)&(maskData[0x16]);
 	short maskbpp = *(short*)&(maskData[0x1C]);
+	if (image->format == GL_BGRA || image->format == GL_BGR)
+	{
+		std::swap(color[0], color[2]);
+	}
 	if (maskbpp != 8) 
 	{
 		LogWriter::WriteLine("Texture manager: Mask file is not greyscale " + maskFile);
@@ -295,10 +306,10 @@ void ApplyTeamcolor(sImage* image, std::string const& maskFile, unsigned char co
 		for (unsigned int y = 0; y < image->height; ++y)
 		{
 			unsigned int pos = (x * image->height + y) * image->bpp / 8;
-			unsigned int maskPos = x * maskWidth / image->width * maskHeight + y * maskHeight / image->height;
+			unsigned int maskPos = 54 + x * maskWidth / image->width * maskHeight + y * maskHeight / image->height;
 			for (unsigned int i = 0; i < 3; ++i)
 			{
-				image->data[pos + i] = image->data[pos + i] * maskData[maskPos] / 255 + color[i] * (1 - maskData[maskPos]) / 255;
+				image->data[pos + i] = image->data[pos + i] * (1.0 - maskData[maskPos] / 255.0) + color[i] * (maskData[maskPos] / 255.0);
 			}
 		}
 	}

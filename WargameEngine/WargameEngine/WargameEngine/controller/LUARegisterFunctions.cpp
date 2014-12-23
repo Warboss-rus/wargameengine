@@ -363,7 +363,7 @@ int EnableVertexLighting(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetInstance().lock()->EnableVertexLightning();
+	CGameView::GetInstance().lock()->EnableVertexLightning(true);
 	return 0;
 }
 
@@ -371,7 +371,7 @@ int DisableVertexLighting(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetInstance().lock()->DisableVertexLightning();
+	CGameView::GetInstance().lock()->EnableVertexLightning(false);
 	return 0;
 }
 
@@ -397,7 +397,7 @@ int EnableMSAA(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetInstance().lock()->EnableMSAA();
+	CGameView::GetInstance().lock()->EnableMSAA(true);
 	return 0;
 }
 
@@ -405,7 +405,7 @@ int DisableMSAA(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetInstance().lock()->DisableMSAA();
+	CGameView::GetInstance().lock()->EnableMSAA(false);
 	return 0;
 }
 
@@ -628,7 +628,7 @@ int EnableGPUSkinning(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetInstance().lock()->EnableGPUSkinning();
+	CGameView::GetInstance().lock()->EnableGPUSkinning(true);
 	return 0;
 }
 
@@ -636,7 +636,7 @@ int DisableGPUSkinning(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameView::GetInstance().lock()->DisableGPUSkinning();
+	CGameView::GetInstance().lock()->EnableGPUSkinning(false);
 	return 0;
 }
 

@@ -339,6 +339,30 @@ int GoTo(lua_State* L)
 	return 0;
 }
 
+int ApplyTeamColor(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 5)
+		return luaL_error(L, "4 argument expected(mask suffix, r, g, b)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	std::string suffix = CLUAScript::GetArgument<const char*>(2);
+	unsigned int r = CLUAScript::GetArgument<unsigned int>(3);
+	unsigned int g = CLUAScript::GetArgument<unsigned int>(4);
+	unsigned int b = CLUAScript::GetArgument<unsigned int>(5);
+	object->ApplyTeamColor(suffix, r, g, b);
+	return 0;
+}
+
+int ReplaceTexture(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 3)
+		return luaL_error(L, "2 argument expected(old texture, new texture)");
+	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
+	std::string oldt = CLUAScript::GetArgument<const char*>(2);
+	std::string newt = CLUAScript::GetArgument<const char*>(3);
+	object->ReplaceTexture(oldt, newt);
+	return 0;
+}
+
 static const luaL_Reg ObjectFuncs[] = {
 	{ "New", NewObject },
 	{ "GetSelected", GetSelectedObject },
@@ -368,6 +392,8 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "AdditionalModel", AdditionalModel },
 	{ "RemoveAdditionalModel", RemoveAdditionalModel },
 	{ "GoTo", GoTo },
+	{ "ApplyTeamColor", ApplyTeamColor },
+	{ "ReplaceTexture", ReplaceTexture },
 	{ NULL, NULL }
 };
 

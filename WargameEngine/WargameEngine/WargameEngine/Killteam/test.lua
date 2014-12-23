@@ -3,7 +3,7 @@ hunter = nil
 function NewObject()
 	local ui = UI:Get()--Retrives current assigned UI
 	local model = ui:GetChild("ComboBox1"):GetText() --Gets a text from Edit or Listbox (selected item)
-	Object:New(model, 0, 0, 0)--Creates a new object(model path, x, y, rotation) and returns it
+	local object = Object:New(model, 0, 0, 0)--Creates a new object(model path, x, y, rotation) and returns it
 end
 
 function DeleteSelectedObject()
@@ -104,6 +104,21 @@ function RMB(object, x, y, z)
 	end
 end
 
+function TC1()
+	local selected = Object:GetSelected()
+	selected:ApplyTeamColor("_base", 255, 0, 0)
+end
+
+function TC2()
+	local selected = Object:GetSelected()
+	selected:ApplyTeamColor("_base", 0, 255, 0)
+end
+
+function TC3()
+	local selected = Object:GetSelected()
+	selected:ApplyTeamColor("_base", 0, 0, 255)
+end
+
 function Music()
 	PlaySoundPlaylist({"music_warhammer40ktheme.wav", "music_warhammer40ktheme.wav"}, 1.0)
 end
@@ -112,7 +127,7 @@ IncludeLibrary("math")--Includes the following library
 IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
 EnableShadowMap(1024, 53)
-EnableMSAA()
+--EnableMSAA()
 SetAnisotropy(GetMaxAnisotropy())
 SetShaders("gpu_skinning.vsh", "gpu_skinning.fsh")
 --EnableVertexLightning()
@@ -148,6 +163,9 @@ ui:NewEdit("Edit3", 10, 550, 30, 200, "Text")
 ui:NewButton("Button10", 230, 550, 30, 80, "Send", "Send")
 ui:NewButton("Button11", 10, 100, 30, 80, "Animation", "PlayAnim")
 ui:NewButton("Button12", 110, 100, 30, 80, "PlayMusic", "Music")
+ui:NewButton("Button13", 210, 100, 30, 80, "TeamColor1", "TC1")
+ui:NewButton("Button14", 310, 100, 30, 80, "TeamColor2", "TC2")
+ui:NewButton("Button15", 410, 100, 30, 80, "TeamColor3", "TC3")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
 
 local panel = ui:NewPanel("Panel1", 390, 40, 150, 120)
@@ -166,5 +184,5 @@ SetSelectionCallback("OnSelection")
 NewDecal("chaos_crater_02.tga", 2.5, 2.5, 0, 5, 5)
 SetOnStringRecievedCallback("StringRecieved")
 SetRMBCallback("RMB", false)
---NewParticleEffect("effect.xml", 0, 0, 0, 0, 0, -1)
+NewParticleEffect("effect.xml", 0, 0, 0, 0, 0, -1)
 --Preload("asphalt.bmp")

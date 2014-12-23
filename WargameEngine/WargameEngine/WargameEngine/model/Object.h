@@ -38,8 +38,10 @@ public:
 	float GetAnimationSpeed() const { return m_animationSpeed; }
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed);
 	void Update();
-	std::map<std::string, unsigned char[3]> const& GetTeamColor() const { return m_teamColor; }
+	std::vector<sTeamColor> const& GetTeamColor() const { return m_teamColor; }
 	void ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b);
+	void ReplaceTexture(std::string const& oldTexture, std::string const& newTexture);
+	std::map<std::string, std::string> const& GetReplaceTextures() const { return m_replaceTextures; }
 private:
 	std::string m_model;
 	std::vector<std::string> m_secondaryModels;
@@ -57,5 +59,6 @@ private:
 	CVector3d m_goTarget;
 	float m_goSpeed;
 	long m_lastUpdateTime;
-	std::map<std::string, unsigned char[3]> m_teamColor;
+	std::vector<sTeamColor> m_teamColor;
+	std::map<std::string, std::string> m_replaceTextures;
 };
