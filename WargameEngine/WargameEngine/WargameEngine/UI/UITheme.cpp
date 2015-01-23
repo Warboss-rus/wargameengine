@@ -1,9 +1,6 @@
 #include "UITheme.h"
-#include <memory>
-#include <fstream>
 #include "../LogWriter.h"
-#include <algorithm>
-#include <sstream>
+#include "../tinyxml.h"
 
 CUITheme CUITheme::defaultTheme;
 
@@ -86,107 +83,123 @@ CUITheme::CUITheme()
 	sbar.width = 20;
 }
 
-void RemoveSpaces(std::string & line)
+void GetFloats(float * array, const char* data, unsigned int max = UINT_MAX)
 {
-	while (line.back() == ' ' || line.back() == '\t') line.pop_back();
-	line = line.substr(line.find_first_not_of(' '));
-}
-
-void ReadFloats(float * floats, int number, std::string const& str)
-{
-	std::stringstream ss(str);
-	for (int i = 0; i < number; ++i)
+	char * fl = strtok((char*)data, " \n\t");
+	unsigned int i = 0;
+	while (fl != NULL && i < max)
 	{
-		ss >> floats[i];
+		for (unsigned int i = 0; i < strlen(fl); ++i)
+		{
+			if (fl[i] == ',') fl[i] = '.';
+		}
+		array[i] = atof(fl);
+		i++;
+		fl = strtok(NULL, " \n\t");
 	}
 }
 
-int ReadInt(std::string const& str)
+void ParseTextTheme(TiXmlElement* theme, CUITheme::sText & text)
 {
-	std::stringstream ss(str);
-	int result;
-	ss >> result;
-	return result;
-}
-
-CUITheme::sText::eAligment ReadAligment(std::string const& str)
-{
-	if (str == "center") return CUITheme::sText::center;
-	if (str == "right") return CUITheme::sText::right;
-	return CUITheme::sText::left;
+	if (theme->Attribute("color")) GetFloats(text.color, (char*)theme->Attribute("color"), 3);
+	if (theme->Attribute("font")) text.font = theme->Attribute("font");
+	if (theme->Attribute("fontSize")) text.fontSize = atof(theme->Attribute("fontSize"));
+	if (theme->Attribute("aligment"))
+	{
+		std::string aligment = theme->Attribute("aligment");
+		if (aligment == "center") text.aligment = CUITheme::sText::center;
+		if (aligment == "right") text.aligment = CUITheme::sText::right;
+		if (aligment == "left") text.aligment = CUITheme::sText::left;
+	}
 }
 
 void CUITheme::Load(std::string const& filename)
 {
-	std::ifstream iFile(filename);
-	std::string line;
-	if (!iFile.good())
+	TiXmlDocument doc;
+	doc.LoadFile(filename);
+	TiXmlElement* theme = doc.RootElement();
+	if (!theme)
 	{
-		LogWriter::WriteLine("Cannot load UI theme " + filename);
+		LogWriter::WriteLine(filename + " is not a valid theme file");
 		return;
 	}
-	while (std::getline(iFile, line))
+	if (theme->Attribute("texture")) texture = theme->Attribute("texture");
+	if (theme->Attribute("defaultColor")) GetFloats(defaultColor, theme->Attribute("defaultColor"), 3);
+	if (theme->Attribute("textfieldColor")) GetFloats(defaultColor, theme->Attribute("textfieldColor"), 3);
+	//text block
+	TiXmlElement* themeText = theme->FirstChildElement("text");
+	if (themeText) ParseTextTheme(themeText, text);
+	//button block
+	TiXmlElement* themeButton = theme->FirstChildElement("button");
+	if (themeButton)
 	{
-		size_t commentpos = line.find_first_of(';');
-		if (commentpos != line.npos) line = line.substr(0, commentpos - 1);
-		size_t eqPos = line.find('=');
-		if (eqPos == line.npos) continue;
-		std::string key = line.substr(0, eqPos - 1);
-		std::string value = line.substr(eqPos + 1);
-		RemoveSpaces(key);
-		RemoveSpaces(value);
-		std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-		if (key == "texture") texture = value;
-		else if (key == "defaultcolor") ReadFloats(defaultColor, 3, value);
-		else if (key == "textfieldcolor") ReadFloats(textfieldColor, 3, value);
-		else if (key == "textcolor") ReadFloats(text.color, 3, value);
-		else if (key == "textfont") text.font = value;
-		else if (key == "textfontsize") text.fontSize = ReadInt(value);
-		else if (key == "textaligment") text.aligment = ReadAligment(value);
-		else if (key == "buttontexcoord") ReadFloats(button.texCoord, 4, value);
-		else if (key == "buttonpressedtexcoord") ReadFloats(button.pressedTexCoord, 4, value);
-		else if (key == "buttontextcolor") ReadFloats(button.text.color, 3, value);
-		else if (key == "buttontextfont") button.text.font = value;
-		else if (key == "buttontextfontsize") button.text.fontSize = ReadInt(value);
-		else if (key == "buttontextaligment") button.text.aligment = ReadAligment(value);
-		else if (key == "comboboxtexcoord") ReadFloats(combobox.texCoord, 4, value);
-		else if (key == "comboboxexpandedtexcoord") ReadFloats(combobox.expandedTexCoord, 4, value);
-		else if (key == "comboboxbuttonwidthcoeff") ReadFloats(&combobox.buttonWidthCoeff, 1, value);
-		else if (key == "comboboxbordersize") combobox.borderSize = ReadInt(value);
-		else if (key == "comboboxelementsize") combobox.elementSize = ReadInt(value);
-		else if (key == "comboboxtextcolor") ReadFloats(combobox.text.color, 3, value);
-		else if (key == "comboboxtextfont") combobox.text.font = value;
-		else if (key == "comboboxtextfontsize") combobox.text.fontSize = ReadInt(value);
-		else if (key == "comboboxtextaligment") combobox.text.aligment = ReadAligment(value);
-		else if (key == "listbordersize") list.borderSize = ReadInt(value);
-		else if (key == "listelementsize") list.elementSize = ReadInt(value);
-		else if (key == "listtextcolor") ReadFloats(list.text.color, 3, value);
-		else if (key == "listtextfont") list.text.font = value;
-		else if (key == "listtextfontsize") list.text.fontSize = ReadInt(value);
-		else if (key == "listtextaligment") list.text.aligment = ReadAligment(value);
-		else if (key == "checkboxtexcoord") ReadFloats(checkbox.texCoord, 4, value);
-		else if (key == "checkboxcheckedtexcoord") ReadFloats(checkbox.checkedTexCoord, 4, value);
-		else if (key == "checkboxcheckboxsizecoeff") ReadFloats(&checkbox.checkboxSizeCoeff, 1, value);
-		else if (key == "checkboxtextcolor") ReadFloats(list.text.color, 3, value);
-		else if (key == "checkboxtextfont") list.text.font = value;
-		else if (key == "checkboxtextfontsize") list.text.fontSize = ReadInt(value);
-		else if (key == "checkboxtextaligment") list.text.aligment = ReadAligment(value);
-		else if (key == "editbordersize") edit.borderSize = ReadInt(value);
-		else if (key == "edittextcolor") ReadFloats(edit.text.color, 3, value);
-		else if (key == "edittextfont") edit.text.font = value;
-		else if (key == "edittextfontsize") edit.text.fontSize = ReadInt(value);
-		else if (key == "edittextaligment") edit.text.aligment = ReadAligment(value);
-		else if (key == "radiogrouptexcoord") ReadFloats(radiogroup.texCoord, 4, value);
-		else if (key == "radiogroupselectedtexcoord") ReadFloats(radiogroup.selectedTexCoord, 4, value);
-		else if (key == "radiogroupbuttonsize") ReadFloats(&radiogroup.buttonSize, 1, value);
-		else if (key == "radiogroupelementsize") ReadFloats(&radiogroup.elementSize, 1, value);
-		else if (key == "radiogrouptextcolor") ReadFloats(radiogroup.text.color, 3, value);
-		else if (key == "radiogrouptextfont") radiogroup.text.font = value;
-		else if (key == "radiogrouptextfontsize") radiogroup.text.fontSize = ReadInt(value);
-		else if (key == "radiogrouptextaligment") radiogroup.text.aligment = ReadAligment(value);
-		else if (key == "scrollbartexcoord") ReadFloats(sbar.texCoord, 4, value);
-		else if (key == "scrollbarpressedtexcoord") ReadFloats(sbar.pressedTexCoord, 4, value);
-		else if (key == "scrollbarwidth") sbar.width = ReadInt(value);
-		else if (key == "scrollbarbuttonheight") sbar.buttonHeight = ReadInt(value);
+		if (themeButton->Attribute("texCoord")) GetFloats(button.texCoord, themeButton->Attribute("texCoord"), 4);
+		TiXmlElement* themePressed = themeButton->FirstChildElement("pressed");
+		if (themePressed && themePressed->Attribute("texCoord")) GetFloats(button.pressedTexCoord, themePressed->Attribute("texCoord"), 4);
+		themeText = themeButton->FirstChildElement("text");
+		if (themeText) ParseTextTheme(themeText, button.text);
 	}
+	//combobox
+	TiXmlElement* themeCombobox = theme->FirstChildElement("combobox");
+	if (themeCombobox)
+	{
+		if (themeCombobox->Attribute("texCoord")) GetFloats(combobox.texCoord, themeCombobox->Attribute("texCoord"), 4);
+		if (themeCombobox->Attribute("borderSize")) combobox.borderSize = atoi(themeCombobox->Attribute("borderSize"));
+		if (themeCombobox->Attribute("elementSize")) combobox.elementSize = atoi(themeCombobox->Attribute("elementSize"));
+		TiXmlElement* themeExpanded = themeCombobox->FirstChildElement("expanded");
+		if (themeExpanded && themeExpanded->Attribute("texCoord")) GetFloats(combobox.expandedTexCoord, themeExpanded->Attribute("texCoord"), 4);
+		themeText = themeCombobox->FirstChildElement("text");
+		if (themeText) ParseTextTheme(themeText, combobox.text);
+	}
+	//list
+	TiXmlElement* themeList = theme->FirstChildElement("list");
+	if (themeList)
+	{
+		if (themeList->Attribute("borderSize")) list.borderSize = atoi(themeList->Attribute("borderSize"));
+		if (themeList->Attribute("elementSize")) list.elementSize = atoi(themeList->Attribute("elementSize"));
+		themeText = themeList->FirstChildElement("text");
+		if (themeText) ParseTextTheme(themeText, list.text);
+	}
+	//checkbox
+	TiXmlElement* themeCheckbox = theme->FirstChildElement("checkbox");
+	if (themeCheckbox)
+	{
+		if (themeCheckbox->Attribute("texCoord")) GetFloats(checkbox.texCoord, themeCheckbox->Attribute("texCoord"), 4);
+		if (themeCheckbox->Attribute("sizeCoeff")) checkbox.checkboxSizeCoeff = atof(themeCheckbox->Attribute("sizeCoeff"));
+		TiXmlElement* themeChecked = themeCheckbox->FirstChildElement("checked");
+		if (themeChecked && themeChecked->Attribute("texCoord")) GetFloats(checkbox.checkedTexCoord, themeChecked->Attribute("texCoord"), 4);
+		themeText = themeCheckbox->FirstChildElement("text");
+		if (themeText) ParseTextTheme(themeText, checkbox.text);
+	}
+	//edit
+	TiXmlElement* themeEdit = theme->FirstChildElement("list");
+	if (themeEdit)
+	{
+		if (themeEdit->Attribute("borderSize")) edit.borderSize = atoi(themeEdit->Attribute("borderSize"));
+		themeText = themeEdit->FirstChildElement("text");
+		if (themeText) ParseTextTheme(themeText, edit.text);
+	}
+	//radiogroup
+	TiXmlElement* themeRadiogroup = theme->FirstChildElement("radiogroup");
+	if (themeRadiogroup)
+	{
+		if (themeRadiogroup->Attribute("texCoord")) GetFloats(radiogroup.texCoord, themeRadiogroup->Attribute("texCoord"), 4);
+		if (themeRadiogroup->Attribute("buttonSize")) radiogroup.buttonSize = atof(themeRadiogroup->Attribute("buttonSize"));
+		if (themeRadiogroup->Attribute("elementSize")) radiogroup.elementSize = atof(themeRadiogroup->Attribute("elementSize"));
+		TiXmlElement* themeSelected = themeRadiogroup->FirstChildElement("selected");
+		if (themeSelected && themeSelected->Attribute("texCoord")) GetFloats(radiogroup.selectedTexCoord, themeSelected->Attribute("texCoord"), 4);
+		themeText = themeRadiogroup->FirstChildElement("text");
+		if (themeText) ParseTextTheme(themeText, radiogroup.text);
+	}
+	//scrollbar
+	TiXmlElement* themeScrollbar = theme->FirstChildElement("scrollbar");
+	if (themeScrollbar)
+	{
+		if (themeScrollbar->Attribute("texCoord")) GetFloats(sbar.texCoord, themeButton->Attribute("texCoord"), 4);
+		if (themeScrollbar->Attribute("buttonHeight")) sbar.buttonHeight = atoi(themeScrollbar->Attribute("buttonHeight"));
+		if (themeScrollbar->Attribute("width")) sbar.width = atoi(themeScrollbar->Attribute("width"));
+		TiXmlElement* themePressed = themeScrollbar->FirstChildElement("pressed");
+		if (themePressed && themePressed->Attribute("texCoord")) GetFloats(sbar.pressedTexCoord, themePressed->Attribute("texCoord"), 4);
+	}
+	doc.Clear();
 }

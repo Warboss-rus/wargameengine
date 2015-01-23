@@ -20,6 +20,7 @@ public:
 	void SetText(std::string const& text);
 	void SetOnChangeCallback(callback(onChange)) { m_onChange = onChange; }
 	void Resize(int windowHeight, int windowWidth);
+	void SetTheme(std::shared_ptr<CUITheme> theme) { m_theme = theme; m_scrollbar = CUIScrollBar(theme); }
 private:
 	std::vector<std::string> m_items;
 	int m_selected;

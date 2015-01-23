@@ -8,7 +8,7 @@ void CUIStaticText::Draw() const
 		return;
 	glPushMatrix();
 	glTranslatef(GetX(), GetY(), 0.0f);
-	PrintText(0, 0, GetWidth(), GetHeight(), m_text, m_theme.text);
+	PrintText(0, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 	CUIElement::Draw();
 	glPopMatrix();
 }

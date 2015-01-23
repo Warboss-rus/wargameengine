@@ -123,8 +123,6 @@ function Music()
 	PlaySoundPlaylist({"music_warhammer40ktheme.wav", "music_warhammer40ktheme.wav"}, 1.0)
 end
 
-IncludeLibrary("math")--Includes the following library
-IncludeLibrary("os")
 SetLightPosition(1, 0, 0, 30)
 EnableShadowMap(1024, 53)
 --EnableMSAA()
@@ -135,7 +133,7 @@ CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to textu
 CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 CameraStrategy(15, 6, 5, 0.5)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 local ui = UI:Get()--Get current UI
-ui:ApplyTheme("ui.uit")
+ui:ApplyTheme("uiTheme.xml")
 local list = ui:NewCombobox("ComboBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
 local files = GetFilesList("models", "*.wbm", false)--Find all models and add them into list
 for i = 1, #files do

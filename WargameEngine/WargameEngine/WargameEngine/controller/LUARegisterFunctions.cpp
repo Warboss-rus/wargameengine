@@ -119,15 +119,6 @@ int SetGlobalProperty(lua_State* L)
 	return 0;
 }
 
-int IncludeLibrary(lua_State* L)
-{
-	if(CLUAScript::GetArgumentCount() != 1)
-		return luaL_error(L, "1 argument expected (libName)");
-	char* lib = CLUAScript::GetArgument<char*>(1);
-	CLUAScript::IncludeLibrary(lib);
-	return 0;
-}
-
 int SetSelectionCallback(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 1)
@@ -716,6 +707,15 @@ int NewStaticObject(lua_State* L)
 	return 0;
 }
 
+int Print(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "1 argument expected (string)");
+	std::string text = CLUAScript::GetArgument<char*>(1);
+	LogWriter::WriteLine("LUA: " + text);
+	return 0;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -728,7 +728,6 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(RunScript, "RunScript");
 	lua.RegisterConstant(GetGlobalProperty, "GetGlobalProperty");
 	lua.RegisterConstant(SetGlobalProperty, "SetGlobalProperty");
-	lua.RegisterConstant(IncludeLibrary, "IncludeLibrary");
 	lua.RegisterConstant(SetSelectionCallback, "SetSelectionCallback");
 	lua.RegisterConstant(SetUpdateCallback, "SetUpdateCallback");
 	lua.RegisterConstant(SetOnStateRecievedCallback, "SetOnStateRecievedCallback");
@@ -783,4 +782,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(PlaySoundPlaylist, "PlaySoundPlaylist");
 	lua.RegisterConstant(NewDecal, "NewDecal");
 	lua.RegisterConstant(NewStaticObject, "NewStaticObject");
+	lua.RegisterConstant(Print, "print");
 }

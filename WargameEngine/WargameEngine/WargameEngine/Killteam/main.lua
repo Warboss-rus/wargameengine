@@ -225,10 +225,6 @@ function OnArmyChange2()
 	Recalculate()
 end
 
-IncludeLibrary("base")
-IncludeLibrary("math")
-IncludeLibrary("table")
-IncludeLibrary("string")
 --ResizeWindow(600, 600)
 dofile("killteam.lua")
 --dofile all your races here

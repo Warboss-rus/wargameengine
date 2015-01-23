@@ -11,19 +11,19 @@ void CUIRadioGroup::Draw() const
 	glTranslatef(GetX(), GetY(), 0.0f);
 	for(size_t i = 0; i < m_items.size(); ++i)
 	{
-		CTextureManager::GetInstance()->SetTexture(m_theme.texture);
-		float y = m_theme.radiogroup.elementSize * i + (m_theme.radiogroup.elementSize - m_theme.radiogroup.buttonSize) / 2;
+		CTextureManager::GetInstance()->SetTexture(m_theme->texture);
+		float y = m_theme->radiogroup.elementSize * i + (m_theme->radiogroup.elementSize - m_theme->radiogroup.buttonSize) / 2;
 		glBegin(GL_TRIANGLE_STRIP);
-		(i == m_selected)?glTexCoord2f(m_theme.radiogroup.selectedTexCoord[0], m_theme.radiogroup.selectedTexCoord[1]):glTexCoord2f(m_theme.radiogroup.texCoord[0], m_theme.radiogroup.texCoord[1]);
+		(i == m_selected)?glTexCoord2f(m_theme->radiogroup.selectedTexCoord[0], m_theme->radiogroup.selectedTexCoord[1]):glTexCoord2f(m_theme->radiogroup.texCoord[0], m_theme->radiogroup.texCoord[1]);
 		glVertex2f(0.0f, y);
-		(i == m_selected)?glTexCoord2f(m_theme.radiogroup.selectedTexCoord[0], m_theme.radiogroup.selectedTexCoord[3]):glTexCoord2f(m_theme.radiogroup.texCoord[0], m_theme.radiogroup.texCoord[3]);
-		glVertex2f(0.0f, y + m_theme.radiogroup.buttonSize);
-		(i == m_selected)?glTexCoord2f(m_theme.radiogroup.selectedTexCoord[2], m_theme.radiogroup.selectedTexCoord[1]):glTexCoord2f(m_theme.radiogroup.texCoord[2], m_theme.radiogroup.texCoord[1]);
-		glVertex2f(m_theme.radiogroup.buttonSize, y);
-		(i == m_selected)?glTexCoord2f(m_theme.radiogroup.selectedTexCoord[2], m_theme.radiogroup.selectedTexCoord[3]):glTexCoord2f(m_theme.radiogroup.texCoord[2], m_theme.radiogroup.texCoord[3]);
-		glVertex2f(m_theme.radiogroup.buttonSize, y + m_theme.radiogroup.buttonSize);
+		(i == m_selected)?glTexCoord2f(m_theme->radiogroup.selectedTexCoord[0], m_theme->radiogroup.selectedTexCoord[3]):glTexCoord2f(m_theme->radiogroup.texCoord[0], m_theme->radiogroup.texCoord[3]);
+		glVertex2f(0.0f, y + m_theme->radiogroup.buttonSize);
+		(i == m_selected)?glTexCoord2f(m_theme->radiogroup.selectedTexCoord[2], m_theme->radiogroup.selectedTexCoord[1]):glTexCoord2f(m_theme->radiogroup.texCoord[2], m_theme->radiogroup.texCoord[1]);
+		glVertex2f(m_theme->radiogroup.buttonSize, y);
+		(i == m_selected)?glTexCoord2f(m_theme->radiogroup.selectedTexCoord[2], m_theme->radiogroup.selectedTexCoord[3]):glTexCoord2f(m_theme->radiogroup.texCoord[2], m_theme->radiogroup.texCoord[3]);
+		glVertex2f(m_theme->radiogroup.buttonSize, y + m_theme->radiogroup.buttonSize);
 		glEnd();
-		PrintText(m_theme.radiogroup.buttonSize + 1, m_theme.radiogroup.elementSize * i, GetWidth(), m_theme.radiogroup.elementSize, m_items[i], m_theme.text);
+		PrintText(m_theme->radiogroup.buttonSize + 1, m_theme->radiogroup.elementSize * i, GetWidth(), m_theme->radiogroup.elementSize, m_items[i], m_theme->text);
 		glColor3f(1.0f, 1.0f, 1.0f);
 	}
 	CTextureManager::GetInstance()->SetTexture("");
@@ -40,7 +40,7 @@ bool CUIRadioGroup::LeftMouseButtonUp(int x, int y)
 	}
 	if(PointIsOnElement(x, y))
 	{
-		unsigned int index = (y - GetY()) / m_theme.radiogroup.elementSize;
+		unsigned int index = (y - GetY()) / m_theme->radiogroup.elementSize;
 		if(index >= 0 && index < m_items.size()) m_selected = index;
 		if(m_onChange) m_onChange();
 		SetFocus();

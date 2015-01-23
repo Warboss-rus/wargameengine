@@ -32,11 +32,11 @@ public:
 	static void CallFunctionReturn4(std::string const& funcName, double x, double y, double z, double w, double & x1, double & y1, double & z1, double & w1);
 	static void * GetClassInstance(std::string const& className);
 	static int NewInstanceClass(void* instance, std::string const& className);
-	static void IncludeLibrary(std::string const& libName);
 	template<class T>
 	static std::vector<T> GetArray(int index);
 	template<class T>
 	static void SetArray(std::vector<T> arr);
+	static std::string GetKeyForGetter();
 private:
 	static lua_State* m_lua_state;
 };

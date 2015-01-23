@@ -263,6 +263,7 @@ void CTextureManager::SetTexture(std::string const& path, eTextureSlot slot)
 	if (path.empty())
 	{
 		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(GL_TEXTURE0);
 		return;
 	}
 	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, std::vector<sTeamColor>());

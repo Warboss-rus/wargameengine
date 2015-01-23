@@ -13,42 +13,42 @@ void CUIEdit::Draw() const
 		return;
 	glPushMatrix();
 	glTranslatef(GetX(), GetY(), 0.0f);
-	glColor3f(m_theme.defaultColor[0], m_theme.defaultColor[1], m_theme.defaultColor[2]);
+	glColor3f(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
 	glBegin(GL_QUADS);
 		glVertex2i(0, 0);
 		glVertex2i(0, GetHeight());
 		glVertex2i(GetWidth(), GetHeight());
 		glVertex2i(GetWidth(), 0);
 	glEnd();
-	glColor3f(m_theme.textfieldColor[0], m_theme.textfieldColor[1], m_theme.textfieldColor[2]);
+	glColor3f(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
 	glBegin(GL_QUADS);
-		glVertex2i(m_theme.edit.borderSize, m_theme.edit.borderSize);
-		glVertex2i(m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
-		glVertex2i(GetWidth() - m_theme.edit.borderSize, GetHeight() - m_theme.edit.borderSize);
-		glVertex2i(GetWidth() - m_theme.edit.borderSize, m_theme.edit.borderSize);
+		glVertex2i(m_theme->edit.borderSize, m_theme->edit.borderSize);
+		glVertex2i(m_theme->edit.borderSize, GetHeight() - m_theme->edit.borderSize);
+		glVertex2i(GetWidth() - m_theme->edit.borderSize, GetHeight() - m_theme->edit.borderSize);
+		glVertex2i(GetWidth() - m_theme->edit.borderSize, m_theme->edit.borderSize);
 	glEnd();
-	int fonty = (GetHeight() + m_theme.edit.text.fontSize) / 2;
+	int fonty = (GetHeight() + m_theme->edit.text.fontSize) / 2;
 	if(IsFocused(NULL))
 	{
-		int cursorpos = m_theme.edit.borderSize + GetStringWidth(m_theme.edit.text, m_text);
+		int cursorpos = m_theme->edit.borderSize + GetStringWidth(m_theme->edit.text, m_text);
 		glColor3ub(0, 0, 0);
 		glBegin(GL_LINES);
 		glVertex2i(cursorpos, fonty);
-		glVertex2i(cursorpos, fonty - m_theme.edit.text.fontSize);
+		glVertex2i(cursorpos, fonty - m_theme->edit.text.fontSize);
 		glEnd();
 	}
 	if(m_pos != m_beginSelection)
 	{
 		glColor3f(0.0f, 0.0f, 1.0f);
-		int fontwidth = GetStringWidth(m_theme.edit.text, m_text);
+		int fontwidth = GetStringWidth(m_theme->edit.text, m_text);
 		glBegin(GL_QUADS);
-		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty);
-		glVertex2i(m_theme.edit.borderSize + m_beginSelection * fontwidth, fonty - GetStringHeight(m_theme.edit.text, m_text));
-		glVertex2i(m_theme.edit.borderSize + m_pos * fontwidth, fonty - GetStringHeight(m_theme.edit.text, m_text));
-		glVertex2i(m_theme.edit.borderSize + m_pos * fontwidth, fonty);
+		glVertex2i(m_theme->edit.borderSize + m_beginSelection * fontwidth, fonty);
+		glVertex2i(m_theme->edit.borderSize + m_beginSelection * fontwidth, fonty - GetStringHeight(m_theme->edit.text, m_text));
+		glVertex2i(m_theme->edit.borderSize + m_pos * fontwidth, fonty - GetStringHeight(m_theme->edit.text, m_text));
+		glVertex2i(m_theme->edit.borderSize + m_pos * fontwidth, fonty);
 		glEnd();
 	}
-	PrintText(m_theme.edit.borderSize, m_theme.edit.borderSize, m_width - 2 * m_theme.edit.borderSize, m_height - 2 *m_theme.edit.borderSize, m_text, m_theme.text);
+	PrintText(m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 *m_theme->edit.borderSize, m_text, m_theme->text);
 	CTextureManager::GetInstance()->SetTexture("");
 	CUIElement::Draw();
 	glPopMatrix();
@@ -145,7 +145,7 @@ bool CUIEdit::LeftMouseButtonUp(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		size_t pos = (x - GetX()) / GetStringHeight(m_theme.edit.text, "0");
+		size_t pos = (x - GetX()) / GetStringHeight(m_theme->edit.text, "0");
 		m_pos = (pos > m_text.size())?m_text.size():pos;
 		SetFocus();
 		return true;
@@ -164,7 +164,7 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 		return true;
 	if(PointIsOnElement(x, y))
 	{
-		size_t pos = (x - GetX()) / GetStringHeight(m_theme.edit.text, "0");
+		size_t pos = (x - GetX()) / GetStringHeight(m_theme->edit.text, "0");
 		m_beginSelection = (pos > m_text.size())?m_text.size():pos;
 		m_pos = m_beginSelection;
 		SetFocus();

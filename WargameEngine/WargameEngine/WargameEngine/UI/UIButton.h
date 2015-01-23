@@ -10,8 +10,11 @@ public:
 	bool LeftMouseButtonDown(int x, int y);
 	std::string const GetText() const { return m_text; }
 	void SetText(std::string const& text) { m_text = text; }
+	void SetOnClickCallback(callback(onClick)) { m_onClick = onClick; }
+	void SetBackgroundImage(std::string const& image) { m_backgroundImage = image; }
 private:
 	std::string m_text;
+	std::string m_backgroundImage;
 	callback(m_onClick);
 	bool m_isPressed;
 };

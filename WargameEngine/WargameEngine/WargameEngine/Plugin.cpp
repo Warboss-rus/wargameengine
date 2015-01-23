@@ -9,9 +9,7 @@
 std::string GetErrorString()
 {
 #ifdef WIN32
-	char errorCode[16];
-	sprintf(errorCode, "%d", GetLastError());
-	return errorCode;
+	return std::to_string(GetLastError());
 #else
 	return dlerror();
 #endif

@@ -106,6 +106,7 @@
     <ClCompile Include="lua.c" />
     <ClCompile Include="luac.c" />
     <ClCompile Include="lundump.c" />
+    <ClCompile Include="lutf8lib.c" />
     <ClCompile Include="lvm.c" />
     <ClCompile Include="lzio.c" />
   </ItemGroup>
@@ -124,6 +125,7 @@
     <ClInclude Include="lobject.h" />
     <ClInclude Include="lopcodes.h" />
     <ClInclude Include="lparser.h" />
+    <ClInclude Include="lprefix.h" />
     <ClInclude Include="lstate.h" />
     <ClInclude Include="lstring.h" />
     <ClInclude Include="ltable.h" />

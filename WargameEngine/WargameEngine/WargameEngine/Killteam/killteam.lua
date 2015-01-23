@@ -5,10 +5,6 @@ hunterGroup = nil
 hunterGroupIndex = nil
 
 function Init()
-	IncludeLibrary("math")
-	IncludeLibrary("os")
-	IncludeLibrary("table")
-	IncludeLibrary("io")
 	math.randomseed(os.time())
 	CameraStrategy(30, 12, 5, 0.3)
 	EnableLight(1)

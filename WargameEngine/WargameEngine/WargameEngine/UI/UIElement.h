@@ -5,7 +5,7 @@
 class CUIElement : public IUIElement
 {
 public:
-	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(NULL), m_focused(NULL), m_theme(CUITheme::defaultTheme), m_windowHeight(640), m_windowWidth(640) {}
+	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(NULL), m_focused(NULL), m_windowHeight(640), m_windowWidth(640) {}
 	void Draw() const;
 	IUIElement* GetChildByName(std::string const& name);
 	void DeleteChild(std::string const& name);
@@ -23,8 +23,8 @@ public:
 	bool GetVisible() { return m_visible; }
 	void SetFocus(IUIElement * focus = NULL);
 	bool IsFocused(const IUIElement * child) const;
-	void SetTheme(CUITheme const& theme) { m_theme = theme; }
-	CUITheme & GetTheme() { return m_theme; }
+	void SetTheme(std::shared_ptr<CUITheme> theme) { m_theme = theme; }
+	std::shared_ptr<CUITheme> GetTheme() { return m_theme; }
 	std::string const GetText() const { return ""; }
 	void SetText(std::string const& text) {}
 	void AddItem(std::string const& str) {}
@@ -36,6 +36,8 @@ public:
 	void SetSelected(size_t index) {}
 	void Resize(int windowHeight, int windowWidth);
 	void SetOnChangeCallback(callback(onChange)) {}
+	void SetOnClickCallback(callback(onClick)) {}
+	void SetBackgroundImage(std::string const& image) {}
 
 	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick));
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text);
@@ -59,5 +61,5 @@ protected:
 	bool m_visible;
 	IUIElement * m_parent;
 	IUIElement * m_focused;
-	CUITheme m_theme;
+	std::shared_ptr<CUITheme> m_theme;
 };

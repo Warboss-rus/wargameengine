@@ -30,8 +30,8 @@ public:
 	virtual void SetVisible(bool visible) = 0;
 	virtual bool GetVisible() = 0;
 	virtual bool IsFocused(const IUIElement * child) const = 0;
-	virtual void SetTheme(CUITheme const& theme) = 0;
-	virtual CUITheme & GetTheme() = 0;
+	virtual void SetTheme(std::shared_ptr<CUITheme> theme) = 0;
+	virtual std::shared_ptr<CUITheme> GetTheme() = 0;
 	virtual std::string const GetText() const = 0;
 	virtual void SetText(std::string const& text) = 0;
 	virtual void AddItem(std::string const& str) = 0;
@@ -43,6 +43,8 @@ public:
 	virtual void SetSelected(size_t index) = 0;
 	virtual void Resize(int windowHeight, int windowWidth) = 0;
 	virtual void SetOnChangeCallback(callback(onChange)) = 0;
+	virtual void SetOnClickCallback(callback(onClick)) = 0;
+	virtual void SetBackgroundImage(std::string const& image) = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick)) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;

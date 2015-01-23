@@ -1,10 +1,11 @@
+#include <memory>
 #include "UITheme.h"
 #pragma once
 
 class CUIScrollBar
 {
 public:
-	CUIScrollBar(CUITheme const& theme) { m_theme = theme; }
+	CUIScrollBar(std::shared_ptr<CUITheme> theme) { m_theme = theme; }
 	void Update(int size, int contentSize, int width, int step);
 	void Draw() const;
 	bool LeftMouseButtonDown(int x, int y);
@@ -20,5 +21,5 @@ private:
 	int m_step;
 	bool m_pressed;
 	bool m_buttonPressed;
-	CUITheme m_theme;
+	std::shared_ptr<CUITheme> m_theme;
 };

@@ -17,6 +17,7 @@ CLUAScript::CLUAScript()
 	m_lua_state = luaL_newstate();
 	lua_register( m_lua_state, "_ALERT", luaError );
 	lua_atpanic(m_lua_state, luaError);
+	luaL_openlibs(m_lua_state);
 }
 
 CLUAScript::~CLUAScript()
@@ -50,7 +51,7 @@ int CLUAScript::GetArgument<int>(int index)
 template<>
 unsigned int CLUAScript::GetArgument<unsigned int>(int index)
 {
-    return luaL_checkunsigned(m_lua_state,index);
+    return luaL_checkinteger(m_lua_state,index);
 }
 
 template<>
@@ -301,33 +302,6 @@ int CLUAScript::NewInstanceClass(void* instance, std::string const& className)
 	return 1; 
 }
 
-void CLUAScript::IncludeLibrary(std::string const& libName)
-{
-	static const luaL_Reg lualibs[] = 
-    {
-		{"base", luaopen_base },
-		{"bit32", luaopen_bit32 },
-		{"coroutine", luaopen_coroutine },
-		{"debug", luaopen_debug },
-		{"io", luaopen_io },
-		{"math", luaopen_math },
-		{"os", luaopen_os },
-		{"package", luaopen_package },
-		{"string", luaopen_string },
-		{"table", luaopen_table },
-		{NULL, NULL}
-    };
-
-    for(const luaL_Reg *lib = lualibs; lib->func != NULL; lib++)
-    {
-        if(libName == lib->name)
-		{
-			luaL_requiref(m_lua_state, lib->name, lib->func, 1);
-			lua_settop(m_lua_state, 0);
-		}
-    }
-}
-
 template<>
 std::vector<int> CLUAScript::GetArray<int>(int index)
 {
@@ -407,7 +381,7 @@ void CLUAScript::SetArray<unsigned int>(std::vector<unsigned int> arr)
 	lua_createtable(m_lua_state, arr.size(), 0);
 	for (size_t i = 0; i < arr.size(); ++i)
 	{
-		lua_pushunsigned(m_lua_state, arr[i]);
+		lua_pushinteger(m_lua_state, arr[i]);
 		lua_rawseti(m_lua_state, -2, i);
 	}
 }
@@ -454,4 +428,19 @@ void CLUAScript::SetArray<const char*>(std::vector<const char*> arr)
 		lua_pushstring(m_lua_state, arr[i]);
 		lua_rawseti(m_lua_state, -2, i);
 	}
+}
+
+std::string CLUAScript::GetKeyForGetter()
+{
+	const char* key = luaL_checkstring(m_lua_state, 2);
+	lua_getmetatable(m_lua_state, 1);
+	lua_getfield(m_lua_state, -1, key);
+
+	// Either key is name of a method in the metatable
+	if (!lua_isnil(m_lua_state, -1))
+		return "";
+	// ... or its a field access, so recall as self.get(self, value).
+	lua_settop(m_lua_state, 2);
+
+	return key;
 }
