@@ -1,0 +1,1 @@
+Wargame Engine is a free OpenGL engine that allows to recreate different wargames
