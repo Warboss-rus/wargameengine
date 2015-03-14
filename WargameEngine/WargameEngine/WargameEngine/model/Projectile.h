@@ -8,14 +8,14 @@ class CProjectile : public CStaticObject
 public:
 	CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::string const& model, std::string const& particleFile, callback(onHit), callback(onCollision));
 	bool Update();
-	const std::string GetParticle() const { return m_particle; }
-	void CallOnCollision() const { m_onCollision(); }
-	float GetTime() const { return (double)m_lastUpdateTime / 1000.0; }
+	const std::string GetParticle() const;
+	void CallOnCollision() const;
+	float GetTime() const;
 private:
 	CVector3d m_target;
 	double m_speed;
 	std::string m_particle;
-	long m_lastUpdateTime;
+	long long m_lastUpdateTime;
 	callback(m_onHit);
 	callback(m_onCollision);
 };

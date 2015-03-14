@@ -35,16 +35,15 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/LUA/LUARegisterFunctions.o \
-	${OBJECTDIR}/LUA/LUARegisterObject.o \
-	${OBJECTDIR}/LUA/LUARegisterUI.o \
-	${OBJECTDIR}/LUA/LUAScriptHandler.o \
-	${OBJECTDIR}/LUA/TimedCallback.o \
 	${OBJECTDIR}/LogWriter.o \
 	${OBJECTDIR}/Module.o \
 	${OBJECTDIR}/NetSocket.o \
+	${OBJECTDIR}/Network.o \
+	${OBJECTDIR}/OSSpecific.o \
+	${OBJECTDIR}/Plugin.o \
+	${OBJECTDIR}/PluginManager.o \
 	${OBJECTDIR}/Ruler.o \
-	${OBJECTDIR}/SelectionTools.o \
+	${OBJECTDIR}/SoundPlayer.o \
 	${OBJECTDIR}/ThreadPool.o \
 	${OBJECTDIR}/Threading.o \
 	${OBJECTDIR}/UI/UIButton.o \
@@ -68,25 +67,39 @@ OBJECTFILES= \
 	${OBJECTDIR}/controller/CommandMoveObject.o \
 	${OBJECTDIR}/controller/CommandRotateObject.o \
 	${OBJECTDIR}/controller/GameController.o \
-	${OBJECTDIR}/los.o \
+	${OBJECTDIR}/controller/LUARegisterFunctions.o \
+	${OBJECTDIR}/controller/LUARegisterObject.o \
+	${OBJECTDIR}/controller/LUARegisterUI.o \
+	${OBJECTDIR}/controller/LUAScriptHandler.o \
+	${OBJECTDIR}/controller/TimedCallback.o \
 	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/model/3dObject.o \
+	${OBJECTDIR}/model/Bounding.o \
 	${OBJECTDIR}/model/GameModel.o \
+	${OBJECTDIR}/model/Landscape.o \
 	${OBJECTDIR}/model/MovementLimiter.o \
+	${OBJECTDIR}/model/Object.o \
 	${OBJECTDIR}/model/ObjectGroup.o \
+	${OBJECTDIR}/model/Projectile.o \
 	${OBJECTDIR}/nv_dds.o \
+	${OBJECTDIR}/tinyxml.o \
+	${OBJECTDIR}/tinyxmlerror.o \
+	${OBJECTDIR}/tinyxmlparser.o \
 	${OBJECTDIR}/view/3dModel.o \
-	${OBJECTDIR}/view/Bounding.o \
-	${OBJECTDIR}/view/Camera.o \
-	${OBJECTDIR}/view/DecalFactory.o \
+	${OBJECTDIR}/view/CameraFirstPerson.o \
+	${OBJECTDIR}/view/CameraStrategy.o \
+	${OBJECTDIR}/view/ColladaModelFactory.o \
 	${OBJECTDIR}/view/GameView.o \
 	${OBJECTDIR}/view/Input.o \
 	${OBJECTDIR}/view/MaterialManager.o \
 	${OBJECTDIR}/view/ModelManager.o \
 	${OBJECTDIR}/view/OBJModelFactory.o \
+	${OBJECTDIR}/view/ParticleEffect.o \
+	${OBJECTDIR}/view/ParticleModel.o \
+	${OBJECTDIR}/view/ParticleSystem.o \
+	${OBJECTDIR}/view/ParticleTracer.o \
+	${OBJECTDIR}/view/SelectionTools.o \
 	${OBJECTDIR}/view/ShaderManager.o \
 	${OBJECTDIR}/view/SkyBox.o \
-	${OBJECTDIR}/view/Table.o \
 	${OBJECTDIR}/view/TextWriter.o \
 	${OBJECTDIR}/view/TextureManager.o \
 	${OBJECTDIR}/view/WBMModelFactory.o
@@ -120,31 +133,6 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wargameengine: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wargameengine ${OBJECTFILES} ${LDLIBSOPTIONS} -lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs`
 
-${OBJECTDIR}/LUA/LUARegisterFunctions.o: LUA/LUARegisterFunctions.cpp 
-	${MKDIR} -p ${OBJECTDIR}/LUA
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LUA/LUARegisterFunctions.o LUA/LUARegisterFunctions.cpp
-
-${OBJECTDIR}/LUA/LUARegisterObject.o: LUA/LUARegisterObject.cpp 
-	${MKDIR} -p ${OBJECTDIR}/LUA
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LUA/LUARegisterObject.o LUA/LUARegisterObject.cpp
-
-${OBJECTDIR}/LUA/LUARegisterUI.o: LUA/LUARegisterUI.cpp 
-	${MKDIR} -p ${OBJECTDIR}/LUA
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LUA/LUARegisterUI.o LUA/LUARegisterUI.cpp
-
-${OBJECTDIR}/LUA/LUAScriptHandler.o: LUA/LUAScriptHandler.cpp 
-	${MKDIR} -p ${OBJECTDIR}/LUA
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LUA/LUAScriptHandler.o LUA/LUAScriptHandler.cpp
-
-${OBJECTDIR}/LUA/TimedCallback.o: LUA/TimedCallback.cpp 
-	${MKDIR} -p ${OBJECTDIR}/LUA
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LUA/TimedCallback.o LUA/TimedCallback.cpp
-
 ${OBJECTDIR}/LogWriter.o: LogWriter.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -160,15 +148,35 @@ ${OBJECTDIR}/NetSocket.o: NetSocket.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/NetSocket.o NetSocket.cpp
 
+${OBJECTDIR}/Network.o: Network.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Network.o Network.cpp
+
+${OBJECTDIR}/OSSpecific.o: OSSpecific.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OSSpecific.o OSSpecific.cpp
+
+${OBJECTDIR}/Plugin.o: Plugin.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Plugin.o Plugin.cpp
+
+${OBJECTDIR}/PluginManager.o: PluginManager.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PluginManager.o PluginManager.cpp
+
 ${OBJECTDIR}/Ruler.o: Ruler.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Ruler.o Ruler.cpp
 
-${OBJECTDIR}/SelectionTools.o: SelectionTools.cpp 
+${OBJECTDIR}/SoundPlayer.o: SoundPlayer.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/SelectionTools.o SelectionTools.cpp
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/SoundPlayer.o SoundPlayer.cpp
 
 ${OBJECTDIR}/ThreadPool.o: ThreadPool.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -285,60 +293,110 @@ ${OBJECTDIR}/controller/GameController.o: controller/GameController.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/controller/GameController.o controller/GameController.cpp
 
-${OBJECTDIR}/los.o: los.cpp 
-	${MKDIR} -p ${OBJECTDIR}
+${OBJECTDIR}/controller/LUARegisterFunctions.o: controller/LUARegisterFunctions.cpp 
+	${MKDIR} -p ${OBJECTDIR}/controller
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/los.o los.cpp
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/controller/LUARegisterFunctions.o controller/LUARegisterFunctions.cpp
+
+${OBJECTDIR}/controller/LUARegisterObject.o: controller/LUARegisterObject.cpp 
+	${MKDIR} -p ${OBJECTDIR}/controller
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/controller/LUARegisterObject.o controller/LUARegisterObject.cpp
+
+${OBJECTDIR}/controller/LUARegisterUI.o: controller/LUARegisterUI.cpp 
+	${MKDIR} -p ${OBJECTDIR}/controller
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/controller/LUARegisterUI.o controller/LUARegisterUI.cpp
+
+${OBJECTDIR}/controller/LUAScriptHandler.o: controller/LUAScriptHandler.cpp 
+	${MKDIR} -p ${OBJECTDIR}/controller
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/controller/LUAScriptHandler.o controller/LUAScriptHandler.cpp
+
+${OBJECTDIR}/controller/TimedCallback.o: controller/TimedCallback.cpp 
+	${MKDIR} -p ${OBJECTDIR}/controller
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/controller/TimedCallback.o controller/TimedCallback.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
-${OBJECTDIR}/model/3dObject.o: model/3dObject.cpp 
+${OBJECTDIR}/model/Bounding.o: model/Bounding.cpp 
 	${MKDIR} -p ${OBJECTDIR}/model
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/3dObject.o model/3dObject.cpp
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/Bounding.o model/Bounding.cpp
 
 ${OBJECTDIR}/model/GameModel.o: model/GameModel.cpp 
 	${MKDIR} -p ${OBJECTDIR}/model
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/GameModel.o model/GameModel.cpp
 
+${OBJECTDIR}/model/Landscape.o: model/Landscape.cpp 
+	${MKDIR} -p ${OBJECTDIR}/model
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/Landscape.o model/Landscape.cpp
+
 ${OBJECTDIR}/model/MovementLimiter.o: model/MovementLimiter.cpp 
 	${MKDIR} -p ${OBJECTDIR}/model
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/MovementLimiter.o model/MovementLimiter.cpp
+
+${OBJECTDIR}/model/Object.o: model/Object.cpp 
+	${MKDIR} -p ${OBJECTDIR}/model
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/Object.o model/Object.cpp
 
 ${OBJECTDIR}/model/ObjectGroup.o: model/ObjectGroup.cpp 
 	${MKDIR} -p ${OBJECTDIR}/model
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/ObjectGroup.o model/ObjectGroup.cpp
 
+${OBJECTDIR}/model/Projectile.o: model/Projectile.cpp 
+	${MKDIR} -p ${OBJECTDIR}/model
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/model/Projectile.o model/Projectile.cpp
+
 ${OBJECTDIR}/nv_dds.o: nv_dds.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nv_dds.o nv_dds.cpp
+
+${OBJECTDIR}/tinyxml.o: tinyxml.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/tinyxml.o tinyxml.cpp
+
+${OBJECTDIR}/tinyxmlerror.o: tinyxmlerror.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/tinyxmlerror.o tinyxmlerror.cpp
+
+${OBJECTDIR}/tinyxmlparser.o: tinyxmlparser.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/tinyxmlparser.o tinyxmlparser.cpp
 
 ${OBJECTDIR}/view/3dModel.o: view/3dModel.cpp 
 	${MKDIR} -p ${OBJECTDIR}/view
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/3dModel.o view/3dModel.cpp
 
-${OBJECTDIR}/view/Bounding.o: view/Bounding.cpp 
+${OBJECTDIR}/view/CameraFirstPerson.o: view/CameraFirstPerson.cpp 
 	${MKDIR} -p ${OBJECTDIR}/view
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/Bounding.o view/Bounding.cpp
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/CameraFirstPerson.o view/CameraFirstPerson.cpp
 
-${OBJECTDIR}/view/Camera.o: view/Camera.cpp 
+${OBJECTDIR}/view/CameraStrategy.o: view/CameraStrategy.cpp 
 	${MKDIR} -p ${OBJECTDIR}/view
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/Camera.o view/Camera.cpp
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/CameraStrategy.o view/CameraStrategy.cpp
 
-${OBJECTDIR}/view/DecalFactory.o: view/DecalFactory.cpp 
+${OBJECTDIR}/view/ColladaModelFactory.o: view/ColladaModelFactory.cpp 
 	${MKDIR} -p ${OBJECTDIR}/view
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/DecalFactory.o view/DecalFactory.cpp
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/ColladaModelFactory.o view/ColladaModelFactory.cpp
 
 ${OBJECTDIR}/view/GameView.o: view/GameView.cpp 
 	${MKDIR} -p ${OBJECTDIR}/view
@@ -365,6 +423,31 @@ ${OBJECTDIR}/view/OBJModelFactory.o: view/OBJModelFactory.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/OBJModelFactory.o view/OBJModelFactory.cpp
 
+${OBJECTDIR}/view/ParticleEffect.o: view/ParticleEffect.cpp 
+	${MKDIR} -p ${OBJECTDIR}/view
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/ParticleEffect.o view/ParticleEffect.cpp
+
+${OBJECTDIR}/view/ParticleModel.o: view/ParticleModel.cpp 
+	${MKDIR} -p ${OBJECTDIR}/view
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/ParticleModel.o view/ParticleModel.cpp
+
+${OBJECTDIR}/view/ParticleSystem.o: view/ParticleSystem.cpp 
+	${MKDIR} -p ${OBJECTDIR}/view
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/ParticleSystem.o view/ParticleSystem.cpp
+
+${OBJECTDIR}/view/ParticleTracer.o: view/ParticleTracer.cpp 
+	${MKDIR} -p ${OBJECTDIR}/view
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/ParticleTracer.o view/ParticleTracer.cpp
+
+${OBJECTDIR}/view/SelectionTools.o: view/SelectionTools.cpp 
+	${MKDIR} -p ${OBJECTDIR}/view
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/SelectionTools.o view/SelectionTools.cpp
+
 ${OBJECTDIR}/view/ShaderManager.o: view/ShaderManager.cpp 
 	${MKDIR} -p ${OBJECTDIR}/view
 	${RM} "$@.d"
@@ -374,11 +457,6 @@ ${OBJECTDIR}/view/SkyBox.o: view/SkyBox.cpp
 	${MKDIR} -p ${OBJECTDIR}/view
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/SkyBox.o view/SkyBox.cpp
-
-${OBJECTDIR}/view/Table.o: view/Table.cpp 
-	${MKDIR} -p ${OBJECTDIR}/view
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -w -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/view/Table.o view/Table.cpp
 
 ${OBJECTDIR}/view/TextWriter.o: view/TextWriter.cpp 
 	${MKDIR} -p ${OBJECTDIR}/view

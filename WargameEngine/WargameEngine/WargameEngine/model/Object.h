@@ -53,12 +53,12 @@ private:
 	std::unique_ptr<IMoveLimiter> m_movelimiter;
 	bool m_castsShadow;
 	std::string m_animation;
-	long m_animationBegin;
+	long long m_animationBegin;
 	sAnimation::eLoopMode m_animationLoop;
 	float m_animationSpeed;
 	CVector3d m_goTarget;
-	float m_goSpeed;
-	long m_lastUpdateTime;
+	double m_goSpeed;
+	long long m_lastUpdateTime;
 	std::vector<sTeamColor> m_teamColor;
 	std::map<std::string, std::string> m_replaceTextures;
 };

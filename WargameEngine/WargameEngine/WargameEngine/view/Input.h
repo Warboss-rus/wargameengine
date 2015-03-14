@@ -24,6 +24,8 @@ private:
 	static bool m_ruler;
 	static double startX;
 	static double startY;
+	static int startWindowX;
+	static int startWindowY;
 	static double m_oldRotation;
 	static std::map<sKeyBind, std::function<void()>> m_keyBindings;
 	static std::string m_LMBclickCallback;

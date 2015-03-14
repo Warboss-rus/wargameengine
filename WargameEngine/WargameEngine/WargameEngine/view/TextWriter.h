@@ -17,11 +17,25 @@ struct sSymbol
 struct sGlyph
 {
 	unsigned int texture;
+	unsigned char* data;
 	int bitmap_left;
 	int bitmap_top;
 	int width;
 	int rows;
 	int advancex;
+};
+struct sTextLine
+{
+	std::string text;
+	unsigned int size;
+	FT_Face face;
+	bool operator< (const sTextLine & other) const;
+};
+struct sRenderedLine
+{
+	unsigned int texture;
+	unsigned int height;
+	unsigned int width;
 };
 
 class CTextWriter
@@ -40,4 +54,5 @@ private:
 	FT_Library m_ft;
 	std::map<std::string, FT_Face> m_faces;
 	std::map<sSymbol, sGlyph> m_symbols;
+	std::map<sTextLine, sRenderedLine> m_lines;
 };

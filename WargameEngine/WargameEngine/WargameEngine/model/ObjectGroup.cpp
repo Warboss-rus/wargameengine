@@ -225,3 +225,15 @@ void CObjectGroup::ReplaceTexture(std::string const& oldTexture, std::string con
 		m_children[i]->ReplaceTexture(oldTexture, newTexture);
 	}
 }
+
+std::vector<sTeamColor> const& CObjectGroup::GetTeamColor() const
+{ 
+	static std::vector<sTeamColor> dummy ;
+	return dummy;
+}
+
+std::map<std::string, std::string> const& CObjectGroup::GetReplaceTextures() const
+{ 
+	static std::map<std::string, std::string> dummy;
+	return dummy;
+}

@@ -15,12 +15,15 @@ public:
 	static void FreeInstance();
 	~CGameController();
 
-	void SelectObjectGroup(int beginX, int beginY, int endX, int endY);
-	void SelectObject(double * begin, double * end, bool add);
+	void Update();
+	void SelectObjectGroup(double beginX, double beginY, double endX, double endY);
+	void SelectObject(double * begin, double * end, bool add, bool noCallback = false);
 	bool IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current);
 	const CVector3d * GetCapturePoint() const;
 	int GetLineOfSight(IObject * shooter, IObject * target);
 	void SetSelectionCallback(callback(onSelect));
+	void SetUpdateCallback(callback(onUpdate));
+	void SetSingleCallback(callback(onSingleUpdate));
 	std::vector<char> GetState(bool hasAdresses = false) const;
 	void SetState(char* data, bool hasAdresses = false);
 	void Save(std::string const& filename);
@@ -36,4 +39,6 @@ private:
 	CVector3d m_selectedObjectCapturePoint;
 	std::shared_ptr<CLUAScript> m_lua;
 	callback(m_selectionCallback);
+	callback(m_updateCallback);
+	callback(m_singleCallback);
 };

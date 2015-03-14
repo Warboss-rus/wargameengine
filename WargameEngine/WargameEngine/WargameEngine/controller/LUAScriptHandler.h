@@ -21,6 +21,7 @@ public:
     static void RegisterConstant(T value, char* constantname);
 	static void RegisterClass(const luaL_Reg funcs[], std::string const& className);
 	static void CallFunction(std::string const& funcName);
+	static void CallFunctionFromReference(int referenceIndex);
 	template<class X>
 	static void CallFunction(std::string const& funcName, X param);
 	static void CallFunction(std::string const& funcName, void* param, std::string const& className);
@@ -37,6 +38,11 @@ public:
 	template<class T>
 	static void SetArray(std::vector<T> arr);
 	static std::string GetKeyForGetter();
+	static bool IsClassInstance(int index = 1);
+	static int StoreReference(int index = 1);
+	static void LoadRefenrece(int reference);
+	static bool IsString(int index);
+	static bool IsNil(int index);
 private:
 	static lua_State* m_lua_state;
 };

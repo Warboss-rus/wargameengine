@@ -8,7 +8,6 @@ class CModelManager
 public:
 	CModelManager() {}
 	void DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly = false, bool gpuSkinning = false);
-	std::shared_ptr<IBounding> GetBoundingBox(std::string const& path);
 	void LoadIfNotExist(std::string const& path);
 	std::vector<std::string> GetAnimations(std::string const& path);
 protected:

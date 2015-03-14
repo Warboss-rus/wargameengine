@@ -170,12 +170,12 @@ void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, s
 							char y = mode[13] - '0';
 							float matrix[16];
 							memcpy(matrix, joints[i].matrix, sizeof(float) * 16);
-							for (unsigned int i = 0; i < anim.matrices.size(); ++i)
+							for (unsigned int j = 0; j < anim.matrices.size(); ++j)
 							{
-								matrix[y * 4 + x] = anim.matrices[i];
-								for (unsigned int j = 0; j < 16; ++j)
+								matrix[y * 4 + x] = anim.matrices[j];
+								for (unsigned int k = 0; k < 16; ++k)
 								{
-									result.push_back(matrix[j]);
+									result.push_back(matrix[k]);
 								}
 							}
 						}

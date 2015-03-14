@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\UI">
-      <UniqueIdentifier>{8332af67-ba2c-45df-bd31-0c2a8362dafb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{85f77776-fb0b-4e1a-b9ab-93330f23f37c}</UniqueIdentifier>
     </Filter>
@@ -36,6 +33,9 @@
     </Filter>
     <Filter Include="Source Files\controller">
       <UniqueIdentifier>{bbfc768f-9356-4e40-bfa4-23e779379293}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\view\UI">
+      <UniqueIdentifier>{8332af67-ba2c-45df-bd31-0c2a8362dafb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -76,9 +76,6 @@
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\TextureManager.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\Bounding.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\Input.cpp">
@@ -237,22 +234,31 @@
     <ClCompile Include="PluginManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="view\CameraFirstPerson.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="model\Bounding.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ParticleTracer.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ruler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UI\IUI.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIButton.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIElement.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIPanel.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\3dModel.h">
       <Filter>Header Files\view</Filter>
@@ -269,23 +275,20 @@
     <ClInclude Include="view\TextureManager.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\Bounding.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\Input.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="UI\UICheckBox.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIEdit.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIText.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UITheme.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandCreateObject.h">
       <Filter>Header Files\controller</Filter>
@@ -312,16 +315,16 @@
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIStaticText.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIList.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIComboBox.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIRadioGroup.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\TextWriter.h">
       <Filter>Header Files\view</Filter>
@@ -357,7 +360,7 @@
       <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIScrollBar.h">
-      <Filter>Header Files\UI</Filter>
+      <Filter>Header Files\view\UI</Filter>
     </ClInclude>
     <ClInclude Include="ThreadPool.h">
       <Filter>Header Files</Filter>
@@ -447,6 +450,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="view\ImageDecoderInterface.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\CameraFirstPerson.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Bounding.h">
+      <Filter>Header Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleTracer.h">
+      <Filter>Header Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IParticleEffecth.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
   </ItemGroup>

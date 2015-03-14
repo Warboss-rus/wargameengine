@@ -1,5 +1,6 @@
 #include <vector>
 #include "Vector3.h"
+#include <string.h>
 
 class CParticle
 {

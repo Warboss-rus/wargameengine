@@ -1,5 +1,5 @@
 #include "Object.h"
-#include <sys\timeb.h> 
+#include <sys/timeb.h> 
 
 CObject::CObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
 	:m_model(model), m_coords(x, y, 0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
@@ -80,8 +80,8 @@ float CObject::GetAnimationTime() const
 	if (m_animationBegin == 0L) return 0.0f;
 	struct timeb time;
 	ftime(&time);
-	long delta = 1000 * time.time + time.millitm - m_animationBegin;
-	return (double)delta / 1000.0f;
+	long long delta = 1000 * time.time + time.millitm - m_animationBegin;
+	return static_cast<float>((double)delta / 1000.0);
 }
 
 void CObject::RemoveSecondaryModel(std::string const& model)
@@ -106,21 +106,22 @@ void CObject::Update()
 {
 	struct timeb time;
 	ftime(&time);
-	long current = 1000 * time.time + time.millitm;
-	if (m_goSpeed == 0.0f)
+	long long current = 1000 * time.time + time.millitm;
+	if (m_goSpeed == 0.0)
 	{
 		m_lastUpdateTime = current;
 		return;
 	}
 	CVector3d dir = m_goTarget - m_coords;
 	dir.Normalize();
-	dir = dir * (current - m_lastUpdateTime) / 1000.0f * m_goSpeed;
+	m_rotation = atan2(dir.y, dir.x) * 180 / 3.1415;
+	dir = dir * static_cast<double>(current - m_lastUpdateTime) / 1000.0 * m_goSpeed;
 	if (dir.GetLength() > (m_goTarget - m_coords).GetLength()) dir = (m_goTarget - m_coords);
 	m_coords += dir;
 	m_lastUpdateTime = current;
 	if ((m_coords - m_goTarget).GetLength() < 0.0001)
 	{
-		m_goSpeed = 0.0f;
+		m_goSpeed = 0.0;
 		PlayAnimation("", sAnimation::NONLOOPING, 0.0f);
 	}
 }

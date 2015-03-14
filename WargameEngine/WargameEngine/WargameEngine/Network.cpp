@@ -1,4 +1,5 @@
 #include "Network.h"
+#include <string.h>
 #include "LogWriter.h"
 #include "model/GameModel.h"
 #include "model/Object.h"
@@ -283,7 +284,7 @@ std::shared_ptr<IObject> CNetwork::GetObject(unsigned int address)
 
 void CNetwork::AddAddressLocal(std::shared_ptr<IObject> obj)
 {
-	m_translator[(unsigned int)obj.get()] = obj;
+	m_translator[(uintptr_t)obj.get()] = obj;
 }
 
 void CNetwork::AddAddress(std::shared_ptr<IObject> obj, unsigned int address)

@@ -45,13 +45,13 @@ float CLUAScript::GetArgument<float>(int index)
 template<>
 int CLUAScript::GetArgument<int>(int index)
 {
-    return luaL_checkinteger(m_lua_state,index);
+    return static_cast<int>(luaL_checkinteger(m_lua_state,index));
 }
 
 template<>
 unsigned int CLUAScript::GetArgument<unsigned int>(int index)
 {
-    return luaL_checkinteger(m_lua_state,index);
+    return static_cast<unsigned int>(luaL_checkinteger(m_lua_state,index));
 }
 
 template<>
@@ -114,7 +114,7 @@ int CLUAScript::RunScript(std::string const& file)
 		const char *err = lua_tostring(m_lua_state, -1);
 		LogWriter::WriteLine(std::string("LUA Error: ") + err);
 	}
-	return lua_tointeger(m_lua_state, lua_gettop(m_lua_state));
+	return static_cast<int>(lua_tointeger(m_lua_state, lua_gettop(m_lua_state)));
 }
 
 template<>
@@ -262,6 +262,17 @@ int CLUAScript::CallFunctionReturn<int, const char*>(std::string const& funcName
 	return result;
 }
 
+void CLUAScript::CallFunctionFromReference(int referenceIndex)
+{
+	lua_rawgeti(m_lua_state, LUA_REGISTRYINDEX, referenceIndex);
+	int result = lua_pcall(m_lua_state, 0, 0, 0);
+	if (result && lua_isstring(m_lua_state, -1))
+	{
+		const char *err = lua_tostring(m_lua_state, -1);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+}
+
 void * CLUAScript::GetClassInstance(std::string const& className)
 {
 	void* ud = 0;
@@ -282,22 +293,23 @@ int CLUAScript::NewInstanceClass(void* instance, std::string const& className)
 	
 	luaL_checktype(m_lua_state, 1, LUA_TTABLE);
     
-    lua_newtable(m_lua_state);      // Create table to represent instance
+    lua_newtable(m_lua_state);      // Create table to represent instance. Stack:: table
 
     // Set first argument of new to metatable of instance
-    lua_pushvalue(m_lua_state,1);       
-    lua_setmetatable(m_lua_state, -2);
+    lua_pushvalue(m_lua_state,1);       //Stack: table, 1
+    lua_setmetatable(m_lua_state, -2); //stack: table
 
-    // Do function lookups in metatable
-    lua_pushvalue(m_lua_state,1);
-    lua_setfield(m_lua_state, 1, "__index");  
+    // Do function lookups in metatable. Need to change for properties to work
+    lua_pushvalue(m_lua_state,1); //Stack: table, 1
+    lua_setfield(m_lua_state, 1, "__index");  //Stack: table
 
-	void **s = (void **)lua_newuserdata(m_lua_state, sizeof(void *));
+	void **s = (void **)lua_newuserdata(m_lua_state, sizeof(void *));//Stack: table, userdata
 
 	*s = instance;
-	luaL_getmetatable(m_lua_state, std::string("Classes." + className).c_str());
-	lua_setmetatable(m_lua_state, -2);
-	lua_setfield(m_lua_state, -2, "__self"); 
+	luaL_getmetatable(m_lua_state, std::string("Classes." + className).c_str());//Stack: table, userdata, metatable
+
+	lua_setmetatable(m_lua_state, -2);//Stack: table, userdata
+	lua_setfield(m_lua_state, -2, "__self");//Stack: table
     
 	return 1; 
 }
@@ -443,4 +455,34 @@ std::string CLUAScript::GetKeyForGetter()
 	lua_settop(m_lua_state, 2);
 
 	return key;
+}
+
+bool CLUAScript::IsClassInstance(int index)
+{
+	luaL_checktype(m_lua_state, index, LUA_TTABLE);
+	lua_getfield(m_lua_state, index, "__self");
+	bool result = lua_isuserdata(m_lua_state, -1) != 0;
+	lua_pop(m_lua_state, 1);
+	return result;
+}
+
+int CLUAScript::StoreReference(int index)
+{
+	lua_pushvalue(m_lua_state, index);
+	return luaL_ref(m_lua_state, LUA_REGISTRYINDEX);
+}
+
+void CLUAScript::LoadRefenrece(int reference)
+{
+	lua_rawgeti(m_lua_state, LUA_REGISTRYINDEX, reference);
+}
+
+bool CLUAScript::IsString(int index)
+{
+	return lua_isstring(m_lua_state, index) != 0;
+}
+
+bool CLUAScript::IsNil(int index)
+{
+	return lua_isnil(m_lua_state, index);
 }

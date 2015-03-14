@@ -5,7 +5,11 @@
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
+#pragma warning( push )
+#pragma warning( disable : 4457)
+#pragma warning( disable : 4456)
 #include "../stb_image.c"
+#pragma warning( pop )
 #include "../nv_dds.h"
 #include "GameView.h"
 
@@ -310,7 +314,7 @@ void ApplyTeamcolor(sImage* image, std::string const& maskFile, unsigned char co
 			unsigned int maskPos = 54 + x * maskWidth / image->width * maskHeight + y * maskHeight / image->height;
 			for (unsigned int i = 0; i < 3; ++i)
 			{
-				image->data[pos + i] = image->data[pos + i] * (1.0 - maskData[maskPos] / 255.0) + color[i] * (maskData[maskPos] / 255.0);
+				image->data[pos + i] = static_cast<unsigned char>(image->data[pos + i] * (1.0 - maskData[maskPos] / 255.0) + color[i] * (maskData[maskPos] / 255.0));
 			}
 		}
 	}

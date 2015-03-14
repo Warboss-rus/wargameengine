@@ -98,21 +98,21 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 		}
 		if (type == "map_Kd") //texture
 		{
-			std::string path;
-			lineStream >> path;
-			lastMaterial->texture = path;
+			std::string texture;
+			lineStream >> texture;
+			lastMaterial->texture = texture;
 		}
 		if (type == "map_bump" || type == "bump") //bump texture
 		{
-			std::string path;
-			lineStream >> path;
-			lastMaterial->bumpMap = path;
+			std::string texture;
+			lineStream >> texture;
+			lastMaterial->bumpMap = texture;
 		}
 		if (type == "map_specular") //custom specular map extension
 		{
-			std::string path;
-			lineStream >> path;
-			lastMaterial->texture = path;
+			std::string texture;
+			lineStream >> texture;
+			lastMaterial->texture = texture;
 		}
 	}
 	iFile.close();

@@ -221,11 +221,11 @@ int SetMoveLimit(lua_State* L)
 	return 0;
 }
 
-int SelectNull(lua_State* L)
+int Select(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
-        return luaL_error(L, "no argument expected");
-	std::shared_ptr<IObject> object = NULL;
+        return luaL_error(L, "1 argument expected (thing to select");
+	std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->Get3DObject((IObject *)CLUAScript::GetClassInstance("Object"));
 	CGameModel::GetInstance().lock()->SelectObject(object);
 	return 0;
 }
@@ -382,7 +382,7 @@ static const luaL_Reg ObjectFuncs[] = {
 	{ "SetProperty", SetProperty },
 	{ "SetSelectable", SetSelectable },
 	{ "SetMoveLimit", SetMoveLimit },
-	{ "SelectNull", SelectNull },
+	{ "Select", Select },
 	{ "Equals", ObjectEquals },
 	{ "IsGroup", IsGroup },
 	{ "GetGroupChildrenCount", GetGroupChildrenCount },

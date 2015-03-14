@@ -1,7 +1,4 @@
 #include "MaterialManager.h"
-#include <fstream>
-#include <string>
-#include <sstream>
 
 const sMaterial * CMaterialManager::GetMaterial(std::string const& name) const
 {

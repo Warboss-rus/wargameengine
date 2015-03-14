@@ -12,18 +12,27 @@
 bool CInput::m_isLMBDown = false;
 bool CInput::m_isRMBDown = false;
 bool CInput::m_ruler = false;
-double CInput::startX = 0;
-double CInput::startY = 0;
-double CInput::m_oldRotation = 0;
+double CInput::startX = 0.0;
+double CInput::startY = 0.0;
+double CInput::m_oldRotation = 0.0;
+int CInput::startWindowX = -1;
+int CInput::startWindowY = -1;
 std::map<CInput::sKeyBind, std::function<void()>> CInput::m_keyBindings;
 std::string CInput::m_LMBclickCallback;
 std::string CInput::m_RMBclickCallback;
 bool CInput::m_disableDefaultLMB = false;
 bool CInput::m_disableDefaultRMB = false;
 
+void SelectObject(int x, int y, bool shiftPressed, bool noCallback = false)
+{
+	double start[3];
+	double end[3];
+	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
+	CGameController::GetInstance().lock()->SelectObject(start, end, shiftPressed, noCallback);
+}
+
 void CInput::OnMouse(int button, int state, int x, int y)
 {
-	std::shared_ptr<CGameView> view = CGameView::GetInstance().lock();
 	std::shared_ptr<CGameModel> model = CGameModel::GetInstance().lock();
 	switch(button)
 	{
@@ -31,7 +40,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		if (state == GLUT_DOWN)
 		{
 			m_isLMBDown = true;
-			if(view->GetUI()->LeftMouseButtonDown(x, y)) return;
+			if(CGameView::GetInstance().lock()->GetUI()->LeftMouseButtonDown(x, y)) return;
 			if(m_ruler)
 			{
 				double worldX, worldY;
@@ -43,7 +52,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				CRuler::Hide();
 				if (!m_disableDefaultLMB)
 				{
-					view->SelectObject(x, y, glutGetModifiers() == GLUT_ACTIVE_SHIFT);
+					SelectObject(x, y, glutGetModifiers() == GLUT_ACTIVE_SHIFT);
 					std::shared_ptr<IObject> obj = model->GetSelectedObject();
 					if (obj)//drag object
 					{
@@ -53,8 +62,8 @@ void CInput::OnMouse(int button, int state, int x, int y)
 					}
 					else//selection rectangle
 					{
-						startX = x;
-						startY = y;
+						startWindowX = x;
+						startWindowY = y;
 					}
 				}
 			}
@@ -63,32 +72,37 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			if (!m_isLMBDown) break;
 			m_isLMBDown = false;
-			if (view->GetUI()->LeftMouseButtonUp(x, y)) return;
+			if (CGameView::GetInstance().lock()->GetUI()->LeftMouseButtonUp(x, y)) return;
 			std::shared_ptr<IObject> obj = model->GetSelectedObject();
 			if(!m_ruler && obj && !m_disableDefaultLMB)
 			{
-				view->TryMoveSelectedObject(obj, x, y);
+				double worldX, worldY;
+				const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
+				WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
+				CGameController::GetInstance().lock()->TryMoveSelectedObject(obj, worldX, worldY, 0.0);
 				double newX = obj->GetX();
 				double newY = obj->GetY();
 				CCommandHandler::GetInstance().lock()->AddNewMoveObject(obj, newX - startX, newY - startY);
-				startX = -1;
-				startY = -1;
+				startX = -1.0;
+				startY = -1.0;
 				CRuler::Hide();
 			}
 			if (!obj && !m_disableDefaultLMB)
 			{
 				//needs to be fixed
 				double beginWorldX, beginWorldY, endWorldX, endWorldY;
-				WindowCoordsToWorldCoords(startX, startY, beginWorldX, beginWorldY);
+				WindowCoordsToWorldCoords(startWindowX, startWindowY, beginWorldX, beginWorldY);
 				WindowCoordsToWorldCoords(x, y, endWorldX, endWorldY);
 				CGameController::GetInstance().lock()->SelectObjectGroup(beginWorldX, beginWorldY, endWorldX, endWorldY);
+				startWindowX = -1;
+				startWindowY = -1;
 			}
 			if (!m_LMBclickCallback.empty())
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
 				std::shared_ptr<IObject> prev = model->GetSelectedObject();
-				view->SelectObject(x, y, false);
+				SelectObject(x, y, false, true);
 				CLUAScript::CallFunction(m_LMBclickCallback, model->GetSelectedObject().get(), "Object", worldX, worldY, 0.0);
 				model->SelectObject(prev);
 			}
@@ -101,7 +115,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 			if (!m_disableDefaultRMB)
 			{
 				std::shared_ptr<IObject> prev = model->GetSelectedObject();
-				view->SelectObject(x, y, false);
+				SelectObject(x, y, false);
 				WindowCoordsToWorldCoords(x, y, startX, startY);
 				IObject * object = model->GetSelectedObject().get();
 				if (!object) model->SelectObject(prev);
@@ -128,10 +142,10 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
 				std::shared_ptr<IObject> prev = model->GetSelectedObject();
-				view->SelectObject(x, y, false);
-				std::shared_ptr<IObject> object = model->GetSelectedObject();
+				SelectObject(x, y, false, true);
+				std::shared_ptr<IObject> current = model->GetSelectedObject();
 				model->SelectObject(prev);
-				CLUAScript::CallFunction(m_RMBclickCallback, object.get(), "Object", worldX, worldY, 0.0);
+				CLUAScript::CallFunction(m_RMBclickCallback, current.get(), "Object", worldX, worldY, 0.0);
 			}
 			startX = 0;
 			startY = 0;
@@ -139,12 +153,12 @@ void CInput::OnMouse(int button, int state, int x, int y)
 	case SCROLL_UP:
 		if (state == GLUT_UP)
 		{
-			view->GetCamera()->OnMouseWheelUp();
+			CGameView::GetInstance().lock()->GetCamera()->OnMouseWheelUp();
 		}break;
 	case SCROLL_DOWN:
 		if (state == GLUT_UP)
 		{
-			view->GetCamera()->OnMouseWheelDown();
+			CGameView::GetInstance().lock()->GetCamera()->OnMouseWheelDown();
 		}break;
 	}
 }
@@ -183,8 +197,8 @@ void CInput::OnSpecialKeyPress(int key, int x, int y)
 
 void CInput::OnPassiveMouseMove(int x, int y)
 {
-	static int prevMouseX;
-	static int prevMouseY;
+	static int prevMouseX = 320;
+	static int prevMouseY = 240;
 	static bool just_warped = false;
 	if(just_warped) 
 	{
@@ -224,7 +238,10 @@ void CInput::OnMouseMove(int x, int y)
 			std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->GetSelectedObject();
 			if(object)
 			{
-				CGameView::GetInstance().lock()->TryMoveSelectedObject(object, x, y);
+				double worldX, worldY;
+				const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
+				WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
+				CGameController::GetInstance().lock()->TryMoveSelectedObject(object, worldX, worldY, 0.0);
 				CRuler::SetEnd(object->GetX(), object->GetY());
 			}
 		}

@@ -20,7 +20,7 @@ CPlugin::CPlugin(std::string const& str)
 #ifdef WIN32
 	m_handle = LoadLibraryA(str.c_str());
 #else
-	m_handle = dlopen(name.c_str(), RTLD_NOW);
+	m_handle = dlopen(str.c_str(), RTLD_NOW);
 #endif
 	if (!m_handle)
 	{

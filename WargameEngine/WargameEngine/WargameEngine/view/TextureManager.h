@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <utility>
+#include <string.h>
 #pragma once
 
 struct sTeamColor

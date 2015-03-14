@@ -21,6 +21,7 @@ std::weak_ptr<CGameController> CGameController::GetInstance()
 
 CGameController::CGameController()
 {
+	CNetwork::FreeInstance();
 }
 
 void CGameController::Init()
@@ -43,7 +44,19 @@ CGameController::~CGameController(void)
 	CCommandHandler::FreeInstance();//causes crash on CommandDeleteObject being destroyed
 }
 
-void CGameController::SelectObjectGroup(int beginX, int beginY, int endX, int endY)
+void CGameController::Update()
+{
+	if (CNetwork::GetInstance().lock()->IsConnected()) CNetwork::GetInstance().lock()->Update();
+	if (m_updateCallback) m_updateCallback();
+	if (m_singleCallback)
+	{
+		m_singleCallback();
+		m_singleCallback = std::function<void()>();
+	}
+	CGameModel::GetInstance().lock()->Update();
+}
+
+void CGameController::SelectObjectGroup(double beginX, double beginY, double endX, double endY)
 {
 	double minX = (beginX < endX) ? beginX : endX;
 	double maxX = (beginX > endX) ? beginX : endX;
@@ -88,7 +101,7 @@ std::shared_ptr<IObject> CGameController::GetNearestObject(double * start, doubl
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(object->GetPathToModel());
+		std::shared_ptr<IBounding> bounding = CGameModel::GetInstance().lock()->GetBoundingBox(object->GetPathToModel());
 		if (!bounding) continue;
 		if (bounding->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
@@ -106,7 +119,7 @@ std::shared_ptr<IObject> CGameController::GetNearestObject(double * start, doubl
 	return selectedObject;
 }
 
-void CGameController::SelectObject(double * begin, double * end, bool add)
+void CGameController::SelectObject(double * begin, double * end, bool add, bool noCallback)
 {
 	std::shared_ptr<IObject> selectedObject = GetNearestObject(begin, end);
 	if (selectedObject && !selectedObject->IsSelectable())
@@ -158,7 +171,7 @@ void CGameController::SelectObject(double * begin, double * end, bool add)
 			CGameModel::GetInstance().lock()->SelectObject(selectedObject);
 		}
 	}
-	if (m_selectionCallback) m_selectionCallback();
+	if (m_selectionCallback && !noCallback) m_selectionCallback();
 }
 
 const CVector3d * CGameController::GetCapturePoint() const
@@ -169,7 +182,7 @@ const CVector3d * CGameController::GetCapturePoint() const
 bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 {
 	CGameModel * model = CGameModel::GetInstance().lock().get();
-	std::shared_ptr<IBounding> curBox = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(current->GetPathToModel());
+	std::shared_ptr<IBounding> curBox = CGameModel::GetInstance().lock()->GetBoundingBox(current->GetPathToModel());
 	if (!curBox) return false;
 	CVector3d curPos(current->GetCoords());
 	double curAngle = current->GetRotation();
@@ -177,7 +190,7 @@ bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> cur
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(object->GetPathToModel());
+		std::shared_ptr<IBounding> bounding = CGameModel::GetInstance().lock()->GetBoundingBox(object->GetPathToModel());
 		if (!bounding) continue;
 		CVector3d pos(object->GetCoords());
 		double angle = object->GetRotation();
@@ -192,13 +205,12 @@ bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> cur
 bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 {
 	CGameModel* model = CGameModel::GetInstance().lock().get();
-	CModelManager& modelManager = CGameView::GetInstance().lock()->GetModelManager();
 	CVector3d coords;
 	for (unsigned int i = 0; i < model->GetObjectCount(); ++i)
 	{
 		IObject * current = model->Get3DObject(i).get();
 		if (current == shooter || current == target) continue;
-		IBounding * box = modelManager.GetBoundingBox(current->GetPathToModel()).get();
+		IBounding * box = model->GetBoundingBox(current->GetPathToModel()).get();
 		if (!box) continue;
 		if (box->IsIntersectsRay(origin, dir, current->GetX(), current->GetY(), current->GetZ(), current->GetRotation(), coords))
 		{
@@ -245,7 +257,7 @@ int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * t
 int CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 {
 	if (!shooter || !target) return -1;
-	IBounding * targetBound = CGameView::GetInstance().lock()->GetModelManager().GetBoundingBox(target->GetPathToModel()).get();
+	IBounding * targetBound = CGameModel::GetInstance().lock()->GetBoundingBox(target->GetPathToModel()).get();
 	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
 	return BBoxlos(center, targetBound, shooter, target);
 }
@@ -297,7 +309,7 @@ std::vector<char> CGameController::GetState(bool hasAdresses) const
 		{
 			std::vector<char> address;
 			address.resize(4);
-			*((unsigned int*)&address[0]) = (unsigned int)object;
+			*((unsigned int*)&address[0]) = (uintptr_t)object;
 			current.insert(current.end(), address.begin(), address.end());
 		}
 		std::vector<char> properties = PackProperties(object->GetAllProperties());
@@ -337,7 +349,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 		}
 		unsigned int propertiesCount = *((unsigned int*)&data[current]);
 		current += 4;
-		for (unsigned int i = 0; i < propertiesCount; ++i)
+		for (unsigned int j = 0; j < propertiesCount; ++j)
 		{
 			unsigned int firstSize = *((unsigned int*)&data[current]);
 			char * first = new char[firstSize];
@@ -412,4 +424,14 @@ void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, dou
 	{
 		object->SetCoords(old);
 	}
+}
+
+void CGameController::SetUpdateCallback(callback(onUpdate))
+{
+	m_updateCallback = onUpdate;
+}
+
+void CGameController::SetSingleCallback(callback(onSingleUpdate))
+{
+	m_singleCallback = onSingleUpdate;
 }

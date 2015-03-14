@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="94">
+<configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -15,20 +15,20 @@
         <itemPath>controller/CommandRotateObject.h</itemPath>
         <itemPath>controller/GameController.h</itemPath>
         <itemPath>controller/ICommand.h</itemPath>
-      </logicalFolder>
-      <logicalFolder name="LUA" displayName="LUA" projectFiles="true">
-        <itemPath>LUA/LUARegisterFunctions.h</itemPath>
-        <itemPath>LUA/LUARegisterObject.h</itemPath>
-        <itemPath>LUA/LUARegisterUI.h</itemPath>
-        <itemPath>LUA/LUAScriptHandler.h</itemPath>
-        <itemPath>LUA/TimedCallback.h</itemPath>
+        <itemPath>controller/LUARegisterFunctions.h</itemPath>
+        <itemPath>controller/LUAScriptHandler.h</itemPath>
+        <itemPath>controller/TimedCallback.h</itemPath>
       </logicalFolder>
       <logicalFolder name="model" displayName="model" projectFiles="true">
-        <itemPath>model/3dObject.h</itemPath>
+        <itemPath>model/Bounding.h</itemPath>
         <itemPath>model/GameModel.h</itemPath>
+        <itemPath>model/Landscape.h</itemPath>
         <itemPath>model/MovementLimiter.h</itemPath>
+        <itemPath>model/Object.h</itemPath>
         <itemPath>model/ObjectGroup.h</itemPath>
         <itemPath>model/ObjectInterface.h</itemPath>
+        <itemPath>model/ObjectStatic.h</itemPath>
+        <itemPath>model/Projectile.h</itemPath>
       </logicalFolder>
       <logicalFolder name="UI" displayName="UI" projectFiles="true">
         <itemPath>UI/IUI.h</itemPath>
@@ -47,34 +47,44 @@
       </logicalFolder>
       <logicalFolder name="view" displayName="view" projectFiles="true">
         <itemPath>view/3dModel.h</itemPath>
-        <itemPath>view/Bounding.h</itemPath>
-        <itemPath>view/Camera.h</itemPath>
-        <itemPath>view/DecalFactory.h</itemPath>
+        <itemPath>view/CameraFirstPerson.h</itemPath>
+        <itemPath>view/CameraStrategy.h</itemPath>
         <itemPath>view/GameView.h</itemPath>
+        <itemPath>view/ICamera.h</itemPath>
+        <itemPath>view/IParticleEffecth.h</itemPath>
+        <itemPath>view/ImageDecoderInterface.h</itemPath>
         <itemPath>view/Input.h</itemPath>
         <itemPath>view/Material.h</itemPath>
         <itemPath>view/MaterialManager.h</itemPath>
         <itemPath>view/ModelManager.h</itemPath>
         <itemPath>view/OBJModelFactory.h</itemPath>
+        <itemPath>view/Particle.h</itemPath>
+        <itemPath>view/ParticleEffect.h</itemPath>
+        <itemPath>view/ParticleModel.h</itemPath>
+        <itemPath>view/ParticleSystem.h</itemPath>
+        <itemPath>view/ParticleTracer.h</itemPath>
+        <itemPath>view/SelectionTools.h</itemPath>
         <itemPath>view/ShaderManager.h</itemPath>
         <itemPath>view/SkyBox.h</itemPath>
-        <itemPath>view/Table.h</itemPath>
         <itemPath>view/TextWriter.h</itemPath>
         <itemPath>view/TextureManager.h</itemPath>
         <itemPath>view/Vector2.h</itemPath>
         <itemPath>view/Vector3.h</itemPath>
-        <itemPath>view/WBMModelFactory.h</itemPath>
+        <itemPath>view/gl.h</itemPath>
       </logicalFolder>
       <itemPath>LogWriter.h</itemPath>
       <itemPath>Module.h</itemPath>
       <itemPath>NetSocket.h</itemPath>
+      <itemPath>Network.h</itemPath>
+      <itemPath>OSSpecific.h</itemPath>
+      <itemPath>Plugin.h</itemPath>
+      <itemPath>PluginManager.h</itemPath>
       <itemPath>Ruler.h</itemPath>
-      <itemPath>SelectionTools.h</itemPath>
-      <itemPath>Task.h</itemPath>
+      <itemPath>SoundPlayer.h</itemPath>
       <itemPath>ThreadPool.h</itemPath>
       <itemPath>Threading.h</itemPath>
-      <itemPath>los.h</itemPath>
       <itemPath>nv_dds.h</itemPath>
+      <itemPath>tinyxml.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -93,19 +103,20 @@
         <itemPath>controller/CommandMoveObject.cpp</itemPath>
         <itemPath>controller/CommandRotateObject.cpp</itemPath>
         <itemPath>controller/GameController.cpp</itemPath>
-      </logicalFolder>
-      <logicalFolder name="LUA" displayName="LUA" projectFiles="true">
-        <itemPath>LUA/LUARegisterFunctions.cpp</itemPath>
-        <itemPath>LUA/LUARegisterObject.cpp</itemPath>
-        <itemPath>LUA/LUARegisterUI.cpp</itemPath>
-        <itemPath>LUA/LUAScriptHandler.cpp</itemPath>
-        <itemPath>LUA/TimedCallback.cpp</itemPath>
+        <itemPath>controller/LUARegisterFunctions.cpp</itemPath>
+        <itemPath>controller/LUARegisterObject.cpp</itemPath>
+        <itemPath>controller/LUARegisterUI.cpp</itemPath>
+        <itemPath>controller/LUAScriptHandler.cpp</itemPath>
+        <itemPath>controller/TimedCallback.cpp</itemPath>
       </logicalFolder>
       <logicalFolder name="model" displayName="model" projectFiles="true">
-        <itemPath>model/3dObject.cpp</itemPath>
+        <itemPath>model/Bounding.cpp</itemPath>
         <itemPath>model/GameModel.cpp</itemPath>
+        <itemPath>model/Landscape.cpp</itemPath>
         <itemPath>model/MovementLimiter.cpp</itemPath>
+        <itemPath>model/Object.cpp</itemPath>
         <itemPath>model/ObjectGroup.cpp</itemPath>
+        <itemPath>model/Projectile.cpp</itemPath>
       </logicalFolder>
       <logicalFolder name="UI" displayName="UI" projectFiles="true">
         <itemPath>UI/UIButton.cpp</itemPath>
@@ -123,17 +134,21 @@
       </logicalFolder>
       <logicalFolder name="view" displayName="view" projectFiles="true">
         <itemPath>view/3dModel.cpp</itemPath>
-        <itemPath>view/Bounding.cpp</itemPath>
-        <itemPath>view/Camera.cpp</itemPath>
-        <itemPath>view/DecalFactory.cpp</itemPath>
+        <itemPath>view/CameraFirstPerson.cpp</itemPath>
+        <itemPath>view/CameraStrategy.cpp</itemPath>
+        <itemPath>view/ColladaModelFactory.cpp</itemPath>
         <itemPath>view/GameView.cpp</itemPath>
         <itemPath>view/Input.cpp</itemPath>
         <itemPath>view/MaterialManager.cpp</itemPath>
         <itemPath>view/ModelManager.cpp</itemPath>
         <itemPath>view/OBJModelFactory.cpp</itemPath>
+        <itemPath>view/ParticleEffect.cpp</itemPath>
+        <itemPath>view/ParticleModel.cpp</itemPath>
+        <itemPath>view/ParticleSystem.cpp</itemPath>
+        <itemPath>view/ParticleTracer.cpp</itemPath>
+        <itemPath>view/SelectionTools.cpp</itemPath>
         <itemPath>view/ShaderManager.cpp</itemPath>
         <itemPath>view/SkyBox.cpp</itemPath>
-        <itemPath>view/Table.cpp</itemPath>
         <itemPath>view/TextWriter.cpp</itemPath>
         <itemPath>view/TextureManager.cpp</itemPath>
         <itemPath>view/WBMModelFactory.cpp</itemPath>
@@ -141,13 +156,19 @@
       <itemPath>LogWriter.cpp</itemPath>
       <itemPath>Module.cpp</itemPath>
       <itemPath>NetSocket.cpp</itemPath>
+      <itemPath>Network.cpp</itemPath>
+      <itemPath>OSSpecific.cpp</itemPath>
+      <itemPath>Plugin.cpp</itemPath>
+      <itemPath>PluginManager.cpp</itemPath>
       <itemPath>Ruler.cpp</itemPath>
-      <itemPath>SelectionTools.cpp</itemPath>
+      <itemPath>SoundPlayer.cpp</itemPath>
       <itemPath>ThreadPool.cpp</itemPath>
       <itemPath>Threading.cpp</itemPath>
-      <itemPath>los.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>nv_dds.cpp</itemPath>
+      <itemPath>tinyxml.cpp</itemPath>
+      <itemPath>tinyxmlerror.cpp</itemPath>
+      <itemPath>tinyxmlparser.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -173,6 +194,10 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <architecture>1</architecture>
+          <standard>10</standard>
+        </cTool>
         <ccTool>
           <standard>8</standard>
           <incDir>
@@ -186,29 +211,9 @@
             <linkerLibFileItem>../../LUA/LUA/liblua.a</linkerLibFileItem>
             <linkerLibFileItem>../../MathLib/MathLib/dist/Debug/GNU-Linux-x86/libmathlib.a</linkerLibFileItem>
           </linkerLibItems>
-          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs`</commandLine>
+          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs` -lopenal</commandLine>
         </linkerTool>
       </compileType>
-      <item path="LUA/LUARegisterFunctions.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterFunctions.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterObject.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterObject.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterUI.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterUI.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/LUAScriptHandler.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUAScriptHandler.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/TimedCallback.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/TimedCallback.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="LogWriter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LogWriter.h" ex="false" tool="3" flavor2="0">
@@ -221,15 +226,29 @@
       </item>
       <item path="NetSocket.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Network.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Network.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OSSpecific.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OSSpecific.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Plugin.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Plugin.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PluginManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PluginManager.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Ruler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Ruler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="SelectionTools.cpp" ex="false" tool="1" flavor2="0">
+      <item path="SoundPlayer.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="SelectionTools.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Task.h" ex="false" tool="3" flavor2="0">
+      <item path="SoundPlayer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="ThreadPool.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -336,23 +355,46 @@
       </item>
       <item path="controller/ICommand.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="los.cpp" ex="false" tool="1" flavor2="0">
+      <item path="controller/LUARegisterFunctions.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
       </item>
-      <item path="los.h" ex="false" tool="3" flavor2="0">
+      <item path="controller/LUARegisterFunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/LUARegisterObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/LUARegisterUI.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/LUAScriptHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/LUAScriptHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/TimedCallback.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/TimedCallback.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="model/3dObject.cpp" ex="false" tool="1" flavor2="0">
+      <item path="model/Bounding.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="model/3dObject.h" ex="false" tool="3" flavor2="0">
+      <item path="model/Bounding.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="model/GameModel.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="model/GameModel.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="model/Landscape.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/Landscape.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="model/MovementLimiter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="model/MovementLimiter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/Object.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/Object.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="model/ObjectGroup.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -360,29 +402,47 @@
       </item>
       <item path="model/ObjectInterface.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="model/ObjectStatic.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/Projectile.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/Projectile.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="nv_dds.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="nv_dds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="tinyxml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxmlerror.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="tinyxmlparser.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/3dModel.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/3dModel.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="view/Bounding.cpp" ex="false" tool="1" flavor2="0">
+      <item path="view/CameraFirstPerson.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="view/Bounding.h" ex="false" tool="3" flavor2="0">
+      <item path="view/CameraFirstPerson.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="view/Camera.cpp" ex="false" tool="1" flavor2="0">
+      <item path="view/CameraStrategy.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="view/Camera.h" ex="false" tool="3" flavor2="0">
+      <item path="view/CameraStrategy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="view/DecalFactory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="view/DecalFactory.h" ex="false" tool="3" flavor2="0">
+      <item path="view/ColladaModelFactory.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/GameView.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/GameView.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ICamera.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/IParticleEffecth.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ImageDecoderInterface.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="view/Input.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -402,6 +462,28 @@
       </item>
       <item path="view/OBJModelFactory.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="view/Particle.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleEffect.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleEffect.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleModel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleModel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleSystem.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleSystem.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleTracer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleTracer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/SelectionTools.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/SelectionTools.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="view/ShaderManager.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/ShaderManager.h" ex="false" tool="3" flavor2="0">
@@ -409,10 +491,6 @@
       <item path="view/SkyBox.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/SkyBox.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="view/Table.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="view/Table.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="view/TextWriter.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -428,7 +506,7 @@
       </item>
       <item path="view/WBMModelFactory.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="view/WBMModelFactory.h" ex="false" tool="3" flavor2="0">
+      <item path="view/gl.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -466,26 +544,6 @@
           <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs`</commandLine>
         </linkerTool>
       </compileType>
-      <item path="LUA/LUARegisterFunctions.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterFunctions.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterObject.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterObject.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterUI.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUARegisterUI.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/LUAScriptHandler.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/LUAScriptHandler.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="LUA/TimedCallback.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="LUA/TimedCallback.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="LogWriter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LogWriter.h" ex="false" tool="3" flavor2="0">
@@ -498,15 +556,29 @@
       </item>
       <item path="NetSocket.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Network.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Network.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OSSpecific.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="OSSpecific.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Plugin.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Plugin.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PluginManager.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PluginManager.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Ruler.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Ruler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="SelectionTools.cpp" ex="false" tool="1" flavor2="0">
+      <item path="SoundPlayer.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="SelectionTools.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="Task.h" ex="false" tool="3" flavor2="0">
+      <item path="SoundPlayer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="ThreadPool.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -613,23 +685,46 @@
       </item>
       <item path="controller/ICommand.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="los.cpp" ex="false" tool="1" flavor2="0">
+      <item path="controller/LUARegisterFunctions.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
       </item>
-      <item path="los.h" ex="false" tool="3" flavor2="0">
+      <item path="controller/LUARegisterFunctions.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/LUARegisterObject.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/LUARegisterUI.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/LUAScriptHandler.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/LUAScriptHandler.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="controller/TimedCallback.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="controller/TimedCallback.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="model/3dObject.cpp" ex="false" tool="1" flavor2="0">
+      <item path="model/Bounding.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="model/3dObject.h" ex="false" tool="3" flavor2="0">
+      <item path="model/Bounding.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="model/GameModel.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="model/GameModel.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="model/Landscape.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/Landscape.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="model/MovementLimiter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="model/MovementLimiter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/Object.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/Object.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="model/ObjectGroup.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -637,29 +732,47 @@
       </item>
       <item path="model/ObjectInterface.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="model/ObjectStatic.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="model/Projectile.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="model/Projectile.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="nv_dds.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="nv_dds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="tinyxml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxmlerror.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="tinyxmlparser.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/3dModel.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/3dModel.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="view/Bounding.cpp" ex="false" tool="1" flavor2="0">
+      <item path="view/CameraFirstPerson.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="view/Bounding.h" ex="false" tool="3" flavor2="0">
+      <item path="view/CameraFirstPerson.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="view/Camera.cpp" ex="false" tool="1" flavor2="0">
+      <item path="view/CameraStrategy.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="view/Camera.h" ex="false" tool="3" flavor2="0">
+      <item path="view/CameraStrategy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="view/DecalFactory.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="view/DecalFactory.h" ex="false" tool="3" flavor2="0">
+      <item path="view/ColladaModelFactory.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/GameView.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/GameView.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ICamera.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/IParticleEffecth.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ImageDecoderInterface.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="view/Input.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -679,6 +792,28 @@
       </item>
       <item path="view/OBJModelFactory.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="view/Particle.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleEffect.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleEffect.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleModel.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleModel.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleSystem.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleSystem.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/ParticleTracer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/ParticleTracer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="view/SelectionTools.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="view/SelectionTools.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="view/ShaderManager.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/ShaderManager.h" ex="false" tool="3" flavor2="0">
@@ -686,10 +821,6 @@
       <item path="view/SkyBox.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="view/SkyBox.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="view/Table.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="view/Table.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="view/TextWriter.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -705,7 +836,7 @@
       </item>
       <item path="view/WBMModelFactory.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="view/WBMModelFactory.h" ex="false" tool="3" flavor2="0">
+      <item path="view/gl.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

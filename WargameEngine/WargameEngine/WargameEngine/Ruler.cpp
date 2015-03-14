@@ -1,5 +1,5 @@
 #include "Ruler.h"
-#include "view\GameView.h"
+#include "view/GameView.h"
 #include <GL/glut.h>
 #include <math.h>
 #include <string>

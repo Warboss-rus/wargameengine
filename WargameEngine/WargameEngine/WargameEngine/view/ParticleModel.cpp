@@ -17,26 +17,26 @@ std::vector<float> GetFloatsArray(TiXmlElement* data)
 		{
 			if (fl[i] == ',') fl[i] = '.';
 		}
-		float i = atof(fl);
+		float i = static_cast<float>(atof(fl));
 		res.push_back(i);
 		fl = strtok(NULL, " \n\t");
 	}
 	return std::move(res);
 }
 
-float StrToFloat(const char* str, float default)
+float StrToFloat(const char* str, float defaultValue)
 {
-	if (str == NULL) return default;
+	if (str == NULL) return defaultValue;
 	std::string value = str;
 	if (value.substr(0, 5) == "rand(")
 	{
 		double from = atof(value.substr(5, value.find(',') - 5).c_str());
 		double to = atof(value.substr(value.find(',') + 1).c_str());
-		return from + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (to - from)));
+		return static_cast <float> (from + rand()) / (static_cast <float> (RAND_MAX / (to - from)));
 	}
 	else
 	{
-		return atof(str);
+		return static_cast<float>(atof(str));
 	}
 }
 
@@ -46,7 +46,7 @@ CParticleModel::CParticleModel(std::string const& file)
 	doc.LoadFile(file);
 	TiXmlElement* root = doc.RootElement();
 	if (!root) return;
-	m_duration = atof(root->Attribute("duration"));
+	m_duration = static_cast<float>(atof(root->Attribute("duration")));
 	TiXmlElement* materials = root->FirstChildElement("materials");
 	if (!materials) return;
 	TiXmlElement* material = materials->FirstChildElement("material");
@@ -69,7 +69,9 @@ CParticleModel::CParticleModel(std::string const& file)
 		std::vector<float> keyframes = GetFloatsArray(particle->FirstChildElement("keyframes"));
 		std::vector<float> positions = GetFloatsArray(particle->FirstChildElement("positions"));
 		particleIDs[particle->Attribute("id")] = m_particles.size();
-		m_particles.push_back(CParticle(keyframes, positions, materialIds[particle->Attribute("material")], atof(particle->Attribute("width")), atof(particle->Attribute("height"))));
+		float width = static_cast<float>(atof(particle->Attribute("width")));
+		float height = static_cast<float>(atof(particle->Attribute("height")));
+		m_particles.push_back(CParticle(keyframes, positions, materialIds[particle->Attribute("material")], width, height));
 		particle = particle->NextSiblingElement("particle");
 	}
 	TiXmlElement* instances = root->FirstChildElement("instances");
@@ -124,13 +126,13 @@ void DrawParticle(CVector3f const& position, float width, float height)
 
 	float sizeX2 = width * 0.5f;
 	float sizeY2 = height * 0.5f;
-	// извлекаем направление координатных осей из матрицы моделирования-вида 
-	// и умножаем jcb x и y на половину размера бильборда
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅ 
+	// пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ jcb x пїЅ y пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	CVector3d xAxis(modelview[0][0] * sizeX2, modelview[1][0] * sizeX2, modelview[2][0] * sizeX2);
 	CVector3d yAxis(modelview[0][1] * sizeY2, modelview[1][1] * sizeY2, modelview[2][1] * sizeY2);
 	CVector3d zAxis(modelview[0][2], modelview[1][2], modelview[2][2]);
 
-	// вектора смещения четырех вершин бильборда относительно его центра
+	// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	CVector3d p0(-xAxis.x + yAxis.x + position.x, -xAxis.y + yAxis.y + position.y, -xAxis.z + yAxis.z + position.z);
 	CVector3d p1(-xAxis.x - yAxis.x + position.x, -xAxis.y - yAxis.y + position.y, -xAxis.z - yAxis.z + position.z);
 	CVector3d p2(+xAxis.x - yAxis.x + position.x, +xAxis.y - yAxis.y + position.y, +xAxis.z - yAxis.z + position.z);
@@ -166,13 +168,13 @@ void CParticleModel::Draw(float time) const
 	for (unsigned int i = 0; i < m_instances.size(); ++i)
 	{
 		CParticle const& particle = m_particles[m_instances[i].particle];
-		float partTime = (time - m_instances[i].start) / m_instances[i].speed;
+		float partTime = (time - m_instances[i].start) / (float)m_instances[i].speed;
 		if (partTime >= 0.0f && partTime <= particle.GetKeyFrames().back())//we need to draw this particle
 		{
 			glPushMatrix();
 			CVector3d const & coords = m_instances[i].position;
 			glTranslated(coords.x, coords.y, coords.z);
-			glRotated(m_instances[i].rotation, 0.0, 0.0, 1.0);
+			glRotated(m_instances[i].rotation, 0.0, 1.0, 0.0);
 			glScaled(m_instances[i].scale, m_instances[i].scale, m_instances[i].scale);
 			//calculate the position to draw
 			std::vector<float> const& keyframes = particle.GetKeyFrames();
@@ -193,14 +195,14 @@ void CParticleModel::Draw(float time) const
 			}
 			CTextureManager::GetInstance()->SetTexture(m_textures[particle.GetMaterial()]);
 			m_shaders[particle.GetMaterial()].BindProgram();
-			for (auto j = m_instances[i].uniforms.begin(); j != m_instances[i].uniforms.end(); ++j)
+			for (auto k = m_instances[i].uniforms.begin(); k != m_instances[i].uniforms.end(); ++k)
 			{
-				m_shaders[particle.GetMaterial()].SetUniformValue(j->first, j->second.size(), &j->second[0]);
+				m_shaders[particle.GetMaterial()].SetUniformValue(k->first, k->second.size(), &k->second[0]);
 			}
 			DrawParticle(position, particle.GetWidth(), particle.GetHeight());
-			for (auto j = m_instances[i].uniforms.begin(); j != m_instances[i].uniforms.end(); ++j)
+			for (auto k = m_instances[i].uniforms.begin(); k != m_instances[i].uniforms.end(); ++k)
 			{
-				m_shaders[particle.GetMaterial()].SetUniformValue(j->first, 0, (float*)nullptr);
+				m_shaders[particle.GetMaterial()].SetUniformValue(k->first, 0, (float*)nullptr);
 			}
 			m_shaders[particle.GetMaterial()].UnBindProgram();
 			CTextureManager::GetInstance()->SetTexture("");

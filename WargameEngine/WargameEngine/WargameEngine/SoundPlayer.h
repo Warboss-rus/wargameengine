@@ -8,7 +8,7 @@ class CSoundPlayer
 public:
 	static std::weak_ptr<CSoundPlayer> GetInstance();
 	static void FreeInstance();
-	void PlaySound(std::string const& file, float volume = 1.0f);
+	void Play(std::string const& file, float volume = 1.0f);
 	void PlaySoundPosition(std::string const& file, CVector3d const& position, float volume = 1.0f);
 	void PlaySoundPlaylist(std::vector<std::string> const& files, float volume = 1.0f, bool shuffle = true, bool repeat = false);
 	void SetListenerPosition(CVector3d const& position, CVector3d const& center);

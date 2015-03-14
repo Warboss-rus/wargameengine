@@ -114,7 +114,7 @@ function MeleePhase(player)
 end
 
 function EndTurn()
-	Object:SelectNull()
+	Object:Select(nil)
 	for i=1, #Player1 do
 		Player1[i]:SetSelectable(false)
 		Player1[i]:SetMoveLimit("static")
@@ -374,7 +374,7 @@ function Fire2(prey)
 		NextHunter()
 		if(hunter ~= nil) then
 			if(unsaved == 0) then
-				Object:SelectNull()
+				Object:Select(nil)
 				Fire2(prey)
 			else
 				MessageBox("Select next target")
@@ -383,7 +383,7 @@ function Fire2(prey)
 		return
 	end
 	CancelEnemySelection()
-	Object:SelectNull()
+	Object:Select(nil)
 	OnSelection()
 end
 
@@ -520,7 +520,7 @@ function Strike2(prey)
 		NextHunter()
 		if(hunter ~= nil) then
 			if(unsaved == 0) then
-				Object:SelectNull()
+				Object:Select(nil)
 				Strike2(prey)
 				return
 			else
@@ -530,7 +530,7 @@ function Strike2(prey)
 		return
 	end
 	CancelEnemySelection()
-	Object:SelectNull()
+	Object:Select(nil)
 	OnSelection()
 end
 

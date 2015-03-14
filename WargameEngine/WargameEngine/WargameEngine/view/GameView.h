@@ -19,10 +19,8 @@ public:
 	void ResetTable();
 	void CreateSkybox(double size, std::string const& textureFolder);
 	IUIElement * GetUI() const;
-	void SelectObject(int x, int y, bool shiftPressed);
 	ICamera * GetCamera();
 	void SetCamera(ICamera * camera);
-	void TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y);
 	CModelManager& GetModelManager() { return m_modelManager; }
 	CParticleSystem& GetParticleSystem() { return m_particles; }
 	void ResizeWindow(int height, int width);
@@ -47,9 +45,6 @@ public:
 	void DrawLine(double beginX, double beginY, double beginZ, double endX, double endY, double endZ, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
 	void DrawLineLoop(double * points, unsigned int size, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
 	void DrawText3D(double x, double y, double z, std::string const& text);
-	
-	void SetUpdateCallback(callback(onUpdate));
-	void SetSingleCallback(callback(onSingleUpdate));
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);
@@ -77,8 +72,6 @@ private:
 	std::unique_ptr<IUIElement> m_ui;
 
 	std::weak_ptr<CGameModel> m_gameModel;
-	callback(m_updateCallback);
-	callback(m_singleCallback);
 	bool m_vertexLightning;
 	bool m_shadowMap;
 	unsigned int m_shadowMapTexture;

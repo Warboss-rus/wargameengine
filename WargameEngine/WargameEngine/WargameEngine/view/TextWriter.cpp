@@ -1,7 +1,6 @@
 #include "TextWriter.h"
+#include <GL/glew.h>
 #include "gl.h"
-#include <exception>
-
 #ifndef GL_CLAMP_TO_EDGE_EXT 
 #define GL_CLAMP_TO_EDGE_EXT 0x812F 
 #endif
@@ -16,11 +15,15 @@ CTextWriter::CTextWriter()
 
 CTextWriter::~CTextWriter()
 {
-	FT_Done_FreeType(m_ft);
 	/*for (auto i = m_symbols.begin(); i != m_symbols.end(); ++i)//causes a crash
 	{
 		glDeleteTextures(1, &i->second.texture);
+	}
+	for (auto i = m_lines.begin(); i != m_lines.end(); ++i)
+	{
+		glDeleteTextures(1, &i->second.texture);
 	}*/
+	FT_Done_FreeType(m_ft);
 }
 
 FT_Face CTextWriter::GetFace(std::string const& name)
@@ -28,12 +31,15 @@ FT_Face CTextWriter::GetFace(std::string const& name)
 	if(m_faces.find(name) == m_faces.end())
 	{
 		if(FT_New_Face(m_ft, name.c_str(), 0, &m_faces[name]) 
-#ifndef _WIN32
+#ifdef _WIN32
 			 && FT_New_Face(m_ft, (std::string(getenv("windir")) + "\\fonts\\" + name).c_str(), 0, &m_faces[name]))
-#elif _WINDOWS
-			&& FT_New_Face(m_ft, ("/usr/share/fonts" + name).c_str(), 0, &m_faces[name])
-			&& FT_New_Face(m_ft, ("/usr/local/share/fonts" + name).c_str(), 0, &m_faces[name])
-			&& FT_New_Face(m_ft, ("~/.fonts" + name).c_str(), 0, &m_faces[name]))
+#elif __unix
+			&& FT_New_Face(m_ft, ("/usr/share/fonts/" + name).c_str(), 0, &m_faces[name])
+			&& FT_New_Face(m_ft, ("/usr/local/share/fonts/" + name).c_str(), 0, &m_faces[name])
+			&& FT_New_Face(m_ft, ("~/.fonts/" + name).c_str(), 0, &m_faces[name]))
+#elif __APPLE__
+			&& FT_New_Face(m_ft, ("~/Library/Fonts/" + name).c_str(), 0, &m_faces[name])
+			&& FT_New_Face(m_ft, ("/System/Library/Fonts/" + name).c_str(), 0, &m_faces[name])
 #else
 			)
 #endif
@@ -67,6 +73,7 @@ sGlyph CTextWriter::CreateSymbol(sSymbol  const& s)
 	symbol.width = face->glyph->bitmap.width;
 	symbol.rows = face->glyph->bitmap.rows;
 	symbol.advancex = face->glyph->advance.x >> 6;
+	symbol.data = face->glyph->bitmap.buffer;
 	return symbol;
 }
 
@@ -107,6 +114,58 @@ void CTextWriter::DrawBitmap(int x, int y, sGlyph const& symbol)
 
 void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int size, std::string const& text, int width, int height)
 {
+	/*sTextLine line;
+	line.face = GetFace(font);
+	line.size = size;
+	line.text = text;
+	if (m_lines.find(line) == m_lines.end())
+	{
+		int w = 0;
+		int h = 0;
+		for (unsigned int i = 0; i < text.size(); ++i)
+		{
+			sGlyph glyph = GetSymbol(line.face, size, text[i]);
+			w += glyph.width + 1;
+			if (glyph.rows + glyph.bitmap_top > h) h = glyph.rows + glyph.bitmap_top;
+		}
+		//h++;
+		GLuint tex;
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL);
+		int newx = 0;
+		for (unsigned int i = 0; i < text.size(); ++i)
+		{
+			sGlyph glyph = GetSymbol(line.face, size, text[i]);
+			wchar_t unicodeSymbol;
+			mbstowcs(&unicodeSymbol, &text[i], 1);
+			FT_Load_Char(line.face, unicodeSymbol, FT_LOAD_RENDER);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, newx + glyph.bitmap_left, h - glyph.bitmap_top, glyph.width, glyph.rows, GL_ALPHA, GL_UNSIGNED_BYTE, line.face->glyph->bitmap.buffer);
+			newx += glyph.width + 1;
+		}
+		sRenderedLine rend;
+		rend.texture = tex;
+		rend.height = h;
+		rend.width = w;
+		m_lines[line] = rend;
+	}
+	sRenderedLine const& rendered = m_lines[line];
+	glBindTexture(GL_TEXTURE_2D, rendered.texture);
+	glBegin(GL_TRIANGLE_STRIP);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex2i(x, y);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex2i(x + rendered.width, y);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex2i(x, y - rendered.height);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex2i(x + rendered.width, y - rendered.height);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, 0);*/
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	int newx = x;
@@ -166,4 +225,9 @@ int CTextWriter::GetStringWidth(std::string const& font, unsigned int size, std:
 		width += GetSymbol(face, size, text[i]).advancex;
 	}
 	return width;
+}
+
+bool sTextLine::operator< (const sTextLine &other) const
+{
+	return (text < other.text || size < other.size || face < other.face);
 }

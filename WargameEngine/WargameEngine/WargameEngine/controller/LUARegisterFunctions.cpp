@@ -9,6 +9,7 @@
 #include "../Network.h"
 #include "../SoundPlayer.h"
 #include "../view/CameraStrategy.h"
+#include "../view/CameraFirstPerson.h"
 
 int CreateTable(lua_State* L)
 {
@@ -41,6 +42,14 @@ int CameraStrategy(lua_State* L)
 	double maxScale = CLUAScript::GetArgument<double>(3);
 	double minScale = CLUAScript::GetArgument<double>(4);
 	CGameView::GetInstance().lock()->SetCamera(new CCameraStrategy(maxTransX, maxTransY, maxScale, minScale));
+	return 0;
+}
+
+int CameraFirstPerson(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 0)
+		return luaL_error(L, "no arguments expected ()");
+	CGameView::GetInstance().lock()->SetCamera(new CCameraFirstPerson());
 	return 0;
 }
 
@@ -119,19 +128,36 @@ int SetGlobalProperty(lua_State* L)
 	return 0;
 }
 
+std::function<void()> GetCallbackFunction(int index = 1)
+{
+	std::function<void()> function;
+	if (CLUAScript::IsString(index))
+	{
+		std::string func = CLUAScript::GetArgument<char*>(1);
+		if (!func.empty())
+		{
+			function = [func]()
+			{
+				CLUAScript::CallFunction(func);
+			};
+		}
+	}
+	else if (!CLUAScript::IsNil(index))
+	{
+		int func = CLUAScript::StoreReference(index);
+		function = [func]()
+		{
+			CLUAScript::CallFunctionFromReference(func);
+		};
+	}
+	return function;
+}
+
 int SetSelectionCallback(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (funcName)");
-	std::string func = CLUAScript::GetArgument<char*>(1);
-	std::function<void()> function;
-	if(!func.empty())
-	{
-		function = [func]()
-		{ 
-			CLUAScript::CallFunction(func);
-		};
-	}
+	std::function<void()> function = GetCallbackFunction(1);
 	CGameController::GetInstance().lock()->SetSelectionCallback(function);
 	return 0;
 }
@@ -140,16 +166,8 @@ int SetUpdateCallback(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (funcName)");
-	std::string func = CLUAScript::GetArgument<char*>(1);
-	std::function<void()> function;
-	if(!func.empty())
-	{
-		function = [func]()
-		{ 
-			CLUAScript::CallFunction(func);
-		};
-	}
-	CGameView::GetInstance().lock()->SetUpdateCallback(function);
+	std::function<void()> function = GetCallbackFunction(1);
+	CGameController::GetInstance().lock()->SetUpdateCallback(function);
 	return 0;
 }
 
@@ -157,15 +175,7 @@ int SetOnStateRecievedCallback(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (funcName)");
-	std::string func = CLUAScript::GetArgument<char*>(1);
-	std::function<void()> function;
-	if (!func.empty())
-	{
-		function = [func]()
-		{
-			CLUAScript::CallFunction(func);
-		};
-	}
+	std::function<void()> function = GetCallbackFunction(1);
 	CNetwork::GetInstance().lock()->SetStateRecievedCallback(function);
 	return 0;
 }
@@ -176,13 +186,13 @@ int SetOnStringRecievedCallback(lua_State* L)
 		return luaL_error(L, "1 argument expected (funcName)");
 	std::string func = CLUAScript::GetArgument<char*>(1);
 	std::function<void(const char*)> function;
-	if (!func.empty())
-	{
-		function = [func](const char* param)
-		{
-			CLUAScript::CallFunction(func, param);
-		};
-	}
+        if (!func.empty())
+        {
+            function = [func](const char* param)
+            {
+                    CLUAScript::CallFunction(func, param);
+            };
+        }
 	CNetwork::GetInstance().lock()->SetStringRecievedCallback(function);
 	return 0;
 }
@@ -246,15 +256,7 @@ int BindKey(lua_State* L)
 	bool shift = CLUAScript::GetArgument<bool>(2);
 	bool ctrl = CLUAScript::GetArgument<bool>(3);
 	bool alt = CLUAScript::GetArgument<bool>(4);
-	std::string func = CLUAScript::GetArgument<char*>(5);
-	std::function<void()> function;
-	if(!func.empty())
-	{
-		function = [func]()
-		{ 
-			CLUAScript::CallFunction(func);
-		};
-	}
+	std::function<void()> function = GetCallbackFunction(1);
 	CInput::BindKey(key, shift, ctrl, alt, function);
 	return 0;
 }
@@ -646,13 +648,32 @@ int NewParticleEffect(lua_State* L)
 	return 0;
 }
 
+int NewParticleTracer(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 10)
+		return luaL_error(L, "10 arguments expected (effect file, begin coordinates, end coordinates, rotation, scale, speed)");
+	std::string file = CLUAScript::GetArgument<const char*>(1);
+	CVector3d begin, end;
+	begin.x = CLUAScript::GetArgument<double>(2);
+	begin.y = CLUAScript::GetArgument<double>(3);
+	begin.z = CLUAScript::GetArgument<double>(4);
+	end.x = CLUAScript::GetArgument<double>(5);
+	end.y = CLUAScript::GetArgument<double>(6);
+	end.z = CLUAScript::GetArgument<double>(7);
+	double rot = CLUAScript::GetArgument<double>(8);
+	double scale = CLUAScript::GetArgument<double>(9);
+	float speed = CLUAScript::GetArgument<float>(10);
+	CGameView::GetInstance().lock()->GetParticleSystem().AddTracer(file, begin, end, rot, scale, speed);
+	return 0;
+}
+
 int PlaySound(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() < 1 || CLUAScript::GetArgumentCount() > 2)
 		return luaL_error(L, "1 or 2 arguments expected (file, volume)");
 	std::string file = CLUAScript::GetArgument<const char*>(1);
 	float volume = CLUAScript::GetArgument<float>(2);
-	CSoundPlayer::GetInstance().lock()->PlaySound(file, volume);
+	CSoundPlayer::GetInstance().lock()->Play(file, volume);
 	return 0;
 }
 
@@ -721,6 +742,7 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(CreateTable, "CreateTable");
 	lua.RegisterConstant(CreateSkybox, "CreateSkybox");
 	lua.RegisterConstant(CameraStrategy, "CameraStrategy");
+	lua.RegisterConstant(CameraFirstPerson, "CameraFirstPerson");
 	lua.RegisterConstant(Ruler, "Ruler");
 	lua.RegisterConstant(Undo, "Undo");
 	lua.RegisterConstant(Redo, "Redo");
@@ -777,6 +799,7 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(EnableGPUSkinning, "EnableGPUSkinning");
 	lua.RegisterConstant(DisableGPUSkinning, "DisableGPUSkinning");
 	lua.RegisterConstant(NewParticleEffect, "NewParticleEffect");
+	lua.RegisterConstant(NewParticleTracer, "NewParticleTracer");
 	lua.RegisterConstant(PlaySound, "PlaySound");
 	lua.RegisterConstant(PlaySoundPosition, "PlaySoundPosition");
 	lua.RegisterConstant(PlaySoundPlaylist, "PlaySoundPlaylist");

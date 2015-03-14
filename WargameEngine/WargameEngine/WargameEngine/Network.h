@@ -3,8 +3,8 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "model\ObjectInterface.h"
-#include "controller\CommandHandler.h"
+#include "model/ObjectInterface.h"
+#include "controller/CommandHandler.h"
 #include <functional>
 #define callback(x) std::function<void()>(x)
 
@@ -35,7 +35,7 @@ private:
 	static std::shared_ptr<CNetwork> m_instance;
 	std::shared_ptr<CNetSocket> m_socket;
 	std::vector<CNetSocket> m_childs;
-	std::map<unsigned int, std::shared_ptr<IObject>> m_translator;
+	std::map<uintptr_t, std::shared_ptr<IObject>> m_translator;
 	bool m_host;
 	int m_netRecievedSize;
 	int m_netTotalSize;

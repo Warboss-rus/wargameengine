@@ -1,12 +1,18 @@
 #include "SoundPlayer.h"
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <string.h>
 #include "LogWriter.h"
 #include "Threading.h"
 #define STREAM_BUFFERS 5
 #define WAV_FILE_HEADER_SIZE 44
 #define WAV_FILE_NUMCHANNELS_POSITION 22
-#define PlaySound PlaySound
+
+#ifdef __unix__
+#include <unistd.h>
+#else
+#define sleep Sleep
+#endif
 
 std::shared_ptr<CSoundPlayer> CSoundPlayer::m_instance;
 
@@ -108,7 +114,7 @@ CSoundPlayer::~CSoundPlayer()
 	alcCloseDevice((ALCdevice *)m_device);
 }
 
-void CSoundPlayer::PlaySound(std::string const& file, float volume)
+void CSoundPlayer::Play(std::string const& file, float volume)
 {
 	if (m_buffers.find(file) == m_buffers.end())
 	{
@@ -216,7 +222,7 @@ void CSoundPlayer::ReadWav(std::string const& file)
 void CSoundPlayer::SetListenerPosition(CVector3d const& position, CVector3d const& center)
 {
 	alListener3f(AL_POSITION, position.x, position.y, position.z);
-	float ori[6] = {center.x, center.y, center.z, 0.0, 1.0, 0.0};
+	float ori[6] = {center.x, center.y, center.z, 0.0f, 1.0f, 0.0f};
 	alListenerfv(AL_ORIENTATION, ori);
 }
 
@@ -291,7 +297,7 @@ void* StreamThread(void* param)
 					firstRun = false;
 					curBuffer = 0;
 				}
-				_sleep(10);
+				sleep(10);
 			}
 			delete[] data;
 			fclose(f);
@@ -301,7 +307,7 @@ void* StreamThread(void* param)
 	alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 	while (processed < STREAM_BUFFERS)
 	{
-		_sleep(10);
+		sleep(10);
 		alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 	}
 	alDeleteSources(1, &source);

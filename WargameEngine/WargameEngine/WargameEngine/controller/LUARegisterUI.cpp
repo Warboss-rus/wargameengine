@@ -4,11 +4,19 @@
 #include "../UI/UIComboBox.h"
 #include "../view/GameView.h"
 
+IUIElement * GetUIPointer()
+{
+	if (CLUAScript::IsClassInstance())//it is UI instance, not metatable
+		return (IUIElement *)CLUAScript::GetClassInstance("UI");
+	else
+		return CGameView::GetInstance().lock()->GetUI();
+}
+
 int NewButton(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 8)
         return luaL_error(L, "7 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -28,7 +36,7 @@ int NewStaticText(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 7)
         return luaL_error(L, "6 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -43,7 +51,7 @@ int NewPanel(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 6)
         return luaL_error(L, "5 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -57,7 +65,7 @@ int NewCheckbox(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 8)
         return luaL_error(L, "7 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -73,7 +81,7 @@ int NewCombobox(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 6)
         return luaL_error(L, "5 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -87,7 +95,7 @@ int NewEdit(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 7)
         return luaL_error(L, "6 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -102,7 +110,7 @@ int NewList(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 6)
         return luaL_error(L, "5 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -116,7 +124,7 @@ int NewRadioGroup(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 6)
         return luaL_error(L, "5 arguments expected");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	int x = CLUAScript::GetArgument<int>(3);
 	int y = CLUAScript::GetArgument<int>(4);
@@ -130,7 +138,7 @@ int GetChild(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (childname)");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	return CLUAScript::NewInstanceClass(c->GetChildByName(name), "UI");
 }
@@ -302,7 +310,7 @@ int Get(lua_State* L)
 
 int ClearChildren(lua_State* L)
 {
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	c->ClearChildren();
 	return 0;
 }
@@ -311,7 +319,7 @@ int DeleteChild(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (name)");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string name = CLUAScript::GetArgument<char*>(2);
 	c->DeleteChild(name);
 	return 0;
@@ -321,7 +329,7 @@ int ApplyTheme(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
 		return luaL_error(L, "1 argument expected (theme file)");
-	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = GetUIPointer();
 	std::string file = CLUAScript::GetArgument<char*>(2);
 	std::shared_ptr<CUITheme> theme = std::make_shared<CUITheme>(CUITheme());
 	theme->Load(file);
@@ -333,8 +341,10 @@ int Getter(lua_State* L)
 {
 	std::string key = CLUAScript::GetKeyForGetter();
 	if (key.empty())
+	{
 		return 0;
-		//return luaL_error(L, ("key " + key + "does not exist").c_str());
+	}
+	//return luaL_error(L, ("key " + key + "does not exist").c_str());
 	if (key == "text")
 		return GetText(L);
 	if (key == "visible")

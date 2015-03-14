@@ -1,4 +1,5 @@
 #include "UITheme.h"
+#include <limits.h>
 #include "../LogWriter.h"
 #include "../tinyxml.h"
 

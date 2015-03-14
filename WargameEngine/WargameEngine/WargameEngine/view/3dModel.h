@@ -4,7 +4,7 @@
 #include <set>
 #include <map>
 #include "MaterialManager.h"
-#include "Bounding.h"
+#include "Vector3.h"
 #pragma once
 
 class IObject;
@@ -55,16 +55,14 @@ bool operator< (sModelCallListKey const& one, sModelCallListKey const& two);
 class C3DModel
 {
 public:
-	C3DModel(std::shared_ptr<IBounding> bounding, double scale);
+	C3DModel(double scale, double rotateX, double rotateY, double rotateZ);
 	C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-		CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale);
+		CMaterialManager & materials, std::vector<sMesh> & meshes, double scale);
 	~C3DModel();
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes);
 	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);
 	void Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning);
-	std::shared_ptr<IBounding> GetBounding() const { return m_bounding; }
-	void SetBounding(std::shared_ptr<IBounding> bounding, double scale);
 	void PreloadTextures() const;
 	std::vector<std::string> GetAnimations() const;
 private:
@@ -82,9 +80,11 @@ private:
 	std::vector<sAnimation> m_animations;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
-	std::shared_ptr<IBounding> m_bounding;
 	std::map<sModelCallListKey, unsigned int> m_lists;
 	double m_scale;
+	double m_rotX;
+	double m_rotY;
+	double m_rotZ;
 	unsigned int m_vbo;
 	int m_count;
 	std::vector<int> m_gpuWeightIndexes;

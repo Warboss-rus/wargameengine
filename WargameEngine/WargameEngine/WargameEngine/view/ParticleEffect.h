@@ -1,21 +1,20 @@
-#include <string>
-#include "Vector3.h"
+#include "IParticleEffecth.h"
 
-class CParticleEffect
+class CParticleEffect: public IParticleEffect
 {
 public:
 	CParticleEffect(std::string const& file, double x, double y, double z, double rotation, double scale, float lifetime);
 	std::string const& GetModel() const;
-	CVector3d const& GetCoords() const;
+	CVector3d const& GetCoords();
 	double GetRotation() const;
 	double GetScale() const;
 	float GetTime() const;
-	float GetLifetime() const;
+	bool IsEnded() const;
 private:
 	std::string m_file;
 	CVector3d m_coords;
 	double m_rotation;
 	double m_scale;
-	long m_beginTime;
+	long long m_beginTime;
 	float m_lifetime;
 };

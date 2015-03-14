@@ -11,7 +11,6 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../OSSpecific.h"
-#include "../Network.h"
 #include "../Ruler.h"
 #include "../SoundPlayer.h"
 #include "CameraStrategy.h"
@@ -40,7 +39,6 @@ CGameView::~CGameView()
 {
 	ThreadPool::CancelAll();
 	CSoundPlayer::FreeInstance();
-	CNetwork::FreeInstance();
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
 	CGameModel::FreeInstance();
@@ -135,6 +133,58 @@ void CGameView::DrawUI()
 	glDisable(GL_BLEND);
 }
 
+void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation)
+{
+	if (dynamic_cast<CBoundingCompound*>(ibox) != NULL)
+	{
+		CBoundingCompound * bbox = (CBoundingCompound *)ibox;
+		for (unsigned int i = 0; i < bbox->GetChildCount(); ++i)
+		{
+			DrawBBox(bbox->GetChild(i), x, y, z, rotation);
+		}
+		return;
+	}
+	CBoundingBox * bbox = (CBoundingBox *)ibox;
+	glPushMatrix();
+	glTranslated(x, y, z);
+	glRotated(rotation, 0.0, 0.0, 1.0);
+	glScaled(bbox->GetScale(), bbox->GetScale(), bbox->GetScale());
+	glColor3d(0.0, 0.0, 255.0);
+	const double * min = bbox->GetMin();
+	const double * max = bbox->GetMax();
+	//Left
+	glBegin(GL_LINE_LOOP);
+	glVertex3d(min[0], min[1], min[2]);
+	glVertex3d(min[0], max[1], min[2]);
+	glVertex3d(min[0], max[1], max[2]);
+	glVertex3d(min[0], min[1], max[2]);
+	
+	glEnd();
+	//Right
+	glBegin(GL_LINE_LOOP);
+	glVertex3d(max[0], min[1], min[2]);
+	glVertex3d(max[0], max[1], min[2]);
+	glVertex3d(max[0], max[1], max[2]);
+	glVertex3d(max[0], min[1], max[2]);
+	glEnd();
+	//Front
+	glBegin(GL_LINE_LOOP);
+	glVertex3d(min[0], max[1], min[2]);
+	glVertex3d(min[0], max[1], max[2]);
+	glVertex3d(max[0], max[1], max[2]);
+	glVertex3d(max[0], max[1], min[2]);
+	glEnd();
+	//Back
+	glBegin(GL_LINE_LOOP);
+	glVertex3d(min[0], min[1], min[2]);
+	glVertex3d(min[0], min[1], max[2]);
+	glVertex3d(max[0], min[1], max[2]);
+	glVertex3d(max[0], min[1], min[2]);
+	glEnd();
+	glColor3d(255.0, 255.0, 255.0);
+	glPopMatrix();
+}
+
 void CGameView::DrawBoundingBox()
 {
 	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
@@ -148,28 +198,24 @@ void CGameView::DrawBoundingBox()
 				object = group->GetChild(i);
 				if(object)
 				{
-					auto bbox = m_modelManager.GetBoundingBox(object->GetPathToModel());
-					if(bbox) bbox->Draw(object->GetX(),	object->GetY(), object->GetZ(), object->GetRotation());
+					auto bbox = m_gameModel.lock()->GetBoundingBox(object->GetPathToModel());
+					if (bbox)
+					{
+						DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
+					}
 				}
 			}
 		}
 		else
 		{
-			auto bbox = m_modelManager.GetBoundingBox(object->GetPathToModel());
-			if(bbox) bbox->Draw(object->GetX(),	object->GetY(), object->GetZ(), object->GetRotation());
+			auto bbox = m_gameModel.lock()->GetBoundingBox(object->GetPathToModel());
+			if(bbox) DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
 		}
 	}
 }
 
 void CGameView::Update()
 {
-	if (CNetwork::GetInstance().lock()->IsConnected()) CNetwork::GetInstance().lock()->Update();
-	if (m_updateCallback) m_updateCallback();
-	if (m_singleCallback)
-	{
-		m_singleCallback();
-		m_singleCallback = std::function<void()>();
-	}
 	ThreadPool::Update();
 	const double * position = m_camera->GetPosition();
 	const double * direction = m_camera->GetDirection();
@@ -178,7 +224,7 @@ void CGameView::Update()
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
 	glLoadIdentity();
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
-	m_gameModel.lock()->Update();
+	CGameController::GetInstance().lock()->Update();
 	DrawObjects();
 	DrawBoundingBox();
 	CRuler::Draw();
@@ -285,9 +331,9 @@ void CGameView::DrawObjects(void)
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_gpuSkinning);
 		unsigned int secondaryModels = object->GetSecondaryModelsCount();
-		for (unsigned int i = 0; i < secondaryModels; ++i)
+		for (unsigned int j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(i), object, false, m_gpuSkinning);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false, m_gpuSkinning);
 		}
 		glPopMatrix();
 	}
@@ -371,9 +417,9 @@ void CGameView::DrawShadowMap()
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, true, m_gpuSkinning);
 		unsigned int secondaryModels = object->GetSecondaryModelsCount();
-		for (unsigned int i = 0; i < secondaryModels; ++i)
+		for (unsigned int j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(i), object, true, m_gpuSkinning);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, true, m_gpuSkinning);
 		}
 		glPopMatrix();
 	}
@@ -394,7 +440,7 @@ void CGameView::OnReshape(int width, int height)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	GLdouble aspect = (GLdouble)width / (GLdouble)height;
-	gluPerspective(60, aspect, 0.5, 100.0);
+	gluPerspective(60, aspect, 0.5, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
 	CGameView::GetInstance().lock()->m_ui->Resize(height, width);
 }
@@ -414,35 +460,9 @@ void CGameView::SetCamera(ICamera * camera)
 	m_camera.reset(camera);
 }
 
-void CGameView::SelectObject(int x, int y, bool shiftPressed)
-{
-	double start[3];
-	double end[3];
-	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
-	CGameController::GetInstance().lock()->SelectObject(start, end, shiftPressed);
-}
-
-void CGameView::TryMoveSelectedObject(std::shared_ptr<IObject> object, int x, int y)
-{
-	double worldX, worldY;
-	const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
-	WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
-	CGameController::GetInstance().lock()->TryMoveSelectedObject(object, worldX, worldY, 0.0);
-}
-
 IUIElement * CGameView::GetUI() const
 {
 	return m_ui.get();
-}
-
-void CGameView::SetUpdateCallback(callback(onUpdate))
-{
-	m_updateCallback = onUpdate;
-}
-
-void CGameView::SetSingleCallback(callback(onSingleUpdate))
-{
-	m_singleCallback = onSingleUpdate;
 }
 
 void CGameView::ResizeWindow(int height, int width)
@@ -623,14 +643,13 @@ void LoadModuleCallback(int)
 
 void CGameView::LoadModule(std::string const& module)
 {
-	//ThreadPool::WaitAll();
+	ThreadPool::CancelAll();
 	sModule::Load(module);
 	ChangeDir(sModule::folder);
 	CGameModel::FreeInstance();
 	m_gameModel = CGameModel::GetInstance();
 	CTextureManager::FreeInstance();
 	m_modelManager = CModelManager();
-	CNetwork::FreeInstance();
 	m_skybox.reset();
 	m_vertexLightning = false;
 	m_shadowMap = false;

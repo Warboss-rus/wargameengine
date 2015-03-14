@@ -5,18 +5,12 @@
 #include "GameView.h"
 #include "../model/Object.h"
 
-C3DModel::C3DModel(std::shared_ptr<IBounding> bounding, double scale)
-{ 
-	m_bounding = bounding; 
-	m_scale = scale; 
-}
+C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotX(rotateX), m_rotY(rotateY), m_rotZ(rotateZ) {}
 
 C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-				   CMaterialManager & materials, std::vector<sMesh> & meshes, std::shared_ptr<IBounding> bounding, double scale)
+				   CMaterialManager & materials, std::vector<sMesh> & meshes, double scale):m_scale(scale)
 {
 	SetModel(vertices, textureCoords, normals, indexes, materials, meshes);
-	m_bounding = bounding;
-	m_scale = scale;
 }
 
 void DeleteList(std::map<std::set<std::string>, unsigned int> const& list)
@@ -76,12 +70,6 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 		glDeleteLists(i->second, 1);
 	}
 	m_lists.clear();
-}
-
-void C3DModel::SetBounding(std::shared_ptr<IBounding> bounding, double scale)
-{
-	m_bounding = bounding;
-	m_scale = scale;
 }
 
 void SetMaterial(const sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures = nullptr)
@@ -152,6 +140,9 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 		}
 	}
 	glPushMatrix();
+	glRotated(m_rotX, 1.0, 0.0, 0.0);//causes transparent models
+	glRotated(m_rotY, 0.0, 1.0, 0.0);
+	glRotated(m_rotZ, 0.0, 0.0, 1.0); 
 	glScaled(m_scale, m_scale, m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{
@@ -369,6 +360,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 	return jointMatrices;
 }
 
+//returns if animations is ended
 bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
 {
 	bool result;

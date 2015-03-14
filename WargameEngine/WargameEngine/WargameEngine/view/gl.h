@@ -4,5 +4,5 @@
 #include <Windows.h>
 #include <GL/GL.h>
 #else
-#include <GL/GL.h>
+#include <GL/gl.h>
 #endif

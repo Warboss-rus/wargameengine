@@ -28,13 +28,13 @@ CLandscape::CLandscape(double width, double depth, std::string const& texture, u
 
 void CLandscape::SetHeight(double x, double y, double value)
 {
-	m_heights[round((-m_width / 2 + x) * m_pointsPerWidth - m_depth / 2 + y)] = value;
+	m_heights[static_cast<size_t>(round((-m_width / 2 + x) * m_pointsPerWidth - m_depth / 2 + y))] = value;
 	CGameView::GetInstance().lock()->ResetTable();
 }
 
 double CLandscape::GetHeight(double x, double y) const
 {
-	return m_heights[(m_width / 2 + x) / (m_width / m_pointsPerWidth) + (m_depth / 2 + y) / (m_depth / m_pointsPerDepth)];
+	return m_heights[static_cast<size_t>((m_width / 2 + x) / (m_width / m_pointsPerWidth) + (m_depth / 2 + y) / (m_depth / m_pointsPerDepth))];
 }
 
 void CLandscape::AddNewDecal(sDecal const& decal)

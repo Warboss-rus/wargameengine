@@ -6,6 +6,7 @@
 #include "ObjectInterface.h"
 #include "Projectile.h"
 #include "Landscape.h"
+#include "Bounding.h"
 
 class CGameModel
 {
@@ -33,6 +34,8 @@ public:
 	void RemoveProjectile(unsigned int index) { m_projectiles.erase(m_projectiles.begin() + index); }
 	CLandscape & GetLandscape() { return m_landscape; }
 	void ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	std::shared_ptr<IBounding> GetBoundingBox(std::string const& path) const { return m_boundings.at(path); }
+	void AddBoundingBox(std::string const& path, std::shared_ptr<IBounding> bbox) { m_boundings[path] = bbox; }
 private:
 	CGameModel(void) :m_selectedObject(NULL){};
 	CGameModel(CGameModel const&){};
@@ -43,4 +46,5 @@ private:
 	static std::shared_ptr<CGameModel> m_instanse;
 	std::map<std::string, std::string> m_properties;
 	CLandscape m_landscape;
+	std::map<std::string, std::shared_ptr<IBounding>> m_boundings;
 };

@@ -1,10 +1,13 @@
 #include "ModelManager.h"
 #include "OBJModelFactory.h"
 #include <string>
+#include <fstream>
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../model/Object.h"
 #include "../LogWriter.h"
+#include "../model/Bounding.h"
+#include "../model/GameModel.h"
 
 void UseModel(void* data)
 {
@@ -15,6 +18,46 @@ void UseModel(void* data)
 	delete loader;
 }
 
+std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale, double * rotation)
+{
+	std::ifstream iFile(path);
+	std::unique_ptr<IBounding> bounding(new CBoundingCompound());
+	std::string line;
+	unsigned int count = 0;
+	if (!iFile.good()) return NULL;
+	while (iFile.good())
+	{
+		iFile >> line;
+		if (line == "box")
+		{
+			double min[3], max[3];
+			iFile >> min[0] >> min[1] >> min[2] >> max[0] >> max[1] >> max[2];
+			CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
+			compound->AddChild(std::unique_ptr<IBounding>(new CBoundingBox(min, max)));
+		}
+		if (line == "scale")
+		{
+			iFile >> scale;
+		}
+		if (line == "rotationX")
+		{
+			iFile >> rotation[0];
+		}
+		if (line == "rotationY")
+		{
+			iFile >> rotation[1];
+		}
+		if (line == "rotationZ")
+		{
+			iFile >> rotation[2];
+		}
+	}
+	iFile.close();
+	CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
+	compound->SetScale(scale);
+	return bounding;
+}
+
 void CModelManager::LoadIfNotExist(std::string const& path)
 {
 	if(m_models.find(path) == m_models.end())
@@ -23,9 +66,11 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		std::string extension = path.substr(dotCoord, path.length() - dotCoord);
 		std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
 		double scale = 1.0;
-		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(sModule::models + boundingPath, scale);
+		double rotation[3] = { 0.0, 0.0, 0.0 };
+		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(sModule::models + boundingPath, scale, rotation);
+		CGameModel::GetInstance().lock()->AddBoundingBox(path, bounding);
 		sOBJLoader * obj = new sOBJLoader();
-		obj->model = new C3DModel(bounding, scale);
+		obj->model = new C3DModel(scale, rotation[0], rotation[1], rotation[2]);
 		m_models[path] = std::shared_ptr<C3DModel>(obj->model);
 		if(extension == "obj")
 			ThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
@@ -42,12 +87,6 @@ void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> 
 {
 	LoadIfNotExist(path);
 	m_models[path]->Draw(object, vertexOnly, gpuSkinning);
-}
-
-std::shared_ptr<IBounding> CModelManager::GetBoundingBox(std::string const& path)
-{
-	LoadIfNotExist(path);
-	return m_models[path]->GetBounding();
 }
 
 std::vector<std::string> CModelManager::GetAnimations(std::string const& path)
