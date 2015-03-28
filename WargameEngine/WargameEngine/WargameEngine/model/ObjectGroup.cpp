@@ -1,6 +1,17 @@
 #include "ObjectGroup.h"
 #include "GameModel.h"
 
+CObjectGroup::CObjectGroup() :m_current(0)
+{
+
+}
+
+std::string CObjectGroup::GetPathToModel() const
+{
+	if(m_children.empty()) return "";
+	return m_children[m_current]->GetPathToModel();
+}
+
 void CObjectGroup::Move(double x, double y, double z)
 {
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
@@ -66,6 +77,11 @@ double CObjectGroup::GetZ() const
 	return 0.0;
 }
 
+CVector3d CObjectGroup::GetCoords() const
+{
+	return CVector3d(GetX(), GetY(), GetZ());
+}
+
 double CObjectGroup::GetRotation() const
 {
 	if(m_current < m_children.size())
@@ -128,6 +144,11 @@ bool CObjectGroup::ContainsChildren(std::shared_ptr<IObject> object) const
 	return false;
 }
 
+size_t CObjectGroup::GetCount() const
+{
+	return m_children.size();
+}
+
 std::shared_ptr<IObject> CObjectGroup::GetChild(size_t index)
 {
 	return m_children[index];
@@ -154,7 +175,12 @@ void CObjectGroup::SetCurrent(std::shared_ptr<IObject> object)
 	}
 }
 
-void CObjectGroup::SetProperty(std::string const& key, std::string const& value) 
+std::shared_ptr<IObject> CObjectGroup::GetCurrent() const
+{
+	return m_children[m_current];
+}
+
+void CObjectGroup::SetProperty(std::string const& key, std::string const& value)
 { 
 	for(unsigned int i =0; i < m_children.size(); ++i)
 	{
@@ -168,6 +194,11 @@ std::string const CObjectGroup::GetProperty(std::string const& key) const
 		return m_children[m_current]->GetProperty(key);
 	}
 	return "";
+}
+
+bool CObjectGroup::IsSelectable() const
+{
+	return true;
 }
 
 void CObjectGroup::SetSelectable(bool selectable)
@@ -186,12 +217,75 @@ void CObjectGroup::SetMovementLimiter(IMoveLimiter * limiter)
 	}
 }
 
+std::map<std::string, std::string> const& CObjectGroup::GetAllProperties() const
+{
+	return m_children[0]->GetAllProperties();
+}
+
+bool CObjectGroup::CastsShadow() const
+{
+	if (m_children.empty()) return true;
+	return m_children[m_current]->CastsShadow();
+}
+
 void CObjectGroup::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed)
 {
 	for (unsigned int i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->PlayAnimation(animation, loop, speed);
 	}
+}
+
+std::string CObjectGroup::GetAnimation() const
+{
+	if (m_children.empty()) return "";
+	return m_children[m_current]->GetAnimation();
+}
+
+float CObjectGroup::GetAnimationTime() const
+{
+	if (m_children.empty()) return true;
+	return m_children[m_current]->GetAnimationTime();
+}
+
+void CObjectGroup::AddSecondaryModel(std::string const& model)
+{
+	for (unsigned int i = 0; i < m_children.size(); ++i)
+	{
+		m_children[i]->AddSecondaryModel(model);
+	}
+}
+
+void CObjectGroup::RemoveSecondaryModel(std::string const& model)
+{
+	for (unsigned int i = 0; i < m_children.size(); ++i)
+	{
+		m_children[i]->RemoveSecondaryModel(model);
+	}
+}
+
+unsigned int CObjectGroup::GetSecondaryModelsCount() const
+{
+	if (m_children.empty()) return 0;
+	return m_children[m_current]->GetSecondaryModelsCount();
+}
+
+std::string CObjectGroup::GetSecondaryModel(unsigned int index) const
+{
+	if (m_children.empty()) return "";
+	return m_children[m_current]->GetSecondaryModel(index);
+}
+
+sAnimation::eLoopMode CObjectGroup::GetAnimationLoop() const
+{
+	if (m_children.empty()) return sAnimation::eLoopMode::NONLOOPING;
+	return m_children[m_current]->GetAnimationLoop();
+}
+
+float CObjectGroup::GetAnimationSpeed() const
+{
+	if (m_children.empty()) return 1.0f;
+	return m_children[m_current]->GetAnimationSpeed();
 }
 
 void CObjectGroup::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)//needs to be reworked
@@ -228,12 +322,20 @@ void CObjectGroup::ReplaceTexture(std::string const& oldTexture, std::string con
 
 std::vector<sTeamColor> const& CObjectGroup::GetTeamColor() const
 { 
-	static std::vector<sTeamColor> dummy ;
-	return dummy;
+	if(m_children.empty())
+	{
+		static std::vector<sTeamColor> dummy;
+		return dummy;
+	}
+	return m_children[m_current]->GetTeamColor();
 }
 
 std::map<std::string, std::string> const& CObjectGroup::GetReplaceTextures() const
 { 
-	static std::map<std::string, std::string> dummy;
-	return dummy;
+	if (m_children.empty())
+	{
+		static std::map<std::string, std::string> dummy;
+		return dummy;
+	}
+	return m_children[m_current]->GetReplaceTextures();
 }

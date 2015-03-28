@@ -118,3 +118,35 @@ void CUIList::Resize(int windowHeight, int windowWidth)
 	CUIElement::Resize(windowHeight, windowWidth);
 	m_scrollbar.Update(GetHeight(), m_theme->list.elementSize * m_items.size(), GetWidth(), m_theme->list.elementSize);
 }
+
+int CUIList::GetSelectedIndex() const
+{ 
+	return m_selected; 
+}
+
+size_t CUIList::GetItemsCount() const
+{ 
+	return m_items.size(); 
+}
+
+std::string CUIList::GetItem(size_t index) const
+{ 
+	return m_items[index]; 
+}
+
+void CUIList::ClearItems()
+{ 
+	m_items.clear(); 
+	m_selected = -1; 
+}
+
+void CUIList::SetOnChangeCallback(std::function<void()> const& onChange)
+{ 
+	m_onChange = onChange; 
+}
+
+void CUIList::SetTheme(std::shared_ptr<CUITheme> theme)
+{ 
+	m_theme = theme; 
+	m_scrollbar = CUIScrollBar(theme); 
+}

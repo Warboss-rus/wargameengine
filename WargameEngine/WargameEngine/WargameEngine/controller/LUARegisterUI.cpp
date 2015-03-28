@@ -157,7 +157,14 @@ int SetText(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (text)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	c->SetText(CLUAScript::GetArgument<char*>(2));
+	try
+	{
+		c->SetText(CLUAScript::GetArgument<char*>(2));
+	}
+	catch (std::runtime_error const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 0;
 }
 
@@ -183,7 +190,7 @@ int GetState(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no arguments expected");
-	CUICheckBox * c = (CUICheckBox *)CLUAScript::GetClassInstance("UI");
+	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	CLUAScript::SetArgument(c->GetState());
 	return 1;
 }
@@ -193,7 +200,14 @@ int AddItem(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (item)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	c->AddItem(CLUAScript::GetArgument<char*>(2));
+	try
+	{
+		c->AddItem(CLUAScript::GetArgument<char*>(2));
+	}
+	catch (std::runtime_error const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 0;
 }
 
@@ -205,7 +219,15 @@ int DeleteItem(lua_State* L)
 	unsigned int index = CLUAScript::GetArgument<unsigned int>(2);
 	if(index >= 0 && index < c->GetItemsCount())
 	{
-		c->DeleteItem(index);
+		try
+		{
+			c->DeleteItem(index);
+		}
+		catch (std::runtime_error const& e)
+		{
+			return luaL_error(L, e.what());
+		}
+		
 	}
 	return 0;
 }
@@ -215,7 +237,14 @@ int GetSelectedIndex(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	CLUAScript::SetArgument(c->GetSelectedIndex() + 1);
+	try
+	{
+		CLUAScript::SetArgument(c->GetSelectedIndex() + 1);
+	}
+	catch (std::runtime_error const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 1;
 }
 
@@ -224,7 +253,14 @@ int GetItemsCount(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	CLUAScript::SetArgument((int)c->GetItemsCount());
+	try
+	{
+		CLUAScript::SetArgument((int)c->GetItemsCount());
+	}
+	catch (std::runtime_error const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 1;
 }
 
@@ -234,7 +270,14 @@ int GetItem(lua_State* L)
         return luaL_error(L, "1 argument expected (index)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	int index = CLUAScript::GetArgument<int>(2) - 1;
-	CLUAScript::SetArgument(c->GetItem(index).c_str());
+	try
+	{
+		CLUAScript::SetArgument(c->GetItem(index).c_str());
+	}
+	catch (std::runtime_error const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 1;
 }
 
@@ -243,7 +286,14 @@ int ClearItems(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no arguments expected");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
-	c->ClearItems();
+	try
+	{
+		c->ClearItems();
+	}
+	catch (std::runtime_error const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 0;
 }
 
@@ -271,7 +321,14 @@ int SetOnChangeCallback(lua_State* L)
 			CLUAScript::CallFunction(func);
 		};
 	}
-	c->SetOnChangeCallback(function);
+	try
+	{
+		c->SetOnChangeCallback(function);
+	}
+	catch (std::exception const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 0;
 }
 
@@ -289,7 +346,14 @@ int SetOnClickCallback(lua_State* L)
 			CLUAScript::CallFunction(func);
 		};
 	}
-	c->SetOnClickCallback(function);
+	try
+	{
+		c->SetOnClickCallback(function);
+	}
+	catch (std::exception const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 0;
 }
 
@@ -299,7 +363,14 @@ int SetBackgroundImage(lua_State* L)
 		return luaL_error(L, "1 argument expected (image)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
 	std::string image = CLUAScript::GetArgument<char*>(2);
-	c->SetBackgroundImage(image);
+	try 
+	{
+		c->SetBackgroundImage(image);
+	}
+	catch (std::exception const& e)
+	{
+		return luaL_error(L, e.what());
+	}
 	return 0;
 }
 

@@ -86,3 +86,29 @@ void CUIRadioGroup::SetText(std::string const& text)
 		}
 	}
 }
+
+int CUIRadioGroup::GetSelectedIndex() const
+{ 
+	return m_selected; 
+}
+
+size_t CUIRadioGroup::GetItemsCount() const
+{ 
+	return m_items.size(); 
+}
+
+std::string CUIRadioGroup::GetItem(size_t index) const
+{ 
+	return m_items[index]; 
+}
+
+void CUIRadioGroup::ClearItems()
+{ 
+	m_items.clear(); 
+	m_selected = -1; 
+}
+
+void CUIRadioGroup::SetOnChangeCallback(std::function<void()> const& onChange)
+{ 
+	m_onChange = onChange; 
+}

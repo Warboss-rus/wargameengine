@@ -7,41 +7,41 @@ class CObject : public IObject
 {
 public:
 	CObject(std::string const& model, double x, double y, double rotation, bool hasShadow = true);
-	std::string GetPathToModel() const { return m_model; }
-	void Move(double x, double y, double z);
-	void SetCoords(double x, double y, double z);
-	void SetCoords(CVector3d const& coords) { m_coords = coords;}
-	void Rotate(double rotation);
-	double GetX() const { return m_coords.x; }
-	double GetY() const { return m_coords.y; }
-	double GetZ() const { return m_coords.z; }
-	CVector3d GetCoords() const { return m_coords; }
-	double GetRotation() const { return m_rotation; }
-	std::set<std::string> const& GetHiddenMeshes() const { return m_hiddenMeshes; }
-	void HideMesh(std::string const& meshName);
-	void ShowMesh(std::string const& meshName);
-	void SetProperty(std::string const& key, std::string const& value);
-	std::string const GetProperty(std::string const& key) const;
-	bool IsSelectable() const { return m_isSelectable; }
-	void SetSelectable(bool selectable) { m_isSelectable = selectable; }
-	void SetMovementLimiter(IMoveLimiter * limiter) { m_movelimiter.reset(limiter); }
-	std::map<std::string, std::string> const& GetAllProperties() const { return m_properties; }
-	bool CastsShadow() const { return m_castsShadow; }
-	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed);
-	std::string GetAnimation() const;
-	float GetAnimationTime() const;
-	void AddSecondaryModel(std::string const& model) { m_secondaryModels.push_back(model); }
-	void RemoveSecondaryModel(std::string const& model);
-	unsigned int GetSecondaryModelsCount() const { return m_secondaryModels.size(); }
-	std::string GetSecondaryModel(unsigned int index) const { return m_secondaryModels[index]; }
-	sAnimation::eLoopMode GetAnimationLoop() const { return m_animationLoop; }
-	float GetAnimationSpeed() const { return m_animationSpeed; }
-	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed);
-	void Update();
-	std::vector<sTeamColor> const& GetTeamColor() const { return m_teamColor; }
-	void ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b);
-	void ReplaceTexture(std::string const& oldTexture, std::string const& newTexture);
-	std::map<std::string, std::string> const& GetReplaceTextures() const { return m_replaceTextures; }
+	std::string GetPathToModel() const override;
+	void Move(double x, double y, double z) override;
+	void SetCoords(double x, double y, double z) override;
+	void SetCoords(CVector3d const& coords) override;
+	void Rotate(double rotation) override;
+	double GetX() const override;
+	double GetY() const override;
+	double GetZ() const override;
+	CVector3d GetCoords() const override;
+	double GetRotation() const override;
+	std::set<std::string> const& GetHiddenMeshes() const override;
+	void HideMesh(std::string const& meshName) override;
+	void ShowMesh(std::string const& meshName) override;
+	void SetProperty(std::string const& key, std::string const& value) override;
+	std::string const GetProperty(std::string const& key) const override;
+	bool IsSelectable() const override;
+	void SetSelectable(bool selectable) override;
+	void SetMovementLimiter(IMoveLimiter * limiter) override;
+	std::map<std::string, std::string> const& GetAllProperties() const override;
+	bool CastsShadow() const override;
+	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed) override;
+	std::string GetAnimation() const override;
+	float GetAnimationTime() const override;
+	void AddSecondaryModel(std::string const& model) override;
+	void RemoveSecondaryModel(std::string const& model) override;
+	unsigned int GetSecondaryModelsCount() const override;
+	std::string GetSecondaryModel(unsigned int index) const override;
+	sAnimation::eLoopMode GetAnimationLoop() const override;
+	float GetAnimationSpeed() const override;
+	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) override;
+	void Update() override;
+	std::vector<sTeamColor> const& GetTeamColor() const override;
+	void ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
+	void ReplaceTexture(std::string const& oldTexture, std::string const& newTexture) override;
+	std::map<std::string, std::string> const& GetReplaceTextures() const override;
 private:
 	std::string m_model;
 	std::vector<std::string> m_secondaryModels;

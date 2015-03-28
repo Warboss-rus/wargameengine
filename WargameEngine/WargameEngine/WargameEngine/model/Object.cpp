@@ -9,7 +9,12 @@ CObject::CObject(std::string const& model, double x, double y, double rotation, 
 	m_lastUpdateTime = 1000 * time.time + time.millitm;
 }
 
-void CObject::Move(double x, double y, double z) 
+std::string CObject::GetPathToModel() const
+{
+	return m_model;
+}
+
+void CObject::Move(double x, double y, double z)
 { 
 	m_coords.x += x; 
 	m_coords.y += y;
@@ -23,13 +28,48 @@ void CObject::SetCoords(double x, double y, double z)
 	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
 }
 
-void CObject::Rotate(double rotation) 
+void CObject::SetCoords(CVector3d const& coords)
+{
+	m_coords = coords;
+}
+
+void CObject::Rotate(double rotation)
 { 
 	m_rotation = fmod(m_rotation + rotation + 360.0, 360); 
 	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
 }
 
-void CObject::ShowMesh(std::string const& meshName) 
+double CObject::GetX() const
+{
+	return m_coords.x;
+}
+
+double CObject::GetY() const
+{
+	return m_coords.y;
+}
+
+double CObject::GetZ() const
+{
+	return m_coords.z;
+}
+
+CVector3d CObject::GetCoords() const
+{
+	return m_coords;
+}
+
+double CObject::GetRotation() const
+{
+	return m_rotation;
+}
+
+std::set<std::string> const& CObject::GetHiddenMeshes() const
+{
+	return m_hiddenMeshes;
+}
+
+void CObject::ShowMesh(std::string const& meshName)
 { 
 	auto i = m_hiddenMeshes.find(meshName);
 	if(i != m_hiddenMeshes.end())
@@ -60,6 +100,31 @@ std::string const CObject::GetProperty(std::string const& key) const
 	}
 }
 
+bool CObject::IsSelectable() const
+{
+	return m_isSelectable;
+}
+
+void CObject::SetSelectable(bool selectable)
+{
+	m_isSelectable = selectable;
+}
+
+void CObject::SetMovementLimiter(IMoveLimiter * limiter)
+{
+	m_movelimiter.reset(limiter);
+}
+
+std::map<std::string, std::string> const& CObject::GetAllProperties() const
+{
+	return m_properties;
+}
+
+bool CObject::CastsShadow() const
+{
+	return m_castsShadow;
+}
+
 void CObject::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed)
 {
 	m_animation = animation;
@@ -84,6 +149,11 @@ float CObject::GetAnimationTime() const
 	return static_cast<float>((double)delta / 1000.0);
 }
 
+void CObject::AddSecondaryModel(std::string const& model)
+{
+	m_secondaryModels.push_back(model);
+}
+
 void CObject::RemoveSecondaryModel(std::string const& model)
 {
 	for (auto i = m_secondaryModels.begin(); i != m_secondaryModels.end(); ++i)
@@ -93,6 +163,26 @@ void CObject::RemoveSecondaryModel(std::string const& model)
 			m_secondaryModels.erase(i);
 		}
 	}
+}
+
+unsigned int CObject::GetSecondaryModelsCount() const
+{
+	return m_secondaryModels.size();
+}
+
+std::string CObject::GetSecondaryModel(unsigned int index) const
+{
+	return m_secondaryModels[index];
+}
+
+sAnimation::eLoopMode CObject::GetAnimationLoop() const
+{
+	return m_animationLoop;
+}
+
+float CObject::GetAnimationSpeed() const
+{
+	return m_animationSpeed;
 }
 
 void CObject::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)
@@ -126,6 +216,11 @@ void CObject::Update()
 	}
 }
 
+std::vector<sTeamColor> const& CObject::GetTeamColor() const
+{
+	return m_teamColor;
+}
+
 void CObject::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
 	sTeamColor tc;
@@ -146,4 +241,9 @@ void CObject::ReplaceTexture(std::string const& oldTexture, std::string const& n
 	{
 		m_replaceTextures[oldTexture] = newTexture;
 	}
+}
+
+std::map<std::string, std::string> const& CObject::GetReplaceTextures() const
+{
+	return m_replaceTextures;
 }

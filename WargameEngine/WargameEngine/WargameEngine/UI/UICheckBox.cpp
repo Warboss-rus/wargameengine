@@ -63,3 +63,18 @@ void CUICheckBox::SetState(bool state)
 {
 	m_state = state;
 }
+
+bool CUICheckBox::GetState() const
+{ 
+	return m_state; 
+}
+
+std::string const CUICheckBox::GetText() const
+{ 
+	return m_text; 
+}
+
+void CUICheckBox::SetText(std::string const& text)
+{ 
+	m_text = text; 
+}

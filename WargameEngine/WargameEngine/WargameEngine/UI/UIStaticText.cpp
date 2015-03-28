@@ -12,3 +12,13 @@ void CUIStaticText::Draw() const
 	CUIElement::Draw();
 	glPopMatrix();
 }
+
+std::string const CUIStaticText::GetText() const
+{ 
+	return m_text; 
+}
+
+void CUIStaticText::SetText(std::string const& text)
+{ 
+	m_text = text; 
+}

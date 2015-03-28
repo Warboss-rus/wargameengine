@@ -170,3 +170,35 @@ void CUIComboBox::Resize(int windowHeight, int windowWidth)
 	CUIElement::Resize(windowHeight, windowWidth);
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme->combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme->combobox.elementSize);
 }
+
+int CUIComboBox::GetSelectedIndex() const
+{ 
+	return m_selected; 
+}
+
+size_t CUIComboBox::GetItemsCount() const
+{ 
+	return m_items.size(); 
+}
+
+std::string CUIComboBox::GetItem(size_t index) const
+{ 
+	return m_items[index]; 
+}
+
+void CUIComboBox::ClearItems()
+{ 
+	m_items.clear(); 
+	m_selected = -1; 
+}
+
+void CUIComboBox::SetOnChangeCallback(std::function<void()> const& onChange)
+{ 
+	m_onChange = onChange; 
+}
+
+void CUIComboBox::SetTheme(std::shared_ptr<CUITheme> theme) 
+{ 
+	m_theme = theme; 
+	m_scrollbar = CUIScrollBar(theme); 
+}

@@ -55,6 +55,16 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 	return false;
 }
 
+void CUIElement::SetState(bool state)
+{
+	throw std::runtime_error("This UI element doesn't have state");
+}
+
+bool CUIElement::GetState() const
+{
+	throw std::runtime_error("This UI element doesn't have state");
+}
+
 bool CUIElement::LeftMouseButtonDown(int x, int y)
 {
 	if(!m_visible) return false;
@@ -112,7 +122,7 @@ bool CUIElement::OnSpecialKeyPress(int key)
 	return false;
 }
 
-IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick))
+IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, std::function<void()> const& onClick)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this));
 	AddChild(name, item);
@@ -190,6 +200,46 @@ bool CUIElement::IsFocused(const IUIElement * child) const
 	return true;
 }
 
+void CUIElement::SetText(std::string const& text)
+{
+	throw std::runtime_error("This UI element has no text");
+}
+
+void CUIElement::AddItem(std::string const& str)
+{
+	throw std::runtime_error("This UI element has no items");
+}
+
+void CUIElement::DeleteItem(size_t index)
+{
+	throw std::runtime_error("This UI element has no items");
+}
+
+int CUIElement::GetSelectedIndex() const
+{
+	throw std::runtime_error("This UI element has no items");
+}
+
+size_t CUIElement::GetItemsCount() const
+{
+	throw std::runtime_error("This UI element has no items");
+}
+
+std::string CUIElement::GetItem(size_t index) const
+{
+	throw std::runtime_error("This UI element has no items");
+}
+
+void CUIElement::ClearItems()
+{
+	throw std::runtime_error("This UI element has no items");
+}
+
+void CUIElement::SetSelected(size_t index)
+{
+	throw std::runtime_error("This UI element has no items");
+}
+
 void CUIElement::ClearChildren()
 {
 	m_children.clear();
@@ -224,4 +274,19 @@ void CUIElement::Resize(int windowHeight, int windowWidth)
 	{
 		i->second->Resize(windowHeight, windowWidth);
 	}
+}
+
+void CUIElement::SetOnChangeCallback(std::function<void()> const& onChange)
+{
+	throw new std::runtime_error("This UI element has no OnChange event");
+}
+
+void CUIElement::SetOnClickCallback(std::function<void()> const& onClick)
+{
+	throw new std::runtime_error("This UI element has no OnChange event");
+}
+
+void CUIElement::SetBackgroundImage(std::string const& image)
+{
+	throw new std::runtime_error("This UI element has no background image");
 }

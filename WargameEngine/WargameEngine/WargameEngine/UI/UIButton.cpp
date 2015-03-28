@@ -76,3 +76,23 @@ bool CUIButton::LeftMouseButtonDown(int x, int y)
 	}
 	return false;
 }
+
+std::string const CUIButton::GetText() const
+{ 
+	return m_text; 
+}
+
+void CUIButton::SetText(std::string const& text)
+{ 
+	m_text = text; 
+}
+
+void CUIButton::SetOnClickCallback(std::function<void()> const& onClick)
+{ 
+	m_onClick = onClick; 
+}
+
+void CUIButton::SetBackgroundImage(std::string const& image)
+{ 
+	m_backgroundImage = image; 
+}

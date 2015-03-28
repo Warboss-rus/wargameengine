@@ -172,3 +172,13 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 	}
 	return false;
 }
+
+std::string const CUIEdit::GetText() const
+{ 
+	return m_text; 
+}
+
+void CUIEdit::SetText(std::string const& text)
+{ 
+	m_text = text; 
+}

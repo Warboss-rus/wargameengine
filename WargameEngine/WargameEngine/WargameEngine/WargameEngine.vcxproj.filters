@@ -34,7 +34,7 @@
     <Filter Include="Source Files\controller">
       <UniqueIdentifier>{bbfc768f-9356-4e40-bfa4-23e779379293}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\view\UI">
+    <Filter Include="Header Files\UI">
       <UniqueIdentifier>{8332af67-ba2c-45df-bd31-0c2a8362dafb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -249,16 +249,16 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UI\IUI.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIButton.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIElement.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIPanel.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\3dModel.h">
       <Filter>Header Files\view</Filter>
@@ -279,16 +279,16 @@
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="UI\UICheckBox.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIEdit.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIText.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UITheme.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandCreateObject.h">
       <Filter>Header Files\controller</Filter>
@@ -315,16 +315,16 @@
       <Filter>Header Files\view</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIStaticText.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIList.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIComboBox.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIRadioGroup.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\TextWriter.h">
       <Filter>Header Files\view</Filter>
@@ -360,7 +360,7 @@
       <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIScrollBar.h">
-      <Filter>Header Files\view\UI</Filter>
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="ThreadPool.h">
       <Filter>Header Files</Filter>

@@ -2,13 +2,7 @@
 #include <string>
 #include <vector>
 #include "UITheme.h"
-#define CPP11CALLBACK
-#ifdef CPP11CALLBACK
 #include <functional>
-#define callback(x) std::function<void()>(x)
-#else
-#define callback(x) void(*x)()
-#endif
 
 class IUIElement
 {
@@ -28,10 +22,10 @@ public:
 	virtual int GetHeight() const = 0;
 	virtual int GetWidth() const = 0;
 	virtual void SetVisible(bool visible) = 0;
-	virtual bool GetVisible() = 0;
+	virtual bool GetVisible() const = 0;
 	virtual bool IsFocused(const IUIElement * child) const = 0;
 	virtual void SetTheme(std::shared_ptr<CUITheme> theme) = 0;
-	virtual std::shared_ptr<CUITheme> GetTheme() = 0;
+	virtual std::shared_ptr<CUITheme> GetTheme() const = 0;
 	virtual std::string const GetText() const = 0;
 	virtual void SetText(std::string const& text) = 0;
 	virtual void AddItem(std::string const& str) = 0;
@@ -42,11 +36,13 @@ public:
 	virtual std::string GetItem(size_t index) const = 0;
 	virtual void SetSelected(size_t index) = 0;
 	virtual void Resize(int windowHeight, int windowWidth) = 0;
-	virtual void SetOnChangeCallback(callback(onChange)) = 0;
-	virtual void SetOnClickCallback(callback(onClick)) = 0;
+	virtual void SetOnChangeCallback(std::function<void()> const& onChange) = 0;
+	virtual void SetOnClickCallback(std::function<void()> const& onClick) = 0;
 	virtual void SetBackgroundImage(std::string const& image) = 0;
+	virtual void SetState(bool state) = 0;
+	virtual bool GetState() const = 0;
 
-	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, callback(onClick)) = 0;
+	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, std::function<void()> const& onClick) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;
 	virtual IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState) = 0;

@@ -5,20 +5,20 @@ class CUIRadioGroup : public CUIElement
 {
 public:
 	CUIRadioGroup(int x, int y, int height, int width, IUIElement * parent): CUIElement(x, y, height, width, parent), m_selected(-1) { }
-	void Draw() const;
-	bool LeftMouseButtonUp(int x, int y);
-	void AddItem(std::string const& str);
-	void DeleteItem(size_t index);
-	std::string const GetText() const;
-	int GetSelectedIndex() const { return m_selected; }
-	size_t GetItemsCount() const { return m_items.size(); }
-	std::string GetItem(size_t index) const { return m_items[index]; }
-	void ClearItems() { m_items.clear(); m_selected = -1; }
-	void SetSelected(size_t index);
-	void SetText(std::string const& text);
-	void SetOnChangeCallback(callback(onChange)) { m_onChange = onChange; }
+	void Draw() const override;
+	bool LeftMouseButtonUp(int x, int y) override;
+	void AddItem(std::string const& str) override;
+	void DeleteItem(size_t index) override;
+	std::string const GetText() const override;
+	int GetSelectedIndex() const override;
+	size_t GetItemsCount() const override;
+	std::string GetItem(size_t index) const override;
+	void ClearItems() override;
+	void SetSelected(size_t index) override;
+	void SetText(std::string const& text) override;
+	void SetOnChangeCallback(std::function<void()> const& onChange) override;
 private:
 	std::vector<std::string> m_items;
 	int m_selected;
-	callback(m_onChange);
+	std::function<void()> m_onChange;
 };

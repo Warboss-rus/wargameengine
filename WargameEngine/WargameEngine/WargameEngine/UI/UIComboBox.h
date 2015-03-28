@@ -7,27 +7,27 @@ class CUIComboBox : public CUIElement
 public:
 	CUIComboBox(int x, int y, int height, int width, IUIElement * parent): CUIElement(x, y, height, width, parent), 
 		m_selected(-1), m_expanded(false), m_pressed(false), m_scrollbar(m_theme) { }
-	void Draw() const;
-	bool LeftMouseButtonDown(int x, int y);
-	bool LeftMouseButtonUp(int x, int y);
-	void AddItem(std::string const& str);
-	void DeleteItem(size_t index);
-	std::string const GetText() const;
-	int GetSelectedIndex() const { return m_selected; }
-	size_t GetItemsCount() const { return m_items.size(); }
-	std::string GetItem(size_t index) const { return m_items[index]; }
-	void ClearItems() { m_items.clear(); m_selected = -1; }
-	void SetSelected(size_t index);
-	bool PointIsOnElement(int x, int y) const;
-	void SetText(std::string const& text);
-	void SetOnChangeCallback(callback(onChange)) { m_onChange = onChange; }
-	void Resize(int windowHeight, int windowWidth);
-	void SetTheme(std::shared_ptr<CUITheme> theme) { m_theme = theme; m_scrollbar = CUIScrollBar(theme); }
+	void Draw() const override;
+	bool LeftMouseButtonDown(int x, int y) override;
+	bool LeftMouseButtonUp(int x, int y) override;
+	void AddItem(std::string const& str) override;
+	void DeleteItem(size_t index) override;
+	std::string const GetText() const override;
+	int GetSelectedIndex() const override;
+	size_t GetItemsCount() const override;
+	std::string GetItem(size_t index) const override;
+	void ClearItems() override;
+	void SetSelected(size_t index) override;
+	bool PointIsOnElement(int x, int y) const override;
+	void SetText(std::string const& text) override;
+	void SetOnChangeCallback(std::function<void()> const& onChange) override;
+	void Resize(int windowHeight, int windowWidth) override;
+	void SetTheme(std::shared_ptr<CUITheme> theme) override;
 private:
 	std::vector<std::string> m_items;
 	int m_selected;
 	bool m_expanded;
 	bool m_pressed;
-	callback(m_onChange);
+	std::function<void()> m_onChange;
 	CUIScrollBar m_scrollbar;
 };
