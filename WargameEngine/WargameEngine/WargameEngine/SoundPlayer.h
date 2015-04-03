@@ -1,6 +1,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <future>
 #include "view/Vector3.h"
 
 class CSoundPlayer
@@ -23,4 +24,6 @@ private:
 	void * m_context;
 	std::map<std::string, unsigned int> m_buffers;
 	std::vector<unsigned int> m_sources;
+	std::future<void> m_thread;
+	bool m_stop;
 };

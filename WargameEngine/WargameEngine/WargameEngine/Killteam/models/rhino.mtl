@@ -1,0 +1,70 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+# Multi/Sub Multimaterial (7) to come 
+#
+newmtl predator_track_r
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd predator_track_r.bmp
+#
+newmtl predator_track_l
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd predator_track_l.bmp
+#
+newmtl rhino_chassis_1
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd rhino_chassis_1.bmp
+#
+newmtl rhino_chassis_2
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd rhino_chassis_2.bmp
+#
+newmtl vehicle_wargear_2
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd vehicle_wargear_2.bmp
+#
+newmtl vehicle_extra_armor
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd vehicle_extra_armor.bmp
+#
+newmtl vehicle_wargear_1
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+map_Kd vehicle_wargear_1.bmp
+#
+# Multi/Sub Multimaterial done 
+#
+# EOF

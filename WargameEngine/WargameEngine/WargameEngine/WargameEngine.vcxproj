@@ -151,11 +151,11 @@
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="SoundPlayer.cpp" />
-    <ClCompile Include="Threading.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="tinyxml.cpp" />
     <ClCompile Include="tinyxmlerror.cpp" />
     <ClCompile Include="tinyxmlparser.cpp" />
+    <ClCompile Include="TranslationManager.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
     <ClCompile Include="UI\UIEdit.cpp" />
@@ -214,9 +214,10 @@
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="PluginManager.h" />
     <ClInclude Include="SoundPlayer.h" />
-    <ClInclude Include="Threading.h" />
+    <ClInclude Include="Task.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="tinyxml.h" />
+    <ClInclude Include="TranslationManager.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
     <ClInclude Include="view\CameraFirstPerson.h" />

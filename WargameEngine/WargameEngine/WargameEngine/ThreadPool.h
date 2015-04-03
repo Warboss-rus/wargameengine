@@ -1,19 +1,15 @@
 #include <string>
 #include <list>
-
-struct sRunFunc;
-struct sRunFunc2;
-
-#include "Threading.h"
+#include <memory>
 
 class ThreadPool
 {
 public:
-	//Runs function in threadpool.
+	//Runs function in thread pool.
 	static void RunFunc(void* (*func)(void*), void* param, unsigned int flags = 0);
-	//Runs function in threadpool. doneCallback will be called in main thread when finished
+	//Runs function in thread pool. doneCallback will be called in main thread when finished
 	static void RunFunc(void(*func)(void*), void* param, void(*doneCallback)(), unsigned int flags = 0);
-	//Runs function in threadpool. doneCallback will be called in main thread when finished with initial function result as the parameter
+	//Runs function in thread pool. doneCallback will be called in main thread when finished with initial function result as the parameter
 	static void RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*), unsigned int flags = 0);
 	//Reads file content and runs a function with a data, size and param as parameters. doneCallback will be called in main thread when finished
 	static void AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(), unsigned int flags = 0);
@@ -36,26 +32,12 @@ public:
 		//Functions with this flag will be executed in the same thread as the async reading. Speedup on small functions. Has no effect when no async reading is present.
 		FLAG_FAST_FUNCTION = 2
 	};
-	
+	struct Impl;
 private:
-	static void QueueCallback(void(*callback)());
-	static void QueueCallback(void(*callback)(void*), void *params);
-	static void QueueFunc(sRunFunc * func, unsigned int flags = 0);
-	static void QueueFunc(sRunFunc2 * func, unsigned int flags = 0);
-	static void ReportThreadClose();
-	static void* Func(void* param);
-	static void* Func2(void* param);
+	static std::unique_ptr<Impl> m_pImpl;
 	static void* ReadData(void* param);
 	static void* ReadData2(void* param);
+	static void* WorkerThread(void* param);
 	static void ProcessData(void* param);
 	static void* ProcessData2(void* param);
-	static void* WorkerThread(void* param);
-	static std::list<void(*)()> m_callbacks;
-	static std::list<std::pair<void(*)(void*), void*>> m_callbacks2;
-	static std::list<sRunFunc*> m_funcs;
-	static std::list<sRunFunc2*> m_funcs2;
-	static int m_currentThreads;
-	static int m_maxThreads;
-	static int m_threadsTimeout;
-	static bool m_cancelled;
 };

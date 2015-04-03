@@ -3,28 +3,14 @@
 #include <AL/alc.h>
 #include <string.h>
 #include "LogWriter.h"
-#include "Threading.h"
+#include <future>
 #define STREAM_BUFFERS 5
 #define WAV_FILE_HEADER_SIZE 44
 #define WAV_FILE_NUMCHANNELS_POSITION 22
 
-#ifdef __unix__
-#include <unistd.h>
-#else
-#define sleep Sleep
-#endif
-
 std::shared_ptr<CSoundPlayer> CSoundPlayer::m_instance;
 
-void* StreamThread(void* param);
-
-struct sStreamProps
-{
-	std::vector<std::string> files;
-	bool shuffle;
-	bool repeat;
-	float volume;
-};
+void StreamThread(std::vector<std::string> const& files, bool shuffle, bool repeat, float volume, bool & stop);
 
 std::string GetALError(ALenum error)
 {
@@ -75,6 +61,7 @@ void CSoundPlayer::FreeInstance()
 
 void CSoundPlayer::Init()
 {
+	m_stop = false;
 	ALCdevice *dev;
 	ALCcontext *ctx;
 	dev = alcOpenDevice(NULL);
@@ -103,6 +90,7 @@ void CSoundPlayer::Init()
 
 CSoundPlayer::~CSoundPlayer()
 {
+	m_stop = true;
 	for (auto i = m_buffers.begin(); i != m_buffers.end(); ++i)
 	{
 		alDeleteBuffers(1, &i->second);
@@ -169,12 +157,9 @@ void CSoundPlayer::PlaySoundPosition(std::string const& file, CVector3d const& p
 
 void CSoundPlayer::PlaySoundPlaylist(std::vector<std::string> const& files, float volume, bool shuffle, bool repeat)
 {
-	sStreamProps * props = new sStreamProps;
-	props->files = files;
-	props->volume = volume;
-	props->repeat = repeat;
-	props->shuffle = shuffle;
-	StartThread(StreamThread, props);
+	m_thread = std::async(std::launch::async, [=] {
+		StreamThread(files, shuffle, repeat, volume, m_stop);
+	});
 }
 
 void CSoundPlayer::ReadWav(std::string const& file)
@@ -234,9 +219,8 @@ void CSoundPlayer::Update()
 	}
 }
 
-void* StreamThread(void* param)
+void StreamThread(std::vector<std::string> const& files, bool shuffle, bool repeat, float volume, bool & stop)
 {
-	sStreamProps & sparam = *reinterpret_cast<sStreamProps*>(param);
 	ALuint buffers[STREAM_BUFFERS];
 	alGenBuffers(STREAM_BUFFERS, buffers);
 	ALuint source;
@@ -244,15 +228,15 @@ void* StreamThread(void* param)
 	alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE);
 	alSource3f(source, AL_POSITION, 0.0f, 0.0f, 0.0f);
 	alSourcei(source, AL_LOOPING, AL_FALSE);
-	alSourcef(source, AL_GAIN, sparam.volume);
+	alSourcef(source, AL_GAIN, volume);
 	unsigned int curBuffer = 0;//index of the buffer to be filled
 	bool firstRun = true;
 	do
 	{
-		for (unsigned int i = 0; i < sparam.files.size(); ++i)
+		for (unsigned int i = 0; i < files.size(); ++i)
 		{
 			//open the file and read the header
-			FILE * f = fopen(sparam.files[i].c_str(), "rb");
+			FILE * f = fopen(files[i].c_str(), "rb");
 			fseek(f, 0L, SEEK_END);
 			unsigned int fileSize = ftell(f);
 			fseek(f, 0L, SEEK_SET);
@@ -277,6 +261,12 @@ void* StreamThread(void* param)
 			unsigned char * data = new unsigned char[pieceSize];
 			while (bytesRead < fileSize)
 			{
+				if (stop)
+				{
+					alDeleteSources(1, &source);
+					alDeleteBuffers(STREAM_BUFFERS, buffers);
+					return;
+				}
 				if (bytesRead + pieceSize > fileSize) pieceSize = fileSize - bytesRead;
 				ALint processed;
 				alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
@@ -297,21 +287,19 @@ void* StreamThread(void* param)
 					firstRun = false;
 					curBuffer = 0;
 				}
-				sleep(10);
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 			delete[] data;
 			fclose(f);
 		}
-	} while (sparam.repeat);
+	} while (repeat);
 	ALint processed;
 	alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
-	while (processed < STREAM_BUFFERS)
+	while (processed < STREAM_BUFFERS && !stop)
 	{
-		sleep(10);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		alGetSourcei(source, AL_BUFFERS_PROCESSED, &processed);
 	}
 	alDeleteSources(1, &source);
 	alDeleteBuffers(STREAM_BUFFERS, buffers);
-	delete reinterpret_cast<sStreamProps*>(param);
-	return NULL;
 }

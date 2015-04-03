@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<effect duration="1.0">
+	<materials>
+		<material id="material1" texture="tracer.png" vertex_shader="" fragment_shader=""/>
+	</materials>
+	<particles>
+		<particle id="particle1" width="1.0" height="1.0" material="material1">
+			<keyframes>0.0 1.0</keyframes>
+			<positions>
+				0.0 0.0 0.0
+				0.0 0.0 0.0
+			</positions>
+		</particle>
+	</particles>
+	<instances>
+		<instance particle="particle1"/>
+	</instances>
+</effect>

@@ -1,0 +1,10 @@
+Name = RTS
+Version = 1
+Author = Warboss-rus
+Site = galaxyinfire.ucoz.ru ; comment here
+Playable = 1
+Folder = Killteam
+Script = rts.lua
+Models = models
+Textures = texture
+Shaders = 
