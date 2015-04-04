@@ -17,7 +17,9 @@
         </gdb_signals>
         <gdb_options>
           <DebugOptions>
-            <option name="debug_command" value="&quot;${OUTPUT_PATH}&quot; &quot;-module&quot; Test.module"/>
+            <option name="debug_command" value="&quot;${OUTPUT_PATH}&quot;"/>
+            <option name="debug_dir"
+                    value="/home/warbossrus/Documents/WargameEngine/WargameEngine/WargameEngine"/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
@@ -60,11 +62,11 @@
       </nativedebugger>
       <runprofile version="9">
         <runcommandpicklist>
-          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" -</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" -module Test.module</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" -module Test.module</runcommand>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

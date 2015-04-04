@@ -45,7 +45,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/Ruler.o \
 	${OBJECTDIR}/SoundPlayer.o \
 	${OBJECTDIR}/ThreadPool.o \
-	${OBJECTDIR}/Threading.o \
+	${OBJECTDIR}/TranslationManager.o \
 	${OBJECTDIR}/UI/UIButton.o \
 	${OBJECTDIR}/UI/UICheckBox.o \
 	${OBJECTDIR}/UI/UIComboBox.o \
@@ -131,7 +131,7 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wargameengine: ../../MathLib/MathLib/
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wargameengine: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wargameengine ${OBJECTFILES} ${LDLIBSOPTIONS} -lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs` -lopenal
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/wargameengine ${OBJECTFILES} ${LDLIBSOPTIONS} -lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs` -lopenal -pthread
 
 ${OBJECTDIR}/LogWriter.o: LogWriter.cpp 
 	${MKDIR} -p ${OBJECTDIR}
@@ -183,10 +183,10 @@ ${OBJECTDIR}/ThreadPool.o: ThreadPool.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ThreadPool.o ThreadPool.cpp
 
-${OBJECTDIR}/Threading.o: Threading.cpp 
+${OBJECTDIR}/TranslationManager.o: TranslationManager.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Threading.o Threading.cpp
+	$(COMPILE.cc) -g -I../../LUA/LUA -I../../MathLib/MathLib -I/usr/include/freetype2 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/TranslationManager.o TranslationManager.cpp
 
 ${OBJECTDIR}/UI/UIButton.o: UI/UIButton.cpp 
 	${MKDIR} -p ${OBJECTDIR}/UI

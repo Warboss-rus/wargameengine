@@ -13,7 +13,7 @@ class CGameModel
 public:
 	static std::weak_ptr<CGameModel> GetInstance();
 	static void FreeInstance();
-	unsigned long GetObjectCount() const;
+	size_t GetObjectCount() const;
 	void Clear();
 	std::shared_ptr<const IObject> Get3DObject(unsigned long number) const;
 	std::shared_ptr<IObject> Get3DObject(unsigned long number);
@@ -28,7 +28,7 @@ public:
 	std::string const GetProperty(std::string const& key);
 	std::map<std::string, std::string> const& GetAllProperties() const;
 	void AddProjectile(CProjectile const& projectile) { m_projectiles.push_back(projectile); }
-	unsigned int GetProjectileCount() const { return m_projectiles.size(); }
+	size_t GetProjectileCount() const { return m_projectiles.size(); }
 	CProjectile const& GetProjectile(unsigned int index) const { return m_projectiles[index]; }
 	void Update();
 	void RemoveProjectile(unsigned int index) { m_projectiles.erase(m_projectiles.begin() + index); }

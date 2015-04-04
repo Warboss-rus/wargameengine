@@ -69,7 +69,7 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 
 		if (type == "Ka") //ambient color
 		{
-			for (unsigned int i = 0; i < 3; ++i)
+			for (size_t i = 0; i < 3; ++i)
 			{
 				lineStream >> dvalue;
 				lastMaterial->ambient[i] = dvalue;
@@ -77,7 +77,7 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 		}
 		if (type == "Kd") //diffuse color
 		{
-			for (unsigned int i = 0; i < 3; ++i)
+			for (size_t i = 0; i < 3; ++i)
 			{
 				lineStream >> dvalue;
 				lastMaterial->diffuse[i] = dvalue;
@@ -85,7 +85,7 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 		}
 		if (type == "Ks") //specular color
 		{
-			for (unsigned int i = 0; i < 3; ++i)
+			for (size_t i = 0; i < 3; ++i)
 			{
 				lineStream >> dvalue;
 				lastMaterial->specular[i] = dvalue;

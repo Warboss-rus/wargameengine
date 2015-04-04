@@ -186,7 +186,7 @@ bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> cur
 	if (!curBox) return false;
 	CVector3d curPos(current->GetCoords());
 	double curAngle = current->GetRotation();
-	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
+	for (size_t i = 0; i < model->GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = model->Get3DObject(i);
 		if (!object) continue;
@@ -206,7 +206,7 @@ bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 {
 	CGameModel* model = CGameModel::GetInstance().lock().get();
 	CVector3d coords;
-	for (unsigned int i = 0; i < model->GetObjectCount(); ++i)
+	for (size_t i = 0; i < model->GetObjectCount(); ++i)
 	{
 		IObject * current = model->Get3DObject(i).get();
 		if (current == shooter || current == target) continue;
@@ -228,7 +228,7 @@ int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * t
 	if (!tarBox)
 	{
 		CBoundingCompound * compound = (CBoundingCompound*)target;
-		for (unsigned int i = 0; i < compound->GetChildCount(); ++i)
+		for (size_t i = 0; i < compound->GetChildCount(); ++i)
 		{
 			result += BBoxlos(origin, compound->GetChild(i), shooter, targetObject);
 		}
@@ -291,9 +291,9 @@ std::vector<char> CGameController::GetState(bool hasAdresses) const
 	std::vector<char> result;
 	result.resize(9);
 	result[0] = 1;
-	unsigned int count = model.GetObjectCount();
+	size_t count = model.GetObjectCount();
 	*((unsigned int*)&result[5]) = count;
-	for (unsigned int i = 0; i < count; ++i)
+	for (size_t i = 0; i < count; ++i)
 	{
 		const IObject * object = model.Get3DObject(i).get();
 		std::vector<char> current;
@@ -328,7 +328,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 	unsigned int current = 4;
 	CGameModel * model = CGameModel::GetInstance().lock().get();
 	model->Clear();
-	for (unsigned int i = 0; i < count; ++i)
+	for (size_t i = 0; i < count; ++i)
 	{
 		double x = *((double*)&data[current]);
 		double y = *((double*)&data[current + 8]);

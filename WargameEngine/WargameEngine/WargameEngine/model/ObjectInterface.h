@@ -37,7 +37,7 @@ public:
 	virtual float GetAnimationTime() const = 0;
 	virtual void AddSecondaryModel(std::string const& model) = 0;
 	virtual void RemoveSecondaryModel(std::string const& model) = 0;
-	virtual unsigned int GetSecondaryModelsCount() const = 0;
+	virtual size_t GetSecondaryModelsCount() const = 0;
 	virtual std::string GetSecondaryModel(unsigned int index) const = 0;
 	virtual sAnimation::eLoopMode GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;

@@ -20,7 +20,7 @@ void CGameModel::FreeInstance()
 	m_instanse.reset();
 }
 
-unsigned long CGameModel::GetObjectCount() const
+size_t CGameModel::GetObjectCount() const
 {
 	return m_objects.size();
 }
@@ -121,11 +121,11 @@ void CGameModel::ResetLandscape(double width, double depth, std::string const& t
 
 void CGameModel::Update()
 {
-	for (unsigned int i = 0; i < m_objects.size(); ++i)
+	for (size_t i = 0; i < m_objects.size(); ++i)
 	{
 		m_objects[i]->Update();
 	}
-	for (unsigned int i = 0; i < m_projectiles.size(); ++i)
+	for (size_t i = 0; i < m_projectiles.size(); ++i)
 	{
 		m_projectiles[i].Update();
 	}

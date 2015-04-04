@@ -38,7 +38,7 @@ const double * CCameraStrategy::GetPosition() const
 	pos[1] = pos[0] * sin(m_rotZ * M_PI / 180) + pos[1] * cos(m_rotZ * M_PI / 180);
 	pos[0] = temp;
 	//scale
-	for (unsigned int i = 0; i < 3; ++i)
+	for (size_t i = 0; i < 3; ++i)
 	{
 		pos[i] /= m_scale;
 	}

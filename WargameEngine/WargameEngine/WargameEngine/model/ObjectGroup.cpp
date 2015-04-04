@@ -230,7 +230,7 @@ bool CObjectGroup::CastsShadow() const
 
 void CObjectGroup::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed)
 {
-	for (unsigned int i = 0; i < m_children.size(); ++i)
+	for (size_t i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->PlayAnimation(animation, loop, speed);
 	}
@@ -250,7 +250,7 @@ float CObjectGroup::GetAnimationTime() const
 
 void CObjectGroup::AddSecondaryModel(std::string const& model)
 {
-	for (unsigned int i = 0; i < m_children.size(); ++i)
+	for (size_t i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->AddSecondaryModel(model);
 	}
@@ -258,7 +258,7 @@ void CObjectGroup::AddSecondaryModel(std::string const& model)
 
 void CObjectGroup::RemoveSecondaryModel(std::string const& model)
 {
-	for (unsigned int i = 0; i < m_children.size(); ++i)
+	for (size_t i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->RemoveSecondaryModel(model);
 	}
@@ -290,7 +290,7 @@ float CObjectGroup::GetAnimationSpeed() const
 
 void CObjectGroup::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)//needs to be reworked
 {
-	for (unsigned int i = 0; i < m_children.size(); ++i)
+	for (size_t i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->GoTo(coords, speed, animation, animationSpeed);
 	}
@@ -298,7 +298,7 @@ void CObjectGroup::GoTo(CVector3d const& coords, double speed, std::string const
 
 void CObjectGroup::Update()
 {
-	for (unsigned int i = 0; i < m_children.size(); ++i)
+	for (size_t i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->Update();
 	}
@@ -306,7 +306,7 @@ void CObjectGroup::Update()
 
 void CObjectGroup::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
-	for (unsigned int i = 0; i < m_children.size(); ++i)
+	for (size_t i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->ApplyTeamColor(suffix, r, g, b);
 	}
@@ -314,7 +314,7 @@ void CObjectGroup::ApplyTeamColor(std::string const& suffix, unsigned char r, un
 
 void CObjectGroup::ReplaceTexture(std::string const& oldTexture, std::string const& newTexture)
 {
-	for (unsigned int i = 0; i < m_children.size(); ++i)
+	for (size_t i = 0; i < m_children.size(); ++i)
 	{
 		m_children[i]->ReplaceTexture(oldTexture, newTexture);
 	}

@@ -97,7 +97,7 @@ bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, do
 
 bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, double angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, double angle2)
 {
-	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
+	for (size_t i = 0; i < bounding2.GetChildCount(); i++)
 	{
 		if (IsInteresect(&bounding1, translate1, angle1, bounding2.GetChild(i), translate2, angle2))
 		{
@@ -109,7 +109,7 @@ bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, do
 
 bool IsInteresect(CBoundingCompound const& bounding1, CVector3d const& translate1, double angle1, CBoundingCompound const& bounding2, CVector3d const& translate2, double angle2)
 {
-	for (unsigned int i = 0; i < bounding2.GetChildCount(); i++)
+	for (size_t i = 0; i < bounding2.GetChildCount(); i++)
 	{
 		if (IsInteresect((IBounding*)&bounding1, translate1, angle1, bounding2.GetChild(i), translate2, angle2))
 		{
@@ -175,7 +175,7 @@ void CBoundingCompound::SetScale(double scale)
 	}
 }
 
-unsigned int CBoundingCompound::GetChildCount() const
+size_t CBoundingCompound::GetChildCount() const
 { 
 	return m_children.size(); 
 }

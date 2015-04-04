@@ -32,10 +32,10 @@ public:
 	unsigned int GetPointsPerDepth() const { return m_pointsPerDepth; }
 	bool isCoordsOnTable(double worldX, double worldY) const;
 	void AddNewDecal(sDecal const& decal);
-	unsigned int GetNumberOfDecals() const { return m_decals.size(); }
+	size_t GetNumberOfDecals() const { return m_decals.size(); }
 	sDecal const& GetDecal(unsigned int index) const { return m_decals[index]; }
 	void AddStaticObject(CStaticObject const& object);
-	unsigned int GetStaticObjectCount() const { return m_staticObjects.size(); }
+	size_t GetStaticObjectCount() const { return m_staticObjects.size(); }
 	CStaticObject const& GetStaticObject(unsigned int index) const { return m_staticObjects[index]; }
 private:
 	double m_width;

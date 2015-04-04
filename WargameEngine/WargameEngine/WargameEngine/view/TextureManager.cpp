@@ -50,7 +50,7 @@ void* LoadBMP(void * data, unsigned int size, void* param)
 	if (img->headerSize==0)  // Some BMP files are misformatted, guess missing information
 		img->headerSize=54;
 	img->data = imgData;
-	for (unsigned int i = 0; i < img->teamcolor.size(); ++i)
+	for (size_t i = 0; i < img->teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img->teamcolor[i].suffix, img->teamcolor[i].color);
 	}
@@ -110,7 +110,7 @@ void* LoadTGA(void * data, unsigned int size, void* param)
 		img->headerSize = 0;
 	}
 	img->data = imgData;
-	for (unsigned int i = 0; i < img->teamcolor.size(); ++i)
+	for (size_t i = 0; i < img->teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img->teamcolor[i].suffix, img->teamcolor[i].color);
 	}
@@ -134,7 +134,7 @@ void* UnpackTexture(void * data, unsigned int size, void* param)
 	img->bpp = 32;
 	img->format = GL_RGBA;
 	img->headerSize = 0;
-	for (unsigned int i = 0; i < img->teamcolor.size(); ++i)
+	for (size_t i = 0; i < img->teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img->teamcolor[i].suffix, img->teamcolor[i].color);
 	}

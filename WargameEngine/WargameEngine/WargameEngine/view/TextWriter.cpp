@@ -122,7 +122,7 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 	{
 		int w = 0;
 		int h = 0;
-		for (unsigned int i = 0; i < text.size(); ++i)
+		for (size_t i = 0; i < text.size(); ++i)
 		{
 			sGlyph glyph = GetSymbol(line.face, size, text[i]);
 			w += glyph.width + 1;
@@ -138,7 +138,7 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, w, h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, NULL);
 		int newx = 0;
-		for (unsigned int i = 0; i < text.size(); ++i)
+		for (size_t i = 0; i < text.size(); ++i)
 		{
 			sGlyph glyph = GetSymbol(line.face, size, text[i]);
 			wchar_t unicodeSymbol;

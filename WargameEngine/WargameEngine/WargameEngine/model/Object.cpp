@@ -165,7 +165,7 @@ void CObject::RemoveSecondaryModel(std::string const& model)
 	}
 }
 
-unsigned int CObject::GetSecondaryModelsCount() const
+size_t CObject::GetSecondaryModelsCount() const 
 {
 	return m_secondaryModels.size();
 }

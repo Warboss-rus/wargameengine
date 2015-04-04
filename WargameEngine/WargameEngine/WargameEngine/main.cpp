@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 				return 1;
 			}
 			sModule::Load(argv[i]);
-			ChangeDir(sModule::folder);
+			ChangeWorkingDirectory(sModule::folder.c_str());
 		}
 	}
 	if (sModule::name.empty())

@@ -193,6 +193,7 @@
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />
+    <ClInclude Include="ITask.h" />
     <ClInclude Include="model\Bounding.h" />
     <ClInclude Include="model\Landscape.h" />
     <ClInclude Include="model\ObjectStatic.h" />

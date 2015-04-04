@@ -72,6 +72,7 @@
         <itemPath>view/Vector3.h</itemPath>
         <itemPath>view/gl.h</itemPath>
       </logicalFolder>
+      <itemPath>ITask.h</itemPath>
       <itemPath>LogWriter.h</itemPath>
       <itemPath>Module.h</itemPath>
       <itemPath>NetSocket.h</itemPath>
@@ -81,8 +82,9 @@
       <itemPath>PluginManager.h</itemPath>
       <itemPath>Ruler.h</itemPath>
       <itemPath>SoundPlayer.h</itemPath>
+      <itemPath>Task.h</itemPath>
       <itemPath>ThreadPool.h</itemPath>
-      <itemPath>Threading.h</itemPath>
+      <itemPath>TranslationManager.h</itemPath>
       <itemPath>nv_dds.h</itemPath>
       <itemPath>tinyxml.h</itemPath>
     </logicalFolder>
@@ -163,7 +165,7 @@
       <itemPath>Ruler.cpp</itemPath>
       <itemPath>SoundPlayer.cpp</itemPath>
       <itemPath>ThreadPool.cpp</itemPath>
-      <itemPath>Threading.cpp</itemPath>
+      <itemPath>TranslationManager.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>nv_dds.cpp</itemPath>
       <itemPath>tinyxml.cpp</itemPath>
@@ -211,9 +213,11 @@
             <linkerLibFileItem>../../LUA/LUA/liblua.a</linkerLibFileItem>
             <linkerLibFileItem>../../MathLib/MathLib/dist/Debug/GNU-Linux-x86/libmathlib.a</linkerLibFileItem>
           </linkerLibItems>
-          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs` -lopenal</commandLine>
+          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs` -lopenal -pthread</commandLine>
         </linkerTool>
       </compileType>
+      <item path="ITask.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="LogWriter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LogWriter.h" ex="false" tool="3" flavor2="0">
@@ -250,13 +254,15 @@
       </item>
       <item path="SoundPlayer.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Task.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="ThreadPool.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="ThreadPool.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Threading.cpp" ex="false" tool="1" flavor2="0">
+      <item path="TranslationManager.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="Threading.h" ex="false" tool="3" flavor2="0">
+      <item path="TranslationManager.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="UI/IUI.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -541,9 +547,11 @@
             <linkerLibFileItem>../../MathLib/MathLib/dist/Debug/GNU-Linux-x86/libmathlib.a</linkerLibFileItem>
             <linkerLibFileItem>../../LUA/LUA/liblua.a</linkerLibFileItem>
           </linkerLibItems>
-          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs`</commandLine>
+          <commandLine>-lGL -lGLU -lGLEW -lglut -ldl -lm `freetype-config --libs` -lopenal -pthread</commandLine>
         </linkerTool>
       </compileType>
+      <item path="ITask.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="LogWriter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LogWriter.h" ex="false" tool="3" flavor2="0">
@@ -580,13 +588,15 @@
       </item>
       <item path="SoundPlayer.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Task.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="ThreadPool.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="ThreadPool.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Threading.cpp" ex="false" tool="1" flavor2="0">
+      <item path="TranslationManager.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="Threading.h" ex="false" tool="3" flavor2="0">
+      <item path="TranslationManager.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="UI/IUI.h" ex="false" tool="3" flavor2="0">
       </item>

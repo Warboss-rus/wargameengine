@@ -37,7 +37,7 @@ void CPluginManager::LoadPlugin(std::string const& file)
 void CPluginManager::LoadFolder(std::string const& folder, bool recursive)
 {
 	std::vector<std::string> files = GetFiles(folder, "*.dll", recursive);
-	for (unsigned int i = 0; i < files.size(); ++i)
+	for (size_t i = 0; i < files.size(); ++i)
 	{
 		LoadPlugin(files[i]);
 	}

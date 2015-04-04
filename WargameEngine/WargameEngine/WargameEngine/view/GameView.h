@@ -8,6 +8,7 @@
 #include "ParticleSystem.h"
 #include "../UI/UIElement.h"
 #include "ShaderManager.h"
+#include "TextWriter.h"
 
 class CGameView
 {
@@ -23,6 +24,7 @@ public:
 	void SetCamera(ICamera * camera);
 	CModelManager& GetModelManager() { return m_modelManager; }
 	CParticleSystem& GetParticleSystem() { return m_particles; }
+	CTextWriter& GetTextWriter() { return m_textWriter; }
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
@@ -67,6 +69,7 @@ private:
 	CModelManager m_modelManager;
 	CShaderManager m_shader;
 	CParticleSystem m_particles;
+	CTextWriter m_textWriter;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;

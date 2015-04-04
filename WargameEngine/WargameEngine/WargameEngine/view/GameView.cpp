@@ -10,9 +10,9 @@
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
-#include "../OSSpecific.h"
 #include "../Ruler.h"
 #include "../SoundPlayer.h"
+#include "../OSSpecific.h"
 #include "CameraStrategy.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
@@ -138,7 +138,7 @@ void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation)
 	if (dynamic_cast<CBoundingCompound*>(ibox) != NULL)
 	{
 		CBoundingCompound * bbox = (CBoundingCompound *)ibox;
-		for (unsigned int i = 0; i < bbox->GetChildCount(); ++i)
+		for (size_t i = 0; i < bbox->GetChildCount(); ++i)
 		{
 			DrawBBox(bbox->GetChild(i), x, y, z, rotation);
 		}
@@ -193,7 +193,7 @@ void CGameView::DrawBoundingBox()
 		if (CGameModel::IsGroup(object.get()))
 		{
 			CObjectGroup * group = (CObjectGroup *)object.get();
-			for(unsigned int i = 0; i < group->GetCount(); ++i)
+			for(size_t i = 0; i < group->GetCount(); ++i)
 			{
 				object = group->GetChild(i);
 				if(object)
@@ -261,10 +261,10 @@ void CGameView::DrawTable(bool shadowOnly)
 	double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
 	CTextureManager::GetInstance()->SetTexture(landscape.GetTexture());
 	unsigned int k = 0;
-	for (double x = x1; x <= x2 - xstep; x += xstep)
+	for(double x = x1; x <= x2 - xstep; x += xstep)
 	{
 		glBegin(GL_TRIANGLE_STRIP);
-		for (double y = y1; y <= y2; y += ystep, k++)
+		for(double y = y1; y <= y2; y += ystep, k++)
 		{
 			glTexCoord2d((x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale());
 			glVertex3d(x, y, landscape.GetHeight(k));
@@ -274,7 +274,7 @@ void CGameView::DrawTable(bool shadowOnly)
 		glEnd();
 	}
 	CTextureManager::GetInstance()->SetTexture("");
-	for (unsigned long i = 0; i < landscape.GetStaticObjectCount(); i++)
+	for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
 	{
 		CStaticObject const& object = landscape.GetStaticObject(i);
 		glPushMatrix();
@@ -285,7 +285,7 @@ void CGameView::DrawTable(bool shadowOnly)
 	}
 	if (!shadowOnly)//Down't draw decals because they don't cast shadows
 	{
-		for (unsigned int i = 0; i < landscape.GetNumberOfDecals(); ++i)
+		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 		{
 			sDecal const& decal = landscape.GetDecal(i);
 			CTextureManager::GetInstance()->SetTexture(decal.texture);
@@ -322,16 +322,16 @@ void CGameView::DrawObjects(void)
 	if (m_shadowMap) SetUpShadowMapDraw();
 	if (m_tableList == 0) DrawTable(false);
 	else glCallList(m_tableList);
-	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
-	for (unsigned long i = 0; i < countObjects; i++)
+	size_t countObjects = m_gameModel.lock()->GetObjectCount();
+	for (size_t i = 0; i < countObjects; i++)
 	{
 		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0.0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_gpuSkinning);
-		unsigned int secondaryModels = object->GetSecondaryModelsCount();
-		for (unsigned int j = 0; j < secondaryModels; ++j)
+		size_t secondaryModels = object->GetSecondaryModelsCount();
+		for (size_t j = 0; j < secondaryModels; ++j)
 		{
 			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false, m_gpuSkinning);
 		}
@@ -340,7 +340,7 @@ void CGameView::DrawObjects(void)
 	m_shader.UnBindProgram();
 	glDisable(GL_BLEND);
 	glDisable(GL_LIGHTING);
-	for (unsigned long i = 0; i < m_gameModel.lock()->GetProjectileCount(); i++)
+	for (size_t i = 0; i < m_gameModel.lock()->GetProjectileCount(); i++)
 	{
 		CProjectile const& projectile = m_gameModel.lock()->GetProjectile(i);
 		glPushMatrix();
@@ -407,8 +407,8 @@ void CGameView::DrawShadowMap()
 	if (m_tableListShadow == 0) DrawTable(true);
 	else glCallList(m_tableListShadow);
 
-	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
-	for (unsigned long i = 0; i < countObjects; i++)
+	size_t countObjects = m_gameModel.lock()->GetObjectCount();
+	for (size_t i = 0; i < countObjects; i++)
 	{
 		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
 		if (!object->CastsShadow()) continue;
@@ -416,8 +416,8 @@ void CGameView::DrawShadowMap()
 		glTranslated(object->GetX(), object->GetY(), 0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, true, m_gpuSkinning);
-		unsigned int secondaryModels = object->GetSecondaryModelsCount();
-		for (unsigned int j = 0; j < secondaryModels; ++j)
+		size_t secondaryModels = object->GetSecondaryModelsCount();
+		for (size_t j = 0; j < secondaryModels; ++j)
 		{
 			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, true, m_gpuSkinning);
 		}
@@ -624,8 +624,8 @@ void CGameView::Preload(std::string const& image)
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
 	}
-	unsigned long countObjects = m_gameModel.lock()->GetObjectCount();
-	for (unsigned long i = 0; i < countObjects; i++)
+	size_t countObjects = m_gameModel.lock()->GetObjectCount();
+	for (size_t i = 0; i < countObjects; i++)
 	{
 		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
@@ -645,7 +645,7 @@ void CGameView::LoadModule(std::string const& module)
 {
 	ThreadPool::CancelAll();
 	sModule::Load(module);
-	ChangeDir(sModule::folder);
+	ChangeWorkingDirectory(sModule::folder);
 	CGameModel::FreeInstance();
 	m_gameModel = CGameModel::GetInstance();
 	CTextureManager::FreeInstance();
@@ -688,7 +688,7 @@ void CGameView::DrawLineLoop(double * points, unsigned int size, unsigned char c
 void CGameView::DrawText3D(double x, double y, double z, std::string const& text)
 {
 	glRasterPos3d(x, y, z); // location to start printing text
-	for (unsigned int i = 0; i < text.size(); i++) // loop until i is greater then l
+	for (size_t i = 0; i < text.size(); i++) // loop until i is greater then l
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]); // Print a character on the screen
 	}

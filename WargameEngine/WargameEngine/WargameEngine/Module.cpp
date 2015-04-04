@@ -25,7 +25,7 @@ std::string AddSlash(std::string const& str)
 {
 	if (!str.empty() && str.back() != '/' && str.back() != '\\')
 	{
-		return str + '\\';
+		return str + '/';
 	}
 	return str;
 }

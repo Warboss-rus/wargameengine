@@ -148,7 +148,7 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 	{
 		unsigned int begin = 0;
 		unsigned int end;
-		for (unsigned int i = 0; i < m_meshes.size(); ++i)
+		for (size_t i = 0; i < m_meshes.size(); ++i)
 		{
 			if (hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
 			{
@@ -198,7 +198,7 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 void C3DModel::CalculateGPUWeights()
 {
 	unsigned int k = 0;
-	for (unsigned int i = 0; i < m_weightsCount.size(); ++i)
+	for (size_t i = 0; i < m_weightsCount.size(); ++i)
 	{
 		unsigned int j = 0;
 		float sum = 0.0f;
@@ -222,7 +222,7 @@ void C3DModel::CalculateGPUWeights()
 		}
 	}
 	m_gpuInverseMatrices.resize(m_skeleton.size() * 16);
-	for (unsigned int i = 0; i < m_skeleton.size(); ++i)
+	for (size_t i = 0; i < m_skeleton.size(); ++i)
 	{
 		memcpy(&m_gpuInverseMatrices[i * 16], m_skeleton[i].invBindMatrix, sizeof(float) * 16);
 	}
@@ -269,7 +269,7 @@ void MultiplyMatrices(float * a, float * b)
 void AddAllChildren(std::vector<sAnimation> const& anims, unsigned int current, std::vector<unsigned int> & set)
 {
 	set.push_back(current);
-	for (unsigned int i = 0; i < anims[current].children.size(); ++i)
+	for (size_t i = 0; i < anims[current].children.size(); ++i)
 	{
 		AddAllChildren(anims, anims[current].children[i], set);
 	}
@@ -277,7 +277,7 @@ void AddAllChildren(std::vector<sAnimation> const& anims, unsigned int current, 
 
 void InterpolateMatrices(float * m1, const float * m2, float t)//works bad if matrices are strongly differ
 {
-	for (unsigned int i = 0; i < 16; ++i)
+	for (size_t i = 0; i < 16; ++i)
 	{
 		m1[i] = m1[i] * t + m2[i] * (1.0f - t);
 	}
@@ -289,7 +289,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 	//copy all matrices
 	std::vector<float> jointMatrices;
 	jointMatrices.resize(skeleton.size() * 16);
-	for (unsigned int i = 0; i < skeleton.size(); ++i)
+	for (size_t i = 0; i < skeleton.size(); ++i)
 	{
 		memcpy(&jointMatrices[i * 16], skeleton[i].matrix, sizeof(float) * 16);
 	}
@@ -298,7 +298,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 	{
 		//get animations that are need to be played
 		std::vector<unsigned int> animsToPlay;
-		for (unsigned int i = 0; i < animations.size(); ++i)
+		for (size_t i = 0; i < animations.size(); ++i)
 		{
 			if (animations[i].id == animationToPlay)
 			{
@@ -322,7 +322,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 			}
 		}
 		//replace affected joints with animation matrices
-		for (unsigned int i = 0; i < animsToPlay.size(); ++i)
+		for (size_t i = 0; i < animsToPlay.size(); ++i)
 		{
 			const sAnimation * anim = &animations[animsToPlay[i]];
 			unsigned int k;
@@ -335,7 +335,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 			}
 			if (k < anim->keyframes.size())
 			{
-				for (unsigned int j = 0; j < 16; ++j)
+				for (size_t j = 0; j < 16; ++j)
 				{
 					jointMatrices[anim->boneIndex * 16 + j] = anim->matrices[k * 16 + j];
 				}
@@ -347,7 +347,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 		}
 	}
 	//cycle through all joints and multiply them to their parents
-	for (unsigned int i = 0; i < skeleton.size(); ++i)
+	for (size_t i = 0; i < skeleton.size(); ++i)
 	{
 		if (skeleton[i].parentIndex != -1)
 		{
@@ -381,10 +381,10 @@ bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertex
 		vertices.resize(m_vertices.size());
 		normals.resize(m_normals.size());
 		unsigned int k = 0;
-		for (unsigned int i = 0; i < m_vertices.size(); ++i)
+		for (size_t i = 0; i < m_vertices.size(); ++i)
 		{
 			//recalculate vertex using bones
-			for (unsigned int j = 0; j < m_weightsCount[i]; ++j, ++k)
+			for (size_t j = 0; j < m_weightsCount[i]; ++j, ++k)
 			{
 				CVector3f vertex = m_vertices[i];
 				sJoint * joint = &m_skeleton[m_weightsIndexes[k]];
@@ -458,7 +458,7 @@ void C3DModel::PreloadTextures() const
 {
 	return;
 	CTextureManager * texManager = CTextureManager::GetInstance();
-	for (unsigned int i = 0; i < m_meshes.size(); ++i)
+	for (size_t i = 0; i < m_meshes.size(); ++i)
 	{
 		if (!m_materials.GetMaterial(m_meshes[i].materialName)) continue;
 		texManager->SetTexture(m_materials.GetMaterial(m_meshes[i].materialName)->texture);
@@ -468,7 +468,7 @@ void C3DModel::PreloadTextures() const
 std::vector<std::string> C3DModel::GetAnimations() const
 {
 	std::vector<std::string> result;
-	for (unsigned int i = 0; i < m_animations.size(); ++i)
+	for (size_t i = 0; i < m_animations.size(); ++i)
 	{
 		result.push_back(m_animations[i].id);
 	}

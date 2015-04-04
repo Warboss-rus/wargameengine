@@ -32,7 +32,7 @@ public:
 	float GetAnimationTime() const override;
 	void AddSecondaryModel(std::string const& model) override;
 	void RemoveSecondaryModel(std::string const& model) override;
-	unsigned int GetSecondaryModelsCount() const override;
+	size_t GetSecondaryModelsCount() const override;
 	std::string GetSecondaryModel(unsigned int index) const override;
 	sAnimation::eLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;

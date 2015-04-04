@@ -12,7 +12,7 @@ std::vector<float> GetFloats(TiXmlElement* data)
 	char * fl = strtok((char*)data->GetText() , " \n\t");
 	while (fl != NULL)
 	{
-		for (unsigned int i = 0; i < strlen(fl); ++i)
+		for (size_t i = 0; i < strlen(fl); ++i)
 		{
 			if (fl[i] == ',') fl[i] = '.';
 		}
@@ -157,7 +157,7 @@ void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, s
 			std::string bone = channel->Attribute("target");
 			std::string mode = bone.substr(bone.find('/') + 1);
 			bone = bone.substr(0, bone.find('/'));
-			for (unsigned int i = 0; i < joints.size(); ++i)
+			for (size_t i = 0; i < joints.size(); ++i)
 			{
 				if (bone == joints[i].id)
 				{
@@ -170,10 +170,10 @@ void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, s
 							char y = mode[13] - '0';
 							float matrix[16];
 							memcpy(matrix, joints[i].matrix, sizeof(float) * 16);
-							for (unsigned int j = 0; j < anim.matrices.size(); ++j)
+							for (size_t j = 0; j < anim.matrices.size(); ++j)
 							{
 								matrix[y * 4 + x] = anim.matrices[j];
-								for (unsigned int k = 0; k < 16; ++k)
+								for (size_t k = 0; k < 16; ++k)
 								{
 									result.push_back(matrix[k]);
 								}
@@ -183,7 +183,7 @@ void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, s
 					}
 					anim.boneIndex = i;
 					anim.duration = 0.0f;
-					for (unsigned int j = 0; j < anim.keyframes.size(); ++j)
+					for (size_t j = 0; j < anim.keyframes.size(); ++j)
 					{
 						if (anim.keyframes[j] > anim.duration)
 						{
@@ -454,7 +454,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 					char * fl = strtok((char*)jointSource->GetText(), " \n\t");
 					while (fl != NULL)
 					{
-						for (unsigned int i = 0; i < loader->joints.size(); ++i)
+						for (size_t i = 0; i < loader->joints.size(); ++i)
 						{
 							if (loader->joints[i].bone == fl)
 							{
@@ -486,7 +486,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 					std::vector<unsigned int> v = GetUIntegers(vertex_weights->FirstChildElement("v"));
 					std::vector<std::string> jointNames;
 					std::string sname = jointSource->FirstChild()->ValueStr();
-					for (unsigned int i = 0; i < sname.size(); ++i)
+					for (size_t i = 0; i < sname.size(); ++i)
 					{
 						if (sname[i] == '\0') sname[i] = ' ';
 					}
@@ -498,10 +498,10 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 					}
 					std::vector<float> weightArray = GetFloats(weightsSource);
 					int j = 0;
-					for (unsigned int i = 0; i < vcount.size(); ++i)
+					for (size_t i = 0; i < vcount.size(); ++i)
 					{
 						weightCount[geometryId].push_back(vcount[i]);
-						for (unsigned int k = 0; k < vcount[i]; k++)
+						for (size_t k = 0; k < vcount[i]; k++)
 						{
 							unsigned int jointIndex = v[j + k * 2];
 							if (jointIndex >= jointNames.size())
@@ -510,7 +510,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 								continue;
 							}
 							unsigned int weightIndex = v[j + k * 2 + 1];
-							for (unsigned int i = 0; i < loader->joints.size(); ++i)
+							for (size_t i = 0; i < loader->joints.size(); ++i)
 							{
 								if (loader->joints[i].bone == jointNames[jointIndex])
 								{
@@ -549,7 +549,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			{
 				std::string animName = animation->Attribute("url");
 				animName = animName.substr(1);
-				for (unsigned int i = 0; i < loader->animations.size(); ++i)
+				for (size_t i = 0; i < loader->animations.size(); ++i)
 				{
 					if (loader->animations[i].id == animName)
 					{
@@ -702,11 +702,11 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 									unsigned int count = weightCount[geometryElement->Attribute("id")][indexes[vertexOffset]];
 									loader->weightsCount.push_back(count);
 									unsigned int start = 0;
-									for (unsigned int i = 0; i < indexes[vertexOffset]; ++i)//Get the starting index of the current vertex weight
+									for (size_t i = 0; i < indexes[vertexOffset]; ++i)//Get the starting index of the current vertex weight
 									{
 										start += weightCount[geometryElement->Attribute("id")][i];
 									}
-									for (unsigned int i = 0; i < count; ++i)
+									for (size_t i = 0; i < count; ++i)
 									{
 										loader->weightsIndexes.push_back(weightIndexes[geometryElement->Attribute("id")][start + i]);
 										loader->weights.push_back(weights[geometryElement->Attribute("id")][start + i]);

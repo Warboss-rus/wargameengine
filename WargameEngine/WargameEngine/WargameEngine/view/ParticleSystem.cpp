@@ -5,7 +5,7 @@
 
 CParticleSystem::~CParticleSystem()
 {
-	for (unsigned int i = 0; i < m_effects.size(); ++i)
+	for (size_t i = 0; i < m_effects.size(); ++i)
 	{
 		delete m_effects[i];
 	}
@@ -13,7 +13,7 @@ CParticleSystem::~CParticleSystem()
 
 void CParticleSystem::DrawParticles() 
 {
-	for (unsigned int i = 0; i < m_effects.size(); ++i)
+	for (size_t i = 0; i < m_effects.size(); ++i)
 	{
 		while (m_effects[i]->IsEnded())
 		{

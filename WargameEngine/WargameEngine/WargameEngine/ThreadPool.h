@@ -1,6 +1,7 @@
 #include <string>
-#include <list>
 #include <memory>
+#include <functional>
+#include "ITask.h"
 
 class ThreadPool
 {
@@ -25,6 +26,10 @@ public:
 	static void SetWorkerTimeout(int timeout);
 	//Removes all queued operations and callbacks
 	static void CancelAll();
+	//Queues task to be executed in thread pool
+	static void AddTask(ITask & task);
+	//Queues callback function to be executed in main thread
+	static void AddTaskCallback(std::function<void()> const& func);
 	enum flags
 	{
 		//Functions with this flag will be added to the beginning of the queue, not the end
@@ -35,9 +40,4 @@ public:
 	struct Impl;
 private:
 	static std::unique_ptr<Impl> m_pImpl;
-	static void* ReadData(void* param);
-	static void* ReadData2(void* param);
-	static void* WorkerThread(void* param);
-	static void ProcessData(void* param);
-	static void* ProcessData2(void* param);
 };

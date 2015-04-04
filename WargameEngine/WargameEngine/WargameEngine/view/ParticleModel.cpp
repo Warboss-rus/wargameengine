@@ -13,7 +13,7 @@ std::vector<float> GetFloatsArray(TiXmlElement* data)
 	char * fl = strtok((char*)data->GetText(), " \n\t");
 	while (fl != NULL)
 	{
-		for (unsigned int i = 0; i < strlen(fl); ++i)
+		for (size_t i = 0; i < strlen(fl); ++i)
 		{
 			if (fl[i] == ',') fl[i] = '.';
 		}
@@ -155,7 +155,7 @@ void DrawParticle(CVector3f const& position, float width, float height)
 CVector3f InterpolateVectors(CVector3f const& v1, CVector3f const& v2, float t)
 {
 	float result[3];
-	for (unsigned int i = 0; i < 3; ++i)
+	for (size_t i = 0; i < 3; ++i)
 	{
 		result[i] = v1[i] * t + v2[i] * (1.0f - t);
 	}
@@ -165,7 +165,7 @@ CVector3f InterpolateVectors(CVector3f const& v1, CVector3f const& v2, float t)
 void CParticleModel::Draw(float time) const 
 {
 	time = fmod(time, GetDuration());
-	for (unsigned int i = 0; i < m_instances.size(); ++i)
+	for (size_t i = 0; i < m_instances.size(); ++i)
 	{
 		CParticle const& particle = m_particles[m_instances[i].particle];
 		float partTime = (time - m_instances[i].start) / (float)m_instances[i].speed;

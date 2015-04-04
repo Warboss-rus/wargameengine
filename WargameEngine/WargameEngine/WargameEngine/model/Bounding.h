@@ -34,7 +34,7 @@ public:
 	void AddChild(std::unique_ptr<IBounding> child);
 	bool IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const override;
 	void SetScale(double scale) override;
-	unsigned int GetChildCount() const;
+	size_t GetChildCount() const;
 	IBounding * GetChild(unsigned int index);
 	const IBounding * GetChild(unsigned int index) const;
 private:

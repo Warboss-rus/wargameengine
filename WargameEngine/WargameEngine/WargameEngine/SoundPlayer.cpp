@@ -1,9 +1,8 @@
 #include "SoundPlayer.h"
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <string.h>
+#include <cstring>
 #include "LogWriter.h"
-#include <future>
 #define STREAM_BUFFERS 5
 #define WAV_FILE_HEADER_SIZE 44
 #define WAV_FILE_NUMCHANNELS_POSITION 22
@@ -213,7 +212,7 @@ void CSoundPlayer::SetListenerPosition(CVector3d const& position, CVector3d cons
 
 void CSoundPlayer::Update()
 {
-	for (unsigned int i = 0; i < m_sources.size(); ++i)
+	for (size_t i = 0; i < m_sources.size(); ++i)
 	{
 
 	}
@@ -233,7 +232,7 @@ void StreamThread(std::vector<std::string> const& files, bool shuffle, bool repe
 	bool firstRun = true;
 	do
 	{
-		for (unsigned int i = 0; i < files.size(); ++i)
+		for (size_t i = 0; i < files.size(); ++i)
 		{
 			//open the file and read the header
 			FILE * f = fopen(files[i].c_str(), "rb");
