@@ -8,7 +8,7 @@
 #include <windows.h>
 #include "Plugin.h"
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 	int argc = __argc;
 	char** argv = __argv;

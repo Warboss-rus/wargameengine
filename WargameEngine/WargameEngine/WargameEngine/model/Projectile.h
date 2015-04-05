@@ -1,12 +1,11 @@
 #pragma once
 #include "ObjectStatic.h"
 #include <functional>
-#define callback(x) std::function<void()>(x)
 
 class CProjectile : public CStaticObject
 {
 public:
-	CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::string const& model, std::string const& particleFile, callback(onHit), callback(onCollision));
+	CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::string const& model, std::string const& particleFile, std::function<void()> const& onHit, std::function<void()> const& onCollision);
 	bool Update();
 	const std::string GetParticle() const;
 	void CallOnCollision() const;
@@ -16,6 +15,6 @@ private:
 	double m_speed;
 	std::string m_particle;
 	long long m_lastUpdateTime;
-	callback(m_onHit);
-	callback(m_onCollision);
+	std::function<void()> m_onHit;
+	std::function<void()> m_onCollision;
 };

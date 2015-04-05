@@ -5,9 +5,7 @@
 #include "CommandRotateObject.h"
 #include "CommandChangeProperty.h"
 #include "CommandChangeGlobalProperty.h"
-#include "../Network.h"
-
-std::shared_ptr<CCommandHandler> CCommandHandler::m_instance = NULL;
+#include "GameController.h"
 
 void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 {
@@ -24,30 +22,22 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 		m_commands.push_back(std::unique_ptr<ICommand>(command));
 	}
 	m_current = m_commands.size() - 1;
-	if (local && CNetwork::GetInstance().lock()->IsConnected()) CNetwork::GetInstance().lock()->SendAction(command->Serialize(), true);
+	CNetwork & network = CGameController::GetInstance().lock()->GetNetwork();
+	if (local && network.IsConnected())
+	{
+		network.SendAction(command->Serialize(), true);
+	}
 }
 
 void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool local)
 {
 	ICommand* action = new CCommandCreateObject(object);
 	action->Execute();
-	if (local)CNetwork::GetInstance().lock()->AddAddressLocal(object);
-	AddNewCommand(action, local);
-}
-
-std::weak_ptr<CCommandHandler> CCommandHandler::GetInstance()
-{
-	if (!m_instance.get())
+	if (local)
 	{
-		m_instance.reset(new CCommandHandler());
+		CGameController::GetInstance().lock()->GetNetwork().AddAddressLocal(object);
 	}
-	std::weak_ptr<CCommandHandler> pView(m_instance);
-
-	return pView;
-}
-void CCommandHandler::FreeInstance()
-{
-	m_instance.reset();
+	AddNewCommand(action, local);
 }
 
 void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object, bool local)

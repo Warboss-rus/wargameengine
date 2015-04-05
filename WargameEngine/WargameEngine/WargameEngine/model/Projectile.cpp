@@ -1,7 +1,7 @@
 #include "Projectile.h"
 #include <sys/timeb.h> 
 
-CProjectile::CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::string const& model, std::string const& particleFile, callback(onHit), callback(onCollision))
+CProjectile::CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::string const& model, std::string const& particleFile, std::function<void()> const& onHit, std::function<void()> const& onCollision)
 	:CStaticObject(model, origin.x, origin.y, 0.0, model.empty()), m_target(target), m_particle(particleFile), m_speed(speed), m_onHit(onHit), m_onCollision(onCollision)
 {
 	struct timeb time;

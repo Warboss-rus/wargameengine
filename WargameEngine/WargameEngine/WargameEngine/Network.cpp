@@ -3,22 +3,15 @@
 #include "LogWriter.h"
 #include "model/GameModel.h"
 #include "model/Object.h"
+#include "controller/CommandHandler.h"
 #include "controller/GameController.h"
 
-std::shared_ptr<CNetwork> CNetwork::m_instance;
-
-std::weak_ptr<CNetwork> CNetwork::GetInstance()
+CNetwork::CNetwork() 
+	:m_host(true)
+	, m_netData(NULL)
+	, m_netRecievedSize(0)
+	, m_netTotalSize(0)
 {
-	if (!m_instance)
-	{
-		m_instance.reset(new CNetwork());
-	}
-	return std::weak_ptr<CNetwork>(m_instance);
-}
-
-void CNetwork::FreeInstance()
-{
-	m_instance.reset();
 }
 
 void CNetwork::Host(unsigned int port)
@@ -102,6 +95,7 @@ void CNetwork::Update()
 			char * data = m_netData + 4;
 			bool action = data[1] < 0;
 			char type = data[1];
+			CCommandHandler & commandHandler = CGameController::GetInstance().lock()->GetCommandHandler();
 			switch (type)
 			{
 			case 0://CreateObject
@@ -115,7 +109,7 @@ void CNetwork::Update()
 				path.resize(size);
 				memcpy(&path[0], data + 34, size);
 				std::shared_ptr<IObject> obj = std::shared_ptr<IObject>(new CObject(path, pos[0], pos[1], pos[2], true));
-				CCommandHandler::GetInstance().lock()->AddNewCreateObject(obj, false);
+				commandHandler.AddNewCreateObject(obj, false);
 				m_translator[address] = obj;
 				LogWriter::WriteLine("CreateObject received");
 			}break;
@@ -123,7 +117,7 @@ void CNetwork::Update()
 			{
 				unsigned int address;
 				memcpy(&address, data + 2, 4);
-				CCommandHandler::GetInstance().lock()->AddNewDeleteObject(GetObject(address), false);
+				commandHandler.AddNewDeleteObject(GetObject(address), false);
 				m_translator.erase(address);
 				LogWriter::WriteLine("DeleteObject received");
 			}break;
@@ -134,7 +128,7 @@ void CNetwork::Update()
 				memcpy(&address, data + 2, 4);
 				memcpy(&x, data + 6, 8);
 				memcpy(&y, data + 14, 8);
-				CCommandHandler::GetInstance().lock()->AddNewMoveObject(GetObject(address), x, y, false);
+				commandHandler.AddNewMoveObject(GetObject(address), x, y, false);
 				LogWriter::WriteLine("MoveObject received");
 			}break;
 			case 3://RotateObject
@@ -143,7 +137,7 @@ void CNetwork::Update()
 				double rot;
 				memcpy(&address, data + 2, 4);
 				memcpy(&rot, data + 6, 8);
-				CCommandHandler::GetInstance().lock()->AddNewRotateObject(GetObject(address), rot, false);
+				commandHandler.AddNewRotateObject(GetObject(address), rot, false);
 				LogWriter::WriteLine("RotateObject received");
 			}break;
 			case 4://ChangeProperty
@@ -162,7 +156,7 @@ void CNetwork::Update()
 				memcpy(&size, data + begin, 4);
 				oldvalue.resize(size);
 				memcpy(&oldvalue[0], data + begin + 4, size);
-				CCommandHandler::GetInstance().lock()->AddNewChangeProperty(GetObject(address), key, newvalue, false);
+				commandHandler.AddNewChangeProperty(GetObject(address), key, newvalue, false);
 				LogWriter::WriteLine("ChangeProperty received");
 			}break;
 			case 5://ChangeGlobalProperty
@@ -180,7 +174,7 @@ void CNetwork::Update()
 				memcpy(&size, data + begin, 4);
 				oldvalue.resize(size);
 				memcpy(&oldvalue[0], data + begin + 4, size);
-				CCommandHandler::GetInstance().lock()->AddNewChangeGlobalProperty(key, newvalue, false);
+				commandHandler.AddNewChangeGlobalProperty(key, newvalue, false);
 				LogWriter::WriteLine("CreateGlobalProperty received");
 			}break;
 			default:
@@ -199,6 +193,11 @@ void CNetwork::Update()
 		m_netTotalSize = 0;
 		m_netRecievedSize = 0;
 	}
+}
+
+bool CNetwork::IsHost() const
+{
+	return m_host;
 }
 
 void CNetwork::SendState()
@@ -253,6 +252,11 @@ void CNetwork::SendAction(std::vector<char> const& command, bool execute)
 	LogWriter::WriteLine("Action sent.");
 }
 
+bool CNetwork::IsConnected()
+{
+	return m_socket.get() != NULL;
+}
+
 unsigned int CNetwork::GetAddress(std::shared_ptr<IObject> object)
 {
 	for (auto i = m_translator.begin(); i != m_translator.end(); ++i)
@@ -292,7 +296,7 @@ void CNetwork::AddAddress(std::shared_ptr<IObject> obj, unsigned int address)
 	m_translator[address] = obj;
 }
 
-void CNetwork::SetStateRecievedCallback(callback(onStateRecieved))
+void CNetwork::SetStateRecievedCallback(std::function<void()> onStateRecieved)
 {
 	m_stateRecievedCallback = onStateRecieved;
 }

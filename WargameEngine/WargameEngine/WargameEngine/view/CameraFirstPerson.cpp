@@ -3,10 +3,11 @@
 #include <math.h>
 #define TRANSLATE					  0.3
 #include <GL/glut.h>
-#define  GLUT_KEY_LEFT                      0x0064
-#define  GLUT_KEY_UP                        0x0065
-#define  GLUT_KEY_RIGHT                     0x0066
-#define  GLUT_KEY_DOWN                      0x0067
+#define KEY_BACKSPACE	8
+#define KEY_LEFT       37
+#define KEY_UP         38
+#define KEY_RIGHT      39
+#define KEY_DOWN       40
 
 CCameraFirstPerson::CCameraFirstPerson()
 {
@@ -72,6 +73,26 @@ bool CCameraFirstPerson::OnMouseMove(int deltaX, int deltaY, bool LMB, bool RMB,
 	return true;
 }
 
+bool CCameraFirstPerson::OnMouseWheelUp()
+{
+	return false;
+}
+
+bool CCameraFirstPerson::OnMouseWheelDown()
+{
+	return false;
+}
+
+const double CCameraFirstPerson::GetScale() const
+{
+	return 1.0;
+}
+
+bool CCameraFirstPerson::HidePointer() const
+{
+	return true;
+}
+
 void CCameraFirstPerson::Rotate(double rotZ, double rotX)
 {
 	m_rotZ = fmod(m_rotZ + rotZ, 360);
@@ -86,34 +107,35 @@ void CCameraFirstPerson::Translate(double transX, double transY)
 	m_transY += -transX * sin(m_rotZ * M_PI / 180.0) + transY1 * cos(m_rotZ * M_PI / 180.0);
 }
 
-bool CCameraFirstPerson::OnSpecialKeyPress(int key)
+bool CCameraFirstPerson::OnKeyPress(int key)
 {
 	switch (key)
 	{
-	case GLUT_KEY_LEFT:
+	case KEY_LEFT:
 	{
 		Translate(-TRANSLATE, 0.0);
-		return true;
-	}
-	break;
-	case GLUT_KEY_RIGHT:
+	}break;
+	case KEY_RIGHT:
 	{
 		Translate(TRANSLATE, 0.0);
-		return true;
-	}
-	break;
-	case GLUT_KEY_DOWN:
+	}break;
+	case KEY_DOWN:
 	{
 		Translate(0.0, -TRANSLATE);
-		return true;
 	}
 	break;
-	case GLUT_KEY_UP:
+	case KEY_UP:
 	{
 		Translate(0.0, TRANSLATE);
-		return true;
+	}break;
+	case KEY_BACKSPACE:
+	{
+		Reset();
+	}break;
+	default:
+	{
+		return false;
 	}
-	break;
 	}
-	return false;
+	return true;
 }

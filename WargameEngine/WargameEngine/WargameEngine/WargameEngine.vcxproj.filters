@@ -37,6 +37,15 @@
     <Filter Include="Header Files\UI">
       <UniqueIdentifier>{8332af67-ba2c-45df-bd31-0c2a8362dafb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\controller\commands">
+      <UniqueIdentifier>{6658bfbb-27ee-465f-a4df-d7c741985eb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\controller\luaRegisters">
+      <UniqueIdentifier>{8ca9dadd-2879-42df-93e1-a9cc3a9686d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\controller\commands">
+      <UniqueIdentifier>{cdab68ad-206b-4a7d-bacf-b744a9c880cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -93,18 +102,6 @@
     <ClCompile Include="UI\UITheme.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="controller\CommandCreateObject.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\CommandDeleteObject.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\CommandHandler.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\CommandMoveObject.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
     <ClCompile Include="view\WBMModelFactory.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -129,23 +126,11 @@
     <ClCompile Include="UI\UIRadioGroup.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="controller\CommandRotateObject.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
     <ClCompile Include="LogWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="view\ShaderManager.cpp">
       <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\CommandCompound.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\CommandChangeProperty.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\CommandChangeGlobalProperty.cpp">
-      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="UI\UIScrollBar.cpp">
       <Filter>Source Files\UI</Filter>
@@ -184,15 +169,6 @@
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="controller\GameController.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\LUARegisterFunctions.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\LUARegisterObject.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\LUARegisterUI.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="controller\LUAScriptHandler.cpp">
@@ -243,6 +219,39 @@
     <ClCompile Include="TranslationManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="controller\CommandChangeGlobalProperty.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandChangeProperty.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandCompound.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandCreateObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandDeleteObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandMoveObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandRotateObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\LUARegisterFunctions.cpp">
+      <Filter>Source Files\controller\luaRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\LUARegisterObject.cpp">
+      <Filter>Source Files\controller\luaRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\LUARegisterUI.cpp">
+      <Filter>Source Files\controller\luaRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandHandler.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ruler.h">
@@ -290,21 +299,6 @@
     <ClInclude Include="UI\UITheme.h">
       <Filter>Header Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="controller\CommandCreateObject.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandDeleteObject.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandHandler.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandMoveObject.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\ICommand.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
     <ClInclude Include="view\Material.h">
       <Filter>Header Files\view</Filter>
     </ClInclude>
@@ -341,23 +335,11 @@
     <ClInclude Include="model\ObjectInterface.h">
       <Filter>Header Files\model</Filter>
     </ClInclude>
-    <ClInclude Include="controller\CommandRotateObject.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
     <ClInclude Include="LogWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="view\ShaderManager.h">
       <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandCompound.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandChangeProperty.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandChangeGlobalProperty.h">
-      <Filter>Header Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIScrollBar.h">
       <Filter>Header Files\UI</Filter>
@@ -469,6 +451,33 @@
     </ClInclude>
     <ClInclude Include="ITask.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandChangeGlobalProperty.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandChangeProperty.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandCompound.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandCreateObject.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandDeleteObject.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandMoveObject.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandRotateObject.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ICommand.h">
+      <Filter>Header Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandHandler.h">
+      <Filter>Header Files\controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

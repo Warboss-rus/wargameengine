@@ -17,9 +17,8 @@ double CInput::startY = 0.0;
 double CInput::m_oldRotation = 0.0;
 int CInput::startWindowX = -1;
 int CInput::startWindowY = -1;
-std::map<CInput::sKeyBind, std::function<void()>> CInput::m_keyBindings;
-std::string CInput::m_LMBclickCallback;
-std::string CInput::m_RMBclickCallback;
+std::function<void(std::shared_ptr<IObject>, std::string const&, double, double, double)> CInput::m_LMBclickCallback;
+std::function<void(std::shared_ptr<IObject>, std::string const&, double, double, double)> CInput::m_RMBclickCallback;
 bool CInput::m_disableDefaultLMB = false;
 bool CInput::m_disableDefaultRMB = false;
 
@@ -82,7 +81,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				CGameController::GetInstance().lock()->TryMoveSelectedObject(obj, worldX, worldY, 0.0);
 				double newX = obj->GetX();
 				double newY = obj->GetY();
-				CCommandHandler::GetInstance().lock()->AddNewMoveObject(obj, newX - startX, newY - startY);
+				CGameController::GetInstance().lock()->MoveObject(obj, newX - startX, newY - startY);
 				startX = -1.0;
 				startY = -1.0;
 				CRuler::Hide();
@@ -97,13 +96,13 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				startWindowX = -1;
 				startWindowY = -1;
 			}
-			if (!m_LMBclickCallback.empty())
+			if (m_LMBclickCallback)
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
 				std::shared_ptr<IObject> prev = model->GetSelectedObject();
 				SelectObject(x, y, false, true);
-				CLUAScript::CallFunction(m_LMBclickCallback, model->GetSelectedObject().get(), "Object", worldX, worldY, 0.0);
+				m_LMBclickCallback(model->GetSelectedObject(), "Object", worldX, worldY, 0.0);
 				model->SelectObject(prev);
 			}
 			m_ruler = false;
@@ -135,9 +134,9 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				double rotation = 90 + (atan2(worldY - startY, worldX - startX) * 180 / 3.1417);
 				if (sqrt((worldX - startX) * (worldX - startX) + (worldY - startY) * (worldY - startY)) > 0.2)
 					model->GetSelectedObject()->Rotate(rotation - rot);
-				CCommandHandler::GetInstance().lock()->AddNewRotateObject(object, object->GetRotation() - m_oldRotation);
+				CGameController::GetInstance().lock()->RotateObject(object, object->GetRotation() - m_oldRotation);
 			}
-			if (!m_RMBclickCallback.empty())
+			if (m_RMBclickCallback)
 			{
 				double worldX, worldY;
 				WindowCoordsToWorldCoords(x, y, worldX, worldY);
@@ -145,7 +144,7 @@ void CInput::OnMouse(int button, int state, int x, int y)
 				SelectObject(x, y, false, true);
 				std::shared_ptr<IObject> current = model->GetSelectedObject();
 				model->SelectObject(prev);
-				CLUAScript::CallFunction(m_RMBclickCallback, current.get(), "Object", worldX, worldY, 0.0);
+				m_RMBclickCallback(current, "Object", worldX, worldY, 0.0);
 			}
 			startX = 0;
 			startY = 0;
@@ -163,36 +162,59 @@ void CInput::OnMouse(int button, int state, int x, int y)
 	}
 }
 
+bool HasModifier(int modifier)
+{
+	return (glutGetModifiers() & modifier) != 0;
+}
+
 void CInput::OnKeyboard(unsigned char key, int x, int y)
 {
-	if (CGameView::GetInstance().lock()->GetUI()->OnKeyPress(key))
+	if (CGameView::GetInstance().lock()->GetUI()->OnKeyPress(key) || CGameView::GetInstance().lock()->GetCamera()->OnKeyPress(key))
 		return;
-	switch(key)
+	if(key == 13 && glutGetModifiers() == GLUT_ACTIVE_ALT)
 	{
-		case BACKSPACE_BUTTON_ID:
-		{
-			CGameView::GetInstance().lock()->GetCamera()->Reset();
-		} break;
-		case 13:
-		{
-			if (glutGetModifiers() == GLUT_ACTIVE_ALT)
-			{
-				CGameView::GetInstance().lock()->ToggleFullscreen();
-			}
-		}
+		CGameView::GetInstance().lock()->ToggleFullscreen();
 	}
-	sKeyBind keybind(key, glutGetModifiers() == GLUT_ACTIVE_SHIFT, glutGetModifiers() == GLUT_ACTIVE_CTRL, glutGetModifiers() == GLUT_ACTIVE_ALT);
-	if(m_keyBindings.find(keybind) != m_keyBindings.end())
+	CGameController::GetInstance().lock()->OnKeyPress(key, HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
+}
+
+int SpecialToKeyCode(int special)
+{
+	if(special >= GLUT_KEY_F1 && special <= GLUT_KEY_F12)
 	{
-		m_keyBindings[keybind]();
+		return 112 + special - GLUT_KEY_F1;
 	}
+	if(special >= GLUT_KEY_LEFT && special <= GLUT_KEY_DOWN)
+	{
+		return 37 + special - GLUT_KEY_LEFT;
+	}
+	if(special == GLUT_KEY_PAGE_UP || special == GLUT_KEY_PAGE_DOWN)
+	{
+		return 33 + special - GLUT_KEY_PAGE_UP;
+	}
+	if(special == GLUT_KEY_END)
+	{
+		return 35;
+	}
+	if (special == GLUT_KEY_HOME)
+	{
+		return 36;
+	}
+	if (special == GLUT_KEY_INSERT)
+	{
+		return 45;
+	}
+	return 0;
 }
 
 void CInput::OnSpecialKeyPress(int key, int x, int y)
 {
 	if (CGameView::GetInstance().lock()->GetUI()->OnSpecialKeyPress(key))
 		return;
-	CGameView::GetInstance().lock()->GetCamera()->OnSpecialKeyPress(key);
+	int keycode = SpecialToKeyCode(key);
+	if (CGameView::GetInstance().lock()->GetCamera()->OnKeyPress(keycode))
+		return;
+	CGameController::GetInstance().lock()->OnKeyPress(keycode, HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
 }
 
 void CInput::OnPassiveMouseMove(int x, int y)
@@ -205,10 +227,7 @@ void CInput::OnPassiveMouseMove(int x, int y)
         just_warped = false;
         return;
     }
-	bool isShiftPressed = glutGetModifiers() == GLUT_ACTIVE_SHIFT;
-	bool isCtrlPressed = glutGetModifiers() == GLUT_ACTIVE_CTRL;
-	bool isAltPressed = glutGetModifiers() == GLUT_ACTIVE_ALT;
-	CGameView::GetInstance().lock()->GetCamera()->OnMouseMove(x - prevMouseX, prevMouseY - y, m_isLMBDown, m_isRMBDown, isShiftPressed, isCtrlPressed, isAltPressed);
+	CGameView::GetInstance().lock()->GetCamera()->OnMouseMove(x - prevMouseX, prevMouseY - y, m_isLMBDown, m_isRMBDown, HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
 	if (CGameView::GetInstance().lock()->GetCamera()->HidePointer())
 	{
 		glutSetCursor(GLUT_CURSOR_NONE);
@@ -260,29 +279,13 @@ void CInput::OnMouseMove(int x, int y)
 	}
 }
 
-void CInput::BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func)
-{
-	sKeyBind keybind(key, shift, ctrl, alt);
-	if(func)
-	{
-		m_keyBindings[keybind] = func;
-	}
-	else
-	{
-		if(m_keyBindings.find(keybind) != m_keyBindings.end())
-		{
-			m_keyBindings.erase(keybind);
-		}
-	}
-}
-
-void CInput::SetLMBCallback(std::string const& callback, bool disableDefault)
+void CInput::SetLMBCallback(MouseCallback const& callback, bool disableDefault)
 {
 	m_LMBclickCallback = callback;
 	m_disableDefaultLMB = disableDefault;
 }
 
-void CInput::SetRMBCallback(std::string const& callback, bool disableDefault)
+void CInput::SetRMBCallback(MouseCallback const& callback, bool disableDefault)
 {
 	m_RMBclickCallback = callback;
 	m_disableDefaultRMB = disableDefault;

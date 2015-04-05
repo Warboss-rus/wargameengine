@@ -1,6 +1,7 @@
 #include "LUAScriptHandler.h"
-#include "../LogWriter.h"
 #include <exception>
+
+#include "../LogWriter.h"
 
 lua_State* CLUAScript::m_lua_state;
 
@@ -18,6 +19,11 @@ CLUAScript::CLUAScript()
 	lua_register( m_lua_state, "_ALERT", luaError );
 	lua_atpanic(m_lua_state, luaError);
 	luaL_openlibs(m_lua_state);
+}
+
+CLUAScript::CLUAScript(lua_State* state)
+//	:m_lua_state(state)
+{
 }
 
 CLUAScript::~CLUAScript()

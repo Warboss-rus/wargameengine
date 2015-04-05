@@ -1,5 +1,5 @@
 #include "../model/GameModel.h"
-#include "../controller/CommandHandler.h"
+#include "../controller/GameController.h"
 #include "LUAScriptHandler.h"
 #include "../model/Object.h"
 #include "../model/ObjectGroup.h"
@@ -14,9 +14,8 @@ int NewObject(lua_State* L)
 	double x = CLUAScript::GetArgument<double>(3);
 	double y = CLUAScript::GetArgument<double>(4);
 	double rotation = CLUAScript::GetArgument<double>(5);
-	IObject* object = new CObject(model, x, y, rotation);
-	CCommandHandler::GetInstance().lock()->AddNewCreateObject(std::shared_ptr<IObject>(object));
-	return CLUAScript::NewInstanceClass(object, "Object");
+	std::shared_ptr<IObject> object = CGameController::GetInstance().lock()->CreateObject(model, x, y, rotation);
+	return CLUAScript::NewInstanceClass(object.get(), "Object");
 }
 
 int GetSelectedObject(lua_State* L)
@@ -48,7 +47,7 @@ int DeleteObject(lua_State* L)
         return luaL_error(L, "no argument expected");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	std::shared_ptr<IObject> shared_object = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CCommandHandler::GetInstance().lock()->AddNewDeleteObject(shared_object);
+	CGameController::GetInstance().lock()->DeleteObject(shared_object);
 	object = nullptr;
 	return 0;
 }
@@ -152,7 +151,7 @@ int SetProperty(lua_State* L)
 	char* key = CLUAScript::GetArgument<char*>(2);
 	char* value = CLUAScript::GetArgument<char*>(3);
 	std::shared_ptr<IObject> obj = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CCommandHandler::GetInstance().lock()->AddNewChangeProperty(obj, key, value);
+	CGameController::GetInstance().lock()->SetObjectProperty(obj, key, value);
 	return 0;
 }
 

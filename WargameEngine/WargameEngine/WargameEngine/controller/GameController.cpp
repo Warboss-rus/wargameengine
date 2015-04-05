@@ -4,7 +4,6 @@
 #include "../model/ObjectGroup.h"
 #include "LUARegisterFunctions.h"
 #include "../Module.h"
-#include "../Network.h"
 #include "../LogWriter.h"
 
 std::shared_ptr<CGameController> CGameController::m_instanse = NULL;
@@ -21,12 +20,12 @@ std::weak_ptr<CGameController> CGameController::GetInstance()
 
 CGameController::CGameController()
 {
-	CNetwork::FreeInstance();
 }
 
 void CGameController::Init()
 {
-	CCommandHandler::GetInstance();
+	m_commandHandler.reset(new CCommandHandler());
+	m_network.reset(new CNetwork());
 	m_lua.reset(new CLUAScript());
 	RegisterFunctions(*m_lua.get());
 	RegisterUI(*m_lua.get());
@@ -41,12 +40,11 @@ void CGameController::FreeInstance()
 
 CGameController::~CGameController(void)
 {
-	CCommandHandler::FreeInstance();//causes crash on CommandDeleteObject being destroyed
 }
 
 void CGameController::Update()
 {
-	if (CNetwork::GetInstance().lock()->IsConnected()) CNetwork::GetInstance().lock()->Update();
+	m_network->Update();
 	if (m_updateCallback) m_updateCallback();
 	if (m_singleCallback)
 	{
@@ -262,7 +260,7 @@ int CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 	return BBoxlos(center, targetBound, shooter, target);
 }
 
-void CGameController::SetSelectionCallback(callback(onSelect))
+void CGameController::SetSelectionCallback(std::function<void()> const& onSelect)
 {
 	m_selectionCallback = onSelect;
 }
@@ -345,7 +343,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 		{
 			unsigned int address = *((unsigned int*)&data[current]);
 			current += 4;
-			CNetwork::GetInstance().lock()->AddAddress(object, address);
+			m_network->AddAddress(object, address);
 		}
 		unsigned int propertiesCount = *((unsigned int*)&data[current]);
 		current += 4;
@@ -401,12 +399,11 @@ void CGameController::Load(std::string const& filename)
 	fseek(file, 0L, SEEK_END);
 	unsigned int size = ftell(file);
 	fseek(file, 0L, SEEK_SET);
-	char* data = new char[size];
-	fread(data, 1, size, file);
+	std::unique_ptr<char> data(new char[size]);
+	fread(data.get(), 1, size, file);
 	fclose(file);
-	SetState(data + 5);
-	delete[] data;
-	CNetwork::GetInstance().lock()->CallStateRecievedCallback();
+	SetState(data.get() + 5);
+	m_network->CallStateRecievedCallback();
 }
 
 void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, double x, double y, double z)
@@ -426,12 +423,81 @@ void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, dou
 	}
 }
 
-void CGameController::SetUpdateCallback(callback(onUpdate))
+void CGameController::SetUpdateCallback(std::function<void()> const& onUpdate)
 {
 	m_updateCallback = onUpdate;
 }
 
-void CGameController::SetSingleCallback(callback(onSingleUpdate))
+void CGameController::SetSingleCallback(std::function<void()> const& onSingleUpdate)
 {
 	m_singleCallback = onSingleUpdate;
+}
+
+bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind const& two)
+{
+	return one.key < two.key;
+}
+
+void CGameController::BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func)
+{
+	sKeyBind keybind(key, shift, ctrl, alt);
+	if (func)
+	{
+		m_keyBindings[keybind] = func;
+	}
+	else
+	{
+		if (m_keyBindings.find(keybind) != m_keyBindings.end())
+		{
+			m_keyBindings.erase(keybind);
+		}
+	}
+}
+
+bool CGameController::OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt)
+{
+	sKeyBind keybind(key, shift, ctrl, alt);
+	if (m_keyBindings.find(keybind) != m_keyBindings.end())
+	{
+		m_keyBindings[keybind]();
+		return true;
+	}
+	return false;
+}
+
+void CGameController::MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY)
+{
+	m_commandHandler->AddNewMoveObject(obj, deltaX, deltaY);
+}
+
+void CGameController::RotateObject(std::shared_ptr<IObject> obj, double deltaRot)
+{
+	m_commandHandler->AddNewRotateObject(obj, deltaRot);
+}
+
+std::shared_ptr<IObject> CGameController::CreateObject(std::string const& model, double x, double y, double rotation)
+{
+	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, rotation);
+	m_commandHandler->AddNewCreateObject(object);
+	return object;
+}
+
+void CGameController::DeleteObject(std::shared_ptr<IObject> obj)
+{
+	m_commandHandler->AddNewDeleteObject(obj);
+}
+
+void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::string const& key, std::string const& value)
+{
+	m_commandHandler->AddNewChangeProperty(obj, key, value);
+}
+
+CCommandHandler & CGameController::GetCommandHandler()
+{
+	return *m_commandHandler;
+}
+
+CNetwork& CGameController::GetNetwork()
+{
+	return *m_network;
 }

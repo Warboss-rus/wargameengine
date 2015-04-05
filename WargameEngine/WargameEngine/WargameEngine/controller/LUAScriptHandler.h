@@ -1,15 +1,16 @@
+#include <string>
+#include <vector>
 #ifdef _WINDOWS
 #pragma comment(lib,"lua.lib")
 #endif
 #include <lua.hpp>
-#include <string>
-#include <vector>
 #pragma once
 
 class CLUAScript
 {
 public:
 	CLUAScript();
+	CLUAScript(lua_State* state);
 	~CLUAScript();
 	static int RunScript(std::string const& file);
 	static int GetArgumentCount();

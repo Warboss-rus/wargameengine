@@ -1,7 +1,5 @@
 #include "LUAScriptHandler.h"
 #include "../UI/UIElement.h"
-#include "../UI/UICheckBox.h"
-#include "../UI/UIComboBox.h"
 #include "../view/GameView.h"
 
 IUIElement * GetUIPointer()

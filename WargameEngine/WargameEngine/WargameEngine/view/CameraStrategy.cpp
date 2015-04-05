@@ -3,10 +3,11 @@
 #include <math.h>
 #define TRANSLATE					  0.3
 #define SCALE						  1.1
-#define  GLUT_KEY_LEFT                      0x0064
-#define  GLUT_KEY_UP                        0x0065
-#define  GLUT_KEY_RIGHT                     0x0066
-#define  GLUT_KEY_DOWN                      0x0067
+#define KEY_BACKSPACE	8
+#define KEY_LEFT       37
+#define KEY_UP         38
+#define KEY_RIGHT      39
+#define KEY_DOWN       40
 
 CCameraStrategy::CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
 	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false)
@@ -70,36 +71,37 @@ const double * CCameraStrategy::GetUpVector() const
 	return up;
 }
 
-bool CCameraStrategy::OnSpecialKeyPress(int key)
+bool CCameraStrategy::OnKeyPress(int key)
 {
 	switch (key)
 	{
-	case GLUT_KEY_LEFT:
+	case KEY_LEFT:
 	{
 		Translate(-TRANSLATE, 0.0);
-		return true;
-	}
-	break;
-	case GLUT_KEY_RIGHT:
+	}break;
+	case KEY_RIGHT:
 	{
 		Translate(TRANSLATE, 0.0);
-		return true;
-	}
-	break;
-	case GLUT_KEY_DOWN:
+	}break;
+	case KEY_DOWN:
 	{
 		Translate(0.0, -TRANSLATE);
-		return true;
 	}
 	break;
-	case GLUT_KEY_UP:
+	case KEY_UP:
 	{
 		Translate(0.0, TRANSLATE);
-		return true;
+	}break;
+	case KEY_BACKSPACE:
+	{
+		Reset();
+	}break;
+	default:
+	{
+		return false;
 	}
-	break;
 	}
-	return false;
+	return true;
 }
 
 bool CCameraStrategy::OnMouseMove(int deltaX, int deltaY, bool LMB, bool RMB, bool shift, bool ctrl, bool alt)
@@ -142,4 +144,14 @@ bool CCameraStrategy::OnMouseWheelDown()
 	m_scale *= 1 / SCALE;
 	if (m_scale < m_minScale) m_scale = m_minScale;
 	return true;
+}
+
+const double CCameraStrategy::GetScale() const
+{
+	return m_scale;
+}
+
+bool CCameraStrategy::HidePointer() const
+{
+	return m_hidePointer;
 }

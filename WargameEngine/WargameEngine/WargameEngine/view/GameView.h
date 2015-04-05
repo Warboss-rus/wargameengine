@@ -9,6 +9,7 @@
 #include "../UI/UIElement.h"
 #include "ShaderManager.h"
 #include "TextWriter.h"
+#include "../SoundPlayer.h"
 
 class CGameView
 {
@@ -22,9 +23,10 @@ public:
 	IUIElement * GetUI() const;
 	ICamera * GetCamera();
 	void SetCamera(ICamera * camera);
-	CModelManager& GetModelManager() { return m_modelManager; }
-	CParticleSystem& GetParticleSystem() { return m_particles; }
-	CTextWriter& GetTextWriter() { return m_textWriter; }
+	CModelManager& GetModelManager();
+	CParticleSystem& GetParticleSystem();
+	CTextWriter& GetTextWriter();
+	CSoundPlayer& GetSoundPlayer();
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
@@ -70,6 +72,7 @@ private:
 	CShaderManager m_shader;
 	CParticleSystem m_particles;
 	CTextWriter m_textWriter;
+	CSoundPlayer m_soundPlayer;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;

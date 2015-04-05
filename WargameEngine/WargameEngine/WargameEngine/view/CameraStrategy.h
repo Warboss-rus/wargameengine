@@ -5,17 +5,17 @@ class CCameraStrategy : public ICamera
 {
 public:
 	CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale);
-	const double * GetPosition() const;
-	const double * GetDirection() const;
-	const double * GetUpVector() const;
-	bool OnSpecialKeyPress(int key);
-	bool OnMouseMove(int deltaX, int deltaY, bool LMB = false, bool RMB = false, bool shift = false, bool ctrl = false, bool alt = false);
-	bool OnMouseWheelUp();
-	bool OnMouseWheelDown();
-	void Reset();
-	const double GetScale() const { return m_scale; }
-	bool HidePointer() const { return m_hidePointer; }
+	const double * GetPosition() const override;
+	const double * GetDirection() const override;
+	const double * GetUpVector() const override;
+	bool OnKeyPress(int key) override;
+	bool OnMouseMove(int deltaX, int deltaY, bool LMB = false, bool RMB = false, bool shift = false, bool ctrl = false, bool alt = false) override;
+	bool OnMouseWheelUp() override;
+	bool OnMouseWheelDown() override;
+	const double GetScale() const override;
+	bool HidePointer() const override;
 private:
+	void Reset();
 	void Translate(double transX, double transY);
 	void Rotate(double rotZ, double rotX);
 	const double m_maxTransX;

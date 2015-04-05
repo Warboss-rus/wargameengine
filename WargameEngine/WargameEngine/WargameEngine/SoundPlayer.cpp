@@ -7,8 +7,6 @@
 #define WAV_FILE_HEADER_SIZE 44
 #define WAV_FILE_NUMCHANNELS_POSITION 22
 
-std::shared_ptr<CSoundPlayer> CSoundPlayer::m_instance;
-
 void StreamThread(std::vector<std::string> const& files, bool shuffle, bool repeat, float volume, bool & stop);
 
 std::string GetALError(ALenum error)
@@ -40,22 +38,6 @@ std::string GetALError(ALenum error)
 		return "Unknown error.";
 	}break;
 	}
-}
-
-std::weak_ptr<CSoundPlayer> CSoundPlayer::GetInstance()
-{
-	if (!m_instance.get())
-	{
-		m_instance.reset(new CSoundPlayer());
-		m_instance->Init();
-	}
-	std::weak_ptr<CSoundPlayer> pView(m_instance);
-
-	return pView;
-}
-void CSoundPlayer::FreeInstance()
-{
-	m_instance.reset();
 }
 
 void CSoundPlayer::Init()

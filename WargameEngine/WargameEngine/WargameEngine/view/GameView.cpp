@@ -38,7 +38,6 @@ void CGameView::FreeInstance()
 CGameView::~CGameView()
 {
 	ThreadPool::CancelAll();
-	CSoundPlayer::FreeInstance();
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
 	CGameModel::FreeInstance();
@@ -220,7 +219,7 @@ void CGameView::Update()
 	const double * position = m_camera->GetPosition();
 	const double * direction = m_camera->GetDirection();
 	const double * up = m_camera->GetUpVector();
-	CSoundPlayer::GetInstance().lock()->SetListenerPosition(CVector3d(position), CVector3d(direction));
+	m_soundPlayer.SetListenerPosition(CVector3d(position), CVector3d(direction));
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
 	glLoadIdentity();
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
@@ -460,9 +459,29 @@ void CGameView::SetCamera(ICamera * camera)
 	m_camera.reset(camera);
 }
 
+CModelManager& CGameView::GetModelManager()
+{
+	return m_modelManager;
+}
+
 IUIElement * CGameView::GetUI() const
 {
 	return m_ui.get();
+}
+
+CParticleSystem& CGameView::GetParticleSystem()
+{
+	return m_particles;
+}
+
+CTextWriter& CGameView::GetTextWriter()
+{
+	return m_textWriter;
+}
+
+CSoundPlayer& CGameView::GetSoundPlayer()
+{
+	return m_soundPlayer;
 }
 
 void CGameView::ResizeWindow(int height, int width)

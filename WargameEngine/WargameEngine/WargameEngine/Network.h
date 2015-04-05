@@ -1,3 +1,4 @@
+#pragma once
 #include "NetSocket.h"
 #include <vector>
 #include <memory>
@@ -6,30 +7,27 @@
 #include "model/ObjectInterface.h"
 #include "controller/CommandHandler.h"
 #include <functional>
-#define callback(x) std::function<void()>(x)
 
 class CNetwork
 {
 public:
-	static std::weak_ptr<CNetwork> GetInstance();
-	static void FreeInstance();
+	CNetwork();
 	void Host(unsigned int port = 0);
 	void Client(const char * ip, unsigned short port = 0);
 	void Update();
-	bool IsHost() const { return m_host; }
+	bool IsHost() const;
 	void Stop();
 	void SendState();
 	void SendMessag(std::string const& message);
 	void SendAction(std::vector<char> const& command, bool execute);
-	bool IsConnected() { return m_socket.get() != NULL; }
+	bool IsConnected();
 	std::shared_ptr<IObject> GetObject(unsigned int address);
 	void AddAddressLocal(std::shared_ptr<IObject> obj);
 	void AddAddress(std::shared_ptr<IObject> obj, unsigned int address);
-	void SetStateRecievedCallback(callback(onStateRecieved));
+	void SetStateRecievedCallback(std::function<void()> onStateRecieved);
 	void SetStringRecievedCallback(std::function<void(const char*)> onStringRecieved);
 	void CallStateRecievedCallback();
 private:
-	CNetwork() :m_host(true), m_netData(NULL), m_netRecievedSize(0), m_netTotalSize(0) {}
 	unsigned int GetAddress(std::shared_ptr<IObject> obj);
 	unsigned int GetAddress(IObject* obj);
 	static std::shared_ptr<CNetwork> m_instance;
@@ -40,6 +38,6 @@ private:
 	int m_netRecievedSize;
 	int m_netTotalSize;
 	char * m_netData;
-	callback(m_stateRecievedCallback);
+	std::function<void()> m_stateRecievedCallback;
 	std::function<void(const char*)>m_stringRecievedCallback;
 };
