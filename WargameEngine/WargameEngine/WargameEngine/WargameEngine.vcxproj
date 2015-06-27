@@ -18,6 +18,7 @@
     <ProjectGuid>{525B45EF-5FB2-495E-8F33-27363E097E50}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WargameEngine</RootNamespace>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -31,14 +32,14 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -54,19 +55,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\MathLib\MathLib;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\MathLib\Debug;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\MathLib\MathLib;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\MathLib\Release;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\freeglut\include;..\..\LUA\LUA;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\MathLib\MathLib;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\LUA\Release;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\MathLib\Release;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.5.3\include;..\..\glew-1.11.0\include;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\freetype-2.5.3\objs\win32\vc2010;..\..\glew-1.11.0\lib\Release\Win32;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -74,12 +74,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>freetype253.lib;LUA.lib;glew32s.lib;MathLib.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype253.lib;glew32s.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,14 +91,15 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>freetype253.lib;LUA.lib;glew32s.lib;MathLib.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype253.lib;glew32s.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -109,14 +111,15 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>freetype253.lib;LUA.lib;glew32s.lib;MathLib.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freetype253.lib;glew32s.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -265,6 +268,14 @@
     <ClInclude Include="view\OBJModelFactory.h" />
     <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\TextureManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LUA\LUA.vcxproj">
+      <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\MathLib\MathLib.vcxproj">
+      <Project>{ac364c0b-39cd-45d1-ac21-4a048568cb58}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

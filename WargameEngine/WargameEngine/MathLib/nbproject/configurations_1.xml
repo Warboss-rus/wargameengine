@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="94">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <logicalFolder name="Algorithm" displayName="Algorithm" projectFiles="true">
+        <logicalFolder name="Random" displayName="Random" projectFiles="true">
+          <itemPath>Algorithm/Random/LCG.h</itemPath>
+        </logicalFolder>
+      </logicalFolder>
+      <logicalFolder name="emscripten" displayName="emscripten" projectFiles="true">
+        <itemPath>emscripten/library_system.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="Geometry" displayName="Geometry" projectFiles="true">
+        <itemPath>Geometry/AABB.h</itemPath>
+        <itemPath>Geometry/AABB2D.h</itemPath>
+        <itemPath>Geometry/Capsule.h</itemPath>
+        <itemPath>Geometry/Circle.h</itemPath>
+        <itemPath>Geometry/Frustum.h</itemPath>
+        <itemPath>Geometry/GeomType.h</itemPath>
+        <itemPath>Geometry/GeometryAll.h</itemPath>
+        <itemPath>Geometry/HitInfo.h</itemPath>
+        <itemPath>Geometry/KDTree.h</itemPath>
+        <itemPath>Geometry/Line.h</itemPath>
+        <itemPath>Geometry/LineSegment.h</itemPath>
+        <itemPath>Geometry/OBB.h</itemPath>
+        <itemPath>Geometry/PBVolume.h</itemPath>
+        <itemPath>Geometry/Plane.h</itemPath>
+        <itemPath>Geometry/Polygon.h</itemPath>
+        <itemPath>Geometry/Polyhedron.h</itemPath>
+        <itemPath>Geometry/QuadTree.h</itemPath>
+        <itemPath>Geometry/Ray.h</itemPath>
+        <itemPath>Geometry/Sphere.h</itemPath>
+        <itemPath>Geometry/Triangle.h</itemPath>
+        <itemPath>Geometry/TriangleMesh.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="Math" displayName="Math" projectFiles="true">
+        <itemPath>Math/BitOps.h</itemPath>
+        <itemPath>Math/FixedPoint.h</itemPath>
+        <itemPath>Math/FloatCmp.h</itemPath>
+        <itemPath>Math/MathAll.h</itemPath>
+        <itemPath>Math/MathConstants.h</itemPath>
+        <itemPath>Math/MathFunc.h</itemPath>
+        <itemPath>Math/MathLog.h</itemPath>
+        <itemPath>Math/MathNamespace.h</itemPath>
+        <itemPath>Math/MathTypes.h</itemPath>
+        <itemPath>Math/MatrixProxy.h</itemPath>
+        <itemPath>Math/Polynomial.h</itemPath>
+        <itemPath>Math/Quat.h</itemPath>
+        <itemPath>Math/Rect.h</itemPath>
+        <itemPath>Math/Reinterpret.h</itemPath>
+        <itemPath>Math/SSEMath.h</itemPath>
+        <itemPath>Math/TransformOps.h</itemPath>
+        <itemPath>Math/assume.h</itemPath>
+        <itemPath>Math/float2.h</itemPath>
+        <itemPath>Math/float3.h</itemPath>
+        <itemPath>Math/float3x3.h</itemPath>
+        <itemPath>Math/float3x4.h</itemPath>
+        <itemPath>Math/float4.h</itemPath>
+        <itemPath>Math/float4_neon.h</itemPath>
+        <itemPath>Math/float4_sse.h</itemPath>
+        <itemPath>Math/float4x4.h</itemPath>
+        <itemPath>Math/float4x4_neon.h</itemPath>
+        <itemPath>Math/float4x4_sse.h</itemPath>
+        <itemPath>Math/myassert.h</itemPath>
+        <itemPath>Math/quat_simd.h</itemPath>
+        <itemPath>Math/simd.h</itemPath>
+        <itemPath>Math/sse_mathfun.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="nbproject" displayName="nbproject" projectFiles="true">
+        <logicalFolder name="private" displayName="private" projectFiles="true">
+          <itemPath>nbproject/private/Makefile-variables.mk</itemPath>
+          <itemPath>nbproject/private/configurations.xml</itemPath>
+          <itemPath>nbproject/private/launcher.properties</itemPath>
+          <itemPath>nbproject/private/private.xml</itemPath>
+        </logicalFolder>
+        <itemPath>nbproject/Makefile-Debug.mk</itemPath>
+        <itemPath>nbproject/Makefile-Release.mk</itemPath>
+        <itemPath>nbproject/Makefile-impl.mk</itemPath>
+        <itemPath>nbproject/Makefile-variables.mk</itemPath>
+        <itemPath>nbproject/Package-Debug.bash</itemPath>
+        <itemPath>nbproject/Package-Release.bash</itemPath>
+        <itemPath>nbproject/configurations.xml</itemPath>
+        <itemPath>nbproject/project.xml</itemPath>
+      </logicalFolder>
+      <logicalFolder name="Time" displayName="Time" projectFiles="true">
+        <itemPath>Time/Clock.h</itemPath>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="Algorithm" displayName="Algorithm" projectFiles="true">
+        <logicalFolder name="Random" displayName="Random" projectFiles="true">
+          <itemPath>Algorithm/Random/LCG_1.h</itemPath>
+        </logicalFolder>
+      </logicalFolder>
+      <logicalFolder name="emscripten" displayName="emscripten" projectFiles="true">
+        <itemPath>emscripten/library_system_1.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="Geometry" displayName="Geometry" projectFiles="true">
+        <itemPath>Geometry/AABB2D_1.h</itemPath>
+        <itemPath>Geometry/AABB_1.h</itemPath>
+        <itemPath>Geometry/Capsule_1.h</itemPath>
+        <itemPath>Geometry/Circle_1.h</itemPath>
+        <itemPath>Geometry/Frustum_1.h</itemPath>
+        <itemPath>Geometry/GeomType_1.h</itemPath>
+        <itemPath>Geometry/GeometryAll_1.h</itemPath>
+        <itemPath>Geometry/HitInfo_1.h</itemPath>
+        <itemPath>Geometry/KDTree_1.h</itemPath>
+        <itemPath>Geometry/LineSegment_1.h</itemPath>
+        <itemPath>Geometry/Line_1.h</itemPath>
+        <itemPath>Geometry/OBB_1.h</itemPath>
+        <itemPath>Geometry/PBVolume_1.h</itemPath>
+        <itemPath>Geometry/Plane_1.h</itemPath>
+        <itemPath>Geometry/Polygon_1.h</itemPath>
+        <itemPath>Geometry/Polyhedron_1.h</itemPath>
+        <itemPath>Geometry/QuadTree_1.h</itemPath>
+        <itemPath>Geometry/Ray_1.h</itemPath>
+        <itemPath>Geometry/Sphere_1.h</itemPath>
+        <itemPath>Geometry/TriangleMesh_1.h</itemPath>
+        <itemPath>Geometry/Triangle_1.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="Math" displayName="Math" projectFiles="true">
+        <itemPath>Math/BitOps_1.h</itemPath>
+        <itemPath>Math/FixedPoint_1.h</itemPath>
+        <itemPath>Math/FloatCmp_1.h</itemPath>
+        <itemPath>Math/MathAll_1.h</itemPath>
+        <itemPath>Math/MathConstants_1.h</itemPath>
+        <itemPath>Math/MathFunc_1.h</itemPath>
+        <itemPath>Math/MathLog_1.h</itemPath>
+        <itemPath>Math/MathNamespace_1.h</itemPath>
+        <itemPath>Math/MathTypes_1.h</itemPath>
+        <itemPath>Math/MatrixProxy_1.h</itemPath>
+        <itemPath>Math/Polynomial_1.h</itemPath>
+        <itemPath>Math/Quat_1.h</itemPath>
+        <itemPath>Math/Rect_1.h</itemPath>
+        <itemPath>Math/Reinterpret_1.h</itemPath>
+        <itemPath>Math/SSEMath_1.h</itemPath>
+        <itemPath>Math/TransformOps_1.h</itemPath>
+        <itemPath>Math/assume_1.h</itemPath>
+        <itemPath>Math/float2_1.h</itemPath>
+        <itemPath>Math/float3_1.h</itemPath>
+        <itemPath>Math/float3x3_1.h</itemPath>
+        <itemPath>Math/float3x4_1.h</itemPath>
+        <itemPath>Math/float4_1.h</itemPath>
+        <itemPath>Math/float4_neon_1.h</itemPath>
+        <itemPath>Math/float4_sse_1.h</itemPath>
+        <itemPath>Math/float4x4_1.h</itemPath>
+        <itemPath>Math/float4x4_neon_1.h</itemPath>
+        <itemPath>Math/float4x4_sse_1.h</itemPath>
+        <itemPath>Math/myassert_1.h</itemPath>
+        <itemPath>Math/quat_simd_1.h</itemPath>
+        <itemPath>Math/simd_1.h</itemPath>
+        <itemPath>Math/sse_mathfun_1.h</itemPath>
+      </logicalFolder>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceRootList>
+    <Elem>Algorithm</Elem>
+    <Elem>emscripten</Elem>
+    <Elem>Geometry</Elem>
+    <Elem>Math</Elem>
+    <Elem>nbproject</Elem>
+    <Elem>Time</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="3">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <archiverTool>
+        </archiverTool>
+      </compileType>
+      <item path="Algorithm/Random/LCG.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Algorithm/Random/LCG_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB2D.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB2D_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Capsule.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Capsule_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Circle.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Circle_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Frustum.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Frustum_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeomType.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeomType_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeometryAll.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeometryAll_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/HitInfo.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/HitInfo_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/KDTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/KDTree_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Line.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/LineSegment.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/LineSegment_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Line_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/OBB.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/OBB_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/PBVolume.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/PBVolume_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Plane.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Plane_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polygon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polygon_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polyhedron.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polyhedron_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/QuadTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/QuadTree_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Ray.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Ray_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Sphere.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Sphere_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Triangle.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/TriangleMesh.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/TriangleMesh_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Triangle_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/BitOps.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/BitOps_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FixedPoint.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FixedPoint_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FloatCmp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FloatCmp_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathAll.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathAll_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathConstants.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathConstants_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathFunc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathFunc_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathLog.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathLog_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathNamespace.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathNamespace_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathTypes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathTypes_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MatrixProxy.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MatrixProxy_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Polynomial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Polynomial_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Quat.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Quat_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Rect.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Rect_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Reinterpret.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Reinterpret_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/SSEMath.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/SSEMath_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/TransformOps.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/TransformOps_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/assume.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/assume_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float2.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float2_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x3.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x3_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x4.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x4_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_neon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_neon_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_sse.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_sse_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_neon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_neon_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_sse.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_sse_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/myassert.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/myassert_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/quat_simd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/quat_simd_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/simd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/simd_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/sse_mathfun.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/sse_mathfun_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Time/Clock.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/library_system.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/library_system_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-Debug.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-Release.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-impl.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-variables.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Package-Debug.bash" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Package-Release.bash" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/configurations.xml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/private/Makefile-variables.mk"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nbproject/private/configurations.xml"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nbproject/private/launcher.properties"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nbproject/private/private.xml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/project.xml" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="3">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+        <archiverTool>
+        </archiverTool>
+      </compileType>
+      <item path="Algorithm/Random/LCG.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Algorithm/Random/LCG_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB2D.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB2D_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/AABB_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Capsule.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Capsule_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Circle.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Circle_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Frustum.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Frustum_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeomType.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeomType_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeometryAll.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/GeometryAll_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/HitInfo.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/HitInfo_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/KDTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/KDTree_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Line.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/LineSegment.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/LineSegment_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Line_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/OBB.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/OBB_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/PBVolume.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/PBVolume_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Plane.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Plane_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polygon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polygon_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polyhedron.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Polyhedron_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/QuadTree.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/QuadTree_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Ray.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Ray_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Sphere.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Sphere_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Triangle.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/TriangleMesh.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/TriangleMesh_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Geometry/Triangle_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/BitOps.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/BitOps_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FixedPoint.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FixedPoint_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FloatCmp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/FloatCmp_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathAll.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathAll_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathConstants.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathConstants_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathFunc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathFunc_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathLog.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathLog_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathNamespace.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathNamespace_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathTypes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MathTypes_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MatrixProxy.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/MatrixProxy_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Polynomial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Polynomial_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Quat.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Quat_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Rect.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Rect_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Reinterpret.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/Reinterpret_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/SSEMath.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/SSEMath_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/TransformOps.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/TransformOps_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/assume.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/assume_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float2.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float2_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x3.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x3_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x4.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float3x4_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_neon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_neon_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_sse.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4_sse_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_neon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_neon_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_sse.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/float4x4_sse_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/myassert.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/myassert_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/quat_simd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/quat_simd_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/simd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/simd_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/sse_mathfun.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Math/sse_mathfun_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Time/Clock.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/library_system.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="emscripten/library_system_1.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-Debug.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-Release.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-impl.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Makefile-variables.mk" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Package-Debug.bash" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/Package-Release.bash" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/configurations.xml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/private/Makefile-variables.mk"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nbproject/private/configurations.xml"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nbproject/private/launcher.properties"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="nbproject/private/private.xml" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="nbproject/project.xml" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

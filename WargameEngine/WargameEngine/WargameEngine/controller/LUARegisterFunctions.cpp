@@ -224,7 +224,7 @@ int SetLMBCallback(lua_State* L)
 		return luaL_error(L, "2 argument expected (function name, disable default behavior)");
 	std::string func = CLUAScript::GetArgument<char*>(1);
 	bool disable = CLUAScript::GetArgument<bool>(2);
-	auto callback = [&func](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z){
+	auto callback = [func](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z){
 		CLUAScript::CallFunction(func, obj.get(), type, x, y, z);
 	};
 	CInput::SetLMBCallback(callback, disable);
@@ -237,7 +237,7 @@ int SetRMBCallback(lua_State* L)
 		return luaL_error(L, "2 argument expected (function name, disable default behavior)");
 	std::string func = CLUAScript::GetArgument<char*>(1);
 	bool disable = CLUAScript::GetArgument<bool>(2);
-	auto callback = [&func](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z) {
+	auto callback = [func](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z) {
 		CLUAScript::CallFunction(func, obj.get(), type, x, y, z);
 	};
 	CInput::SetRMBCallback(callback, disable);
