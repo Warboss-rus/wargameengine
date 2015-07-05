@@ -1,5 +1,6 @@
 #include "Object.h"
 #include <sys/timeb.h> 
+#include <algorithm>
 
 CObject::CObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
 	:m_model(model), m_coords(x, y, 0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
@@ -228,6 +229,11 @@ void CObject::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigne
 	tc.color[0] = r;
 	tc.color[1] = g;
 	tc.color[2] = b;
+	auto it = std::find_if(m_teamColor.begin(), m_teamColor.end(), [&suffix](sTeamColor const& tc) {return tc.suffix == suffix;});
+	if (it != m_teamColor.end())
+	{
+		m_teamColor.erase(it);
+	}
 	m_teamColor.push_back(tc);
 }
 

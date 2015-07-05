@@ -479,5 +479,8 @@
     <ClInclude Include="controller\CommandHandler.h">
       <Filter>Header Files\controller</Filter>
     </ClInclude>
+    <ClInclude Include="AsyncReadTask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

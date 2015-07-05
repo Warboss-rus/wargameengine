@@ -122,7 +122,7 @@ void CSoundPlayer::PlaySoundPosition(std::string const& file, CVector3d const& p
 		LogWriter::WriteLine("AL error. Error creating a source. " + GetALError(error));
 		return;
 	}
-	alSource3f(source, AL_POSITION, position.x, position.y, position.z);
+	alSource3f(source, AL_POSITION, static_cast<ALfloat>(position.x), static_cast<ALfloat>(position.y), static_cast<ALfloat>(position.z));
 	alSourcef(source, AL_GAIN, volume);
 	error = alGetError();
 	if (error != AL_NO_ERROR)
@@ -187,8 +187,8 @@ void CSoundPlayer::ReadWav(std::string const& file)
 
 void CSoundPlayer::SetListenerPosition(CVector3d const& position, CVector3d const& center)
 {
-	alListener3f(AL_POSITION, position.x, position.y, position.z);
-	float ori[6] = {center.x, center.y, center.z, 0.0f, 1.0f, 0.0f};
+	alListener3f(AL_POSITION, static_cast<ALfloat>(position.x), static_cast<ALfloat>(position.y), static_cast<ALfloat>(position.z));
+	ALfloat ori[6] = { static_cast<ALfloat>(center.x), static_cast<ALfloat>(center.y), static_cast<ALfloat>(center.z), 0.0f, 1.0f, 0.0f};
 	alListenerfv(AL_ORIENTATION, ori);
 }
 

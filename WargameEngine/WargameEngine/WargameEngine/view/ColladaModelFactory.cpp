@@ -16,7 +16,7 @@ std::vector<float> GetFloats(TiXmlElement* data)
 		{
 			if (fl[i] == ',') fl[i] = '.';
 		}
-		float i = atof(fl);
+		float i = static_cast<float>(atof(fl));
 		res.push_back(i);
 		fl = strtok(NULL, " \n\t");
 	}
@@ -203,16 +203,15 @@ void LoadAnimations(TiXmlElement * element, std::vector<sJoint> const& joints, s
 	}
 }
 
-void * LoadColladaModel(void* data, unsigned int size, void* param)
+void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 {
-	sOBJLoader * loader = (sOBJLoader*)param;
 	TiXmlDocument doc;
 	doc.Parse((const char*)data);
 	TiXmlElement* root = doc.RootElement();
 	if (!root)//No root
 	{
 		LogWriter::WriteLine("Cannot load model. No root.");
-		return loader;
+		return;
 	}
 	std::map<std::string, std::string> imageTranslator;
 	//Process textures
@@ -264,7 +263,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 				}
 				else if (node->Attribute("type") == std::string("JOINT"))
 				{
-					LoadJoints(node, loader->joints, -1);
+					LoadJoints(node, loader.joints, -1);
 				}
 				node = node->NextSiblingElement("node");
 			}
@@ -370,7 +369,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 							if (shininess)
 							{
 								TiXmlElement* fl = shininess->FirstChildElement("float");
-								if (fl) material.shininess = atof(fl->GetText());
+								if (fl) material.shininess = static_cast<float>(atof(fl->GetText()));
 							}
 						}
 					}
@@ -391,7 +390,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			{
 				if (i->second == effect->Attribute("id"))
 				{
-					loader->materialManager.AddMaterial(i->first, material);
+					loader.materialManager.AddMaterial(i->first, material);
 					break;
 				}
 			}
@@ -454,11 +453,11 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 					char * fl = strtok((char*)jointSource->GetText(), " \n\t");
 					while (fl != NULL)
 					{
-						for (size_t i = 0; i < loader->joints.size(); ++i)
+						for (size_t i = 0; i < loader.joints.size(); ++i)
 						{
-							if (loader->joints[i].bone == fl)
+							if (loader.joints[i].bone == fl)
 							{
-								memcpy(loader->joints[i].invBindMatrix, &inv[index * 16], sizeof(float) * 16);
+								memcpy(loader.joints[i].invBindMatrix, &inv[index * 16], sizeof(float) * 16);
 							}
 						}
 						index++;
@@ -510,9 +509,9 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 								continue;
 							}
 							unsigned int weightIndex = v[j + k * 2 + 1];
-							for (size_t i = 0; i < loader->joints.size(); ++i)
+							for (size_t i = 0; i < loader.joints.size(); ++i)
 							{
-								if (loader->joints[i].bone == jointNames[jointIndex])
+								if (loader.joints[i].bone == jointNames[jointIndex])
 								{
 									weightIndexes[geometryId].push_back(i);
 									weights[geometryId].push_back(weightArray[weightIndex]);
@@ -532,7 +531,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 	TiXmlElement* animationLib = root->FirstChildElement("library_animations");
 	if (animationLib && controllerLib)
 	{
-		LoadAnimations(animationLib, loader->joints, loader->animations, -1);
+		LoadAnimations(animationLib, loader.joints, loader.animations, -1);
 	}
 	TiXmlElement* clipsLib = root->FirstChildElement("library_animation_clips");
 	if (clipsLib)
@@ -543,15 +542,15 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			sAnimation anim;
 			anim.id = clip->Attribute("id");
 			anim.boneIndex = -1;
-			anim.duration = atof(clip->Attribute("end")) - atof(clip->Attribute("start"));
+			anim.duration = static_cast<float>(atof(clip->Attribute("end")) - atof(clip->Attribute("start")));
 			TiXmlElement* animation = clip->FirstChildElement("instance_animation");
 			while (animation)
 			{
 				std::string animName = animation->Attribute("url");
 				animName = animName.substr(1);
-				for (size_t i = 0; i < loader->animations.size(); ++i)
+				for (size_t i = 0; i < loader.animations.size(); ++i)
 				{
-					if (loader->animations[i].id == animName)
+					if (loader.animations[i].id == animName)
 					{
 						anim.children.push_back(i);
 						break;
@@ -561,7 +560,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			}
 			if (anim.children.size() > 0)
 			{
-				loader->animations.push_back(anim);
+				loader.animations.push_back(anim);
 			}
 			clip = clip->NextSiblingElement("animation_clip");
 		}
@@ -580,7 +579,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 		TiXmlElement* mesh = geometryElement->FirstChildElement("mesh");
 		while (mesh != NULL)//Parse a mesh
 		{
-			indexOffset = loader->vertices.size();
+			indexOffset = loader.vertices.size();
 			std::map<std::string, TiXmlElement*> sources;//Parse sources;
 			TiXmlElement* source = mesh->FirstChildElement("source");
 			while (source != NULL)
@@ -597,8 +596,8 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 			if (triangles)
 			{
 				m.materialName = triangles->Attribute("material");
-				m.polygonIndex = loader->indexes.size();
-				loader->meshes.push_back(m);
+				m.polygonIndex = loader.indexes.size();
+				loader.meshes.push_back(m);
 				TiXmlElement* input = triangles->FirstChildElement("input");
 				unsigned int vertexOffset = 0;
 				unsigned int normalOffset = 0;
@@ -661,18 +660,18 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 				if (simple)
 				{
 					//temp
-					unsigned int oldSize = loader->vertices.size();
-					loader->vertices.resize(oldSize + vert.size() / 3);
-					memcpy(&loader->vertices[oldSize], &vert[0], vert.size() * sizeof(float));
-					oldSize = loader->normals.size();
-					loader->normals.resize(oldSize + normal.size() / 3);
-					memcpy(&loader->normals[oldSize], &normal[0], normal.size() * sizeof(float));
-					oldSize = loader->textureCoords.size();
-					loader->textureCoords.resize(oldSize + texcoord.size() / 2);
-					memcpy(&loader->textureCoords[oldSize], &texcoord[0], texcoord.size() * sizeof(float));
-					loader->weightsCount.insert(loader->weightsCount.end(), weightCount[geometryElement->Attribute("id")].begin(), weightCount[geometryElement->Attribute("id")].end());
-					loader->weightsIndexes.insert(loader->weightsIndexes.end(), weightIndexes[geometryElement->Attribute("id")].begin(), weightIndexes[geometryElement->Attribute("id")].end());
-					loader->weights.insert(loader->weights.end(), weights[geometryElement->Attribute("id")].begin(), weights[geometryElement->Attribute("id")].end());
+					unsigned int oldSize = loader.vertices.size();
+					loader.vertices.resize(oldSize + vert.size() / 3);
+					memcpy(&loader.vertices[oldSize], &vert[0], vert.size() * sizeof(float));
+					oldSize = loader.normals.size();
+					loader.normals.resize(oldSize + normal.size() / 3);
+					memcpy(&loader.normals[oldSize], &normal[0], normal.size() * sizeof(float));
+					oldSize = loader.textureCoords.size();
+					loader.textureCoords.resize(oldSize + texcoord.size() / 2);
+					memcpy(&loader.textureCoords[oldSize], &texcoord[0], texcoord.size() * sizeof(float));
+					loader.weightsCount.insert(loader.weightsCount.end(), weightCount[geometryElement->Attribute("id")].begin(), weightCount[geometryElement->Attribute("id")].end());
+					loader.weightsIndexes.insert(loader.weightsIndexes.end(), weightIndexes[geometryElement->Attribute("id")].begin(), weightIndexes[geometryElement->Attribute("id")].end());
+					loader.weights.insert(loader.weights.end(), weights[geometryElement->Attribute("id")].begin(), weights[geometryElement->Attribute("id")].end());
 				}
 				std::vector<unsigned int> indexes;
 				TiXmlElement* data = triangles->FirstChildElement("p");
@@ -684,7 +683,7 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 						int i = atoi(result);
 						if (simple)
 						{
-							loader->indexes.push_back(i + indexOffset);
+							loader.indexes.push_back(i + indexOffset);
 						}
 						else
 						{
@@ -693,14 +692,14 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 							{
 								CVector3f vert(vert[indexes[vertexOffset] * 3], vert[indexes[vertexOffset] * 3 + 1], vert[indexes[vertexOffset] * 3 + 2]);
 								MultiplyVectorToMatrix(vert, &bindShapeMatrices[geometryElement->Attribute("id")][0]);
-								loader->vertices.push_back(vert);
-								loader->normals.push_back(CVector3f(normal[indexes[normalOffset] * 3], normal[indexes[normalOffset] * 3 + 1], normal[indexes[normalOffset] * 3 + 2]));
-								loader->textureCoords.push_back(CVector2f(texcoord[indexes[texcoordOffset] * texCoordStride], texcoord[indexes[texcoordOffset] * texCoordStride + 1]));
-								loader->indexes.push_back(loader->vertices.size() - 1);
+								loader.vertices.push_back(vert);
+								loader.normals.push_back(CVector3f(normal[indexes[normalOffset] * 3], normal[indexes[normalOffset] * 3 + 1], normal[indexes[normalOffset] * 3 + 2]));
+								loader.textureCoords.push_back(CVector2f(texcoord[indexes[texcoordOffset] * texCoordStride], texcoord[indexes[texcoordOffset] * texCoordStride + 1]));
+								loader.indexes.push_back(loader.vertices.size() - 1);
 								if (controllerLib)
 								{
 									unsigned int count = weightCount[geometryElement->Attribute("id")][indexes[vertexOffset]];
-									loader->weightsCount.push_back(count);
+									loader.weightsCount.push_back(count);
 									unsigned int start = 0;
 									for (size_t i = 0; i < indexes[vertexOffset]; ++i)//Get the starting index of the current vertex weight
 									{
@@ -708,8 +707,8 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 									}
 									for (size_t i = 0; i < count; ++i)
 									{
-										loader->weightsIndexes.push_back(weightIndexes[geometryElement->Attribute("id")][start + i]);
-										loader->weights.push_back(weights[geometryElement->Attribute("id")][start + i]);
+										loader.weightsIndexes.push_back(weightIndexes[geometryElement->Attribute("id")][start + i]);
+										loader.weights.push_back(weights[geometryElement->Attribute("id")][start + i]);
 									}
 								}
 								indexes.clear();
@@ -725,5 +724,4 @@ void * LoadColladaModel(void* data, unsigned int size, void* param)
 		geometryElement = geometryElement->NextSiblingElement("geometry");
 	}
 	doc.Clear();
-	return loader;
 }

@@ -2,7 +2,7 @@
 #include <cstring>
 #include <math.h>
 #pragma warning( push )
-#pragma warning( disable : 4458)
+#pragma warning( disable : 4458 4996 4244)
 #include "Geometry/Ray.h"
 #include "Geometry/Polyhedron.h"
 #include "Geometry/LineSegment.h"
@@ -18,15 +18,20 @@ CBoundingBox::CBoundingBox(double min[3], double max[3])
 	memcpy(m_min, min, sizeof(double) * 3); 
 	memcpy(m_max, max, sizeof(double) * 3); 
 }
+template<class T>
+float3 ToFloat3(T const& vec)
+{
+	return float3(static_cast<float>(vec[0]), static_cast<float>(vec[1]), static_cast<float>(vec[2]));
+}
 
 AABB GetAABB(CBoundingBox const& bounding)
 {
 	const double *min = bounding.GetMin();
 	const double *max = bounding.GetMax();
-	float min1[3] = {min[0], min[1], min[2]};
-	float max1[3] = {max[0], max[1], max[2]};
-	math::float3 minVector(min1);
-	math::float3 maxVector(max1);
+	float min1[3] = {static_cast<float>(min[0]), static_cast<float>(min[1]), static_cast<float>(min[2])};
+	float max1[3] = { static_cast<float>(max[0]), static_cast<float>(max[1]), static_cast<float>(max[2])};
+	math::float3 minVector = ToFloat3(min);
+	math::float3 maxVector = ToFloat3(max);
 	return AABB(minVector, maxVector);
 }
 
@@ -34,12 +39,14 @@ OBB GetOBB(CBoundingBox const& bounding, float3 translate, double angle)
 {
 	OBB res( GetAABB(bounding) );
 	float z = res.r.z;
-	res.Scale( res.CenterPoint(), bounding.GetScale() );
+	res.Scale( res.CenterPoint(), static_cast<float>(bounding.GetScale()) );
 	res.Translate(float3(0, 0, res.r.z - z));
 
+	float fangle = static_cast<float>(angle);
+
 	float3x3 rotateMatrix(
-		cos(angle), -sin(angle), 0.0f,
-		sin(angle), cos(angle), 0.0f,
+		cos(fangle), -sin(fangle), 0.0f,
+		sin(fangle), cos(fangle), 0.0f,
 		0.0f, 0.0f, 1.0f
 	);
 	res.Transform(rotateMatrix);
@@ -49,17 +56,18 @@ OBB GetOBB(CBoundingBox const& bounding, float3 translate, double angle)
 
 bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
-	float origin1[3] = {origin[0], origin[1], origin[2]};
-	float3 pos(origin1);
-	float3 dir(end[0] - origin[0], end[1] - origin[1], end[2] - origin[2]);
+	float3 pos = ToFloat3(origin);
+	float3 dir = ToFloat3(CVector3d(end) - CVector3d(origin));
 	Line l(pos, dir);
 
-	OBB object = GetOBB(*this, float3(x, y, z), rotation);
+	float3 objPos(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+
+	OBB object = GetOBB(*this, objPos, static_cast<float>(rotation));
 	
 	if ( object.Intersects(l) )
 	{
 		Polyhedron polyhedron = object.ToPolyhedron();
-		float end1[3] = {end[0], end[1], end[2]};
+		float end1[3] = { static_cast<float>(end[0]), static_cast<float>(end[1]), static_cast<float>(end[2])};
 		float3 endPont(end1);
 		LineSegment line(pos, endPont);
 		float3 interesectPoint = polyhedron.ClosestPoint(line);
@@ -88,8 +96,8 @@ const double CBoundingBox::GetScale() const
 
 bool IsInteresect(CBoundingBox const& bounding1, CVector3d const& translate1, double angle1, CBoundingBox const& bounding2, CVector3d const& translate2, double angle2)
 {
-	float3 tr1(translate1[0], translate1[1], translate1[2]);
-	float3 tr2(translate2[0], translate2[1], translate2[2]);
+	float3 tr1 = ToFloat3(translate1);
+	float3 tr2 = ToFloat3(translate2);
 	OBB ob1 = GetOBB(bounding1, tr1, angle1);
 	OBB ob2 = GetOBB(bounding2, tr2, angle2);
 	return ob1.Intersects(ob2);

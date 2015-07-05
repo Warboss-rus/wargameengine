@@ -5,78 +5,89 @@
 #include "ThreadPool.h"
 
 template<class T>
-class TaskT : public ITask
+class TaskT : public IAsyncTask<T>
 {
-	typedef std::function<T()> AsyncHandler;
-	typedef std::function<void(T)> CallbackHandler;
-	typedef std::function<void()> OnFailHandler;
-	enum class TaskState
-	{
-		CREATED,
-		QUEUED,
-		STARTED,
-		COMPLETED,
-		READY_FOR_DISPOSE,
-		CANCELLED,
-		FAILED,
-	};
 public:
-	Task(AsyncHandler const& func, bool start = false)
-		:m_handler(func)
-		, m_state(CREATED)
+	TaskT(AsyncHandler const& func, bool start = false)
+		: m_handler(func)
+		, m_state(TaskState::CREATED)
 	{
-		if(start)
-		{
-			Start();
-		}
+		
 	}
 
-	void AddOnCompleteHandler(CallbackHandler const& handler)
+	virtual void AddOnCompleteHandler(CallbackHandler const& handler) override
 	{
-		lock_guard<std::mutex> lk(m_sync);
-		if (m_state != TaskState::QUEUED || m_state != TaskState::CREATED)
+		std::lock_guard<std::mutex> lk(m_sync);
+		if (m_state != TaskState::QUEUED && m_state != TaskState::CREATED)
 		{
 			throw std::logic_error("Cannot change task when it is already started");
 		}
 		m_callback = handler;
 	}
 
-	void AddOnFailHandler(CallbackHandler const& handler)
+	virtual void AddOnFailHandler(OnFailHandler const& handler) override
 	{
-		lock_guard<std::mutex> lk(m_sync);
-		if (m_state != TaskState::QUEUED || m_state != TaskState::CREATED)
+		std::lock_guard<std::mutex> lk(m_sync);
+		if (m_state != TaskState::QUEUED && m_state != TaskState::CREATED)
 		{
 			throw std::logic_error("Cannot change task when it is already started");
 		}
 		m_onFail = handler;
 	}
 
-	void Cancel()
+	virtual void Cancel() override
 	{
 		std::lock_guard<std::mutex> lk(m_sync);
 		m_state = TaskState::CANCELLED;
+		ThreadPool::RemoveTask(this);
 	}
 
-	void Start()
+	virtual void Queue() override
 	{
 		std::unique_lock<std::mutex> lk(m_sync);
 		if (m_state != TaskState::CREATED)
 		{
 			throw std::runtime_error("Task have already been queued");
 		}
-		ThreadPool::AddTask(this);
+		m_state = TaskState::QUEUED;
 	}
 
-	const TaskState GetState() const;
+	virtual const TaskState GetState() const override
 	{
 		std::lock_guard<std::mutex> lk(m_sync);
 		return m_state;
+	}
+protected:
+	TaskT()
+		: m_state(TaskState::CREATED)
+	{
+	}
+	void SetTaskState(TaskState state)
+	{
+		std::lock_guard<std::mutex> lk(m_sync);
+		m_state = state;
+	}
+
+	AsyncHandler m_handler;
+	CallbackHandler m_callback;
+	OnFailHandler m_onFail;
+	TaskState m_state;
+	mutable std::mutex m_sync;
+};
+
+template <class T>
+class Task : public TaskT<T>
+{
+public:
+	Task(AsyncHandler const& func)
+		: TaskT(func)
+	{
 	}
 private:
 	virtual void Execute() override
 	{
 		std::unique_lock<std::mutex> lk(m_sync);
-		if(m_state != TaskState::QUEUED)
+		if (m_state != TaskState::QUEUED)
 		{
 			throw std::runtime_error("Task is not ready for execution");
 		}
@@ -85,29 +96,19 @@ private:
 		try
 		{
 			T result = m_handler();
-			lk.lock();
-			m_state = TaskState::COMPLETED;
-			if (m_onFail)
+			SetTaskState(TaskState::COMPLETED);
+			if (m_callback)
 			{
-				ThreadPool::AddTaskCallback([this, result] {m_callback(result); });
+				ThreadPool::QueueCallback([this, result] {m_callback(result); });
 			}
 		}
 		catch (std::exception const& e)
 		{
-			lk.lock();
-			m_state = TaskState::FAILED;
-			if(m_onFail)
+			SetTaskState(TaskState::FAILED);
+			if (m_onFail)
 			{
-				ThreadPool::AddTaskCallback(m_onFail);
+				ThreadPool::QueueCallback([this]() {m_onFail(e);});
 			}
 		}
 	}
-
-	AsyncHandler m_handler;
-	CallbackHandler m_callback;
-	OnFailHandler m_onFail;
-	TaskState m_state;
-	std::mutex m_sync;
 };
-
-typedef TaskT<void> Task;

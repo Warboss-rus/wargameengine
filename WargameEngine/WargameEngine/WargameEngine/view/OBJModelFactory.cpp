@@ -119,9 +119,8 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 	return materials;
 }
 
-void * LoadObjModel(void* data, unsigned int size, void* param)
+void LoadObjModel(void* data, unsigned int size, sOBJLoader & loader)
 {
-	sOBJLoader * loader = (sOBJLoader*)param;
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
@@ -173,30 +172,30 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 				iFile >> index3;
 				if(faces.find(index3) != faces.end()) //This vertex/texture coord/normal already exist
 				{
-					loader->indexes.push_back(faces[index3]);
+					loader.indexes.push_back(faces[index3]);
 				}
 				else//New vertex/texcoord/normal
 				{
 					FaceIndex faceIndex  = ParseFaceIndex(index3);
-					loader->vertices.push_back(vertices[faceIndex.vertex - 1]);
+					loader.vertices.push_back(vertices[faceIndex.vertex - 1]);
 					if(faceIndex.textureCoord != 0)
 					{
-						loader->textureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
+						loader.textureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
 					}
 					else
 					{
-						loader->textureCoords.push_back(CVector2f());
+						loader.textureCoords.push_back(CVector2f());
 					}
 					if(faceIndex.normal != 0)
 					{
-						loader->normals.push_back(normals[faceIndex.normal - 1]);
+						loader.normals.push_back(normals[faceIndex.normal - 1]);
 					}
 					else
 					{
-						loader->normals.push_back(CVector3f());
+						loader.normals.push_back(CVector3f());
 					}
-					loader->indexes.push_back(loader->vertices.size() - 1);
-					faces[index3] = loader->vertices.size() - 1;
+					loader.indexes.push_back(loader.vertices.size() - 1);
+					faces[index3] = loader.vertices.size() - 1;
 				}
 			}
 		}
@@ -204,19 +203,19 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 		{
 			std::string path;
 			iFile >> path;
-			loader->materialManager.InsertMaterials(LoadMTL(path));
+			loader.materialManager.InsertMaterials(LoadMTL(path));
 		}
 		if(type == "usemtl")//apply material
 		{
 			iFile >> mesh.materialName;
-			mesh.polygonIndex = loader->indexes.size();
-			if(!loader->meshes.empty() && mesh.polygonIndex == loader->meshes.back().polygonIndex)
+			mesh.polygonIndex = loader.indexes.size();
+			if(!loader.meshes.empty() && mesh.polygonIndex == loader.meshes.back().polygonIndex)
 			{
-				loader->meshes.back() = mesh;
+				loader.meshes.back() = mesh;
 			}
 			else
 			{
-				loader->meshes.push_back(mesh);
+				loader.meshes.push_back(mesh);
 			}
 		}
 		if(type == "g")//apply material
@@ -227,32 +226,31 @@ void * LoadObjModel(void* data, unsigned int size, void* param)
 			if(!name.empty())
 			{
 				mesh.name = name;
-				mesh.polygonIndex = loader->indexes.size();
-				if(!loader->meshes.empty() && mesh.polygonIndex == loader->meshes.back().polygonIndex)
+				mesh.polygonIndex = loader.indexes.size();
+				if(!loader.meshes.empty() && mesh.polygonIndex == loader.meshes.back().polygonIndex)
 				{
-					loader->meshes.back() = mesh;
+					loader.meshes.back() = mesh;
 				}
 				else
 				{
-					loader->meshes.push_back(mesh);
+					loader.meshes.push_back(mesh);
 				}
 			}
 		}
 	}
 	if(!useNormals)
 	{
-		loader->normals.clear();
+		loader.normals.clear();
 	}
 	if(!useUVs)
 	{
-		loader->textureCoords.clear();
+		loader.textureCoords.clear();
 	}
 	delete [] data;
 	if(!useFaces)
 	{
-		loader->vertices.swap(vertices);
-		loader->textureCoords.swap(textureCoords);
-		loader->normals.swap(normals);
+		loader.vertices.swap(vertices);
+		loader.textureCoords.swap(textureCoords);
+		loader.normals.swap(normals);
 	}
-	return loader;
 }

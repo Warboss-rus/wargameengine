@@ -3,51 +3,14 @@
 #include <mutex>
 #include <future>
 #include <deque>
-
-void ProcessData(void* param);
-void* ProcessData2(void* param);
+#include "ITask.h"
 
 struct ThreadPool::Impl
 {
 	struct sRunFunc
 	{
-		sRunFunc(void(*f)(void*), void* p, void(*c)(), unsigned int fl) :func(f), param(p), callback(c), flags(fl) {}
-		void(*func)(void*);
-		void* param;
-		void(*callback)();
-		unsigned int flags;
-	};
-
-	struct sRunFunc2
-	{
-		sRunFunc2(void* (*f)(void*), void* p, void(*c)(void*), unsigned int fl) :func(f), param(p), callback(c), flags(fl) {}
-		void* (*func)(void*);
-		void* param;
-		void(*callback)(void*);
-		unsigned int flags;
-	};
-
-	struct sAsyncRead
-	{
-		sAsyncRead(std::string const& p, void(*f)(void*, unsigned int, void*), void* par, void(*c)(), unsigned int fl) :path(p), func(f), param(par), callback(c), flags(fl) {}
-		std::string path;
-		unsigned char* data;
-		unsigned int size;
-		void(*func)(void*, unsigned int, void*);
-		void* param;
-		void(*callback)();
-		unsigned int flags;
-	};
-
-	struct sAsyncRead2
-	{
-		sAsyncRead2(std::string const& p, void* (*f)(void*, unsigned int, void*), void* par, void(*c)(void*), unsigned int fl) :path(p), func(f), param(par), callback(c), flags(fl) {}
-		std::string path;
-		unsigned char* data;
-		unsigned int size;
-		void* (*func)(void*, unsigned int, void*);
-		void* param;
-		void(*callback)(void*);
+		FunctionHandler func;
+		CallbackHandler callback;
 		unsigned int flags;
 	};
 public:
@@ -64,59 +27,39 @@ public:
 		}
 	}
 
-	void QueueFunc(sRunFunc2 const& func)
+	void RunFunc(FunctionHandler const& func, CallbackHandler const& callback, unsigned int flags)
 	{
-		std::lock_guard<std::mutex> lk(m_funcMutex2);
-		if (func.flags & FLAG_HIGH_PRIORITY)
+		QueueFunc(sRunFunc{ func, callback, flags });
+	}
+
+	void QueueCallback(CallbackHandler const& callback, unsigned int flags)
+	{
+		std::lock_guard<std::mutex> lk(m_callbackMutex);
+		if (flags & FLAG_HIGH_PRIORITY)
 		{
-			m_funcs2.push_front(func);
+			m_callbacks.push_front(callback);
 		}
 		else
 		{
-			m_funcs2.push_back(func);
+			m_callbacks.push_back(callback);
 		}
 	}
 
-	void RunFunc(void* (*func)(void*), void* param, unsigned int flags)
+	void AddTask(std::shared_ptr<ITask> task)
 	{
-		m_cancelled = false;
-		QueueFunc(sRunFunc2(func, param, NULL, flags));
+		std::lock_guard<std::mutex> lk(m_tasksMutex);
+		m_tasks.push_back(task);
+		task->Queue();
 	}
 
-	void RunFunc(void(*func)(void*), void* param, void(*doneCallback)(), unsigned int flags)
+	void RemoveTask(ITask * task)
 	{
-		m_cancelled = false;
-		QueueFunc(sRunFunc(func, param, doneCallback, flags));
-	}
-
-	void RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*), unsigned int flags)
-	{
-		m_cancelled = false;
-		QueueFunc(sRunFunc2(func, param, doneCallback, flags));
-	}
-
-	void AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(), unsigned int flags)
-	{
-		m_cancelled = false;
-		std::thread([=]{ ReadData(path, func, param, doneCallback, flags); }).detach();
-	}
-
-	void AsyncReadFile(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*), unsigned int flags)
-	{
-		m_cancelled = false;
-		std::thread([=]{ ReadData2(path, func, param, doneCallback, flags); }).detach();
-	}
-
-	void QueueCallback(void(*callback)())
-	{
-		std::lock_guard<std::mutex> lk(m_callbackMutex);
-		m_callbacks.push_back(callback);
-	}
-
-	void QueueCallback(void(*callback)(void*), void *params)
-	{
-		std::lock_guard<std::mutex> lk(m_callbackMutex2);
-		m_callbacks2.push_back(std::pair<void(*)(void*), void*>(callback, params));
+		std::lock_guard<std::mutex> lk(m_tasksMutex);
+		auto it = std::find_if(m_tasks.begin(), m_tasks.end(), [task](std::shared_ptr<ITask> const& taskptr) {return taskptr.get() == task;});
+		if (it != m_tasks.end())
+		{
+			m_tasks.erase(it);
+		}
 	}
 
 	void ReportThreadClose()
@@ -132,12 +75,12 @@ public:
 
 	void Update()
 	{
-		if ((!m_funcs.empty() || !m_funcs2.empty()) && m_currentThreads < m_maxThreads)
+		if ((!m_funcs.empty() || !m_tasks.empty()) && m_currentThreads < m_maxThreads)
 		{
 			m_threadsMutex.lock();
 			m_currentThreads++;
+			m_threads.push_back(std::async(std::launch::async, std::bind(&Impl::WorkerThread, this)));
 			m_threadsMutex.unlock();
-			std::thread([this]{ WorkerThread(); }).detach();
 		}
 		while (!m_callbacks.empty())
 		{
@@ -146,22 +89,6 @@ public:
 			if (last) m_callbackMutex.lock();
 			m_callbacks.pop_front();
 			if (last) m_callbackMutex.unlock();
-		}
-		while (!m_callbacks2.empty())
-		{
-			if (m_callbacks2.front().first) m_callbacks2.front().first(m_callbacks2.front().second);
-			bool last = m_callbacks2.size() == 1;
-			if (last) m_callbackMutex2.lock();
-			m_callbacks2.pop_front();
-			if (last) m_callbackMutex2.unlock();
-		}
-		while(!m_taskCallbacks.empty())
-		{
-			m_taskCallbacks.front()();
-			bool last = m_callbacks2.size() == 1;
-			if (last) m_callbackMutex2.lock();
-			m_callbacks2.pop_front();
-			if (last) m_callbackMutex2.unlock();
 		}
 	}
 
@@ -173,7 +100,9 @@ public:
 		m_currentThreads++;
 		m_threadsMutex.unlock();
 		WorkerThread();
+		m_threads.clear();
 		SetWorkerTimeout(timeout);
+		Update();
 	}
 
 	void SetWorkerTimeout(int timeout)
@@ -187,77 +116,11 @@ public:
 		m_funcMutex.lock();
 		m_funcs.clear();
 		m_funcMutex.unlock();
-		m_funcMutex2.lock();
-		m_funcs2.clear();
-		m_funcMutex2.unlock();
 		m_callbackMutex.lock();
 		m_callbacks.clear();
 		m_callbackMutex.unlock();
-		m_callbackMutex2.lock();
-		m_callbacks2.clear();
-		m_callbackMutex2.unlock();
-	}
-
-	void ReadData(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(), unsigned int flags)
-	{
-		FILE * file = fopen(path.c_str(), "rb");
-		if (!file)
-		{
-			LogWriter::WriteLine("Cannot open file " + path);
-			return;
-		}
-		sAsyncRead * run = new sAsyncRead(path, func, param, doneCallback, flags);
-		fseek(file, 0L, SEEK_END);
-		run->size = ftell(file);
-		fseek(file, 0L, SEEK_SET);
-		run->data = new unsigned char[run->size];
-		fread(run->data, 1, run->size, file);
-		fclose(file);
-		if (m_cancelled)
-		{
-			return;
-		}
-		if (flags & FLAG_FAST_FUNCTION)
-		{
-			func(run->data, run->size, param);
-			if (doneCallback)
-				QueueCallback(doneCallback);
-		}
-		else
-		{
-			QueueFunc(sRunFunc(ProcessData, run, doneCallback, flags));
-		}
-	}
-
-	void ReadData2(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*), unsigned int flags)
-	{
-		FILE * file = fopen(path.c_str(), "rb");
-		if (!file)
-		{
-			LogWriter::WriteLine("Cannot open file " + path);
-			return;
-		}
-		sAsyncRead2 * run = new sAsyncRead2(path, func, param, doneCallback, flags);
-		fseek(file, 0L, SEEK_END);
-		run->size = ftell(file);
-		fseek(file, 0L, SEEK_SET);
-		run->data = new unsigned char[run->size];
-		fread(run->data, 1, run->size, file);
-		fclose(file);
-		if (m_cancelled)
-		{
-			return;
-		}
-		if (flags & FLAG_FAST_FUNCTION)
-		{
-			void * result = func(run->data, run->size, param);
-			if (doneCallback)
-				QueueCallback(doneCallback, result);
-		}
-		else
-		{
-			QueueFunc(sRunFunc2(ProcessData2, run, doneCallback, flags));
-		}
+		m_threads.clear();
+		m_cancelled = false;
 	}
 
 	void WorkerThread()
@@ -277,108 +140,59 @@ public:
 					sRunFunc func = std::move(m_funcs.front());
 					m_funcs.pop_front();
 					lk.unlock();
-					func.func(func.param);
+					func.func();
 					if (func.callback)
 					{
-						QueueCallback(func.callback);
+						QueueCallback(func.callback, func.flags);
 					}
 					timeUntilExit = GetWorkerTimeout();
 				}
 			}
 			{
-				std::unique_lock<std::mutex> lk(m_funcMutex2);
-				if (!m_funcs2.empty())
+				std::unique_lock<std::mutex> lk(m_tasksMutex);
+				if (!m_tasks.empty())
 				{
-					sRunFunc2 func = std::move(m_funcs2.front());
-					m_funcs2.pop_front();
-					lk.unlock();
-					void* result = func.func(func.param);
-					if (func.callback) QueueCallback(func.callback, result);
-					timeUntilExit = GetWorkerTimeout();
-				}
-			}
-			{
-				std::unique_lock<std::mutex> lk(m_funcMutex2);
-				if(!m_tasks.empty())
-				{
-					std::unique_ptr<ITask> task = std::move(m_tasks.front());
+					std::shared_ptr<ITask> task = m_tasks.front();
 					m_tasks.pop_front();
+					storedTasks.push_back(task);
+					lk.unlock();
 					task->Execute();
+					timeUntilExit = GetWorkerTimeout();
 				}
 			}
 			if (timeUntilExit < GetWorkerTimeout())
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		}
 		ReportThreadClose();
 	}
 
-	void AddTask(ITask & task)
-	{
-		m_tasks.push_back(std::unique_ptr<ITask>(&task));
-	}
-
-	void AddTaskCallback(std::function<void()> const& func)
-	{
-		m_taskCallbacks.push_back(func);
-	}
-
-	std::deque<void(*)()> m_callbacks;
-	std::deque<std::pair<void(*)(void*), void*>> m_callbacks2;
+	std::deque<FunctionHandler> m_callbacks;
 	std::deque<sRunFunc> m_funcs;
-	std::deque<sRunFunc2> m_funcs2;
-	std::deque<std::unique_ptr<ITask>> m_tasks;
-	std::deque<std::function<void()>> m_taskCallbacks;
+	std::deque<std::shared_ptr<ITask>> m_tasks;
+	std::vector<std::shared_ptr<ITask>> storedTasks;
 	unsigned int m_currentThreads = 0;
 	unsigned int m_maxThreads = std::thread::hardware_concurrency();
 	int m_threadsTimeout = 2000;
 	bool m_cancelled = false;
+	std::vector<std::future<void>> m_threads;
 	std::mutex m_callbackMutex;
-	std::mutex m_callbackMutex2;
 	std::mutex m_funcMutex;
-	std::mutex m_funcMutex2;
 	std::mutex m_threadsMutex;
-	std::mutex m_taskMutex;
+	std::mutex m_tasksMutex;
 };
-
-void ProcessData(void* param)
-{
-	auto run = std::unique_ptr<ThreadPool::Impl::sAsyncRead>((ThreadPool::Impl::sAsyncRead*)param);
-	run->func(run->data, run->size, run->param);
-}
-
-void* ProcessData2(void* param)
-{
-	auto run = std::unique_ptr<ThreadPool::Impl::sAsyncRead2>((ThreadPool::Impl::sAsyncRead2*)param);
-	return run->func(run->data, run->size, run->param);
-}
 
 std::unique_ptr<ThreadPool::Impl> ThreadPool::m_pImpl(std::unique_ptr<ThreadPool::Impl>(new ThreadPool::Impl()));
 
-void ThreadPool::RunFunc(void* (*func)(void*), void* param, unsigned int flags)
+void ThreadPool::RunFunc(FunctionHandler const& func, CallbackHandler const& callback, unsigned int flags)
 {
-	m_pImpl->RunFunc(func, param, flags);
+	m_pImpl->RunFunc(func, callback, flags);
 }
 
-void ThreadPool::RunFunc(void(*func)(void*), void* param, void(*doneCallback)(), unsigned int flags)
+void ThreadPool::QueueCallback(CallbackHandler const& func, unsigned int flags)
 {
-	m_pImpl->RunFunc(func, param, doneCallback, flags);
-}
-
-void ThreadPool::RunFunc(void* (*func)(void*), void* param, void(*doneCallback)(void*), unsigned int flags)
-{
-	m_pImpl->RunFunc(func, param, doneCallback, flags);
-}
-
-void ThreadPool::AsyncReadFile(std::string const& path, void(*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(), unsigned int flags)
-{
-	m_pImpl->AsyncReadFile(path, func, param, doneCallback, flags);
-}
-
-void ThreadPool::AsyncReadFile(std::string const& path, void* (*func)(void*, unsigned int, void*), void* param, void(*doneCallback)(void*), unsigned int flags)
-{
-	m_pImpl->AsyncReadFile(path, func, param, doneCallback, flags);
+	m_pImpl->QueueCallback(func, flags);
 }
 
 void ThreadPool::Update()
@@ -406,12 +220,12 @@ void ThreadPool::CancelAll()
 	m_pImpl->CancelAll();
 }
 
-void ThreadPool::AddTask(ITask & task)
+void ThreadPool::AddTask(std::shared_ptr<ITask> task)
 {
 	m_pImpl->AddTask(task);
 }
 
-void ThreadPool::AddTaskCallback(std::function<void()> const& func)
+void ThreadPool::RemoveTask(ITask * task)
 {
-	m_pImpl->AddTaskCallback(func);
+	m_pImpl->RemoveTask(task);
 }

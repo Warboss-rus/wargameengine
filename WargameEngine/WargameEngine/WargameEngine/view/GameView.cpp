@@ -49,6 +49,7 @@ CGameView::CGameView(void)
 	m_gameModel = CGameModel::GetInstance();
 	m_ui.reset(new CUIElement());
 	m_ui->SetTheme(std::shared_ptr<CUITheme>(new CUITheme(CUITheme::defaultTheme)));
+	m_soundPlayer.Init();
 }
 
 void CGameView::OnTimer(int value)

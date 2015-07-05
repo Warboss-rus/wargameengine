@@ -8,14 +8,11 @@
 #include "../LogWriter.h"
 #include "../model/Bounding.h"
 #include "../model/GameModel.h"
+#include "../AsyncReadTask.h"
 
-void UseModel(void* data)
+void UseModel(std::shared_ptr<sOBJLoader> loader)
 {
-	sOBJLoader * loader = (sOBJLoader*)data;
-	loader->model->SetModel(loader->vertices, loader->textureCoords, loader->normals, loader->indexes, loader->materialManager, loader->meshes);
-	if(loader->animations.size() > 0) loader->model->SetAnimation(loader->weightsCount, loader->weightsIndexes, loader->weights, loader->joints, loader->animations);
-	loader->model->PreloadTextures();
-	delete loader;
+	
 }
 
 std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale, double * rotation)
@@ -69,17 +66,37 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		double rotation[3] = { 0.0, 0.0, 0.0 };
 		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(sModule::models + boundingPath, scale, rotation);
 		CGameModel::GetInstance().lock()->AddBoundingBox(path, bounding);
-		sOBJLoader * obj = new sOBJLoader();
-		obj->model = new C3DModel(scale, rotation[0], rotation[1], rotation[2]);
-		m_models[path] = std::shared_ptr<C3DModel>(obj->model);
+		std::shared_ptr<sOBJLoader> obj = std::make_shared<sOBJLoader>();
+		std::shared_ptr<C3DModel> model = std::make_shared<C3DModel>(scale, rotation[0], rotation[1], rotation[2]);
+		m_models[path] = model;
+		std::function<void(void* data, unsigned int size)> loadingFunc;
 		if(extension == "obj")
-			ThreadPool::AsyncReadFile(sModule::models + path, LoadObjModel, obj, UseModel);
+			loadingFunc = [obj](void* data, unsigned int size) {
+				LoadObjModel(data, size, *obj);
+			};
 		else if(extension == "wbm")
-			ThreadPool::AsyncReadFile(sModule::models + path, LoadWbmModel, obj, UseModel);
+			loadingFunc = [obj](void* data, unsigned int size) {
+				LoadWbmModel(data, size, *obj);
+			};
 		else if (extension == "dae")
-			ThreadPool::AsyncReadFile(sModule::models + path, LoadColladaModel, obj, UseModel);
+			loadingFunc = [obj](void* data, unsigned int size) {
+				LoadColladaModel(data, size, *obj);
+			};
 		else
 			LogWriter::WriteLine("Cannot load model " + path + ". Unknown extension " + extension);
+		if (loadingFunc)
+		{
+			std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(sModule::models + path, loadingFunc);
+			readTask->AddOnCompleteHandler([obj, model]() {
+				model->SetModel(obj->vertices, obj->textureCoords, obj->normals, obj->indexes, obj->materialManager, obj->meshes);
+				if (obj->animations.size() > 0) model->SetAnimation(obj->weightsCount, obj->weightsIndexes, obj->weights, obj->joints, obj->animations);
+				model->PreloadTextures();
+			});
+			readTask->AddOnFailHandler([](std::exception const& e) {
+				LogWriter::WriteLine(e.what());
+			});
+			ThreadPool::AddTask(readTask);
+		}
 	}
 }
 

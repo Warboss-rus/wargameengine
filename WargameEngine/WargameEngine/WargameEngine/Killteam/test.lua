@@ -121,7 +121,7 @@ end
 
 SetLightPosition(1, 0, 0, 30)
 EnableShadowMap(1024, 53)
---EnableMSAA()
+EnableMSAA()
 SetAnisotropy(GetMaxAnisotropy())
 SetShaders("gpu_skinning.vsh", "gpu_skinning.fsh")
 --EnableVertexLightning()

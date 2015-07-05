@@ -84,6 +84,11 @@ CUITheme::CUITheme()
 	sbar.width = 20;
 }
 
+float atoff(const char * ch)
+{
+	return static_cast<float>(atof(ch));
+}
+
 void GetFloats(float * array, const char* data, unsigned int max = UINT_MAX)
 {
 	char * fl = strtok((char*)data, " \n\t");
@@ -94,7 +99,7 @@ void GetFloats(float * array, const char* data, unsigned int max = UINT_MAX)
 		{
 			if (fl[i] == ',') fl[i] = '.';
 		}
-		array[i] = atof(fl);
+		array[i] = atoff(fl);
 		i++;
 		fl = strtok(NULL, " \n\t");
 	}
@@ -104,7 +109,7 @@ void ParseTextTheme(TiXmlElement* theme, CUITheme::sText & text)
 {
 	if (theme->Attribute("color")) GetFloats(text.color, (char*)theme->Attribute("color"), 3);
 	if (theme->Attribute("font")) text.font = theme->Attribute("font");
-	if (theme->Attribute("fontSize")) text.fontSize = atof(theme->Attribute("fontSize"));
+	if (theme->Attribute("fontSize")) text.fontSize = static_cast<unsigned int>(atoi(theme->Attribute("fontSize")));
 	if (theme->Attribute("aligment"))
 	{
 		std::string aligment = theme->Attribute("aligment");
@@ -166,7 +171,7 @@ void CUITheme::Load(std::string const& filename)
 	if (themeCheckbox)
 	{
 		if (themeCheckbox->Attribute("texCoord")) GetFloats(checkbox.texCoord, themeCheckbox->Attribute("texCoord"), 4);
-		if (themeCheckbox->Attribute("sizeCoeff")) checkbox.checkboxSizeCoeff = atof(themeCheckbox->Attribute("sizeCoeff"));
+		if (themeCheckbox->Attribute("sizeCoeff")) checkbox.checkboxSizeCoeff = atoff(themeCheckbox->Attribute("sizeCoeff"));
 		TiXmlElement* themeChecked = themeCheckbox->FirstChildElement("checked");
 		if (themeChecked && themeChecked->Attribute("texCoord")) GetFloats(checkbox.checkedTexCoord, themeChecked->Attribute("texCoord"), 4);
 		themeText = themeCheckbox->FirstChildElement("text");
@@ -185,8 +190,8 @@ void CUITheme::Load(std::string const& filename)
 	if (themeRadiogroup)
 	{
 		if (themeRadiogroup->Attribute("texCoord")) GetFloats(radiogroup.texCoord, themeRadiogroup->Attribute("texCoord"), 4);
-		if (themeRadiogroup->Attribute("buttonSize")) radiogroup.buttonSize = atof(themeRadiogroup->Attribute("buttonSize"));
-		if (themeRadiogroup->Attribute("elementSize")) radiogroup.elementSize = atof(themeRadiogroup->Attribute("elementSize"));
+		if (themeRadiogroup->Attribute("buttonSize")) radiogroup.buttonSize = atoff(themeRadiogroup->Attribute("buttonSize"));
+		if (themeRadiogroup->Attribute("elementSize")) radiogroup.elementSize = atoff(themeRadiogroup->Attribute("elementSize"));
 		TiXmlElement* themeSelected = themeRadiogroup->FirstChildElement("selected");
 		if (themeSelected && themeSelected->Attribute("texCoord")) GetFloats(radiogroup.selectedTexCoord, themeSelected->Attribute("texCoord"), 4);
 		themeText = themeRadiogroup->FirstChildElement("text");

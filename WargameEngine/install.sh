@@ -5,15 +5,15 @@ echo `sudo apt-get install libglew-dev`
 echo `sudo apt-get install libreadline-dev`
 echo `sudo apt-get install libopenal1`
 echo `sudo apt-get install libopenal-dev`
-cd LUA/LUA
+cd WargameEngine/LUA
 echo `dir`
 echo `make linux install`
-cd ../..
-cd MathLib/MathLib
+cd ..
+cd MathLib
 echo `make`
-cd ../..
+cd ..
 printf "\n"
-cd WargameEngine/WargameEngine
+cd WargameEngine
 echo `make`
 cd ..
 }

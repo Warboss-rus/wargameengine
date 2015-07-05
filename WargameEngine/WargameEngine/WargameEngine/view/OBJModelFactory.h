@@ -1,13 +1,8 @@
 #include <string>
 #include "3dModel.h"
 
-void * LoadObjModel(void* data, unsigned int size, void* param);
-void * LoadWbmModel(void* data, unsigned int dataSize, void* param);
-void * LoadColladaModel(void* data, unsigned int size, void* param);
-
 struct sOBJLoader
 {
-	C3DModel * model;
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
@@ -20,3 +15,7 @@ struct sOBJLoader
 	std::vector<sJoint> joints;
 	std::vector<sAnimation> animations;
 };
+
+void LoadObjModel(void* data, unsigned int size, sOBJLoader & loader);
+void LoadWbmModel(void* data, unsigned int dataSize, sOBJLoader & loader);
+void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader);
