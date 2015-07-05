@@ -4,6 +4,11 @@
 class CShaderManager
 {
 public:
+	enum eUniformIndex
+	{
+		WEIGHT = 16,
+		WEIGHT_INDEX = 17,
+	};
 	CShaderManager():m_program(-1) {}
 	void NewProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void BindProgram() const;

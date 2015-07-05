@@ -95,7 +95,7 @@ public:
 	void WaitAll()
 	{
 		int timeout = GetWorkerTimeout();
-		SetWorkerTimeout(0);
+		SetWorkerTimeout(10);
 		m_threadsMutex.lock();
 		m_currentThreads++;
 		m_threadsMutex.unlock();

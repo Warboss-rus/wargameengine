@@ -13,14 +13,6 @@ C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & t
 	SetModel(vertices, textureCoords, normals, indexes, materials, meshes);
 }
 
-void DeleteList(std::map<std::set<std::string>, unsigned int> const& list)
-{
-	for (auto i = list.begin(); i != list.end(); ++i)
-	{
-		glDeleteLists(i->second, 1);
-	}
-}
-
 C3DModel::~C3DModel()
 {
 	if (m_vbo) glDeleteBuffersARB(1, &m_vbo);
@@ -34,7 +26,7 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 	CMaterialManager & materials, std::vector<sMesh> & meshes)
 {
 	m_vbo = NULL;
-	if (NULL && GLEW_ARB_vertex_buffer_object)//will be needed for animation
+	if (NULL && GLEW_ARB_vertex_buffer_object)
 	{
 		glGenBuffersARB(1, &m_vbo);
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
@@ -99,8 +91,8 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 	{
 		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
 		shader->SetUniformMatrix4("invBindMatrices", m_skeleton.size(), &m_gpuInverseMatrices[0]);
-		shader->SetVertexAttrib4(16, &m_gpuWeight[0]);
-		shader->SetVertexAttrib4(17, &m_gpuWeightIndexes[0]);
+		shader->SetVertexAttrib4(CShaderManager::eUniformIndex::WEIGHT, &m_gpuWeight[0]);
+		shader->SetVertexAttrib4(CShaderManager::eUniformIndex::WEIGHT_INDEX, &m_gpuWeightIndexes[0]);
 	}
 	if (m_vbo)
 	{
@@ -414,7 +406,6 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 		key.replaceTextures = object->GetReplaceTextures();
 	}
 	key.vertexOnly = vertexOnly;
-	unsigned int k = 0;//current index of weight and weightIndex arrays
 	if (!m_weightsCount.empty() && object)//object needs to be skinned
 	{
 		if (object->GetAnimation().empty())//no animation is playing, default pose
@@ -423,7 +414,7 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 			{
 				unsigned int id = glGenLists(1);
 				glNewList(id, GL_COMPILE);
-				DrawSkinned(&key.hiddenMeshes, true, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning, &key.teamcolor, &key.replaceTextures);
+				DrawSkinned(&key.hiddenMeshes, vertexOnly, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning, &key.teamcolor, &key.replaceTextures);
 				glEndList();
 				m_lists[key] = id;
 			}
@@ -431,7 +422,7 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 		}
 		else//animation is playing, full computation
 		{
-			if (DrawSkinned(&key.hiddenMeshes, false, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), gpuSkinning, &key.teamcolor, &key.replaceTextures))
+			if (DrawSkinned(&key.hiddenMeshes, vertexOnly, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), gpuSkinning, &key.teamcolor, &key.replaceTextures))
 			{
 				object->PlayAnimation("");
 			}

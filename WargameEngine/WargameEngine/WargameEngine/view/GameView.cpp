@@ -562,7 +562,7 @@ void CGameView::SetLightPosition(int index, float* pos)
 	if(index == 0) memcpy(m_lightPosition, pos, sizeof(float)* 3);
 }
 
-void CGameView::EnableMSAA(bool enable) const
+void CGameView::EnableMSAA(bool enable)
 {
 	if (GLEW_ARB_multisample)
 	{
@@ -605,7 +605,7 @@ void CGameView::ClearResources()
 	ResetTable();
 }
 
-void CGameView::SetWindowTitle(std::string const& title) const
+void CGameView::SetWindowTitle(std::string const& title)
 {
 	glutSetWindowTitle((title + " - Wargame Engine").c_str());
 }
@@ -643,6 +643,7 @@ void CGameView::Preload(std::string const& image)
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
+		glutSwapBuffers();
 	}
 	size_t countObjects = m_gameModel.lock()->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)

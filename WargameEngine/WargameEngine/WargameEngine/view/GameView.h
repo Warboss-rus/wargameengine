@@ -34,13 +34,12 @@ public:
 	void EnableShadowMap(int size, float angle);
 	void DisableShadowMap();
 	void SetLightPosition(int index, float* pos);
-	void EnableMSAA(bool enable) const;
-	void DisableMSAA() const;
+	void EnableMSAA(bool enable);
 	static float GetMaxAnisotropy();
 	float GetAnisotropyLevel() const;
 	void SetAnisotropy(float maxAnisotropy);
 	void ClearResources();
-	void SetWindowTitle(std::string const& title) const;
+	void SetWindowTitle(std::string const& title);
 	const CShaderManager * GetShaderManager() const;
 	void Preload(std::string const& image);
 	void LoadModule(std::string const& module);
