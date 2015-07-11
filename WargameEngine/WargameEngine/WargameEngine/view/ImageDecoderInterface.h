@@ -23,6 +23,7 @@ public:
 	void SetID(unsigned int id) { m_id = id; }
 	unsigned int GetID() const { return m_id; }
 	virtual void Load(std::string const& image) = 0;
+	virtual ~IImageDecoder() {}
 protected:
 	unsigned int m_width;
 	unsigned int m_height;

@@ -11,7 +11,6 @@
 #include "Geometry/AABB.h"
 #include "Math/float3.h"
 #include "Math/float3x3.h"
-#pragma warning( pop )
 
 CBoundingBox::CBoundingBox(double min[3], double max[3]) 
 { 
@@ -197,3 +196,5 @@ const IBounding * CBoundingCompound::GetChild(unsigned int index) const
 { 
 	return m_children[index].get(); 
 }
+
+#pragma warning( pop )

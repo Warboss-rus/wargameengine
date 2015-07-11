@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="lapi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -106,9 +103,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lua.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="luac.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lundump.c">

@@ -2,32 +2,33 @@
 #include <fstream>
 #include <map>
 #include <string>
-#include "../tinyxml.h"
 #include "gl.h"
 #include "TextureManager.h"
 #include <cstring>
+#include "..\rapidxml\rapidxml.hpp"
+#include <sstream>
 
-std::vector<float> GetFloatsArray(TiXmlElement* data)
+using namespace std;
+using namespace rapidxml;
+
+vector<float> GetFloatsArray(xml_node<>* data)
 {
-	std::vector<float> res;
-	char * fl = strtok((char*)data->GetText(), " \n\t");
-	while (fl != NULL)
+	vector<float> res;
+	stringstream sstream(data->value());
+	while (!sstream.eof())
 	{
-		for (size_t i = 0; i < strlen(fl); ++i)
-		{
-			if (fl[i] == ',') fl[i] = '.';
-		}
-		float i = static_cast<float>(atof(fl));
-		res.push_back(i);
-		fl = strtok(NULL, " \n\t");
+		float val;
+		sstream >> val;
+		res.push_back(val);
 	}
-	return std::move(res);
+	res.shrink_to_fit();
+	return move(res);
 }
 
-float StrToFloat(const char* str, float defaultValue)
+float StrToFloat(xml_attribute<>* strAttr, float defaultValue)
 {
-	if (str == NULL) return defaultValue;
-	std::string value = str;
+	if (strAttr == NULL) return defaultValue;
+	string value = strAttr->value();
 	if (value.substr(0, 5) == "rand(")
 	{
 		double from = atof(value.substr(5, value.find(',') - 5).c_str());
@@ -36,87 +37,89 @@ float StrToFloat(const char* str, float defaultValue)
 	}
 	else
 	{
-		return static_cast<float>(atof(str));
+		return static_cast<float>(atof(strAttr->value()));
 	}
 }
 
-CParticleModel::CParticleModel(std::string const& file)
+CParticleModel::CParticleModel(string const& file)
 {
-	TiXmlDocument doc;
-	doc.LoadFile(file);
-	TiXmlElement* root = doc.RootElement();
+	ifstream istream(file);
+	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
+	xml_document<> doc;
+	doc.parse<parse_trim_whitespace>(&content[0]);
+	xml_node<>* root = doc.first_node();
 	if (!root) return;
-	m_duration = static_cast<float>(atof(root->Attribute("duration")));
-	TiXmlElement* materials = root->FirstChildElement("materials");
+	m_duration = static_cast<float>(atof(root->first_attribute("duration")->value()));
+	xml_node<>* materials = root->first_node("materials");
 	if (!materials) return;
-	TiXmlElement* material = materials->FirstChildElement("material");
-	std::map<std::string, unsigned int> materialIds;
+	xml_node<>* material = materials->first_node("material");
+	map<string, unsigned int> materialIds;
 	while (material)
 	{
-		materialIds[material->Attribute("id")] =  m_textures.size();
-		m_textures.push_back(material->Attribute("texture"));
+		materialIds[material->first_attribute("id")->value()] =  m_textures.size();
+		m_textures.push_back(material->first_attribute("texture")->value());
 		CShaderManager shaderman;
-		if (material->Attribute("shader")) shaderman.NewProgram(material->Attribute("vertex_shader"), material->Attribute("fragment_shader"));
+		if (material->first_attribute("shader")) shaderman.NewProgram(material->first_attribute("vertex_shader")->value(), material->first_attribute("fragment_shader")->value());
 		m_shaders.push_back(shaderman);
-		material = material->NextSiblingElement("material");
+		material = material->next_sibling("material");
 	}
-	std::map<std::string, unsigned int> particleIDs;
-	TiXmlElement* particles = root->FirstChildElement("particles");
+	map<string, unsigned int> particleIDs;
+	xml_node<>* particles = root->first_node("particles");
 	if (!particles) return;
-	TiXmlElement* particle = particles->FirstChildElement("particle");
+	xml_node<>* particle = particles->first_node("particle");
 	while (particle)
 	{
-		std::vector<float> keyframes = GetFloatsArray(particle->FirstChildElement("keyframes"));
-		std::vector<float> positions = GetFloatsArray(particle->FirstChildElement("positions"));
-		particleIDs[particle->Attribute("id")] = m_particles.size();
-		float width = static_cast<float>(atof(particle->Attribute("width")));
-		float height = static_cast<float>(atof(particle->Attribute("height")));
-		m_particles.push_back(CParticle(keyframes, positions, materialIds[particle->Attribute("material")], width, height));
-		particle = particle->NextSiblingElement("particle");
+		vector<float> keyframes = GetFloatsArray(particle->first_node("keyframes"));
+		vector<float> positions = GetFloatsArray(particle->first_node("positions"));
+		particleIDs[particle->first_attribute("id")->value()] = m_particles.size();
+		float width = static_cast<float>(atof(particle->first_attribute("width")->value()));
+		float height = static_cast<float>(atof(particle->first_attribute("height")->value()));
+		m_particles.push_back(CParticle(keyframes, positions, materialIds.at(particle->first_attribute("material")->value()), width, height));
+		particle = particle->next_sibling("particle");
 	}
-	TiXmlElement* instances = root->FirstChildElement("instances");
+	xml_node<>* instances = root->first_node("instances");
 	if (!instances) return;
-	TiXmlElement* instance = instances->FirstChildElement("instance");
+	xml_node<>* instance = instances->first_node("instance");
 	while (instance)
 	{
 		sParticleInstance pinstance;
-		pinstance.position.x = StrToFloat(instance->Attribute("x"), 0.0f);
-		pinstance.position.y = StrToFloat(instance->Attribute("y"), 0.0f);
-		pinstance.position.z = StrToFloat(instance->Attribute("z"), 0.0f);
-		pinstance.rotation = StrToFloat(instance->Attribute("rotation"), 0.0f);
-		pinstance.speed = StrToFloat(instance->Attribute("speed"), 1.0f);
-		pinstance.scale = StrToFloat(instance->Attribute("scale"), 1.0f);
-		pinstance.start = StrToFloat(instance->Attribute("start"), 0.0f);
-		pinstance.particle = particleIDs[instance->Attribute("particle")];
-		TiXmlElement* uniform = instance->FirstChildElement("uniform");
+		pinstance.position.x = StrToFloat(instance->first_attribute("x"), 0.0f);
+		pinstance.position.y = StrToFloat(instance->first_attribute("y"), 0.0f);
+		pinstance.position.z = StrToFloat(instance->first_attribute("z"), 0.0f);
+		pinstance.rotation = StrToFloat(instance->first_attribute("rotation"), 0.0f);
+		pinstance.speed = StrToFloat(instance->first_attribute("speed"), 1.0f);
+		pinstance.scale = StrToFloat(instance->first_attribute("scale"), 1.0f);
+		pinstance.start = StrToFloat(instance->first_attribute("start"), 0.0f);
+		pinstance.particle = particleIDs[instance->first_attribute("particle")->value()];
+		xml_node<>* uniform = instance->first_node("uniform");
 		while (uniform)
 		{
-			pinstance.uniforms[uniform->Attribute("key")] = GetFloatsArray(uniform);
-			uniform = uniform->NextSiblingElement("uniform");
+			pinstance.uniforms[uniform->first_attribute("key")->value()] = GetFloatsArray(uniform);
+			uniform = uniform->next_sibling("uniform");
 		}
-		m_instances.push_back(std::move(pinstance));
-		instance = instance->NextSiblingElement("instance");
+		m_instances.push_back(move(pinstance));
+		instance = instance->next_sibling("instance");
 	}
-	TiXmlElement * randomInstance = instances->FirstChildElement("random_instance");
+	xml_node<> * randomInstance = instances->first_node("random_instance");
 	while (randomInstance)
 	{
-		int count = atoi(randomInstance->Attribute("count"));
+		int count = atoi(randomInstance->first_attribute("count")->value());
 		for (int i = 0; i < count; ++i)
 		{
 			sParticleInstance pinstance;
-			pinstance.position.x = StrToFloat(randomInstance->Attribute("x"), 0.0f);
-			pinstance.position.y = StrToFloat(randomInstance->Attribute("y"), 0.0f);
-			pinstance.position.z = StrToFloat(randomInstance->Attribute("z"), 0.0f);
-			pinstance.rotation = StrToFloat(randomInstance->Attribute("rotation"), 0.0f);
-			pinstance.speed = StrToFloat(randomInstance->Attribute("speed"), 1.0f);
-			pinstance.scale = StrToFloat(randomInstance->Attribute("scale"), 1.0f);
-			pinstance.start = StrToFloat(randomInstance->Attribute("start"), 0.0f);
-			pinstance.particle = particleIDs[randomInstance->Attribute("particle")];
-			m_instances.push_back(std::move(pinstance));
-			randomInstance = randomInstance->NextSiblingElement("random_instance");
+			pinstance.position.x = StrToFloat(randomInstance->first_attribute("x"), 0.0f);
+			pinstance.position.y = StrToFloat(randomInstance->first_attribute("y"), 0.0f);
+			pinstance.position.z = StrToFloat(randomInstance->first_attribute("z"), 0.0f);
+			pinstance.rotation = StrToFloat(randomInstance->first_attribute("rotation"), 0.0f);
+			pinstance.speed = StrToFloat(randomInstance->first_attribute("speed"), 1.0f);
+			pinstance.scale = StrToFloat(randomInstance->first_attribute("scale"), 1.0f);
+			pinstance.start = StrToFloat(randomInstance->first_attribute("start"), 0.0f);
+			pinstance.particle = particleIDs[randomInstance->first_attribute("particle")->value()];
+			m_instances.push_back(move(pinstance));
+			randomInstance = randomInstance->next_sibling("random_instance");
 		}
 	}
-	doc.Clear();
+	doc.clear();
 }
 
 void DrawParticle(CVector3f const& position, float width, float height)
@@ -177,7 +180,7 @@ void CParticleModel::Draw(float time) const
 			glRotated(m_instances[i].rotation, 0.0, 1.0, 0.0);
 			glScaled(m_instances[i].scale, m_instances[i].scale, m_instances[i].scale);
 			//calculate the position to draw
-			std::vector<float> const& keyframes = particle.GetKeyFrames();
+			vector<float> const& keyframes = particle.GetKeyFrames();
 			unsigned int j = 0;//a frame to draw
 			for (j; j < keyframes.size(); ++j)
 			{

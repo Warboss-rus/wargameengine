@@ -3,13 +3,7 @@
 #include "ParticleEffect.h"
 #include "ParticleTracer.h"
 
-CParticleSystem::~CParticleSystem()
-{
-	for (size_t i = 0; i < m_effects.size(); ++i)
-	{
-		delete m_effects[i];
-	}
-}
+using namespace std;
 
 void CParticleSystem::DrawParticles() 
 {
@@ -17,8 +11,7 @@ void CParticleSystem::DrawParticles()
 	{
 		while (m_effects[i]->IsEnded())
 		{
-			std::swap(m_effects[i], m_effects.back()); 
-			delete m_effects.back();
+			swap(m_effects[i], m_effects.back()); 
 			m_effects.pop_back();
 			if (i == m_effects.size()) return;
 		}
@@ -31,7 +24,7 @@ void CParticleSystem::DrawParticles()
 	}
 }
 
-void CParticleSystem::AddEffect(std::string const& file, double x, double y, double z, double rotation, double scale, float lifetime)
+void CParticleSystem::AddEffect(string const& file, double x, double y, double z, double rotation, double scale, float lifetime)
 {
 	if (m_models.find(file) == m_models.end())
 	{
@@ -41,19 +34,19 @@ void CParticleSystem::AddEffect(std::string const& file, double x, double y, dou
 	{
 		lifetime = m_models[file].GetDuration();
 	}
-	m_effects.push_back(new CParticleEffect(file, x, y, z, rotation, scale, lifetime));
+	m_effects.push_back(make_unique<CParticleEffect>(file, x, y, z, rotation, scale, lifetime));
 }
 
-void CParticleSystem::AddTracer(std::string const& file, CVector3d const& start, CVector3d const& end, double rotation, double scale, double speed)
+void CParticleSystem::AddTracer(string const& file, CVector3d const& start, CVector3d const& end, double rotation, double scale, double speed)
 {
 	if (m_models.find(file) == m_models.end())
 	{
 		m_models[file] = CParticleModel(file);
 	}
-	m_effects.push_back(new CParticleTracer(file, start, end, rotation, scale, speed));
+	m_effects.push_back(make_unique<CParticleTracer>(file, start, end, rotation, scale, speed));
 }
 
-void CParticleSystem::DrawEffect(std::string const& effectFile, float time)
+void CParticleSystem::DrawEffect(string const& effectFile, float time)
 {
 	m_models[effectFile].Draw(time);
 }

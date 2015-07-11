@@ -1,7 +1,11 @@
 #include "UITheme.h"
 #include <limits.h>
 #include "../LogWriter.h"
-#include "../tinyxml.h"
+#include "../rapidxml/rapidxml.hpp"
+#include <fstream>
+
+using namespace std;
+using namespace rapidxml;
 
 CUITheme CUITheme::defaultTheme;
 
@@ -89,7 +93,7 @@ float atoff(const char * ch)
 	return static_cast<float>(atof(ch));
 }
 
-void GetFloats(float * array, const char* data, unsigned int max = UINT_MAX)
+void GetValues(float * array, const char* data, unsigned int max = UINT_MAX)
 {
 	char * fl = strtok((char*)data, " \n\t");
 	unsigned int i = 0;
@@ -105,14 +109,14 @@ void GetFloats(float * array, const char* data, unsigned int max = UINT_MAX)
 	}
 }
 
-void ParseTextTheme(TiXmlElement* theme, CUITheme::sText & text)
+void ParseTextTheme(xml_node<>* theme, CUITheme::sText & text)
 {
-	if (theme->Attribute("color")) GetFloats(text.color, (char*)theme->Attribute("color"), 3);
-	if (theme->Attribute("font")) text.font = theme->Attribute("font");
-	if (theme->Attribute("fontSize")) text.fontSize = static_cast<unsigned int>(atoi(theme->Attribute("fontSize")));
-	if (theme->Attribute("aligment"))
+	if (theme->first_attribute("color")) GetValues(text.color, (char*)theme->first_attribute("color"), 3);
+	if (theme->first_attribute("font")) text.font = theme->first_attribute("font")->value();
+	if (theme->first_attribute("fontSize")) text.fontSize = static_cast<unsigned int>(atoi(theme->first_attribute("fontSize")->value()));
+	if (theme->first_attribute("aligment"))
 	{
-		std::string aligment = theme->Attribute("aligment");
+		std::string aligment = theme->first_attribute("aligment")->value();
 		if (aligment == "center") text.aligment = CUITheme::sText::center;
 		if (aligment == "right") text.aligment = CUITheme::sText::right;
 		if (aligment == "left") text.aligment = CUITheme::sText::left;
@@ -121,91 +125,93 @@ void ParseTextTheme(TiXmlElement* theme, CUITheme::sText & text)
 
 void CUITheme::Load(std::string const& filename)
 {
-	TiXmlDocument doc;
-	doc.LoadFile(filename);
-	TiXmlElement* theme = doc.RootElement();
+	ifstream istream(filename);
+	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
+	xml_document<> doc;
+	doc.parse<0>((char*)content.c_str());
+	xml_node<>* theme = doc.first_node();
 	if (!theme)
 	{
 		LogWriter::WriteLine(filename + " is not a valid theme file");
 		return;
 	}
-	if (theme->Attribute("texture")) texture = theme->Attribute("texture");
-	if (theme->Attribute("defaultColor")) GetFloats(defaultColor, theme->Attribute("defaultColor"), 3);
-	if (theme->Attribute("textfieldColor")) GetFloats(defaultColor, theme->Attribute("textfieldColor"), 3);
+	if (theme->first_attribute("texture")) texture = theme->first_attribute("texture")->value();
+	if (theme->first_attribute("defaultColor")) GetValues(defaultColor, theme->first_attribute("defaultColor")->value(), 3);
+	if (theme->first_attribute("textfieldColor")) GetValues(defaultColor, theme->first_attribute("textfieldColor")->value(), 3);
 	//text block
-	TiXmlElement* themeText = theme->FirstChildElement("text");
+	xml_node<>* themeText = theme->first_node("text");
 	if (themeText) ParseTextTheme(themeText, text);
 	//button block
-	TiXmlElement* themeButton = theme->FirstChildElement("button");
+	xml_node<>* themeButton = theme->first_node("button");
 	if (themeButton)
 	{
-		if (themeButton->Attribute("texCoord")) GetFloats(button.texCoord, themeButton->Attribute("texCoord"), 4);
-		TiXmlElement* themePressed = themeButton->FirstChildElement("pressed");
-		if (themePressed && themePressed->Attribute("texCoord")) GetFloats(button.pressedTexCoord, themePressed->Attribute("texCoord"), 4);
-		themeText = themeButton->FirstChildElement("text");
+		if (themeButton->first_attribute("texCoord")) GetValues(button.texCoord, themeButton->first_attribute("texCoord")->value(), 4);
+		xml_node<>* themePressed = themeButton->first_node("pressed");
+		if (themePressed && themePressed->first_attribute("texCoord")) GetValues(button.pressedTexCoord, themePressed->first_attribute("texCoord")->value(), 4);
+		themeText = themeButton->first_node("text");
 		if (themeText) ParseTextTheme(themeText, button.text);
 	}
 	//combobox
-	TiXmlElement* themeCombobox = theme->FirstChildElement("combobox");
+	xml_node<>* themeCombobox = theme->first_node("combobox");
 	if (themeCombobox)
 	{
-		if (themeCombobox->Attribute("texCoord")) GetFloats(combobox.texCoord, themeCombobox->Attribute("texCoord"), 4);
-		if (themeCombobox->Attribute("borderSize")) combobox.borderSize = atoi(themeCombobox->Attribute("borderSize"));
-		if (themeCombobox->Attribute("elementSize")) combobox.elementSize = atoi(themeCombobox->Attribute("elementSize"));
-		TiXmlElement* themeExpanded = themeCombobox->FirstChildElement("expanded");
-		if (themeExpanded && themeExpanded->Attribute("texCoord")) GetFloats(combobox.expandedTexCoord, themeExpanded->Attribute("texCoord"), 4);
-		themeText = themeCombobox->FirstChildElement("text");
+		if (themeCombobox->first_attribute("texCoord")) GetValues(combobox.texCoord, themeCombobox->first_attribute("texCoord")->value(), 4);
+		if (themeCombobox->first_attribute("borderSize")) combobox.borderSize = atoi(themeCombobox->first_attribute("borderSize")->value());
+		if (themeCombobox->first_attribute("elementSize")) combobox.elementSize = atoi(themeCombobox->first_attribute("elementSize")->value());
+		xml_node<>* themeExpanded = themeCombobox->first_node("expanded");
+		if (themeExpanded && themeExpanded->first_attribute("texCoord")) GetValues(combobox.expandedTexCoord, themeExpanded->first_attribute("texCoord")->value(), 4);
+		themeText = themeCombobox->first_node("text");
 		if (themeText) ParseTextTheme(themeText, combobox.text);
 	}
 	//list
-	TiXmlElement* themeList = theme->FirstChildElement("list");
+	xml_node<>* themeList = theme->first_node("list");
 	if (themeList)
 	{
-		if (themeList->Attribute("borderSize")) list.borderSize = atoi(themeList->Attribute("borderSize"));
-		if (themeList->Attribute("elementSize")) list.elementSize = atoi(themeList->Attribute("elementSize"));
-		themeText = themeList->FirstChildElement("text");
+		if (themeList->first_attribute("borderSize")) list.borderSize = atoi(themeList->first_attribute("borderSize")->value());
+		if (themeList->first_attribute("elementSize")) list.elementSize = atoi(themeList->first_attribute("elementSize")->value());
+		themeText = themeList->first_node("text");
 		if (themeText) ParseTextTheme(themeText, list.text);
 	}
 	//checkbox
-	TiXmlElement* themeCheckbox = theme->FirstChildElement("checkbox");
+	xml_node<>* themeCheckbox = theme->first_node("checkbox");
 	if (themeCheckbox)
 	{
-		if (themeCheckbox->Attribute("texCoord")) GetFloats(checkbox.texCoord, themeCheckbox->Attribute("texCoord"), 4);
-		if (themeCheckbox->Attribute("sizeCoeff")) checkbox.checkboxSizeCoeff = atoff(themeCheckbox->Attribute("sizeCoeff"));
-		TiXmlElement* themeChecked = themeCheckbox->FirstChildElement("checked");
-		if (themeChecked && themeChecked->Attribute("texCoord")) GetFloats(checkbox.checkedTexCoord, themeChecked->Attribute("texCoord"), 4);
-		themeText = themeCheckbox->FirstChildElement("text");
+		if (themeCheckbox->first_attribute("texCoord")) GetValues(checkbox.texCoord, themeCheckbox->first_attribute("texCoord")->value(), 4);
+		if (themeCheckbox->first_attribute("sizeCoeff")) checkbox.checkboxSizeCoeff = atoff(themeCheckbox->first_attribute("sizeCoeff")->value());
+		xml_node<>* themeChecked = themeCheckbox->first_node("checked");
+		if (themeChecked && themeChecked->first_attribute("texCoord")) GetValues(checkbox.checkedTexCoord, themeChecked->first_attribute("texCoord")->value(), 4);
+		themeText = themeCheckbox->first_node("text");
 		if (themeText) ParseTextTheme(themeText, checkbox.text);
 	}
 	//edit
-	TiXmlElement* themeEdit = theme->FirstChildElement("list");
+	xml_node<>* themeEdit = theme->first_node("list");
 	if (themeEdit)
 	{
-		if (themeEdit->Attribute("borderSize")) edit.borderSize = atoi(themeEdit->Attribute("borderSize"));
-		themeText = themeEdit->FirstChildElement("text");
+		if (themeEdit->first_attribute("borderSize")) edit.borderSize = atoi(themeEdit->first_attribute("borderSize")->value());
+		themeText = themeEdit->first_node("text");
 		if (themeText) ParseTextTheme(themeText, edit.text);
 	}
 	//radiogroup
-	TiXmlElement* themeRadiogroup = theme->FirstChildElement("radiogroup");
+	xml_node<>* themeRadiogroup = theme->first_node("radiogroup");
 	if (themeRadiogroup)
 	{
-		if (themeRadiogroup->Attribute("texCoord")) GetFloats(radiogroup.texCoord, themeRadiogroup->Attribute("texCoord"), 4);
-		if (themeRadiogroup->Attribute("buttonSize")) radiogroup.buttonSize = atoff(themeRadiogroup->Attribute("buttonSize"));
-		if (themeRadiogroup->Attribute("elementSize")) radiogroup.elementSize = atoff(themeRadiogroup->Attribute("elementSize"));
-		TiXmlElement* themeSelected = themeRadiogroup->FirstChildElement("selected");
-		if (themeSelected && themeSelected->Attribute("texCoord")) GetFloats(radiogroup.selectedTexCoord, themeSelected->Attribute("texCoord"), 4);
-		themeText = themeRadiogroup->FirstChildElement("text");
+		if (themeRadiogroup->first_attribute("texCoord")) GetValues(radiogroup.texCoord, themeRadiogroup->first_attribute("texCoord")->value(), 4);
+		if (themeRadiogroup->first_attribute("buttonSize")) radiogroup.buttonSize = atoff(themeRadiogroup->first_attribute("buttonSize")->value());
+		if (themeRadiogroup->first_attribute("elementSize")) radiogroup.elementSize = atoff(themeRadiogroup->first_attribute("elementSize")->value());
+		xml_node<>* themeSelected = themeRadiogroup->first_node("selected");
+		if (themeSelected && themeSelected->first_attribute("texCoord")) GetValues(radiogroup.selectedTexCoord, themeSelected->first_attribute("texCoord")->value(), 4);
+		themeText = themeRadiogroup->first_node("text");
 		if (themeText) ParseTextTheme(themeText, radiogroup.text);
 	}
 	//scrollbar
-	TiXmlElement* themeScrollbar = theme->FirstChildElement("scrollbar");
+	xml_node<>* themeScrollbar = theme->first_node("scrollbar");
 	if (themeScrollbar)
 	{
-		if (themeScrollbar->Attribute("texCoord")) GetFloats(sbar.texCoord, themeButton->Attribute("texCoord"), 4);
-		if (themeScrollbar->Attribute("buttonHeight")) sbar.buttonHeight = atoi(themeScrollbar->Attribute("buttonHeight"));
-		if (themeScrollbar->Attribute("width")) sbar.width = atoi(themeScrollbar->Attribute("width"));
-		TiXmlElement* themePressed = themeScrollbar->FirstChildElement("pressed");
-		if (themePressed && themePressed->Attribute("texCoord")) GetFloats(sbar.pressedTexCoord, themePressed->Attribute("texCoord"), 4);
+		if (themeScrollbar->first_attribute("texCoord")) GetValues(sbar.texCoord, themeButton->first_attribute("texCoord")->value(), 4);
+		if (themeScrollbar->first_attribute("buttonHeight")) sbar.buttonHeight = atoi(themeScrollbar->first_attribute("buttonHeight")->value());
+		if (themeScrollbar->first_attribute("width")) sbar.width = atoi(themeScrollbar->first_attribute("width")->value());
+		xml_node<>* themePressed = themeScrollbar->first_node("pressed");
+		if (themePressed && themePressed->first_attribute("texCoord")) GetValues(sbar.pressedTexCoord, themePressed->first_attribute("texCoord")->value(), 4);
 	}
-	doc.Clear();
+	doc.clear();
 }

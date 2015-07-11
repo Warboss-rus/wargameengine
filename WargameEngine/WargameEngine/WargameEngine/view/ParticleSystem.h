@@ -1,12 +1,12 @@
 #include <map>
 #include <vector>
+#include <memory>
 #include "ParticleModel.h"
 #include "IParticleEffecth.h"
 
 class CParticleSystem
 {
 public:
-	~CParticleSystem();
 	void DrawParticles();
 	//World effects
 	void AddEffect(std::string const& file, double x, double y, double z, double rotation, double scale, float lifetime);
@@ -16,5 +16,5 @@ public:
 	void DrawEffect(std::string const& effect, float time);
 private:
 	std::map<std::string, CParticleModel> m_models;
-	std::vector<IParticleEffect*> m_effects;
+	std::vector<std::unique_ptr<IParticleEffect>> m_effects;
 };

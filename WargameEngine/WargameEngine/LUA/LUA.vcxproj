@@ -71,9 +71,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="lapi.c" />
     <ClCompile Include="lauxlib.c" />
     <ClCompile Include="lbaselib.c" />
@@ -104,7 +101,6 @@
     <ClCompile Include="ltablib.c" />
     <ClCompile Include="ltm.c" />
     <ClCompile Include="lua.c" />
-    <ClCompile Include="luac.c" />
     <ClCompile Include="lundump.c" />
     <ClCompile Include="lutf8lib.c" />
     <ClCompile Include="lvm.c" />

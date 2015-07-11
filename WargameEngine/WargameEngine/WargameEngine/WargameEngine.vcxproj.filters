@@ -46,6 +46,9 @@
     <Filter Include="Header Files\controller\commands">
       <UniqueIdentifier>{cdab68ad-206b-4a7d-bacf-b744a9c880cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\rapidxml">
+      <UniqueIdentifier>{39bcbc2e-de4f-42e3-aef1-59a8dc028d8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -156,15 +159,6 @@
     <ClCompile Include="view\ColladaModelFactory.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="tinyxml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxmlerror.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tinyxmlparser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="view\SelectionTools.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -251,6 +245,9 @@
     </ClCompile>
     <ClCompile Include="controller\CommandHandler.cpp">
       <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Particle.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -360,9 +357,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Network.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tinyxml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="view\SelectionTools.h">
@@ -481,6 +475,18 @@
     </ClInclude>
     <ClInclude Include="AsyncReadTask.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rapidxml\rapidxml.hpp">
+      <Filter>Header Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="rapidxml\rapidxml_iterators.hpp">
+      <Filter>Header Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="rapidxml\rapidxml_print.hpp">
+      <Filter>Header Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="rapidxml\rapidxml_utils.hpp">
+      <Filter>Header Files\rapidxml</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
