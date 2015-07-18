@@ -1,57 +1,38 @@
 #include "UIEdit.h"
 #include "UIText.h"
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
-#include "../view/TextureManager.h"
+#include "..\view\KeyDefines.h"
 
 void CUIEdit::Draw() const
 {
 	if(!m_visible)
 		return;
-	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0.0f);
-	glColor3f(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
-	glBegin(GL_QUADS);
-		glVertex2i(0, 0);
-		glVertex2i(0, GetHeight());
-		glVertex2i(GetWidth(), GetHeight());
-		glVertex2i(GetWidth(), 0);
-	glEnd();
-	glColor3f(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
-	glBegin(GL_QUADS);
-		glVertex2i(m_theme->edit.borderSize, m_theme->edit.borderSize);
-		glVertex2i(m_theme->edit.borderSize, GetHeight() - m_theme->edit.borderSize);
-		glVertex2i(GetWidth() - m_theme->edit.borderSize, GetHeight() - m_theme->edit.borderSize);
-		glVertex2i(GetWidth() - m_theme->edit.borderSize, m_theme->edit.borderSize);
-	glEnd();
+	m_renderer.PushMatrix();
+	m_renderer.Translate(GetX(), GetY(), 0);
+	m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
+	m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
+	m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+	int borderSize = m_theme->edit.borderSize;
+	m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
 	int fonty = (GetHeight() + m_theme->edit.text.fontSize) / 2;
-	if(IsFocused(NULL))
+	if(IsFocused(nullptr))
 	{
 		int cursorpos = m_theme->edit.borderSize + GetStringWidth(m_theme->edit.text, m_text);
-		glColor3ub(0, 0, 0);
-		glBegin(GL_LINES);
-		glVertex2i(cursorpos, fonty);
-		glVertex2i(cursorpos, fonty - m_theme->edit.text.fontSize);
-		glEnd();
+		m_renderer.SetColor(0, 0, 0);
+		m_renderer.RenderArrays(RenderMode::LINES, { CVector2i(cursorpos, fonty), { cursorpos, fonty - static_cast<int>(m_theme->edit.text.fontSize) } }, {});
 	}
 	if(m_pos != m_beginSelection)
 	{
-		glColor3f(0.0f, 0.0f, 1.0f);
+		m_renderer.SetColor(0.0f, 0.0f, 1.0f);
 		int fontwidth = GetStringWidth(m_theme->edit.text, m_text);
-		glBegin(GL_QUADS);
-		glVertex2i(m_theme->edit.borderSize + m_beginSelection * fontwidth, fonty);
-		glVertex2i(m_theme->edit.borderSize + m_beginSelection * fontwidth, fonty - GetStringHeight(m_theme->edit.text, m_text));
-		glVertex2i(m_theme->edit.borderSize + m_pos * fontwidth, fonty - GetStringHeight(m_theme->edit.text, m_text));
-		glVertex2i(m_theme->edit.borderSize + m_pos * fontwidth, fonty);
-		glEnd();
+		int selectionWidth = m_beginSelection * fontwidth;
+		int pos = m_pos;
+		m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize + selectionWidth, fonty),
+		{ borderSize + selectionWidth, fonty - GetStringHeight(m_theme->edit.text, m_text) }, {borderSize + pos * fontwidth, fonty - GetStringHeight(m_theme->edit.text, m_text) }, {borderSize + pos * fontwidth, fonty} }, {});
 	}
 	PrintText(m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 *m_theme->edit.borderSize, m_text, m_theme->text);
-	CTextureManager::GetInstance()->SetTexture("");
+	m_renderer.SetTexture("");
 	CUIElement::Draw();
-	glPopMatrix();
+	m_renderer.PopMatrix();
 }
 
 bool CUIEdit::OnKeyPress(unsigned char key)
@@ -112,24 +93,24 @@ bool CUIEdit::OnSpecialKeyPress(int key)
 	}
 	switch (key) 
 	{
-	case GLUT_KEY_LEFT:
+	case KEY_LEFT:
 		{
 			if(m_pos > 0) m_pos--;
 			if(m_beginSelection > 0) m_beginSelection--;
 			return true;
 		}break;
-	case GLUT_KEY_RIGHT:
+	case KEY_RIGHT:
 		{
 			if(m_pos < m_text.size()) m_pos++;
 			if(m_beginSelection < m_text.size()) m_beginSelection++;
 			return true;
 		}break;
-	case GLUT_KEY_HOME:
+	case KEY_HOME:
 		{
 			m_pos = 0;
 			return true;
 		}break;
-	case GLUT_KEY_END:
+	case KEY_END:
 		{
 			m_pos = m_text.size();
 			return true;

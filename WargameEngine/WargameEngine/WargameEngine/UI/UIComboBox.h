@@ -5,8 +5,7 @@
 class CUIComboBox : public CUIElement
 {
 public:
-	CUIComboBox(int x, int y, int height, int width, IUIElement * parent): CUIElement(x, y, height, width, parent), 
-		m_selected(-1), m_expanded(false), m_pressed(false), m_scrollbar(m_theme) { }
+	CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
 	void Draw() const override;
 	bool LeftMouseButtonDown(int x, int y) override;
 	bool LeftMouseButtonUp(int x, int y) override;

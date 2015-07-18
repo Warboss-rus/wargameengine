@@ -5,7 +5,7 @@
 class CUIList : public CUIElement
 {
 public:
-	CUIList(int x, int y, int height, int width, IUIElement * parent) : CUIElement(x, y, height, width, parent), m_selected(-1), m_scrollbar(m_theme) { }
+	CUIList(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer) : CUIElement(x, y, height, width, parent, renderer), m_selected(-1), m_scrollbar(m_theme, m_renderer) { }
 	void Draw() const override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	bool LeftMouseButtonDown(int x, int y) override;

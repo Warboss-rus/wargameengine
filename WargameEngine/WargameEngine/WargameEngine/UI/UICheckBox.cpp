@@ -1,29 +1,27 @@
 #include "UICheckBox.h"
-#include "../view/gl.h"
-#include "../view/TextureManager.h"
 #include "UIText.h"
+
+CUICheckBox::CUICheckBox(int x, int y, int height, int width, char* text, bool initState, IUIElement * parent, IRenderer & renderer) :
+	CUIElement(x, y, height, width, parent, renderer), m_text(text), m_state(initState), m_pressed(false)
+{
+
+}
 
 void CUICheckBox::Draw() const
 {
 	if(!m_visible)
 		return;
-	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0.0f);
-	CTextureManager::GetInstance()->SetTexture(m_theme->texture);
-	glBegin(GL_QUADS);
-		(m_state)?glTexCoord2f(m_theme->checkbox.checkedTexCoord[0], m_theme->checkbox.checkedTexCoord[1]):glTexCoord2f(m_theme->checkbox.texCoord[0], m_theme->checkbox.texCoord[1]);
-		glVertex2f(0.0f, 0.0f);
-		(m_state)?glTexCoord2f(m_theme->checkbox.checkedTexCoord[0], m_theme->checkbox.checkedTexCoord[3]):glTexCoord2f(m_theme->checkbox.texCoord[0], m_theme->checkbox.texCoord[3]);
-		glVertex2f(0.0f, GetHeight() * m_theme->checkbox.checkboxSizeCoeff);
-		(m_state)?glTexCoord2f(m_theme->checkbox.checkedTexCoord[2], m_theme->checkbox.checkedTexCoord[3]):glTexCoord2f(m_theme->checkbox.texCoord[2], m_theme->checkbox.texCoord[3]);
-		glVertex2f(GetHeight() * m_theme->checkbox.checkboxSizeCoeff, GetHeight() * m_theme->checkbox.checkboxSizeCoeff);
-		(m_state)?glTexCoord2f(m_theme->checkbox.checkedTexCoord[2], m_theme->checkbox.checkedTexCoord[1]):glTexCoord2f(m_theme->checkbox.texCoord[2], m_theme->checkbox.texCoord[1]);
-		glVertex2f(GetHeight() * m_theme->checkbox.checkboxSizeCoeff, 0.0f);
-	glEnd();
-	CTextureManager::GetInstance()->SetTexture("");
-	PrintText(GetHeight() * m_theme->checkbox.checkboxSizeCoeff + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
+	m_renderer.PushMatrix();
+	m_renderer.Translate(GetX(), GetY(), 0);
+	m_renderer.SetTexture(m_theme->texture);
+	float * texCoords = m_state ? m_theme->checkbox.checkedTexCoord : m_theme->checkbox.texCoord;
+	float size = GetHeight() * m_theme->checkbox.checkboxSizeCoeff;
+	m_renderer.RenderArrays(RenderMode::RECTANGLES,
+	{ CVector2f(0.0f, 0.0f), {0.0f, size}, {size, size}, {size, 0.0f} },
+	{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
+	PrintText(static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 	CUIElement::Draw();
-	glPopMatrix();
+	m_renderer.PopMatrix();
 }
 
 bool CUICheckBox::LeftMouseButtonUp(int x, int y)

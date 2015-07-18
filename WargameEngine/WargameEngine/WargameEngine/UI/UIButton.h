@@ -3,8 +3,8 @@
 class CUIButton : public CUIElement
 {
 public:
-	CUIButton(int x, int y, int height, int width, char* text, std::function<void()> const& onClick, IUIElement * parent):
-		CUIElement(x, y, height, width, parent), m_text(text), m_onClick(onClick), m_isPressed(false) {}
+	CUIButton(int x, int y, int height, int width, char* text, std::function<void()> const& onClick, IUIElement * parent, IRenderer & renderer):
+		CUIElement(x, y, height, width, parent, renderer), m_text(text), m_onClick(onClick), m_isPressed(false) {}
 	void Draw() const override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	bool LeftMouseButtonDown(int x, int y) override;

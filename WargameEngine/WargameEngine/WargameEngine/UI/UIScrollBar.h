@@ -1,11 +1,12 @@
+#pragma once
 #include <memory>
 #include "UITheme.h"
-#pragma once
+#include "..\view\IRenderer.h"
 
 class CUIScrollBar
 {
 public:
-	CUIScrollBar(std::shared_ptr<CUITheme> theme) { m_theme = theme; }
+	CUIScrollBar(std::shared_ptr<CUITheme> theme, IRenderer & renderer):m_theme(theme), m_renderer(&renderer) {}
 	void Update(int size, int contentSize, int width, int step);
 	void Draw() const;
 	bool LeftMouseButtonDown(int x, int y);
@@ -22,4 +23,5 @@ private:
 	bool m_pressed;
 	bool m_buttonPressed;
 	std::shared_ptr<CUITheme> m_theme;
+	IRenderer * m_renderer;
 };

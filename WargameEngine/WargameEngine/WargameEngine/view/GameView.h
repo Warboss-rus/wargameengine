@@ -10,6 +10,7 @@
 #include "ShaderManager.h"
 #include "TextWriter.h"
 #include "../SoundPlayer.h"
+#include "OpenGLRenderer.h"
 
 class CGameView
 {
@@ -72,6 +73,7 @@ private:
 	CParticleSystem m_particles;
 	CTextWriter m_textWriter;
 	CSoundPlayer m_soundPlayer;
+	COpenGLRenderer m_renderer;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;

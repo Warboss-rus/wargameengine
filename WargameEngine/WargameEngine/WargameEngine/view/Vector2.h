@@ -193,3 +193,4 @@ CVector2<T> const operator*(T const& scalar, CVector2<T> const& v) throw()
 
 typedef CVector2<float> CVector2f;
 typedef CVector2<double> CVector2d;
+typedef CVector2<int> CVector2i;

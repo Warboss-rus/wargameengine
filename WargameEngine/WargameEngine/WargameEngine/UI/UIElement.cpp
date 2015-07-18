@@ -27,6 +27,22 @@ void CUIElement::SetVisible(bool visible)
 	m_visible = visible;
 }
 
+bool CUIElement::GetVisible() const
+{
+	return m_visible;
+}
+
+CUIElement::CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer) : m_x(x), m_y(y), m_height(height), m_width(width),
+m_visible(true), m_parent(parent), m_focused(nullptr), m_renderer(renderer)
+{
+
+}
+
+CUIElement::CUIElement(IRenderer & renderer) :m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_windowHeight(640), m_windowWidth(640), m_renderer(renderer)
+{
+
+}
+
 void CUIElement::AddChild(std::string const& name, std::shared_ptr<IUIElement> element)
 {
 	m_children[name] = element;
@@ -124,35 +140,35 @@ bool CUIElement::OnSpecialKeyPress(int key)
 
 IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, std::function<void()> const& onClick)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIStaticText(x, y, height, width, text, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIStaticText(x, y, height, width, text, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewPanel(std::string const& name, int x, int y, int height, int width)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIPanel(x, y, height, width, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIPanel(x, y, height, width, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUICheckBox(x, y, height, width, text, initState, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUICheckBox(x, y, height, width, text, initState, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIComboBox(x, y, height, width, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIComboBox(x, y, height, width, this, m_renderer));
 	if(items)
 	{
 		for(auto i = items->begin(); i != items->end(); i++)
@@ -166,21 +182,21 @@ IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, in
 
 IUIElement* CUIElement::AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIEdit(x, y, height, width, text, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIEdit(x, y, height, width, text, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewList(std::string const& name, int x, int y, int height, int width)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIList(x, y, height, width, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIList(x, y, height, width, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewRadioGroup(std::string const& name, int x, int y, int height, int width)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIRadioGroup(x, y, height, width, this));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIRadioGroup(x, y, height, width, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
@@ -198,6 +214,21 @@ bool CUIElement::IsFocused(const IUIElement * child) const
 	if(m_parent != NULL)
 		return m_parent->IsFocused(this);
 	return true;
+}
+
+void CUIElement::SetTheme(std::shared_ptr<CUITheme> theme)
+{
+	m_theme = theme;
+}
+
+std::shared_ptr<CUITheme> CUIElement::GetTheme() const
+{
+	return m_theme;
+}
+
+std::string const CUIElement::GetText() const
+{
+	return "";
 }
 
 void CUIElement::SetText(std::string const& text)

@@ -3,8 +3,8 @@
 class CUIEdit : public CUIElement
 {
 public:
-	CUIEdit(int x, int y, int height, int width, char* text, IUIElement * parent): 
-		CUIElement(x, y, height, width, parent), m_isPressed(false), m_pos(0), m_beginSelection(0), m_text(text){}
+	CUIEdit(int x, int y, int height, int width, char* text, IUIElement * parent, IRenderer & renderer): 
+		CUIElement(x, y, height, width, parent, renderer), m_isPressed(false), m_pos(0), m_beginSelection(0), m_text(text){}
 	void Draw() const override;
 	bool OnKeyPress(unsigned char key) override;
 	bool OnSpecialKeyPress(int key) override;

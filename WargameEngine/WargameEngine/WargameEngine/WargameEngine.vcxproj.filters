@@ -5,10 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -16,26 +12,14 @@
     <Filter Include="Source Files\UI">
       <UniqueIdentifier>{85f77776-fb0b-4e1a-b9ab-93330f23f37c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\view">
-      <UniqueIdentifier>{cfab82e7-a9e2-415e-8296-446dc3ff7347}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\view">
       <UniqueIdentifier>{0ef7c67f-d75f-417d-b16d-1f3bf064e45c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\model">
-      <UniqueIdentifier>{0948a43f-f393-42e0-bf26-3155fbcd0809}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\model">
       <UniqueIdentifier>{636ee3a0-8baf-4c83-94b5-ae1f908c9261}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\controller">
-      <UniqueIdentifier>{7fcd2ea5-c4a3-4bc6-82d0-4ac3c86d605f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\controller">
       <UniqueIdentifier>{bbfc768f-9356-4e40-bfa4-23e779379293}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\UI">
-      <UniqueIdentifier>{8332af67-ba2c-45df-bd31-0c2a8362dafb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\controller\commands">
       <UniqueIdentifier>{6658bfbb-27ee-465f-a4df-d7c741985eb0}</UniqueIdentifier>
@@ -43,10 +27,7 @@
     <Filter Include="Source Files\controller\luaRegisters">
       <UniqueIdentifier>{8ca9dadd-2879-42df-93e1-a9cc3a9686d7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\controller\commands">
-      <UniqueIdentifier>{cdab68ad-206b-4a7d-bacf-b744a9c880cc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\rapidxml">
+    <Filter Include="Source Files\rapidxml">
       <UniqueIdentifier>{39bcbc2e-de4f-42e3-aef1-59a8dc028d8c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -249,244 +230,256 @@
     <ClCompile Include="view\Particle.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="view\OpenGLRenderer.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Ruler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\IUI.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIButton.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIElement.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIPanel.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="view\3dModel.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\GameView.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ModelManager.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\OBJModelFactory.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\TextureManager.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Input.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UICheckBox.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIEdit.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIText.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UITheme.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Material.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\MaterialManager.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\SkyBox.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIStaticText.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIList.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIComboBox.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIRadioGroup.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="view\TextWriter.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="model\GameModel.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\MovementLimiter.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\ObjectGroup.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\ObjectInterface.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="LogWriter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ShaderManager.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIScrollBar.h">
-      <Filter>Header Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="ThreadPool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Module.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NetSocket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="nv_dds.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OSSpecific.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Network.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\SelectionTools.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Vector2.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Vector3.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\GameController.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\LUARegisterFunctions.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\LUAScriptHandler.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\TimedCallback.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="model\Object.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="view\gl.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleEffect.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleSystem.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleModel.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Particle.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="SoundPlayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="model\ObjectStatic.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\Projectile.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ICamera.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\CameraStrategy.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="model\Landscape.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="Plugin.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PluginManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ImageDecoderInterface.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\CameraFirstPerson.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="model\Bounding.h">
-      <Filter>Header Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleTracer.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\IParticleEffecth.h">
-      <Filter>Header Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="TranslationManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Task.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ITask.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandChangeGlobalProperty.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandChangeProperty.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandCompound.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandCreateObject.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandDeleteObject.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandMoveObject.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandRotateObject.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\ICommand.h">
-      <Filter>Header Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\CommandHandler.h">
-      <Filter>Header Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="AsyncReadTask.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="rapidxml\rapidxml.hpp">
-      <Filter>Header Files\rapidxml</Filter>
+      <Filter>Source Files\rapidxml</Filter>
     </ClInclude>
     <ClInclude Include="rapidxml\rapidxml_iterators.hpp">
-      <Filter>Header Files\rapidxml</Filter>
+      <Filter>Source Files\rapidxml</Filter>
     </ClInclude>
     <ClInclude Include="rapidxml\rapidxml_print.hpp">
-      <Filter>Header Files\rapidxml</Filter>
+      <Filter>Source Files\rapidxml</Filter>
     </ClInclude>
     <ClInclude Include="rapidxml\rapidxml_utils.hpp">
-      <Filter>Header Files\rapidxml</Filter>
+      <Filter>Source Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncReadTask.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITask.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LogWriter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetSocket.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Network.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nv_dds.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OSSpecific.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Plugin.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PluginManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ruler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundPlayer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Task.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TranslationManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandHandler.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\GameController.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\LUARegisterFunctions.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\LUAScriptHandler.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\TimedCallback.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandChangeGlobalProperty.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandChangeProperty.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandCompound.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandCreateObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandDeleteObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandMoveObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandRotateObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ICommand.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Bounding.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\GameModel.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Landscape.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\MovementLimiter.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Object.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\ObjectGroup.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\ObjectInterface.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\ObjectStatic.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Projectile.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\IUI.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIButton.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UICheckBox.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIComboBox.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIEdit.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIElement.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIList.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIPanel.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIRadioGroup.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIScrollBar.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIStaticText.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIText.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UITheme.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="view\3dModel.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\CameraFirstPerson.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\CameraStrategy.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\GameView.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\gl.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ICamera.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ImageDecoderInterface.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Input.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IParticleEffecth.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IRenderer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Material.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\MaterialManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ModelManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\OBJModelFactory.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\OpenGLRenderer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Particle.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleEffect.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleModel.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleSystem.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleTracer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\SelectionTools.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ShaderManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\SkyBox.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\TextureManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\TextWriter.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Vector2.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Vector3.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\KeyDefines.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

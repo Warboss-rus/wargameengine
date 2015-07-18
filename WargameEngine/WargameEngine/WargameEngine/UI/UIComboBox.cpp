@@ -1,65 +1,58 @@
 #include "UIComboBox.h"
 #include "UIText.h"
-#include "../view/gl.h"
-#include "../view/TextureManager.h"
+
+CUIComboBox::CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer) : CUIElement(x, y, height, width, parent, renderer),
+m_selected(-1), m_expanded(false), m_pressed(false), m_scrollbar(m_theme, renderer)
+{
+}
 
 void CUIComboBox::Draw() const
 {
-	if(!m_visible)
+	if (!m_visible)
 		return;
-	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0.0f);
-	glColor3f(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
-	glBegin(GL_QUADS);
-		glVertex2i(0, 0);
-		glVertex2i(0, GetHeight());
-		glVertex2i(GetWidth(), GetHeight());
-		glVertex2i(GetWidth(), 0);
-	glEnd();
-	glColor3f(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
-	glBegin(GL_QUADS);
-		glVertex2i(m_theme->combobox.borderSize, m_theme->combobox.borderSize);
-		glVertex2i(m_theme->combobox.borderSize, GetHeight() - m_theme->combobox.borderSize);
-		glVertex2i(GetWidth() - m_theme->combobox.borderSize, GetHeight() - m_theme->combobox.borderSize);
-		glVertex2i(GetWidth() - m_theme->combobox.borderSize, m_theme->combobox.borderSize);
-	glEnd();
-	glColor3f(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
+	m_renderer.PushMatrix();
+	m_renderer.Translate(GetX(), GetY(), 0);
+	m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
+	m_renderer.RenderArrays(RenderMode::RECTANGLES,
+	{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
+
+	m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+	int borderSize = m_theme->combobox.borderSize;
+	m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize},
+	{GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
+
+	m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
 	if(m_selected >= 0)	PrintText(m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
-	glColor3f(0.6f,0.6f,0.6f);
-	CTextureManager::GetInstance()->SetTexture(m_theme->texture);
-	glBegin(GL_QUADS);
-		(m_expanded)?glTexCoord2f(m_theme->combobox.expandedTexCoord[0], m_theme->combobox.expandedTexCoord[1]):glTexCoord2f(m_theme->combobox.texCoord[0], m_theme->combobox.texCoord[1]);
-		glVertex2f(GetWidth() - GetHeight() * m_theme->combobox.buttonWidthCoeff, 0.0f);
-		(m_expanded)?glTexCoord2f(m_theme->combobox.expandedTexCoord[0], m_theme->combobox.expandedTexCoord[3]):glTexCoord2f(m_theme->combobox.texCoord[0], m_theme->combobox.texCoord[3]);
-		glVertex2f(GetWidth() - GetHeight() * m_theme->combobox.buttonWidthCoeff, GetHeight());
-		(m_expanded)?glTexCoord2f(m_theme->combobox.expandedTexCoord[2], m_theme->combobox.expandedTexCoord[3]):glTexCoord2f(m_theme->combobox.texCoord[2], m_theme->combobox.texCoord[3]);
-		glVertex2i(GetWidth(), GetHeight());
-		(m_expanded)?glTexCoord2f(m_theme->combobox.expandedTexCoord[2], m_theme->combobox.expandedTexCoord[1]):glTexCoord2f(m_theme->combobox.texCoord[2], m_theme->combobox.texCoord[1]);
-		glVertex2i(GetWidth(), 0);
-	glEnd();
-	CTextureManager::GetInstance()->SetTexture("");
+
+	m_renderer.SetColor(0.6f,0.6f,0.6f);
+	m_renderer.SetTexture(m_theme->texture);
+	float * texCoords = m_expanded ? m_theme->combobox.expandedTexCoord : m_theme->combobox.texCoord;
+	int firstX = GetWidth() - static_cast<int>(GetHeight() * m_theme->combobox.buttonWidthCoeff);
+	m_renderer.RenderArrays(RenderMode::RECTANGLES,
+	{ CVector2i(firstX, 0), { firstX, GetHeight() }, {GetWidth(), GetHeight()}, {GetWidth(), 0} },
+	{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
+	m_renderer.SetTexture("");
+
 	if(m_expanded)
 	{
-		glColor3f(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
-		glBegin(GL_QUADS);
-			glVertex2i(0, GetHeight());
-			glVertex2i(0, GetHeight() + m_theme->combobox.elementSize * m_items.size());
-			glVertex2i(GetWidth(), GetHeight() + m_theme->combobox.elementSize * m_items.size());
-			glVertex2i(GetWidth(), GetHeight());
-		glEnd();
-		glColor3f(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
+		m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+		int totalHeight = GetHeight() + m_theme->combobox.elementSize * m_items.size();
+		m_renderer.RenderArrays(RenderMode::RECTANGLES,	{ CVector2i(0, GetHeight()), { 0, totalHeight }, {GetWidth(), totalHeight}, {GetWidth(), GetHeight()} }, {});
+
+		m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
 		for (size_t i = m_scrollbar.GetPosition() / m_theme->combobox.elementSize; i < m_items.size(); ++i)
 		{
-			if (GetHeight() + m_theme->combobox.elementSize * i - m_scrollbar.GetPosition() > m_windowHeight) break;
+			if (GetHeight() + m_theme->combobox.elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight) break;
 			PrintText(m_theme->combobox.borderSize, GetHeight() + m_theme->combobox.elementSize * i - m_scrollbar.GetPosition(), GetWidth(), m_theme->combobox.elementSize, m_items[i], m_theme->combobox.text);
 		}
-		glPushMatrix();
-		glTranslatef(0.0f, GetHeight(), 0.0f);
+
+		m_renderer.PushMatrix();
+		m_renderer.Translate(0, GetHeight(), 0);
 		m_scrollbar.Draw();
-		glPopMatrix();
+		m_renderer.PopMatrix();
 	}
 	CUIElement::Draw();
-	glPopMatrix();
+	m_renderer.PopMatrix();
 }
 
 bool CUIComboBox::LeftMouseButtonDown(int x, int y)
@@ -200,5 +193,5 @@ void CUIComboBox::SetOnChangeCallback(std::function<void()> const& onChange)
 void CUIComboBox::SetTheme(std::shared_ptr<CUITheme> theme) 
 { 
 	m_theme = theme; 
-	m_scrollbar = CUIScrollBar(theme); 
+	m_scrollbar = CUIScrollBar(theme, m_renderer); 
 }

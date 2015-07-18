@@ -1,47 +1,35 @@
 #include "UIList.h"
 #include "UIText.h"
-#include "../view/gl.h"
-#include "../view/TextureManager.h"
 
 void CUIList::Draw() const
 {
 	if(!m_visible)
 		return;
-	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0.0f);
-	glColor3f(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
-	glBegin(GL_QUADS);
-		glVertex2i(0, 0);
-		glVertex2i(0, GetHeight());
-		glVertex2i(GetWidth(), GetHeight());
-		glVertex2i(GetWidth(), 0);
-	glEnd();
-	glColor3f(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
-	glBegin(GL_QUADS);
-		glVertex2i(m_theme->list.borderSize, m_theme->list.borderSize);
-		glVertex2i(m_theme->list.borderSize, GetHeight() - m_theme->list.borderSize);
-		glVertex2i(GetWidth() - m_theme->list.borderSize, GetHeight() - m_theme->list.borderSize);
-		glVertex2i(GetWidth() - m_theme->list.borderSize, m_theme->list.borderSize);
-	glEnd();
+	m_renderer.PushMatrix();
+	m_renderer.Translate(GetX(), GetY(), 0);
+	m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
+	m_renderer.RenderArrays(RenderMode::RECTANGLES,
+	{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
+	m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+	int borderSize = m_theme->list.borderSize;
+	m_renderer.RenderArrays(RenderMode::RECTANGLES,
+	{ CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
 	if(m_selected > -1)
 	{
-		glColor3f(0.2f, 0.2f, 1.0f);
-		glBegin(GL_QUADS);
-			glVertex2i(m_theme->list.borderSize, m_theme->list.borderSize + m_theme->list.elementSize * m_selected);
-			glVertex2i(m_theme->list.borderSize, 2 * m_theme->list.borderSize + m_theme->list.elementSize * (m_selected + 1) );
-			glVertex2i(GetWidth() - m_theme->list.borderSize, 2 * m_theme->list.borderSize + m_theme->list.elementSize * (m_selected + 1));
-			glVertex2i(GetWidth() - m_theme->list.borderSize, m_theme->list.borderSize + m_theme->list.elementSize * m_selected);
-		glEnd();
+		m_renderer.SetColor(0.2f, 0.2f, 1.0f);
+		int elementSize = m_theme->list.elementSize;
+		m_renderer.RenderArrays(RenderMode::RECTANGLES,	{ CVector2i(borderSize, borderSize + elementSize * m_selected), {borderSize, 2 * borderSize + elementSize * (m_selected + 1)}, 
+			{GetWidth() - borderSize, 2 * borderSize + elementSize * (m_selected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * m_selected } }, {});
 	}
-	glColor3f(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
+	m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
 	for (size_t i = m_scrollbar.GetPosition() / m_theme->list.elementSize; i < m_items.size(); ++i)
 	{
-		if (m_theme->list.borderSize + m_theme->list.elementSize * (i - m_scrollbar.GetPosition() / m_theme->list.elementSize) > GetHeight()) break;
+		if (m_theme->list.borderSize + m_theme->list.elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / m_theme->list.elementSize) > GetHeight()) break;
 		PrintText(m_theme->list.borderSize, m_theme->list.borderSize + m_theme->list.elementSize * (i - m_scrollbar.GetPosition() / m_theme->list.elementSize), GetWidth(), m_theme->list.text.fontSize, m_items[i], m_theme->text);
 	}
 	m_scrollbar.Draw();
 	CUIElement::Draw();
-	glPopMatrix();
+	m_renderer.PopMatrix();
 }
 
 bool CUIList::LeftMouseButtonDown(int x, int y)
@@ -148,5 +136,5 @@ void CUIList::SetOnChangeCallback(std::function<void()> const& onChange)
 void CUIList::SetTheme(std::shared_ptr<CUITheme> theme)
 { 
 	m_theme = theme; 
-	m_scrollbar = CUIScrollBar(theme); 
+	m_scrollbar = CUIScrollBar(theme, m_renderer); 
 }

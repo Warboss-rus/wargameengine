@@ -3,11 +3,7 @@
 #include <math.h>
 #define TRANSLATE					  0.3
 #define SCALE						  1.1
-#define KEY_BACKSPACE	8
-#define KEY_LEFT       37
-#define KEY_UP         38
-#define KEY_RIGHT      39
-#define KEY_DOWN       40
+#include "KeyDefines.h"
 
 CCameraStrategy::CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
 	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false)

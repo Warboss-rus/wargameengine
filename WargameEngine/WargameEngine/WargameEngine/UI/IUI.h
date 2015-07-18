@@ -46,9 +46,9 @@ public:
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;
 	virtual IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState) = 0;
-	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = NULL) = 0;
+	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = nullptr) = 0;
 	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text) = 0;
 	virtual IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) = 0;
-	virtual void SetFocus(IUIElement * focus = NULL) = 0;
+	virtual void SetFocus(IUIElement * focus = nullptr) = 0;
 };

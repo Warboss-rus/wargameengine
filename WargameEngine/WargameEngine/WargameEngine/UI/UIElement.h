@@ -1,11 +1,12 @@
 #include "IUI.h"
 #include <map>
+#include "..\view\IRenderer.h"
 #pragma once
 
 class CUIElement : public IUIElement
 {
 public:
-	CUIElement():m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(NULL), m_focused(NULL), m_windowHeight(640), m_windowWidth(640) {}
+	CUIElement(IRenderer & renderer);
 	void Draw() const override;
 	IUIElement* GetChildByName(std::string const& name) override;
 	void DeleteChild(std::string const& name) override;
@@ -19,12 +20,12 @@ public:
 	int GetHeight() const override;
 	int GetWidth() const override;
 	void SetVisible(bool visible) override;
-	bool GetVisible() const override { return m_visible; }
-	void SetFocus(IUIElement * focus = NULL) override;
+	bool GetVisible() const override;
+	void SetFocus(IUIElement * focus = nullptr) override;
 	bool IsFocused(const IUIElement * child) const override;
-	void SetTheme(std::shared_ptr<CUITheme> theme) override { m_theme = theme; }
-	std::shared_ptr<CUITheme> GetTheme() const override { return m_theme; }
-	std::string const GetText() const override { return ""; }
+	void SetTheme(std::shared_ptr<CUITheme> theme) override;
+	std::shared_ptr<CUITheme> GetTheme() const override;
+	std::string const GetText() const override;
 	void SetText(std::string const& text) override;
 	void AddItem(std::string const& str) override;
 	void DeleteItem(size_t index) override;
@@ -44,13 +45,12 @@ public:
 	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) override;
 	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) override;
 	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState) override; 
-	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = NULL) override;
+	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = nullptr) override;
 	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text) override;
 	IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) override;
 	IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) override;
 protected:
-	CUIElement(int x, int y, int height, int width, IUIElement * parent): m_x(x), m_y(y), m_height(height), m_width(width), 
-		m_visible(true), m_parent(parent), m_focused(NULL) {}
+	CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
 	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element);
 	virtual bool PointIsOnElement(int x, int y) const;
 
@@ -65,4 +65,5 @@ protected:
 	IUIElement * m_parent;
 	IUIElement * m_focused;
 	std::shared_ptr<CUITheme> m_theme;
+	IRenderer & m_renderer;
 };

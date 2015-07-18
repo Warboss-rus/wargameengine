@@ -3,8 +3,7 @@
 class CUICheckBox : public CUIElement
 {
 public:
-	CUICheckBox(int x, int y, int height, int width, char* text, bool initState, IUIElement * parent):
-		CUIElement(x, y, height, width, parent), m_text(text), m_state(initState), m_pressed(false) {}
+	CUICheckBox(int x, int y, int height, int width, char* text, bool initState, IUIElement * parent, IRenderer & renderer);
 	void Draw() const override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	bool LeftMouseButtonDown(int x, int y) override;

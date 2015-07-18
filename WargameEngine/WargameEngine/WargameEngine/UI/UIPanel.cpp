@@ -1,20 +1,15 @@
 #include "UIPanel.h"
-#include "../view/gl.h"
 
 void CUIPanel::Draw() const
 {
 	if(!m_visible)
 		return;
-	glPushMatrix();
-	glTranslatef(GetX(), GetY(), 0.0f);
-	glColor3f(0.6f,0.6f,0.6f);
-	glBegin(GL_QUADS);
-		glVertex2i(0, 0);
-		glVertex2i(0, GetHeight());
-		glVertex2i(GetWidth(), GetHeight());
-		glVertex2i(GetWidth(), 0);
-	glEnd();
-	glColor3f(0.0f,0.0f,0.0f);
+	m_renderer.PushMatrix();
+	m_renderer.Translate(GetX(), GetY(), 0);
+	m_renderer.SetColor(0.6f,0.6f,0.6f);
+	m_renderer.RenderArrays(RenderMode::RECTANGLES,
+	{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
+	m_renderer.SetColor(0.0f,0.0f,0.0f);
 	CUIElement::Draw();
-	glPopMatrix();
+	m_renderer.PopMatrix();
 }
