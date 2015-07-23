@@ -100,7 +100,7 @@ bool CCameraStrategy::OnKeyPress(int key)
 	return true;
 }
 
-bool CCameraStrategy::OnMouseMove(int deltaX, int deltaY, bool LMB, bool RMB, bool shift, bool ctrl, bool alt)
+bool CCameraStrategy::OnMouseMove(int deltaX, int deltaY, bool /*LMB*/, bool /*RMB*/, bool /*shift*/, bool /*ctrl*/, bool alt)
 {
 	m_hidePointer = alt;
 	if (alt)

@@ -23,36 +23,36 @@ struct sImage
 	unsigned int height;
 	unsigned int bpp;
 	unsigned char * data;
-	unsigned int headerSize;
 	GLenum format;
 	std::vector<sTeamColor> teamcolor;
+	std::vector<unsigned char> uncompressedData;
 };
 
 void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char color[3]);
 
-void LoadBMP(void * data, unsigned int size, sImage & img)
+void LoadBMP(void * data, unsigned int /*size*/, sImage & img)
 {
 	unsigned char* imgData = (unsigned char*) data;
-	img.headerSize = *(int*)&(imgData[0x0A]);     // Position in the file where the actual data begins
-	unsigned int imageSize = *(int*)&(imgData[0x22]);
+	unsigned int headerSize = *(int*)&(imgData[0x0A]);     // Position in the file where the actual data begins
 	img.width = *(int*)&(imgData[0x12]);
 	img.height = *(int*)&(imgData[0x16]);
 	img.bpp = *(short*)&(imgData[0x1C]);
 	img.format = (img.bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
-	if (img.headerSize==0)  // Some BMP files are misformatted, guess missing information
-		img.headerSize=54;
-	img.data = imgData;
+	if (headerSize==0)  // Some BMP files are misformatted, guess missing information
+		headerSize=54;
+	img.data = imgData + headerSize;
 	for (size_t i = 0; i < img.teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
 	}
 }
 
-unsigned char * UncompressTGA(unsigned char * data, unsigned int width, unsigned int height, unsigned int bpp)
+std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int width, unsigned int height, unsigned int bpp)
 {
-	short iPixelSize = bpp / 8;
+	unsigned int iPixelSize = bpp / 8;
 	unsigned int imageSize = width * height * iPixelSize;
-	unsigned char * uncompressedData = new unsigned char[imageSize];
+	std::vector<unsigned char> uncompressedData;
+	uncompressedData.resize(imageSize);
 	unsigned int index = 0;
 	unsigned char *pCur = &data[0];
 	unsigned char bLength,bLoop;
@@ -82,7 +82,7 @@ unsigned char * UncompressTGA(unsigned char * data, unsigned int width, unsigned
 	return uncompressedData;
 }
 
-void LoadTGA(void * data, unsigned int size, sImage & img)
+void LoadTGA(void * data, unsigned int /*size*/, sImage & img)
 {
 	unsigned char* imgData = (unsigned char*) data;
 	if (imgData[2] != 2 && imgData[2] != 10)
@@ -91,15 +91,15 @@ void LoadTGA(void * data, unsigned int size, sImage & img)
 	img.height = imgData[15] * 256 + imgData[14];
 	img.bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
 	img.format = (img.bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
-	img.headerSize = 18;
 	if(imgData[2] == 10) //Compressed
 	{
-		unsigned char* old = imgData;
-		imgData = UncompressTGA(imgData + img.headerSize, img.width, img.height, img.bpp);
-		delete [] old;
-		img.headerSize = 0;
+		img.uncompressedData = UncompressTGA(imgData, img.width, img.height, img.bpp);
+		img.data = img.uncompressedData.data();
 	}
-	img.data = imgData;
+	else
+	{
+		img.data = imgData + 18;
+	}
 	for (size_t i = 0; i < img.teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
@@ -110,18 +110,17 @@ void UnpackTexture(void * data, unsigned int size, sImage & img)
 {
 	int width, height, bpp;
 	unsigned char * newData = stbi_load_from_memory((const unsigned char*)data, size, &width, &height, &bpp, 4);
-	delete[] data;
-	img.data = new unsigned char[width * height * 4];
+	img.uncompressedData.resize(width * height * 4);
 	for (int y = 0; y < height; ++y)
 	{
-		memcpy(&img.data[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
+		memcpy(&img.uncompressedData[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
 	}
 	stbi_image_free(newData);
 	img.width = width;
 	img.height = height;
 	img.bpp = 32;
 	img.format = GL_RGBA;
-	img.headerSize = 0;
+	img.data = img.uncompressedData.data();
 	for (size_t i = 0; i < img.teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
@@ -146,14 +145,13 @@ void UseTexture(sImage const& img, unsigned int id)
 	// "Bind" the newly created texture : all future texture functions will modify this texture
 	glBindTexture(GL_TEXTURE_2D, id);
 	// Give the image to OpenGL
-	gluBuild2DMipmaps(GL_TEXTURE_2D, img.bpp / 8, img.width, img.height, img.format, GL_UNSIGNED_BYTE, &img.data[img.headerSize]);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, img.bpp / 8, img.width, img.height, img.format, GL_UNSIGNED_BYTE, img.data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	if (GLEW_EXT_texture_filter_anisotropic)
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, CGameView::GetInstance().lock()->GetAnisotropyLevel());
-	delete [] img.data;
 }
 
 unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor)
@@ -284,8 +282,9 @@ void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char c
 	fseek(fmask, 0L, SEEK_END);
 	unsigned int maskSize = ftell(fmask);
 	fseek(fmask, 0L, SEEK_SET);
-	unsigned char * maskData = new unsigned char[maskSize];
-	fread(maskData, 1, maskSize, fmask);
+	std::vector<unsigned char> maskData;
+	maskData.resize(maskSize);
+	fread(maskData.data(), 1, maskSize, fmask);
 	fclose(fmask);
 	int maskHeight = *(int*)&(maskData[0x12]);
 	int maskWidth = *(int*)&(maskData[0x16]);
@@ -311,5 +310,4 @@ void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char c
 			}
 		}
 	}
-	delete [] maskData;
 }

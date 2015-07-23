@@ -5,10 +5,10 @@
 #include "ThreadPool.h"
 
 template<class T>
-class TaskT : public IAsyncTask<T>
+class TaskBase : public IAsyncTask<T>
 {
 public:
-	TaskT(AsyncHandler const& func, bool start = false)
+	TaskBase(AsyncHandler const& func, bool start = false)
 		: m_handler(func)
 		, m_state(TaskState::CREATED)
 	{
@@ -58,7 +58,7 @@ public:
 		return m_state;
 	}
 protected:
-	TaskT()
+	TaskBase()
 		: m_state(TaskState::CREATED)
 	{
 	}
@@ -76,11 +76,11 @@ protected:
 };
 
 template <class T>
-class Task : public TaskT<T>
+class Task : public TaskBase<T>
 {
 public:
 	Task(AsyncHandler const& func)
-		: TaskT(func)
+		: TaskBase(func)
 	{
 	}
 private:
@@ -99,7 +99,10 @@ private:
 			SetTaskState(TaskState::COMPLETED);
 			if (m_callback)
 			{
-				ThreadPool::QueueCallback([this, result] {m_callback(result); });
+				ThreadPool::QueueCallback([this, result] {
+					m_callback(result); 
+					ThreadPool::RemoveTask(this);
+				});
 			}
 		}
 		catch (std::exception const& e)

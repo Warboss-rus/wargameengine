@@ -63,7 +63,7 @@ const double * CCameraFirstPerson::GetUpVector() const
 	return up;
 }
 
-bool CCameraFirstPerson::OnMouseMove(int deltaX, int deltaY, bool LMB, bool RMB, bool shift, bool ctrl, bool alt)
+bool CCameraFirstPerson::OnMouseMove(int deltaX, int deltaY, bool /*LMB*/, bool /*RMB*/, bool /*shift*/, bool /*ctrl*/, bool /*alt*/)
 {
 	Rotate(deltaX, deltaY);
 	return true;

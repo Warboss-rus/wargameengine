@@ -31,8 +31,8 @@ public:
 	void SetAnisotropyLevel(float level);
 	~CTextureManager();
 protected:
-	CTextureManager(){}
-	CTextureManager(CTextureManager const& other){}
+	CTextureManager() = default;
+	CTextureManager(CTextureManager const& other) = default;
 private:
 	static CTextureManager * m_manager;
 	std::map<std::pair<std::string, std::vector<sTeamColor>>, unsigned int> m_textures;

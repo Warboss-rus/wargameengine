@@ -167,7 +167,7 @@ bool HasModifier(int modifier)
 	return (glutGetModifiers() & modifier) != 0;
 }
 
-void CInput::OnKeyboard(unsigned char key, int x, int y)
+void CInput::OnKeyboard(unsigned char key, int /*x*/, int /*y*/)
 {
 	if (CGameView::GetInstance().lock()->GetUI()->OnKeyPress(key) || CGameView::GetInstance().lock()->GetCamera()->OnKeyPress(key))
 		return;
@@ -207,14 +207,14 @@ int SpecialToKeyCode(int special)
 	return 0;
 }
 
-void CInput::OnSpecialKeyPress(int key, int x, int y)
+void CInput::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
 {
 	if (CGameView::GetInstance().lock()->GetUI()->OnSpecialKeyPress(key))
 		return;
 	int keycode = SpecialToKeyCode(key);
 	if (CGameView::GetInstance().lock()->GetCamera()->OnKeyPress(keycode))
 		return;
-	CGameController::GetInstance().lock()->OnKeyPress(keycode, HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
+	CGameController::GetInstance().lock()->OnKeyPress(static_cast<unsigned char>(keycode), HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
 }
 
 void CInput::OnPassiveMouseMove(int x, int y)

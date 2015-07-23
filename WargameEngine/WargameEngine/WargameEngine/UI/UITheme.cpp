@@ -99,9 +99,9 @@ void GetValues(float * array, const char* data, unsigned int max = UINT_MAX)
 	unsigned int i = 0;
 	while (fl != NULL && i < max)
 	{
-		for (size_t i = 0; i < strlen(fl); ++i)
+		for (size_t j = 0; j < strlen(fl); ++j)
 		{
-			if (fl[i] == ',') fl[i] = '.';
+			if (fl[j] == ',') fl[j] = '.';
 		}
 		array[i] = atoff(fl);
 		i++;

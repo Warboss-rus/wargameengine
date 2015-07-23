@@ -335,7 +335,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 		unsigned int pathSize = *((unsigned int*)&data[current + 32]);
 		char * path = new char[pathSize];
 		memcpy(path, &data[current + 36], pathSize);
-		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, x, y, rotation));
+		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, x, y, z, rotation));
 		model->AddObject(object);
 		delete[] path;
 		current += 36 + pathSize;
@@ -415,7 +415,7 @@ void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, dou
 	CVector3d old(object->GetCoords());
 	if (CGameModel::GetInstance().lock()->GetLandscape().isCoordsOnTable(x, y))
 	{
-		object->SetCoords(x - m_selectedObjectCapturePoint.x, y - m_selectedObjectCapturePoint.y, 0);
+		object->SetCoords(x - m_selectedObjectCapturePoint.x, y - m_selectedObjectCapturePoint.y, z);
 	}
 	if (CGameController::GetInstance().lock()->IsObjectInteresectSomeObjects(object))
 	{
@@ -477,7 +477,7 @@ void CGameController::RotateObject(std::shared_ptr<IObject> obj, double deltaRot
 
 std::shared_ptr<IObject> CGameController::CreateObject(std::string const& model, double x, double y, double rotation)
 {
-	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, rotation);
+	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, 0.0, rotation);
 	m_commandHandler->AddNewCreateObject(object);
 	return object;
 }

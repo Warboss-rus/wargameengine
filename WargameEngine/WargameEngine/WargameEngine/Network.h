@@ -12,7 +12,7 @@ class CNetwork
 {
 public:
 	CNetwork();
-	void Host(unsigned int port = 0);
+	void Host(unsigned short port = 0);
 	void Client(const char * ip, unsigned short port = 0);
 	void Update();
 	bool IsHost() const;

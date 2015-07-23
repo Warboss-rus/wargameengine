@@ -1,6 +1,6 @@
 #include <string>
 #include <vector>
-#include "lua.hpp"
+#include "../LUA/lua.hpp"
 #pragma once
 
 class CLUAScript

@@ -1,7 +1,7 @@
 #include "MovementLimiter.h"
 #include "../controller/LUAScriptHandler.h"
 
-void CMoveLimiterRectangle::FixPosition(CVector3d & position, double & rotation) const
+void CMoveLimiterRectangle::FixPosition(CVector3d & position, double & /*rotation*/) const
 { 
 	if (position.x < m_minX) position.x = m_minX;
 	if (position.x > m_maxX) position.x = m_maxX;
@@ -9,7 +9,7 @@ void CMoveLimiterRectangle::FixPosition(CVector3d & position, double & rotation)
 	if (position.y > m_maxY) position.y = m_maxY;
 }
 
-void CMoveLimiterCircle::FixPosition(CVector3d & position, double & rotation) const
+void CMoveLimiterCircle::FixPosition(CVector3d & position, double & /*rotation*/) const
 {
 	if (sqrt((position.x - m_x) * (position.x - m_x) + (position.y - m_y) * (position.y - m_y)) > m_radius)
 	{
@@ -27,7 +27,7 @@ void CMoveLimiterStatic::FixPosition(CVector3d & position, double & rotation) co
 	rotation = m_rotation;
 }
 
-void CMoveLimiterTiles::FixPosition(CVector3d & position, double & rotation) const
+void CMoveLimiterTiles::FixPosition(CVector3d & position, double & /*rotation*/) const
 {
 	position.x = floor(position.x);
 	position.y = floor(position.y);

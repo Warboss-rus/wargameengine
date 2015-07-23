@@ -11,7 +11,7 @@ public:
 	void LoadIfNotExist(std::string const& path);
 	std::vector<std::string> GetAnimations(std::string const& path);
 protected:
-	CModelManager(CModelManager const& other) {}
+	CModelManager(CModelManager const& other) = default;
 private:
 	std::map<std::string, std::shared_ptr<C3DModel>> m_models;
 };

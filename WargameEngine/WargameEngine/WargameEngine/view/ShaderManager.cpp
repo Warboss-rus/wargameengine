@@ -8,7 +8,7 @@
 
 void CShaderManager::BindProgram() const
 {
-	if(m_program != -1)
+	if(m_program != 0)
 		glUseProgram(m_program);
 }
 

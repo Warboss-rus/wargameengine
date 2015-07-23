@@ -168,9 +168,8 @@ void CSoundPlayer::ReadWav(std::string const& file)
 	memcpy(&frequency, data + 24, sizeof(frequency));
 	memcpy(&bitsPerSample, data + 34, sizeof(bitsPerSample));
 	memcpy(&dataSize, data + 0x44, sizeof(ALsizei));
-	ALenum format;
-	if (numChannels == 1 && bitsPerSample == 8) format = AL_FORMAT_MONO8;
-	else if (numChannels == 1 && bitsPerSample == 16) format = AL_FORMAT_MONO16;
+	ALenum format = AL_FORMAT_MONO8;
+	if (numChannels == 1 && bitsPerSample == 16) format = AL_FORMAT_MONO16;
 	else if (numChannels == 2 && bitsPerSample == 8) format = AL_FORMAT_STEREO8;
 	else if (numChannels == 2 && bitsPerSample == 16) format = AL_FORMAT_STEREO16;
 	m_buffers[file] = buffer;
@@ -200,7 +199,7 @@ void CSoundPlayer::Update()
 	}
 }
 
-void StreamThread(std::vector<std::string> const& files, bool shuffle, bool repeat, float volume, bool & stop)
+void StreamThread(std::vector<std::string> const& files, bool /*shuffle*/, bool repeat, float volume, bool & stop)
 {
 	ALuint buffers[STREAM_BUFFERS];
 	alGenBuffers(STREAM_BUFFERS, buffers);
@@ -232,9 +231,8 @@ void StreamThread(std::vector<std::string> const& files, bool shuffle, bool repe
 			fread(&bitsPerSample, sizeof(bitsPerSample), 1, f);
 			fseek(f, 44L, SEEK_SET);
 			delete[] header;
-			ALenum format;
-			if (numChannels == 1 && bitsPerSample == 8) format = AL_FORMAT_MONO8;
-			else if (numChannels == 1 && bitsPerSample == 16) format = AL_FORMAT_MONO16;
+			ALenum format = AL_FORMAT_MONO8;
+			if (numChannels == 1 && bitsPerSample == 16) format = AL_FORMAT_MONO16;
 			else if (numChannels == 2 && bitsPerSample == 8) format = AL_FORMAT_STEREO8;
 			else if (numChannels == 2 && bitsPerSample == 16) format = AL_FORMAT_STEREO16;
 			unsigned int pieceSize = frequency * numChannels * bitsPerSample / 8;

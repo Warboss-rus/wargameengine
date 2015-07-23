@@ -16,12 +16,8 @@ public:
 	static void QueueCallback(CallbackHandler const& func, unsigned int flags = 0);
 	//Runs additional working threads and queued doneCallbacks. Call from main thread as often as possible
 	static void Update();
-	//Waits until all active jobs complete. Main thread is also used as a working thread.
-	static void WaitAll();
-	//Returns time before thread closed if it has no work to do.
-	static int GetWorkerTimeout();
-	//Sets the time before thread closed if it has no work to do.
-	static void SetWorkerTimeout(int timeout);
+	//Returns number of tasks and functions queued
+	static size_t GetTasksAndFuncsCount();
 	//Removes all queued operations and callbacks
 	static void CancelAll();
 	//Task internal functions

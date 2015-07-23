@@ -361,7 +361,7 @@ void LoadAnimationClips(xml_node<>* clipsLib, sOBJLoader &loader)
 	{
 		sAnimation anim;
 		anim.id = clip->first_attribute("id")->value();
-		anim.boneIndex = -1;
+		anim.boneIndex = 0;
 		anim.duration = static_cast<float>(atof(clip->first_attribute("end")->value()) - atof(clip->first_attribute("start")->value()));
 		xml_node<>* animation = clip->first_node("instance_animation");
 		while (animation)
@@ -387,10 +387,12 @@ void LoadAnimationClips(xml_node<>* clipsLib, sOBJLoader &loader)
 
 void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 {
-	realloc(data, size + 1);
-	((char*)data)[size] = '\0';
+	std::vector<char> normalizedData;
+	normalizedData.resize(size);
+	memcpy(normalizedData.data(), data, size);
+	normalizedData.push_back('\0');
 	xml_document<> doc;
-	doc.parse<parse_trim_whitespace>((char*)data);
+	doc.parse<parse_trim_whitespace>(normalizedData.data());
 	xml_node<>* root = doc.first_node();
 	if (!root)//No root
 	{
@@ -464,9 +466,9 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 				xml_node<> * source = skin->first_node("source");
 				while (source)
 				{
-					xml_node<>* data = source->first_node("float_array");
-					if (!data) data = source->first_node("Name_array");
-					sources[source->first_attribute("id")->value()] = data;
+					xml_node<>* sourceData = source->first_node("float_array");
+					if (!sourceData) sourceData = source->first_node("Name_array");
+					sources[source->first_attribute("id")->value()] = sourceData;
 					source = source->next_sibling("source");
 				}
 				xml_node<> * j = skin->first_node("joints");
@@ -598,9 +600,9 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 			while (source != NULL)
 			{
 				string id = source->first_attribute("id")->value();
-				xml_node<>* data = source->first_node("float_array");
-				if (!data) data = source->first_node("int_array");
-				sources["#" + id] = data;
+				xml_node<>* sourceData = source->first_node("float_array");
+				if (!sourceData) sourceData = source->first_node("int_array");
+				sources["#" + id] = sourceData;
 				source = source->next_sibling("source");
 			}
 			xml_node<>* triangles = mesh->first_node("triangles");
@@ -690,10 +692,10 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 					loader.weights.insert(loader.weights.end(), weightPtr.begin(), weightPtr.end());
 				}
 				vector<unsigned int> indexes;
-				xml_node<>* data = triangles->first_node("p");
-				while (data)
+				xml_node<>* polygons = triangles->first_node("p");
+				while (polygons)
 				{
-					string value = data->value();
+					string value = polygons->value();
 					int indexCount = (std::count(value.begin(), value.end(), ' ') + 1) / maxOffset;
 					loader.indexes.reserve(loader.indexes.size() + indexCount);
 					loader.vertices.reserve(loader.vertices.size() + indexCount);
@@ -731,7 +733,7 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 							}
 						}
 					}
-					data = data->next_sibling("p");
+					polygons = polygons->next_sibling("p");
 				}
 			}
 			mesh = mesh->next_sibling("mesh");

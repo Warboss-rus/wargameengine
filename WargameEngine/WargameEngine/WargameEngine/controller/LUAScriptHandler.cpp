@@ -7,10 +7,10 @@ lua_State* CLUAScript::m_lua_state;
 
 int luaError( lua_State *L )
 {
-    const char* str = lua_tostring( L, -1 );
+    std::string str = lua_tostring( L, -1 );
+	LogWriter::WriteLine("LUA error:" + str);
     lua_pop(L, 1);
 	throw std::exception();
-    return 0;
 }
 
 CLUAScript::CLUAScript()
@@ -21,7 +21,7 @@ CLUAScript::CLUAScript()
 	luaL_openlibs(m_lua_state);
 }
 
-CLUAScript::CLUAScript(lua_State* state)
+CLUAScript::CLUAScript(lua_State* /*state*/)
 //	:m_lua_state(state)
 {
 }
@@ -326,7 +326,7 @@ std::vector<int> CLUAScript::GetArray<int>(int index)
 	luaL_checktype(m_lua_state, index, LUA_TTABLE);
 	int n = 0;
 	std::vector<int> result;
-	while(true) 
+	for (;;)
 	{
 		lua_rawgeti(m_lua_state, index, ++n);
 		if (lua_isnil(m_lua_state, -1)) break;
@@ -343,7 +343,7 @@ std::vector<float> CLUAScript::GetArray<float>(int index)
 	luaL_checktype(m_lua_state, index, LUA_TTABLE);
 	int n = 0;
 	std::vector<float> result;
-	while (true)
+	for (;;)
 	{
 		lua_rawgeti(m_lua_state, index, ++n);
 		if (lua_isnil(m_lua_state, -1)) break;
@@ -360,7 +360,7 @@ std::vector<std::string> CLUAScript::GetArray<std::string>(int index)
 	luaL_checktype(m_lua_state, index, LUA_TTABLE);
 	int n = 0;
 	std::vector<std::string> result;
-	while (true)
+	for (;;)
 	{
 		lua_rawgeti(m_lua_state, index, ++n);
 		if (lua_isnil(m_lua_state, -1)) break;

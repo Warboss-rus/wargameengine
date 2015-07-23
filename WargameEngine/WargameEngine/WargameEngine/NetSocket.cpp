@@ -1,6 +1,6 @@
 #include "NetSocket.h"
 #ifdef _WINDOWS
-#include <winsock2.h>
+#include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
 #define GET_ERROR WSAGetLastError();
 #else
@@ -134,9 +134,9 @@ CNetSocket::CNetSocket(unsigned short port)//Server
 		LogError();
 		return;
 	}
-	char text[255];
-	sprintf(text, "Net OK. Client %s is accepted by the host.", inet_ntoa(addr.sin_addr));
-	LogWriter::WriteLine(text);
+	char textAddr[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &addr.sin_addr, textAddr, INET_ADDRSTRLEN);
+	LogWriter::WriteLine(std::string("Net OK. Client ") + textAddr + " is accepted by the host.");
 }
 
 CNetSocket::CNetSocket(const char * ip, unsigned short port)//Client
@@ -180,7 +180,7 @@ bool CNetSocket::ChangeAddress(const char* ip, unsigned short port)
 	struct sockaddr_in * addr = (struct sockaddr_in *)m_sockAddr;
 	addr->sin_family = AF_INET;
 	addr->sin_port = htons(port);
-	addr->sin_addr.s_addr = inet_addr(ip);
+	inet_pton(AF_INET, ip, (void*)addr->sin_addr.s_addr);
 	return true;
 }
 
@@ -218,7 +218,7 @@ bool CNetSocket::InitSocket()
 #endif
 }
 
-const char* CNetSocket::GetIP() const
+std::string CNetSocket::GetIP() const
 {
 	struct sockaddr_in name;
 #ifndef _WINDOWS
@@ -230,7 +230,9 @@ const char* CNetSocket::GetIP() const
 	{
 		LogError();
 	}
-	return inet_ntoa(name.sin_addr);
+	char textAddr[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &name.sin_addr, textAddr, INET_ADDRSTRLEN);
+	return textAddr;
 }
 
 unsigned short CNetSocket::GetPort() const

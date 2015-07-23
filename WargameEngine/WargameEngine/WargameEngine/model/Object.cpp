@@ -2,8 +2,8 @@
 #include <sys/timeb.h> 
 #include <algorithm>
 
-CObject::CObject(std::string const& model, double x, double y, double rotation, bool hasShadow)
-	:m_model(model), m_coords(x, y, 0), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
+CObject::CObject(std::string const& model, double x, double y, double z, double rotation, bool hasShadow)
+	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
 {
 	struct timeb time;
 	ftime(&time);

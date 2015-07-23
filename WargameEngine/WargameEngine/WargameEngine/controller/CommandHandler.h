@@ -8,7 +8,7 @@
 class CCommandHandler
 {
 public:
-	CCommandHandler():m_current(-1) {}
+	CCommandHandler();
 	void AddNewCreateObject(std::shared_ptr<IObject> object, bool local = true);
 	void AddNewDeleteObject(std::shared_ptr<IObject> object, bool local = true);
 	void AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY, bool local = true);
@@ -23,6 +23,6 @@ private:
 	void AddNewCommand(ICommand * command, bool local);
 	std::unique_ptr<CCommandCompound> m_compound;
 	std::vector<std::unique_ptr<ICommand>> m_commands;
-	int m_current;
+	size_t m_current;
 };
 

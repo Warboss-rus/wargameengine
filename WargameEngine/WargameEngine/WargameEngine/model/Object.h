@@ -6,7 +6,7 @@
 class CObject : public IObject
 {
 public:
-	CObject(std::string const& model, double x, double y, double rotation, bool hasShadow = true);
+	CObject(std::string const& model, double x, double y, double z, double rotation, bool hasShadow = true);
 	std::string GetPathToModel() const override;
 	void Move(double x, double y, double z) override;
 	void SetCoords(double x, double y, double z) override;

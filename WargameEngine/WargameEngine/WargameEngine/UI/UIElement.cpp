@@ -71,7 +71,7 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 	return false;
 }
 
-void CUIElement::SetState(bool state)
+void CUIElement::SetState(bool)
 {
 	throw std::runtime_error("This UI element doesn't have state");
 }
@@ -231,17 +231,17 @@ std::string const CUIElement::GetText() const
 	return "";
 }
 
-void CUIElement::SetText(std::string const& text)
+void CUIElement::SetText(std::string const&)
 {
 	throw std::runtime_error("This UI element has no text");
 }
 
-void CUIElement::AddItem(std::string const& str)
+void CUIElement::AddItem(std::string const&)
 {
 	throw std::runtime_error("This UI element has no items");
 }
 
-void CUIElement::DeleteItem(size_t index)
+void CUIElement::DeleteItem(size_t)
 {
 	throw std::runtime_error("This UI element has no items");
 }
@@ -256,7 +256,7 @@ size_t CUIElement::GetItemsCount() const
 	throw std::runtime_error("This UI element has no items");
 }
 
-std::string CUIElement::GetItem(size_t index) const
+std::string CUIElement::GetItem(size_t) const
 {
 	throw std::runtime_error("This UI element has no items");
 }
@@ -266,7 +266,7 @@ void CUIElement::ClearItems()
 	throw std::runtime_error("This UI element has no items");
 }
 
-void CUIElement::SetSelected(size_t index)
+void CUIElement::SetSelected(size_t)
 {
 	throw std::runtime_error("This UI element has no items");
 }
@@ -307,17 +307,17 @@ void CUIElement::Resize(int windowHeight, int windowWidth)
 	}
 }
 
-void CUIElement::SetOnChangeCallback(std::function<void()> const& onChange)
+void CUIElement::SetOnChangeCallback(std::function<void()> const&)
 {
 	throw new std::runtime_error("This UI element has no OnChange event");
 }
 
-void CUIElement::SetOnClickCallback(std::function<void()> const& onClick)
+void CUIElement::SetOnClickCallback(std::function<void()> const&)
 {
 	throw new std::runtime_error("This UI element has no OnChange event");
 }
 
-void CUIElement::SetBackgroundImage(std::string const& image)
+void CUIElement::SetBackgroundImage(std::string const&)
 {
 	throw new std::runtime_error("This UI element has no background image");
 }

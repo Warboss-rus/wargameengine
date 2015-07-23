@@ -258,7 +258,7 @@ int BindKey(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 5)
 		return luaL_error(L, "5 argument expected (key, shift, ctrl, alt, funcName)");
-	unsigned char key = CLUAScript::GetArgument<unsigned int>(1);
+	unsigned char key = static_cast<unsigned char>(CLUAScript::GetArgument<unsigned int>(1));
 	bool shift = CLUAScript::GetArgument<bool>(2);
 	bool ctrl = CLUAScript::GetArgument<bool>(3);
 	bool alt = CLUAScript::GetArgument<bool>(4);
@@ -445,8 +445,8 @@ int NetHost(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (port)");
-	int port = CLUAScript::GetArgument<int>(1);
-	CGameController::GetInstance().lock()->GetNetwork().Host(port);
+	unsigned int port = CLUAScript::GetArgument<unsigned int>(1);
+	CGameController::GetInstance().lock()->GetNetwork().Host(static_cast<unsigned short>(port));
 	return 0;
 }
 
@@ -455,7 +455,7 @@ int NetClient(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
 		return luaL_error(L, "2 argument expected (ip, port)");
 	std::string ip = CLUAScript::GetArgument<const char*>(1);
-	int port = CLUAScript::GetArgument<int>(2);
+	unsigned short port = static_cast<unsigned short>(CLUAScript::GetArgument<unsigned int>(2));
 	CGameController::GetInstance().lock()->GetNetwork().Client(ip.c_str(), port);
 	return 0;
 }
@@ -729,7 +729,6 @@ int NewStaticObject(lua_State* L)
 	double x = CLUAScript::GetArgument<double>(2);
 	double y = CLUAScript::GetArgument<double>(3);
 	double rotation = CLUAScript::GetArgument<double>(4);
-	IObject* object = new CObject(model, x, y, rotation);
 	CGameModel::GetInstance().lock()->GetLandscape().AddStaticObject(CStaticObject(model, x, y, rotation));
 	return 0;
 }

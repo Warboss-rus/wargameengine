@@ -26,7 +26,8 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 	CMaterialManager & materials, std::vector<sMesh> & meshes)
 {
 	m_vbo = NULL;
-	if (NULL && GLEW_ARB_vertex_buffer_object)
+#ifdef _USE_VBO
+	if (GLEW_ARB_vertex_buffer_object)
 	{
 		glGenBuffersARB(1, &m_vbo);
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
@@ -36,6 +37,7 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 		glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, vertices.size() * 3 * sizeof(float)+normals.size() * 3 * sizeof(float), textureCoords.size() * 2 * sizeof(float), &textureCoords[0]);
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	}
+#endif
 	m_vertices.swap(vertices);
 	m_textureCoords.swap(textureCoords);
 	m_normals.swap(normals);

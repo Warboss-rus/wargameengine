@@ -20,7 +20,6 @@ std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double 
 	std::ifstream iFile(path);
 	std::unique_ptr<IBounding> bounding(new CBoundingCompound());
 	std::string line;
-	unsigned int count = 0;
 	if (!iFile.good()) return NULL;
 	while (iFile.good())
 	{

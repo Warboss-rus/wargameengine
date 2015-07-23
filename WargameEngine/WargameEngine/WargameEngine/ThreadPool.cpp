@@ -25,6 +25,7 @@ public:
 		{
 			m_funcs.push_back(func);
 		}
+		m_conditional.notify_one();
 	}
 
 	void RunFunc(FunctionHandler const& func, CallbackHandler const& callback, unsigned int flags)
@@ -50,6 +51,7 @@ public:
 		std::lock_guard<std::mutex> lk(m_tasksMutex);
 		m_tasks.push_back(task);
 		task->Queue();
+		m_conditional.notify_one();
 	}
 
 	void RemoveTask(ITask * task)
@@ -60,27 +62,18 @@ public:
 		{
 			m_tasks.erase(it);
 		}
-	}
-
-	void ReportThreadClose()
-	{
-		std::lock_guard<std::mutex> lk(m_threadsMutex);
-		m_currentThreads--;
-	}
-
-	int GetWorkerTimeout()
-	{
-		return m_threadsTimeout;
+		auto it2 = std::find_if(m_storedTasks.begin(), m_storedTasks.end(), [task](std::shared_ptr<ITask> const& taskptr) {return taskptr.get() == task;});
+		if (it2 != m_storedTasks.end())
+		{
+			m_storedTasks.erase(it2);
+		}
 	}
 
 	void Update()
 	{
-		if ((!m_funcs.empty() || !m_tasks.empty()) && m_currentThreads < m_maxThreads)
+		if ((!m_funcs.empty() || !m_tasks.empty()) && m_threads.size() < m_maxThreads)
 		{
-			m_threadsMutex.lock();
-			m_currentThreads++;
 			m_threads.push_back(std::async(std::launch::async, std::bind(&Impl::WorkerThread, this)));
-			m_threadsMutex.unlock();
 		}
 		while (!m_callbacks.empty())
 		{
@@ -92,22 +85,15 @@ public:
 		}
 	}
 
-	void WaitAll()
+	size_t GetTasksAndFuncsCount()
 	{
-		int timeout = GetWorkerTimeout();
-		SetWorkerTimeout(10);
-		m_threadsMutex.lock();
-		m_currentThreads++;
-		m_threadsMutex.unlock();
-		WorkerThread();
-		m_threads.clear();
-		SetWorkerTimeout(timeout);
-		Update();
-	}
-
-	void SetWorkerTimeout(int timeout)
-	{
-		m_threadsTimeout = timeout;
+		m_funcMutex.lock();
+		size_t result = m_funcs.size();
+		m_funcMutex.unlock();
+		m_tasksMutex.lock();
+		result += m_tasks.size();
+		m_tasksMutex.unlock();
+		return result;
 	}
 
 	void CancelAll()
@@ -116,6 +102,10 @@ public:
 		m_funcMutex.lock();
 		m_funcs.clear();
 		m_funcMutex.unlock();
+		m_tasksMutex.lock();
+		m_tasks.clear();
+		m_tasksMutex.unlock();
+		m_conditional.notify_all();
 		m_callbackMutex.lock();
 		m_callbacks.clear();
 		m_callbackMutex.unlock();
@@ -125,18 +115,14 @@ public:
 
 	void WorkerThread()
 	{
-		int timeUntilExit = GetWorkerTimeout();
-		while (timeUntilExit > 0)
+		for (;;)
 		{
-			if (m_cancelled)
-			{
-				return;
-			}
-			timeUntilExit--;
+			bool hasTasks = false;
 			{
 				std::unique_lock<std::mutex> lk(m_funcMutex);
 				if (!m_funcs.empty())
 				{
+					hasTasks = true;
 					sRunFunc func = std::move(m_funcs.front());
 					m_funcs.pop_front();
 					lk.unlock();
@@ -145,41 +131,44 @@ public:
 					{
 						QueueCallback(func.callback, func.flags);
 					}
-					timeUntilExit = GetWorkerTimeout();
 				}
 			}
 			{
 				std::unique_lock<std::mutex> lk(m_tasksMutex);
 				if (!m_tasks.empty())
 				{
+					hasTasks = true;
 					std::shared_ptr<ITask> task = m_tasks.front();
 					m_tasks.pop_front();
-					storedTasks.push_back(task);
+					m_storedTasks.push_back(task);
 					lk.unlock();
 					task->Execute();
-					timeUntilExit = GetWorkerTimeout();
 				}
 			}
-			if (timeUntilExit < GetWorkerTimeout())
+			if (!hasTasks)
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				std::unique_lock<std::mutex> lk(m_conditionalMutex);
+				m_conditional.wait(lk);
+				if (m_cancelled)
+				{
+					return;
+				}
 			}
 		}
-		ReportThreadClose();
+		
 	}
 
 	std::deque<FunctionHandler> m_callbacks;
 	std::deque<sRunFunc> m_funcs;
 	std::deque<std::shared_ptr<ITask>> m_tasks;
-	std::vector<std::shared_ptr<ITask>> storedTasks;
-	unsigned int m_currentThreads = 0;
+	std::vector<std::shared_ptr<ITask>> m_storedTasks;
 	unsigned int m_maxThreads = std::thread::hardware_concurrency();
-	int m_threadsTimeout = 2000;
 	bool m_cancelled = false;
 	std::vector<std::future<void>> m_threads;
+	std::condition_variable m_conditional;
+	std::mutex m_conditionalMutex;
 	std::mutex m_callbackMutex;
 	std::mutex m_funcMutex;
-	std::mutex m_threadsMutex;
 	std::mutex m_tasksMutex;
 };
 
@@ -200,19 +189,9 @@ void ThreadPool::Update()
 	m_pImpl->Update();
 }
 
-void ThreadPool::WaitAll()
+size_t ThreadPool::GetTasksAndFuncsCount()
 {
-	m_pImpl->WaitAll();
-}
-
-int ThreadPool::GetWorkerTimeout()
-{
-	return m_pImpl->GetWorkerTimeout();
-}
-
-void ThreadPool::SetWorkerTimeout(int timeout)
-{
-	m_pImpl->SetWorkerTimeout(timeout);
+	return m_pImpl->GetTasksAndFuncsCount();
 }
 
 void ThreadPool::CancelAll()

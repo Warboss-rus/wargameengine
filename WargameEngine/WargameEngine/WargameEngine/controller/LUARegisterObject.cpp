@@ -193,7 +193,6 @@ int SetMoveLimit(lua_State* L)
 	}
 	if(limiterType == "rectangle")
 	{
-		int n =CLUAScript::GetArgumentCount();
 		if (CLUAScript::GetArgumentCount() != 7)
 			return luaL_error(L, "5 argument expected(moveLimiterType, x1, y1, x2, y2)");
 		double x1 = CLUAScript::GetArgument<double>(3);
@@ -204,14 +203,12 @@ int SetMoveLimit(lua_State* L)
 	}
 	if (limiterType == "tiles")
 	{
-		int n = CLUAScript::GetArgumentCount();
 		if (CLUAScript::GetArgumentCount() != 3)
 			return luaL_error(L, "1 argument expected(moveLimiterType)");
 		object->SetMovementLimiter(new CMoveLimiterTiles());
 	}
 	if (limiterType == "custom")
 	{
-		int n = CLUAScript::GetArgumentCount();
 		if (CLUAScript::GetArgumentCount() != 4)
 			return luaL_error(L, "1 argument expected(moveLimiterType, functionName)");
 		std::string function = CLUAScript::GetArgument<const char*>(3);

@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstring>
 
-void LoadWbmModel(void* data, unsigned int dataSize, sOBJLoader & loader)
+void LoadWbmModel(void* data, unsigned int /*dataSize*/, sOBJLoader & loader)
 {
 	std::map<std::string, sMaterial> materials;
 	std::vector<sMesh> meshes;
@@ -65,5 +65,4 @@ void LoadWbmModel(void* data, unsigned int dataSize, sOBJLoader & loader)
 		position += size + 4;
 	}
 	loader.materialManager =  CMaterialManager(materials);
-	delete [] data;
 }

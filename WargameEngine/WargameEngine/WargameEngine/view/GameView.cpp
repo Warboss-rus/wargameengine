@@ -55,7 +55,7 @@ CGameView::CGameView(void)
 void CGameView::OnTimer(int value)
 {
 	if(m_visible) glutPostRedisplay();
-	glutTimerFunc(1, OnTimer, 0);
+	glutTimerFunc(1, OnTimer, value);
 }
 
 void CGameView::OnChangeState(int state)
@@ -628,7 +628,6 @@ void CGameView::Preload(std::string const& image)
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		CTextureManager::GetInstance()->SetTexture(image);
-		ThreadPool::WaitAll();
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2d(0.0, 0.0);
 		glVertex2d(0.0, 0.0);
@@ -651,7 +650,6 @@ void CGameView::Preload(std::string const& image)
 		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
 	}
-	ThreadPool::WaitAll();
 	CTextureManager::GetInstance()->SetTexture("");
 }
 
@@ -688,8 +686,8 @@ void CGameView::DrawLine(double beginX, double beginY, double beginZ, double end
 {
 	glColor3ub(colorR, colorG, colorB);
 	glBegin(GL_LINES);
-	glVertex3d(beginX, beginY, 0.0);
-	glVertex3d(endX, endY, 0.0);
+	glVertex3d(beginX, beginY, beginZ);
+	glVertex3d(endX, endY, endZ);
 	glEnd();
 	glColor3d(255.0, 255.0, 255.0);
 }

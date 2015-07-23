@@ -119,7 +119,7 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 	return materials;
 }
 
-void LoadObjModel(void* data, unsigned int size, sOBJLoader & loader)
+void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader)
 {
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;

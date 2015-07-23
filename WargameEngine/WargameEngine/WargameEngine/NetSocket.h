@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 class CNetSocket
 {
@@ -14,7 +15,7 @@ public:
 	bool SendData(const char * data, int len) const;
 	//Return -1 then error occures, 0 then connection is closed by other side or number of bytes recieved.
 	int RecieveData(char* data, int maxLength);
-	const char* GetIP() const;
+	std::string GetIP() const;
 	unsigned short GetPort() const;
 	~CNetSocket();
 private:

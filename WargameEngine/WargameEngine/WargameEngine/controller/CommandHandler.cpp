@@ -9,9 +9,9 @@
 
 void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 {
-	if(!m_commands.empty() && m_current != m_commands.size() - 1)
+	if(!m_commands.empty() && m_current < m_commands.size())
 	{
-		m_commands.erase(m_commands.begin() + m_current + 1, m_commands.end());
+		m_commands.erase(m_commands.begin() + m_current, m_commands.end());
 	}
 	if(m_compound)
 	{
@@ -21,12 +21,17 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 	{
 		m_commands.push_back(std::unique_ptr<ICommand>(command));
 	}
-	m_current = m_commands.size() - 1;
+	m_current = m_commands.size();
 	CNetwork & network = CGameController::GetInstance().lock()->GetNetwork();
 	if (local && network.IsConnected())
 	{
 		network.SendAction(command->Serialize(), true);
 	}
+}
+
+CCommandHandler::CCommandHandler()
+	:m_current(0)
+{
 }
 
 void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool local)
@@ -77,16 +82,16 @@ void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::st
 
 void CCommandHandler::Undo()
 {
-	if(m_current == -1) return;
-	m_commands[m_current]->Rollback();
+	if(m_current == 0) return;
 	m_current--;
+	m_commands[m_current]->Rollback();
 }
 
 void CCommandHandler::Redo()
 {
-	if(m_current == m_commands.size() - 1) return;
-	m_current++;
+	if(m_current == m_commands.size()) return;
 	m_commands[m_current]->Execute();
+	m_current++;
 }
 
 void CCommandHandler::BeginCompound()

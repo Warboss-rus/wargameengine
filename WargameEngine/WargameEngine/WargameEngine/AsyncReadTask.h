@@ -1,7 +1,7 @@
 #pragma once
 #include "Task.h"
 
-class AsyncReadTask : public TaskT<void>
+class AsyncReadTask : public TaskBase<void>
 {
 public:
 	typedef std::function<void(void*, unsigned int)> AsyncReadHandler;
@@ -28,17 +28,17 @@ public:
 				throw std::exception(("Cannot open file " + m_path).c_str());
 			}
 			fseek(file, 0L, SEEK_END);
-			m_size = ftell(file);
+			unsigned int size = ftell(file);
 			fseek(file, 0L, SEEK_SET);
-			m_data = new unsigned char[m_size];
-			fread(m_data, 1, m_size, file);
+			m_data.resize(size);
+			fread(m_data.data(), 1, size, file);
 			fclose(file);
 			if (m_handler)
 			{
 				ThreadPool::RunFunc([this]() {
 					try
 					{
-						m_handler(m_data, m_size);
+						m_handler(m_data.data(), m_data.size());
 					}
 					catch (std::exception const& e)
 					{
@@ -48,7 +48,10 @@ public:
 							ThreadPool::QueueCallback([=]() {m_onFail(e);});
 						}
 					}
-				}, m_callback);
+				}, [this]() {
+					m_callback();
+					ThreadPool::RemoveTask(this);
+				});
 			}
 		}
 		catch (std::exception const& e)
@@ -62,7 +65,6 @@ public:
 	}
 private:
 	std::string m_path;
-	void * m_data;
-	unsigned int m_size;
+	std::vector<unsigned char> m_data;
 	AsyncReadHandler m_handler;
 };

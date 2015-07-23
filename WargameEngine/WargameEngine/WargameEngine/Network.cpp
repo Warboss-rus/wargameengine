@@ -14,7 +14,7 @@ CNetwork::CNetwork()
 {
 }
 
-void CNetwork::Host(unsigned int port)
+void CNetwork::Host(unsigned short port)
 {
 	if (m_socket)
 	{
@@ -93,7 +93,6 @@ void CNetwork::Update()
 		else if (m_netData[0] == 2) //command
 		{
 			char * data = m_netData + 4;
-			bool action = data[1] < 0;
 			char type = data[1];
 			CCommandHandler & commandHandler = CGameController::GetInstance().lock()->GetCommandHandler();
 			switch (type)
