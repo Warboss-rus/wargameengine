@@ -6,22 +6,23 @@ class CUIComboBox : public CUIElement
 {
 public:
 	CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
-	void Draw() const override;
-	bool LeftMouseButtonDown(int x, int y) override;
-	bool LeftMouseButtonUp(int x, int y) override;
-	void AddItem(std::wstring const& str) override;
-	void DeleteItem(size_t index) override;
-	std::wstring const GetText() const override;
-	int GetSelectedIndex() const override;
-	size_t GetItemsCount() const override;
-	std::wstring GetItem(size_t index) const override;
-	void ClearItems() override;
-	void SetSelected(size_t index) override;
-	bool PointIsOnElement(int x, int y) const override;
-	void SetText(std::wstring const& text) override;
-	void SetOnChangeCallback(std::function<void()> const& onChange) override;
-	void Resize(int windowHeight, int windowWidth) override;
-	void SetTheme(std::shared_ptr<CUITheme> theme) override;
+	virtual void Draw() const override;
+	virtual bool LeftMouseButtonDown(int x, int y) override;
+	virtual bool LeftMouseButtonUp(int x, int y) override;
+	virtual void OnMouseMove(int x, int y) override;
+	virtual void AddItem(std::wstring const& str) override;
+	virtual void DeleteItem(size_t index) override;
+	virtual std::wstring const GetText() const override;
+	virtual int GetSelectedIndex() const override;
+	virtual size_t GetItemsCount() const override;
+	virtual std::wstring GetItem(size_t index) const override;
+	virtual void ClearItems() override;
+	virtual void SetSelected(size_t index) override;
+	virtual bool PointIsOnElement(int x, int y) const override;
+	virtual void SetText(std::wstring const& text) override;
+	virtual void SetOnChangeCallback(std::function<void()> const& onChange) override;
+	virtual void Resize(int windowHeight, int windowWidth) override;
+	virtual void SetTheme(std::shared_ptr<CUITheme> theme) override;
 private:
 	std::vector<std::wstring> m_items;
 	int m_selected;

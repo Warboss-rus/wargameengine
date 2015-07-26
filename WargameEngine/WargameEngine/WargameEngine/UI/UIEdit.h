@@ -12,6 +12,8 @@ public:
 	std::wstring const GetText() const override;
 	void SetText(std::wstring const& text) override;
 private:
+	void SetCursorPos(int x);
+
 	std::wstring m_text;
 	size_t m_pos;
 	size_t m_beginSelection;

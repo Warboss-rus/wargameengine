@@ -6,11 +6,12 @@
 class CUIScrollBar
 {
 public:
-	CUIScrollBar(std::shared_ptr<CUITheme> theme, IRenderer & renderer):m_theme(theme), m_renderer(&renderer) {}
+	CUIScrollBar(std::shared_ptr<CUITheme> theme, IRenderer & renderer);
 	void Update(int size, int contentSize, int width, int step);
 	void Draw() const;
 	bool LeftMouseButtonDown(int x, int y);
 	bool LeftMouseButtonUp(int x, int y);
+	bool OnMouseMove(int x, int y);
 	bool IsOnElement(int x, int y) const;
 	int GetPosition() const;
 private:
@@ -21,7 +22,8 @@ private:
 	int m_mousePos;
 	int m_step;
 	bool m_pressed;
-	bool m_buttonPressed;
+	bool m_upButtonPressed;
+	bool m_downButtonPressed;
 	std::shared_ptr<CUITheme> m_theme;
 	IRenderer * m_renderer;
 };

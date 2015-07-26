@@ -76,7 +76,7 @@ public:
 		float texCoord[4];
 		float pressedTexCoord[4];
 		int width;
-		int buttonHeight;
+		int buttonSize;
 	};
 	sScrollBar sbar;
 	static CUITheme defaultTheme;

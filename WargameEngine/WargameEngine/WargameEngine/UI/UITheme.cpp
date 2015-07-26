@@ -84,7 +84,7 @@ CUITheme::CUITheme()
 	sbar.pressedTexCoord[1] = 0.984f;
 	sbar.pressedTexCoord[2] = 0.168f;
 	sbar.pressedTexCoord[3] = 0.953f;
-	sbar.buttonHeight = 20;
+	sbar.buttonSize = 20;
 	sbar.width = 20;
 }
 
@@ -208,7 +208,7 @@ void CUITheme::Load(std::string const& filename)
 	if (themeScrollbar)
 	{
 		if (themeScrollbar->first_attribute("texCoord")) GetValues(sbar.texCoord, themeButton->first_attribute("texCoord")->value(), 4);
-		if (themeScrollbar->first_attribute("buttonHeight")) sbar.buttonHeight = atoi(themeScrollbar->first_attribute("buttonHeight")->value());
+		if (themeScrollbar->first_attribute("buttonHeight")) sbar.buttonSize = atoi(themeScrollbar->first_attribute("buttonHeight")->value());
 		if (themeScrollbar->first_attribute("width")) sbar.width = atoi(themeScrollbar->first_attribute("width")->value());
 		xml_node<>* themePressed = themeScrollbar->first_node("pressed");
 		if (themePressed && themePressed->first_attribute("texCoord")) GetValues(sbar.pressedTexCoord, themePressed->first_attribute("texCoord")->value(), 4);

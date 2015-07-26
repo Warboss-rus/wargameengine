@@ -104,8 +104,8 @@ bool CUIComboBox::LeftMouseButtonUp(int x, int y)
 		{
 			if(m_expanded && PointIsOnElement(x, y))
 			{
-				int index = (y - GetHeight() + m_scrollbar.GetPosition()) / m_theme->combobox.elementSize;
-				if(index > 0) m_selected = index - 1;
+				int index = (y - GetHeight() - GetY() + m_scrollbar.GetPosition()) / m_theme->combobox.elementSize;
+				if(index >= 0) m_selected = index;
 				if(m_onChange) m_onChange();
 			}
 			m_expanded = !m_expanded;
@@ -147,11 +147,11 @@ void CUIComboBox::SetSelected(size_t index)
 bool CUIComboBox::PointIsOnElement(int x, int y) const
 {
 	int height = GetHeight();
-	if(m_expanded && !m_items.empty())
+	if(m_expanded)
 	{
-		height *= m_items.size() + 1;
+		height += m_theme->combobox.elementSize * m_items.size();
 	}
-	if(x > GetX() && x < GetX() + GetWidth()	&& y > GetY() && y < GetY() + height)
+	if(x > GetX() && x < GetX() + GetWidth() && y > GetY() && y < GetY() + height)
 		return true;
 	return false;
 }
@@ -217,4 +217,13 @@ void CUIComboBox::SetTheme(std::shared_ptr<CUITheme> theme)
 	m_theme = theme; 
 	m_scrollbar = CUIScrollBar(theme, m_renderer); 
 	Invalidate();
+}
+
+void CUIComboBox::OnMouseMove(int x, int y)
+{
+	if (m_visible && m_focused) m_focused->OnMouseMove(x, y);
+	if (m_scrollbar.OnMouseMove(x - GetX(), y - GetY() - GetHeight()))
+	{
+		Invalidate();
+	}
 }

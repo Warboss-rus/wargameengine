@@ -227,6 +227,7 @@ void CInput::OnPassiveMouseMove(int x, int y)
         just_warped = false;
         return;
     }
+	CGameView::GetInstance().lock()->GetUI()->OnMouseMove(x, y);
 	CGameView::GetInstance().lock()->GetCamera()->OnMouseMove(x - prevMouseX, prevMouseY - y, m_isLMBDown, m_isRMBDown, HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
 	if (CGameView::GetInstance().lock()->GetCamera()->HidePointer())
 	{
@@ -244,6 +245,7 @@ void CInput::OnPassiveMouseMove(int x, int y)
 
 void CInput::OnMouseMove(int x, int y)
 {
+	CGameView::GetInstance().lock()->GetUI()->OnMouseMove(x, y);
 	if (m_isLMBDown)
 	{
 		if(m_ruler)

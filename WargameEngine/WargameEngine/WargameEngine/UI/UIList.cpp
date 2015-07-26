@@ -69,7 +69,7 @@ bool CUIList::LeftMouseButtonUp(int x, int y)
 	if (m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY())) return true;
 	if(PointIsOnElement(x, y))
 	{
-		unsigned int index = (y - GetY()) / m_theme->list.elementSize;
+		int index = (y - GetY()) / m_theme->list.elementSize;
 		if(index >= 0 && index < m_items.size()) m_selected = index;
 		if(m_onChange) m_onChange();
 		SetFocus();
@@ -91,7 +91,11 @@ void CUIList::AddItem(std::wstring const& str)
 
 std::wstring const CUIList::GetText() const
 {
-	return m_items[m_selected];
+	if (m_selected >= 0)
+	{
+		return m_items[m_selected];
+	}
+	return L"";
 }
 
 void CUIList::SetSelected(size_t index)
@@ -161,4 +165,13 @@ void CUIList::SetTheme(std::shared_ptr<CUITheme> theme)
 	m_theme = theme; 
 	m_scrollbar = CUIScrollBar(theme, m_renderer); 
 	Invalidate();
+}
+
+void CUIList::OnMouseMove(int x, int y)
+{
+	if (m_visible && m_focused) m_focused->OnMouseMove(x, y);
+	if (m_scrollbar.OnMouseMove(x, y))
+	{
+		Invalidate();
+	}
 }

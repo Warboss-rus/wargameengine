@@ -143,6 +143,11 @@ bool CUIElement::OnSpecialKeyPress(int key)
 	return false;
 }
 
+void CUIElement::OnMouseMove(int x, int y)
+{
+	if(m_visible && m_focused) m_focused->OnMouseMove(x, y);
+}
+
 IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this, m_renderer));
