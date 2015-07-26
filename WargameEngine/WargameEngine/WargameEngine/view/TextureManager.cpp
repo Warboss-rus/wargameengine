@@ -1,13 +1,11 @@
 #include "TextureManager.h"
-#define GLEW_STATIC
 #include <GL/glew.h>
 #include "gl.h"
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
 #pragma warning( push )
-#pragma warning( disable : 4457)
-#pragma warning( disable : 4456)
+#pragma warning( disable : 4457 4456 4100)
 #include "../stb_image.c"
 #pragma warning( pop )
 #include "../nv_dds.h"

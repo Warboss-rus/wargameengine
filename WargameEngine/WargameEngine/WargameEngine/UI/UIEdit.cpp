@@ -2,35 +2,51 @@
 #include "UIText.h"
 #include "..\view\KeyDefines.h"
 
+CUIEdit::CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer) :
+	CUIElement(x, y, height, width, parent, renderer), m_isPressed(false), m_pos(0), m_beginSelection(0), m_text(text)
+{
+
+}
+
 void CUIEdit::Draw() const
 {
 	if(!m_visible)
 		return;
 	m_renderer.PushMatrix();
 	m_renderer.Translate(GetX(), GetY(), 0);
-	m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
-	m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
-	m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
-	int borderSize = m_theme->edit.borderSize;
-	m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
-	int fonty = (GetHeight() + m_theme->edit.text.fontSize) / 2;
-	if(IsFocused(nullptr))
+	if (!m_cache)
 	{
-		int cursorpos = m_theme->edit.borderSize + GetStringWidth(m_theme->edit.text, m_text);
-		m_renderer.SetColor(0, 0, 0);
-		m_renderer.RenderArrays(RenderMode::LINES, { CVector2i(cursorpos, fonty), { cursorpos, fonty - static_cast<int>(m_theme->edit.text.fontSize) } }, {});
+		m_cache = move(m_renderer.RenderToTexture([this]() {
+			m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
+			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
+			m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+			int borderSize = m_theme->edit.borderSize;
+			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
+			int fonty = (GetHeight() + m_theme->edit.text.fontSize) / 2;
+			if (IsFocused(nullptr))
+			{
+				int cursorpos = m_theme->edit.borderSize + GetStringWidth(m_theme->edit.text, m_text);
+				m_renderer.SetColor(0, 0, 0);
+				m_renderer.RenderArrays(RenderMode::LINES, { CVector2i(cursorpos, fonty), { cursorpos, fonty - static_cast<int>(m_theme->edit.text.fontSize) } }, {});
+			}
+			if (m_pos != m_beginSelection)
+			{
+				m_renderer.SetColor(0.0f, 0.0f, 1.0f);
+				int fontwidth = GetStringWidth(m_theme->edit.text, m_text);
+				int selectionWidth = m_beginSelection * fontwidth;
+				int pos = m_pos;
+				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize + selectionWidth, fonty),
+				{ borderSize + selectionWidth, fonty - GetStringHeight(m_theme->edit.text, m_text) }, {borderSize + pos * fontwidth, fonty - GetStringHeight(m_theme->edit.text, m_text) }, {borderSize + pos * fontwidth, fonty} }, {});
+			}
+			PrintText(m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 * m_theme->edit.borderSize, m_text, m_theme->text);
+		}, GetWidth(), GetHeight()));
 	}
-	if(m_pos != m_beginSelection)
-	{
-		m_renderer.SetColor(0.0f, 0.0f, 1.0f);
-		int fontwidth = GetStringWidth(m_theme->edit.text, m_text);
-		int selectionWidth = m_beginSelection * fontwidth;
-		int pos = m_pos;
-		m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize + selectionWidth, fonty),
-		{ borderSize + selectionWidth, fonty - GetStringHeight(m_theme->edit.text, m_text) }, {borderSize + pos * fontwidth, fonty - GetStringHeight(m_theme->edit.text, m_text) }, {borderSize + pos * fontwidth, fonty} }, {});
-	}
-	PrintText(m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 *m_theme->edit.borderSize, m_text, m_theme->text);
+	m_cache->Bind();
+	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
+	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
 	m_renderer.SetTexture("");
+
 	CUIElement::Draw();
 	m_renderer.PopMatrix();
 }
@@ -40,6 +56,7 @@ bool CUIEdit::OnKeyPress(unsigned char key)
 	if(!m_visible) return false;
 	if(CUIElement::OnKeyPress(key)) 
 		return true;
+	Invalidate();
 	if(!IsFocused(NULL))
 	{
 		return false;
@@ -48,9 +65,10 @@ bool CUIEdit::OnKeyPress(unsigned char key)
 		return false;
 	if(key != 127 && key != 8)
 	{
-		char str[2];
-		str[0] = key;
-		str[1] = '\0';
+		wchar_t str[2];
+		char ckey = key;
+		mbstowcs(str, &ckey, 1);
+		str[1] = L'\0';
 		m_text.insert(m_pos, str);
 		m_pos++;
 		m_beginSelection++;
@@ -85,6 +103,7 @@ bool CUIEdit::OnKeyPress(unsigned char key)
 bool CUIEdit::OnSpecialKeyPress(int key)
 {
 	if(!m_visible) return false;
+	Invalidate();
 	if(CUIElement::OnSpecialKeyPress(key)) 
 		return true;
 	if(!IsFocused(NULL))
@@ -124,6 +143,7 @@ bool CUIEdit::LeftMouseButtonUp(int x, int y)
 	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonUp(x, y))
 		return true;
+	Invalidate();
 	if(PointIsOnElement(x, y))
 	{
 		size_t pos = (x - GetX()) / GetStringHeight(m_theme->edit.text, "0");
@@ -143,6 +163,7 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 	if(!m_visible) return false;
 	if(CUIElement::LeftMouseButtonDown(x, y))
 		return true;
+	Invalidate();
 	if(PointIsOnElement(x, y))
 	{
 		size_t pos = (x - GetX()) / GetStringHeight(m_theme->edit.text, "0");
@@ -154,12 +175,13 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 	return false;
 }
 
-std::string const CUIEdit::GetText() const
+std::wstring const CUIEdit::GetText() const
 { 
 	return m_text; 
 }
 
-void CUIEdit::SetText(std::string const& text)
+void CUIEdit::SetText(std::wstring const& text)
 { 
 	m_text = text; 
+	Invalidate();
 }

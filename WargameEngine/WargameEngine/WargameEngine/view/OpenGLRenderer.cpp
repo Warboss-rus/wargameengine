@@ -1,6 +1,8 @@
 #include "OpenGLRenderer.h"
 #include "TextureManager.h"
+#include <GL\glew.h>
 #include "gl.h"
+#include "..\LogWriter.h"
 
 using namespace std;
 
@@ -151,3 +153,85 @@ void COpenGLRenderer::SetColor(int r, int g, int b)
 	glColor3i(r, g, b);
 }
 
+std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
+{
+	//set up texture
+	auto texture = std::make_unique<COpenGlCachedTexture>();
+	texture->Bind();
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	SetTexture("");
+	//set up buffer
+	GLuint framebuffer = 0;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *texture, 0);
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+	{
+		LogWriter::WriteLine("framebuffer error code=" + std::to_string(status));
+	}
+	glPushAttrib(GL_VIEWPORT_BIT);
+	glViewport(0, 0, width, height);
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glScalef(1.0f, -1.0f, 1.0f);
+	glOrtho(0, width, height, 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	func();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glPopAttrib();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &framebuffer);
+	return move(texture);
+}
+
+std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(void * data, unsigned int width, unsigned int height, CachedTextureType type)
+{
+	static const std::map<CachedTextureType, GLenum> typeMap = {
+		{ CachedTextureType::RGBA, GL_RGBA },
+		{ CachedTextureType::ALPHA, GL_ALPHA }
+	};
+	auto texture = std::make_unique<COpenGlCachedTexture>();
+	texture->Bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
+	return move(texture);
+}
+
+COpenGlCachedTexture::COpenGlCachedTexture()
+{
+	glGenTextures(1, &m_id);
+}
+
+COpenGlCachedTexture::~COpenGlCachedTexture()
+{
+	glDeleteTextures(1, &m_id);
+}
+
+void COpenGlCachedTexture::Bind() const
+{
+	glBindTexture(GL_TEXTURE_2D, m_id);
+}
+
+COpenGlCachedTexture::operator unsigned int()
+{
+	return m_id;
+}

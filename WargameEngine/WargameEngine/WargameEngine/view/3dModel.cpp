@@ -1,5 +1,4 @@
 #include "3dModel.h"
-#define GLEW_STATIC
 #include <GL/glew.h>
 #include "gl.h"
 #include "GameView.h"
@@ -449,7 +448,6 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 
 void C3DModel::PreloadTextures() const
 {
-	return;
 	CTextureManager * texManager = CTextureManager::GetInstance();
 	for (size_t i = 0; i < m_meshes.size(); ++i)
 	{

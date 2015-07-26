@@ -13,7 +13,6 @@ void CPluginManager::LoadPlugin(std::string const& file)
 		return;
 	}
 	std::string type = typeFunc();
-	void * instance = instanceFunc();
 	if (type == "image")
 	{
 		//Register image type plugin

@@ -26,14 +26,14 @@ public:
 	virtual bool IsFocused(const IUIElement * child) const = 0;
 	virtual void SetTheme(std::shared_ptr<CUITheme> theme) = 0;
 	virtual std::shared_ptr<CUITheme> GetTheme() const = 0;
-	virtual std::string const GetText() const = 0;
-	virtual void SetText(std::string const& text) = 0;
-	virtual void AddItem(std::string const& str) = 0;
+	virtual std::wstring const GetText() const = 0;
+	virtual void SetText(std::wstring const& text) = 0;
+	virtual void AddItem(std::wstring const& str) = 0;
 	virtual void DeleteItem(size_t index) = 0;
 	virtual void ClearItems() = 0;
 	virtual int GetSelectedIndex() const = 0;
 	virtual size_t GetItemsCount() const = 0;
-	virtual std::string GetItem(size_t index) const = 0;
+	virtual std::wstring GetItem(size_t index) const = 0;
 	virtual void SetSelected(size_t index) = 0;
 	virtual void Resize(int windowHeight, int windowWidth) = 0;
 	virtual void SetOnChangeCallback(std::function<void()> const& onChange) = 0;
@@ -41,14 +41,16 @@ public:
 	virtual void SetBackgroundImage(std::string const& image) = 0;
 	virtual void SetState(bool state) = 0;
 	virtual bool GetState() const = 0;
+	virtual void Invalidate() const = 0;
 
-	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, std::function<void()> const& onClick) = 0;
-	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) = 0;
+	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick) = 0;
+	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text) = 0;
 	virtual IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) = 0;
-	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState) = 0;
-	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = nullptr) = 0;
-	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text) = 0;
+	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState) = 0;
+	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring> * items = nullptr) = 0;
+	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) = 0;
 	virtual IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual void SetFocus(IUIElement * focus = nullptr) = 0;
+
 };

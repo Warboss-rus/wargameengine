@@ -1,5 +1,4 @@
 #include "GameView.h"
-#define GLEW_STATIC
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <string>
@@ -45,10 +44,11 @@ CGameView::~CGameView()
 }
 
 CGameView::CGameView(void)
+	:m_textWriter(m_renderer)
 {
 	m_gameModel = CGameModel::GetInstance();
-	m_ui.reset(new CUIElement(m_renderer));
-	m_ui->SetTheme(std::shared_ptr<CUITheme>(new CUITheme(CUITheme::defaultTheme)));
+	m_ui = std::make_unique<CUIElement>(m_renderer);
+	m_ui->SetTheme(std::make_shared<CUITheme>(CUITheme::defaultTheme));
 	m_soundPlayer.Init();
 }
 
@@ -483,6 +483,11 @@ CTextWriter& CGameView::GetTextWriter()
 CSoundPlayer& CGameView::GetSoundPlayer()
 {
 	return m_soundPlayer;
+}
+
+CTranslationManager& CGameView::GetTranslationManager()
+{
+	return m_translationManager;
 }
 
 void CGameView::ResizeWindow(int height, int width)

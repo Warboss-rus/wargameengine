@@ -1,5 +1,4 @@
 #include "ShaderManager.h"
-#define GLEW_STATIC
 #include <GL/glew.h>
 #include "gl.h"
 #include <fstream>

@@ -107,6 +107,17 @@ void CLUAScript::SetArgument<const char*>(const char* arg)
 }
 
 template<>
+void CLUAScript::SetArgument<const wchar_t*>(const wchar_t* arg)
+{
+	std::vector<char> str;
+	size_t size = wcslen(arg);
+	str.resize(size);
+	wcstombs(str.data(), arg, size);
+	str.push_back('\0');
+	lua_pushstring(m_lua_state, str.data());
+}
+
+template<>
 void CLUAScript::SetArgument<bool>(bool arg)
 {
 	lua_pushboolean(m_lua_state, arg);

@@ -25,13 +25,13 @@ public:
 	bool IsFocused(const IUIElement * child) const override;
 	void SetTheme(std::shared_ptr<CUITheme> theme) override;
 	std::shared_ptr<CUITheme> GetTheme() const override;
-	std::string const GetText() const override;
-	void SetText(std::string const& text) override;
-	void AddItem(std::string const& str) override;
+	std::wstring const GetText() const override;
+	void SetText(std::wstring const& text) override;
+	void AddItem(std::wstring const& str) override;
 	void DeleteItem(size_t index) override;
 	int GetSelectedIndex() const override;
 	size_t GetItemsCount() const override;
-	std::string GetItem(size_t index) const override;
+	std::wstring GetItem(size_t index) const override;
 	void ClearItems() override;
 	void SetSelected(size_t index) override;
 	void Resize(int windowHeight, int windowWidth) override;
@@ -40,13 +40,14 @@ public:
 	void SetBackgroundImage(std::string const& image) override;
 	void SetState(bool state) override;
 	bool GetState() const override;
+	virtual void Invalidate() const override;
 
-	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, std::function<void()> const& onClick) override;
-	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text) override;
+	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick) override;
+	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
 	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) override;
-	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState) override; 
-	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items = nullptr) override;
-	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text) override;
+	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState) override; 
+	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring> * items = nullptr) override;
+	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
 	IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) override;
 	IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) override;
 protected:
@@ -66,4 +67,5 @@ protected:
 	IUIElement * m_focused;
 	std::shared_ptr<CUITheme> m_theme;
 	IRenderer & m_renderer;
+	mutable std::unique_ptr<ICachedTexture> m_cache;
 };

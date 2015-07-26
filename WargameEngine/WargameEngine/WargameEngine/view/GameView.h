@@ -11,6 +11,7 @@
 #include "TextWriter.h"
 #include "../SoundPlayer.h"
 #include "OpenGLRenderer.h"
+#include "../TranslationManager.h"
 
 class CGameView
 {
@@ -28,6 +29,7 @@ public:
 	CParticleSystem& GetParticleSystem();
 	CTextWriter& GetTextWriter();
 	CSoundPlayer& GetSoundPlayer();
+	CTranslationManager& GetTranslationManager();
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
@@ -64,8 +66,8 @@ private:
 	void SetUpShadowMapDraw();
 	void Init();
 	CGameView(void);
-	CGameView(CGameView const&){};
-	CGameView& operator=(const CGameView&){};
+	CGameView(CGameView const&) = delete;
+	CGameView& operator=(const CGameView&) = delete;
 
 	static std::shared_ptr<CGameView> m_instanse;
 	CModelManager m_modelManager;
@@ -74,6 +76,7 @@ private:
 	CTextWriter m_textWriter;
 	CSoundPlayer m_soundPlayer;
 	COpenGLRenderer m_renderer;
+	CTranslationManager m_translationManager;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;

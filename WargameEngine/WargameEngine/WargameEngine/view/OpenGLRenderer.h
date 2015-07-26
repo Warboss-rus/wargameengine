@@ -1,6 +1,19 @@
 #pragma once
 #include "IRenderer.h"
 
+class COpenGlCachedTexture : public ICachedTexture
+{
+public:
+	COpenGlCachedTexture();
+	~COpenGlCachedTexture();
+
+	virtual void Bind() const override;
+
+	operator unsigned int();
+private:
+	unsigned int m_id;
+};
+
 class COpenGLRenderer : public IRenderer
 {
 public:
@@ -21,6 +34,11 @@ public:
 
 	virtual void SetColor(float r, float g, float b) override;
 	virtual void SetColor(int r, int g, int b) override;
+
+	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
+
+	virtual std::unique_ptr<ICachedTexture> CreateTexture(void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
+
 private:
 	std::string m_lastTexture;
 };

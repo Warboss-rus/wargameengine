@@ -26,7 +26,8 @@ int NewButton(lua_State* L)
 	{ 
 		CLUAScript::CallFunction(callback);
 	};
-	IUIElement * button = c->AddNewButton(name, x, y, height, width, text, onClick);
+	auto& transMan = CGameView::GetInstance().lock()->GetTranslationManager();
+	IUIElement * button = c->AddNewButton(name, x, y, height, width, transMan.GetTranslation(text), onClick);
 	return CLUAScript::NewInstanceClass(button, "UI");
 }
 
@@ -41,7 +42,8 @@ int NewStaticText(lua_State* L)
 	int height = CLUAScript::GetArgument<int>(5);
 	int width = CLUAScript::GetArgument<int>(6);
 	char* caption = CLUAScript::GetArgument<char*>(7);
-	IUIElement * text = c->AddNewStaticText(name, x, y, height, width, caption);
+	auto& transMan = CGameView::GetInstance().lock()->GetTranslationManager();
+	IUIElement * text = c->AddNewStaticText(name, x, y, height, width, transMan.GetTranslation(caption));
 	return CLUAScript::NewInstanceClass(text, "UI");
 }
 
@@ -71,7 +73,8 @@ int NewCheckbox(lua_State* L)
 	int width = CLUAScript::GetArgument<int>(6);
 	char* caption = CLUAScript::GetArgument<char*>(7);
 	bool state = CLUAScript::GetArgument<bool>(8);
-	IUIElement * checkbox = c->AddNewCheckBox(name, x, y, height, width, caption, state);
+	auto& transMan = CGameView::GetInstance().lock()->GetTranslationManager();
+	IUIElement * checkbox = c->AddNewCheckBox(name, x, y, height, width, transMan.GetTranslation(caption), state);
 	return CLUAScript::NewInstanceClass(checkbox, "UI");
 }
 
@@ -100,7 +103,8 @@ int NewEdit(lua_State* L)
 	int height = CLUAScript::GetArgument<int>(5);
 	int width = CLUAScript::GetArgument<int>(6);
 	char* caption = CLUAScript::GetArgument<char*>(7);
-	IUIElement * edit = c->AddNewEdit(name, x, y, height, width, caption);
+	auto& transMan = CGameView::GetInstance().lock()->GetTranslationManager();
+	IUIElement * edit = c->AddNewEdit(name, x, y, height, width, transMan.GetTranslation(caption));
 	return CLUAScript::NewInstanceClass(edit, "UI");
 }
 
@@ -155,9 +159,10 @@ int SetText(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (text)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	auto& transMan = CGameView::GetInstance().lock()->GetTranslationManager();
 	try
 	{
-		c->SetText(CLUAScript::GetArgument<char*>(2));
+		c->SetText(transMan.GetTranslation(CLUAScript::GetArgument<char*>(2)));
 	}
 	catch (std::runtime_error const& e)
 	{
@@ -198,9 +203,10 @@ int AddItem(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (item)");
 	IUIElement * c = (IUIElement *)CLUAScript::GetClassInstance("UI");
+	auto& transMan = CGameView::GetInstance().lock()->GetTranslationManager();
 	try
 	{
-		c->AddItem(CLUAScript::GetArgument<char*>(2));
+		c->AddItem(transMan.GetTranslation(CLUAScript::GetArgument<char*>(2)));
 	}
 	catch (std::runtime_error const& e)
 	{

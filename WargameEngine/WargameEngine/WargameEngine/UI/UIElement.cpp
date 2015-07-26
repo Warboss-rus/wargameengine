@@ -71,6 +71,11 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 	return false;
 }
 
+void CUIElement::Invalidate() const
+{
+	m_cache.reset();
+}
+
 void CUIElement::SetState(bool)
 {
 	throw std::runtime_error("This UI element doesn't have state");
@@ -138,14 +143,14 @@ bool CUIElement::OnSpecialKeyPress(int key)
 	return false;
 }
 
-IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, char* text, std::function<void()> const& onClick)
+IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
-IUIElement* CUIElement::AddNewStaticText(std::string const& name, int x, int y, int height, int width, char* text)
+IUIElement* CUIElement::AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIStaticText(x, y, height, width, text, this, m_renderer));
 	AddChild(name, item);
@@ -159,14 +164,14 @@ IUIElement* CUIElement::AddNewPanel(std::string const& name, int x, int y, int h
 	return item.get();
 }
 
-IUIElement* CUIElement::AddNewCheckBox(std::string const& name, int x, int y, int height, int width, char* text, bool initState)
+IUIElement* CUIElement::AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUICheckBox(x, y, height, width, text, initState, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }
 
-IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::string> * items)
+IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring> * items /*= nullptr*/)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIComboBox(x, y, height, width, this, m_renderer));
 	if(items)
@@ -180,7 +185,7 @@ IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, in
 	return item.get();
 }
 
-IUIElement* CUIElement::AddNewEdit(std::string const& name, int x, int y, int height, int width, char* text)
+IUIElement* CUIElement::AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIEdit(x, y, height, width, text, this, m_renderer));
 	AddChild(name, item);
@@ -219,6 +224,7 @@ bool CUIElement::IsFocused(const IUIElement * child) const
 void CUIElement::SetTheme(std::shared_ptr<CUITheme> theme)
 {
 	m_theme = theme;
+	Invalidate();
 }
 
 std::shared_ptr<CUITheme> CUIElement::GetTheme() const
@@ -226,17 +232,17 @@ std::shared_ptr<CUITheme> CUIElement::GetTheme() const
 	return m_theme;
 }
 
-std::string const CUIElement::GetText() const
+std::wstring const CUIElement::GetText() const
 {
-	return "";
+	return L"";
 }
 
-void CUIElement::SetText(std::string const&)
+void CUIElement::SetText(std::wstring const&)
 {
 	throw std::runtime_error("This UI element has no text");
 }
 
-void CUIElement::AddItem(std::string const&)
+void CUIElement::AddItem(std::wstring const&)
 {
 	throw std::runtime_error("This UI element has no items");
 }
@@ -256,7 +262,7 @@ size_t CUIElement::GetItemsCount() const
 	throw std::runtime_error("This UI element has no items");
 }
 
-std::string CUIElement::GetItem(size_t) const
+std::wstring CUIElement::GetItem(size_t) const
 {
 	throw std::runtime_error("This UI element has no items");
 }
@@ -305,6 +311,7 @@ void CUIElement::Resize(int windowHeight, int windowWidth)
 	{
 		i->second->Resize(windowHeight, windowWidth);
 	}
+	Invalidate();
 }
 
 void CUIElement::SetOnChangeCallback(std::function<void()> const&)

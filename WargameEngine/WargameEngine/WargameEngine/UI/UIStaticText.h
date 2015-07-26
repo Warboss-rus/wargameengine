@@ -3,11 +3,10 @@
 class CUIStaticText : public CUIElement
 {
 public:
-	CUIStaticText(int x, int y, int height, int width, char* text, IUIElement * parent, IRenderer & renderer): 
-		CUIElement(x, y, height, width, parent, renderer), m_text(text) {}
+	CUIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer);
 	void Draw() const override;
-	std::string const GetText() const override;
-	void SetText(std::string const& text) override;
+	std::wstring const GetText() const override;
+	void SetText(std::wstring const& text) override;
 private:
-	std::string m_text;
+	std::wstring m_text;
 };

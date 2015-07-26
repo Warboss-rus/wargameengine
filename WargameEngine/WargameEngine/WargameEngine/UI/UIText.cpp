@@ -5,6 +5,12 @@
 
 void PrintText(int x, int y, int width, int height, std::string const& str, CUITheme::sText const& theme)
 {
+	std::wstring wstr(str.begin(), str.end());
+	PrintText(x, y, width, height, wstr, theme);
+}
+
+void PrintText(int x, int y, int width, int height, std::wstring const& str, CUITheme::sText const& theme)
+{
 	CTextWriter & text = CGameView::GetInstance().lock()->GetTextWriter();
 	if(theme.aligment == theme.center)
 		x = (width - text.GetStringWidth(theme.font, theme.fontSize, str)) / 2;
@@ -21,7 +27,17 @@ int GetStringHeight(CUITheme::sText const& theme, std::string const& str)
 	return CGameView::GetInstance().lock()->GetTextWriter().GetStringHeight(theme.font, theme.fontSize, str);
 }
 
+int GetStringHeight(CUITheme::sText const& theme, std::wstring const& str)
+{
+	return CGameView::GetInstance().lock()->GetTextWriter().GetStringHeight(theme.font, theme.fontSize, str);
+}
+
 int GetStringWidth(CUITheme::sText const& theme, std::string const& str)
+{
+	return CGameView::GetInstance().lock()->GetTextWriter().GetStringWidth(theme.font, theme.fontSize, str);
+}
+
+int GetStringWidth(CUITheme::sText const& theme, std::wstring const& str)
 {
 	return CGameView::GetInstance().lock()->GetTextWriter().GetStringWidth(theme.font, theme.fontSize, str);
 }
