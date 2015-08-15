@@ -2,7 +2,7 @@
 #include "UIText.h"
 
 CUIList::CUIList(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer)
-	: CUIElement(x, y, height, width, parent, renderer), m_selected(-1), m_scrollbar(m_theme, m_renderer)
+	: CUIElement(x, y, height, width, parent, renderer), m_selected(0), m_scrollbar(m_theme, m_renderer)
 {
 }
 
@@ -22,12 +22,13 @@ void CUIList::Draw() const
 			int borderSize = m_theme->list.borderSize;
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
-			if (m_selected > -1)
+			if (m_items.size() > 0)
 			{
 				m_renderer.SetColor(0.2f, 0.2f, 1.0f);
 				int elementSize = m_theme->list.elementSize;
-				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize + elementSize * m_selected), {borderSize, 2 * borderSize + elementSize * (m_selected + 1)},
-					{GetWidth() - borderSize, 2 * borderSize + elementSize * (m_selected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * m_selected } }, {});
+				int intSelected = static_cast<int>(m_selected);
+				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize + elementSize * intSelected), {borderSize, 2 * borderSize + elementSize * (intSelected + 1)},
+					{GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * intSelected } }, {});
 			}
 			m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
 			for (size_t i = m_scrollbar.GetPosition() / m_theme->list.elementSize; i < m_items.size(); ++i)
@@ -70,7 +71,7 @@ bool CUIList::LeftMouseButtonUp(int x, int y)
 	if(PointIsOnElement(x, y))
 	{
 		int index = (y - GetY()) / m_theme->list.elementSize;
-		if(index >= 0 && index < m_items.size()) m_selected = index;
+		if(index >= 0 && static_cast<unsigned int>(index) < m_items.size()) m_selected = static_cast<size_t>(index);
 		if(m_onChange) m_onChange();
 		SetFocus();
 		return true;
@@ -151,7 +152,7 @@ std::wstring CUIList::GetItem(size_t index) const
 void CUIList::ClearItems()
 { 
 	m_items.clear(); 
-	m_selected = -1; 
+	m_selected = 0; 
 	Invalidate();
 }
 

@@ -22,7 +22,6 @@ CLUAScript::CLUAScript()
 }
 
 CLUAScript::CLUAScript(lua_State* /*state*/)
-//	:m_lua_state(state)
 {
 }
 
@@ -58,6 +57,12 @@ template<>
 unsigned int CLUAScript::GetArgument<unsigned int>(int index)
 {
     return static_cast<unsigned int>(luaL_checkinteger(m_lua_state,index));
+}
+
+template<>
+unsigned char CLUAScript::GetArgument<unsigned char>(int index)
+{
+	return static_cast<unsigned char>(luaL_checkinteger(m_lua_state, index));
 }
 
 template<>

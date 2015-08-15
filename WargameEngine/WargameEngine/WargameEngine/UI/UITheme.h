@@ -79,5 +79,11 @@ public:
 		int buttonSize;
 	};
 	sScrollBar sbar;
+	struct sWindow
+	{
+		int headerHeight;
+		int buttonSize;
+	};
+	sWindow window;
 	static CUITheme defaultTheme;
 };

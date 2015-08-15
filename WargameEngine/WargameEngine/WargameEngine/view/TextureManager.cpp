@@ -5,8 +5,9 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #pragma warning( push )
-#pragma warning( disable : 4457 4456 4100)
-#include "../stb_image.c"
+#pragma warning( disable : 4457 4456)
+#define STB_IMAGE_IMPLEMENTATION
+#include "../stb_image.h"
 #pragma warning( pop )
 #include "../nv_dds.h"
 #include "GameView.h"
@@ -39,6 +40,27 @@ void LoadBMP(void * data, unsigned int /*size*/, sImage & img)
 	if (headerSize==0)  // Some BMP files are misformatted, guess missing information
 		headerSize=54;
 	img.data = imgData + headerSize;
+	for (size_t i = 0; i < img.teamcolor.size(); ++i)
+	{
+		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
+	}
+}
+
+void UnpackTexture(void * data, unsigned int size, sImage & img)
+{
+	int width, height, bpp;
+	unsigned char * newData = stbi_load_from_memory((const unsigned char*)data, size, &width, &height, &bpp, 4);
+	img.uncompressedData.resize(width * height * 4);
+	for (int y = 0; y < height; ++y)
+	{
+		memcpy(&img.uncompressedData[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
+	}
+	stbi_image_free(newData);
+	img.width = width;
+	img.height = height;
+	img.bpp = 32;
+	img.format = GL_RGBA;
+	img.data = img.uncompressedData.data();
 	for (size_t i = 0; i < img.teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
@@ -80,11 +102,14 @@ std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int widt
 	return uncompressedData;
 }
 
-void LoadTGA(void * data, unsigned int /*size*/, sImage & img)
+void LoadTGA(void * data, unsigned int size, sImage & img)
 {
 	unsigned char* imgData = (unsigned char*) data;
-	if (imgData[2] != 2 && imgData[2] != 10)
-		throw std::exception("nonRGB TGA are not supported");
+	if (imgData[2] != 2 && imgData[2] != 10)//use stb_image for non-RGB textures
+	{
+		UnpackTexture(data, size, img);
+		return;
+	}
 	img.width = imgData[13] * 256 + imgData[12];
 	img.height = imgData[15] * 256 + imgData[14];
 	img.bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
@@ -98,27 +123,6 @@ void LoadTGA(void * data, unsigned int /*size*/, sImage & img)
 	{
 		img.data = imgData + 18;
 	}
-	for (size_t i = 0; i < img.teamcolor.size(); ++i)
-	{
-		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
-	}
-}
-
-void UnpackTexture(void * data, unsigned int size, sImage & img)
-{
-	int width, height, bpp;
-	unsigned char * newData = stbi_load_from_memory((const unsigned char*)data, size, &width, &height, &bpp, 4);
-	img.uncompressedData.resize(width * height * 4);
-	for (int y = 0; y < height; ++y)
-	{
-		memcpy(&img.uncompressedData[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
-	}
-	stbi_image_free(newData);
-	img.width = width;
-	img.height = height;
-	img.bpp = 32;
-	img.format = GL_RGBA;
-	img.data = img.uncompressedData.data();
 	for (size_t i = 0; i < img.teamcolor.size(); ++i)
 	{
 		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
@@ -152,7 +156,7 @@ void UseTexture(sImage const& img, unsigned int id)
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, CGameView::GetInstance().lock()->GetAnisotropyLevel());
 }
 
-unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor)
+unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor, bool now = false)
 {
 	std::shared_ptr<sImage> img = std::make_shared<sImage>();
 	img->filename = path;
@@ -166,11 +170,11 @@ unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const&
 		loadingFunc = [img](void* data, unsigned int size) {
 			LoadBMP(data, size, *img);
 		};
-	if(extension == "tga")
+	else if(extension == "tga")
 		loadingFunc = [img](void* data, unsigned int size) {
 			LoadTGA(data, size, *img);
 		};
-	if (extension == "dds")
+	else if (extension == "dds")
 	{
 		std::shared_ptr<nv_dds::CDDSImage> image = std::make_shared<nv_dds::CDDSImage>();
 		ThreadPool::RunFunc([image, path] {
@@ -183,20 +187,21 @@ unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const&
 			UseDDS(*image, id);
 		});
 	}
-	if (extension == "png" || extension == "psd" || extension == "jpg" || extension == "jpeg" || extension == "gif" || extension == "hdr" || extension == "pic")
+	else 
 		loadingFunc = [img](void* data, unsigned int size) {
 			UnpackTexture(data, size, *img);
 		};
-	if (loadingFunc)
+	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(path, loadingFunc);
+	readTask->AddOnCompleteHandler([img, id]() {
+		UseTexture(*img, id);
+	});
+	readTask->AddOnFailHandler([](std::exception const& e) {
+		LogWriter::WriteLine(e.what());
+	});
+	ThreadPool::AddTask(readTask);
+	if (now)
 	{
-		std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(path, loadingFunc);
-		readTask->AddOnCompleteHandler([img, id]() {
-			UseTexture(*img, id);
-		});
-		readTask->AddOnFailHandler([](std::exception const& e) {
-			LogWriter::WriteLine(e.what());
-		});
-		ThreadPool::AddTask(readTask);
+		WaitForTask(*readTask);
 	}
 	return id;
 }
@@ -240,6 +245,15 @@ void CTextureManager::SetAnisotropyLevel(float level)
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, level);
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void CTextureManager::LoadTextureNow(std::string const& path, const std::vector<sTeamColor> * teamcolor /*= nullptr*/)
+{
+	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
+	if (m_textures.find(pair) == m_textures.end())
+	{
+		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, true);
+	}
 }
 
 CTextureManager::~CTextureManager()

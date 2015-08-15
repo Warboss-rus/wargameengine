@@ -129,13 +129,11 @@ void DrawParticle(CVector3f const& position, float width, float height)
 
 	float sizeX2 = width * 0.5f;
 	float sizeY2 = height * 0.5f;
-	// ��������� ����������� ������������ ���� �� ������� �������������-���� 
-	// � �������� jcb x � y �� �������� ������� ���������
+
 	CVector3d xAxis(modelview[0][0] * sizeX2, modelview[1][0] * sizeX2, modelview[2][0] * sizeX2);
 	CVector3d yAxis(modelview[0][1] * sizeY2, modelview[1][1] * sizeY2, modelview[2][1] * sizeY2);
 	CVector3d zAxis(modelview[0][2], modelview[1][2], modelview[2][2]);
 
-	// ������� �������� ������� ������ ��������� ������������ ��� ������
 	CVector3d p0(-xAxis.x + yAxis.x + position.x, -xAxis.y + yAxis.y + position.y, -xAxis.z + yAxis.z + position.z);
 	CVector3d p1(-xAxis.x - yAxis.x + position.x, -xAxis.y - yAxis.y + position.y, -xAxis.z - yAxis.z + position.z);
 	CVector3d p2(+xAxis.x - yAxis.x + position.x, +xAxis.y - yAxis.y + position.y, +xAxis.z - yAxis.z + position.z);

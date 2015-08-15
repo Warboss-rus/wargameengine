@@ -17,7 +17,7 @@ void CUIButton::Draw() const
 		m_cache = move(m_renderer.RenderToTexture([this]() {
 			if (m_backgroundImage.empty())
 			{
-				m_renderer.SetTexture(m_theme->texture);
+				m_renderer.SetTexture(m_theme->texture, true);
 				float * texCoord = m_isPressed ? m_theme->button.pressedTexCoord : m_theme->button.texCoord;
 				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 				{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
@@ -25,7 +25,7 @@ void CUIButton::Draw() const
 			}
 			else
 			{
-				m_renderer.SetTexture(m_theme->texture);
+				m_renderer.SetTexture(m_theme->texture, true);
 				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 				{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
 				{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });

@@ -30,7 +30,7 @@ void CUIComboBox::Draw() const
 			if (m_selected >= 0)	PrintText(m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
 
 			m_renderer.SetColor(0.6f, 0.6f, 0.6f);
-			m_renderer.SetTexture(m_theme->texture);
+			m_renderer.SetTexture(m_theme->texture, true);
 			float * texCoords = m_expanded ? m_theme->combobox.expandedTexCoord : m_theme->combobox.texCoord;
 			int firstX = GetWidth() - static_cast<int>(GetHeight() * m_theme->combobox.buttonWidthCoeff);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
@@ -159,7 +159,7 @@ bool CUIComboBox::PointIsOnElement(int x, int y) const
 void CUIComboBox::DeleteItem(size_t index)
 {
 	m_items.erase(m_items.begin() + index);
-	if(m_selected == index) m_selected--;
+	if(m_selected == static_cast<int>(index)) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme->combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme->combobox.elementSize);
 	Invalidate();

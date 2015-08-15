@@ -537,30 +537,30 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 						jointNames.push_back(val);
 					}
 					vector<float> weightArray = GetValues<float>(weightsSource);
-					size_t j = 0;
+					size_t l = 0;
 					weightCount[geometryId] = vcount;
 					for (size_t i = 0; i < vcount.size(); ++i)
 					{
 						for (size_t k = 0; k < vcount[i]; k++)
 						{
-							unsigned int jointIndex = v[j + k * 2];
+							unsigned int jointIndex = v[l + k * 2];
 							if (jointIndex >= jointNames.size())
 							{
 								//LogWriter::WriteLine("Model loading warning. Error parsing joints information");
 								continue;
 							}
-							unsigned int weightIndex = v[j + k * 2 + 1];
-							for (size_t i = 0; i < loader.joints.size(); ++i)
+							unsigned int weightIndex = v[l + k * 2 + 1];
+							for (size_t m = 0; m < loader.joints.size(); ++m)
 							{
-								if (loader.joints[i].bone == jointNames[jointIndex])
+								if (loader.joints[m].bone == jointNames[jointIndex])
 								{
-									weightIndexes[geometryId].push_back(i);
+									weightIndexes[geometryId].push_back(m);
 									weights[geometryId].push_back(weightArray[weightIndex]);
 									break;
 								}
 							}
 						}
-						j += vcount[i] * 2;
+						l += vcount[i] * 2;
 					}
 					vertex_weights = vertex_weights->next_sibling("vertex_weights");
 				}
@@ -617,7 +617,7 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 				unsigned int vertexOffset = 0;
 				unsigned int normalOffset = 0;
 				unsigned int texcoordOffset = 0;
-				int maxOffset = 0;
+				size_t maxOffset = 0;
 				vector<float> vert;
 				vector<float> normal;
 				vector<float> texcoord;
@@ -637,16 +637,16 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 							xml_node<>* vertEntry = vertices->first_node("input");
 							while (vertEntry != NULL)
 							{
-								string type = vertEntry->first_attribute("semantic")->value();
-								if (type == "POSITION")
+								string inputType = vertEntry->first_attribute("semantic")->value();
+								if (inputType == "POSITION")
 								{
 									vert = GetValues<float>(sources[vertEntry->first_attribute("source")->value()]);
 								}
-								else if (type == "NORMAL")
+								else if (inputType == "NORMAL")
 								{
 									normal = GetValues<float>(sources[vertEntry->first_attribute("source")->value()]);
 								}
-								else if (type == "TEXCOORD")
+								else if (inputType == "TEXCOORD")
 								{
 									texcoord = GetValues<float>(sources[vertEntry->first_attribute("source")->value()]);
 									
@@ -668,7 +668,8 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 						texcoord = GetValues<float>(sources[input->first_attribute("source")->value()]);
 						texCoordStride = atoi(sources[input->first_attribute("source")->value()]->next_sibling("technique_common")->first_node("accessor")->first_attribute("stride")->value());
 					}
-					if (atoi(input->first_attribute("offset")->value()) > maxOffset) maxOffset = atoi(input->first_attribute("offset")->value());
+					size_t offset = static_cast<size_t>(atoi(input->first_attribute("offset")->value()));
+					if (offset > maxOffset) maxOffset = offset;
 					input = input->next_sibling("input");
 				}
 				maxOffset++;

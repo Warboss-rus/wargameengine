@@ -16,8 +16,8 @@ public:
 	template<class T>
 	static void SetArgument(T arg);
 	template<class T>
-    static void RegisterConstant(T value, char* constantname);
-	static void RegisterClass(const luaL_Reg funcs[], std::string const& className);
+	void RegisterConstant(T value, char* constantname);
+	void RegisterClass(const luaL_Reg funcs[], std::string const& className);
 	static void CallFunction(std::string const& funcName);
 	static void CallFunctionFromReference(int referenceIndex);
 	template<class X>

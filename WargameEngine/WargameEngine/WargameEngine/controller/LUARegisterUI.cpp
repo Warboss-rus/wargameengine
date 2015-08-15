@@ -380,11 +380,15 @@ int SetBackgroundImage(lua_State* L)
 
 int Get(lua_State* L)
 {
+	if (CLUAScript::GetArgumentCount() != 0)
+		return luaL_error(L, "no arguments expected");
 	return CLUAScript::NewInstanceClass(CGameView::GetInstance().lock()->GetUI(), "UI");
 }
 
 int ClearChildren(lua_State* L)
 {
+	if (CLUAScript::GetArgumentCount() != 1)
+		return luaL_error(L, "no arguments expected");
 	IUIElement * c = GetUIPointer();
 	c->ClearChildren();
 	return 0;
@@ -433,7 +437,7 @@ int Getter(lua_State* L)
 	return GetChild(L);
 }
 
-int Setter(lua_State* L)
+int Setter(lua_State* /*L*/)
 {
 	std::string key = CLUAScript::GetArgument<const char*>(2);
 	if (key == "__self")

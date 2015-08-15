@@ -1,11 +1,16 @@
 #include "ParticleSystem.h"
-#include "gl.h"
 #include "ParticleEffect.h"
 #include "ParticleTracer.h"
 
 using namespace std;
 
-void CParticleSystem::DrawParticles() 
+CParticleSystem::CParticleSystem(IRenderer & renderer)
+	:m_renderer(renderer)
+{
+
+}
+
+void CParticleSystem::DrawParticles()
 {
 	for (size_t i = 0; i < m_effects.size(); ++i)
 	{
@@ -15,12 +20,12 @@ void CParticleSystem::DrawParticles()
 			m_effects.pop_back();
 			if (i == m_effects.size()) return;
 		}
-		glPushMatrix();
+		m_renderer.PushMatrix();
 		CVector3d const & coords = m_effects[i]->GetCoords();
-		glTranslated(coords.x, coords.y, coords.z);
-		glRotated(m_effects[i]->GetRotation(), 0.0, 1.0, 0.0);
+		m_renderer.Translate(coords.x, coords.y, coords.z);
+		m_renderer.Rotate(m_effects[i]->GetRotation(), 0.0, 1.0, 0.0);
 		m_models[m_effects[i]->GetModel()].Draw(m_effects[i]->GetTime());
-		glPopMatrix();
+		m_renderer.PopMatrix();
 	}
 }
 

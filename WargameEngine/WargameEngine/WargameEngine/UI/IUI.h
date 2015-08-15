@@ -12,6 +12,7 @@ public:
 	virtual void AddChild(std::string const& name, std::shared_ptr<IUIElement> element) = 0;
 	virtual IUIElement* GetChildByName(std::string const& name) = 0;
 	virtual void DeleteChild(std::string const& name) = 0;
+	virtual void DeleteChild(IUIElement * element) = 0;
 	virtual void ClearChildren() = 0;
 	virtual bool LeftMouseButtonDown(int x, int y) = 0;
 	virtual bool LeftMouseButtonUp(int x, int y) = 0;
@@ -52,6 +53,6 @@ public:
 	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) = 0;
 	virtual IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) = 0;
+	virtual IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) = 0;
 	virtual void SetFocus(IUIElement * focus = nullptr) = 0;
-
 };

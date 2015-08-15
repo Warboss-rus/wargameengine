@@ -3,7 +3,6 @@
 #include "../controller/GameController.h"
 #include "../view/Input.h"
 #include "../LogWriter.h"
-#include <GL/glut.h>
 #include "TimedCallback.h"
 #include "../OSSpecific.h"
 #include "../Network.h"
@@ -102,10 +101,11 @@ int ShMessageBox(lua_State* L)
 
 int RunScript(lua_State* L)
 {
-	if(CLUAScript::GetArgumentCount() != 1)
+	CLUAScript lua(L);
+	if(lua.GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (filename)");
 	char* filename =  CLUAScript::GetArgument<char*>(1);
-	CLUAScript::RunScript(filename);
+	lua.RunScript(filename);
 	return 0;
 }
 
@@ -283,9 +283,9 @@ int EnableLight(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (index)");
-	int i = CLUAScript::GetArgument<int>(1) - 1;
+	size_t i = CLUAScript::GetArgument<size_t>(1) - 1;
 	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
-	glEnable(GL_LIGHT0 + i);
+	CGameView::GetInstance().lock()->EnableLight(i, true);
 	return 0;
 }
 
@@ -295,7 +295,7 @@ int DisableLight(lua_State* L)
 		return luaL_error(L, "1 argument expected (index)");
 	int i = CLUAScript::GetArgument<int>(1) - 1;
 	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
-	glDisable(GL_LIGHT0 + i);
+	CGameView::GetInstance().lock()->EnableLight(i, false);
 	return 0;
 }
 
@@ -317,14 +317,14 @@ int SetLightAmbient(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 5)
 		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
-	int i = CLUAScript::GetArgument<int>(1) -1;
+	size_t i = CLUAScript::GetArgument<size_t>(1) - 1;
 	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
 	color[1] = CLUAScript::GetArgument<float>(3);
 	color[2] = CLUAScript::GetArgument<float>(4);
 	color[3] = CLUAScript::GetArgument<float>(5);
-	glLightfv(GL_LIGHT0 + i, GL_AMBIENT, color);
+	CGameView::GetInstance().lock()->SetLightColor(i, LightningType::AMBIENT, color);
 	return 0;
 }
 
@@ -332,14 +332,14 @@ int SetLightDiffuse(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 5)
 		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
-	int i = CLUAScript::GetArgument<int>(1) - 1;
+	size_t i = CLUAScript::GetArgument<size_t>(1) - 1;
 	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
 	color[1] = CLUAScript::GetArgument<float>(3);
 	color[2] = CLUAScript::GetArgument<float>(4);
 	color[3] = CLUAScript::GetArgument<float>(5);
-	glLightfv(GL_LIGHT0 + i, GL_DIFFUSE, color);
+	CGameView::GetInstance().lock()->SetLightColor(i, LightningType::DIFFUSE, color);
 	return 0;
 }
 
@@ -347,14 +347,14 @@ int SetLightSpecular(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 5)
 		return luaL_error(L, "5 argument expected (index, r, g, b, a)");
-	int i = CLUAScript::GetArgument<int>(1) - 1;
+	size_t i = CLUAScript::GetArgument<size_t>(1) - 1;
 	if (i < 0 || i > 7) return luaL_error(L, "only 8 light sources are supported");
 	float color[4];
 	color[0] = CLUAScript::GetArgument<float>(2);
 	color[1] = CLUAScript::GetArgument<float>(3);
 	color[2] = CLUAScript::GetArgument<float>(4);
 	color[3] = CLUAScript::GetArgument<float>(5);
-	glLightfv(GL_LIGHT0 + i, GL_SPECULAR, color);
+	CGameView::GetInstance().lock()->SetLightColor(i, LightningType::SPECULAR, color);
 	return 0;
 }
 

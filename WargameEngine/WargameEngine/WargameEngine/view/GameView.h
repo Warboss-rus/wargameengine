@@ -13,6 +13,13 @@
 #include "OpenGLRenderer.h"
 #include "../TranslationManager.h"
 
+enum class LightningType
+{
+	DIFFUSE,
+	AMBIENT,
+	SPECULAR
+};
+
 class CGameView
 {
 public:
@@ -51,6 +58,8 @@ public:
 	void DrawLine(double beginX, double beginY, double beginZ, double endX, double endY, double endZ, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
 	void DrawLineLoop(double * points, unsigned int size, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
 	void DrawText3D(double x, double y, double z, std::string const& text);
+	void EnableLight(size_t index, bool enable = true);
+	void SetLightColor(size_t index, LightningType type, float * values);
 	
 	static void OnDrawScene();
 	static void OnReshape(int width, int height);

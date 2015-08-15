@@ -1,12 +1,9 @@
 Release
 Release-XP
-build
 Debug
 dist
-/WargameEngine/WargameEngine/WargameEngine/.dep.inc
-/WargameEngine/WargameEngine/WargameEngine/Killteam/killteam.sav
+.dep.inc
 Thumbs.db
-/WargameEngine/WargameEngine/WargameEngine/Release-XP
 /WargameEngine/freetype-2.6/objs
 *.sdf
 *.user

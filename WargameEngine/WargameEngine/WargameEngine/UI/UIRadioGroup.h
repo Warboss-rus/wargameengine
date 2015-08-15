@@ -19,6 +19,6 @@ public:
 	void SetOnChangeCallback(std::function<void()> const& onChange) override;
 private:
 	std::vector<std::wstring> m_items;
-	int m_selected;
+	size_t m_selected;
 	std::function<void()> m_onChange;
 };

@@ -7,6 +7,8 @@
 #include "UIEdit.h"
 #include "UIList.h"
 #include "UIRadioGroup.h"
+#include <algorithm>
+#include "UIWindow.h"
 
 void CUIElement::Draw() const
 {
@@ -62,6 +64,15 @@ void CUIElement::DeleteChild(std::string const& name)
 		m_focused = NULL;
 	}
 	m_children.erase(m_children.find(name));
+}
+
+void CUIElement::DeleteChild(IUIElement * element)
+{
+	auto it = std::find_if(m_children.begin(), m_children.end(), [element](auto& child) {return child.second.get() == element;});
+	if (it != m_children.end())
+	{
+		m_children.erase(it);
+	}
 }
 
 bool CUIElement::PointIsOnElement(int x, int y) const
@@ -207,6 +218,13 @@ IUIElement* CUIElement::AddNewList(std::string const& name, int x, int y, int he
 IUIElement* CUIElement::AddNewRadioGroup(std::string const& name, int x, int y, int height, int width)
 {
 	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIRadioGroup(x, y, height, width, this, m_renderer));
+	AddChild(name, item);
+	return item.get();
+}
+
+IUIElement* CUIElement::AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText)
+{
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIWindow(height, width, headerText, this, m_renderer));
 	AddChild(name, item);
 	return item.get();
 }

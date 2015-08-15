@@ -44,7 +44,8 @@ CGameView::~CGameView()
 }
 
 CGameView::CGameView(void)
-	:m_textWriter(m_renderer)
+	: m_textWriter(m_renderer)
+	, m_particles(m_renderer)
 {
 	m_gameModel = CGameModel::GetInstance();
 	m_ui = std::make_unique<CUIElement>(m_renderer);
@@ -716,6 +717,29 @@ void CGameView::DrawText3D(double x, double y, double z, std::string const& text
 	{
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]); // Print a character on the screen
 	}
+}
+
+void CGameView::EnableLight(size_t index, bool enable)
+{
+	if (enable)
+	{
+		glEnable(GL_LIGHT0 + index);
+	}
+	else
+	{
+		glDisable(GL_LIGHT0 + index);
+	}
+}
+
+static const std::map<LightningType, GLenum> lightningTypesMap = {
+	{ LightningType::DIFFUSE, GL_DIFFUSE },
+	{ LightningType::AMBIENT, GL_AMBIENT },
+	{ LightningType::SPECULAR, GL_SPECULAR }
+};
+
+void CGameView::SetLightColor(size_t index, LightningType type, float * values)
+{
+	glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
 }
 
 void CGameView::EnableGPUSkinning(bool enable)

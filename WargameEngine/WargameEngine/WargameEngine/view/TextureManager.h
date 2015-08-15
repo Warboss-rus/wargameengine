@@ -29,6 +29,7 @@ public:
 	//doesn't set textureSize uniform
 	void SetTexture(std::string const& path, eTextureSlot slot);
 	void SetAnisotropyLevel(float level);
+	void LoadTextureNow(std::string const& path, const std::vector<sTeamColor> * teamcolor = nullptr);
 	~CTextureManager();
 protected:
 	CTextureManager() = default;

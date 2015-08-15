@@ -10,6 +10,7 @@ public:
 	virtual void Draw() const override;
 	IUIElement* GetChildByName(std::string const& name) override;
 	virtual void DeleteChild(std::string const& name) override;
+	virtual void DeleteChild(IUIElement * element) override;
 	virtual void ClearChildren() override;
 	virtual bool LeftMouseButtonDown(int x, int y) override;
 	virtual bool LeftMouseButtonUp(int x, int y) override;
@@ -43,14 +44,15 @@ public:
 	virtual bool GetState() const override;
 	virtual void Invalidate() const override;
 
-	IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick) override;
-	IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
-	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) override;
-	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState) override; 
-	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring> * items = nullptr) override;
-	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
-	IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) override;
-	IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) override;
+	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick) override;
+	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
+	virtual IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) override;
+	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState) override;
+	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring> * items = nullptr) override;
+	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
+	virtual IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) override;
+	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) override;
+	virtual IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) override;
 protected:
 	CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
 	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element);

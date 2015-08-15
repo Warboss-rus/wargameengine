@@ -50,6 +50,7 @@ public:
 					}
 				}, [this]() {
 					m_callback();
+					SetTaskState(ITask::TaskState::COMPLETED);
 					ThreadPool::RemoveTask(this);
 				});
 			}
@@ -61,6 +62,7 @@ public:
 			{
 				ThreadPool::QueueCallback([=]() {m_onFail(e);});
 			}
+			ThreadPool::RemoveTask(this);
 		}
 	}
 private:

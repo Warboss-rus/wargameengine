@@ -165,6 +165,7 @@
     <ClCompile Include="UI\UIStaticText.cpp" />
     <ClCompile Include="UI\UIText.cpp" />
     <ClCompile Include="UI\UITheme.cpp" />
+    <ClCompile Include="UI\UIWindow.cpp" />
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\CameraFirstPerson.cpp" />
     <ClCompile Include="view\CameraStrategy.cpp" />
@@ -219,11 +220,13 @@
     <ClInclude Include="rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="SoundPlayer.h" />
+    <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="TranslationManager.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
+    <ClInclude Include="UI\UIWindow.h" />
     <ClInclude Include="view\CameraFirstPerson.h" />
     <ClInclude Include="view\CameraStrategy.h" />
     <ClInclude Include="view\gl.h" />

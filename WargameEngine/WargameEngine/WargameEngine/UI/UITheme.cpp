@@ -86,6 +86,8 @@ CUITheme::CUITheme()
 	sbar.pressedTexCoord[3] = 0.953f;
 	sbar.buttonSize = 20;
 	sbar.width = 20;
+	window.buttonSize = 20;
+	window.headerHeight = 20;
 }
 
 float atoff(const char * ch)
@@ -212,6 +214,13 @@ void CUITheme::Load(std::string const& filename)
 		if (themeScrollbar->first_attribute("width")) sbar.width = atoi(themeScrollbar->first_attribute("width")->value());
 		xml_node<>* themePressed = themeScrollbar->first_node("pressed");
 		if (themePressed && themePressed->first_attribute("texCoord")) GetValues(sbar.pressedTexCoord, themePressed->first_attribute("texCoord")->value(), 4);
+	}
+	//window
+	xml_node<>* themeWindow = theme->first_node("window");
+	if (themeWindow)
+	{
+		if (themeWindow->first_attribute("headerHeight")) window.headerHeight = atoi(themeScrollbar->first_attribute("headerHeight")->value());
+		if (themeWindow->first_attribute("buttonSize")) window.buttonSize = atoi(themeScrollbar->first_attribute("buttonSize")->value());
 	}
 	doc.clear();
 }

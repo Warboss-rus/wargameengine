@@ -28,6 +28,8 @@ int GetSelectedObject(lua_State* L)
 
 int GetCount(lua_State* L)
 {
+	if (CLUAScript::GetArgumentCount() != 0)
+		return luaL_error(L, "no argument expected");
 	CLUAScript::SetArgument((int)CGameModel::GetInstance().lock()->GetObjectCount());
 	return 1;
 }
@@ -341,9 +343,9 @@ int ApplyTeamColor(lua_State* L)
 		return luaL_error(L, "4 argument expected(mask suffix, r, g, b)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	std::string suffix = CLUAScript::GetArgument<const char*>(2);
-	unsigned int r = CLUAScript::GetArgument<unsigned int>(3);
-	unsigned int g = CLUAScript::GetArgument<unsigned int>(4);
-	unsigned int b = CLUAScript::GetArgument<unsigned int>(5);
+	unsigned char r = CLUAScript::GetArgument<unsigned char>(3);
+	unsigned char g = CLUAScript::GetArgument<unsigned char>(4);
+	unsigned char b = CLUAScript::GetArgument<unsigned char>(5);
 	object->ApplyTeamColor(suffix, r, g, b);
 	return 0;
 }

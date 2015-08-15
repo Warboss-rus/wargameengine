@@ -2,13 +2,11 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #define TRANSLATE					  0.3
-#include <GL/glut.h>
 #include "KeyDefines.h"
 
 CCameraFirstPerson::CCameraFirstPerson()
 {
 	Reset();
-	glutWarpPointer(320, 240);
 }
 
 void CCameraFirstPerson::Reset()

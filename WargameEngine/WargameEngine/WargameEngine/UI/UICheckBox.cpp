@@ -16,7 +16,7 @@ void CUICheckBox::Draw() const
 	if (!m_cache)
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
-			m_renderer.SetTexture(m_theme->texture);
+			m_renderer.SetTexture(m_theme->texture, true);
 			float * texCoords = m_state ? m_theme->checkbox.checkedTexCoord : m_theme->checkbox.texCoord;
 			float size = GetHeight() * m_theme->checkbox.checkboxSizeCoeff;
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,

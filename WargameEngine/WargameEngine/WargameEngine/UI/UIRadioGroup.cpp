@@ -2,7 +2,7 @@
 #include "UIText.h"
 
 CUIRadioGroup::CUIRadioGroup(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer)
-	: CUIElement(x, y, height, width, parent, renderer), m_selected(-1)
+	: CUIElement(x, y, height, width, parent, renderer), m_selected(0)
 {
 }
 
@@ -17,9 +17,9 @@ void CUIRadioGroup::Draw() const
 		m_cache = move(m_renderer.RenderToTexture([this]() {
 			for (size_t i = 0; i < m_items.size(); ++i)
 			{
-				m_renderer.SetTexture(m_theme->texture);
+				m_renderer.SetTexture(m_theme->texture, true);
 				float y = m_theme->radiogroup.elementSize * i + (m_theme->radiogroup.elementSize - m_theme->radiogroup.buttonSize) / 2;
-				float * texCoord = m_selected ? m_theme->radiogroup.selectedTexCoord : m_theme->radiogroup.texCoord;
+				float * texCoord = (i == m_selected) ? m_theme->radiogroup.selectedTexCoord : m_theme->radiogroup.texCoord;
 				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 				{ CVector2f(0.0f, y), { 0.0f, y + m_theme->radiogroup.buttonSize }, { m_theme->radiogroup.buttonSize, y }, { m_theme->radiogroup.buttonSize, y + m_theme->radiogroup.buttonSize} },
 				{ CVector2f(texCoord), {texCoord[0], texCoord[3]}, {texCoord[2], texCoord[1]}, {texCoord[2], texCoord[3]} });
@@ -59,10 +59,6 @@ bool CUIRadioGroup::LeftMouseButtonUp(int x, int y)
 void CUIRadioGroup::AddItem(std::wstring const& str)
 {
 	m_items.push_back(str);
-	if(m_selected == -1)
-	{
-		m_selected = 0;
-	}
 	Invalidate();
 }
 
@@ -80,8 +76,7 @@ void CUIRadioGroup::SetSelected(size_t index)
 void CUIRadioGroup::DeleteItem(size_t index)
 {
 	m_items.erase(m_items.begin() + index);
-	if(m_selected == index) m_selected--;
-	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
+	if(m_selected == index && index != 0) m_selected--;
 	Invalidate();
 }
 
@@ -116,7 +111,7 @@ std::wstring CUIRadioGroup::GetItem(size_t index) const
 void CUIRadioGroup::ClearItems()
 { 
 	m_items.clear(); 
-	m_selected = -1; 
+	m_selected = 0; 
 	Invalidate();
 }
 

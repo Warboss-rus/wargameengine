@@ -1,14 +1,19 @@
 #include "OpenGLRenderer.h"
-#include "TextureManager.h"
 #include <GL\glew.h>
 #include "gl.h"
 #include "..\LogWriter.h"
+#include "TextureManager.h"
 
 using namespace std;
 
-void COpenGLRenderer::SetTexture(std::string const& texture)
+void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow)
 {
-	CTextureManager::GetInstance()->SetTexture(texture);
+	auto texMan = CTextureManager::GetInstance();
+	if (forceLoadNow)
+	{
+		texMan->LoadTextureNow(texture);
+	}
+	texMan->SetTexture(texture);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
@@ -214,6 +219,11 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(void * data, unsi
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 	return move(texture);
+}
+
+void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
+{
+	glRotated(angle, x, y, z);
 }
 
 COpenGlCachedTexture::COpenGlCachedTexture()

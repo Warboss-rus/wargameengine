@@ -233,6 +233,9 @@
     <ClCompile Include="view\OpenGLRenderer.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="UI\UIWindow.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -480,6 +483,12 @@
     </ClInclude>
     <ClInclude Include="view\KeyDefines.h">
       <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UIWindow.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
