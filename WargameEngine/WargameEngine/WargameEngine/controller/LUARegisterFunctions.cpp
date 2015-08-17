@@ -698,11 +698,15 @@ int PlaySoundPosition(lua_State* L)
 
 int PlaySoundPlaylist(lua_State* L)
 {
-	if (CLUAScript::GetArgumentCount() < 1 || CLUAScript::GetArgumentCount() > 2)
-		return luaL_error(L, "1 or 2 arguments expected (list or tracks, volume)");
-	std::vector<std::string> files = CLUAScript::GetArray<std::string>(1);
-	float volume = CLUAScript::GetArgument<float>(2);
-	CGameView::GetInstance().lock()->GetSoundPlayer().PlaySoundPlaylist(files, volume);
+	int n = CLUAScript::GetArgumentCount();
+	if (n < 2 || n > 5)
+		return luaL_error(L, "2 or 5 arguments expected (name, list or tracks, volume, shuffle, repeat)");
+	std::string name = CLUAScript::GetArgument<const char*>(1);
+	std::vector<std::string> files = CLUAScript::GetArray<std::string>(2);
+	float volume = n > 2 ? CLUAScript::GetArgument<float>(3): 1.0f;
+	bool shuffle = n > 3 ? CLUAScript::GetArgument<bool>(4) : false;
+	bool repeat = n > 4 ? CLUAScript::GetArgument<bool>(5) : false;
+	CGameView::GetInstance().lock()->GetSoundPlayer().PlaySoundPlaylist(name, files, volume, shuffle, repeat);
 	return 0;
 }
 

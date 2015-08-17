@@ -1,0 +1,1 @@
+0:8:35	LUA Error: test.lua:105: attempt to index a nil value (local 'selected')

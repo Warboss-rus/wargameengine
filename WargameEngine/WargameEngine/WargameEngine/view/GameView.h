@@ -9,9 +9,10 @@
 #include "../UI/UIElement.h"
 #include "ShaderManager.h"
 #include "TextWriter.h"
-#include "../SoundPlayer.h"
+#include "../SoundPlayerOpenAl.h"
 #include "OpenGLRenderer.h"
 #include "../TranslationManager.h"
+#include "../SoundPlayerFMod.h"
 
 enum class LightningType
 {
@@ -35,7 +36,7 @@ public:
 	CModelManager& GetModelManager();
 	CParticleSystem& GetParticleSystem();
 	CTextWriter& GetTextWriter();
-	CSoundPlayer& GetSoundPlayer();
+	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
@@ -83,7 +84,7 @@ private:
 	CShaderManager m_shader;
 	CParticleSystem m_particles;
 	CTextWriter m_textWriter;
-	CSoundPlayer m_soundPlayer;
+	CSoundPlayerFMod m_soundPlayer;
 	COpenGLRenderer m_renderer;
 	CTranslationManager m_translationManager;
 	std::unique_ptr<ICamera> m_camera;

@@ -55,16 +55,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\openal-soft-1.16.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\openal-soft-1.16.0\libs\Win32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -79,7 +79,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,7 +97,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -116,7 +116,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -150,7 +150,7 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="Ruler.cpp" />
-    <ClCompile Include="SoundPlayer.cpp" />
+    <ClCompile Include="SoundPlayerFMod.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="TranslationManager.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
@@ -194,6 +194,7 @@
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />
+    <ClInclude Include="ISoundPlayer.h" />
     <ClInclude Include="ITask.h" />
     <ClInclude Include="model\Bounding.h" />
     <ClInclude Include="model\Landscape.h" />
@@ -219,7 +220,7 @@
     <ClInclude Include="rapidxml\rapidxml_iterators.hpp" />
     <ClInclude Include="rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
-    <ClInclude Include="SoundPlayer.h" />
+    <ClInclude Include="SoundPlayerFMod.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="ThreadPool.h" />

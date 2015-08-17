@@ -16,6 +16,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 int main(int argc, char* argv[])
 {
 #endif
+	srand(time(0));
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "-module"))

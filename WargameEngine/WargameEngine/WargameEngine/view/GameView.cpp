@@ -10,7 +10,7 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../Ruler.h"
-#include "../SoundPlayer.h"
+#include "../SoundPlayerOpenAl.h"
 #include "../OSSpecific.h"
 #include "CameraStrategy.h"
 
@@ -222,6 +222,7 @@ void CGameView::Update()
 	const double * direction = m_camera->GetDirection();
 	const double * up = m_camera->GetUpVector();
 	m_soundPlayer.SetListenerPosition(CVector3d(position), CVector3d(direction));
+	m_soundPlayer.Update();
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
 	glLoadIdentity();
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
@@ -481,7 +482,7 @@ CTextWriter& CGameView::GetTextWriter()
 	return m_textWriter;
 }
 
-CSoundPlayer& CGameView::GetSoundPlayer()
+ISoundPlayer& CGameView::GetSoundPlayer()
 {
 	return m_soundPlayer;
 }

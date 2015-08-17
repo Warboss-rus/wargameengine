@@ -164,9 +164,6 @@
     <ClCompile Include="view\ParticleSystem.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="SoundPlayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="model\Projectile.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -236,6 +233,9 @@
     <ClCompile Include="UI\UIWindow.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
+    <ClCompile Include="SoundPlayerFMod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -281,9 +281,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Ruler.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SoundPlayer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Task.h">
@@ -488,6 +485,12 @@
       <Filter>Source Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ISoundPlayer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -116,7 +116,7 @@ function TC3()
 end
 
 function Music()
-	PlaySoundPlaylist({"music_warhammer40ktheme.wav", "music_warhammer40ktheme.wav"}, 1.0)
+	PlaySoundPlaylist("music", {"music_warhammer40ktheme.mp3", "music_theme_spacemarines_01.mp3", "music_force_commander_theme.mp3", "music_dawnofwartheme.mp3"}, 1.0, true, true)
 end
 
 SetLightPosition(1, 0, 0, 30)
