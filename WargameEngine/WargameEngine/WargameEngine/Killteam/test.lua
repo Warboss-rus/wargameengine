@@ -9,9 +9,19 @@ function DeleteSelectedObject()
 	Object:GetSelected():Delete()--Gets currently selected object and deletes it
 end
 
-function SetDicePanelVisibility()
-	local oldState = UI:GetChild("Panel1"):GetVisible()--Get visibility of object and all its children
-	UI:GetChild("Panel1"):SetVisible(not oldState)
+function SetDicewindowVisibility()
+	local window = UI:NewWindow("Window1", 150, 120, "Dice Rolls", false)
+	--window:SetVisible(false)--Sets visibility of objects and all its children
+	window:NewStaticText("Label1", 5, 10, 30, 50, "Count")--Adds a new static text to UI (name, x, y, width, height, text)
+	window:NewStaticText("Label2", 5, 50, 30, 50, "Faces")
+	window:NewButton("Button5", 30, 110, 30, 60, "Roll", "RollDices")
+	window:NewCheckbox("CheckBox1", 5, 85, 20, 100, "Group", false)--Adds a new checkbox text to UI (name, x, y, width, height, text, initial state)
+	window:NewEdit("Edit1", 65, 10, 30, 50, "1")
+	local list2 = window:NewCombobox("ComboBox2", 65, 50, 30, 50)
+	list2:AddItem(6)
+	list2:AddItem(3)
+	list2:AddItem(12)
+	list2:AddItem(20)
 end
 
 function SetRuler()
@@ -28,10 +38,10 @@ end
 
 function RollDices()
 	math.randomseed(os.time())
-	local panel = UI:GetChild("Panel1")
-	local sides = panel:GetChild("ComboBox2"):GetText()
-	local count = panel:GetChild("Edit1"):GetText()
-	local group = panel:GetChild("CheckBox1"):GetState()
+	local window = UI:GetChild("Window1")
+	local sides = window:GetChild("ComboBox2"):GetText()
+	local count = window:GetChild("Edit1"):GetText()
+	local group = window:GetChild("CheckBox1"):GetState()
 	local result = ""
 	local grouped = {}
 	for i = 1, sides do
@@ -146,7 +156,7 @@ for i = 1, #files do
 end
 UI:NewButton("Button1", 220, 10, 30, 80, "Create", "NewObject")--Adds new button to UI (name, x, y, width, height, caption, callback function name)
 UI:NewButton("Button2", 310, 10, 30, 80, "Delete", "DeleteSelectedObject")
-UI:NewButton("Button3", 400, 10, 30, 100, "Roll Dices", "SetDicePanelVisibility")
+UI:NewButton("Button3", 400, 10, 30, 100, "Roll Dices", "SetDicewindowVisibility")
 UI:NewButton("Button4", 510, 10, 30, 80, "Ruler", "SetRuler")
 UI:NewButton("Button5", 10, 50, 30, 80, "Undo", "UndoAction")
 UI:NewButton("Button6", 100, 50, 30, 80, "Redo", "RedoAction")
@@ -163,18 +173,6 @@ UI:NewButton("Button14", 310, 100, 30, 80, "TeamColor2", "TC2")
 UI:NewButton("Button15", 410, 100, 30, 80, "TeamColor3", "TC3")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
 
-local panel = UI:NewPanel("Panel1", 390, 40, 150, 120)
-panel:SetVisible(false)--Sets visibility of objects and all its children
-panel:NewStaticText("Label1", 5, 10, 30, 50, "Count")--Adds a new static text to UI (name, x, y, width, height, text)
-panel:NewStaticText("Label2", 5, 50, 30, 50, "Faces")
-panel:NewButton("Button5", 30, 110, 30, 60, "Roll", "RollDices")
-panel:NewCheckbox("CheckBox1", 5, 85, 20, 100, "Group", false)--Adds a new checkbox text to UI (name, x, y, width, height, text, initial state)
-panel:NewEdit("Edit1", 65, 10, 30, 50, "1")
-local list2 = panel:NewCombobox("ComboBox2", 65, 50, 30, 50)
-list2:AddItem(6)
-list2:AddItem(3)
-list2:AddItem(12)
-list2:AddItem(20)
 SetSelectionCallback("OnSelection")
 NewDecal("chaos_crater_02.tga", 2.5, 2.5, 0, 5, 5)
 SetOnStringRecievedCallback("StringRecieved")

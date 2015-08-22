@@ -136,6 +136,20 @@ int NewRadioGroup(lua_State* L)
 	return CLUAScript::NewInstanceClass(listbox, "UI");
 }
 
+int NewWindow(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 6)
+		return luaL_error(L, "5 arguments expected (name, width, height, headerText, modal");
+	IUIElement * c = GetUIPointer();
+	std::string name = CLUAScript::GetArgument<char*>(2);
+	int height = CLUAScript::GetArgument<int>(3);
+	int width = CLUAScript::GetArgument<int>(4);
+	std::string header = CLUAScript::GetArgument<char*>(5);
+	auto& transMan = CGameView::GetInstance().lock()->GetTranslationManager();
+	IUIElement * panel = c->AddNewWindow(name, height, width, transMan.GetTranslation(header));
+	return CLUAScript::NewInstanceClass(panel, "UI");
+}
+
 int GetChild(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
@@ -457,6 +471,7 @@ static const luaL_Reg UIFuncs[] = {
 	{ "NewEdit", NewEdit },
 	{ "NewList", NewList },
 	{ "NewRadioGroup", NewRadioGroup },
+	{ "NewWindow", NewWindow },
 	{ "GetChild", GetChild },
 	{ "SetVisible", SetVisible },
 	{ "GetVisible", GetVisible },

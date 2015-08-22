@@ -1,9 +1,14 @@
 #include "UIWindow.h"
+#include "..\view\TextWriter.h"
+#include "..\view\GameView.h"
+#include "UIText.h"
 
 CUIWindow::CUIWindow(int width, int height, std::wstring const& headerText, IUIElement * parent, IRenderer & renderer)
-	:CUIElement(0, 0, height, width, parent, renderer), m_headerText(headerText), m_dragging(false)
+	:CUIElement(parent->GetWidth() / 2, parent->GetHeight() / 2, height, width, parent, renderer)
+	, m_headerText(headerText), m_dragging(false)
 {
-
+	m_x = (600 - m_width) / 2;
+	m_y = (600 - m_height) / 2;
 }
 
 void CUIWindow::Draw() const
@@ -12,31 +17,45 @@ void CUIWindow::Draw() const
 		return;
 	m_renderer.PushMatrix();
 	m_renderer.Translate(GetX(), GetY(), 0);
-	m_renderer.SetColor(0.4f, 0.4f, 1.0f);
-	m_renderer.RenderArrays(RenderMode::RECTANGLES,
-	{ CVector2i(0, 0),{ 0, m_theme->window.headerHeight },{ GetWidth(), m_theme->window.headerHeight },{ GetWidth(), 0 } }, {});
-	m_renderer.SetColor(1.0f, 0.0f, 0.0f);
-	int right = GetWidth() - m_theme->window.buttonSize;
-	m_renderer.RenderArrays(RenderMode::RECTANGLES,
-	{ CVector2i(right, 0),{ right, m_theme->window.buttonSize },{ GetWidth(), m_theme->window.buttonSize },{ GetWidth(), 0 } }, {});
+	if (!m_cache)
+	{
+		m_cache = move(m_renderer.RenderToTexture([this]() {
+			m_renderer.SetColor(0.4f, 0.4f, 1.0f);
+			m_renderer.RenderArrays(RenderMode::RECTANGLES,
+			{ CVector2i(0, 0),{ 0, m_theme->window.headerHeight },{ GetWidth(), m_theme->window.headerHeight },{ GetWidth(), 0 } }, {});
+			m_renderer.SetTexture(m_theme->texture);
+			int right = GetWidth() - m_theme->window.buttonSize;
+			float * texCoord = m_theme->window.closeButtonTexCoord;
+			m_renderer.RenderArrays(RenderMode::RECTANGLES,
+			{ CVector2i(right, 0),{ right, m_theme->window.buttonSize },{ GetWidth(), m_theme->window.buttonSize },{ GetWidth(), 0 } }, 
+			{ CVector2f(texCoord[0], texCoord[1]), { texCoord[0], texCoord[3] }, { texCoord[2], texCoord[3] }, { texCoord[2], texCoord[1] } });
+			m_renderer.SetTexture("");
+			m_renderer.SetColor(m_theme->defaultColor);
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			{ CVector2i(0, m_theme->window.headerHeight),{ GetWidth(), m_theme->window.headerHeight },{ 0, GetHeight() },{ GetWidth(), GetHeight() }, }, {});
+			PrintText(0, 0, GetWidth() - m_theme->window.buttonSize, m_theme->window.headerHeight, m_headerText, m_theme->window.headerText);
+
+		}, GetWidth(), GetHeight()));
+	}
+	m_cache->Bind();
+	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
+	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
 	m_renderer.Translate(0, m_theme->window.headerHeight, 0);
-	m_renderer.SetColor(0.6f, 0.6f, 0.6f);
-	m_renderer.RenderArrays(RenderMode::RECTANGLES,
-	{ CVector2i(0, 0),{ 0, GetHeight() },{ GetWidth(), GetHeight() },{ GetWidth(), 0 } }, {});
-	m_renderer.SetColor(0.0f, 0.0f, 0.0f);
 	CUIElement::Draw();
 	m_renderer.PopMatrix();
 }
 
 bool CUIWindow::LeftMouseButtonDown(int x, int y)
 {
-	if (!m_visible || !PointIsOnElement(x, y)) return false;
+	if (!m_visible || !PointIsOnElement(x, y)) return CUIElement::LeftMouseButtonDown(x, y - m_theme->window.headerHeight);
 	int relativeY = y - m_theme->window.headerHeight;
-	if (relativeY < 0)
+	if (relativeY - GetY() < 0)
 	{
 		m_dragging = true;
 		m_prevX = x;
 		m_prevY = y;
+		m_parent->SetFocus(this);
 	}
 	else
 	{
@@ -47,12 +66,13 @@ bool CUIWindow::LeftMouseButtonDown(int x, int y)
 
 bool CUIWindow::LeftMouseButtonUp(int x, int y)
 {
-	if (!m_visible || !PointIsOnElement(x, y)) return false;
+	if (!m_visible || !PointIsOnElement(x, y)) return CUIElement::LeftMouseButtonUp(x, y - m_theme->window.headerHeight);
 	int relativeY = y - m_theme->window.headerHeight;
-	if (relativeY < 0)
+	if (relativeY - GetY() < 0)
 	{
-		if (GetWidth() - x < m_theme->window.buttonSize)
+		if (GetWidth() - (x - GetX()) < m_theme->window.buttonSize)
 		{
+			m_parent->SetFocus();
 			m_parent->DeleteChild(this);//may cause problems
 			return true;
 		}
@@ -73,5 +93,12 @@ void CUIWindow::OnMouseMove(int x, int y)
 		m_y += y - m_prevY;
 		m_prevX = x;
 		m_prevY = y;
+		Invalidate();
 	}
+	CUIElement::OnMouseMove(x, y);
+}
+
+int CUIWindow::GetHeight() const
+{
+	return CUIElement::GetWidth() + m_theme->window.headerHeight * m_windowWidth / 600;
 }

@@ -449,7 +449,7 @@ void CGameView::OnReshape(int width, int height)
 
 void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 {
-	m_skybox.reset(new CSkyBox(size, size, size, textureFolder));
+	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, m_renderer));
 }
 
 ICamera * CGameView::GetCamera()

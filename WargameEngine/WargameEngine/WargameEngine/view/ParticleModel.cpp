@@ -2,8 +2,6 @@
 #include <fstream>
 #include <map>
 #include <string>
-#include "gl.h"
-#include "TextureManager.h"
 #include <cstring>
 #include "..\rapidxml\rapidxml.hpp"
 #include <sstream>
@@ -41,7 +39,8 @@ float StrToFloat(xml_attribute<>* strAttr, float defaultValue)
 	}
 }
 
-CParticleModel::CParticleModel(string const& file)
+CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
+	:m_renderer(renderer)
 {
 	ifstream istream(file);
 	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
@@ -122,10 +121,10 @@ CParticleModel::CParticleModel(string const& file)
 	doc.clear();
 }
 
-void DrawParticle(CVector3f const& position, float width, float height)
+void CParticleModel::DrawParticle(CVector3f const& position, float width, float height) const
 {
 	float modelview[4][4];
-	glGetFloatv(GL_MODELVIEW_MATRIX, &modelview[0][0]);
+	m_renderer.GetViewMatrix(&modelview[0][0]);
 
 	float sizeX2 = width * 0.5f;
 	float sizeY2 = height * 0.5f;
@@ -139,18 +138,8 @@ void DrawParticle(CVector3f const& position, float width, float height)
 	CVector3d p2(+xAxis.x - yAxis.x + position.x, +xAxis.y - yAxis.y + position.y, +xAxis.z - yAxis.z + position.z);
 	CVector3d p3(+xAxis.x + yAxis.x + position.x, +xAxis.y + yAxis.y + position.y, +xAxis.z + yAxis.z + position.z);
 
-	glBegin(GL_TRIANGLE_STRIP);
-	{
-		glTexCoord2d(0.0, 0.0);
-		glVertex3d(p0.x, p0.y, p0.z);
-		glTexCoord2d(0.0, 1.0);
-		glVertex3d(p1.x, p1.y, p1.z);
-		glTexCoord2d(1.0, 0.0);
-		glVertex3d(p3.x, p3.y, p3.z);
-		glTexCoord2d(1.0, 1.0);
-		glVertex3d(p2.x, p2.y, p2.z);
-	}
-	glEnd();
+	static const std::vector<CVector2d> texCoords = { { 0.0, 0.0 }, { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } };
+	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { p0, p1, p3, p2 }, {}, texCoords);
 }
 
 CVector3f InterpolateVectors(CVector3f const& v1, CVector3f const& v2, float t)
@@ -172,11 +161,11 @@ void CParticleModel::Draw(float time) const
 		float partTime = (time - m_instances[i].start) / (float)m_instances[i].speed;
 		if (partTime >= 0.0f && partTime <= particle.GetKeyFrames().back())//we need to draw this particle
 		{
-			glPushMatrix();
+			m_renderer.PushMatrix();
 			CVector3d const & coords = m_instances[i].position;
-			glTranslated(coords.x, coords.y, coords.z);
-			glRotated(m_instances[i].rotation, 0.0, 1.0, 0.0);
-			glScaled(m_instances[i].scale, m_instances[i].scale, m_instances[i].scale);
+			m_renderer.Translate(coords.x, coords.y, coords.z);
+			m_renderer.Rotate(m_instances[i].rotation, 0.0, 1.0, 0.0);
+			m_renderer.Scale(m_instances[i].scale);
 			//calculate the position to draw
 			vector<float> const& keyframes = particle.GetKeyFrames();
 			unsigned int j = 0;//a frame to draw
@@ -194,7 +183,7 @@ void CParticleModel::Draw(float time) const
 			{
 				position = InterpolateVectors(particle.GetPositions()[j], particle.GetPositions()[j - 1], (partTime - keyframes[j - 1]) / (keyframes[j] - keyframes[j - 1]));
 			}
-			CTextureManager::GetInstance()->SetTexture(m_textures[particle.GetMaterial()]);
+			m_renderer.SetTexture(m_textures[particle.GetMaterial()]);
 			m_shaders[particle.GetMaterial()].BindProgram();
 			for (auto k = m_instances[i].uniforms.begin(); k != m_instances[i].uniforms.end(); ++k)
 			{
@@ -206,8 +195,8 @@ void CParticleModel::Draw(float time) const
 				m_shaders[particle.GetMaterial()].SetUniformValue(k->first, 0, (float*)nullptr);
 			}
 			m_shaders[particle.GetMaterial()].UnBindProgram();
-			CTextureManager::GetInstance()->SetTexture("");
-			glPopMatrix();
+			m_renderer.SetTexture("");
+			m_renderer.PopMatrix();
 		}
 	}
 }

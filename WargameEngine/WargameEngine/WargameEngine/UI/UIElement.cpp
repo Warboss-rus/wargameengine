@@ -16,7 +16,10 @@ void CUIElement::Draw() const
 		return;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		i->second->Draw();
+		if (i->second && i->second.get() != m_focused)
+		{
+			i->second->Draw();
+		}
 	}
 	if(m_focused)
 	{

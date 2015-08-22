@@ -18,7 +18,7 @@ void PrintText(int x, int y, int width, int height, std::wstring const& str, CUI
 		x = width - text.GetStringWidth(theme.font, theme.fontSize, str);
 	y += (height - theme.fontSize) / 2 + theme.fontSize;
 	glColor3f(theme.color[0], theme.color[1], theme.color[2]);
-	text.PrintText(x, y, "times.ttf", theme.fontSize, str);
+	text.PrintText(x, y, theme.font, theme.fontSize, str);
 	glColor3f(0.0f, 0.0f, 0.0f);
 }
 

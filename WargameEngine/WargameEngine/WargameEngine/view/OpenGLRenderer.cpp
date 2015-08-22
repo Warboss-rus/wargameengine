@@ -6,14 +6,14 @@
 
 using namespace std;
 
-void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow)
+void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow, int flags)
 {
 	auto texMan = CTextureManager::GetInstance();
 	if (forceLoadNow)
 	{
-		texMan->LoadTextureNow(texture);
+		texMan->LoadTextureNow(texture, nullptr, flags);
 	}
-	texMan->SetTexture(texture);
+	texMan->SetTexture(texture, nullptr, flags);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
@@ -158,6 +158,16 @@ void COpenGLRenderer::SetColor(int r, int g, int b)
 	glColor3i(r, g, b);
 }
 
+void COpenGLRenderer::SetColor(float * color)
+{
+	glColor3fv(color);
+}
+
+void COpenGLRenderer::SetColor(int * color)
+{
+	glColor3iv(color);
+}
+
 std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
 {
 	//set up texture
@@ -221,6 +231,25 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(void * data, unsi
 	return move(texture);
 }
 
+std::unique_ptr<IDrawingList> COpenGLRenderer::CreateDrawingList(std::function<void() > const& func)
+{
+	unsigned int list = glGenLists(1);
+	glNewList(list, GL_COMPILE);
+	func();
+	glEndList();
+	return std::make_unique<COpenGLDrawingList>(list);
+}
+
+void COpenGLRenderer::GetViewMatrix(float * matrix) const
+{
+	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+}
+
+void COpenGLRenderer::Scale(double scale)
+{
+	glScaled(scale, scale, scale);
+}
+
 void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
 {
 	glRotated(angle, x, y, z);
@@ -244,4 +273,19 @@ void COpenGlCachedTexture::Bind() const
 COpenGlCachedTexture::operator unsigned int()
 {
 	return m_id;
+}
+
+COpenGLDrawingList::COpenGLDrawingList(unsigned int id)
+	:m_id(id)
+{
+}
+
+COpenGLDrawingList::~COpenGLDrawingList()
+{
+	glDeleteLists(m_id, 1);
+}
+
+void COpenGLDrawingList::Draw() const
+{
+	glCallList(m_id);
 }

@@ -82,8 +82,8 @@ void SetMaterial(const sMaterial * material, const std::vector<sTeamColor> * tea
 		texture = replaceTextures->at(texture);
 	}
 	texManager->SetTexture(texture, teamcolor);
-	texManager->SetTexture(material->specularMap, CTextureManager::eSpecular);
-	texManager->SetTexture(material->bumpMap, CTextureManager::eBump);
+	texManager->SetTexture(material->specularMap, CTextureManager::eTextureSlot::eSpecular);
+	texManager->SetTexture(material->bumpMap, CTextureManager::eTextureSlot::eBump);
 }
 
 void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)

@@ -50,6 +50,9 @@ CUITheme::CUITheme()
 	list.borderSize = 2;
 	list.elementSize = 20;
 	list.text = text;
+	list.selectionColor[0] = 0.2f;
+	list.selectionColor[1] = 0.2f;
+	list.selectionColor[2] = 1.0f;
 	//checkbox
 	checkbox.texCoord[0] = 0.121f;
 	checkbox.texCoord[1] = 0.789f;
@@ -64,6 +67,9 @@ CUITheme::CUITheme()
 	//edit
 	edit.borderSize = 2;
 	edit.text = text;
+	edit.selectionColor[0] = 0.0f;
+	edit.selectionColor[1] = 0.0f;
+	edit.selectionColor[2] = 1.0f;
 	//radiogroup
 	radiogroup.texCoord[0] = 0.379f;
 	radiogroup.texCoord[1] = 0.793f;
@@ -86,8 +92,14 @@ CUITheme::CUITheme()
 	sbar.pressedTexCoord[3] = 0.953f;
 	sbar.buttonSize = 20;
 	sbar.width = 20;
+	//window
 	window.buttonSize = 20;
 	window.headerHeight = 20;
+	window.headerText = text;
+	window.closeButtonTexCoord[0] = 0.6758f;
+	window.closeButtonTexCoord[1] = 0.996f;
+	window.closeButtonTexCoord[2] = 0.7343f;
+	window.closeButtonTexCoord[3] = 0.9453f;
 }
 
 float atoff(const char * ch)

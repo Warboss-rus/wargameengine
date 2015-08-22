@@ -45,6 +45,7 @@ public:
 	{
 		int borderSize;
 		int elementSize;
+		float selectionColor[3];
 		sText text;
 	};
 	sList list;
@@ -59,6 +60,7 @@ public:
 	struct sEdit
 	{
 		int borderSize;
+		float selectionColor[3];
 		sText text;
 	};
 	sEdit edit;
@@ -83,6 +85,8 @@ public:
 	{
 		int headerHeight;
 		int buttonSize;
+		float closeButtonTexCoord[4];
+		sText headerText;
 	};
 	sWindow window;
 	static CUITheme defaultTheme;

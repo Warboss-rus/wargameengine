@@ -15,22 +15,22 @@ void CUIList::Draw() const
 	if (!m_cache)
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
-			m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
+			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
-			m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+			m_renderer.SetColor(m_theme->textfieldColor);
 			int borderSize = m_theme->list.borderSize;
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
 			if (m_items.size() > 0)
 			{
-				m_renderer.SetColor(0.2f, 0.2f, 1.0f);
+				m_renderer.SetColor(m_theme->list.selectionColor);
 				int elementSize = m_theme->list.elementSize;
 				int intSelected = static_cast<int>(m_selected);
 				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize + elementSize * intSelected), {borderSize, 2 * borderSize + elementSize * (intSelected + 1)},
 					{GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * intSelected } }, {});
 			}
-			m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
+			m_renderer.SetColor(m_theme->text.color);
 			for (size_t i = m_scrollbar.GetPosition() / m_theme->list.elementSize; i < m_items.size(); ++i)
 			{
 				if (m_theme->list.borderSize + m_theme->list.elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / m_theme->list.elementSize) > GetHeight()) break;

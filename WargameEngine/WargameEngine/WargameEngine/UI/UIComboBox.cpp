@@ -17,7 +17,7 @@ void CUIComboBox::Draw() const
 	if (!m_cache)
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
-			m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
+			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
 
@@ -29,7 +29,7 @@ void CUIComboBox::Draw() const
 			m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
 			if (m_selected >= 0)	PrintText(m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
 
-			m_renderer.SetColor(0.6f, 0.6f, 0.6f);
+			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.SetTexture(m_theme->texture, true);
 			float * texCoords = m_expanded ? m_theme->combobox.expandedTexCoord : m_theme->combobox.texCoord;
 			int firstX = GetWidth() - static_cast<int>(GetHeight() * m_theme->combobox.buttonWidthCoeff);
@@ -40,7 +40,7 @@ void CUIComboBox::Draw() const
 
 			if (m_expanded)
 			{
-				m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+				m_renderer.SetColor(m_theme->textfieldColor);
 				int totalHeight = GetHeight() + m_theme->combobox.elementSize * m_items.size();
 				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, GetHeight()), { 0, totalHeight }, {GetWidth(), totalHeight}, {GetWidth(), GetHeight()} }, {});
 

@@ -17,9 +17,9 @@ void CUIEdit::Draw() const
 	if (!m_cache)
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
-			m_renderer.SetColor(m_theme->defaultColor[0], m_theme->defaultColor[1], m_theme->defaultColor[2]);
+			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
-			m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
+			m_renderer.SetColor(m_theme->textfieldColor);
 			int borderSize = m_theme->edit.borderSize;
 			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
 			int fonty = (GetHeight() + m_theme->edit.text.fontSize) / 2;
@@ -31,7 +31,7 @@ void CUIEdit::Draw() const
 			}
 			if (m_pos != m_beginSelection)
 			{
-				m_renderer.SetColor(0.0f, 0.0f, 1.0f);
+				m_renderer.SetColor(m_theme->edit.selectionColor);
 				int selectionBegin = GetStringWidth(m_theme->edit.text, m_text.substr(0, m_beginSelection));
 				int selectionEnd = GetStringWidth(m_theme->edit.text, m_text.substr(0, m_pos));
 				int fontHeight = GetStringHeight(m_theme->edit.text, m_text);
