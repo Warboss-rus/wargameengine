@@ -4,6 +4,7 @@
 #include "UI/UIElement.h"
 #include <cstring>
 #include "OSSpecific.h"
+#include <time.h>
 #ifdef _WINDOWS
 #include <windows.h>
 #include "Plugin.h"
@@ -16,7 +17,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 int main(int argc, char* argv[])
 {
 #endif
-	srand(time(0));
+	srand(static_cast<unsigned int>(time(NULL)));
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "-module"))

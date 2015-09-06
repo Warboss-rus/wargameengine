@@ -131,12 +131,12 @@ bool CUIElement::LeftMouseButtonUp(int x, int y)
 	return false;
 }
 
-bool CUIElement::OnKeyPress(unsigned char key)
+bool CUIElement::OnCharacterInput(unsigned int key)
 {
 	if(!m_visible) return false;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		if (i->second->OnKeyPress(key))
+		if (i->second->OnCharacterInput(key))
 		{
 			return true;
 		}
@@ -144,12 +144,12 @@ bool CUIElement::OnKeyPress(unsigned char key)
 	return false;
 }
 
-bool CUIElement::OnSpecialKeyPress(int key)
+bool CUIElement::OnKeyPress(int key, int modifiers)
 {
 	if(!m_visible) return false;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		if (i->second->OnSpecialKeyPress(key))
+		if (i->second->OnKeyPress(key, modifiers))
 		{
 			return true;
 		}

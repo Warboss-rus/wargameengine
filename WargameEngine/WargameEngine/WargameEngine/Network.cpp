@@ -6,11 +6,12 @@
 #include "controller/CommandHandler.h"
 #include "controller/GameController.h"
 
-CNetwork::CNetwork() 
+CNetwork::CNetwork(CGameController & gameController)
 	:m_host(true)
 	, m_netData(NULL)
 	, m_netRecievedSize(0)
 	, m_netTotalSize(0)
+	, m_gameController(gameController)
 {
 }
 
@@ -40,6 +41,7 @@ void CNetwork::Client(const char * ip, unsigned short port)
 void CNetwork::Stop()
 {
 	m_socket.reset();
+	m_children.clear();
 	m_host = true;
 	m_netData = NULL;
 	m_netRecievedSize = 0;
@@ -87,14 +89,14 @@ void CNetwork::Update()
 			char state[30];
 			sprintf(state, "State Recieved. Size=%d.", m_netRecievedSize);
 			LogWriter::WriteLine(state);
-			CGameController::GetInstance().lock()->SetState(m_netData + 5, true);
+			m_gameController.SetState(m_netData + 5, true);
 			if (m_stateRecievedCallback) m_stateRecievedCallback();
 		}
 		else if (m_netData[0] == 2) //command
 		{
 			char * data = m_netData + 4;
 			char type = data[1];
-			CCommandHandler & commandHandler = CGameController::GetInstance().lock()->GetCommandHandler();
+			CCommandHandler & commandHandler = m_gameController.GetCommandHandler();
 			switch (type)
 			{
 			case 0://CreateObject
@@ -206,7 +208,7 @@ void CNetwork::SendState()
 		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
-	std::vector<char> result = CGameController::GetInstance().lock()->GetState(true);
+	std::vector<char> result = m_gameController.GetState(true);
 	m_socket->SendData(&result[0], result.size());//1 For full dump
 }
 

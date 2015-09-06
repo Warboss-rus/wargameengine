@@ -3,7 +3,7 @@
 #include <GL/freeglut.h>
 #include <string>
 #include <cstring>
-#include "SelectionTools.h"
+#include "MathUtils.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
 #include "../LogWriter.h"
@@ -13,6 +13,7 @@
 #include "../SoundPlayerOpenAl.h"
 #include "../OSSpecific.h"
 #include "CameraStrategy.h"
+#include "../UI/UIElement.h"
 
 std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
@@ -40,14 +41,13 @@ CGameView::~CGameView()
 	DisableShadowMap();
 	CTextureManager::FreeInstance();
 	CGameModel::FreeInstance();
-	CGameController::FreeInstance();
 }
 
 CGameView::CGameView(void)
 	: m_textWriter(m_renderer)
 	, m_particles(m_renderer)
+	, m_gameModel(CGameModel::GetInstance())
 {
-	m_gameModel = CGameModel::GetInstance();
 	m_ui = std::make_unique<CUIElement>(m_renderer);
 	m_ui->SetTheme(std::make_shared<CUITheme>(CUITheme::defaultTheme));
 	m_soundPlayer.Init();
@@ -85,7 +85,9 @@ void CGameView::Init()
 	glutTimerFunc(1, OnTimer, 0);
 	glutReshapeFunc(&OnReshape);
 	glutKeyboardFunc(&CInput::OnKeyboard);
+	glutKeyboardUpFunc(&CInput::OnKeyboardUp);
 	glutSpecialFunc(&CInput::OnSpecialKeyPress);
+	glutSpecialUpFunc(&CInput::OnSpecialKeyRelease);
 	glutMouseFunc(&CInput::OnMouse);
 	glutMotionFunc(&CInput::OnMouseMove);
 	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
@@ -99,13 +101,149 @@ void CGameView::Init()
 	memset(m_lightPosition, 0, sizeof(float)* 3);
 	m_anisoptropy = 1.0f;
 	m_gpuSkinning = false;
-	m_camera.reset(new CCameraStrategy(0.0, 0.0, 2.8, 0.5));
+	m_camera = std::make_unique<CCameraStrategy>(0.0, 0.0, 2.8, 0.5);
 	m_tableList = 0;
 	m_tableListShadow = 0;
 
-	CGameController::GetInstance();
+	m_gameController = std::make_unique<CGameController>(*m_gameModel.lock());
+	m_gameController->Init();
+
+	InitInput();
 
 	glutMainLoop();
+}
+
+void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, double & startz, double & endx, double & endy, double & endz)
+{
+	//Get model, projection and viewport matrices
+	double matModelView[16], matProjection[16];
+	int viewport[4];
+	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
+	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	//Set OpenGL Windows coordinates
+	double winX = (double)x;
+	double winY = viewport[3] - (double)y;
+
+	//Cast a ray from eye to mouse cursor;
+	gluUnProject(winX, winY, 0.0, matModelView, matProjection,
+		viewport, &startx, &starty, &startz);
+	gluUnProject(winX, winY, 1.0, matModelView, matProjection,
+		viewport, &endx, &endy, &endz);
+}
+
+void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0)
+{
+	double startx, starty, startz, endx, endy, endz;
+	WindowCoordsToWorldVector(windowX, windowY, startx, starty, startz, endx, endy, endz);
+	double a = (worldZ - startz) / (endz - startz);
+	worldX = a * (endx - startx) + startx;
+	worldY = a * (endy - starty) + starty;
+}
+
+static const std::string g_controllerTag = "controller";
+
+void CGameView::InitInput()
+{
+	m_input = std::make_unique<CInput>();
+	m_camera->SetInput(*m_input);
+	//UI
+	m_input->DoOnLMBDown([this](int x, int y) {
+		return m_ui->LeftMouseButtonDown(x, y);
+	}, 0);
+	m_input->DoOnLMBUp([this](int x, int y) {
+		return m_ui->LeftMouseButtonUp(x, y);
+	}, 0);
+	m_input->DoOnCharacter([this](unsigned int key) {
+		return m_ui->OnCharacterInput(key);
+	}, 0);
+	m_input->DoOnKeyDown([this](int key, int modifiers) {
+		return m_ui->OnKeyPress(key, modifiers);
+	}, 0);
+	m_input->DoOnMouseMove([this](int x, int y) {
+		m_ui->OnMouseMove(x, y);
+		return false;
+	}, 9);
+	//Ruler
+	m_input->DoOnLMBDown([this](int x, int y) {
+		double wx, wy;
+		WindowCoordsToWorldCoords(x, y, wx, wy);
+		if (m_ruler.IsVisible())
+		{
+			m_ruler.Hide();
+		}
+		else
+		{
+			if (m_ruler.IsEnabled())
+			{
+				m_ruler.SetBegin(wx, wy);
+				return true;
+			}
+		}
+		return false;
+	}, 2);
+	m_input->DoOnLMBUp([this](int x, int y) {
+		double wx, wy;
+		WindowCoordsToWorldCoords(x, y, wx, wy);
+		m_ruler.SetEnd(wx, wy);
+		return false;
+	}, 2);
+	m_input->DoOnRMBDown([this](int, int) {
+		if (m_ruler.IsVisible())
+		{
+			m_ruler.Hide();
+		}
+		return false;
+	}, 2);
+	m_input->DoOnMouseMove([this](int x, int y) {
+		double wx, wy;
+		WindowCoordsToWorldCoords(x, y, wx, wy);
+		m_ruler.SetEnd(wx, wy);
+		return false;
+	}, 2);
+	//Game Controller
+	m_input->DoOnLMBDown([this](int x, int y) {
+		CVector3d begin, end;
+		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		bool result = m_gameController->OnLeftMouseDown(begin, end, m_input->GetModifiers());
+		auto object = m_gameModel.lock()->GetSelectedObject();
+		if (result && object)
+		{
+			m_ruler.SetBegin(object->GetX(), object->GetY());
+		}
+		return result;
+	}, 5, g_controllerTag);
+	m_input->DoOnLMBUp([this](int x, int y) {
+		CVector3d begin, end;
+		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		bool result = m_gameController->OnLeftMouseUp(begin, end, m_input->GetModifiers());
+		if (result && !m_ruler.IsEnabled())
+		{
+			m_ruler.Hide();
+		}
+		return result;
+	}, 5, g_controllerTag);
+	m_input->DoOnMouseMove([this](int x, int y) {
+		CVector3d begin, end;
+		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		bool result = m_gameController->OnMouseMove(begin, end, m_input->GetModifiers());
+		auto object = m_gameModel.lock()->GetSelectedObject();
+		if (result && object)
+		{
+			m_ruler.SetEnd(object->GetX(), object->GetY());
+		}
+		return result;
+	}, 5, g_controllerTag);
+	m_input->DoOnRMBDown([this](int x, int y) {
+		CVector3d begin, end;
+		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		return m_gameController->OnRightMouseDown(begin, end, m_input->GetModifiers());
+	}, 5, g_controllerTag);
+	m_input->DoOnRMBUp([this](int x, int y) {
+		CVector3d begin, end;
+		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		return m_gameController->OnRightMouseUp(begin, end, m_input->GetModifiers());
+	}, 5, g_controllerTag);
 }
 
 void CGameView::OnDrawScene()
@@ -226,10 +364,10 @@ void CGameView::Update()
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
 	glLoadIdentity();
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
-	CGameController::GetInstance().lock()->Update();
+	m_gameController->Update();
 	DrawObjects();
 	DrawBoundingBox();
-	CRuler::Draw();
+	m_ruler.Draw();
 	DrawUI();
 }
 
@@ -365,7 +503,7 @@ void CGameView::SetUpShadowMapDraw()
 	float cameraInverseModelViewMatrix[16];
 	float lightMatrix[16];
 	glGetFloatv(GL_MODELVIEW_MATRIX, cameraModelViewMatrix);
-	gluInvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
+	InvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
 
 	glPushMatrix();
 	glLoadIdentity();
@@ -452,6 +590,20 @@ void CGameView::CreateSkybox(double size, std::string const& textureFolder)
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, m_renderer));
 }
 
+CGameController& CGameView::GetController()
+{
+	return *m_gameController;
+}
+
+void CGameView::ResetController()
+{
+	m_input->DeleteAllSignalsByTag(g_controllerTag);
+	m_gameController.reset();
+	CGameModel::FreeInstance();
+	m_gameModel = CGameModel::GetInstance();
+	m_gameController = std::make_unique<CGameController>(*m_gameModel.lock());
+}
+
 ICamera * CGameView::GetCamera()
 {
 	return m_camera.get();
@@ -460,6 +612,7 @@ ICamera * CGameView::GetCamera()
 void CGameView::SetCamera(ICamera * camera)
 {
 	m_camera.reset(camera);
+	m_camera->SetInput(*m_input);
 }
 
 CModelManager& CGameView::GetModelManager()
@@ -490,6 +643,11 @@ ISoundPlayer& CGameView::GetSoundPlayer()
 CTranslationManager& CGameView::GetTranslationManager()
 {
 	return m_translationManager;
+}
+
+CRuler& CGameView::GetRuler()
+{
+	return m_ruler;
 }
 
 void CGameView::ResizeWindow(int height, int width)
@@ -660,11 +818,13 @@ void CGameView::Preload(std::string const& image)
 	CTextureManager::GetInstance()->SetTexture("");
 }
 
-void LoadModuleCallback(int)
+void CGameView::LoadModuleCallback(int)
 {
-	CGameController::FreeInstance();
-	CGameView::GetInstance().lock()->GetUI()->ClearChildren();
-	CGameController::GetInstance();
+	auto view = CGameView::GetInstance().lock();
+	view->ResetController();
+	view->GetUI()->ClearChildren();
+	view->GetController().Init();
+	view->InitInput();
 }
 
 void CGameView::LoadModule(std::string const& module)
@@ -672,8 +832,6 @@ void CGameView::LoadModule(std::string const& module)
 	ThreadPool::CancelAll();
 	sModule::Load(module);
 	ChangeWorkingDirectory(sModule::folder);
-	CGameModel::FreeInstance();
-	m_gameModel = CGameModel::GetInstance();
 	CTextureManager::FreeInstance();
 	m_modelManager = CModelManager();
 	m_skybox.reset();

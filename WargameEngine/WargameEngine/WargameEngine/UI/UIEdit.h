@@ -5,8 +5,8 @@ class CUIEdit : public CUIElement
 public:
 	CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer);
 	void Draw() const override;
-	bool OnKeyPress(unsigned char key) override;
-	bool OnSpecialKeyPress(int key) override;
+	bool OnCharacterInput(unsigned int key) override;
+	bool OnKeyPress(int key, int modifiers) override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	bool LeftMouseButtonDown(int x, int y) override;
 	std::wstring const GetText() const override;

@@ -246,7 +246,6 @@ void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader)
 	{
 		loader.textureCoords.clear();
 	}
-	delete [] data;
 	if(!useFaces)
 	{
 		loader.vertices.swap(vertices);

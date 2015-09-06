@@ -27,18 +27,18 @@ public:
 	void SetProperty(std::string const& key, std::string const& value);
 	std::string const GetProperty(std::string const& key);
 	std::map<std::string, std::string> const& GetAllProperties() const;
-	void AddProjectile(CProjectile const& projectile) { m_projectiles.push_back(projectile); }
-	size_t GetProjectileCount() const { return m_projectiles.size(); }
-	CProjectile const& GetProjectile(unsigned int index) const { return m_projectiles[index]; }
+	void AddProjectile(CProjectile const& projectile);
+	size_t GetProjectileCount() const;
+	CProjectile const& GetProjectile(unsigned int index) const;
 	void Update();
-	void RemoveProjectile(unsigned int index) { m_projectiles.erase(m_projectiles.begin() + index); }
-	CLandscape & GetLandscape() { return m_landscape; }
+	void RemoveProjectile(unsigned int index);
+	CLandscape & GetLandscape();
 	void ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
-	std::shared_ptr<IBounding> GetBoundingBox(std::string const& path) const { return m_boundings.at(path); }
-	void AddBoundingBox(std::string const& path, std::shared_ptr<IBounding> bbox) { m_boundings[path] = bbox; }
+	std::shared_ptr<IBounding> GetBoundingBox(std::string const& path) const;
+	void AddBoundingBox(std::string const& path, std::shared_ptr<IBounding> bbox);
 private:
-	CGameModel(void) :m_selectedObject(NULL){};
-	CGameModel(CGameModel const&){};
+	CGameModel(void) {}
+	CGameModel(CGameModel const&) = delete;
 
 	std::vector<std::shared_ptr<IObject>> m_objects;
 	std::vector<CProjectile> m_projectiles;

@@ -14,7 +14,7 @@ int NewObject(lua_State* L)
 	double x = CLUAScript::GetArgument<double>(3);
 	double y = CLUAScript::GetArgument<double>(4);
 	double rotation = CLUAScript::GetArgument<double>(5);
-	std::shared_ptr<IObject> object = CGameController::GetInstance().lock()->CreateObject(model, x, y, rotation);
+	std::shared_ptr<IObject> object = CGameView::GetInstance().lock()->GetController().CreateObject(model, x, y, rotation);
 	return CLUAScript::NewInstanceClass(object.get(), "Object");
 }
 
@@ -49,7 +49,7 @@ int DeleteObject(lua_State* L)
         return luaL_error(L, "no argument expected");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	std::shared_ptr<IObject> shared_object = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CGameController::GetInstance().lock()->DeleteObject(shared_object);
+	CGameView::GetInstance().lock()->GetController().DeleteObject(shared_object);
 	object = nullptr;
 	return 0;
 }
@@ -153,7 +153,7 @@ int SetProperty(lua_State* L)
 	char* key = CLUAScript::GetArgument<char*>(2);
 	char* value = CLUAScript::GetArgument<char*>(3);
 	std::shared_ptr<IObject> obj = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CGameController::GetInstance().lock()->SetObjectProperty(obj, key, value);
+	CGameView::GetInstance().lock()->GetController().SetObjectProperty(obj, key, value);
 	return 0;
 }
 

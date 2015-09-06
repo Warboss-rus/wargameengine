@@ -7,7 +7,7 @@
 class IBounding
 {
 public:
-	virtual bool IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const = 0;
+	virtual bool IsIntersectsRay(const double * origin, const double *end, double x, double y, double z, double rotation, CVector3d & intersectCoord) const = 0;
 	virtual void SetScale(double scale) = 0;
 	virtual ~IBounding() {}
 };
@@ -16,7 +16,7 @@ class CBoundingBox : public IBounding
 {
 public:
 	CBoundingBox(double min[3], double max[3]);
-	bool IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const override;
+	bool IsIntersectsRay(const double * origin, const double *end, double x, double y, double z, double rotation, CVector3d & intersectCoord) const override;
 	void SetScale(double scale) override { m_scale = scale; }
 	const double* GetMin() const;
 	const double* GetMax() const;
@@ -32,7 +32,7 @@ class CBoundingCompound : public IBounding
 {
 public:
 	void AddChild(std::unique_ptr<IBounding> child);
-	bool IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const override;
+	bool IsIntersectsRay(const double * origin, const double *end, double x, double y, double z, double rotation, CVector3d & intersectCoord) const override;
 	void SetScale(double scale) override;
 	size_t GetChildCount() const;
 	IBounding * GetChild(unsigned int index);

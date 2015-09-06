@@ -1,163 +1,84 @@
 #include "Input.h"
+#include <map>
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
 #endif
-#include "GameView.h"
-#include "../Ruler.h"
-#include "SelectionTools.h"
-#include "../controller/GameController.h"
+#include "..\Signal.h"
 
-bool CInput::m_isLMBDown = false;
-bool CInput::m_isRMBDown = false;
-bool CInput::m_ruler = false;
-double CInput::startX = 0.0;
-double CInput::startY = 0.0;
-double CInput::m_oldRotation = 0.0;
-int CInput::startWindowX = -1;
-int CInput::startWindowY = -1;
-std::function<void(std::shared_ptr<IObject>, std::string const&, double, double, double)> CInput::m_LMBclickCallback;
-std::function<void(std::shared_ptr<IObject>, std::string const&, double, double, double)> CInput::m_RMBclickCallback;
-bool CInput::m_disableDefaultLMB = false;
-bool CInput::m_disableDefaultRMB = false;
-
-void SelectObject(int x, int y, bool shiftPressed, bool noCallback = false)
+struct CInput::sSignals
 {
-	double start[3];
-	double end[3];
-	WindowCoordsToWorldVector(x, y, start[0], start[1], start[2], end[0], end[1], end[2]);
-	CGameController::GetInstance().lock()->SelectObject(start, end, shiftPressed, noCallback);
+	CSignal<int, int> m_onLMBDown;
+	CSignal<int, int> m_onLMBUp;
+	CSignal<int, int> m_onRMBDown;
+	CSignal<int, int> m_onRMBUp;
+	CSignal<> m_onWheelUp;
+	CSignal<> m_onWheelDown;
+	CSignal<int, int> m_onKeyDown;
+	CSignal<int, int> m_onKeyUp;
+	CSignal<unsigned int> m_onCharacter;
+	CSignal<int, int> m_onMouseMove;
+};
+
+std::unique_ptr<CInput::sSignals> CInput::m_signals = std::make_unique<CInput::sSignals>();
+bool CInput::m_cursorEnabled = true;
+static const int SCROLL_UP = 3;
+static const int SCROLL_DOWN = 4;
+static int g_prevX;
+static int g_prevY;
+
+static const std::map<int, IInput::Modifiers> modifiersMap = {
+	 {GLUT_ACTIVE_ALT, IInput::MODIFIER_ALT },
+	{ GLUT_ACTIVE_CTRL, IInput::MODIFIER_CTRL },
+	{ GLUT_ACTIVE_SHIFT, IInput::MODIFIER_SHIFT },
+};
+
+int GetModifiers()
+{
+	int glut = glutGetModifiers();
+	int result = 0;
+	for (auto pair : modifiersMap)
+	{
+		if (glut & pair.first)
+		{
+			result |= pair.second;
+		}
+	}
+	return result;
 }
 
 void CInput::OnMouse(int button, int state, int x, int y)
 {
-	std::shared_ptr<CGameModel> model = CGameModel::GetInstance().lock();
 	switch(button)
 	{
 	case GLUT_LEFT_BUTTON: 
 		if (state == GLUT_DOWN)
 		{
-			m_isLMBDown = true;
-			if(CGameView::GetInstance().lock()->GetUI()->LeftMouseButtonDown(x, y)) return;
-			if(m_ruler)
-			{
-				double worldX, worldY;
-				WindowCoordsToWorldCoords(x, y, worldX, worldY);
-				CRuler::SetBegin(worldX, worldY);
-			}
-			else
-			{
-				CRuler::Hide();
-				if (!m_disableDefaultLMB)
-				{
-					SelectObject(x, y, glutGetModifiers() == GLUT_ACTIVE_SHIFT);
-					std::shared_ptr<IObject> obj = model->GetSelectedObject();
-					if (obj)//drag object
-					{
-						startX = obj->GetX();
-						startY = obj->GetY();
-						CRuler::SetBegin(startX, startY);
-					}
-					else//selection rectangle
-					{
-						startWindowX = x;
-						startWindowY = y;
-					}
-				}
-			}
+			m_signals->m_onLMBDown(x, y);
 		}
 		else
 		{
-			if (!m_isLMBDown) break;
-			m_isLMBDown = false;
-			if (CGameView::GetInstance().lock()->GetUI()->LeftMouseButtonUp(x, y)) return;
-			std::shared_ptr<IObject> obj = model->GetSelectedObject();
-			if(!m_ruler && obj && !m_disableDefaultLMB)
-			{
-				double worldX, worldY;
-				const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
-				WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
-				CGameController::GetInstance().lock()->TryMoveSelectedObject(obj, worldX, worldY, 0.0);
-				double newX = obj->GetX();
-				double newY = obj->GetY();
-				CGameController::GetInstance().lock()->MoveObject(obj, newX - startX, newY - startY);
-				startX = -1.0;
-				startY = -1.0;
-				CRuler::Hide();
-			}
-			if (!obj && !m_disableDefaultLMB)
-			{
-				//needs to be fixed
-				double beginWorldX, beginWorldY, endWorldX, endWorldY;
-				WindowCoordsToWorldCoords(startWindowX, startWindowY, beginWorldX, beginWorldY);
-				WindowCoordsToWorldCoords(x, y, endWorldX, endWorldY);
-				CGameController::GetInstance().lock()->SelectObjectGroup(beginWorldX, beginWorldY, endWorldX, endWorldY);
-				startWindowX = -1;
-				startWindowY = -1;
-			}
-			if (m_LMBclickCallback)
-			{
-				double worldX, worldY;
-				WindowCoordsToWorldCoords(x, y, worldX, worldY);
-				std::shared_ptr<IObject> prev = model->GetSelectedObject();
-				SelectObject(x, y, false, true);
-				m_LMBclickCallback(model->GetSelectedObject(), "Object", worldX, worldY, 0.0);
-				model->SelectObject(prev);
-			}
-			m_ruler = false;
+			m_signals->m_onLMBUp(x, y);
 		}break;
 	case GLUT_RIGHT_BUTTON:
 		if (state == GLUT_DOWN)
 		{
-			m_isRMBDown = true;
-			if (!m_disableDefaultRMB)
-			{
-				std::shared_ptr<IObject> prev = model->GetSelectedObject();
-				SelectObject(x, y, false);
-				WindowCoordsToWorldCoords(x, y, startX, startY);
-				IObject * object = model->GetSelectedObject().get();
-				if (!object) model->SelectObject(prev);
-				m_oldRotation = (object) ? object->GetRotation() : 0;
-			}
+			m_signals->m_onRMBDown(x, y);
 		}
 		else
 		{
-			if (!m_isRMBDown) break;
-			m_isRMBDown = false;
-			std::shared_ptr<IObject> object = model->GetSelectedObject();
-			if (object && !m_disableDefaultRMB)
-			{
-				double worldX, worldY;
-				WindowCoordsToWorldCoords(x, y, worldX, worldY);
-				double rot = model->GetSelectedObject()->GetRotation();
-				double rotation = 90 + (atan2(worldY - startY, worldX - startX) * 180 / 3.1417);
-				if (sqrt((worldX - startX) * (worldX - startX) + (worldY - startY) * (worldY - startY)) > 0.2)
-					model->GetSelectedObject()->Rotate(rotation - rot);
-				CGameController::GetInstance().lock()->RotateObject(object, object->GetRotation() - m_oldRotation);
-			}
-			if (m_RMBclickCallback)
-			{
-				double worldX, worldY;
-				WindowCoordsToWorldCoords(x, y, worldX, worldY);
-				std::shared_ptr<IObject> prev = model->GetSelectedObject();
-				SelectObject(x, y, false, true);
-				std::shared_ptr<IObject> current = model->GetSelectedObject();
-				model->SelectObject(prev);
-				m_RMBclickCallback(current, "Object", worldX, worldY, 0.0);
-			}
-			startX = 0;
-			startY = 0;
+			m_signals->m_onRMBUp(x, y);
 		}break;
 	case SCROLL_UP:
 		if (state == GLUT_UP)
 		{
-			CGameView::GetInstance().lock()->GetCamera()->OnMouseWheelUp();
+			m_signals->m_onWheelUp();
 		}break;
 	case SCROLL_DOWN:
 		if (state == GLUT_UP)
 		{
-			CGameView::GetInstance().lock()->GetCamera()->OnMouseWheelDown();
+			m_signals->m_onWheelDown();
 		}break;
 	}
 }
@@ -169,13 +90,16 @@ bool HasModifier(int modifier)
 
 void CInput::OnKeyboard(unsigned char key, int /*x*/, int /*y*/)
 {
-	if (CGameView::GetInstance().lock()->GetUI()->OnKeyPress(key) || CGameView::GetInstance().lock()->GetCamera()->OnKeyPress(key))
-		return;
-	if(key == 13 && glutGetModifiers() == GLUT_ACTIVE_ALT)
+	m_signals->m_onKeyDown(key, ::GetModifiers());
+}
+
+void CInput::OnKeyboardUp(unsigned char key, int , int)
+{
+	m_signals->m_onKeyUp(key, ::GetModifiers());
+	if (key >= 32 && key != 127)
 	{
-		CGameView::GetInstance().lock()->ToggleFullscreen();
+		m_signals->m_onCharacter(key);
 	}
-	CGameController::GetInstance().lock()->OnKeyPress(key, HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
 }
 
 int SpecialToKeyCode(int special)
@@ -207,88 +131,155 @@ int SpecialToKeyCode(int special)
 	return 0;
 }
 
+CInput::CInput()
+{
+	m_signals = std::make_unique<CInput::sSignals>();
+}
+
+void CInput::DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onLMBDown.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onLMBUp.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onRMBDown.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onRMBUp.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnMouseWheelUp(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onWheelUp.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnMouseWheelDown(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onWheelDown.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onKeyDown.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onKeyUp.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onCharacter.Connect(handler, priority, tag);
+}
+
+void CInput::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+{
+	m_signals->m_onMouseMove.Connect(handler, priority, tag);
+}
+
+static int screenCenterX = 320;
+static int screenCenterY = 240;
+static int g_lastMouseX = screenCenterX;
+static int g_lastMouseY = screenCenterY;
+
+void CInput::EnableCursor(bool enable /*= true*/)
+{
+	if (enable)
+	{
+		glutWarpPointer(g_prevX, g_prevY);
+		glutSetCursor(GLUT_CURSOR_INHERIT);
+	}
+	else
+	{
+		glutSetCursor(GLUT_CURSOR_NONE);
+		g_prevX = g_lastMouseX;
+		g_prevY = g_lastMouseY;
+		screenCenterX = glutGet(GLUT_WINDOW_WIDTH) / 2;
+		screenCenterY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
+		glutWarpPointer(screenCenterX, screenCenterY);
+		g_lastMouseX = screenCenterX;
+		g_lastMouseY = screenCenterY;
+	}
+	m_cursorEnabled = enable;
+}
+
 void CInput::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
 {
-	if (CGameView::GetInstance().lock()->GetUI()->OnSpecialKeyPress(key))
-		return;
 	int keycode = SpecialToKeyCode(key);
-	if (CGameView::GetInstance().lock()->GetCamera()->OnKeyPress(keycode))
-		return;
-	CGameController::GetInstance().lock()->OnKeyPress(static_cast<unsigned char>(keycode), HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
+	m_signals->m_onKeyDown(keycode, ::GetModifiers());
+}
+
+void CInput::OnSpecialKeyRelease(int key, int, int)
+{
+	int keycode = SpecialToKeyCode(key);
+	m_signals->m_onKeyUp(keycode, ::GetModifiers());
 }
 
 void CInput::OnPassiveMouseMove(int x, int y)
 {
-	static int prevMouseX = 320;
-	static int prevMouseY = 240;
-	static bool just_warped = false;
-	if(just_warped) 
-	{
-        just_warped = false;
-        return;
-    }
-	CGameView::GetInstance().lock()->GetUI()->OnMouseMove(x, y);
-	CGameView::GetInstance().lock()->GetCamera()->OnMouseMove(x - prevMouseX, prevMouseY - y, m_isLMBDown, m_isRMBDown, HasModifier(GLUT_ACTIVE_SHIFT), HasModifier(GLUT_ACTIVE_CTRL), HasModifier(GLUT_ACTIVE_ALT));
-	if (CGameView::GetInstance().lock()->GetCamera()->HidePointer())
-	{
-		glutSetCursor(GLUT_CURSOR_NONE);
-		glutWarpPointer(prevMouseX, prevMouseY);
-		just_warped = true;
-	}
-	else
-	{
-		glutSetCursor(GLUT_CURSOR_INHERIT);
-		prevMouseX = x;
-		prevMouseY = y;
-	}
+	OnMouseMove(x, y);
 }
 
 void CInput::OnMouseMove(int x, int y)
 {
-	CGameView::GetInstance().lock()->GetUI()->OnMouseMove(x, y);
-	if (m_isLMBDown)
+	static bool just_warped = false;
+	if (just_warped)
 	{
-		if(m_ruler)
-		{
-			double worldX, worldY;
-			WindowCoordsToWorldCoords(x, y, worldX, worldY);
-			CRuler::SetEnd(worldX, worldY);
-		}
-		else
-		{
-			std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->GetSelectedObject();
-			if(object)
-			{
-				double worldX, worldY;
-				const CVector3d * capturePoint = CGameController::GetInstance().lock()->GetCapturePoint();
-				WindowCoordsToWorldCoords(x, y, worldX, worldY, capturePoint->z);
-				CGameController::GetInstance().lock()->TryMoveSelectedObject(object, worldX, worldY, 0.0);
-				CRuler::SetEnd(object->GetX(), object->GetY());
-			}
-		}
+		just_warped = false;
+		return;
 	}
-	if(m_isRMBDown)
+	m_signals->m_onMouseMove(x, y);
+	if (!m_cursorEnabled)
 	{
-		if(CGameModel::GetInstance().lock()->GetSelectedObject())
+		if (g_prevX == 0 && g_prevY)
 		{
-			double worldX, worldY;
-			WindowCoordsToWorldCoords(x, y, worldX, worldY);
-			double rot = CGameModel::GetInstance().lock()->GetSelectedObject()->GetRotation();
-			double rotation = 90 + (atan2(worldY-startY,worldX-startX)*180/3.1417);
-			if(sqrt((worldX - startX) * (worldX - startX) + (worldY - startY) * (worldY - startY)) > 0.2)
-				CGameModel::GetInstance().lock()->GetSelectedObject()->Rotate(rotation-rot);
+			g_prevX = x;
+			g_prevY = y;
 		}
+		glutWarpPointer(screenCenterX, screenCenterY);
+		just_warped = true;
+	}
+	else
+	{
+		g_lastMouseX = x;
+		g_lastMouseY = y;
 	}
 }
 
-void CInput::SetLMBCallback(MouseCallback const& callback, bool disableDefault)
+int CInput::GetMouseX() const
 {
-	m_LMBclickCallback = callback;
-	m_disableDefaultLMB = disableDefault;
+	return g_lastMouseX;
 }
 
-void CInput::SetRMBCallback(MouseCallback const& callback, bool disableDefault)
+int CInput::GetMouseY() const
 {
-	m_RMBclickCallback = callback;
-	m_disableDefaultRMB = disableDefault;
+	return g_lastMouseY;
+}
+
+void CInput::DeleteAllSignalsByTag(std::string const& tag)
+{
+	m_signals->m_onLMBDown.RemoveByTag(tag);
+	m_signals->m_onLMBUp.RemoveByTag(tag);
+	m_signals->m_onRMBDown.RemoveByTag(tag);
+	m_signals->m_onRMBUp.RemoveByTag(tag);
+	m_signals->m_onWheelUp.RemoveByTag(tag);
+	m_signals->m_onWheelDown.RemoveByTag(tag);
+	m_signals->m_onKeyDown.RemoveByTag(tag);
+	m_signals->m_onKeyUp.RemoveByTag(tag);
+	m_signals->m_onCharacter.RemoveByTag(tag);
+	m_signals->m_onMouseMove.RemoveByTag(tag);
+}
+
+int CInput::GetModifiers() const
+{
+	return ::GetModifiers();
 }

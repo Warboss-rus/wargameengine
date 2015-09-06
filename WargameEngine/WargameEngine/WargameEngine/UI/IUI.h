@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 #include <string>
 #include <vector>
@@ -16,8 +17,8 @@ public:
 	virtual void ClearChildren() = 0;
 	virtual bool LeftMouseButtonDown(int x, int y) = 0;
 	virtual bool LeftMouseButtonUp(int x, int y) = 0;
-	virtual bool OnKeyPress(unsigned char key) = 0;
-	virtual bool OnSpecialKeyPress(int key) = 0;
+	virtual bool OnCharacterInput(unsigned int key) = 0;
+	virtual bool OnKeyPress(int key, int modifiers) = 0;
 	virtual void OnMouseMove(int x, int y) = 0;
 	virtual int GetX() const = 0;
 	virtual int GetY() const = 0;

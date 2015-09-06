@@ -5,8 +5,20 @@
 #include "KeyDefines.h"
 
 CCameraFirstPerson::CCameraFirstPerson()
+	:m_input(nullptr)
 {
 	Reset();
+}
+
+static const std::string g_cameraTag = "camera";
+
+CCameraFirstPerson::~CCameraFirstPerson()
+{
+	if (m_input)
+	{
+		m_input->EnableCursor(true);
+	}
+	m_input->DeleteAllSignalsByTag(g_cameraTag);
 }
 
 void CCameraFirstPerson::Reset()
@@ -61,30 +73,9 @@ const double * CCameraFirstPerson::GetUpVector() const
 	return up;
 }
 
-bool CCameraFirstPerson::OnMouseMove(int deltaX, int deltaY, bool /*LMB*/, bool /*RMB*/, bool /*shift*/, bool /*ctrl*/, bool /*alt*/)
-{
-	Rotate(deltaX, deltaY);
-	return true;
-}
-
-bool CCameraFirstPerson::OnMouseWheelUp()
-{
-	return false;
-}
-
-bool CCameraFirstPerson::OnMouseWheelDown()
-{
-	return false;
-}
-
 const double CCameraFirstPerson::GetScale() const
 {
 	return 1.0;
-}
-
-bool CCameraFirstPerson::HidePointer() const
-{
-	return true;
 }
 
 void CCameraFirstPerson::Rotate(double rotZ, double rotX)
@@ -93,43 +84,52 @@ void CCameraFirstPerson::Rotate(double rotZ, double rotX)
 	m_rotX = fmod(m_rotX + rotX, 360);
 }
 
+void CCameraFirstPerson::SetInput(IInput & input)
+{
+	input.EnableCursor(false);
+	int m_oldX = input.GetMouseX();
+	int m_oldY = input.GetMouseY();
+	input.DoOnMouseMove([=](int x, int y) {
+		Rotate(x - m_oldX, y - m_oldY);
+		return true;
+	}, 1, g_cameraTag);
+	input.DoOnKeyDown([this](int key, int) {
+		switch (key)
+		{
+		case KEY_LEFT:
+		{
+			Translate(-TRANSLATE, 0.0);
+		}break;
+		case KEY_RIGHT:
+		{
+			Translate(TRANSLATE, 0.0);
+		}break;
+		case KEY_DOWN:
+		{
+			Translate(0.0, -TRANSLATE);
+		}
+		break;
+		case KEY_UP:
+		{
+			Translate(0.0, TRANSLATE);
+		}break;
+		case KEY_BACKSPACE:
+		{
+			Reset();
+		}break;
+		default:
+		{
+			return false;
+		}
+		}
+		return true;
+	}, 1, g_cameraTag);
+}
+
 void CCameraFirstPerson::Translate(double transX, double transY)
 {
 	double transY1 = transY * cos(m_rotX * M_PI / 180.0);
 	m_transZ += transY * sin(m_rotX * M_PI / 180.0);
 	m_transX += transX * cos(m_rotZ * M_PI / 180.0) + transY1 * sin(m_rotZ * M_PI / 180.0);
 	m_transY += -transX * sin(m_rotZ * M_PI / 180.0) + transY1 * cos(m_rotZ * M_PI / 180.0);
-}
-
-bool CCameraFirstPerson::OnKeyPress(int key)
-{
-	switch (key)
-	{
-	case KEY_LEFT:
-	{
-		Translate(-TRANSLATE, 0.0);
-	}break;
-	case KEY_RIGHT:
-	{
-		Translate(TRANSLATE, 0.0);
-	}break;
-	case KEY_DOWN:
-	{
-		Translate(0.0, -TRANSLATE);
-	}
-	break;
-	case KEY_UP:
-	{
-		Translate(0.0, TRANSLATE);
-	}break;
-	case KEY_BACKSPACE:
-	{
-		Reset();
-	}break;
-	default:
-	{
-		return false;
-	}
-	}
-	return true;
 }

@@ -1,7 +1,8 @@
+#pragma once
 #include "IUI.h"
 #include <map>
 #include "..\view\IRenderer.h"
-#pragma once
+
 
 class CUIElement : public IUIElement
 {
@@ -14,8 +15,8 @@ public:
 	virtual void ClearChildren() override;
 	virtual bool LeftMouseButtonDown(int x, int y) override;
 	virtual bool LeftMouseButtonUp(int x, int y) override;
-	virtual bool OnKeyPress(unsigned char key) override;
-	virtual bool OnSpecialKeyPress(int key) override;
+	virtual bool OnCharacterInput(unsigned int key) override;
+	virtual bool OnKeyPress(int key, int modifiers) override;
 	virtual void OnMouseMove(int x, int y) override;
 	virtual int GetX() const override;
 	virtual int GetY() const override;

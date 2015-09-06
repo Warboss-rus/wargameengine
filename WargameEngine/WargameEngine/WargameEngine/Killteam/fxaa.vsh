@@ -1,8 +1,14 @@
 #version 130
-
-out vec2 v_texcoord0;
+varying vec4 posPos;
+uniform float FXAA_SUBPIX_SHIFT = 1.0/4.0;
+uniform float rt_w = 600; // GeeXLab built-in
+uniform float rt_h = 600; // GeeXLab built-in
 
 void main() {
-  v_texcoord0 = gl_MultiTexCoord0.st;
-  gl_Position = ftransform();
+	gl_Position = ftransform();
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+	vec2 rcpFrame = vec2(1.0/rt_w, 1.0/rt_h);
+	posPos.xy = gl_MultiTexCoord0.xy;
+	posPos.zw = gl_MultiTexCoord0.xy - 
+				  (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT));
 }

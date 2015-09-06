@@ -55,16 +55,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -181,7 +181,7 @@
     <ClCompile Include="view\ParticleModel.cpp" />
     <ClCompile Include="view\ParticleSystem.cpp" />
     <ClCompile Include="view\ParticleTracer.cpp" />
-    <ClCompile Include="view\SelectionTools.cpp" />
+    <ClCompile Include="view\MathUtils.cpp" />
     <ClCompile Include="view\ShaderManager.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
@@ -220,6 +220,7 @@
     <ClInclude Include="rapidxml\rapidxml_iterators.hpp" />
     <ClInclude Include="rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="Signal.h" />
     <ClInclude Include="SoundPlayerFMod.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
@@ -232,7 +233,9 @@
     <ClInclude Include="view\CameraStrategy.h" />
     <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
+    <ClInclude Include="view\IInput.h" />
     <ClInclude Include="view\ImageDecoderInterface.h" />
+    <ClInclude Include="view\Input.h" />
     <ClInclude Include="view\IParticleEffecth.h" />
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\KeyDefines.h" />
@@ -242,7 +245,7 @@
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\ParticleTracer.h" />
-    <ClInclude Include="view\SelectionTools.h" />
+    <ClInclude Include="view\MathUtils.h" />
     <ClInclude Include="view\ShaderManager.h" />
     <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />
@@ -268,7 +271,6 @@
     <ClInclude Include="UI\UITheme.h" />
     <ClInclude Include="view\3dModel.h" />
     <ClInclude Include="view\GameView.h" />
-    <ClInclude Include="view\Input.h" />
     <ClInclude Include="view\Material.h" />
     <ClInclude Include="view\MaterialManager.h" />
     <ClInclude Include="view\ModelManager.h" />

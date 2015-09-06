@@ -1,5 +1,5 @@
 #include "LUAScriptHandler.h"
-#include "../UI/UIElement.h"
+#include "../UI/IUI.h"
 #include "../view/GameView.h"
 
 IUIElement * GetUIPointer()

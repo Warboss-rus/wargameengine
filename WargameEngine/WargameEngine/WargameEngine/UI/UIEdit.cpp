@@ -51,60 +51,31 @@ void CUIEdit::Draw() const
 	m_renderer.PopMatrix();
 }
 
-bool CUIEdit::OnKeyPress(unsigned char key)
+bool CUIEdit::OnCharacterInput(unsigned int key)
 {
 	if (!m_visible) return false;
-	if (CUIElement::OnKeyPress(key))
+	if (CUIElement::OnCharacterInput(key))
 		return true;
 	Invalidate();
 	if (!IsFocused(NULL))
 	{
 		return false;
 	}
-	if (key < 32 && key != 8)
-		return false;
-	if (key != 127 && key != 8)
-	{
-		wchar_t str[2];
-		char ckey = key;
-		mbstowcs(str, &ckey, 1);
-		str[1] = L'\0';
-		m_text.insert(m_pos, str);
-		m_pos++;
-		m_beginSelection++;
-	}
-	if (key == 8 && m_pos > 0)
-	{
-		m_text.erase(m_pos - 1, 1);
-		m_pos--;
-		m_beginSelection--;
-	}
-	if (key == 127)
-	{
-		if (m_pos != m_beginSelection)
-		{
-			size_t begin = (m_pos < m_beginSelection) ? m_pos : m_beginSelection;
-			size_t count = (m_pos - m_beginSelection > 0) ? m_pos - m_beginSelection : m_beginSelection - m_pos;
-			m_text.erase(begin, count);
-			m_pos = begin;
-			m_beginSelection = begin;
-		}
-		else
-		{
-			if (m_pos < m_text.size())
-			{
-				m_text.erase(m_pos, 1);
-			}
-		}
-	}
+	wchar_t str[2];
+	char ckey = static_cast<char>(key);
+	mbstowcs(str, &ckey, 1);
+	str[1] = L'\0';
+	m_text.insert(m_pos, str);
+	m_pos++;
+	m_beginSelection++;
 	return true;
 }
 
-bool CUIEdit::OnSpecialKeyPress(int key)
+bool CUIEdit::OnKeyPress(int key, int modifiers)
 {
 	if (!m_visible) return false;
 	Invalidate();
-	if (CUIElement::OnSpecialKeyPress(key))
+	if (CUIElement::OnKeyPress(key, modifiers))
 		return true;
 	if (!IsFocused(NULL))
 	{
@@ -133,6 +104,33 @@ bool CUIEdit::OnSpecialKeyPress(int key)
 	{
 		m_pos = m_text.size();
 		return true;
+	}break;
+	case KEY_BACKSPACE:
+	{
+		if (m_pos > 0)
+		{
+			m_text.erase(m_pos - 1, 1);
+			m_pos--;
+			m_beginSelection--;
+		}
+	}break;
+	case KEY_DELETE:
+	{
+		if (m_pos != m_beginSelection)
+		{
+			size_t begin = (m_pos < m_beginSelection) ? m_pos : m_beginSelection;
+			size_t count = (m_pos - m_beginSelection > 0) ? m_pos - m_beginSelection : m_beginSelection - m_pos;
+			m_text.erase(begin, count);
+			m_pos = begin;
+			m_beginSelection = begin;
+		}
+		else
+		{
+			if (m_pos < m_text.size())
+			{
+				m_text.erase(m_pos, 1);
+			}
+		}
 	}break;
 	}
 	return false;

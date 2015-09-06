@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "../model/ObjectInterface.h"
+#include "../model/GameModel.h"
 #include "../view/Vector3.h"
 #include <functional>
 #include "LUAScriptHandler.h"
@@ -12,28 +12,29 @@
 class CGameController
 {
 public:
-	static std::weak_ptr<CGameController> GetInstance();
-	static void FreeInstance();
-	~CGameController();
+	typedef std::function<bool(std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z)> MouseButtonCallback;
 
+	CGameController(CGameModel& model);
+	void Init();
 	void Update();
-	void SelectObjectGroup(double beginX, double beginY, double endX, double endY);
-	void SelectObject(double * begin, double * end, bool add, bool noCallback = false);
-	bool IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current);
-	const CVector3d * GetCapturePoint() const;
+
+	bool OnLeftMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
+	bool OnLeftMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
+	bool OnRightMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
+	bool OnRightMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
+	bool OnMouseMove(CVector3d const& begin, CVector3d const& end, int modifiers);
 	int GetLineOfSight(IObject * shooter, IObject * target);
 	void SetSelectionCallback(std::function<void()> const& onSelect);
 	void SetUpdateCallback(std::function<void()> const& onUpdate);
 	void SetSingleCallback(std::function<void()> const& onSingleUpdate);
+	void SetLMBCallback(MouseButtonCallback const& callback);
+	void SetRMBCallback(MouseButtonCallback const& callback);
 	std::vector<char> GetState(bool hasAdresses = false) const;
 	void SetState(char* data, bool hasAdresses = false);
 	void Save(std::string const& filename);
 	void Load(std::string const& filename);
-	void TryMoveSelectedObject(std::shared_ptr<IObject> object, double x, double y, double z);
 	void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);
 	bool OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt);
-	void MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY);
-	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
 	std::shared_ptr<IObject> CreateObject(std::string const& model, double x, double y, double rotation);
 	void DeleteObject(std::shared_ptr<IObject> obj);
 	void SetObjectProperty(std::shared_ptr<IObject> obj, std::string const& key, std::string const& value);
@@ -48,23 +49,32 @@ private:
 		bool ctrl;
 		bool alt;
 	};
-	
-	CGameController(void);
-	CGameController(CGameController const&){};
-	std::shared_ptr<IObject> GetNearestObject(double * start, double * end);
-	void Init();
+	CGameController(CGameController const&) = delete;
+	std::shared_ptr<IObject> GetNearestObject(const double * start, const double * end);
+	void SelectObjectGroup(double beginX, double beginY, double endX, double endY);
+	void SelectObject(const double * begin, const double * end, bool add, bool noCallback = false);
+	bool IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current);
+	void TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3d const& pos);
+	void MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY);
+	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
 
-	static std::shared_ptr<CGameController> m_instanse;
+	CGameModel& m_model;
 	CVector3d m_selectedObjectCapturePoint;
-	std::map<sKeyBind, std::function<void()>> m_keyBindings;
+	std::unique_ptr<CVector3d> m_selectedObjectBeginCoords;
+	std::unique_ptr<CVector2d> m_selectionRectangleBegin;
+	double m_selectedObjectPrevRotation;
+	std::unique_ptr<CVector3d> m_rotationPosBegin;
 
 	std::unique_ptr<CLUAScript> m_lua;
 	std::unique_ptr<CCommandHandler> m_commandHandler;
 	std::unique_ptr<CNetwork> m_network;
 
+	std::map<sKeyBind, std::function<void()>> m_keyBindings;
 	std::function<void()> m_selectionCallback;
 	std::function<void()> m_updateCallback;
 	std::function<void()>m_singleCallback;
+	MouseButtonCallback m_lmbCallback;
+	MouseButtonCallback m_rmbCallback;
 
 	friend bool operator< (sKeyBind const& one, sKeyBind const& two);
 };

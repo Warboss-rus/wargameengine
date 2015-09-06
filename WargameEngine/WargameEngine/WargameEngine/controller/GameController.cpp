@@ -5,41 +5,18 @@
 #include "LUARegisterFunctions.h"
 #include "../Module.h"
 #include "../LogWriter.h"
-
-std::shared_ptr<CGameController> CGameController::m_instanse = NULL;
-
-std::weak_ptr<CGameController> CGameController::GetInstance()
-{
-	if (!m_instanse)
-	{
-		m_instanse.reset(new CGameController());
-		m_instanse->Init();
-	}
-	return std::weak_ptr<CGameController>(m_instanse);
-}
-
-CGameController::CGameController()
-{
-}
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 void CGameController::Init()
 {
-	m_commandHandler.reset(new CCommandHandler());
-	m_network.reset(new CNetwork());
-	m_lua.reset(new CLUAScript());
-	RegisterFunctions(*m_lua.get());
-	RegisterUI(*m_lua.get());
-	RegisterObject(*m_lua.get());
+	m_network = std::make_unique<CNetwork>(*this);
+	m_commandHandler = std::make_unique<CCommandHandler>(*m_network);
+	m_lua = std::make_unique<CLUAScript>();
+	RegisterFunctions(*m_lua);
+	RegisterUI(*m_lua);
+	RegisterObject(*m_lua);
 	m_lua->RunScript(sModule::script);
-}
-
-void CGameController::FreeInstance()
-{
-	m_instanse.reset();
-}
-
-CGameController::~CGameController(void)
-{
 }
 
 void CGameController::Update()
@@ -54,13 +31,121 @@ void CGameController::Update()
 	CGameModel::GetInstance().lock()->Update();
 }
 
+CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0)
+{
+	CVector3d result;
+	double a = (z - begin.z) / (end.z - begin.z);
+	result.x = a * (end.x - begin.x) + begin.x;
+	result.y = a * (end.y - begin.y) + begin.y;
+	result.z = z;
+	return result;
+}
+
+bool CGameController::OnLeftMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers)
+{
+	SelectObject(&begin.x, &end.x, modifiers & IInput::MODIFIER_SHIFT);
+	auto selected = m_model.GetSelectedObject();
+	if (!selected)//selection rectangle
+	{
+		auto point = RayToPoint(begin, end);
+		m_selectionRectangleBegin = std::make_unique<CVector2d>(point.x, point.y);
+	}
+	else
+	{
+		m_selectedObjectBeginCoords = std::make_unique<CVector3d>(selected->GetCoords());
+	}
+	return true;
+}
+
+bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end, int)
+{
+	auto selected = m_model.GetSelectedObject();
+	auto pos = RayToPoint(begin, end);
+	if (m_lmbCallback && m_lmbCallback(selected, "Object", pos.x, pos.y, pos.z))
+	{
+		return true;
+	}
+	if (selected)
+	{
+		pos = RayToPoint(begin, end, m_selectedObjectCapturePoint.z);
+		pos.z = 0;
+		TryMoveSelectedObject(selected, pos);
+		if (m_selectedObjectBeginCoords)
+		{
+			MoveObject(selected, selected->GetX() - m_selectedObjectBeginCoords->x, selected->GetY() - m_selectedObjectBeginCoords->y);
+		}
+	}
+	else//needs a fix
+	{
+		SelectObjectGroup(m_selectionRectangleBegin->x, m_selectionRectangleBegin->y, pos.x, pos.y);
+	}
+	m_selectedObjectBeginCoords.reset();
+	m_selectionRectangleBegin.reset();
+	return true;
+}
+
+bool CGameController::OnRightMouseDown(CVector3d const& begin, CVector3d const& end, int)
+{
+	auto prev = m_model.GetSelectedObject();
+	SelectObject(begin, end, false);
+	auto object = m_model.GetSelectedObject();
+	if (!object) m_model.SelectObject(prev);
+	m_selectedObjectPrevRotation = (object) ? object->GetRotation() : 0;
+	m_rotationPosBegin = std::make_unique<CVector3d>(RayToPoint(begin, end));
+	return !!object;
+}
+
+bool CGameController::OnRightMouseUp(CVector3d const& begin, CVector3d const& end, int)
+{
+	auto object = m_model.GetSelectedObject();
+	double rot = object->GetRotation();
+	auto point = RayToPoint(begin, end);
+	if (m_rmbCallback && m_rmbCallback(object, "Object", point.x, point.y, point.z))
+	{
+		return true;
+	}
+	bool result = false;
+	if (m_rotationPosBegin)
+	{
+		double rotation = 90 + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180 / M_PI);
+		if (sqrt((point.x - m_rotationPosBegin->x) * (point.x - m_rotationPosBegin->x) + (point.y - m_rotationPosBegin->y) * (point.y - m_rotationPosBegin->y)) > 0.2)
+		{
+			m_model.GetSelectedObject()->Rotate(rotation - rot);
+			result = true;
+		}
+		RotateObject(object, object->GetRotation() - m_selectedObjectPrevRotation);
+	}
+	m_rotationPosBegin.reset();
+	return result;
+}
+
+bool CGameController::OnMouseMove(CVector3d const& begin, CVector3d const& end, int)
+{
+	auto selected = m_model.GetSelectedObject();
+	if (selected && m_selectedObjectBeginCoords)
+	{
+		auto pos = RayToPoint(begin, end, m_selectedObjectCapturePoint.z);
+		pos.z = 0;
+		TryMoveSelectedObject(selected, pos);
+	}
+	if (selected && m_rotationPosBegin)
+	{
+		double rot = selected->GetRotation();
+		auto point = RayToPoint(begin, end);
+		double rotation = 90 + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180 / M_PI);
+		if (sqrt((point.x - m_rotationPosBegin->x) * (point.x - m_rotationPosBegin->x) + (point.y - m_rotationPosBegin->y) * (point.y - m_rotationPosBegin->y)) > 0.2)
+			m_model.GetSelectedObject()->Rotate(rotation - rot);
+	}
+	return false;
+}
+
 void CGameController::SelectObjectGroup(double beginX, double beginY, double endX, double endY)
 {
 	double minX = (beginX < endX) ? beginX : endX;
 	double maxX = (beginX > endX) ? beginX : endX;
 	double minY = (beginY < endY) ? beginY : endY;
 	double maxY = (beginY > endY) ? beginY : endY;
-	CObjectGroup* group = new CObjectGroup();
+	auto group = std::make_shared<CObjectGroup>();
 	CGameModel * model = CGameModel::GetInstance().lock().get();
 	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
 	{
@@ -75,22 +160,25 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 	case 0:
 	{
 		model->SelectObject(NULL);
-		delete group;
 	}break;
 	case 1:
 	{
 		model->SelectObject(group->GetChild(0));
-		delete group;
 	}break;
 	default:
 	{
-		model->SelectObject(std::shared_ptr<IObject>(group));
+		model->SelectObject(group);
 	}break;
 	}
 	if (m_selectionCallback) m_selectionCallback();
 }
 
-std::shared_ptr<IObject> CGameController::GetNearestObject(double * start, double * end)
+CGameController::CGameController(CGameModel& model)
+	:m_model(model)
+{
+}
+
+std::shared_ptr<IObject> CGameController::GetNearestObject(const double * start, const double * end)
 {
 	std::shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
@@ -117,7 +205,7 @@ std::shared_ptr<IObject> CGameController::GetNearestObject(double * start, doubl
 	return selectedObject;
 }
 
-void CGameController::SelectObject(double * begin, double * end, bool add, bool noCallback)
+void CGameController::SelectObject(const double * begin, const double * end, bool add, bool noCallback /*= false*/)
 {
 	std::shared_ptr<IObject> selectedObject = GetNearestObject(begin, end);
 	if (selectedObject && !selectedObject->IsSelectable())
@@ -170,11 +258,6 @@ void CGameController::SelectObject(double * begin, double * end, bool add, bool 
 		}
 	}
 	if (m_selectionCallback && !noCallback) m_selectionCallback();
-}
-
-const CVector3d * CGameController::GetCapturePoint() const
-{
-	return &m_selectedObjectCapturePoint;
 }
 
 bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
@@ -383,7 +466,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 void CGameController::Save(std::string const& filename)
 {
 	FILE* file = fopen(filename.c_str(), "wb");
-	std::vector<char> state = CGameController::GetInstance().lock()->GetState();
+	std::vector<char> state = GetState();
 	fwrite(&state[0], 1, state.size(), file);
 	fclose(file);
 }
@@ -406,18 +489,18 @@ void CGameController::Load(std::string const& filename)
 	m_network->CallStateRecievedCallback();
 }
 
-void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, double x, double y, double z)
+void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3d const& pos)
 {
 	if (!object)
 	{
 		return;
 	}
 	CVector3d old(object->GetCoords());
-	if (CGameModel::GetInstance().lock()->GetLandscape().isCoordsOnTable(x, y))
+	if (CGameModel::GetInstance().lock()->GetLandscape().isCoordsOnTable(pos.x, pos.y))
 	{
-		object->SetCoords(x - m_selectedObjectCapturePoint.x, y - m_selectedObjectCapturePoint.y, z);
+		object->SetCoords(pos.x - m_selectedObjectCapturePoint.x, pos.y - m_selectedObjectCapturePoint.y, pos.z);
 	}
-	if (CGameController::GetInstance().lock()->IsObjectInteresectSomeObjects(object))
+	if (IsObjectInteresectSomeObjects(object))
 	{
 		object->SetCoords(old);
 	}
@@ -431,6 +514,16 @@ void CGameController::SetUpdateCallback(std::function<void()> const& onUpdate)
 void CGameController::SetSingleCallback(std::function<void()> const& onSingleUpdate)
 {
 	m_singleCallback = onSingleUpdate;
+}
+
+void CGameController::SetLMBCallback(MouseButtonCallback const& callback)
+{
+	m_lmbCallback = callback;
+}
+
+void CGameController::SetRMBCallback(MouseButtonCallback const& callback)
+{
+	m_rmbCallback = callback;
 }
 
 bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind const& two)

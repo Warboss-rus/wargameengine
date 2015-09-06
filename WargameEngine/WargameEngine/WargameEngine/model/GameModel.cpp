@@ -4,7 +4,7 @@
 #include "Object.h"
 #include <cstring>
 
-std::shared_ptr<CGameModel> CGameModel::m_instanse = NULL;
+std::shared_ptr<CGameModel> CGameModel::m_instanse = nullptr;
 
 std::weak_ptr<CGameModel> CGameModel::GetInstance()
 {
@@ -87,7 +87,7 @@ void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 
 bool CGameModel::IsGroup(IObject* object)
 {
-	return dynamic_cast<CObjectGroup *>(object) != NULL;
+	return dynamic_cast<CObjectGroup *>(object) != nullptr;
 }
 
 void CGameModel::Clear()
@@ -114,9 +114,34 @@ std::map<std::string, std::string> const&  CGameModel::GetAllProperties() const
 }
 
 
+void CGameModel::AddProjectile(CProjectile const& projectile)
+{
+	m_projectiles.push_back(projectile);
+}
+
+size_t CGameModel::GetProjectileCount() const
+{
+	return m_projectiles.size();
+}
+
+CProjectile const& CGameModel::GetProjectile(unsigned int index) const
+{
+	return m_projectiles[index];
+}
+
 void CGameModel::ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
 	m_landscape = CLandscape(width, depth, texture, pointsPerWidth, pointsPerDepth);
+}
+
+std::shared_ptr<IBounding> CGameModel::GetBoundingBox(std::string const& path) const
+{
+	return m_boundings.at(path);
+}
+
+void CGameModel::AddBoundingBox(std::string const& path, std::shared_ptr<IBounding> bbox)
+{
+	m_boundings[path] = bbox;
 }
 
 void CGameModel::Update()
@@ -129,4 +154,14 @@ void CGameModel::Update()
 	{
 		m_projectiles[i].Update();
 	}
+}
+
+void CGameModel::RemoveProjectile(unsigned int index)
+{
+	m_projectiles.erase(m_projectiles.begin() + index);
+}
+
+CLandscape & CGameModel::GetLandscape()
+{
+	return m_landscape;
 }

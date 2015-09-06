@@ -6,13 +6,15 @@
 #include "ICamera.h"
 #include "Input.h"
 #include "ParticleSystem.h"
-#include "../UI/UIElement.h"
 #include "ShaderManager.h"
 #include "TextWriter.h"
-#include "../SoundPlayerOpenAl.h"
 #include "OpenGLRenderer.h"
 #include "../TranslationManager.h"
 #include "../SoundPlayerFMod.h"
+#include "IInput.h"
+#include "../Ruler.h"
+#include "../UI/IUI.h"
+#include "../controller/GameController.h"
 
 enum class LightningType
 {
@@ -30,6 +32,7 @@ public:
 
 	void ResetTable();
 	void CreateSkybox(double size, std::string const& textureFolder);
+	CGameController& GetController();
 	IUIElement * GetUI() const;
 	ICamera * GetCamera();
 	void SetCamera(ICamera * camera);
@@ -38,6 +41,7 @@ public:
 	CTextWriter& GetTextWriter();
 	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
+	CRuler& GetRuler();
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
@@ -66,6 +70,7 @@ public:
 	static void OnReshape(int width, int height);
 	static void OnTimer(int value);
 	static void OnChangeState(int state);
+	static void CGameView::LoadModuleCallback(int);
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();
@@ -75,11 +80,15 @@ private:
 	void DrawShadowMap();
 	void SetUpShadowMapDraw();
 	void Init();
+	void InitInput();
+	void ResetController();
 	CGameView(void);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;
 
 	static std::shared_ptr<CGameView> m_instanse;
+	std::weak_ptr<CGameModel> m_gameModel;
+	std::unique_ptr<CGameController> m_gameController;
 	CModelManager m_modelManager;
 	CShaderManager m_shader;
 	CParticleSystem m_particles;
@@ -87,11 +96,12 @@ private:
 	CSoundPlayerFMod m_soundPlayer;
 	COpenGLRenderer m_renderer;
 	CTranslationManager m_translationManager;
+	std::unique_ptr<IInput> m_input;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
+	CRuler m_ruler;
 
-	std::weak_ptr<CGameModel> m_gameModel;
 	bool m_vertexLightning;
 	bool m_shadowMap;
 	unsigned int m_shadowMapTexture;

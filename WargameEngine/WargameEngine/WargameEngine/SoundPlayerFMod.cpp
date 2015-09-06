@@ -22,6 +22,11 @@ void CSoundPlayerFMod::Play(std::string const& file, float volume /*= 1.0f*/)
 	channel->setVolume(volume);
 }
 
+FMOD_VECTOR Vector3dToFMODVector(CVector3d vec)
+{
+	return{ static_cast<float>(vec.x), static_cast<float>(vec.y), static_cast<float>(vec.z) };
+}
+
 void CSoundPlayerFMod::PlaySoundPosition(std::string const& file, CVector3d const& position, float volume /*= 1.0f*/)
 {
 	if (m_sounds3d.find(file) == m_sounds3d.end())
@@ -32,7 +37,7 @@ void CSoundPlayerFMod::PlaySoundPosition(std::string const& file, CVector3d cons
 	}
 	FMOD::Channel* channel;
 	m_system->playSound(m_sounds3d[file], 0, true, &channel);
-	FMOD_VECTOR pos = {position.x, position.y, position.z };
+	FMOD_VECTOR pos = Vector3dToFMODVector(position);
 	FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
 	channel->set3DAttributes(&pos, &vel);
 	channel->setVolume(volume);
@@ -71,9 +76,9 @@ void CSoundPlayerFMod::PlaySoundPlaylist(std::string const& name, std::vector<st
 
 void CSoundPlayerFMod::SetListenerPosition(CVector3d const& position, CVector3d const& center)
 {
-	FMOD_VECTOR pos = { position.x, position.y, position.z };
+	FMOD_VECTOR pos = Vector3dToFMODVector(position);
 	FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
-	FMOD_VECTOR forw = { center.x, center.y, center.z };
+	FMOD_VECTOR forw = Vector3dToFMODVector(center);
 	FMOD_VECTOR up = { 0.0f, 0.0f, 1.0f };
 	m_system->set3DListenerAttributes(0, &pos, &vel, &forw, &up);
 }

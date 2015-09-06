@@ -48,13 +48,13 @@ function CreateUnit(army, rosterItem, x, y, rot, owner)
 end
 
 function Battle()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	if(GetCost(Player1Roster) > 200 or GetCost(Player2Roster) > 200) then
 		MessageBox("Total unit cost must not exceed 200")
 		return
 	end
 	Init()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local list = ui:GetChild("List2")
 	for i=1, #Player1Roster do
 		Player1[i] = CreateUnit(Player1Army, Player1Roster[i], math.floor(20 + (i - 1) / 2.5), (i - 1) % 5 * 2 - 5, -90, "1")
@@ -68,7 +68,7 @@ function Battle()
 end
 
 function ClearUI()
-	UI:Get():DeleteChild("Panel1")
+	UI:DeleteChild("Panel1")
 end
 
 function GetCost(list)
@@ -80,7 +80,7 @@ function GetCost(list)
 end
 
 function Recalculate()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	--Player1
 	local list = ui:GetChild("List2")
 	local selected = list:GetSelectedIndex()
@@ -108,7 +108,7 @@ function Recalculate()
 end
 
 function AddItem1()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local list1 = ui:GetChild("List1")
 	local list2 = ui:GetChild("List2")
 	local i = #Player1Roster + 1
@@ -119,14 +119,14 @@ function AddItem1()
 end
 
 function DeleteItem1()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local list = ui:GetChild("List2")
 	table.remove(Player1Roster, list:GetSelectedIndex())
 	Recalculate()
 end
 
 function AddItem2()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local list1 = ui:GetChild("List3")
 	local list2 = ui:GetChild("List4")
 	local i = #Player2Roster + 1
@@ -137,14 +137,14 @@ function AddItem2()
 end
 
 function DeleteItem2()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local list = ui:GetChild("List4")
 	table.remove(Player2Roster, list:GetSelectedIndex())
 	Recalculate()
 end
 
 function OnWeaponChange1()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local index = ui:GetChild("List2"):GetSelectedIndex()
 	local weapon = ui:GetChild("Panel2"):GetChild("RadioGroup1"):GetText()
 	weapon = string.sub(weapon, 1, string.find(weapon, "%(") - 2)
@@ -153,7 +153,7 @@ function OnWeaponChange1()
 end
 
 function OnWeaponChange2()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local index = ui:GetChild("List4"):GetSelectedIndex()
 	local weapon = ui:GetChild("Panel3"):GetChild("RadioGroup2"):GetText()
 	weapon = string.sub(weapon, 1, string.find(weapon, "%(") - 2)
@@ -162,7 +162,7 @@ function OnWeaponChange2()
 end
 
 function OnUnitChange1()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local unitName = ui:GetChild("List2"):GetText()
 	unitName = unitName:sub(1, string.find(unitName, "%(") - 1)
 	local weapons = ui:GetChild("Panel2"):GetChild("RadioGroup1")
@@ -181,7 +181,7 @@ function OnUnitChange1()
 end
 
 function OnUnitChange2()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local unitName = ui:GetChild("List4"):GetText()
 	unitName = unitName:sub(1, string.find(unitName, "%(") - 1)
 	local weapons = ui:GetChild("Panel3"):GetChild("RadioGroup2")
@@ -200,7 +200,7 @@ function OnUnitChange2()
 end
 
 function OnArmyChange1()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local armyName = ui:GetChild("CBox1"):GetText()
 	Player1Army = races[armyName]
 	for i=1, #Player1Roster do
@@ -213,7 +213,7 @@ function OnArmyChange1()
 end
 
 function OnArmyChange2()
-	local ui = UI:Get():GetChild("Panel1")
+	local ui = UI:GetChild("Panel1")
 	local armyName = ui:GetChild("CBox2"):GetText()
 	Player2Army = races[armyName]
 	for i=1, #Player2Roster do
@@ -230,7 +230,7 @@ dofile("killteam.lua")
 --dofile all your races here
 dofile("Chaos.lua")
 dofile("SpaceMarines.lua")
-local ui = UI:Get():NewPanel("Panel1", 0, 0, 640, 640)
+local ui = UI:NewPanel("Panel1", 0, 0, 640, 640)
 local cbox = ui:NewCombobox("CBox1", 10, 0, 30, 180)
 local raceslist = getKeysSorted(races, function(a, b) return a < b end)
 for i=1, #raceslist do

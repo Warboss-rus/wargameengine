@@ -5,7 +5,7 @@
 #include "CommandRotateObject.h"
 #include "CommandChangeProperty.h"
 #include "CommandChangeGlobalProperty.h"
-#include "GameController.h"
+#include "..\Network.h"
 
 void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 {
@@ -22,15 +22,15 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 		m_commands.push_back(std::unique_ptr<ICommand>(command));
 	}
 	m_current = m_commands.size();
-	CNetwork & network = CGameController::GetInstance().lock()->GetNetwork();
-	if (local && network.IsConnected())
+	if (local && m_network.IsConnected())
 	{
-		network.SendAction(command->Serialize(), true);
+		m_network.SendAction(command->Serialize(), true);
 	}
 }
 
-CCommandHandler::CCommandHandler()
+CCommandHandler::CCommandHandler(CNetwork& network)
 	:m_current(0)
+	, m_network(network)
 {
 }
 
@@ -40,7 +40,7 @@ void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool l
 	action->Execute();
 	if (local)
 	{
-		CGameController::GetInstance().lock()->GetNetwork().AddAddressLocal(object);
+		m_network.AddAddressLocal(object);
 	}
 	AddNewCommand(action, local);
 }

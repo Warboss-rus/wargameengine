@@ -53,7 +53,7 @@ OBB GetOBB(CBoundingBox const& bounding, float3 translate, double angle)
 	return res;
 }
 
-bool CBoundingBox::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
+bool CBoundingBox::IsIntersectsRay(const double * origin, const double *end, double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
 	float3 pos = ToFloat3(origin);
 	float3 dir = ToFloat3(CVector3d(end) - CVector3d(origin));
@@ -163,7 +163,7 @@ void CBoundingCompound::AddChild(std::unique_ptr<IBounding> child)
 	m_children.push_back(std::move(child));
 }
 
-bool CBoundingCompound::IsIntersectsRay(double origin[3], double end[3], double x, double y, double z, double rotation, CVector3d & intersectCoord) const
+bool CBoundingCompound::IsIntersectsRay(const double * origin, const double *end, double x, double y, double z, double rotation, CVector3d & intersectCoord) const
 {
 	for(size_t i = 0; i < m_children.size(); ++i)
 	{

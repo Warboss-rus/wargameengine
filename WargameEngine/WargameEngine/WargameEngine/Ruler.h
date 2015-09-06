@@ -1,15 +1,22 @@
+#pragma once
+
 class CRuler
 {
 public:
-	static void SetBegin(double x, double y);
-	static void SetEnd(double x, double y);
-	static void Draw();
-	static void Hide();
-	static double GetDistance();
+	CRuler();
+	void Enable();
+	void SetBegin(double x, double y);
+	void SetEnd(double x, double y);
+	void Draw() const;
+	void Hide();
+	double GetDistance() const;
+	bool IsVisible() const;
+	bool IsEnabled() const;
 private:
-	static bool m_isVisible;
-	static double m_worldBeginX;
-	static double m_worldBeginY;
-	static double m_worldEndX;
-	static double m_worldEndY;
+	bool m_isVisible;
+	double m_worldBeginX;
+	double m_worldBeginY;
+	double m_worldEndX;
+	double m_worldEndY;
+	bool m_enabled;
 };

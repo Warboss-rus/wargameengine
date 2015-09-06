@@ -8,10 +8,12 @@
 #include "controller/CommandHandler.h"
 #include <functional>
 
+class CGameController;
+
 class CNetwork
 {
 public:
-	CNetwork();
+	CNetwork(CGameController & gameController);
 	void Host(unsigned short port = 0);
 	void Client(const char * ip, unsigned short port = 0);
 	void Update();
@@ -30,9 +32,8 @@ public:
 private:
 	unsigned int GetAddress(std::shared_ptr<IObject> obj);
 	unsigned int GetAddress(IObject* obj);
-	static std::shared_ptr<CNetwork> m_instance;
-	std::shared_ptr<CNetSocket> m_socket;
-	std::vector<CNetSocket> m_childs;
+	std::unique_ptr<CNetSocket> m_socket;
+	std::vector<CNetSocket> m_children;
 	std::map<uintptr_t, std::shared_ptr<IObject>> m_translator;
 	bool m_host;
 	int m_netRecievedSize;
@@ -40,4 +41,5 @@ private:
 	char * m_netData;
 	std::function<void()> m_stateRecievedCallback;
 	std::function<void(const char*)>m_stringRecievedCallback;
+	CGameController & m_gameController;
 };

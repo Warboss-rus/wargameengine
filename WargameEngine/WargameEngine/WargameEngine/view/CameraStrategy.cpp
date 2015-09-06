@@ -6,9 +6,19 @@
 #include "KeyDefines.h"
 
 CCameraStrategy::CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
-	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false)
+	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false), m_input(nullptr)
 {
 	Reset();
+}
+
+static const std::string g_cameraTag = "camera";
+
+CCameraStrategy::~CCameraStrategy()
+{
+	if (m_input)
+	{
+		m_input->DeleteAllSignalsByTag(g_cameraTag);
+	}
 }
 
 void CCameraStrategy::Reset()
@@ -67,49 +77,6 @@ const double * CCameraStrategy::GetUpVector() const
 	return up;
 }
 
-bool CCameraStrategy::OnKeyPress(int key)
-{
-	switch (key)
-	{
-	case KEY_LEFT:
-	{
-		Translate(-TRANSLATE, 0.0);
-	}break;
-	case KEY_RIGHT:
-	{
-		Translate(TRANSLATE, 0.0);
-	}break;
-	case KEY_DOWN:
-	{
-		Translate(0.0, -TRANSLATE);
-	}
-	break;
-	case KEY_UP:
-	{
-		Translate(0.0, TRANSLATE);
-	}break;
-	case KEY_BACKSPACE:
-	{
-		Reset();
-	}break;
-	default:
-	{
-		return false;
-	}
-	}
-	return true;
-}
-
-bool CCameraStrategy::OnMouseMove(int deltaX, int deltaY, bool /*LMB*/, bool /*RMB*/, bool /*shift*/, bool /*ctrl*/, bool alt)
-{
-	m_hidePointer = alt;
-	if (alt)
-	{
-		Rotate(deltaX, deltaY);
-	}
-	return true;
-}
-
 void CCameraStrategy::Translate(double transX, double transY)
 {
 	m_transX += transX * cos(m_rotZ * M_PI / 180.0) + transY * sin(m_rotZ * M_PI / 180.0);
@@ -128,26 +95,77 @@ void CCameraStrategy::Rotate(double rotZ, double rotX)
 	if (m_rotX < 1.0) m_rotX = 1.0;
 }
 
-bool CCameraStrategy::OnMouseWheelUp()
+void CCameraStrategy::SetInput(IInput & input)
 {
-	m_scale *= SCALE;
-	if (m_scale > m_maxScale) m_scale = m_maxScale;
-	return true;
-}
-
-bool CCameraStrategy::OnMouseWheelDown()
-{
-	m_scale *= 1 / SCALE;
-	if (m_scale < m_minScale) m_scale = m_minScale;
-	return true;
+	m_input = &input;
+	input.DoOnMouseWheelUp([this]() {
+		m_scale *= SCALE;
+		if (m_scale > m_maxScale) m_scale = m_maxScale;
+		return true;
+	}, 1, g_cameraTag);
+	input.DoOnMouseWheelDown([this]() {
+		m_scale *= 1 / SCALE;
+		if (m_scale < m_minScale) m_scale = m_minScale;
+		return true;
+	}, 1, g_cameraTag);
+	input.DoOnMouseMove([this](int x, int y) {
+		int modifiers = m_input->GetModifiers();
+		if (m_hidePointer)
+		{
+			Rotate(x - m_oldX, m_oldY - y);
+			if (!(modifiers & IInput::MODIFIER_ALT))
+			{
+				m_hidePointer = false;
+				m_input->EnableCursor(true);
+			}
+			return true;
+		}
+		else
+		{
+			if (modifiers & IInput::MODIFIER_ALT)
+			{
+				m_hidePointer = true;
+				m_input->EnableCursor(false);
+				m_oldX = m_input->GetMouseX();
+				m_oldY = m_input->GetMouseY();
+			}
+		}
+		return false;
+	}, 1, g_cameraTag);
+	input.DoOnKeyDown([this](int key, int) {
+		switch (key)
+		{
+		case KEY_LEFT:
+		{
+			Translate(-TRANSLATE, 0.0);
+		}break;
+		case KEY_RIGHT:
+		{
+			Translate(TRANSLATE, 0.0);
+		}break;
+		case KEY_DOWN:
+		{
+			Translate(0.0, -TRANSLATE);
+		}
+		break;
+		case KEY_UP:
+		{
+			Translate(0.0, TRANSLATE);
+		}break;
+		case KEY_BACKSPACE:
+		{
+			Reset();
+		}break;
+		default:
+		{
+			return false;
+		}
+		}
+		return true;
+	}, 1, g_cameraTag);
 }
 
 const double CCameraStrategy::GetScale() const
 {
 	return m_scale;
-}
-
-bool CCameraStrategy::HidePointer() const
-{
-	return m_hidePointer;
 }

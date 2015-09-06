@@ -6,7 +6,6 @@ CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object):m_pO
 
 void CCommandCreateObject::Execute()
 {
-	//m_pObject.reset(new CObject(m_model, m_x, m_y, m_rotation)); 
 	CGameModel::GetInstance().lock()->AddObject(m_pObject);
 }
 

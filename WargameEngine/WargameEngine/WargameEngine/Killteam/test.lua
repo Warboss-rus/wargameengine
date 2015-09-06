@@ -126,7 +126,20 @@ function TC3()
 end
 
 function Music()
-	PlaySoundPlaylist("music", {"music_warhammer40ktheme.mp3", "music_theme_spacemarines_01.mp3", "music_force_commander_theme.mp3", "music_dawnofwartheme.mp3"}, 1.0, true, true)
+	PlaySoundPlaylist("music", {
+	"music/music_warhammer40ktheme.mp3", 
+	"music/music_theme_spacemarines_01.mp3", 
+	"music/music_force_commander_theme.mp3", 
+	"music/music_dawnofwartheme.mp3",
+	"music/battle_ingame_01.mp3",
+	"music/music_urban_wasteland.mp3",
+	"music/music_tank_march.mp3",
+	"music/music_main_title.mp3",
+	"music/music_invasion_theme.mp3",
+	"music/music_evil_isador_theme.mp3",
+	"music/music_acid.mp3",
+	"music/music_ork_theme.mp3"
+	}, 1.0, true, true)
 end
 
 SetLightPosition(1, 0, 0, 30)

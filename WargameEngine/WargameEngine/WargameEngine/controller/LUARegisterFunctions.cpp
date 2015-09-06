@@ -1,7 +1,6 @@
 #include "LUAScriptHandler.h"
 #include "../view/GameView.h"
 #include "../controller/GameController.h"
-#include "../view/Input.h"
 #include "../LogWriter.h"
 #include "TimedCallback.h"
 #include "../OSSpecific.h"
@@ -58,7 +57,7 @@ int LoS(lua_State* L)
         return luaL_error(L, "2 argument expected (source, target)");
 	IObject* shootingModel = (IObject*)CLUAScript::GetArgument<void*>(1);
 	IObject* target = (IObject*)CLUAScript::GetArgument<void*>(2);
-	int los = CGameController::GetInstance().lock()->GetLineOfSight(shootingModel, target);
+	int los = CGameView::GetInstance().lock()->GetController().GetLineOfSight(shootingModel, target);
 	CLUAScript::SetArgument(los);
 	return 1;
 }
@@ -67,7 +66,7 @@ int Ruler(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
         return luaL_error(L, "no arguments expected");
-	CInput::EnableRuler();
+	CGameView::GetInstance().lock()->GetRuler().Enable();
 	return 0;
 }
 
@@ -75,7 +74,7 @@ int Undo(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
         return luaL_error(L, "no arguments expected");
-	CGameController::GetInstance().lock()->GetCommandHandler().Undo();
+	CGameView::GetInstance().lock()->GetController().GetCommandHandler().Undo();
 	return 0;
 }
 
@@ -83,7 +82,7 @@ int Redo(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
         return luaL_error(L, "no arguments expected");
-	CGameController::GetInstance().lock()->GetCommandHandler().Redo();
+	CGameView::GetInstance().lock()->GetController().GetCommandHandler().Redo();
 	return 0;
 }
 
@@ -158,7 +157,7 @@ int SetSelectionCallback(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (funcName)");
 	std::function<void()> function = GetCallbackFunction(1);
-	CGameController::GetInstance().lock()->SetSelectionCallback(function);
+	CGameView::GetInstance().lock()->GetController().SetSelectionCallback(function);
 	return 0;
 }
 
@@ -167,7 +166,7 @@ int SetUpdateCallback(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (funcName)");
 	std::function<void()> function = GetCallbackFunction(1);
-	CGameController::GetInstance().lock()->SetUpdateCallback(function);
+	CGameView::GetInstance().lock()->GetController().SetUpdateCallback(function);
 	return 0;
 }
 
@@ -176,7 +175,7 @@ int SetOnStateRecievedCallback(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (funcName)");
 	std::function<void()> function = GetCallbackFunction(1);
-	CGameController::GetInstance().lock()->GetNetwork().SetStateRecievedCallback(function);
+	CGameView::GetInstance().lock()->GetController().GetNetwork().SetStateRecievedCallback(function);
 	return 0;
 }
 
@@ -193,7 +192,7 @@ int SetOnStringRecievedCallback(lua_State* L)
                     CLUAScript::CallFunction(func, param);
             };
         }
-		CGameController::GetInstance().lock()->GetNetwork().SetStringRecievedCallback(function);
+		CGameView::GetInstance().lock()->GetController().GetNetwork().SetStringRecievedCallback(function);
 	return 0;
 }
 
@@ -224,10 +223,11 @@ int SetLMBCallback(lua_State* L)
 		return luaL_error(L, "2 argument expected (function name, disable default behavior)");
 	std::string func = CLUAScript::GetArgument<char*>(1);
 	bool disable = CLUAScript::GetArgument<bool>(2);
-	auto callback = [func](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z){
+	auto callback = [=](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z){
 		CLUAScript::CallFunction(func, obj.get(), type, x, y, z);
+		return disable;
 	};
-	CInput::SetLMBCallback(callback, disable);
+	CGameView::GetInstance().lock()->GetController().SetLMBCallback(callback);
 	return 0;
 }
 
@@ -237,10 +237,11 @@ int SetRMBCallback(lua_State* L)
 		return luaL_error(L, "2 argument expected (function name, disable default behavior)");
 	std::string func = CLUAScript::GetArgument<char*>(1);
 	bool disable = CLUAScript::GetArgument<bool>(2);
-	auto callback = [func](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z) {
+	auto callback = [=](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z) {
 		CLUAScript::CallFunction(func, obj.get(), type, x, y, z);
+		return disable;
 	};
-	CInput::SetRMBCallback(callback, disable);
+	CGameView::GetInstance().lock()->GetController().SetRMBCallback(callback);
 	return 0;
 }
 
@@ -263,7 +264,7 @@ int BindKey(lua_State* L)
 	bool ctrl = CLUAScript::GetArgument<bool>(3);
 	bool alt = CLUAScript::GetArgument<bool>(4);
 	std::function<void()> function = GetCallbackFunction(1);
-	CGameController::GetInstance().lock()->BindKey(key, shift, ctrl, alt, function);
+	CGameView::GetInstance().lock()->GetController().BindKey(key, shift, ctrl, alt, function);
 	return 0;
 }
 
@@ -429,7 +430,7 @@ int BeginActionCompound(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameController::GetInstance().lock()->GetCommandHandler().BeginCompound();
+	CGameView::GetInstance().lock()->GetController().GetCommandHandler().BeginCompound();
 	return 0;
 }
 
@@ -437,7 +438,7 @@ int EndActionCompound(lua_State* L)
 {
 	if(CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CGameController::GetInstance().lock()->GetCommandHandler().EndCompound();
+	CGameView::GetInstance().lock()->GetController().GetCommandHandler().EndCompound();
 	return 0;
 }
 
@@ -446,7 +447,7 @@ int NetHost(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (port)");
 	unsigned int port = CLUAScript::GetArgument<unsigned int>(1);
-	CGameController::GetInstance().lock()->GetNetwork().Host(static_cast<unsigned short>(port));
+	CGameView::GetInstance().lock()->GetController().GetNetwork().Host(static_cast<unsigned short>(port));
 	return 0;
 }
 
@@ -456,7 +457,7 @@ int NetClient(lua_State* L)
 		return luaL_error(L, "2 argument expected (ip, port)");
 	std::string ip = CLUAScript::GetArgument<const char*>(1);
 	unsigned short port = static_cast<unsigned short>(CLUAScript::GetArgument<unsigned int>(2));
-	CGameController::GetInstance().lock()->GetNetwork().Client(ip.c_str(), port);
+	CGameView::GetInstance().lock()->GetController().GetNetwork().Client(ip.c_str(), port);
 	return 0;
 }
 
@@ -465,7 +466,7 @@ int NetSendMessage(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (message)");
 	std::string message = CLUAScript::GetArgument<const char*>(1);
-	CGameController::GetInstance().lock()->GetNetwork().SendMessag(message);
+	CGameView::GetInstance().lock()->GetController().GetNetwork().SendMessag(message);
 	return 0;
 }
 
@@ -474,7 +475,7 @@ int SaveGame(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (filename)");
 	std::string path = CLUAScript::GetArgument<const char*>(1);
-	CGameController::GetInstance().lock()->Save(path);
+	CGameView::GetInstance().lock()->GetController().Save(path);
 	return 0;
 }
 
@@ -483,7 +484,7 @@ int LoadGame(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (filename)");
 	std::string path = CLUAScript::GetArgument<const char*>(1);
-	CGameController::GetInstance().lock()->Load(path);
+	CGameView::GetInstance().lock()->GetController().Load(path);
 	return 0;
 }
 

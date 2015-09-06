@@ -71,9 +71,6 @@
     <ClCompile Include="view\TextureManager.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="view\Input.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="UI\UICheckBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
@@ -138,9 +135,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="view\ColladaModelFactory.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\SelectionTools.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="controller\GameController.cpp">
@@ -235,6 +229,12 @@
     </ClCompile>
     <ClCompile Include="SoundPlayerFMod.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="view\MathUtils.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Input.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -418,9 +418,6 @@
     <ClInclude Include="view\ImageDecoderInterface.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\Input.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\IParticleEffecth.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -457,9 +454,6 @@
     <ClInclude Include="view\ParticleTracer.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\SelectionTools.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\ShaderManager.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -492,6 +486,18 @@
     </ClInclude>
     <ClInclude Include="SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\MathUtils.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="Signal.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Input.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IInput.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

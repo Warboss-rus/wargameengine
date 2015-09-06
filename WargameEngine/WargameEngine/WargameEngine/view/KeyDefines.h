@@ -7,3 +7,4 @@
 #define KEY_DOWN       40
 #define KEY_HOME      106
 #define KEY_END       107
+#define KEY_DELETE	  127
