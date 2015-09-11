@@ -239,6 +239,12 @@
     <ClCompile Include="view\GameWindow.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="controller\CommandPlayAnimation.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\CommandGoTo.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -507,6 +513,12 @@
     </ClInclude>
     <ClInclude Include="controller\IStateManager.h">
       <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandPlayAnimation.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\CommandGoTo.h">
+      <Filter>Source Files\controller\commands</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

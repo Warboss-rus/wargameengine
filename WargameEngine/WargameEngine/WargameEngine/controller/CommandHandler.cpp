@@ -5,8 +5,10 @@
 #include "CommandRotateObject.h"
 #include "CommandChangeProperty.h"
 #include "CommandChangeGlobalProperty.h"
+#include "CommandPlayAnimation.h"
+#include "CommandGoTo.h"
 
-void CCommandHandler::AddNewCommand(ICommand * command, bool local)
+void CCommandHandler::AddNewCommand(std::unique_ptr<ICommand> && command, bool local)
 {
 	if(!m_commands.empty() && m_current < m_commands.size())
 	{
@@ -14,16 +16,16 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 	}
 	if(m_compound)
 	{
-		m_compound->AddChild(command);
+		m_compound->AddChild(command.get());
 	}
 	else
 	{
-		m_commands.push_back(std::unique_ptr<ICommand>(command));
+		m_commands.push_back(std::move(command));
 	}
 	m_current = m_commands.size();
 	if (local && m_onNewCommand)
 	{
-		m_onNewCommand(command);
+		m_onNewCommand(command.get());
 	}
 }
 
@@ -34,44 +36,58 @@ CCommandHandler::CCommandHandler()
 
 void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool local)
 {
-	ICommand* action = new CCommandCreateObject(object);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandCreateObject>(object);
 	action->Execute();
-	AddNewCommand(action, local);
+	AddNewCommand(std::move(action), local);
 }
 
 void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object, bool local)
 {
-	ICommand* action = new CCommandDeleteObject(object);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandDeleteObject>(object);
 	action->Execute();
-	AddNewCommand(action, local);
+	AddNewCommand(std::move(action), local);
 }
 
 void CCommandHandler::AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY, bool local)
 {
-	ICommand* action = new CCommandMoveObject(object, deltaX, deltaY);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandMoveObject>(object, deltaX, deltaY);
 	if (!local) action->Execute();
-	AddNewCommand(action, local);
+	AddNewCommand(std::move(action), local);
 }
 
 void CCommandHandler::AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation, bool local)
 {
-	ICommand* action = new CCommandRotateObject(object, deltaRotation);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandRotateObject>(object, deltaRotation);
 	if (!local) action->Execute();
-	AddNewCommand(action, local);
+	AddNewCommand(std::move(action), local);
 }
 
 void CCommandHandler::AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value, bool local)
 {
-	ICommand* action = new CCommandChangeProperty(object, key, value);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandChangeProperty>(object, key, value);
 	action->Execute();
-	AddNewCommand(action, local);
+	AddNewCommand(std::move(action), local);
 }
 
 void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::string const& value, bool local)
 {
-	ICommand* action = new CommandChangeGlobalProperty(key, value);
+	std::unique_ptr<ICommand> action = std::make_unique<CommandChangeGlobalProperty>(key, value);
 	action->Execute();
-	AddNewCommand(action, local);
+	AddNewCommand(std::move(action), local);
+}
+
+void CCommandHandler::AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed, bool local)
+{
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandPlayAnimation>(object, animation, loopMode, speed);
+	action->Execute();
+	AddNewCommand(std::move(action), local);
+}
+
+void CCommandHandler::AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed, bool local)
+{
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandGoTo>(object, x, y, speed, animation, animationSpeed);
+	action->Execute();
+	AddNewCommand(std::move(action), local);
 }
 
 void CCommandHandler::Undo()

@@ -291,7 +291,8 @@ int PlayAnimation(lua_State* L)
 	{
 		luaL_error(L, "needs to be called on valid object");
 	}
-	object->PlayAnimation(anim, loop, speed);
+	auto objectPtr = CGameModel::GetInstance().lock()->Get3DObject(object);
+	CGameView::GetInstance().lock()->GetController().PlayObjectAnimation(objectPtr, anim, loop, speed);
 	return 0;
 }
 
@@ -333,7 +334,8 @@ int GoTo(lua_State* L)
 	double speed = CLUAScript::GetArgument<double>(4);
 	std::string anim = CLUAScript::GetArgument<const char*>(5);
 	float animSpeed = CLUAScript::GetArgument<float>(6);
-	object->GoTo(CVector3d(x, y, 0.0), speed, anim, animSpeed);
+	auto objectPtr = CGameModel::GetInstance().lock()->Get3DObject(object);
+	CGameView::GetInstance().lock()->GetController().ObjectGoTo(objectPtr, x, y, speed, anim, animSpeed);
 	return 0;
 }
 
