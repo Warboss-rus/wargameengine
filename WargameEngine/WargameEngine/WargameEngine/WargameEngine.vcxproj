@@ -120,6 +120,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="controller\CommandGoTo.cpp" />
+    <ClCompile Include="controller\CommandPlayAnimation.cpp" />
     <ClCompile Include="controller\LUARegisterFunctions.cpp" />
     <ClCompile Include="controller\LUARegisterObject.cpp" />
     <ClCompile Include="controller\LUARegisterUI.cpp" />
@@ -191,6 +193,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncReadTask.h" />
+    <ClInclude Include="controller\CommandGoTo.h" />
+    <ClInclude Include="controller\CommandPlayAnimation.h" />
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />

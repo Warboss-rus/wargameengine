@@ -17,12 +17,14 @@ public:
 	void AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation, bool local = true);
 	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value, bool local = true);
 	void AddNewChangeGlobalProperty(std::string const& key, std::string const& value, bool local = true);
+	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed, bool local = true);
+	void AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed, bool local = true);
 	void Undo();
 	void Redo();
 	void BeginCompound();
 	void EndCompound();
 private:
-	void AddNewCommand(ICommand * command, bool local);
+	void AddNewCommand(std::unique_ptr<ICommand> && command, bool local);
 	std::unique_ptr<CCommandCompound> m_compound;
 	std::vector<std::unique_ptr<ICommand>> m_commands;
 	size_t m_current;

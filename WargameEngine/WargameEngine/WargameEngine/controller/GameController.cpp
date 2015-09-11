@@ -585,6 +585,16 @@ void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::strin
 	m_commandHandler->AddNewChangeProperty(obj, key, value);
 }
 
+void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed)
+{
+	m_commandHandler->AddNewPlayAnimation(object, animation, loopMode, speed);
+}
+
+void CGameController::ObjectGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed)
+{
+	m_commandHandler->AddNewGoTo(object, x, y, speed, animation, animationSpeed);
+}
+
 CCommandHandler & CGameController::GetCommandHandler()
 {
 	return *m_commandHandler;

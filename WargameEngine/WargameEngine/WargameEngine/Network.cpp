@@ -178,6 +178,38 @@ void CNetwork::Update()
 				commandHandler.AddNewChangeGlobalProperty(key, newvalue, false);
 				LogWriter::WriteLine("CreateGlobalProperty received");
 			}break;
+			case 6://PlayAnimation
+			{
+				unsigned int address, size;
+				char loop;
+				float speed;
+				std::string anim;
+				memcpy(&address, data + 2, 4);
+				loop = data[6];
+				memcpy(&speed, data + 7, sizeof(float));
+				memcpy(&size, data + 11, sizeof(unsigned int));
+				anim.resize(size);
+				memcpy(&anim[0], data + 15, size);
+				commandHandler.AddNewPlayAnimation(GetObject(address), anim, loop, speed, false);
+				LogWriter::WriteLine("PlayAnimation received");
+			}break;
+			case 7://GoTo
+			{
+				unsigned int address, size;
+				double x, y, speed;
+				float animSpeed;
+				std::string anim;
+				memcpy(&address, data + 2, 4);
+				memcpy(&x, data + 6, sizeof(double));
+				memcpy(&y, data + 14, sizeof(double));
+				memcpy(&speed, data + 22, sizeof(double));
+				memcpy(&animSpeed, data + 30, sizeof(float));
+				memcpy(&size, data + 34, sizeof(unsigned int));
+				anim.resize(size);
+				memcpy(&anim[0], data + 38, size);
+				commandHandler.AddNewGoTo(GetObject(address), x, y, speed, anim, animSpeed, false);
+				LogWriter::WriteLine("PlayAnimation received");
+			}break;
 			default:
 			{
 				LogWriter::WriteLine("Net error. Unknown action.");
