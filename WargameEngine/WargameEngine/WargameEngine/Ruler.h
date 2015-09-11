@@ -5,6 +5,7 @@ class CRuler
 public:
 	CRuler();
 	void Enable();
+	void Disable();
 	void SetBegin(double x, double y);
 	void SetEnd(double x, double y);
 	void Draw() const;

@@ -1,5 +1,6 @@
+#pragma once
+#include <map>
 #include "Material.h"
-#include "TextureManager.h"
 
 class CMaterialManager
 {

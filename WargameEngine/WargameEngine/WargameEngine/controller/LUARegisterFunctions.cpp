@@ -466,7 +466,7 @@ int NetSendMessage(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 arguments expected (message)");
 	std::string message = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetInstance().lock()->GetController().GetNetwork().SendMessag(message);
+	CGameView::GetInstance().lock()->GetController().GetNetwork().SendMessage(message);
 	return 0;
 }
 
@@ -735,6 +735,7 @@ int NewStaticObject(lua_State* L)
 	double y = CLUAScript::GetArgument<double>(3);
 	double rotation = CLUAScript::GetArgument<double>(4);
 	CGameModel::GetInstance().lock()->GetLandscape().AddStaticObject(CStaticObject(model, x, y, rotation));
+	CGameView::GetInstance().lock()->ResetTable();
 	return 0;
 }
 

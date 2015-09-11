@@ -171,6 +171,7 @@
     <ClCompile Include="view\CameraStrategy.cpp" />
     <ClCompile Include="view\ColladaModelFactory.cpp" />
     <ClCompile Include="view\GameView.cpp" />
+    <ClCompile Include="view\GameWindow.cpp" />
     <ClCompile Include="view\Input.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
@@ -191,6 +192,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncReadTask.h" />
+    <ClInclude Include="controller\IStateManager.h" />
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />
@@ -231,6 +233,7 @@
     <ClInclude Include="UI\UIWindow.h" />
     <ClInclude Include="view\CameraFirstPerson.h" />
     <ClInclude Include="view\CameraStrategy.h" />
+    <ClInclude Include="view\GameWindow.h" />
     <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IInput.h" />

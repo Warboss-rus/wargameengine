@@ -2,14 +2,15 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "../model/GameModel.h"
-#include "../view/Vector3.h"
 #include <functional>
+#include "IStateManager.h"
 #include "LUAScriptHandler.h"
 #include "CommandHandler.h"
+#include "../model/GameModel.h"
+#include "../view/Vector3.h"
 #include "../Network.h"
 
-class CGameController
+class CGameController : public IStateManager
 {
 public:
 	typedef std::function<bool(std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z)> MouseButtonCallback;
@@ -17,6 +18,9 @@ public:
 	CGameController(CGameModel& model);
 	void Init();
 	void Update();
+
+	virtual std::vector<char> GetState(bool hasAdresses = false) const override;
+	virtual void SetState(char* data, bool hasAdresses = false) override;
 
 	bool OnLeftMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
 	bool OnLeftMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
@@ -29,8 +33,6 @@ public:
 	void SetSingleCallback(std::function<void()> const& onSingleUpdate);
 	void SetLMBCallback(MouseButtonCallback const& callback);
 	void SetRMBCallback(MouseButtonCallback const& callback);
-	std::vector<char> GetState(bool hasAdresses = false) const;
-	void SetState(char* data, bool hasAdresses = false);
 	void Save(std::string const& filename);
 	void Load(std::string const& filename);
 	void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);

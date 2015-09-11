@@ -295,13 +295,17 @@ void CLUAScript::CallFunctionFromReference(int referenceIndex)
 	}
 }
 
-void * CLUAScript::GetClassInstance(std::string const& className)
+void * CLUAScript::GetClassInstance(std::string const& className, int pos)
 {
 	void* ud = 0;
-	luaL_checktype(m_lua_state, 1, LUA_TTABLE); 
-	lua_getfield(m_lua_state, 1, "__self");
+	if (lua_isnil(m_lua_state, pos) || lua_isnil(m_lua_state, -pos))
+	{
+		return nullptr;
+	}
+	luaL_checktype(m_lua_state, pos, LUA_TTABLE); 
+	lua_getfield(m_lua_state, pos, "__self");
 	
-	ud = luaL_checkudata(m_lua_state, -1, std::string("Classes." + className).c_str());//return NULL
+	ud = luaL_checkudata(m_lua_state, -pos, std::string("Classes." + className).c_str());//return NULL
 	return *((void**)ud);
 }
 
@@ -462,21 +466,6 @@ void CLUAScript::SetArray<const char*>(std::vector<const char*> arr)
 		lua_pushstring(m_lua_state, arr[i]);
 		lua_rawseti(m_lua_state, -2, i);
 	}
-}
-
-std::string CLUAScript::GetKeyForGetter()
-{
-	const char* key = luaL_checkstring(m_lua_state, 2);
-	lua_getmetatable(m_lua_state, 1);
-	lua_getfield(m_lua_state, -1, key);
-
-	// Either key is name of a method in the metatable
-	if (!lua_isnil(m_lua_state, -1))
-		return "";
-	// ... or its a field access, so recall as self.get(self, value).
-	lua_settop(m_lua_state, 2);
-
-	return key;
 }
 
 bool CLUAScript::IsClassInstance(int index)

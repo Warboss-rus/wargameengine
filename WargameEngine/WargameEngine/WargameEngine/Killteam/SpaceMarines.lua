@@ -16,7 +16,6 @@ races["SpaceMarines"] = {
 			T = 4,
 			Attacks = 1,
 			Sv = 3,
-			InvSv = 7,
 			MovementSpeed = 6
 		},
 		["Assault Marine"] = {
@@ -32,7 +31,6 @@ races["SpaceMarines"] = {
 			T = 4,
 			Attacks = 3,
 			Sv = 3,
-			InvSv = 7,
 			MovementSpeed = 12
 		},
 		["Terminator"] = {
@@ -49,7 +47,6 @@ races["SpaceMarines"] = {
 			T = 4,
 			Attacks = 2,
 			Sv = 2,
-			InvSv = 5,
 			MovementSpeed = 6
 		},
 	},
@@ -60,7 +57,6 @@ races["SpaceMarines"] = {
 			Cost = 0,
 			MeleeAP = 7,
 			Model = "",
-			RerollFailed2Wound = false
 		},
 		["Power Fist"] = {
 			S = 8,
@@ -68,7 +64,6 @@ races["SpaceMarines"] = {
 			Cost = 0,
 			MeleeAP = 2,
 			Model = "Terminator_SB+PF.wbm",
-			RerollFailed2Wound = false
 		},
 		["Lightning claws"] = {
 			S = 4,

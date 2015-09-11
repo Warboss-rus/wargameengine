@@ -29,7 +29,7 @@ static int g_prevX;
 static int g_prevY;
 
 static const std::map<int, IInput::Modifiers> modifiersMap = {
-	 {GLUT_ACTIVE_ALT, IInput::MODIFIER_ALT },
+	{ GLUT_ACTIVE_ALT, IInput::MODIFIER_ALT },
 	{ GLUT_ACTIVE_CTRL, IInput::MODIFIER_CTRL },
 	{ GLUT_ACTIVE_SHIFT, IInput::MODIFIER_SHIFT },
 };

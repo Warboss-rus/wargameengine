@@ -1,20 +1,22 @@
 hunter = nil
 
 function NewObject()
-	local model = UI:GetChild("ComboBox1"):GetText() --Gets a text from Edit or Listbox (selected item)
+	local model = UI:GetChild("ComboBoxModels"):GetText() --Gets a text from Edit or Listbox (selected item)
 	local object = Object:New(model, 0, 0, 0)--Creates a new object(model path, x, y, rotation) and returns it
 end
 
 function DeleteSelectedObject()
-	Object:GetSelected():Delete()--Gets currently selected object and deletes it
+	local selected = Object:GetSelected()
+	if(selected ~= nil) then
+		selected:Delete()--Gets currently selected object and deletes it
+	end
 end
 
 function SetDicewindowVisibility()
 	local window = UI:NewWindow("Window1", 150, 120, "Dice Rolls", false)
-	--window:SetVisible(false)--Sets visibility of objects and all its children
 	window:NewStaticText("Label1", 5, 10, 30, 50, "Count")--Adds a new static text to UI (name, x, y, width, height, text)
 	window:NewStaticText("Label2", 5, 50, 30, 50, "Faces")
-	window:NewButton("Button5", 30, 110, 30, 60, "Roll", "RollDices")
+	window:NewButton("ButtonUndo", 30, 110, 30, 60, "Roll", "RollDices")
 	window:NewCheckbox("CheckBox1", 5, 85, 20, 100, "Group", false)--Adds a new checkbox text to UI (name, x, y, width, height, text, initial state)
 	window:NewEdit("Edit1", 65, 10, 30, 50, "1")
 	local list2 = window:NewCombobox("ComboBox2", 65, 50, 30, 50)
@@ -75,21 +77,28 @@ function OnSelection()
 end
 
 function Host()
-	NetHost(50000)
-	UI:GetChild("Button8"):SetVisible(false)
-	UI:DeleteChild("Button9")
-	UI:DeleteChild("Edit2")
+	NetHost(UI:GetChild("WindowNetwork"):GetChild("EditNetowkPort"):GetText())
+	UI:DeleteChild("WindowNetwork")
 end
 
 function Client()
-	NetClient(UI:GetChild("Edit2"):GetText(), 50000)
-	UI:GetChild("Button9"):SetVisible(false)
-	UI:DeleteChild("Button8")
-	UI:DeleteChild("Edit2")
+	local window = UI:GetChild("WindowNetwork")
+	NetClient(window:GetChild("EditNetowkIp"):GetText(), window:GetChild("EditNetowkPort"):GetText())
+	UI:DeleteChild("WindowNetwork")
+end
+
+function ShowNetwork()
+	local window = UI:NewWindow("WindowNetwork", 200, 100, "Network", false)
+	window:NewStaticText("StaticIP", 10, 5, 30, 80, "IP")
+	window:NewStaticText("StaticPort", 100, 5, 30, 80, "Port")
+	window:NewEdit("EditNetowkIp", 10, 40, 30, 80, "127.0.0.1")
+	window:NewEdit("EditNetowkPort", 100, 40, 30, 50, "50000")
+	window:NewButton("ButtonNetworkHost", 10, 90, 30, 80, "Host", "Host")
+	window:NewButton("ButtonNetworkClient", 100, 90, 30, 80, "Client", "Client")
 end
 
 function Send()
-	NetSendMessage(UI:GetChild("Edit3"):GetText())
+	NetSendMessage(UI:GetChild("EditChatText"):GetText())
 end
 
 function StringRecieved(str)
@@ -154,7 +163,7 @@ CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 CameraStrategy(15, 6, 5, 0.5)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 --CameraFirstPerson()
 --UI:Get():ApplyTheme("uiTheme.xml")
-local list = UI:NewCombobox("ComboBox1", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
+local list = UI:NewCombobox("ComboBoxModels", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
 local files = GetFilesList("models", "*.wbm", false)--Find all models and add them into list
 for i = 1, #files do
 	list:AddItem(files[i])
@@ -167,23 +176,21 @@ files = GetFilesList("models", "*.obj", false)
 for i = 1, #files do
 	list:AddItem(files[i])
 end
-UI:NewButton("Button1", 220, 10, 30, 80, "Create", "NewObject")--Adds new button to UI (name, x, y, width, height, caption, callback function name)
-UI:NewButton("Button2", 310, 10, 30, 80, "Delete", "DeleteSelectedObject")
-UI:NewButton("Button3", 400, 10, 30, 100, "Roll Dices", "SetDicewindowVisibility")
-UI:NewButton("Button4", 510, 10, 30, 80, "Ruler", "SetRuler")
-UI:NewButton("Button5", 10, 50, 30, 80, "Undo", "UndoAction")
-UI:NewButton("Button6", 100, 50, 30, 80, "Redo", "RedoAction")
-UI:NewButton("Button7", 200, 50, 30, 80, "LoS", "LineOfSight")
-UI:NewButton("Button8", 300, 50, 30, 80, "Host", "Host")
-UI:NewEdit("Edit2", 400, 50, 30, 80, "127.0.0.1")
-UI:NewButton("Button9", 500, 50, 30, 80, "Client", "Client")
-UI:NewEdit("Edit3", 10, 550, 30, 200, "Text")
-UI:NewButton("Button10", 230, 550, 30, 80, "Send", "Send")
-UI:NewButton("Button11", 10, 100, 30, 80, "Animation", "PlayAnim")
-UI:NewButton("Button12", 110, 100, 30, 80, "PlayMusic", "Music")
-UI:NewButton("Button13", 210, 100, 30, 80, "TeamColor1", "TC1")
-UI:NewButton("Button14", 310, 100, 30, 80, "TeamColor2", "TC2")
-UI:NewButton("Button15", 410, 100, 30, 80, "TeamColor3", "TC3")
+UI:NewButton("ButtonCreate", 220, 10, 30, 80, "Create", "NewObject")--Adds new button to UI (name, x, y, width, height, caption, callback function name)
+UI:NewButton("ButtonDelete", 310, 10, 30, 80, "Delete", "DeleteSelectedObject")
+UI:NewButton("ButtonDice", 400, 10, 30, 100, "Roll Dices", "SetDicewindowVisibility")
+UI:NewButton("ButtonRuler", 510, 10, 30, 80, "Ruler", "SetRuler")
+UI:NewButton("ButtonUndo", 10, 50, 30, 80, "Undo", "UndoAction")
+UI:NewButton("ButtonRedo", 100, 50, 30, 80, "Redo", "RedoAction")
+UI:NewButton("ButtonLoS", 200, 50, 30, 80, "LoS", "LineOfSight")
+UI:NewButton("ButtonNetwork", 300, 50, 30, 80, "Network", "ShowNetwork")
+UI:NewEdit("EditChatText", 10, 550, 30, 200, "Text")
+UI:NewButton("ButtonChatSend", 230, 550, 30, 80, "Send", "Send")
+UI:NewButton("ButtonPlayAnim", 10, 100, 30, 80, "Animation", "PlayAnim")
+UI:NewButton("ButtonMusic", 110, 100, 30, 80, "PlayMusic", "Music")
+UI:NewButton("ButtonTC1", 210, 100, 30, 80, "TeamColor1", "TC1")
+UI:NewButton("ButtonTC2", 310, 100, 30, 80, "TeamColor2", "TC2")
+UI:NewButton("ButtonTC3", 410, 100, 30, 80, "TeamColor3", "TC3")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
 
 SetSelectionCallback("OnSelection")

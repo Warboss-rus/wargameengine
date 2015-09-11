@@ -1,9 +1,8 @@
+#pragma once
 #include <string>
 #include <map>
 #include <vector>
-#include <utility>
-#include <string.h>
-#pragma once
+#include <string>
 
 struct sTeamColor
 {

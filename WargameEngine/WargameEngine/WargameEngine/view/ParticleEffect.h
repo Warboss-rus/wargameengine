@@ -1,3 +1,4 @@
+#pragma once
 #include "IParticleEffecth.h"
 
 class CParticleEffect: public IParticleEffect

@@ -5,27 +5,27 @@ hunterGroup = nil
 hunterGroupIndex = nil
 
 function Init()
-	math.randomseed(os.time())
+	--math.randomseed(os.time())
 	CameraStrategy(30, 12, 5, 0.3)
 	EnableLight(1)
 	SetLightPosition(1, 0, 0, 50)
 	SetLightDiffuse(1, 1, 1, 1, 1)
 	SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
 	SetLightSpecular(1, 1, 1, 1, 1)
-	EnableShadowMap(4096, 65)
-	SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
+	--EnableShadowMap(4096, 65)
+	--SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
 	SetSelectionCallback("OnSelection")
-	UI:NewButton("Button1", 10, 10, 30, 90, "End phase", "EndPhase")
-	UI:NewButton("Button2", 110, 10, 30, 80, "Ruler", "SetRuler")
-	UI:NewButton("Button3", 200, 10, 30, 80, "Undo", "UndoAction")
-	UI:NewButton("Button4", 290, 10, 30, 80, "Redo", "RedoAction")
-	UI:NewButton("Button5", 380, 10, 30, 80, "Shoot", "Fire"):SetVisible(false)
-	UI:NewButton("Button6", 470, 10, 30, 80, "Run", "Run"):SetVisible(false)
-	UI:NewButton("Button7", 380, 10, 30, 80, "Strike", "Strike"):SetVisible(false)
-	UI:NewButton("Button8", 380, 50, 30, 80, "Save", "Save")
-	UI:NewButton("Button9", 470, 50, 30, 80, "Load", "Load")
-	UI:NewStaticText("Label1", 10, 40, 30, 180, "Deployment Phase")
-	UI:NewStaticText("Label2", 10, 570, 30, 200, "")
+	UI:NewButton("ButtonEndPhase", 10, 10, 30, 90, "End phase", "EndPhase")
+	UI:NewButton("ButtonRuler", 110, 10, 30, 80, "Ruler", "SetRuler")
+	UI:NewButton("ButtonUndo", 200, 10, 30, 80, "Undo", "UndoAction")
+	UI:NewButton("ButtonRedo", 290, 10, 30, 80, "Redo", "RedoAction")
+	UI:NewButton("ButtonShoot", 380, 10, 30, 80, "Shoot", "Fire"):SetVisible(false)
+	UI:NewButton("ButtonRun", 470, 10, 30, 80, "Run", "Run"):SetVisible(false)
+	UI:NewButton("ButtonStrike", 380, 10, 30, 80, "Strike", "Strike"):SetVisible(false)
+	UI:NewButton("ButtonSave", 380, 50, 30, 80, "Save", "Save")
+	UI:NewButton("ButtonLoad", 470, 50, 30, 80, "Load", "Load")
+	UI:NewStaticText("LabelPhase", 10, 40, 30, 180, "Deployment Phase")
+	UI:NewStaticText("LabelUnit", 10, 570, 30, 200, "")
 	SetGlobalProperty("Turn", 0)
 	SetGlobalProperty("Player", "2")
 	SetGlobalProperty("Phase", "NULL")
@@ -79,8 +79,8 @@ function MovePhase(player)
 end
 
 function ShootingPhase(player)
-	UI:Get():GetChild("Button5"):SetVisible(true)
-	UI:Get():GetChild("Button6"):SetVisible(true)
+	UI:GetChild("ButtonShoot"):SetVisible(true)
+	UI:GetChild("ButtonRun"):SetVisible(true)
 	if(player == "1") then
 		for i=1, #Player1 do
 			Player1[i]:SetSelectable(true)
@@ -142,7 +142,7 @@ function EndPhase()
 		end
 		MovePhase(GetGlobalProperty("Player"))
 	end
-	UI:Get():GetChild("Label1"):SetText("Turn " .. GetGlobalProperty("Turn") .. " Player" .. GetGlobalProperty("Player") .. " " .. GetGlobalProperty("Phase") .. " Phase ")
+	UI:GetChild("LabelPhase"):SetText("Turn " .. GetGlobalProperty("Turn") .. " Player" .. GetGlobalProperty("Player") .. " " .. GetGlobalProperty("Phase") .. " Phase ")
 	OnSelection()
 end
 
@@ -221,7 +221,7 @@ end
 
 function Fire()
 	hunter = Object:GetSelected()
-	if(hunter ~= nil) then
+	if(hunter== nil) then
 		MessageBox("Choose one of your models to shoot")
 		hunter = nil
 		return
@@ -303,7 +303,7 @@ function Fire2(prey)
 		MessageBox("Can't see the target(visibility=" .. los .."%)")
 		return
 	end
-	local angle = math.deg(math.atan2(prey:GetX() - hunter:GetX(), prey:GetY() - hunter:GetY()))
+	local angle = math.deg(math.atan(prey:GetX() - hunter:GetX(), prey:GetY() - hunter:GetY()))
 	angle = math.rad((hunter:GetRotation() - angle) / 2)
 	toHit = toHit + math.floor(4 * (1 - math.abs(math.cos(angle))))
 	if(toHit > 6) then
@@ -323,7 +323,7 @@ function Fire2(prey)
 	if(weapon.AP <= save) then
 		save = 7
 	end
-	if(preyUnit.InvSv < save) then
+	if(preyUnit.InvSv ~= nil and preyUnit.InvSv < save) then
 		save = preyUnit.InvSv
 	end
 	local result = "Rolls to hit (".. numShots .. " dice, " .. toHit .. "+): "
@@ -387,7 +387,7 @@ end
 
 function Strike()
 	hunter = Object:GetSelected()
-	if(hunter ~= nil) then
+	if(hunter== nil) then
 		MessageBox("Choose one of your models to strike")
 		hunter = nil
 		return
@@ -460,7 +460,7 @@ function Strike2(prey)
 	if(weapon.AP <= save) then
 		save = 7
 	end
-	if(preyUnit.InvSv < save) then
+	if(preyUnit.InvSv ~= nil and preyUnit.InvSv < save) then
 		save = preyUnit.InvSv
 	end
 	local result = "Rolls to hit (".. numStrikes .. " dice, " .. toHit .. "+): "
@@ -533,22 +533,22 @@ function Strike2(prey)
 end
 
 function OnSelection()
-	UI:Get():GetChild("Button5"):SetVisible(false)
-	UI:Get():GetChild("Button6"):SetVisible(false)
-	UI:Get():GetChild("Button7"):SetVisible(false)
+	UI:GetChild("ButtonShoot"):SetVisible(false)
+	UI:GetChild("ButtonRun"):SetVisible(false)
+	UI:GetChild("ButtonStrike"):SetVisible(false)
 	local selected = Object:GetSelected()
-	if(selected ~= nil) then
-		UI:Get():GetChild("Label2"):SetText("")
+	if(selected == nil) then
+		UI:GetChild("LabelUnit"):SetText("")
 		return
 	else
-		UI:Get():GetChild("Label2"):SetText(selected:GetProperty("Name"))
+		UI:GetChild("LabelUnit"):SetText(selected:GetProperty("Name"))
 	end
 	if(selected:GetProperty("Owner") == GetGlobalProperty("Player")) then
 		if(GetGlobalProperty("Phase") == "Shooting" and selected:GetProperty("Shooted") == "0") then
-			UI:Get():GetChild("Button5"):SetVisible(true)
-			UI:Get():GetChild("Button6"):SetVisible(true)
+			UI:GetChild("ButtonShoot"):SetVisible(true)
+			UI:GetChild("ButtonRun"):SetVisible(true)
 		elseif (GetGlobalProperty("Phase") == "Melee" and selected:GetProperty("StrikedAtMelee") == "0") then
-			UI:Get():GetChild("Button7"):SetVisible(true)
+			UI:GetChild("ButtonStrike"):SetVisible(true)
 		end
 	end
 	if(hunter == nil or selected:IsGroup()) then
@@ -563,7 +563,7 @@ end
 
 function Run()
 	local object = Object:GetSelected()
-	if(object ~= nil) then
+	if(object== nil) then
 		MessageBox("Choose one of your models to run")
 		return
 	end
@@ -659,7 +659,7 @@ function OnStateRecieved()
 		MeleePhase(GetGlobalProperty("Player"))
 	end
 	if(GetGlobalProperty("Phase") == "NULL") then
-		UI:Get():GetChild("Label1"):SetText("Deployment Phase")
+		UI:GetChild("LabelPhase"):SetText("Deployment Phase")
 		for i = 1, #Player1 do
 			Player1[i]:SetSelectable(true)
 			Player1[i]:SetMoveLimit("rectangle", 15, 15, 30, -15)
@@ -670,7 +670,7 @@ function OnStateRecieved()
 			Player2[i]:SetMoveLimit("rectangle", -15, 15, -30, -15)
 		end
 	else
-		UI:Get():GetChild("Label1"):SetText("Turn " .. GetGlobalProperty("Turn") .. " Player" .. GetGlobalProperty("Player") .. " " .. GetGlobalProperty("Phase") .. " Phase ")
+		UI:GetChild("LabelPhase"):SetText("Turn " .. GetGlobalProperty("Turn") .. " Player" .. GetGlobalProperty("Player") .. " " .. GetGlobalProperty("Phase") .. " Phase ")
 	end
 	OnSelection()
 end

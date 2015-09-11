@@ -16,6 +16,11 @@ void CRuler::Enable()
 	m_enabled = true;
 }
 
+void CRuler::Disable()
+{
+	m_enabled = false;
+}
+
 void CRuler::SetBegin(double x, double y)
 {
 	m_worldBeginX = x;

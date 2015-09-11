@@ -35,4 +35,5 @@ std::wstring const CUIStaticText::GetText() const
 void CUIStaticText::SetText(std::wstring const& text)
 { 
 	m_text = text; 
+	Invalidate();
 }

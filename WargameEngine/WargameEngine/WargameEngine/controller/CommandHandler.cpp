@@ -5,7 +5,6 @@
 #include "CommandRotateObject.h"
 #include "CommandChangeProperty.h"
 #include "CommandChangeGlobalProperty.h"
-#include "..\Network.h"
 
 void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 {
@@ -22,15 +21,14 @@ void CCommandHandler::AddNewCommand(ICommand * command, bool local)
 		m_commands.push_back(std::unique_ptr<ICommand>(command));
 	}
 	m_current = m_commands.size();
-	if (local && m_network.IsConnected())
+	if (local && m_onNewCommand)
 	{
-		m_network.SendAction(command->Serialize(), true);
+		m_onNewCommand(command);
 	}
 }
 
-CCommandHandler::CCommandHandler(CNetwork& network)
+CCommandHandler::CCommandHandler()
 	:m_current(0)
-	, m_network(network)
 {
 }
 
@@ -38,10 +36,6 @@ void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool l
 {
 	ICommand* action = new CCommandCreateObject(object);
 	action->Execute();
-	if (local)
-	{
-		m_network.AddAddressLocal(object);
-	}
 	AddNewCommand(action, local);
 }
 
@@ -106,4 +100,9 @@ void CCommandHandler::EndCompound()
 		m_commands.push_back(std::unique_ptr<ICommand>(m_compound.get()));
 	}
 	m_compound.reset();
+}
+
+void CCommandHandler::DoOnNewCommand(std::function<void(ICommand*)> const& handler)
+{
+	m_onNewCommand = handler;
 }

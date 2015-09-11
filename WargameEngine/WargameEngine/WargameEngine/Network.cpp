@@ -4,14 +4,15 @@
 #include "model/GameModel.h"
 #include "model/Object.h"
 #include "controller/CommandHandler.h"
-#include "controller/GameController.h"
+#include "controller/IStateManager.h"
 
-CNetwork::CNetwork(CGameController & gameController)
+CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler)
 	:m_host(true)
 	, m_netData(NULL)
 	, m_netRecievedSize(0)
 	, m_netTotalSize(0)
-	, m_gameController(gameController)
+	, m_stateManager(stateManager)
+	, m_commandHandler(commandHandler)
 {
 }
 
@@ -89,14 +90,13 @@ void CNetwork::Update()
 			char state[30];
 			sprintf(state, "State Recieved. Size=%d.", m_netRecievedSize);
 			LogWriter::WriteLine(state);
-			m_gameController.SetState(m_netData + 5, true);
+			m_stateManager.SetState(m_netData + 5, true);
 			if (m_stateRecievedCallback) m_stateRecievedCallback();
 		}
 		else if (m_netData[0] == 2) //command
 		{
 			char * data = m_netData + 4;
 			char type = data[1];
-			CCommandHandler & commandHandler = m_gameController.GetCommandHandler();
 			switch (type)
 			{
 			case 0://CreateObject
@@ -110,7 +110,7 @@ void CNetwork::Update()
 				path.resize(size);
 				memcpy(&path[0], data + 34, size);
 				std::shared_ptr<IObject> obj = std::shared_ptr<IObject>(new CObject(path, pos[0], pos[1], pos[2], true));
-				commandHandler.AddNewCreateObject(obj, false);
+				m_commandHandler.AddNewCreateObject(obj, false);
 				m_translator[address] = obj;
 				LogWriter::WriteLine("CreateObject received");
 			}break;
@@ -118,7 +118,7 @@ void CNetwork::Update()
 			{
 				unsigned int address;
 				memcpy(&address, data + 2, 4);
-				commandHandler.AddNewDeleteObject(GetObject(address), false);
+				m_commandHandler.AddNewDeleteObject(GetObject(address), false);
 				m_translator.erase(address);
 				LogWriter::WriteLine("DeleteObject received");
 			}break;
@@ -129,7 +129,7 @@ void CNetwork::Update()
 				memcpy(&address, data + 2, 4);
 				memcpy(&x, data + 6, 8);
 				memcpy(&y, data + 14, 8);
-				commandHandler.AddNewMoveObject(GetObject(address), x, y, false);
+				m_commandHandler.AddNewMoveObject(GetObject(address), x, y, false);
 				LogWriter::WriteLine("MoveObject received");
 			}break;
 			case 3://RotateObject
@@ -138,7 +138,7 @@ void CNetwork::Update()
 				double rot;
 				memcpy(&address, data + 2, 4);
 				memcpy(&rot, data + 6, 8);
-				commandHandler.AddNewRotateObject(GetObject(address), rot, false);
+				m_commandHandler.AddNewRotateObject(GetObject(address), rot, false);
 				LogWriter::WriteLine("RotateObject received");
 			}break;
 			case 4://ChangeProperty
@@ -157,7 +157,7 @@ void CNetwork::Update()
 				memcpy(&size, data + begin, 4);
 				oldvalue.resize(size);
 				memcpy(&oldvalue[0], data + begin + 4, size);
-				commandHandler.AddNewChangeProperty(GetObject(address), key, newvalue, false);
+				m_commandHandler.AddNewChangeProperty(GetObject(address), key, newvalue, false);
 				LogWriter::WriteLine("ChangeProperty received");
 			}break;
 			case 5://ChangeGlobalProperty
@@ -175,7 +175,7 @@ void CNetwork::Update()
 				memcpy(&size, data + begin, 4);
 				oldvalue.resize(size);
 				memcpy(&oldvalue[0], data + begin + 4, size);
-				commandHandler.AddNewChangeGlobalProperty(key, newvalue, false);
+				m_commandHandler.AddNewChangeGlobalProperty(key, newvalue, false);
 				LogWriter::WriteLine("CreateGlobalProperty received");
 			}break;
 			default:
@@ -208,11 +208,11 @@ void CNetwork::SendState()
 		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
-	std::vector<char> result = m_gameController.GetState(true);
+	std::vector<char> result = m_stateManager.GetState(true);
 	m_socket->SendData(&result[0], result.size());//1 For full dump
 }
 
-void CNetwork::SendMessag(std::string const& message)
+void CNetwork::SendMessage(std::string const& message)
 {
 	if (!m_socket)
 	{

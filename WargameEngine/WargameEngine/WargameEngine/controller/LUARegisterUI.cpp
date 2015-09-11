@@ -430,38 +430,6 @@ int ApplyTheme(lua_State* L)
 	return 0;
 }
 
-int Getter(lua_State* L)
-{
-	std::string key = CLUAScript::GetKeyForGetter();
-	if (key.empty())
-	{
-		return 0;
-	}
-	//return luaL_error(L, ("key " + key + "does not exist").c_str());
-	if (key == "text")
-		return GetText(L);
-	if (key == "visible")
-		return GetVisible(L);
-	if (key == "state")
-		return GetState(L);
-	if (key == "selectedIndex")
-		return GetSelectedIndex(L);
-	if (key == "itemsCount")
-		return GetItemsCount(L);
-	return GetChild(L);
-}
-
-int Setter(lua_State* /*L*/)
-{
-	std::string key = CLUAScript::GetArgument<const char*>(2);
-	if (key == "__self")
-	{
-		return 1;
-	}
-	std::string value = CLUAScript::GetArgument<const char*>(3);
-	return 0;
-}
-
 static const luaL_Reg UIFuncs[] = {
    	{ "NewButton", NewButton },
 	{ "NewStaticText", NewStaticText },

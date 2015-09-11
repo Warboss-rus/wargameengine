@@ -221,9 +221,9 @@ int SetMoveLimit(lua_State* L)
 
 int Select(lua_State* L)
 {
-	if (CLUAScript::GetArgumentCount() != 1)
-        return luaL_error(L, "1 argument expected (thing to select");
-	std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->Get3DObject((IObject *)CLUAScript::GetClassInstance("Object"));
+	if (CLUAScript::GetArgumentCount() != 2)
+        return luaL_error(L, "1 argument expected (object to select)");
+	std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->Get3DObject((IObject *)CLUAScript::GetClassInstance("Object", 2));
 	CGameModel::GetInstance().lock()->SelectObject(object);
 	return 0;
 }

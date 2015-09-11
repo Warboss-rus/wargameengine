@@ -4,23 +4,23 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "model/ObjectInterface.h"
-#include "controller/CommandHandler.h"
 #include <functional>
 
-class CGameController;
+class IStateManager;
+class CCommandHandler;
+class IObject;
 
 class CNetwork
 {
 public:
-	CNetwork(CGameController & gameController);
+	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler);
 	void Host(unsigned short port = 0);
 	void Client(const char * ip, unsigned short port = 0);
 	void Update();
 	bool IsHost() const;
 	void Stop();
 	void SendState();
-	void SendMessag(std::string const& message);
+	void SendMessage(std::string const& message);
 	void SendAction(std::vector<char> const& command, bool execute);
 	bool IsConnected();
 	std::shared_ptr<IObject> GetObject(unsigned int address);
@@ -41,5 +41,6 @@ private:
 	char * m_netData;
 	std::function<void()> m_stateRecievedCallback;
 	std::function<void(const char*)>m_stringRecievedCallback;
-	CGameController & m_gameController;
+	IStateManager & m_stateManager;
+	CCommandHandler & m_commandHandler;
 };

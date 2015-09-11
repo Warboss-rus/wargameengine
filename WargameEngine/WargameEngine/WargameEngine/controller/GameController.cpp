@@ -1,17 +1,24 @@
 #include "GameController.h"
-#include "../view/GameView.h"
-#include "../model/GameModel.h"
-#include "../model/ObjectGroup.h"
-#include "LUARegisterFunctions.h"
-#include "../Module.h"
-#include "../LogWriter.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "LUARegisterFunctions.h"
+#include "../model/ObjectGroup.h"
+#include "../model/Object.h"
+#include "../view/IInput.h"
+#include "../Module.h"
+#include "../LogWriter.h"
 
 void CGameController::Init()
 {
-	m_network = std::make_unique<CNetwork>(*this);
-	m_commandHandler = std::make_unique<CCommandHandler>(*m_network);
+	m_commandHandler = std::make_unique<CCommandHandler>();
+	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler);
+	m_commandHandler->DoOnNewCommand([this] (ICommand * command){
+		if (m_network->IsConnected())
+		{
+			m_network->SendAction(command->Serialize(), true);
+		}
+	});
+
 	m_lua = std::make_unique<CLUAScript>();
 	RegisterFunctions(*m_lua);
 	RegisterUI(*m_lua);
@@ -43,7 +50,7 @@ CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0)
 
 bool CGameController::OnLeftMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers)
 {
-	SelectObject(&begin.x, &end.x, modifiers & IInput::MODIFIER_SHIFT);
+	SelectObject(begin, end, modifiers & IInput::MODIFIER_SHIFT);
 	auto selected = m_model.GetSelectedObject();
 	if (!selected)//selection rectangle
 	{
@@ -61,7 +68,7 @@ bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end
 {
 	auto selected = m_model.GetSelectedObject();
 	auto pos = RayToPoint(begin, end);
-	if (m_lmbCallback && m_lmbCallback(selected, "Object", pos.x, pos.y, pos.z))
+	if (m_lmbCallback && m_lmbCallback(GetNearestObject(begin, end), "Object", pos.x, pos.y, pos.z))
 	{
 		return true;
 	}
@@ -77,7 +84,10 @@ bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end
 	}
 	else//needs a fix
 	{
-		SelectObjectGroup(m_selectionRectangleBegin->x, m_selectionRectangleBegin->y, pos.x, pos.y);
+		if (m_selectionRectangleBegin)
+		{
+			SelectObjectGroup(m_selectionRectangleBegin->x, m_selectionRectangleBegin->y, pos.x, pos.y);
+		}
 	}
 	m_selectedObjectBeginCoords.reset();
 	m_selectionRectangleBegin.reset();
@@ -98,19 +108,19 @@ bool CGameController::OnRightMouseDown(CVector3d const& begin, CVector3d const& 
 bool CGameController::OnRightMouseUp(CVector3d const& begin, CVector3d const& end, int)
 {
 	auto object = m_model.GetSelectedObject();
-	double rot = object->GetRotation();
+	double rot = object ? object->GetRotation() : 0.0;
 	auto point = RayToPoint(begin, end);
-	if (m_rmbCallback && m_rmbCallback(object, "Object", point.x, point.y, point.z))
+	if (m_rmbCallback && m_rmbCallback(GetNearestObject(begin, end), "Object", point.x, point.y, point.z))
 	{
 		return true;
 	}
 	bool result = false;
-	if (m_rotationPosBegin)
+	if (m_rotationPosBegin && object)
 	{
 		double rotation = 90 + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180 / M_PI);
 		if (sqrt((point.x - m_rotationPosBegin->x) * (point.x - m_rotationPosBegin->x) + (point.y - m_rotationPosBegin->y) * (point.y - m_rotationPosBegin->y)) > 0.2)
 		{
-			m_model.GetSelectedObject()->Rotate(rotation - rot);
+			object->Rotate(rotation - rot);
 			result = true;
 		}
 		RotateObject(object, object->GetRotation() - m_selectedObjectPrevRotation);
@@ -245,7 +255,7 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 	}
 	else
 	{
-		if (add && object != NULL)
+		if (add && object && selectedObject)
 		{
 			CObjectGroup * group = new CObjectGroup();
 			group->AddChildren(object);
@@ -572,6 +582,7 @@ std::shared_ptr<IObject> CGameController::CreateObject(std::string const& model,
 {
 	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, 0.0, rotation);
 	m_commandHandler->AddNewCreateObject(object);
+	m_network->AddAddressLocal(object);
 	return object;
 }
 

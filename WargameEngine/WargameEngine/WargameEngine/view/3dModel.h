@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 #include <memory>
 #include <string>
@@ -5,7 +6,7 @@
 #include <map>
 #include "MaterialManager.h"
 #include "Vector3.h"
-#pragma once
+#include "TextureManager.h"
 
 class IObject;
 

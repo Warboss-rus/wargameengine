@@ -50,7 +50,6 @@ CGameView::CGameView(void)
 {
 	m_ui = std::make_unique<CUIElement>(m_renderer);
 	m_ui->SetTheme(std::make_shared<CUITheme>(CUITheme::defaultTheme));
-	m_soundPlayer.Init();
 }
 
 void CGameView::OnTimer(int value)
@@ -107,6 +106,7 @@ void CGameView::Init()
 
 	m_gameController = std::make_unique<CGameController>(*m_gameModel.lock());
 	m_gameController->Init();
+	m_soundPlayer.Init();
 
 	InitInput();
 
@@ -198,7 +198,10 @@ void CGameView::InitInput()
 	m_input->DoOnMouseMove([this](int x, int y) {
 		double wx, wy;
 		WindowCoordsToWorldCoords(x, y, wx, wy);
-		m_ruler.SetEnd(wx, wy);
+		if (m_ruler.IsEnabled())
+		{
+			m_ruler.SetEnd(wx, wy);
+		}
 		return false;
 	}, 2);
 	//Game Controller
@@ -221,6 +224,7 @@ void CGameView::InitInput()
 		{
 			m_ruler.Hide();
 		}
+		m_ruler.Disable();
 		return result;
 	}, 5, g_controllerTag);
 	m_input->DoOnMouseMove([this](int x, int y) {
@@ -417,11 +421,14 @@ void CGameView::DrawTable(bool shadowOnly)
 	for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
 	{
 		CStaticObject const& object = landscape.GetStaticObject(i);
-		glPushMatrix();
-		glTranslated(object.GetX(), object.GetY(), 0.0);
-		glRotated(object.GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_gpuSkinning);
-		glPopMatrix();
+		if (!shadowOnly || object.CastsShadow())
+		{
+			glPushMatrix();
+			glTranslated(object.GetX(), object.GetY(), 0.0);
+			glRotated(object.GetRotation(), 0.0, 0.0, 1.0);
+			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_gpuSkinning);
+			glPopMatrix();
+		}
 	}
 	if (!shadowOnly)//Down't draw decals because they don't cast shadows
 	{
@@ -461,7 +468,7 @@ void CGameView::DrawObjects(void)
 	}
 	if (m_shadowMap) SetUpShadowMapDraw();
 	if (m_tableList == 0) DrawTable(false);
-	else glCallList(m_tableList);
+	glCallList(m_tableList);
 	size_t countObjects = m_gameModel.lock()->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
@@ -522,11 +529,14 @@ void CGameView::DrawShadowMap()
 {
 	if (!m_shadowMap) return;
 	glEnable(GL_DEPTH_TEST);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
+	glLoadIdentity();
+	gluPerspective(m_shadowAngle, 1.0, 3.0, 300.0);
 	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0, 0, m_shadowMapSize, m_shadowMapSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
@@ -534,18 +544,11 @@ void CGameView::DrawShadowMap()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(2.0, 500.0);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(m_shadowAngle, 1.0, 3.0, 300.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
 	glGetFloatv(GL_PROJECTION_MATRIX, m_lightProjectionMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, m_lightModelViewMatrix);
 
 	if (m_tableListShadow == 0) DrawTable(true);
-	else glCallList(m_tableListShadow);
+	glCallList(m_tableListShadow);
 
 	size_t countObjects = m_gameModel.lock()->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
@@ -564,14 +567,15 @@ void CGameView::DrawShadowMap()
 		glPopMatrix();
 	}
 
+	glPolygonOffset(0.0f, 0.0f);
 	glDisable(GL_POLYGON_OFFSET_FILL);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDisable(GL_DEPTH_TEST);
+	glPopAttrib();
+	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glPopAttrib();
+	glDisable(GL_DEPTH_TEST);
 }
 
 void CGameView::OnReshape(int width, int height) 
