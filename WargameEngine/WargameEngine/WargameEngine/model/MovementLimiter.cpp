@@ -1,7 +1,7 @@
 #include "MovementLimiter.h"
 #include "../controller/LUAScriptHandler.h"
 
-void CMoveLimiterRectangle::FixPosition(CVector3d & position, double & /*rotation*/) const
+void CMoveLimiterRectangle::FixPosition(CVector3d & position, double & /*rotation*/, const CVector3d & /*oldPosition*/, double /*oldRotation*/) const
 { 
 	if (position.x < m_minX) position.x = m_minX;
 	if (position.x > m_maxX) position.x = m_maxX;
@@ -9,7 +9,7 @@ void CMoveLimiterRectangle::FixPosition(CVector3d & position, double & /*rotatio
 	if (position.y > m_maxY) position.y = m_maxY;
 }
 
-void CMoveLimiterCircle::FixPosition(CVector3d & position, double & /*rotation*/) const
+void CMoveLimiterCircle::FixPosition(CVector3d & position, double & /*rotation*/, const CVector3d & /*oldPosition*/, double /*oldRotation*/) const
 {
 	if (sqrt((position.x - m_x) * (position.x - m_x) + (position.y - m_y) * (position.y - m_y)) > m_radius)
 	{
@@ -19,15 +19,13 @@ void CMoveLimiterCircle::FixPosition(CVector3d & position, double & /*rotation*/
 	}
 }
 
-void CMoveLimiterStatic::FixPosition(CVector3d & position, double & rotation) const
+void CMoveLimiterStatic::FixPosition(CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) const
 {
-	position.x = m_x;
-	position.y = m_y;
-	position.z = m_z;
-	rotation = m_rotation;
+	position = oldPosition;
+	rotation = oldRotation;
 }
 
-void CMoveLimiterTiles::FixPosition(CVector3d & position, double & /*rotation*/) const
+void CMoveLimiterTiles::FixPosition(CVector3d & position, double & /*rotation*/, const CVector3d & /*oldPosition*/, double /*oldRotation*/) const
 {
 	position.x = floor(position.x);
 	position.y = floor(position.y);
@@ -38,7 +36,7 @@ CCustomMoveLimiter::CCustomMoveLimiter(std::string const& function) :m_function(
 {
 }
 
-void CCustomMoveLimiter::FixPosition(CVector3d & position, double & rotation) const
+void CCustomMoveLimiter::FixPosition(CVector3d & position, double & rotation, const CVector3d & /*oldPosition*/, double /*oldRotation*/) const
 {
 	double x, y, z;
 	CLUAScript::CallFunctionReturn4(m_function, position.x, position.y, position.z, rotation, x, y, z, rotation);

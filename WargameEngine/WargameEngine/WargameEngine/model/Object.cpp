@@ -20,13 +20,13 @@ void CObject::Move(double x, double y, double z)
 	m_coords.x += x; 
 	m_coords.y += y;
 	m_coords.z += z;
-	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
+	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation, m_coords, m_rotation);
 }
 
 void CObject::SetCoords(double x, double y, double z) 
 { 
 	m_coords = CVector3d(x, y, z);
-	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
+	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation, m_coords, m_rotation);
 }
 
 void CObject::SetCoords(CVector3d const& coords)
@@ -37,7 +37,7 @@ void CObject::SetCoords(CVector3d const& coords)
 void CObject::Rotate(double rotation)
 { 
 	m_rotation = fmod(m_rotation + rotation + 360.0, 360); 
-	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation);
+	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation, m_coords, m_rotation);
 }
 
 double CObject::GetX() const

@@ -44,6 +44,10 @@ std::shared_ptr<IObject> CGameModel::Get3DObject(IObject * object)
 			return *i;
 		}
 	}
+	if (object == m_selectedObject.get())
+	{
+		return m_selectedObject;
+	}
 	return nullptr;
 }
 

@@ -70,6 +70,8 @@ bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end
 	auto pos = RayToPoint(begin, end);
 	if (m_lmbCallback && m_lmbCallback(GetNearestObject(begin, end), "Object", pos.x, pos.y, pos.z))
 	{
+		m_selectedObjectBeginCoords.reset();
+		m_selectionRectangleBegin.reset();
 		return true;
 	}
 	if (selected)
@@ -112,6 +114,7 @@ bool CGameController::OnRightMouseUp(CVector3d const& begin, CVector3d const& en
 	auto point = RayToPoint(begin, end);
 	if (m_rmbCallback && m_rmbCallback(GetNearestObject(begin, end), "Object", point.x, point.y, point.z))
 	{
+		m_rotationPosBegin.reset();
 		return true;
 	}
 	bool result = false;
@@ -505,6 +508,14 @@ void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, CVe
 	{
 		return;
 	}
+	double deltaX = pos.x - object->GetX();
+	double deltaY = pos.y - object->GetY();
+	double deltaZ = pos.z - object->GetZ();
+	if (sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ) < 0.1)
+	{
+		return;
+	}
+
 	CVector3d old(object->GetCoords());
 	if (CGameModel::GetInstance().lock()->GetLandscape().isCoordsOnTable(pos.x, pos.y))
 	{
@@ -615,3 +626,4 @@ CNetwork& CGameController::GetNetwork()
 {
 	return *m_network;
 }
+
