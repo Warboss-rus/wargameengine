@@ -1,11 +1,12 @@
 #include "ObjectInterface.h"
 #include <memory>
 #include <vector>
+#include "IGameModel.h"
 
 class CObjectGroup : public IObject
 {
 public:
-	CObjectGroup();
+	CObjectGroup(IGameModel & model);
 	std::string GetPathToModel() const override;
 	void Move(double x, double y, double z) override;
 	void SetCoords(double x, double y, double z) override;
@@ -53,4 +54,5 @@ private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;
 	const std::set<std::string> empty;
+	IGameModel & m_model;
 };

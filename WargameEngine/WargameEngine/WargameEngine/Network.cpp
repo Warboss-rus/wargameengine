@@ -6,13 +6,14 @@
 #include "controller/CommandHandler.h"
 #include "controller/IStateManager.h"
 
-CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler)
+CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model)
 	:m_host(true)
 	, m_netData(NULL)
 	, m_netRecievedSize(0)
 	, m_netTotalSize(0)
 	, m_stateManager(stateManager)
 	, m_commandHandler(commandHandler)
+	, m_model(model)
 {
 }
 
@@ -110,7 +111,7 @@ void CNetwork::Update()
 				path.resize(size);
 				memcpy(&path[0], data + 34, size);
 				std::shared_ptr<IObject> obj = std::shared_ptr<IObject>(new CObject(path, pos[0], pos[1], pos[2], true));
-				m_commandHandler.AddNewCreateObject(obj, false);
+				m_commandHandler.AddNewCreateObject(obj, m_model, false);
 				m_translator[address] = obj;
 				LogWriter::WriteLine("CreateObject received");
 			}break;
@@ -118,7 +119,7 @@ void CNetwork::Update()
 			{
 				unsigned int address;
 				memcpy(&address, data + 2, 4);
-				m_commandHandler.AddNewDeleteObject(GetObject(address), false);
+				m_commandHandler.AddNewDeleteObject(GetObject(address), m_model, false);
 				m_translator.erase(address);
 				LogWriter::WriteLine("DeleteObject received");
 			}break;
@@ -175,7 +176,7 @@ void CNetwork::Update()
 				memcpy(&size, data + begin, 4);
 				oldvalue.resize(size);
 				memcpy(&oldvalue[0], data + begin + 4, size);
-				m_commandHandler.AddNewChangeGlobalProperty(key, newvalue, false);
+				m_commandHandler.AddNewChangeGlobalProperty(key, newvalue, m_model, false);
 				LogWriter::WriteLine("CreateGlobalProperty received");
 			}break;
 			case 6://PlayAnimation

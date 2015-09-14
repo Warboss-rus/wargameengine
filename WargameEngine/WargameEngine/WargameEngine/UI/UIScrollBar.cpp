@@ -1,5 +1,4 @@
 #include "UIScrollBar.h"
-#include "..\view\gl.h"
 
 CUIScrollBar::CUIScrollBar(std::shared_ptr<CUITheme> theme, IRenderer & renderer)
 	:m_theme(theme), m_renderer(&renderer), m_pressed(false), m_downButtonPressed(false), m_upButtonPressed(false), m_position(0.0f)

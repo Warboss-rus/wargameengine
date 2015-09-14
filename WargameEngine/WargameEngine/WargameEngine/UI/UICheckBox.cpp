@@ -22,7 +22,7 @@ void CUICheckBox::Draw() const
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2f(0.0f, 0.0f), {0.0f, size}, {size, size}, {size, 0.0f} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
-			PrintText(static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
+			PrintText(m_renderer, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();

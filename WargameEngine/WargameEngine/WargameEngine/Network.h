@@ -9,11 +9,12 @@
 class IStateManager;
 class CCommandHandler;
 class IObject;
+class IGameModel;
 
 class CNetwork
 {
 public:
-	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler);
+	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model);
 	void Host(unsigned short port = 0);
 	void Client(const char * ip, unsigned short port = 0);
 	void Update();
@@ -43,4 +44,5 @@ private:
 	std::function<void(const char*)>m_stringRecievedCallback;
 	IStateManager & m_stateManager;
 	CCommandHandler & m_commandHandler;
+	IGameModel & m_model;
 };

@@ -1,6 +1,4 @@
 #include "3dModel.h"
-#include <GL/glew.h>
-#include "gl.h"
 #include "GameView.h"
 #include "../model/Object.h"
 
@@ -14,11 +12,7 @@ C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & t
 
 C3DModel::~C3DModel()
 {
-	if (m_vbo) glDeleteBuffersARB(1, &m_vbo);
-	for (auto i = m_lists.begin(); i != m_lists.end(); ++i)
-	{
-		glDeleteLists(i->second, 1);
-	}
+	//if (m_vbo) glDeleteBuffersARB(1, &m_vbo);
 }
 
 void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
@@ -44,10 +38,6 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 	m_indexes.swap(indexes);
 	std::swap(m_materials, materials);
 	m_meshes.swap(meshes);
-	for (auto i = m_lists.begin(); i != m_lists.end(); ++i)
-	{
-		glDeleteLists(i->second, 1);
-	}
 	m_lists.clear();
 }
 
@@ -58,35 +48,27 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_weights.swap(weights);
 	m_skeleton.swap(skeleton);
 	m_animations.swap(animations);
-	for (auto i = m_lists.begin(); i != m_lists.end(); ++i)
-	{
-		glDeleteLists(i->second, 1);
-	}
 	m_lists.clear();
 }
 
-void SetMaterial(const sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures = nullptr)
+void SetMaterial(IRenderer & renderer, const sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures = nullptr)
 {
 	if(!material)
 	{
 		return;
 	}
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT, material->ambient);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE, material->diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR, material->specular);
-	glMaterialf(GL_FRONT,GL_SHININESS, material->shininess);
-	CTextureManager * texManager = CTextureManager::GetInstance();
+	renderer.SetMaterial(material->ambient, material->diffuse, material->specular, material->shininess);
 	std::string texture = material->texture;
 	if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
 	{
 		texture = replaceTextures->at(texture);
 	}
-	texManager->SetTexture(texture, teamcolor);
-	texManager->SetTexture(material->specularMap, CTextureManager::eTextureSlot::eSpecular);
-	texManager->SetTexture(material->bumpMap, CTextureManager::eTextureSlot::eBump);
+	renderer.SetTexture(texture, teamcolor);
+	renderer.SetTexture(material->specularMap, TextureSlot::eSpecular);
+	renderer.SetTexture(material->bumpMap, TextureSlot::eBump);
 }
 
-void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
+void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
 {
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
@@ -95,7 +77,7 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 		shader->SetVertexAttrib4(CShaderManager::eUniformIndex::WEIGHT, &m_gpuWeight[0]);
 		shader->SetVertexAttrib4(CShaderManager::eUniformIndex::WEIGHT_INDEX, &m_gpuWeightIndexes[0]);
 	}
-	if (m_vbo)
+	/*if (m_vbo)
 	{
 		glBindBufferARB(GL_ARRAY_BUFFER_ARB, m_vbo);
 		if (!vertices.empty())
@@ -113,30 +95,17 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			glTexCoordPointer(2, GL_FLOAT, 0, (void*)(vertices.size() * 3 * sizeof(float)+normals.size() * 3 * sizeof(float)));
 		}
-	}
-	else
-	{
-		if (!vertices.empty())
-		{
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glVertexPointer(3, GL_FLOAT, 0, &vertices[0]);
-		}
-		if (!normals.empty() && !vertexOnly)
-		{
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, 0, &normals[0]);
-		}
-		if (!m_textureCoords.empty() && !vertexOnly)
-		{
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glTexCoordPointer(2, GL_FLOAT, 0, &m_textureCoords[0]);
-		}
-	}
-	glPushMatrix();
-	glRotated(m_rotX, 1.0, 0.0, 0.0);//causes transparent models
-	glRotated(m_rotY, 0.0, 1.0, 0.0);
-	glRotated(m_rotZ, 0.0, 0.0, 1.0); 
-	glScaled(m_scale, m_scale, m_scale);
+	}*/
+	const float * vertex = vertices.empty() ? nullptr : &vertices[0].x;
+	const float * normal = normals.empty() || vertexOnly ? nullptr : &normals[0].x;
+	const float * texCoord = m_textureCoords.empty() || vertexOnly ? nullptr : &m_textureCoords[0].x;
+	auto buffer = renderer.CreateVertexBuffer(vertex, normal, texCoord);
+	buffer->Bind();
+	renderer.PushMatrix();
+	renderer.Rotate(m_rotX, 1.0, 0.0, 0.0);//causes transparent models
+	renderer.Rotate(m_rotY, 0.0, 1.0, 0.0);
+	renderer.Rotate(m_rotZ, 0.0, 0.0, 1.0); 
+	renderer.Scale(m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{
 		unsigned int begin = 0;
@@ -146,8 +115,8 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 			if (hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
 			{
 				end = m_meshes[i].polygonIndex;
-				glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-				SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
+				buffer->DrawIndexes(&m_indexes[begin], end - begin);
+				SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
 				begin = (i + 1 == m_meshes.size()) ? m_count : m_meshes[i + 1].polygonIndex;
 				continue;
 			}
@@ -156,27 +125,24 @@ void C3DModel::DrawModel(const std::set<std::string> * hideMeshes, bool vertexOn
 				continue;
 			}
 			end = m_meshes[i].polygonIndex;
-			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
-			if (!vertexOnly) SetMaterial(m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
+			buffer->DrawIndexes(&m_indexes[begin], end - begin);
+			if (!vertexOnly) SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
 			begin = end;
 		}
 		end = m_count;
 		if (begin != end)
 		{
-			glDrawElements(GL_TRIANGLES, end - begin, GL_UNSIGNED_INT, &m_indexes[begin]);
+			buffer->DrawIndexes(&m_indexes[begin], end - begin);
 		}
 	}
 	else //Draw in a row
 	{
-		glDrawArrays(GL_TRIANGLES, 0, m_count);
+		buffer->DrawAll(m_count);
 	}
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
 	sMaterial empty;
-	SetMaterial(&empty, nullptr);
-	glPopMatrix();
-	if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+	SetMaterial(renderer, &empty, nullptr);
+	renderer.PopMatrix();
+	//if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	if (useGPUskinning)
 	{
 		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
@@ -354,7 +320,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 }
 
 //returns if animations is ended
-bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
+bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
 {
 	bool result;
 	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);
@@ -365,7 +331,7 @@ bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertex
 			CalculateGPUWeights();
 		}
 		CGameView::GetInstance().lock()->GetShaderManager()->SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
-		DrawModel(hideMeshes, vertexOnly, m_vertices, m_normals, true, teamcolor, replaceTextures);
+		DrawModel(renderer, hideMeshes, vertexOnly, m_vertices, m_normals, true, teamcolor, replaceTextures);
 	}
 	else
 	{
@@ -392,12 +358,12 @@ bool C3DModel::DrawSkinned(const std::set<std::string> * hideMeshes, bool vertex
 				normals[i] += normal;
 			}
 		}
-		DrawModel(hideMeshes, vertexOnly, vertices, normals, false, teamcolor, replaceTextures);
+		DrawModel(renderer, hideMeshes, vertexOnly, vertices, normals, false, teamcolor, replaceTextures);
 	}
 	return result;
 }
 
-void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
+void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
 {
 	sModelCallListKey key;
 	if (object)
@@ -413,17 +379,15 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 		{
 			if (m_lists.find(key) == m_lists.end())
 			{
-				unsigned int id = glGenLists(1);
-				glNewList(id, GL_COMPILE);
-				DrawSkinned(&key.hiddenMeshes, vertexOnly, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning, &key.teamcolor, &key.replaceTextures);
-				glEndList();
-				m_lists[key] = id;
+				m_lists[key] = renderer.CreateDrawingList([&] {
+					DrawSkinned(renderer, &key.hiddenMeshes, vertexOnly, "", sAnimation::NONLOOPING, 0.0f, gpuSkinning, &key.teamcolor, &key.replaceTextures);
+				});
 			}
-			else glCallList(m_lists[key]);
+			m_lists.at(key)->Draw();
 		}
 		else//animation is playing, full computation
 		{
-			if (DrawSkinned(&key.hiddenMeshes, vertexOnly, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), gpuSkinning, &key.teamcolor, &key.replaceTextures))
+			if (DrawSkinned(renderer, &key.hiddenMeshes, vertexOnly, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), gpuSkinning, &key.teamcolor, &key.replaceTextures))
 			{
 				object->PlayAnimation("");
 			}
@@ -433,26 +397,20 @@ void C3DModel::Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSk
 	{
 		if (m_lists.find(key) == m_lists.end())
 		{
-			unsigned int id = glGenLists(1);
-			glNewList(id, GL_COMPILE);
-			DrawModel(&key.hiddenMeshes, false, m_vertices, m_normals, false, &key.teamcolor, &key.replaceTextures);
-			glEndList();
-			m_lists[key] = id;
+			m_lists[key] = renderer.CreateDrawingList([&] {
+				DrawModel(renderer, &key.hiddenMeshes, false, m_vertices, m_normals, false, &key.teamcolor, &key.replaceTextures);
+			});
 		}
-		else
-		{
-			glCallList(m_lists[key]);
-		}
+		m_lists.at(key)->Draw();
 	}
 }
 
-void C3DModel::PreloadTextures() const
+void C3DModel::PreloadTextures(IRenderer & renderer) const
 {
-	CTextureManager * texManager = CTextureManager::GetInstance();
 	for (size_t i = 0; i < m_meshes.size(); ++i)
 	{
 		if (!m_materials.GetMaterial(m_meshes[i].materialName)) continue;
-		texManager->SetTexture(m_materials.GetMaterial(m_meshes[i].materialName)->texture);
+		renderer.SetTexture(m_materials.GetMaterial(m_meshes[i].materialName)->texture);
 	}
 }
 

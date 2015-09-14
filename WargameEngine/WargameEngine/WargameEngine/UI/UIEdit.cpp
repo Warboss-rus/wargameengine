@@ -38,7 +38,7 @@ void CUIEdit::Draw() const
 				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize + selectionBegin, fonty),
 				{ borderSize + selectionBegin, fonty - fontHeight }, {borderSize + selectionEnd, fonty - fontHeight }, {borderSize + selectionEnd, fonty} }, {});
 			}
-			PrintText(m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 * m_theme->edit.borderSize, m_text, m_theme->text);
+			PrintText(m_renderer, m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 * m_theme->edit.borderSize, m_text, m_theme->text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();

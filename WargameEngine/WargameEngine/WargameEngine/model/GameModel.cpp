@@ -4,22 +4,6 @@
 #include "Object.h"
 #include <cstring>
 
-std::shared_ptr<CGameModel> CGameModel::m_instanse = nullptr;
-
-std::weak_ptr<CGameModel> CGameModel::GetInstance()
-{
-	if (!m_instanse)
-	{
-		m_instanse.reset(new CGameModel());
-	}
-	return std::weak_ptr<CGameModel>(m_instanse);
-}
-
-void CGameModel::FreeInstance() 
-{
-	m_instanse.reset();
-}
-
 size_t CGameModel::GetObjectCount() const
 {
 	return m_objects.size();
@@ -100,7 +84,7 @@ void CGameModel::Clear()
 	m_properties.clear();
 }
 
-std::string const CGameModel::GetProperty(std::string const& key) 
+std::string CGameModel::GetProperty(std::string const& key) const
 {
 	if (m_properties.find(key) != m_properties.end())
 		return m_properties.find(key)->second;

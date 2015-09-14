@@ -194,13 +194,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncReadTask.h" />
-	<ClInclude Include="controller\IStateManager.h" />	<ClInclude Include="controller\CommandGoTo.h" />
-    <ClInclude Include="controller\CommandPlayAnimation.h" />    <ClInclude Include="controller\LUARegisterFunctions.h" />
+    <ClInclude Include="controller\IStateManager.h" />
+    <ClInclude Include="controller\CommandGoTo.h" />
+    <ClInclude Include="controller\CommandPlayAnimation.h" />
+    <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
     <ClInclude Include="controller\TimedCallback.h" />
     <ClInclude Include="ISoundPlayer.h" />
     <ClInclude Include="ITask.h" />
     <ClInclude Include="model\Bounding.h" />
+    <ClInclude Include="model\IBoundingBoxManager.h" />
+    <ClInclude Include="model\IGameModel.h" />
     <ClInclude Include="model\Landscape.h" />
     <ClInclude Include="model\ObjectStatic.h" />
     <ClInclude Include="model\Projectile.h" />

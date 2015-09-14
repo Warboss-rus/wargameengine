@@ -33,7 +33,7 @@ void CUIWindow::Draw() const
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(0, m_theme->window.headerHeight),{ GetWidth(), m_theme->window.headerHeight },{ 0, GetHeight() },{ GetWidth(), GetHeight() }, }, {});
-			PrintText(0, 0, GetWidth() - m_theme->window.buttonSize, m_theme->window.headerHeight, m_headerText, m_theme->window.headerText);
+			PrintText(m_renderer, 0, 0, GetWidth() - m_theme->window.buttonSize, m_theme->window.headerHeight, m_headerText, m_theme->window.headerText);
 
 		}, GetWidth(), GetHeight()));
 	}

@@ -11,7 +11,7 @@
 void CGameController::Init()
 {
 	m_commandHandler = std::make_unique<CCommandHandler>();
-	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler);
+	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model);
 	m_commandHandler->DoOnNewCommand([this] (ICommand * command){
 		if (m_network->IsConnected())
 		{
@@ -35,7 +35,7 @@ void CGameController::Update()
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
 	}
-	CGameModel::GetInstance().lock()->Update();
+	m_model.Update();
 }
 
 CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0)
@@ -158,11 +158,10 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 	double maxX = (beginX > endX) ? beginX : endX;
 	double minY = (beginY < endY) ? beginY : endY;
 	double maxY = (beginY > endY) ? beginY : endY;
-	auto group = std::make_shared<CObjectGroup>();
-	CGameModel * model = CGameModel::GetInstance().lock().get();
-	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
+	auto group = std::make_shared<CObjectGroup>(m_model);
+	for (unsigned long i = 0; i < m_model.GetObjectCount(); ++i)
 	{
-		std::shared_ptr<IObject> object = model->Get3DObject(i);
+		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
 		if (object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY && object->IsSelectable())
 		{
 			group->AddChildren(object);
@@ -172,15 +171,15 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 	{
 	case 0:
 	{
-		model->SelectObject(NULL);
+		m_model.SelectObject(NULL);
 	}break;
 	case 1:
 	{
-		model->SelectObject(group->GetChild(0));
+		m_model.SelectObject(group->GetChild(0));
 	}break;
 	default:
 	{
-		model->SelectObject(group);
+		m_model.SelectObject(group);
 	}break;
 	}
 	if (m_selectionCallback) m_selectionCallback();
@@ -195,12 +194,11 @@ std::shared_ptr<IObject> CGameController::GetNearestObject(const double * start,
 {
 	std::shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
-	CGameModel * model = CGameModel::GetInstance().lock().get();
-	for (unsigned long i = 0; i < model->GetObjectCount(); ++i)
+	for (unsigned long i = 0; i < m_model.GetObjectCount(); ++i)
 	{
-		std::shared_ptr<IObject> object = model->Get3DObject(i);
+		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
 		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = CGameModel::GetInstance().lock()->GetBoundingBox(object->GetPathToModel());
+		std::shared_ptr<IBounding> bounding = m_model.GetBoundingBox(object->GetPathToModel());
 		if (!bounding) continue;
 		if (bounding->IsIntersectsRay(start, end, object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_selectedObjectCapturePoint))
 		{
@@ -225,7 +223,7 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 	{
 		return;
 	}
-	std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->GetSelectedObject();
+	std::shared_ptr<IObject> object = m_model.GetSelectedObject();
 	if (CGameModel::IsGroup(object.get()))
 	{
 		CObjectGroup * group = (CObjectGroup *)object.get();
@@ -236,7 +234,7 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 				group->RemoveChildren(selectedObject);
 				if (group->GetCount() == 1)//Destroy group
 				{
-					CGameModel::GetInstance().lock()->SelectObject(group->GetChild(0));
+					m_model.SelectObject(group->GetChild(0));
 				}
 			}
 			else
@@ -248,7 +246,7 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 		{
 			if (!group->ContainsChildren(selectedObject))
 			{
-				CGameModel::GetInstance().lock()->SelectObject(selectedObject);
+				m_model.SelectObject(selectedObject);
 			}
 			else
 			{
@@ -260,14 +258,14 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 	{
 		if (add && object && selectedObject)
 		{
-			CObjectGroup * group = new CObjectGroup();
+			CObjectGroup * group = new CObjectGroup(m_model);
 			group->AddChildren(object);
 			group->AddChildren(selectedObject);
-			CGameModel::GetInstance().lock()->SelectObject(std::shared_ptr<IObject>(group));
+			m_model.SelectObject(std::shared_ptr<IObject>(group));
 		}
 		else
 		{
-			CGameModel::GetInstance().lock()->SelectObject(selectedObject);
+			m_model.SelectObject(selectedObject);
 		}
 	}
 	if (m_selectionCallback && !noCallback) m_selectionCallback();
@@ -275,20 +273,21 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 
 bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 {
-	CGameModel * model = CGameModel::GetInstance().lock().get();
-	std::shared_ptr<IBounding> curBox = CGameModel::GetInstance().lock()->GetBoundingBox(current->GetPathToModel());
+	std::shared_ptr<IBounding> curBox = m_model.GetBoundingBox(current->GetPathToModel());
 	if (!curBox) return false;
 	CVector3d curPos(current->GetCoords());
 	double curAngle = current->GetRotation();
-	for (size_t i = 0; i < model->GetObjectCount(); ++i)
+	for (size_t i = 0; i < m_model.GetObjectCount(); ++i)
 	{
-		std::shared_ptr<IObject> object = model->Get3DObject(i);
+		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
 		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = CGameModel::GetInstance().lock()->GetBoundingBox(object->GetPathToModel());
+		std::shared_ptr<IBounding> bounding = m_model.GetBoundingBox(object->GetPathToModel());
 		if (!bounding) continue;
 		CVector3d pos(object->GetCoords());
 		double angle = object->GetRotation();
-		if (current != object && IsInteresect(curBox.get(), curPos, curAngle, bounding.get(), pos, angle))
+		CObjectGroup * group = static_cast<CObjectGroup*>(current.get());
+		bool isGroupChild = m_model.IsGroup(current.get()) && group->ContainsChildren(object);
+		if (current != object && !isGroupChild && IsInteresect(curBox.get(), curPos, curAngle, bounding.get(), pos, angle))
 		{
 			return true;
 		}
@@ -296,15 +295,14 @@ bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> cur
 	return false;
 }
 
-bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
+bool CGameController::TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 {
-	CGameModel* model = CGameModel::GetInstance().lock().get();
 	CVector3d coords;
-	for (size_t i = 0; i < model->GetObjectCount(); ++i)
+	for (size_t i = 0; i < m_model.GetObjectCount(); ++i)
 	{
-		IObject * current = model->Get3DObject(i).get();
+		IObject * current = m_model.Get3DObject(i).get();
 		if (current == shooter || current == target) continue;
-		IBounding * box = model->GetBoundingBox(current->GetPathToModel()).get();
+		IBounding * box = m_model.GetBoundingBox(current->GetPathToModel()).get();
 		if (!box) continue;
 		if (box->IsIntersectsRay(origin, dir, current->GetX(), current->GetY(), current->GetZ(), current->GetRotation(), coords))
 		{
@@ -314,7 +312,7 @@ bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
 	return true;
 }
 
-int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject)
+int CGameController::BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject)
 {
 	int result = 0;
 	int total = 0;
@@ -351,7 +349,7 @@ int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * t
 int CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 {
 	if (!shooter || !target) return -1;
-	IBounding * targetBound = CGameModel::GetInstance().lock()->GetBoundingBox(target->GetPathToModel()).get();
+	IBounding * targetBound = m_model.GetBoundingBox(target->GetPathToModel()).get();
 	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
 	return BBoxlos(center, targetBound, shooter, target);
 }
@@ -381,15 +379,14 @@ std::vector<char> PackProperties(std::map<std::string, std::string> const&proper
 
 std::vector<char> CGameController::GetState(bool hasAdresses) const
 {
-	CGameModel const& model = *CGameModel::GetInstance().lock();
 	std::vector<char> result;
 	result.resize(9);
 	result[0] = 1;
-	size_t count = model.GetObjectCount();
+	size_t count = m_model.GetObjectCount();
 	*((unsigned int*)&result[5]) = count;
 	for (size_t i = 0; i < count; ++i)
 	{
-		const IObject * object = model.Get3DObject(i).get();
+		const IObject * object = m_model.Get3DObject(i).get();
 		std::vector<char> current;
 		std::string path = object->GetPathToModel();
 		current.resize(36 + path.size() + 1, 0);
@@ -410,7 +407,7 @@ std::vector<char> CGameController::GetState(bool hasAdresses) const
 		current.insert(current.end(), properties.begin(), properties.end());
 		result.insert(result.end(), current.begin(), current.end());
 	}
-	std::vector<char> globalProperties = PackProperties(model.GetAllProperties());
+	std::vector<char> globalProperties = PackProperties(m_model.GetAllProperties());
 	result.insert(result.end(), globalProperties.begin(), globalProperties.end());
 	*((unsigned int*)&result[1]) = result.size();
 	return result;
@@ -420,8 +417,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 {
 	unsigned int count = *(unsigned int*)&data[0];
 	unsigned int current = 4;
-	CGameModel * model = CGameModel::GetInstance().lock().get();
-	model->Clear();
+	m_model.Clear();
 	for (size_t i = 0; i < count; ++i)
 	{
 		double x = *((double*)&data[current]);
@@ -432,7 +428,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 		char * path = new char[pathSize];
 		memcpy(path, &data[current + 36], pathSize);
 		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, x, y, z, rotation));
-		model->AddObject(object);
+		m_model.AddObject(object);
 		delete[] path;
 		current += 36 + pathSize;
 		if (hasAdresses)
@@ -470,7 +466,7 @@ void CGameController::SetState(char* data, bool hasAdresses)
 		char * second = new char[secondSize];
 		memcpy(second, &data[current + 4], secondSize);
 		current += secondSize + 4;
-		model->SetProperty(first, second);
+		m_model.SetProperty(first, second);
 		delete[] first;
 		delete[] second;
 	}
@@ -517,7 +513,7 @@ void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, CVe
 	}
 
 	CVector3d old(object->GetCoords());
-	if (CGameModel::GetInstance().lock()->GetLandscape().isCoordsOnTable(pos.x, pos.y))
+	if (m_model.GetLandscape().isCoordsOnTable(pos.x, pos.y))
 	{
 		object->SetCoords(pos.x - m_selectedObjectCapturePoint.x, pos.y - m_selectedObjectCapturePoint.y, pos.z);
 	}
@@ -592,14 +588,14 @@ void CGameController::RotateObject(std::shared_ptr<IObject> obj, double deltaRot
 std::shared_ptr<IObject> CGameController::CreateObject(std::string const& model, double x, double y, double rotation)
 {
 	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, 0.0, rotation);
-	m_commandHandler->AddNewCreateObject(object);
+	m_commandHandler->AddNewCreateObject(object, m_model);
 	m_network->AddAddressLocal(object);
 	return object;
 }
 
 void CGameController::DeleteObject(std::shared_ptr<IObject> obj)
 {
-	m_commandHandler->AddNewDeleteObject(obj);
+	m_commandHandler->AddNewDeleteObject(obj, m_model);
 }
 
 void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::string const& key, std::string const& value)

@@ -22,7 +22,7 @@ int GetSelectedObject(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no argument expected");
-	IObject * object = CGameModel::GetInstance().lock()->GetSelectedObject().get();
+	IObject * object = CGameView::GetInstance().lock()->GetModel().GetSelectedObject().get();
 	return CLUAScript::NewInstanceClass(object, "Object");
 }
 
@@ -30,7 +30,7 @@ int GetCount(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no argument expected");
-	CLUAScript::SetArgument((int)CGameModel::GetInstance().lock()->GetObjectCount());
+	CLUAScript::SetArgument((int)CGameView::GetInstance().lock()->GetModel().GetObjectCount());
 	return 1;
 }
 
@@ -39,8 +39,9 @@ int GetAt(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 2)
 		return luaL_error(L, "1 argument expected(index)");
 	size_t index = CLUAScript::GetArgument<int>(2);
-	if (index > CGameModel::GetInstance().lock()->GetObjectCount()) CLUAScript::NewInstanceClass(NULL, "Object");
-	return CLUAScript::NewInstanceClass(CGameModel::GetInstance().lock()->Get3DObject(index - 1).get(), "Object");
+	auto& model = CGameView::GetInstance().lock()->GetModel();
+	if (index > model.GetObjectCount()) CLUAScript::NewInstanceClass(NULL, "Object");
+	return CLUAScript::NewInstanceClass(model.Get3DObject(index - 1).get(), "Object");
 }
 
 int DeleteObject(lua_State* L)
@@ -48,8 +49,9 @@ int DeleteObject(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no argument expected");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	std::shared_ptr<IObject> shared_object = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CGameView::GetInstance().lock()->GetController().DeleteObject(shared_object);
+	auto view = CGameView::GetInstance().lock();
+	std::shared_ptr<IObject> shared_object = view->GetModel().Get3DObject(object);
+	view->GetController().DeleteObject(shared_object);
 	object = nullptr;
 	return 0;
 }
@@ -152,8 +154,9 @@ int SetProperty(lua_State* L)
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	char* key = CLUAScript::GetArgument<char*>(2);
 	char* value = CLUAScript::GetArgument<char*>(3);
-	std::shared_ptr<IObject> obj = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CGameView::GetInstance().lock()->GetController().SetObjectProperty(obj, key, value);
+	auto view = CGameView::GetInstance().lock();
+	std::shared_ptr<IObject> obj = view->GetModel().Get3DObject(object);
+	view->GetController().SetObjectProperty(obj, key, value);
 	return 0;
 }
 
@@ -223,8 +226,9 @@ int Select(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 2)
         return luaL_error(L, "1 argument expected (object to select)");
-	std::shared_ptr<IObject> object = CGameModel::GetInstance().lock()->Get3DObject((IObject *)CLUAScript::GetClassInstance("Object", 2));
-	CGameModel::GetInstance().lock()->SelectObject(object);
+	auto& model = CGameView::GetInstance().lock()->GetModel();
+	std::shared_ptr<IObject> object = model.Get3DObject((IObject *)CLUAScript::GetClassInstance("Object", 2));
+	model.SelectObject(object);
 	return 0;
 }
 
@@ -291,8 +295,9 @@ int PlayAnimation(lua_State* L)
 	{
 		luaL_error(L, "needs to be called on valid object");
 	}
-	auto objectPtr = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CGameView::GetInstance().lock()->GetController().PlayObjectAnimation(objectPtr, anim, loop, speed);
+	auto view = CGameView::GetInstance().lock();
+	auto objectPtr = view->GetModel().Get3DObject(object);
+	view->GetController().PlayObjectAnimation(objectPtr, anim, loop, speed);
 	return 0;
 }
 
@@ -334,8 +339,9 @@ int GoTo(lua_State* L)
 	double speed = CLUAScript::GetArgument<double>(4);
 	std::string anim = CLUAScript::GetArgument<const char*>(5);
 	float animSpeed = CLUAScript::GetArgument<float>(6);
-	auto objectPtr = CGameModel::GetInstance().lock()->Get3DObject(object);
-	CGameView::GetInstance().lock()->GetController().ObjectGoTo(objectPtr, x, y, speed, anim, animSpeed);
+	auto view = CGameView::GetInstance().lock();
+	auto objectPtr = view->GetModel().Get3DObject(object);
+	view->GetController().ObjectGoTo(objectPtr, x, y, speed, anim, animSpeed);
 	return 0;
 }
 

@@ -1,7 +1,7 @@
 #include "ObjectGroup.h"
 #include "GameModel.h"
 
-CObjectGroup::CObjectGroup() :m_current(0)
+CObjectGroup::CObjectGroup(IGameModel & model) :m_current(0), m_model(model)
 {
 
 }
@@ -156,10 +156,9 @@ std::shared_ptr<IObject> CObjectGroup::GetChild(size_t index)
 
 void CObjectGroup::DeleteAll()
 {
-	CGameModel* model = CGameModel::GetInstance().lock().get();
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		model->DeleteObjectByPtr(*i);
+		m_model.DeleteObjectByPtr(*i);
 	}
 	m_children.clear();
 }
@@ -290,9 +289,11 @@ float CObjectGroup::GetAnimationSpeed() const
 
 void CObjectGroup::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)//needs to be reworked
 {
+	CVector3d groupPos = GetCoords();
 	for (size_t i = 0; i < m_children.size(); ++i)
 	{
-		m_children[i]->GoTo(coords, speed, animation, animationSpeed);
+		CVector3d delta = m_children[i]->GetCoords() - groupPos;
+		m_children[i]->GoTo(coords + delta, speed, animation, animationSpeed);
 	}
 }
 

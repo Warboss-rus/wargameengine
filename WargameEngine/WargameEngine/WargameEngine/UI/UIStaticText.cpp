@@ -15,7 +15,7 @@ void CUIStaticText::Draw() const
 	if (!m_cache)
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
-			PrintText(0, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
+			PrintText(m_renderer, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();

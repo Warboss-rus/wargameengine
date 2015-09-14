@@ -1,19 +1,18 @@
 #include "CommandDeleteObject.h"
-#include "../model/GameModel.h"
 
-CCommandDeleteObject::CCommandDeleteObject(std::shared_ptr<IObject> object)
-	:m_pObject(object)
+CCommandDeleteObject::CCommandDeleteObject(std::shared_ptr<IObject> object, IGameModel& model)
+	:m_pObject(object), m_model(model)
 {
 }
 
 void CCommandDeleteObject::Execute()
 {
-	CGameModel::GetInstance().lock()->DeleteObjectByPtr(m_pObject);
+	m_model.DeleteObjectByPtr(m_pObject);
 }
 
 void CCommandDeleteObject::Rollback()
 {
-	CGameModel::GetInstance().lock()->AddObject(m_pObject);
+	m_model.AddObject(m_pObject);
 }
 
 std::vector<char> CCommandDeleteObject::Serialize() const

@@ -39,14 +39,13 @@ CGameView::~CGameView()
 {
 	ThreadPool::CancelAll();
 	DisableShadowMap();
-	CTextureManager::FreeInstance();
-	CGameModel::FreeInstance();
 }
 
 CGameView::CGameView(void)
 	: m_textWriter(m_renderer)
 	, m_particles(m_renderer)
-	, m_gameModel(CGameModel::GetInstance())
+	, m_gameModel(std::make_unique<CGameModel>())
+	, m_modelManager(m_renderer, *m_gameModel)
 {
 	m_ui = std::make_unique<CUIElement>(m_renderer);
 	m_ui->SetTheme(std::make_shared<CUITheme>(CUITheme::defaultTheme));
@@ -98,13 +97,12 @@ void CGameView::Init()
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float)* 3);
-	m_anisoptropy = 1.0f;
 	m_gpuSkinning = false;
 	m_camera = std::make_unique<CCameraStrategy>(0.0, 0.0, 2.8, 0.5);
 	m_tableList = 0;
 	m_tableListShadow = 0;
 
-	m_gameController = std::make_unique<CGameController>(*m_gameModel.lock());
+	m_gameController = std::make_unique<CGameController>(*m_gameModel);
 	m_gameController->Init();
 	m_soundPlayer.Init();
 
@@ -209,7 +207,7 @@ void CGameView::InitInput()
 		CVector3d begin, end;
 		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
 		bool result = m_gameController->OnLeftMouseDown(begin, end, m_input->GetModifiers());
-		auto object = m_gameModel.lock()->GetSelectedObject();
+		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
 		{
 			m_ruler.SetBegin(object->GetX(), object->GetY());
@@ -231,7 +229,7 @@ void CGameView::InitInput()
 		CVector3d begin, end;
 		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
 		bool result = m_gameController->OnMouseMove(begin, end, m_input->GetModifiers());
-		auto object = m_gameModel.lock()->GetSelectedObject();
+		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
 		{
 			m_ruler.SetEnd(object->GetX(), object->GetY());
@@ -330,7 +328,7 @@ void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation)
 
 void CGameView::DrawBoundingBox()
 {
-	std::shared_ptr<IObject> object = m_gameModel.lock()->GetSelectedObject();
+	std::shared_ptr<IObject> object = m_gameModel->GetSelectedObject();
 	if(object)
 	{
 		if (CGameModel::IsGroup(object.get()))
@@ -341,7 +339,7 @@ void CGameView::DrawBoundingBox()
 				object = group->GetChild(i);
 				if(object)
 				{
-					auto bbox = m_gameModel.lock()->GetBoundingBox(object->GetPathToModel());
+					auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
 					if (bbox)
 					{
 						DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
@@ -351,7 +349,7 @@ void CGameView::DrawBoundingBox()
 		}
 		else
 		{
-			auto bbox = m_gameModel.lock()->GetBoundingBox(object->GetPathToModel());
+			auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
 			if(bbox) DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
 		}
 	}
@@ -396,14 +394,14 @@ void CGameView::DrawTable(bool shadowOnly)
 		glNewList(m_tableList, GL_COMPILE);
 	}
 	
-	CLandscape const& landscape = CGameModel::GetInstance().lock()->GetLandscape();
+	CLandscape const& landscape = m_gameModel->GetLandscape();
 	double x1 = -landscape.GetWidth() / 2.0;
 	double x2 = landscape.GetWidth() / 2.0;
 	double y1 = -landscape.GetDepth() / 2.0;
 	double y2 = landscape.GetDepth() / 2.0;
 	double xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
 	double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
-	CTextureManager::GetInstance()->SetTexture(landscape.GetTexture());
+	m_renderer.SetTexture(landscape.GetTexture());
 	unsigned int k = 0;
 	for(double x = x1; x <= x2 - xstep; x += xstep)
 	{
@@ -417,7 +415,7 @@ void CGameView::DrawTable(bool shadowOnly)
 		}
 		glEnd();
 	}
-	CTextureManager::GetInstance()->SetTexture("");
+	m_renderer.SetTexture("");
 	for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
 	{
 		CStaticObject const& object = landscape.GetStaticObject(i);
@@ -435,7 +433,7 @@ void CGameView::DrawTable(bool shadowOnly)
 		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 		{
 			sDecal const& decal = landscape.GetDecal(i);
-			CTextureManager::GetInstance()->SetTexture(decal.texture);
+			m_renderer.SetTexture(decal.texture);
 			glPushMatrix();
 			glTranslated(decal.x, decal.y, 0.0);
 			glRotated(decal.rotation, 0.0, 0.0, 1.0);
@@ -452,7 +450,7 @@ void CGameView::DrawTable(bool shadowOnly)
 			glPopMatrix();
 		}
 	}
-	CTextureManager::GetInstance()->SetTexture("");
+	m_renderer.SetTexture("");
 	glEndList();
 }
 
@@ -469,10 +467,10 @@ void CGameView::DrawObjects(void)
 	if (m_shadowMap) SetUpShadowMapDraw();
 	if (m_tableList == 0) DrawTable(false);
 	glCallList(m_tableList);
-	size_t countObjects = m_gameModel.lock()->GetObjectCount();
+	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0.0);
 		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
@@ -487,9 +485,9 @@ void CGameView::DrawObjects(void)
 	m_shader.UnBindProgram();
 	glDisable(GL_BLEND);
 	glDisable(GL_LIGHTING);
-	for (size_t i = 0; i < m_gameModel.lock()->GetProjectileCount(); i++)
+	for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
 	{
-		CProjectile const& projectile = m_gameModel.lock()->GetProjectile(i);
+		CProjectile const& projectile = m_gameModel->GetProjectile(i);
 		glPushMatrix();
 		glTranslated(projectile.GetX(), projectile.GetY(), projectile.GetZ());
 		glRotated(projectile.GetRotation(), 0.0, 0.0, 1.0);
@@ -550,10 +548,10 @@ void CGameView::DrawShadowMap()
 	if (m_tableListShadow == 0) DrawTable(true);
 	glCallList(m_tableListShadow);
 
-	size_t countObjects = m_gameModel.lock()->GetObjectCount();
+	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<IObject> object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		if (!object->CastsShadow()) continue;
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
@@ -599,13 +597,17 @@ CGameController& CGameView::GetController()
 	return *m_gameController;
 }
 
+CGameModel& CGameView::GetModel()
+{
+	return *m_gameModel;
+}
+
 void CGameView::ResetController()
 {
 	m_input->DeleteAllSignalsByTag(g_controllerTag);
 	m_gameController.reset();
-	CGameModel::FreeInstance();
-	m_gameModel = CGameModel::GetInstance();
-	m_gameController = std::make_unique<CGameController>(*m_gameModel.lock());
+	m_gameModel = std::make_unique<CGameModel>();
+	m_gameController = std::make_unique<CGameController>(*m_gameModel);
 }
 
 ICamera * CGameView::GetCamera()
@@ -652,6 +654,11 @@ CTranslationManager& CGameView::GetTranslationManager()
 CRuler& CGameView::GetRuler()
 {
 	return m_ruler;
+}
+
+IRenderer& CGameView::GetRenderer()
+{
+	return m_renderer;
 }
 
 void CGameView::ResizeWindow(int height, int width)
@@ -746,11 +753,6 @@ void CGameView::EnableMSAA(bool enable)
 	}
 }
 
-float CGameView::GetAnisotropyLevel() const
-{
-	return m_anisoptropy;
-}
-
 float CGameView::GetMaxAnisotropy()
 {
 	float aniso = 1.0f;
@@ -759,18 +761,14 @@ float CGameView::GetMaxAnisotropy()
 	return aniso;
 }
 
-void CGameView::SetAnisotropy(float maxAnisotropy)
-{
-	m_anisoptropy = maxAnisotropy;
-	CTextureManager::GetInstance()->SetAnisotropyLevel(maxAnisotropy);
-}
-
 void CGameView::ClearResources()
 {
-	CTextureManager::FreeInstance();
-	m_modelManager = CModelManager();
-	CTextureManager::GetInstance();
-	m_skybox->ResetList();
+	m_modelManager = CModelManager(m_renderer, *m_gameModel);
+	m_renderer.GetTextureManager().Reset();
+	if (m_skybox)
+	{
+		m_skybox->ResetList();
+	}
 	ResetTable();
 }
 
@@ -796,7 +794,7 @@ void CGameView::Preload(std::string const& image)
 		glOrtho(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		CTextureManager::GetInstance()->SetTexture(image);
+		m_renderer.SetTexture(image);
 		glBegin(GL_TRIANGLE_STRIP);
 		glTexCoord2d(0.0, 0.0);
 		glVertex2d(0.0, 0.0);
@@ -813,19 +811,20 @@ void CGameView::Preload(std::string const& image)
 		glPopMatrix();
 		glutSwapBuffers();
 	}
-	size_t countObjects = m_gameModel.lock()->GetObjectCount();
+	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<const IObject> object = m_gameModel.lock()->Get3DObject(i);
+		std::shared_ptr<const IObject> object = m_gameModel->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
 	}
-	CTextureManager::GetInstance()->SetTexture("");
+	m_renderer.SetTexture("");
 }
 
 void CGameView::LoadModuleCallback(int)
 {
 	auto view = CGameView::GetInstance().lock();
 	view->ResetController();
+	view->ClearResources();
 	view->GetUI()->ClearChildren();
 	view->GetController().Init();
 	view->InitInput();
@@ -836,13 +835,9 @@ void CGameView::LoadModule(std::string const& module)
 	ThreadPool::CancelAll();
 	sModule::Load(module);
 	ChangeWorkingDirectory(sModule::folder);
-	CTextureManager::FreeInstance();
-	m_modelManager = CModelManager();
-	m_skybox.reset();
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float) * 3);
-	m_anisoptropy = 1.0f;
 	glutTimerFunc(1, LoadModuleCallback, 0);
 }
 

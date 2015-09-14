@@ -1,19 +1,20 @@
 #include "CommandChangeGlobalProperty.h"
 #include "../model/GameModel.h"
 
-CommandChangeGlobalProperty::CommandChangeGlobalProperty(std::string const& key, std::string const& value):m_key(key), m_newValue(value), m_oldValue(CGameModel::GetInstance().lock()->GetProperty(key))
+CommandChangeGlobalProperty::CommandChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel& model)
+	:m_key(key), m_newValue(value), m_model(model), m_oldValue(model.GetProperty(key))
 {
 
 }
 
 void CommandChangeGlobalProperty::Execute()
 {
-	CGameModel::GetInstance().lock()->SetProperty(m_key, m_newValue);
+	m_model.SetProperty(m_key, m_newValue);
 }
 
 void CommandChangeGlobalProperty::Rollback()
 {
-	CGameModel::GetInstance().lock()->SetProperty(m_key, m_oldValue);
+	m_model.SetProperty(m_key, m_oldValue);
 }
 
 std::vector<char> CommandChangeGlobalProperty::Serialize() const

@@ -33,6 +33,7 @@ public:
 	void ResetTable();
 	void CreateSkybox(double size, std::string const& textureFolder);
 	CGameController& GetController();
+	CGameModel& GetModel();
 	IUIElement * GetUI() const;
 	ICamera * GetCamera();
 	void SetCamera(ICamera * camera);
@@ -42,6 +43,7 @@ public:
 	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
+	IRenderer& GetRenderer();
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
@@ -51,8 +53,6 @@ public:
 	void SetLightPosition(int index, float* pos);
 	void EnableMSAA(bool enable);
 	static float GetMaxAnisotropy();
-	float GetAnisotropyLevel() const;
-	void SetAnisotropy(float maxAnisotropy);
 	void ClearResources();
 	void SetWindowTitle(std::string const& title);
 	const CShaderManager * GetShaderManager() const;
@@ -87,7 +87,7 @@ private:
 	CGameView& operator=(const CGameView&) = delete;
 
 	static std::shared_ptr<CGameView> m_instanse;
-	std::weak_ptr<CGameModel> m_gameModel;
+	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
 	CModelManager m_modelManager;
 	CShaderManager m_shader;
@@ -111,7 +111,6 @@ private:
 	float m_lightModelViewMatrix[16];
 	float m_lightPosition[3];
 	float m_shadowAngle;
-	float m_anisoptropy;
 	static bool m_visible;
 	bool m_gpuSkinning;
 

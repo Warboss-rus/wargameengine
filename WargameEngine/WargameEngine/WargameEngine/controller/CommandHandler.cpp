@@ -34,16 +34,16 @@ CCommandHandler::CCommandHandler()
 {
 }
 
-void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, bool local)
+void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, IGameModel & model, bool local)
 {
-	std::unique_ptr<ICommand> action = std::make_unique<CCommandCreateObject>(object);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandCreateObject>(object, model);
 	action->Execute();
 	AddNewCommand(std::move(action), local);
 }
 
-void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object, bool local)
+void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model, bool local)
 {
-	std::unique_ptr<ICommand> action = std::make_unique<CCommandDeleteObject>(object);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandDeleteObject>(object, model);
 	action->Execute();
 	AddNewCommand(std::move(action), local);
 }
@@ -69,9 +69,9 @@ void CCommandHandler::AddNewChangeProperty(std::shared_ptr<IObject> object, std:
 	AddNewCommand(std::move(action), local);
 }
 
-void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::string const& value, bool local)
+void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model, bool local)
 {
-	std::unique_ptr<ICommand> action = std::make_unique<CommandChangeGlobalProperty>(key, value);
+	std::unique_ptr<ICommand> action = std::make_unique<CommandChangeGlobalProperty>(key, value, model);
 	action->Execute();
 	AddNewCommand(std::move(action), local);
 }

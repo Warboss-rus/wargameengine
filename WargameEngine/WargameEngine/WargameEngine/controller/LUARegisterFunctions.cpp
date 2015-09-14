@@ -16,8 +16,9 @@ int CreateTable(lua_State* L)
 	float width = CLUAScript::GetArgument<float>(1);
 	float height = CLUAScript::GetArgument<float>(2);
 	std::string texture = CLUAScript::GetArgument<char*>(3);
-	CGameModel::GetInstance().lock()->ResetLandscape(width, height, texture, 2, 2);
-	CGameView::GetInstance().lock()->ResetTable();
+	auto view = CGameView::GetInstance().lock();
+	view->GetModel().ResetLandscape(width, height, texture, 2, 2);
+	view->ResetTable();
 	return 0;
 }
 
@@ -113,7 +114,7 @@ int GetGlobalProperty(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (key)");
 	char* key = CLUAScript::GetArgument<char*>(1);
-	CLUAScript::SetArgument(CGameModel::GetInstance().lock()->GetProperty(key).c_str());
+	CLUAScript::SetArgument(CGameView::GetInstance().lock()->GetModel().GetProperty(key).c_str());
 	return 1;
 }
 
@@ -123,7 +124,7 @@ int SetGlobalProperty(lua_State* L)
 		return luaL_error(L, "2 arguments expected (key, value)");
 	char* key = CLUAScript::GetArgument<char*>(1);
 	char* value = CLUAScript::GetArgument<char*>(2);
-	CGameModel::GetInstance().lock()->SetProperty(key, value);
+	CGameView::GetInstance().lock()->GetModel().SetProperty(key, value);
 	return 0;
 }
 
@@ -414,7 +415,7 @@ int SetAnisotropy(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected");
 	float a = CLUAScript::GetArgument<float>(1);
-	CGameView::GetInstance().lock()->SetAnisotropy(a);
+	((COpenGLRenderer&)CGameView::GetInstance().lock()->GetRenderer()).GetTextureManager().SetAnisotropyLevel(a);
 	return 0;
 }
 
@@ -519,7 +520,8 @@ int PreloadModel(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (model name)");
 	std::string model = CLUAScript::GetArgument<const char*>(1);
-	CGameView::GetInstance().lock()->GetModelManager().LoadIfNotExist(model);
+	auto view = CGameView::GetInstance().lock();
+	view->GetModelManager().LoadIfNotExist(model);
 	return 0;
 }
 
@@ -722,7 +724,7 @@ int NewDecal(lua_State* L)
 	decal.rotation = CLUAScript::GetArgument<double>(4);
 	decal.width = CLUAScript::GetArgument<double>(5);
 	decal.depth = CLUAScript::GetArgument<double>(6);
-	CGameModel::GetInstance().lock()->GetLandscape().AddNewDecal(decal);
+	CGameView::GetInstance().lock()->GetModel().GetLandscape().AddNewDecal(decal);
 	return 0;
 }
 
@@ -734,8 +736,9 @@ int NewStaticObject(lua_State* L)
 	double x = CLUAScript::GetArgument<double>(2);
 	double y = CLUAScript::GetArgument<double>(3);
 	double rotation = CLUAScript::GetArgument<double>(4);
-	CGameModel::GetInstance().lock()->GetLandscape().AddStaticObject(CStaticObject(model, x, y, rotation));
-	CGameView::GetInstance().lock()->ResetTable();
+	auto view = CGameView::GetInstance().lock();
+	view->GetModel().GetLandscape().AddStaticObject(CStaticObject(model, x, y, rotation));
+	view->ResetTable();
 	return 0;
 }
 

@@ -34,7 +34,7 @@ void CUIList::Draw() const
 			for (size_t i = m_scrollbar.GetPosition() / m_theme->list.elementSize; i < m_items.size(); ++i)
 			{
 				if (m_theme->list.borderSize + m_theme->list.elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / m_theme->list.elementSize) > GetHeight()) break;
-				PrintText(m_theme->list.borderSize, m_theme->list.borderSize + m_theme->list.elementSize * (i - m_scrollbar.GetPosition() / m_theme->list.elementSize), GetWidth(), m_theme->list.text.fontSize, m_items[i], m_theme->text);
+				PrintText(m_renderer, m_theme->list.borderSize, m_theme->list.borderSize + m_theme->list.elementSize * (i - m_scrollbar.GetPosition() / m_theme->list.elementSize), GetWidth(), m_theme->list.text.fontSize, m_items[i], m_theme->text);
 			}
 			m_scrollbar.Draw();
 		}, GetWidth(), GetHeight()));

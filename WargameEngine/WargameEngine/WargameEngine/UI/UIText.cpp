@@ -1,15 +1,14 @@
 #include "UIText.h"
-#include "../view/gl.h"
 #include "UITheme.h"
 #include "../view/GameView.h"
 
-void PrintText(int x, int y, int width, int height, std::string const& str, CUITheme::sText const& theme)
+void PrintText(IRenderer & renderer, int x, int y, int width, int height, std::string const& str, CUITheme::sText const& theme)
 {
 	std::wstring wstr(str.begin(), str.end());
-	PrintText(x, y, width, height, wstr, theme);
+	PrintText(renderer, x, y, width, height, wstr, theme);
 }
 
-void PrintText(int x, int y, int width, int height, std::wstring const& str, CUITheme::sText const& theme)
+void PrintText(IRenderer & renderer, int x, int y, int width, int height, std::wstring const& str, CUITheme::sText const& theme)
 {
 	CTextWriter & text = CGameView::GetInstance().lock()->GetTextWriter();
 	if(theme.aligment == theme.center)
@@ -17,9 +16,9 @@ void PrintText(int x, int y, int width, int height, std::wstring const& str, CUI
 	if(theme.aligment == theme.right)
 		x = width - text.GetStringWidth(theme.font, theme.fontSize, str);
 	y += (height - theme.fontSize) / 2 + theme.fontSize;
-	glColor3f(theme.color[0], theme.color[1], theme.color[2]);
+	renderer.SetColor(theme.color);
 	text.PrintText(x, y, theme.font, theme.fontSize, str);
-	glColor3f(0.0f, 0.0f, 0.0f);
+	renderer.SetColor(0.0f, 0.0f, 0.0f);
 }
 
 int GetStringHeight(CUITheme::sText const& theme, std::string const& str)

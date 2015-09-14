@@ -4,15 +4,14 @@
 #include <fstream>
 #include "../ThreadPool.h"
 #include "../Module.h"
-#include "../model/Object.h"
 #include "../LogWriter.h"
 #include "../model/Bounding.h"
-#include "../model/GameModel.h"
 #include "../AsyncReadTask.h"
+#include "../model/IBoundingBoxManager.h"
 
-void UseModel(std::shared_ptr<sOBJLoader> loader)
+CModelManager::CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager)
+	:m_renderer(&renderer), m_bbManager(&bbmanager)
 {
-	
 }
 
 std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale, double * rotation)
@@ -64,7 +63,7 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		double scale = 1.0;
 		double rotation[3] = { 0.0, 0.0, 0.0 };
 		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(sModule::models + boundingPath, scale, rotation);
-		CGameModel::GetInstance().lock()->AddBoundingBox(path, bounding);
+		m_bbManager->AddBoundingBox(path, bounding);
 		std::shared_ptr<sOBJLoader> obj = std::make_shared<sOBJLoader>();
 		std::shared_ptr<C3DModel> model = std::make_shared<C3DModel>(scale, rotation[0], rotation[1], rotation[2]);
 		m_models[path] = model;
@@ -86,10 +85,10 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 		if (loadingFunc)
 		{
 			std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(sModule::models + path, loadingFunc);
-			readTask->AddOnCompleteHandler([obj, model]() {
+			readTask->AddOnCompleteHandler([=]() {
 				model->SetModel(obj->vertices, obj->textureCoords, obj->normals, obj->indexes, obj->materialManager, obj->meshes);
 				if (obj->animations.size() > 0) model->SetAnimation(obj->weightsCount, obj->weightsIndexes, obj->weights, obj->joints, obj->animations);
-				model->PreloadTextures();
+				model->PreloadTextures(*m_renderer);
 			});
 			readTask->AddOnFailHandler([](std::exception const& e) {
 				LogWriter::WriteLine(e.what());
@@ -102,7 +101,7 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
 {
 	LoadIfNotExist(path);
-	m_models[path]->Draw(object, vertexOnly, gpuSkinning);
+	m_models[path]->Draw(*m_renderer, object, vertexOnly, gpuSkinning);
 }
 
 std::vector<std::string> CModelManager::GetAnimations(std::string const& path)

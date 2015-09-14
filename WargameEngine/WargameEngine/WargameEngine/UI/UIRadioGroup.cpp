@@ -24,7 +24,7 @@ void CUIRadioGroup::Draw() const
 				{ CVector2f(0.0f, y), { 0.0f, y + m_theme->radiogroup.buttonSize }, { m_theme->radiogroup.buttonSize, y }, { m_theme->radiogroup.buttonSize, y + m_theme->radiogroup.buttonSize} },
 				{ CVector2f(texCoord), {texCoord[0], texCoord[3]}, {texCoord[2], texCoord[1]}, {texCoord[2], texCoord[3]} });
 				int intSize = static_cast<int>(m_theme->radiogroup.elementSize);
-				PrintText(static_cast<int>(m_theme->radiogroup.buttonSize) + 1, intSize * i, GetWidth(), intSize, m_items[i], m_theme->text);
+				PrintText(m_renderer, static_cast<int>(m_theme->radiogroup.buttonSize) + 1, intSize * i, GetWidth(), intSize, m_items[i], m_theme->text);
 			}
 		}, GetWidth(), GetHeight()));
 	}

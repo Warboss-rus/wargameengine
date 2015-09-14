@@ -30,7 +30,7 @@ void CUIButton::Draw() const
 				{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
 				{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
 			}
-			PrintText(0, 0, GetWidth(), GetHeight(), m_text, m_theme->button.text);
+			PrintText(m_renderer, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->button.text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();

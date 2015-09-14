@@ -1,17 +1,16 @@
 #include "CommandCreateObject.h"
-#include "../model/GameModel.h"
-#include "../model/Object.h"
+#include "..\model\ObjectInterface.h"
 
-CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object):m_pObject(object) {}
+CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object, IGameModel& model):m_pObject(object), m_model(model) {}
 
 void CCommandCreateObject::Execute()
 {
-	CGameModel::GetInstance().lock()->AddObject(m_pObject);
+	m_model.AddObject(m_pObject);
 }
 
 void CCommandCreateObject::Rollback()
 {
-	CGameModel::GetInstance().lock()->DeleteObjectByPtr(m_pObject);
+	m_model.DeleteObjectByPtr(m_pObject);
 }
 
 std::vector<char> CCommandCreateObject::Serialize() const

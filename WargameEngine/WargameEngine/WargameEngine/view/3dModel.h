@@ -6,7 +6,7 @@
 #include <map>
 #include "MaterialManager.h"
 #include "Vector3.h"
-#include "TextureManager.h"
+#include "IRenderer.h"
 
 class IObject;
 
@@ -63,13 +63,13 @@ public:
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes);
 	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);
-	void Draw(std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning);
-	void PreloadTextures() const;
+	void Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning);
+	void PreloadTextures(IRenderer & renderer) const;
 	std::vector<std::string> GetAnimations() const;
 private:
-	void DrawModel(const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
+	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
 	void CalculateGPUWeights();
-	bool DrawSkinned(const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
+	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, sAnimation::eLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
@@ -81,7 +81,7 @@ private:
 	std::vector<sAnimation> m_animations;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
-	std::map<sModelCallListKey, unsigned int> m_lists;
+	std::map<sModelCallListKey, std::unique_ptr<IDrawingList>> m_lists;
 	double m_scale;
 	double m_rotX;
 	double m_rotY;

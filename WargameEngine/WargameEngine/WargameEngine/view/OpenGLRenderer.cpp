@@ -8,12 +8,21 @@ using namespace std;
 
 void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow, int flags)
 {
-	auto texMan = CTextureManager::GetInstance();
 	if (forceLoadNow)
 	{
-		texMan->LoadTextureNow(texture, nullptr, flags);
+		m_textureManager.LoadTextureNow(texture, nullptr, flags);
 	}
-	texMan->SetTexture(texture, nullptr, flags);
+	m_textureManager.SetTexture(texture, nullptr, flags);
+}
+
+void COpenGLRenderer::SetTexture(std::string const& texture, TextureSlot slot, int flags /*= 0*/)
+{
+	m_textureManager.SetTexture(texture, slot, flags);
+}
+
+void COpenGLRenderer::SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
+{
+	m_textureManager.SetTexture(texture, teamcolor, flags);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
@@ -133,37 +142,37 @@ void COpenGLRenderer::PopMatrix()
 	glPopMatrix();
 }
 
-void COpenGLRenderer::Translate(int dx, int dy, int dz)
+void COpenGLRenderer::Translate(const int dx, const int dy, const int dz)
 {
 	glTranslated(static_cast<double>(dx), static_cast<double>(dy), static_cast<double>(dz));
 }
 
-void COpenGLRenderer::Translate(double dx, double dy, double dz)
+void COpenGLRenderer::Translate(const double dx, const double dy, const double dz)
 {
 	glTranslated(dx, dy, dz);
 }
 
-void COpenGLRenderer::Translate(float dx, float dy, float dz)
+void COpenGLRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	glTranslatef(dx, dy, dz);
 }
 
-void COpenGLRenderer::SetColor(float r, float g, float b)
+void COpenGLRenderer::SetColor(const float r, const float g, const float b)
 {
 	glColor3f(r, g, b);
 }
 
-void COpenGLRenderer::SetColor(int r, int g, int b)
+void COpenGLRenderer::SetColor(const int r, const int g, const int b)
 {
 	glColor3i(r, g, b);
 }
 
-void COpenGLRenderer::SetColor(float * color)
+void COpenGLRenderer::SetColor(const float * color)
 {
 	glColor3fv(color);
 }
 
-void COpenGLRenderer::SetColor(int * color)
+void COpenGLRenderer::SetColor(const int * color)
 {
 	glColor3iv(color);
 }
@@ -215,7 +224,7 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 	return move(texture);
 }
 
-std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(void * data, unsigned int width, unsigned int height, CachedTextureType type)
+std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type)
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_RGBA },
@@ -238,6 +247,29 @@ std::unique_ptr<IDrawingList> COpenGLRenderer::CreateDrawingList(std::function<v
 	func();
 	glEndList();
 	return std::make_unique<COpenGLDrawingList>(list);
+}
+
+std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/)
+{
+	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords);
+}
+
+CTextureManager & COpenGLRenderer::GetTextureManager()
+{
+	return m_textureManager;
+}
+
+CTextureManager const& COpenGLRenderer::GetTextureManager() const
+{
+	return m_textureManager;
+}
+
+void COpenGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
+{
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+	glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }
 
 void COpenGLRenderer::GetViewMatrix(float * matrix) const
@@ -288,4 +320,50 @@ COpenGLDrawingList::~COpenGLDrawingList()
 void COpenGLDrawingList::Draw() const
 {
 	glCallList(m_id);
+}
+
+COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/)
+	:m_vertex(vertex), m_normals(normals), m_texCoords(texcoords)
+{
+}
+
+COpenGLVertexBuffer::~COpenGLVertexBuffer()
+{
+	UnBind();
+}
+
+void COpenGLVertexBuffer::Bind() const
+{
+	if (m_vertex)
+	{
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(3, GL_FLOAT, 0, m_vertex);
+	}
+	if (m_normals)
+	{
+		glEnableClientState(GL_NORMAL_ARRAY);
+		glNormalPointer(GL_FLOAT, 0, m_normals);
+	}
+	if (m_texCoords)
+	{
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(2, GL_FLOAT, 0, m_texCoords);
+	}
+}
+
+void COpenGLVertexBuffer::DrawIndexes(unsigned int * indexPtr, size_t count)
+{
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, indexPtr);
+}
+
+void COpenGLVertexBuffer::DrawAll(size_t count)
+{
+	glDrawArrays(GL_TRIANGLES, 0, count);
+}
+
+void COpenGLVertexBuffer::UnBind() const
+{
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 }

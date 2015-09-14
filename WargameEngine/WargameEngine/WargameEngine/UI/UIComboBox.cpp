@@ -27,7 +27,10 @@ void CUIComboBox::Draw() const
 			{GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
 
 			m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
-			if (m_selected >= 0)	PrintText(m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
+			if (m_selected >= 0)
+			{
+				PrintText(m_renderer, m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
+			}
 
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.SetTexture(m_theme->texture, true);
@@ -48,7 +51,7 @@ void CUIComboBox::Draw() const
 				for (size_t i = m_scrollbar.GetPosition() / m_theme->combobox.elementSize; i < m_items.size(); ++i)
 				{
 					if (GetHeight() + m_theme->combobox.elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight) break;
-					PrintText(m_theme->combobox.borderSize, GetHeight() + m_theme->combobox.elementSize * i - m_scrollbar.GetPosition(), GetWidth(), m_theme->combobox.elementSize, m_items[i], m_theme->combobox.text);
+					PrintText(m_renderer, m_theme->combobox.borderSize, GetHeight() + m_theme->combobox.elementSize * i - m_scrollbar.GetPosition(), GetWidth(), m_theme->combobox.elementSize, m_items[i], m_theme->combobox.text);
 				}
 
 				m_renderer.PushMatrix();

@@ -61,6 +61,8 @@ private:
 	void TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3d const& pos);
 	void MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY);
 	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
+	bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target);
+	int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject);
 
 	CGameModel& m_model;
 	CVector3d m_selectedObjectCapturePoint;
