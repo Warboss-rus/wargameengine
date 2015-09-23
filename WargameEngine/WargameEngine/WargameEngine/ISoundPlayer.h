@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "view\Vector3.h"
+#include "view/Vector3.h"
 #include <vector>
 
 class ISoundPlayer

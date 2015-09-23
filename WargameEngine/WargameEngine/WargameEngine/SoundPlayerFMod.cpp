@@ -1,4 +1,5 @@
 #include "SoundPlayerFMod.h"
+#include <stdlib.h>
 
 void CSoundPlayerFMod::Init()
 {

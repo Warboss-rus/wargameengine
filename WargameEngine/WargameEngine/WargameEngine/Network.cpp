@@ -75,7 +75,7 @@ void CNetwork::Update()
 	{
 		m_socket.reset();
 	}
-	if (m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
+	if (m_netData && m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
 	{
 		if (m_netData[0] == 0) //string
 		{

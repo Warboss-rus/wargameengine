@@ -141,9 +141,9 @@ void CUITheme::Load(std::string const& filename)
 {
 	ifstream istream(filename);
 	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
-	xml_document<> doc;
-	doc.parse<0>((char*)content.c_str());
-	xml_node<>* theme = doc.first_node();
+	std::unique_ptr<xml_document<>> doc = std::make_unique<xml_document<>>();
+	doc->parse<0>((char*)content.c_str());
+	xml_node<>* theme = doc->first_node();
 	if (!theme)
 	{
 		LogWriter::WriteLine(filename + " is not a valid theme file");
@@ -221,7 +221,7 @@ void CUITheme::Load(std::string const& filename)
 	xml_node<>* themeScrollbar = theme->first_node("scrollbar");
 	if (themeScrollbar)
 	{
-		if (themeScrollbar->first_attribute("texCoord")) GetValues(sbar.texCoord, themeButton->first_attribute("texCoord")->value(), 4);
+		if (themeScrollbar->first_attribute("texCoord")) GetValues(sbar.texCoord, themeScrollbar->first_attribute("texCoord")->value(), 4);
 		if (themeScrollbar->first_attribute("buttonHeight")) sbar.buttonSize = atoi(themeScrollbar->first_attribute("buttonHeight")->value());
 		if (themeScrollbar->first_attribute("width")) sbar.width = atoi(themeScrollbar->first_attribute("width")->value());
 		xml_node<>* themePressed = themeScrollbar->first_node("pressed");
@@ -231,8 +231,8 @@ void CUITheme::Load(std::string const& filename)
 	xml_node<>* themeWindow = theme->first_node("window");
 	if (themeWindow)
 	{
-		if (themeWindow->first_attribute("headerHeight")) window.headerHeight = atoi(themeScrollbar->first_attribute("headerHeight")->value());
-		if (themeWindow->first_attribute("buttonSize")) window.buttonSize = atoi(themeScrollbar->first_attribute("buttonSize")->value());
+		if (themeWindow->first_attribute("headerHeight")) window.headerHeight = atoi(themeWindow->first_attribute("headerHeight")->value());
+		if (themeWindow->first_attribute("buttonSize")) window.buttonSize = atoi(themeWindow->first_attribute("buttonSize")->value());
 	}
-	doc.clear();
+	doc->clear();
 }

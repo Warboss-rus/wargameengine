@@ -70,7 +70,7 @@ public:
 	static void OnReshape(int width, int height);
 	static void OnTimer(int value);
 	static void OnChangeState(int state);
-	static void CGameView::LoadModuleCallback(int);
+	static void LoadModuleCallback(int);
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();

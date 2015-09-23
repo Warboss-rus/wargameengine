@@ -1,7 +1,7 @@
 #include "OpenGLRenderer.h"
-#include <GL\glew.h>
+#include <GL/glew.h>
 #include "gl.h"
-#include "..\LogWriter.h"
+#include "../LogWriter.h"
 #include "TextureManager.h"
 
 using namespace std;

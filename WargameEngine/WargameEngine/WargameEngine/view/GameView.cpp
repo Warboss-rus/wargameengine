@@ -286,6 +286,7 @@ void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation)
 		return;
 	}
 	CBoundingBox * bbox = (CBoundingBox *)ibox;
+	if (!bbox) return;
 	glPushMatrix();
 	glTranslated(x, y, z);
 	glRotated(rotation, 0.0, 0.0, 1.0);

@@ -6,7 +6,10 @@
 
 void ChangeWorkingDirectory(std::string const& path)
 {
-    _chdir(path.c_str());
+	if (_chdir(path.c_str()) != 0)
+	{
+		LogWriter::WriteLine("Cannot change working directory. Check if " + path + " exists");
+	}
 }
 
 std::vector<std::string> GetFiles(std::string const& path, std::string const& mask, bool recursive)

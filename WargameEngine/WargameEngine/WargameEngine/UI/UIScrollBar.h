@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "UITheme.h"
-#include "..\view\IRenderer.h"
+#include "../view/IRenderer.h"
 
 class CUIScrollBar
 {

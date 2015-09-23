@@ -319,12 +319,15 @@ int CGameController::BBoxlos(double origin[3], IBounding * target, IObject * sho
 	CBoundingBox * tarBox = dynamic_cast<CBoundingBox *>(target);
 	if (!tarBox)
 	{
-		CBoundingCompound * compound = (CBoundingCompound*)target;
-		for (size_t i = 0; i < compound->GetChildCount(); ++i)
+		CBoundingCompound * compound = dynamic_cast<CBoundingCompound*>(target);
+		if (compound)
 		{
-			result += BBoxlos(origin, compound->GetChild(i), shooter, targetObject);
+			for (size_t i = 0; i < compound->GetChildCount(); ++i)
+			{
+				result += BBoxlos(origin, compound->GetChild(i), shooter, targetObject);
+			}
+			result /= compound->GetChildCount();
 		}
-		result /= compound->GetChildCount();
 		total = 100;
 	}
 	else

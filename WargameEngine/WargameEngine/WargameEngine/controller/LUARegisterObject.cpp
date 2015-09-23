@@ -256,10 +256,16 @@ int GetGroupChildrenCount(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
         return luaL_error(L, "no argument expected");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
-	if(!object) CLUAScript::SetArgument(0);//NULL contains no objects
-	if(!CGameModel::IsGroup(object)) CLUAScript::SetArgument(1); //single object
-	CObjectGroup * group = (CObjectGroup *)object;
-	CLUAScript::SetArgument((int)group->GetCount());
+	if (object)
+	{
+		if (!CGameModel::IsGroup(object)) CLUAScript::SetArgument(1); //single object
+		CObjectGroup * group = (CObjectGroup *)object;
+		CLUAScript::SetArgument((int)group->GetCount());
+	}
+	else
+	{
+		CLUAScript::SetArgument(0);//NULL contains no objects
+	}
 	return 1;
 }
 
@@ -269,10 +275,16 @@ int GetGroupChildrenAt(lua_State* L)
         return luaL_error(L, "1 argument expected(index)");
 	IObject * object = (IObject *)CLUAScript::GetClassInstance("Object");
 	size_t index = CLUAScript::GetArgument<int>(2);
-	if(!object && !CGameModel::IsGroup(object)) CLUAScript::NewInstanceClass(NULL, "Object");
-	CObjectGroup * group = (CObjectGroup *)object;
-	if(index > group->GetCount()) CLUAScript::NewInstanceClass(NULL, "Object");
-	CLUAScript::NewInstanceClass(group->GetChild(index - 1).get(), "Object");
+	if (!object || !CGameModel::IsGroup(object))
+	{
+		CLUAScript::NewInstanceClass(NULL, "Object");
+	}
+	else
+	{
+		CObjectGroup * group = (CObjectGroup *)object;
+		if (index > group->GetCount()) CLUAScript::NewInstanceClass(NULL, "Object");
+		CLUAScript::NewInstanceClass(group->GetChild(index - 1).get(), "Object");
+	}
 	return 1;
 }
 

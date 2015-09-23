@@ -139,12 +139,20 @@ bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, doubl
 		else
 		{
 			const CBoundingCompound* b2c = dynamic_cast<const CBoundingCompound*>(bounding2);
-			return IsInteresect(*b1, translate1, angle1, *b2c, translate2, angle2);
+			if (b2c)
+			{
+				return IsInteresect(*b1, translate1, angle1, *b2c, translate2, angle2);
+			}
+			return false;
 		}
 	}
 	else
 	{
 		const CBoundingCompound* b1c = dynamic_cast<const CBoundingCompound*>(bounding1);
+		if (!b1c)
+		{
+			return false;
+		}
 		const CBoundingBox * b2 = dynamic_cast<const CBoundingBox*>(bounding2);
 		if (b2)
 		{
@@ -153,6 +161,10 @@ bool IsInteresect(const IBounding* bounding1, CVector3d const& translate1, doubl
 		else
 		{
 			const CBoundingCompound * b2c = dynamic_cast<const CBoundingCompound*>(bounding2);
+			if (!b2c)
+			{
+				return false;
+			}
 			return IsInteresect(*b1c, translate1, angle1, *b2c, translate2, angle2);
 		}
 	}

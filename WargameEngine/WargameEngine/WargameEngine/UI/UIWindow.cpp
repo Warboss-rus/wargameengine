@@ -1,6 +1,6 @@
 #include "UIWindow.h"
-#include "..\view\TextWriter.h"
-#include "..\view\GameView.h"
+#include "../view/TextWriter.h"
+#include "../view/GameView.h"
 #include "UIText.h"
 
 CUIWindow::CUIWindow(int width, int height, std::wstring const& headerText, IUIElement * parent, IRenderer & renderer)

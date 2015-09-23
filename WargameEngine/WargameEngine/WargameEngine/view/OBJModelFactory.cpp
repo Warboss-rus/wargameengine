@@ -67,7 +67,7 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 			lastMaterial = &materials[type];
 		}
 
-		if (type == "Ka") //ambient color
+		if (type == "Ka" && lastMaterial) //ambient color
 		{
 			for (size_t i = 0; i < 3; ++i)
 			{
@@ -75,7 +75,7 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 				lastMaterial->ambient[i] = dvalue;
 			}
 		}
-		if (type == "Kd") //diffuse color
+		if (type == "Kd" && lastMaterial) //diffuse color
 		{
 			for (size_t i = 0; i < 3; ++i)
 			{
@@ -83,7 +83,7 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 				lastMaterial->diffuse[i] = dvalue;
 			}
 		}
-		if (type == "Ks") //specular color
+		if (type == "Ks" && lastMaterial) //specular color
 		{
 			for (size_t i = 0; i < 3; ++i)
 			{
@@ -91,24 +91,24 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 				lastMaterial->specular[i] = dvalue;
 			}
 		}
-		if (type == "Ns") //specular coefficient
+		if (type == "Ns" && lastMaterial) //specular coefficient
 		{
 			lineStream >> dvalue;
 			lastMaterial->shininess = dvalue;
 		}
-		if (type == "map_Kd") //texture
+		if (type == "map_Kd" && lastMaterial) //texture
 		{
 			std::string texture;
 			lineStream >> texture;
 			lastMaterial->texture = texture;
 		}
-		if (type == "map_bump" || type == "bump") //bump texture
+		if ((type == "map_bump" || type == "bump") && lastMaterial) //bump texture
 		{
 			std::string texture;
 			lineStream >> texture;
 			lastMaterial->bumpMap = texture;
 		}
-		if (type == "map_specular") //custom specular map extension
+		if (type == "map_specular" && lastMaterial) //custom specular map extension
 		{
 			std::string texture;
 			lineStream >> texture;

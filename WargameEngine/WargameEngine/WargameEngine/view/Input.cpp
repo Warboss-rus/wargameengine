@@ -5,7 +5,7 @@
 #else
 #include <GL/glut.h>
 #endif
-#include "..\Signal.h"
+#include "../Signal.h"
 
 struct CInput::sSignals
 {

@@ -1,6 +1,6 @@
 #include "CommandPlayAnimation.h"
-#include "..\model\ObjectInterface.h"
-#include "..\view\3dModel.h"
+#include "../model/ObjectInterface.h"
+#include "../view/3dModel.h"
 
 CCommandPlayAnimation::CCommandPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed)
 	:m_object(object), m_animation(animation), m_loopMode(loopMode), m_speed(speed)

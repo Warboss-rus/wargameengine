@@ -391,9 +391,9 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 	normalizedData.resize(size);
 	memcpy(normalizedData.data(), data, size);
 	normalizedData.push_back('\0');
-	xml_document<> doc;
-	doc.parse<parse_trim_whitespace>(normalizedData.data());
-	xml_node<>* root = doc.first_node();
+	std::unique_ptr<xml_document<>> doc = std::make_unique<xml_document<>>();
+	doc->parse<parse_trim_whitespace>(normalizedData.data());
+	xml_node<>* root = doc->first_node();
 	if (!root)//No root
 	{
 		LogWriter::WriteLine("Cannot load model. No root.");
@@ -744,5 +744,5 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 	loader.weightsCount.shrink_to_fit();
 	loader.weightsIndexes.shrink_to_fit();
 	loader.weights.shrink_to_fit();
-	doc.clear();
+	doc->clear();
 }

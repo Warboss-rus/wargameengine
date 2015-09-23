@@ -1,7 +1,7 @@
 #pragma once
 #include "IUI.h"
 #include <map>
-#include "..\view\IRenderer.h"
+#include "../view/IRenderer.h"
 
 
 class CUIElement : public IUIElement

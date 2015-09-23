@@ -1,7 +1,7 @@
 #include "ICommand.h"
 #include <string>
 #include <memory>
-#include "..\model\IGameModel.h"
+#include "../model/IGameModel.h"
 
 class IObject;
 

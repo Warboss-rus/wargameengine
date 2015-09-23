@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <cstring>
-#include "..\rapidxml\rapidxml.hpp"
+#include "../rapidxml/rapidxml.hpp"
 #include <sstream>
 
 using namespace std;
@@ -44,9 +44,9 @@ CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
 {
 	ifstream istream(file);
 	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
-	xml_document<> doc;
-	doc.parse<parse_trim_whitespace>(&content[0]);
-	xml_node<>* root = doc.first_node();
+	std::unique_ptr<xml_document<>> doc = std::make_unique<xml_document<>>();
+	doc->parse<parse_trim_whitespace>(&content[0]);
+	xml_node<>* root = doc->first_node();
 	if (!root) return;
 	m_duration = static_cast<float>(atof(root->first_attribute("duration")->value()));
 	xml_node<>* materials = root->first_node("materials");
@@ -118,7 +118,7 @@ CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
 			randomInstance = randomInstance->next_sibling("random_instance");
 		}
 	}
-	doc.clear();
+	doc->clear();
 }
 
 void CParticleModel::DrawParticle(CVector3f const& position, float width, float height) const

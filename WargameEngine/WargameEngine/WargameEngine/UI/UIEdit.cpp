@@ -1,6 +1,6 @@
 #include "UIEdit.h"
 #include "UIText.h"
-#include "..\view\KeyDefines.h"
+#include "../view/KeyDefines.h"
 
 CUIEdit::CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer) :
 	CUIElement(x, y, height, width, parent, renderer), m_isPressed(false), m_pos(0), m_beginSelection(0), m_text(text)
