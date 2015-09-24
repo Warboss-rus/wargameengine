@@ -1,7 +1,9 @@
+#include <gl/glew.h>
+#include "gl.h"
+#include "GameWindow.h"
 #include "GameView.h"
 #include <string>
 #include <cstring>
-#include <gl/glew.h>
 #include "MathUtils.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
@@ -9,7 +11,6 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../Ruler.h"
-#include "../SoundPlayerOpenAl.h"
 #include "../OSSpecific.h"
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
@@ -117,27 +118,28 @@ static const string g_controllerTag = "controller";
 
 void CGameView::InitInput()
 {
-	m_input = make_unique<CInput>();
-	m_camera->SetInput(*m_input);
+	m_window->ResetInput();
+	auto& input = m_window->GetInput();
+	m_camera->SetInput(input);
 	//UI
-	m_input->DoOnLMBDown([this](int x, int y) {
+	input.DoOnLMBDown([this](int x, int y) {
 		return m_ui->LeftMouseButtonDown(x, y);
 	}, 0);
-	m_input->DoOnLMBUp([this](int x, int y) {
+	input.DoOnLMBUp([this](int x, int y) {
 		return m_ui->LeftMouseButtonUp(x, y);
 	}, 0);
-	m_input->DoOnCharacter([this](unsigned int key) {
+	input.DoOnCharacter([this](unsigned int key) {
 		return m_ui->OnCharacterInput(key);
 	}, 0);
-	m_input->DoOnKeyDown([this](int key, int modifiers) {
+	input.DoOnKeyDown([this](int key, int modifiers) {
 		return m_ui->OnKeyPress(key, modifiers);
 	}, 0);
-	m_input->DoOnMouseMove([this](int x, int y) {
+	input.DoOnMouseMove([this](int x, int y) {
 		m_ui->OnMouseMove(x, y);
 		return false;
 	}, 9);
 	//Ruler
-	m_input->DoOnLMBDown([this](int x, int y) {
+	input.DoOnLMBDown([this](int x, int y) {
 		double wx, wy;
 		WindowCoordsToWorldCoords(x, y, wx, wy);
 		if (m_ruler.IsVisible())
@@ -154,20 +156,20 @@ void CGameView::InitInput()
 		}
 		return false;
 	}, 2);
-	m_input->DoOnLMBUp([this](int x, int y) {
+	input.DoOnLMBUp([this](int x, int y) {
 		double wx, wy;
 		WindowCoordsToWorldCoords(x, y, wx, wy);
 		m_ruler.SetEnd(wx, wy);
 		return false;
 	}, 2);
-	m_input->DoOnRMBDown([this](int, int) {
+	input.DoOnRMBDown([this](int, int) {
 		if (m_ruler.IsVisible())
 		{
 			m_ruler.Hide();
 		}
 		return false;
 	}, 2);
-	m_input->DoOnMouseMove([this](int x, int y) {
+	input.DoOnMouseMove([this](int x, int y) {
 		double wx, wy;
 		WindowCoordsToWorldCoords(x, y, wx, wy);
 		if (m_ruler.IsEnabled())
@@ -177,10 +179,10 @@ void CGameView::InitInput()
 		return false;
 	}, 2);
 	//Game Controller
-	m_input->DoOnLMBDown([this](int x, int y) {
+	input.DoOnLMBDown([&](int x, int y) {
 		CVector3d begin, end;
 		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
-		bool result = m_gameController->OnLeftMouseDown(begin, end, m_input->GetModifiers());
+		bool result = m_gameController->OnLeftMouseDown(begin, end, input.GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
 		{
@@ -188,10 +190,10 @@ void CGameView::InitInput()
 		}
 		return result;
 	}, 5, g_controllerTag);
-	m_input->DoOnLMBUp([this](int x, int y) {
+	input.DoOnLMBUp([&](int x, int y) {
 		CVector3d begin, end;
 		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
-		bool result = m_gameController->OnLeftMouseUp(begin, end, m_input->GetModifiers());
+		bool result = m_gameController->OnLeftMouseUp(begin, end, input.GetModifiers());
 		if (result && !m_ruler.IsEnabled())
 		{
 			m_ruler.Hide();
@@ -199,10 +201,10 @@ void CGameView::InitInput()
 		m_ruler.Disable();
 		return result;
 	}, 5, g_controllerTag);
-	m_input->DoOnMouseMove([this](int x, int y) {
+	input.DoOnMouseMove([&](int x, int y) {
 		CVector3d begin, end;
 		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
-		bool result = m_gameController->OnMouseMove(begin, end, m_input->GetModifiers());
+		bool result = m_gameController->OnMouseMove(begin, end, input.GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
 		{
@@ -210,15 +212,15 @@ void CGameView::InitInput()
 		}
 		return result;
 	}, 5, g_controllerTag);
-	m_input->DoOnRMBDown([this](int x, int y) {
+	input.DoOnRMBDown([&](int x, int y) {
 		CVector3d begin, end;
 		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
-		return m_gameController->OnRightMouseDown(begin, end, m_input->GetModifiers());
+		return m_gameController->OnRightMouseDown(begin, end, input.GetModifiers());
 	}, 5, g_controllerTag);
-	m_input->DoOnRMBUp([this](int x, int y) {
+	input.DoOnRMBUp([&](int x, int y) {
 		CVector3d begin, end;
 		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
-		return m_gameController->OnRightMouseUp(begin, end, m_input->GetModifiers());
+		return m_gameController->OnRightMouseUp(begin, end, input.GetModifiers());
 	}, 5, g_controllerTag);
 }
 
@@ -530,7 +532,7 @@ CGameModel& CGameView::GetModel()
 
 void CGameView::ResetController()
 {
-	m_input->DeleteAllSignalsByTag(g_controllerTag);
+	m_window->GetInput().DeleteAllSignalsByTag(g_controllerTag);
 	m_gameController.reset();
 	m_gameModel = make_unique<CGameModel>();
 	m_gameController = make_unique<CGameController>(*m_gameModel);
@@ -544,7 +546,7 @@ ICamera * CGameView::GetCamera()
 void CGameView::SetCamera(ICamera * camera)
 {
 	m_camera.reset(camera);
-	m_camera->SetInput(*m_input);
+	m_camera->SetInput(m_window->GetInput());
 }
 
 CModelManager& CGameView::GetModelManager()

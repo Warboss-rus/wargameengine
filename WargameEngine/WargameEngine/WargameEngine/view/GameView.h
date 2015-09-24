@@ -11,11 +11,9 @@
 #include "OpenGLRenderer.h"
 #include "../TranslationManager.h"
 #include "../SoundPlayerFMod.h"
-#include "IInput.h"
 #include "../Ruler.h"
 #include "../UI/IUI.h"
 #include "../controller/GameController.h"
-#include "GameWindow.h"
 
 enum class LightningType
 {
@@ -23,6 +21,8 @@ enum class LightningType
 	AMBIENT,
 	SPECULAR
 };
+
+class CGameWindow;
 
 class CGameView
 {
@@ -92,7 +92,6 @@ private:
 	CSoundPlayerFMod m_soundPlayer;
 	COpenGLRenderer m_renderer;
 	CTranslationManager m_translationManager;
-	std::unique_ptr<IInput> m_input;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;

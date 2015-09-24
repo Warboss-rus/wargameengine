@@ -1,10 +1,5 @@
 #include "Input.h"
 #include <map>
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
 #include "../Signal.h"
 
 struct CInput::sSignals
@@ -29,31 +24,19 @@ static int g_prevX;
 static int g_prevY;
 
 static const std::map<int, IInput::Modifiers> modifiersMap = {
-	{ GLUT_ACTIVE_ALT, IInput::MODIFIER_ALT },
-	{ GLUT_ACTIVE_CTRL, IInput::MODIFIER_CTRL },
-	{ GLUT_ACTIVE_SHIFT, IInput::MODIFIER_SHIFT },
+	{ GLFW_MOD_ALT, IInput::MODIFIER_ALT },
+	{ GLFW_MOD_CONTROL , IInput::MODIFIER_CTRL },
+	{ GLFW_MOD_SHIFT , IInput::MODIFIER_SHIFT },
 };
 
-int GetModifiers()
+void CInput::OnMouse(GLFWwindow* window, int button, int action, int /*mods*/)
 {
-	int glut = glutGetModifiers();
-	int result = 0;
-	for (auto pair : modifiersMap)
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+	switch (button)
 	{
-		if (glut & pair.first)
-		{
-			result |= pair.second;
-		}
-	}
-	return result;
-}
-
-void CInput::OnMouse(int button, int state, int x, int y)
-{
-	switch(button)
-	{
-	case GLUT_LEFT_BUTTON: 
-		if (state == GLUT_DOWN)
+	case GLFW_MOUSE_BUTTON_LEFT:
+		if (action == GLFW_PRESS)
 		{
 			m_signals->m_onLMBDown(x, y);
 		}
@@ -61,8 +44,8 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			m_signals->m_onLMBUp(x, y);
 		}break;
-	case GLUT_RIGHT_BUTTON:
-		if (state == GLUT_DOWN)
+	case GLFW_MOUSE_BUTTON_RIGHT:
+		if (action == GLFW_PRESS)
 		{
 			m_signals->m_onRMBDown(x, y);
 		}
@@ -70,68 +53,41 @@ void CInput::OnMouse(int button, int state, int x, int y)
 		{
 			m_signals->m_onRMBUp(x, y);
 		}break;
-	case SCROLL_UP:
-		if (state == GLUT_UP)
-		{
-			m_signals->m_onWheelUp();
-		}break;
-	case SCROLL_DOWN:
-		if (state == GLUT_UP)
-		{
-			m_signals->m_onWheelDown();
-		}break;
 	}
 }
 
-bool HasModifier(int modifier)
+void CInput::OnScroll(GLFWwindow* /*window*/, double /*xoffset*/, double yoffset)
 {
-	return (glutGetModifiers() & modifier) != 0;
+	static const double offsetthreshold = 0.1;
+	if (yoffset < -offsetthreshold)
+	{
+		m_signals->m_onWheelDown();
+	}
+	if (yoffset > offsetthreshold)
+	{
+		m_signals->m_onWheelUp();
+	}
 }
 
-void CInput::OnKeyboard(unsigned char key, int /*x*/, int /*y*/)
+void CInput::OnKeyboard(GLFWwindow* /*window*/, int /*key*/, int scancode, int action, int mods)
 {
-	m_signals->m_onKeyDown(key, ::GetModifiers());
+	if (action == GLFW_RELEASE)
+	{
+		m_signals->m_onKeyUp(scancode, mods);
+	}
+	else
+	{
+		m_signals->m_onKeyDown(scancode, mods);
+	}
 }
 
-void CInput::OnKeyboardUp(unsigned char key, int , int)
+void CInput::OnCharacter(GLFWwindow* /*window*/, unsigned int key)
 {
-	m_signals->m_onKeyUp(key, ::GetModifiers());
-	if (key >= 32 && key != 127)
-	{
-		m_signals->m_onCharacter(key);
-	}
+	m_signals->m_onCharacter(key);
 }
 
-int SpecialToKeyCode(int special)
-{
-	if(special >= GLUT_KEY_F1 && special <= GLUT_KEY_F12)
-	{
-		return 112 + special - GLUT_KEY_F1;
-	}
-	if(special >= GLUT_KEY_LEFT && special <= GLUT_KEY_DOWN)
-	{
-		return 37 + special - GLUT_KEY_LEFT;
-	}
-	if(special == GLUT_KEY_PAGE_UP || special == GLUT_KEY_PAGE_DOWN)
-	{
-		return 33 + special - GLUT_KEY_PAGE_UP;
-	}
-	if(special == GLUT_KEY_END)
-	{
-		return 35;
-	}
-	if (special == GLUT_KEY_HOME)
-	{
-		return 36;
-	}
-	if (special == GLUT_KEY_INSERT)
-	{
-		return 45;
-	}
-	return 0;
-}
-
-CInput::CInput()
+CInput::CInput(GLFWwindow * window)
+	: m_window(window)
 {
 	m_signals = std::make_unique<CInput::sSignals>();
 }
@@ -193,66 +149,13 @@ static int g_lastMouseY = screenCenterY;
 
 void CInput::EnableCursor(bool enable /*= true*/)
 {
-	if (enable)
-	{
-		glutWarpPointer(g_prevX, g_prevY);
-		glutSetCursor(GLUT_CURSOR_INHERIT);
-	}
-	else
-	{
-		glutSetCursor(GLUT_CURSOR_NONE);
-		g_prevX = g_lastMouseX;
-		g_prevY = g_lastMouseY;
-		screenCenterX = glutGet(GLUT_WINDOW_WIDTH) / 2;
-		screenCenterY = glutGet(GLUT_WINDOW_HEIGHT) / 2;
-		glutWarpPointer(screenCenterX, screenCenterY);
-		g_lastMouseX = screenCenterX;
-		g_lastMouseY = screenCenterY;
-	}
+	glfwSetInputMode(m_window, GLFW_CURSOR, enable ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	m_cursorEnabled = enable;
 }
 
-void CInput::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
+void CInput::OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 {
-	int keycode = SpecialToKeyCode(key);
-	m_signals->m_onKeyDown(keycode, ::GetModifiers());
-}
-
-void CInput::OnSpecialKeyRelease(int key, int, int)
-{
-	int keycode = SpecialToKeyCode(key);
-	m_signals->m_onKeyUp(keycode, ::GetModifiers());
-}
-
-void CInput::OnPassiveMouseMove(int x, int y)
-{
-	OnMouseMove(x, y);
-}
-
-void CInput::OnMouseMove(int x, int y)
-{
-	static bool just_warped = false;
-	if (just_warped)
-	{
-		just_warped = false;
-		return;
-	}
-	m_signals->m_onMouseMove(x, y);
-	if (!m_cursorEnabled)
-	{
-		if (g_prevX == 0 && g_prevY)
-		{
-			g_prevX = x;
-			g_prevY = y;
-		}
-		glutWarpPointer(screenCenterX, screenCenterY);
-		just_warped = true;
-	}
-	else
-	{
-		g_lastMouseX = x;
-		g_lastMouseY = y;
-	}
+	m_signals->m_onMouseMove(xpos, ypos);
 }
 
 int CInput::GetMouseX() const
@@ -281,5 +184,5 @@ void CInput::DeleteAllSignalsByTag(std::string const& tag)
 
 int CInput::GetModifiers() const
 {
-	return ::GetModifiers();
+	return 0;//::GetModifiers();
 }

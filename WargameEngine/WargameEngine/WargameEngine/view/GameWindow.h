@@ -1,10 +1,14 @@
 #pragma once
 #include <functional>
+#include <memory>
+#include <GLFW\glfw3.h>
+#include "Input.h"
 
 class CGameWindow
 {
 public:
 	void Init();
+
 	void Clear();
 	void DoOnDrawScene(std::function<void()> const& handler);
 	void DoOnResize(std::function<void(int, int)> const& handler);
@@ -14,12 +18,17 @@ public:
 	void ToggleFullscreen();
 	void Enter2DMode();
 	void Leave2DMode();
+	IInput& GetInput();
+	void ResetInput();
 private:
-	static void OnTimer(int value);
-	static void OnChangeState(int state);
-	static void OnDrawScene();
-	static void OnReshape(int width, int height);
-	static void OnShutdown();
+	void CreateNewWindow(GLFWmonitor * monitor = NULL);
+
+	static void OnChangeState(GLFWwindow * window, int state);
+	static void OnReshape(GLFWwindow * window, int width, int height);
+	static void OnShutdown(GLFWwindow * window);
+
+	GLFWwindow * m_window = NULL;
+	std::unique_ptr<CInput>m_input;
 
 	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;

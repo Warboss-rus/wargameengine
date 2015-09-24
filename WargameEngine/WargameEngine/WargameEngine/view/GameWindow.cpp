@@ -1,32 +1,16 @@
-#include "GameWindow.h"
 #include <GL/glew.h>
-#include <GL/freeglut.h>
+#include "GameWindow.h"
 #include "Input.h"
 
 static CGameWindow* g_instance = nullptr;
 bool CGameWindow::m_visible = true;
 
-void CGameWindow::OnTimer(int value)
+void CGameWindow::OnChangeState(GLFWwindow * /*window*/, int state)
 {
-	if (m_visible) glutPostRedisplay();
-	glutTimerFunc(1, OnTimer, value);
+	m_visible = (state == GLFW_VISIBLE);
 }
 
-void CGameWindow::OnChangeState(int state)
-{
-	m_visible = (state == GLUT_VISIBLE);
-}
-
-void CGameWindow::OnDrawScene()
-{
-	if (g_instance->m_onDraw)
-	{
-		g_instance->m_onDraw();
-	}
-	glutSwapBuffers();
-}
-
-void CGameWindow::OnReshape(int width, int height)
+void CGameWindow::OnReshape(GLFWwindow * /*window*/, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
@@ -40,23 +24,53 @@ void CGameWindow::OnReshape(int width, int height)
 	}
 }
 
-void CGameWindow::OnShutdown()
+void CGameWindow::OnShutdown(GLFWwindow * window)
 {
 	if (g_instance->m_onShutdown)
 	{
 		g_instance->m_onShutdown;
 	}
+	glfwDestroyWindow(window);
+	g_instance->m_window = nullptr;
 }
 
 void CGameWindow::Init()
 {
 	g_instance = this;
-	int argc = 0;
-	char* argv[] = { "" };
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
-	glutInitWindowSize(600, 600);
-	glutCreateWindow("WargameEngine");
+
+	glfwInit();
+	glfwWindowHint(GLFW_SAMPLES, 16);
+
+	CreateNewWindow();
+	
+	glewInit();
+
+	//glfwSwapInterval(1);
+
+	while (m_window && !glfwWindowShouldClose(m_window))
+	{
+		if (m_visible)
+		{
+			if (g_instance->m_onDraw)
+			{
+				g_instance->m_onDraw();
+			}
+			glfwSwapBuffers(g_instance->m_window);
+		}
+		glfwPollEvents();
+	}
+	glfwTerminate();
+}
+
+void CGameWindow::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
+{
+	if (m_window)
+	{
+		glfwDestroyWindow(m_window);
+	}
+	m_window = glfwCreateWindow(600, 600, "WargameEngine", monitor, NULL);
+	glfwMakeContextCurrent(m_window);
+	//glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_ALPHA_TEST);
@@ -64,23 +78,14 @@ void CGameWindow::Init()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glutDisplayFunc(&CGameWindow::OnDrawScene);
-	glutTimerFunc(1, OnTimer, 0);
-	glutReshapeFunc(&OnReshape);
-	glutKeyboardFunc(&CInput::OnKeyboard);
-	glutKeyboardUpFunc(&CInput::OnKeyboardUp);
-	glutSpecialFunc(&CInput::OnSpecialKeyPress);
-	glutSpecialUpFunc(&CInput::OnSpecialKeyRelease);
-	glutMouseFunc(&CInput::OnMouse);
-	glutMotionFunc(&CInput::OnMouseMove);
-	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
-	glutMotionFunc(&CInput::OnMouseMove);
-	glutCloseFunc(&CGameWindow::OnShutdown);
-	glutWindowStatusFunc(OnChangeState);
-
-	glewInit();
-
-	glutMainLoop();
+	glfwSetFramebufferSizeCallback(m_window, &OnReshape);
+	glfwSetKeyCallback(m_window, &CInput::OnKeyboard);
+	glfwSetCharCallback(m_window, &CInput::OnCharacter);
+	glfwSetMouseButtonCallback(m_window, &CInput::OnMouse);
+	glfwSetCursorPosCallback(m_window, &CInput::OnMouseMove);
+	glfwSetScrollCallback(m_window, &CInput::OnScroll);
+	glfwSetWindowCloseCallback(m_window, &CGameWindow::OnShutdown);
+	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
 }
 
 void CGameWindow::Clear()
@@ -105,17 +110,17 @@ void CGameWindow::DoOnShutdown(std::function<void()> const& handler)
 
 void CGameWindow::ResizeWindow(int width, int height)
 {
-	glutReshapeWindow(width, height);
+	glfwSetWindowSize(m_window, width, height);
 }
 
 void CGameWindow::SetTitle(std::string const& title)
 {
-	glutSetWindowTitle(title.c_str());
+	glfwSetWindowTitle(m_window, title.c_str());
 }
 
 void CGameWindow::ToggleFullscreen()
 {
-	glutFullScreenToggle();
+	CreateNewWindow(glfwGetPrimaryMonitor());
 }
 
 void CGameWindow::Enter2DMode()
@@ -128,7 +133,9 @@ void CGameWindow::Enter2DMode()
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 		glLoadIdentity();
-		glOrtho(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0, -1, 1);
+		int width, height;
+		glfwGetFramebufferSize(m_window, &width, &height);
+		glOrtho(0, width, height, 0, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 	}
@@ -145,5 +152,15 @@ void CGameWindow::Leave2DMode()
 		glDisable(GL_BLEND);
 		m_2dMode = false;
 	}
+}
+
+IInput& CGameWindow::GetInput()
+{
+	return *m_input;
+}
+
+void CGameWindow::ResetInput()
+{
+	m_input = std::make_unique<CInput>(m_window);
 }
 
