@@ -2,12 +2,12 @@
 #include "../view/GameView.h"
 #include "../controller/GameController.h"
 #include "../LogWriter.h"
-#include "TimedCallback.h"
 #include "../OSSpecific.h"
 #include "../Network.h"
 #include "../view/CameraStrategy.h"
 #include "../view/CameraFirstPerson.h"
 #include "../Network.h"
+#include "../ThreadPool.h"
 
 int CreateTable(lua_State* L)
 {
@@ -204,7 +204,7 @@ int SetTimedCallback(lua_State* L)
 	std::string func = CLUAScript::GetArgument<char*>(1);
 	unsigned int time = CLUAScript::GetArgument<unsigned int>(2);
 	bool repeat = CLUAScript::GetArgument<bool>(3);
-	unsigned int index = CTimedCallback::GetInstance()->AddCallback(func, time, repeat);
+	unsigned int index = ThreadPool::AddTimedCallback([=]() {CLUAScript::CallFunction(func);}, time, repeat);
 	CLUAScript::SetArgument((int)index);
 	return 1;
 }
@@ -214,7 +214,7 @@ int DeleteTimedCallback(lua_State* L)
 	if(CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected (ID)");
 	unsigned int id = CLUAScript::GetArgument<unsigned int>(1);
-	CTimedCallback::GetInstance()->DeleteCallback(id);
+	ThreadPool::RemoveTimedCallback(id);
 	return 0;
 }
 

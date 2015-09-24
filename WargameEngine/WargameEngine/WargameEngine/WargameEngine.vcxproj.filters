@@ -143,9 +143,6 @@
     <ClCompile Include="controller\LUAScriptHandler.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
-    <ClCompile Include="controller\TimedCallback.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
     <ClCompile Include="model\Object.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -311,9 +308,6 @@
       <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\LUAScriptHandler.h">
-      <Filter>Source Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\TimedCallback.h">
       <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandChangeGlobalProperty.h">

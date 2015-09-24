@@ -4,6 +4,7 @@
 #include <future>
 #include <deque>
 #include "ITask.h"
+#include <sys/timeb.h>
 
 struct ThreadPool::Impl
 {
@@ -12,6 +13,16 @@ struct ThreadPool::Impl
 		FunctionHandler func;
 		CallbackHandler callback;
 		unsigned int flags;
+	};
+	struct sTimedCallback
+	{
+		CallbackHandler function;
+		long long period;
+		bool repeat;
+		bool executeSkipped;
+		long long addedTime;
+		long long lastTriggerTime;
+		size_t index;
 	};
 public:
 	void QueueFunc(sRunFunc const& func)
@@ -83,6 +94,34 @@ public:
 			m_callbacks.pop_front();
 			if (last) m_callbackMutex.unlock();
 		}
+		UpdateTimedCallbacks();
+	}
+
+	void UpdateTimedCallbacks()
+	{
+		long long currentTime = GetTime();
+		std::vector<size_t> callbacksToRemove;
+		for (auto& timed : m_timedCallbacks)
+		{
+			long long delta = currentTime - timed.lastTriggerTime;
+			if (delta >= timed.period)
+			{
+				timed.lastTriggerTime += (delta / timed.period) * timed.period;
+				long long count = timed.repeat && timed.executeSkipped ? delta / timed.period : 1;
+				for (long long i = 0; i < count; ++i)
+				{
+					timed.function();
+				}
+				if (!timed.repeat)
+				{
+					callbacksToRemove.push_back(timed.index);
+				}
+			}
+		}
+		for (auto index : callbacksToRemove)
+		{
+			RemoveTimedCallback(index);
+		}
 	}
 
 	size_t GetTasksAndFuncsCount()
@@ -111,6 +150,25 @@ public:
 		m_callbackMutex.unlock();
 		m_threads.clear();
 		m_cancelled = false;
+	}
+
+	long long GetTime() const
+	{
+		struct timeb time;
+		ftime(&time);
+		return 1000ll * time.time + time.millitm;
+	}
+
+	size_t AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat, bool executeSkipped)
+	{
+		m_timedCallbacks.push_back({ func, time, repeat, executeSkipped, GetTime(), GetTime(), m_nextTimedCallbackIndex });
+		m_nextTimedCallbackIndex++;
+		return m_timedCallbacks.back().index;
+	}
+
+	void RemoveTimedCallback(size_t index)
+	{
+		m_timedCallbacks.erase(std::find_if(m_timedCallbacks.begin(), m_timedCallbacks.end(), [=](std::deque<sTimedCallback>::value_type& callback) {return callback.index == index;}));
 	}
 
 	void WorkerThread()
@@ -162,6 +220,8 @@ public:
 	std::deque<sRunFunc> m_funcs;
 	std::deque<std::shared_ptr<ITask>> m_tasks;
 	std::vector<std::shared_ptr<ITask>> m_storedTasks;
+	std::deque<sTimedCallback> m_timedCallbacks;
+	size_t m_nextTimedCallbackIndex = 0;
 	unsigned int m_maxThreads = std::thread::hardware_concurrency();
 	bool m_cancelled = false;
 	std::vector<std::future<void>> m_threads;
@@ -207,4 +267,14 @@ void ThreadPool::AddTask(std::shared_ptr<ITask> task)
 void ThreadPool::RemoveTask(ITask * task)
 {
 	m_pImpl->RemoveTask(task);
+}
+
+size_t ThreadPool::AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat /*= false*/, bool executeSkipped /*= false*/)
+{
+	return m_pImpl->AddTimedCallback(func, time, repeat, executeSkipped);
+}
+
+void ThreadPool::RemoveTimedCallback(size_t index)
+{
+	m_pImpl->RemoveTimedCallback(index);
 }

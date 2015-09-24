@@ -1,4 +1,5 @@
 #pragma once
+#include "view/Vector3.h"
 
 class CRuler
 {
@@ -8,11 +9,12 @@ public:
 	void Disable();
 	void SetBegin(double x, double y);
 	void SetEnd(double x, double y);
-	void Draw() const;
 	void Hide();
 	double GetDistance() const;
 	bool IsVisible() const;
 	bool IsEnabled() const;
+	CVector3d GetBegin() const;
+	CVector3d GetEnd() const;
 private:
 	bool m_isVisible;
 	double m_worldBeginX;

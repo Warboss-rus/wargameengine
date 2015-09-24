@@ -36,15 +36,6 @@ void CRuler::SetEnd(double x, double y)
 	m_worldEndY = y;
 }
 
-void CRuler::Draw() const
-{
-	if(!m_isVisible) return;
-	CGameView::GetInstance().lock()->DrawLine(m_worldBeginX, m_worldBeginY, 0.0, m_worldEndX, m_worldEndY, 0.0, 255, 255, 0);
-	char str[10];
-	sprintf(str, "%0.2f", GetDistance());
-	CGameView::GetInstance().lock()->DrawText3D(m_worldEndX, m_worldEndY, 0.0, str);
-}
-
 double CRuler::GetDistance() const
 {
 	double deltaX = m_worldEndX - m_worldBeginX;
@@ -60,6 +51,16 @@ bool CRuler::IsVisible() const
 bool CRuler::IsEnabled() const
 {
 	return m_enabled;
+}
+
+CVector3d CRuler::GetBegin() const
+{
+	return { m_worldBeginX, m_worldBeginY, 0.0 };
+}
+
+CVector3d CRuler::GetEnd() const
+{
+	return{ m_worldEndX, m_worldEndY, 0.0 };
 }
 
 void CRuler::Hide()

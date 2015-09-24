@@ -10,7 +10,8 @@ enum class RenderMode
 	TRIANGLES,
 	TRIANGLE_STRIP,
 	RECTANGLES,
-	LINES
+	LINES,
+	LINE_LOOP
 };
 
 enum class CachedTextureType
@@ -85,6 +86,7 @@ public:
 	virtual void Rotate(const double angle, const double x, const double y, const double z) = 0;
 	virtual void Scale(const double scale) = 0;
 	virtual void GetViewMatrix(float * matrix) const = 0;
+	virtual void ResetViewMatrix() = 0;
 
 	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(std::string const& texture, TextureSlot slot, int flags = 0) = 0;

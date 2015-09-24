@@ -126,7 +126,6 @@
     <ClCompile Include="controller\LUARegisterObject.cpp" />
     <ClCompile Include="controller\LUARegisterUI.cpp" />
     <ClCompile Include="controller\LUAScriptHandler.cpp" />
-    <ClCompile Include="controller\TimedCallback.cpp" />
     <ClCompile Include="model\Bounding.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
     <ClCompile Include="model\Projectile.cpp" />
@@ -199,7 +198,6 @@
     <ClInclude Include="controller\CommandPlayAnimation.h" />
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
-    <ClInclude Include="controller\TimedCallback.h" />
     <ClInclude Include="ISoundPlayer.h" />
     <ClInclude Include="ITask.h" />
     <ClInclude Include="model\Bounding.h" />

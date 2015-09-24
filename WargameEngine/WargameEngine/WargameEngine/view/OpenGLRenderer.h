@@ -63,6 +63,7 @@ public:
 	virtual void SetColor(const int * color) override;
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
+	virtual void ResetViewMatrix() override;
 
 	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) override;
 

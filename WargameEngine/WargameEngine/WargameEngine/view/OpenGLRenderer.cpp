@@ -29,7 +29,8 @@ static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::TRIANGLES, GL_TRIANGLES },
 	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
 	{ RenderMode::RECTANGLES, GL_QUADS },
-	{ RenderMode::LINES, GL_LINES }
+	{ RenderMode::LINES, GL_LINES },
+	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
 };
 
 void RenderVertex(CVector3f const& vector)
@@ -275,6 +276,11 @@ void COpenGLRenderer::SetMaterial(const float * ambient, const float * diffuse, 
 void COpenGLRenderer::GetViewMatrix(float * matrix) const
 {
 	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+}
+
+void COpenGLRenderer::ResetViewMatrix()
+{
+	glLoadIdentity();
 }
 
 void COpenGLRenderer::Scale(double scale)

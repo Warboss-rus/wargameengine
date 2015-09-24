@@ -1,8 +1,7 @@
 #include "GameView.h"
-#include <GL/glew.h>
-#include <GL/freeglut.h>
 #include <string>
 #include <cstring>
+#include <gl/glew.h>
 #include "MathUtils.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
@@ -15,17 +14,20 @@
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
 
-std::shared_ptr<CGameView> CGameView::m_instanse = NULL;
+using namespace std;
+using namespace placeholders;
+
+shared_ptr<CGameView> CGameView::m_instanse = NULL;
 bool CGameView::m_visible = true;
 
-std::weak_ptr<CGameView> CGameView::GetInstance()
+weak_ptr<CGameView> CGameView::GetInstance()
 {
 	if (!m_instanse.get())
 	{
 		m_instanse.reset(new CGameView());
 		m_instanse->Init();
 	}
-	std::weak_ptr<CGameView> pView(m_instanse);
+	weak_ptr<CGameView> pView(m_instanse);
 
 	return pView;
 }
@@ -44,71 +46,43 @@ CGameView::~CGameView()
 CGameView::CGameView(void)
 	: m_textWriter(m_renderer)
 	, m_particles(m_renderer)
-	, m_gameModel(std::make_unique<CGameModel>())
+	, m_gameModel(make_unique<CGameModel>())
 	, m_modelManager(m_renderer, *m_gameModel)
 {
-	m_ui = std::make_unique<CUIElement>(m_renderer);
-	m_ui->SetTheme(std::make_shared<CUITheme>(CUITheme::defaultTheme));
-}
-
-void CGameView::OnTimer(int value)
-{
-	if(m_visible) glutPostRedisplay();
-	glutTimerFunc(1, OnTimer, value);
-}
-
-void CGameView::OnChangeState(int state)
-{
-	CGameView::m_visible = (state == GLUT_VISIBLE);
+	m_ui = make_unique<CUIElement>(m_renderer);
+	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
 }
 
 void CGameView::Init()
 {
 	setlocale(LC_ALL, ""); 
 	setlocale(LC_NUMERIC, "english");
-	int argc = 0;
-	char* argv[] = {""};
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
-	glutInitWindowSize(600, 600);
-	glutCreateWindow("WargameEngine");
-	glDepthFunc(GL_LESS);
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.01f);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
-	glutDisplayFunc(CGameView::OnDrawScene);
-	glutTimerFunc(1, OnTimer, 0);
-	glutReshapeFunc(&OnReshape);
-	glutKeyboardFunc(&CInput::OnKeyboard);
-	glutKeyboardUpFunc(&CInput::OnKeyboardUp);
-	glutSpecialFunc(&CInput::OnSpecialKeyPress);
-	glutSpecialUpFunc(&CInput::OnSpecialKeyRelease);
-	glutMouseFunc(&CInput::OnMouse);
-	glutMotionFunc(&CInput::OnMouseMove);
-	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
-	glutMotionFunc(&CInput::OnMouseMove);
-	glutCloseFunc(&CGameView::FreeInstance);
-	glutWindowStatusFunc(OnChangeState);
 
-	glewInit();
+	m_window = make_unique<CGameWindow>();
+	
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float)* 3);
 	m_gpuSkinning = false;
-	m_camera = std::make_unique<CCameraStrategy>(0.0, 0.0, 2.8, 0.5);
+	m_camera = make_unique<CCameraStrategy>(0.0, 0.0, 2.8, 0.5);
 	m_tableList = 0;
 	m_tableListShadow = 0;
 
-	m_gameController = std::make_unique<CGameController>(*m_gameModel);
+	m_gameController = make_unique<CGameController>(*m_gameModel);
 	m_gameController->Init();
 	m_soundPlayer.Init();
 
 	InitInput();
 
-	glutMainLoop();
+	m_window->DoOnDrawScene([this] {
+		DrawShadowMap();
+		m_window->Clear();
+		Update();
+	});
+	m_window->DoOnResize([this](int width, int height) {m_ui->Resize(height, width);});
+	m_window->DoOnShutdown(FreeInstance);
+
+	m_window->Init();
 }
 
 void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, double & startz, double & endx, double & endy, double & endz)
@@ -139,11 +113,11 @@ void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double
 	worldY = a * (endy - starty) + starty;
 }
 
-static const std::string g_controllerTag = "controller";
+static const string g_controllerTag = "controller";
 
 void CGameView::InitInput()
 {
-	m_input = std::make_unique<CInput>();
+	m_input = make_unique<CInput>();
 	m_camera->SetInput(*m_input);
 	//UI
 	m_input->DoOnLMBDown([this](int x, int y) {
@@ -248,88 +222,44 @@ void CGameView::InitInput()
 	}, 5, g_controllerTag);
 }
 
-void CGameView::OnDrawScene()
-{
-	CGameView::GetInstance().lock()->DrawShadowMap();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	CGameView::GetInstance().lock()->Update();
-	glutSwapBuffers();
-}
-
 void CGameView::DrawUI()
 {
-	glEnable(GL_BLEND);
-	glPushMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0,glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT),0,-1,1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	m_window->Enter2DMode();
 	m_ui->Draw();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glDisable(GL_BLEND);
+	m_window->Leave2DMode();
 }
 
-void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation)
+void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation, IRenderer & renderer)
 {
 	if (dynamic_cast<CBoundingCompound*>(ibox) != NULL)
 	{
 		CBoundingCompound * bbox = (CBoundingCompound *)ibox;
 		for (size_t i = 0; i < bbox->GetChildCount(); ++i)
 		{
-			DrawBBox(bbox->GetChild(i), x, y, z, rotation);
+			DrawBBox(bbox->GetChild(i), x, y, z, rotation, renderer);
 		}
 		return;
 	}
 	CBoundingBox * bbox = (CBoundingBox *)ibox;
 	if (!bbox) return;
-	glPushMatrix();
-	glTranslated(x, y, z);
-	glRotated(rotation, 0.0, 0.0, 1.0);
-	glScaled(bbox->GetScale(), bbox->GetScale(), bbox->GetScale());
-	glColor3d(0.0, 0.0, 255.0);
+	renderer.PushMatrix();
+	renderer.Translate(x, y, z);
+	renderer.Rotate(rotation, 0.0, 0.0, 1.0);
+	renderer.Scale(bbox->GetScale());
+	renderer.SetColor(0.0f, 0.0f, 255.0f);
 	const double * min = bbox->GetMin();
 	const double * max = bbox->GetMax();
-	//Left
-	glBegin(GL_LINE_LOOP);
-	glVertex3d(min[0], min[1], min[2]);
-	glVertex3d(min[0], max[1], min[2]);
-	glVertex3d(min[0], max[1], max[2]);
-	glVertex3d(min[0], min[1], max[2]);
-	
-	glEnd();
-	//Right
-	glBegin(GL_LINE_LOOP);
-	glVertex3d(max[0], min[1], min[2]);
-	glVertex3d(max[0], max[1], min[2]);
-	glVertex3d(max[0], max[1], max[2]);
-	glVertex3d(max[0], min[1], max[2]);
-	glEnd();
-	//Front
-	glBegin(GL_LINE_LOOP);
-	glVertex3d(min[0], max[1], min[2]);
-	glVertex3d(min[0], max[1], max[2]);
-	glVertex3d(max[0], max[1], max[2]);
-	glVertex3d(max[0], max[1], min[2]);
-	glEnd();
-	//Back
-	glBegin(GL_LINE_LOOP);
-	glVertex3d(min[0], min[1], min[2]);
-	glVertex3d(min[0], min[1], max[2]);
-	glVertex3d(max[0], min[1], max[2]);
-	glVertex3d(max[0], min[1], min[2]);
-	glEnd();
-	glColor3d(255.0, 255.0, 255.0);
-	glPopMatrix();
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], min[1], min[2]), { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], min[1], min[2]), { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(max[0], min[1], min[2]), { max[0], max[1], min[2] }, { max[0], max[1], max[2] }, { max[0], min[1], max[2] } }, {}, {});//Right
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], max[1], min[2]), { min[0], max[1], max[2] }, { max[0], max[1], max[2] }, { max[0], max[1], min[2] } }, {}, {}); //Front
+	renderer.SetColor(255.0f, 255.0f, 255.0f);
+	renderer.PopMatrix();
 }
 
 void CGameView::DrawBoundingBox()
 {
-	std::shared_ptr<IObject> object = m_gameModel->GetSelectedObject();
+	shared_ptr<IObject> object = m_gameModel->GetSelectedObject();
 	if(object)
 	{
 		if (CGameModel::IsGroup(object.get()))
@@ -343,7 +273,7 @@ void CGameView::DrawBoundingBox()
 					auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
 					if (bbox)
 					{
-						DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
+						DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_renderer);
 					}
 				}
 			}
@@ -351,7 +281,7 @@ void CGameView::DrawBoundingBox()
 		else
 		{
 			auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
-			if(bbox) DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation());
+			if(bbox) DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_renderer);
 		}
 	}
 }
@@ -365,94 +295,100 @@ void CGameView::Update()
 	m_soundPlayer.SetListenerPosition(CVector3d(position), CVector3d(direction));
 	m_soundPlayer.Update();
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
-	glLoadIdentity();
+	m_renderer.ResetViewMatrix();
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
 	m_gameController->Update();
 	DrawObjects();
 	DrawBoundingBox();
-	m_ruler.Draw();
+	DrawRuler();
 	DrawUI();
+}
+
+void CGameView::DrawRuler()
+{
+	if (m_ruler.IsVisible())
+	{
+		m_renderer.SetColor(255.0f, 255.0f, 0.0f);
+		m_renderer.RenderArrays(RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
+		m_renderer.SetColor(255.0f, 255.0f, 255.0f);
+		char str[10];
+		sprintf(str, "%0.2f", m_ruler.GetDistance());
+		DrawText3D(m_ruler.GetEnd(), str);
+	}
 }
 
 void CGameView::ResetTable()
 {
-	if (m_tableList) glDeleteLists(m_tableList, 1);
-	if (m_tableListShadow) glDeleteLists(m_tableListShadow, 1);
-	m_tableList = 0;
-	m_tableListShadow = 0;
+	m_tableList.reset();
+	m_tableListShadow.reset();
 }
 
 void CGameView::DrawTable(bool shadowOnly)
-{
+{	
+	auto list = m_renderer.CreateDrawingList([this, shadowOnly] {
+		CLandscape const& landscape = m_gameModel->GetLandscape();
+		double x1 = -landscape.GetWidth() / 2.0;
+		double x2 = landscape.GetWidth() / 2.0;
+		double y1 = -landscape.GetDepth() / 2.0;
+		double y2 = landscape.GetDepth() / 2.0;
+		double xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
+		double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
+		m_renderer.SetTexture(landscape.GetTexture());
+		unsigned int k = 0;
+		for (double x = x1; x <= x2 - xstep; x += xstep)
+		{
+			vector<CVector3d> vertex;
+			vector<CVector2d> texCoord;
+			for (double y = y1; y <= y2; y += ystep, k++)
+			{
+				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x, y, landscape.GetHeight(k) });
+				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x + xstep, y, landscape.GetHeight(k + 1) });
+			}
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, vertex, {}, texCoord);
+		}
+		m_renderer.SetTexture("");
+		for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
+		{
+			CStaticObject const& object = landscape.GetStaticObject(i);
+			if (!shadowOnly || object.CastsShadow())
+			{
+				m_renderer.PushMatrix();
+				m_renderer.Translate(object.GetX(), object.GetY(), 0.0);
+				m_renderer.Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
+				m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_gpuSkinning);
+				m_renderer.PopMatrix();
+			}
+		}
+		if (!shadowOnly)//Down't draw decals because they don't cast shadows
+		{
+			for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
+			{
+				sDecal const& decal = landscape.GetDecal(i);
+				m_renderer.SetTexture(decal.texture);
+				m_renderer.PushMatrix();
+				m_renderer.Translate(decal.x, decal.y, 0.0);
+				m_renderer.Rotate(decal.rotation, 0.0, 0.0, 1.0);
+				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, {
+					CVector3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.0001),
+					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.0001 },
+					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.0001 },
+					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.0001 }
+					}, {},{ CVector2d(0.0, 0.0), { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } });
+				m_renderer.PopMatrix();
+			}
+		}
+		m_renderer.SetTexture("");
+	});
 	if (shadowOnly)
 	{
-		m_tableListShadow = glGenLists(1);
-		glNewList(m_tableListShadow, GL_COMPILE);
+		m_tableListShadow = move(list);
 	}
 	else
 	{
-		m_tableList = glGenLists(1);
-		glNewList(m_tableList, GL_COMPILE);
+		m_tableList = move(list);
 	}
-	
-	CLandscape const& landscape = m_gameModel->GetLandscape();
-	double x1 = -landscape.GetWidth() / 2.0;
-	double x2 = landscape.GetWidth() / 2.0;
-	double y1 = -landscape.GetDepth() / 2.0;
-	double y2 = landscape.GetDepth() / 2.0;
-	double xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
-	double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
-	m_renderer.SetTexture(landscape.GetTexture());
-	unsigned int k = 0;
-	for(double x = x1; x <= x2 - xstep; x += xstep)
-	{
-		glBegin(GL_TRIANGLE_STRIP);
-		for(double y = y1; y <= y2; y += ystep, k++)
-		{
-			glTexCoord2d((x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale());
-			glVertex3d(x, y, landscape.GetHeight(k));
-			glTexCoord2d((x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale());
-			glVertex3d(x + xstep, y, landscape.GetHeight(k + 1));
-		}
-		glEnd();
-	}
-	m_renderer.SetTexture("");
-	for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
-	{
-		CStaticObject const& object = landscape.GetStaticObject(i);
-		if (!shadowOnly || object.CastsShadow())
-		{
-			glPushMatrix();
-			glTranslated(object.GetX(), object.GetY(), 0.0);
-			glRotated(object.GetRotation(), 0.0, 0.0, 1.0);
-			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_gpuSkinning);
-			glPopMatrix();
-		}
-	}
-	if (!shadowOnly)//Down't draw decals because they don't cast shadows
-	{
-		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
-		{
-			sDecal const& decal = landscape.GetDecal(i);
-			m_renderer.SetTexture(decal.texture);
-			glPushMatrix();
-			glTranslated(decal.x, decal.y, 0.0);
-			glRotated(decal.rotation, 0.0, 0.0, 1.0);
-			glBegin(GL_TRIANGLE_STRIP);
-			glTexCoord2d(0.0, 0.0);
-			glVertex3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.0001);
-			glTexCoord2d(0.0, 1.0);
-			glVertex3d(-decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.0001);
-			glTexCoord2d(1.0, 0.0);
-			glVertex3d(decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.0001);
-			glTexCoord2d(1.0, 1.0);
-			glVertex3d(decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.0001);
-			glEnd();
-			glPopMatrix();
-		}
-	}
-	m_renderer.SetTexture("");
-	glEndList();
 }
 
 void CGameView::DrawObjects(void)
@@ -466,22 +402,22 @@ void CGameView::DrawObjects(void)
 		glEnable(GL_LIGHTING);
 	}
 	if (m_shadowMap) SetUpShadowMapDraw();
-	if (m_tableList == 0) DrawTable(false);
-	glCallList(m_tableList);
+	if (!m_tableList) DrawTable(false);
+	m_tableList->Draw();
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
-		glPushMatrix();
-		glTranslated(object->GetX(), object->GetY(), 0.0);
-		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
+		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
+		m_renderer.PushMatrix();
+		m_renderer.Translate(object->GetX(), object->GetY(), 0.0);
+		m_renderer.Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_gpuSkinning);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
 			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false, m_gpuSkinning);
 		}
-		glPopMatrix();
+		m_renderer.PopMatrix();
 	}
 	m_shader.UnBindProgram();
 	glDisable(GL_BLEND);
@@ -489,14 +425,14 @@ void CGameView::DrawObjects(void)
 	for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
 	{
 		CProjectile const& projectile = m_gameModel->GetProjectile(i);
-		glPushMatrix();
-		glTranslated(projectile.GetX(), projectile.GetY(), projectile.GetZ());
-		glRotated(projectile.GetRotation(), 0.0, 0.0, 1.0);
+		m_renderer.PushMatrix();
+		m_renderer.Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
+		m_renderer.Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
 		if (!projectile.GetPathToModel().empty())
 			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_gpuSkinning);
 		if (!projectile.GetParticle().empty())
 			m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
-		glPopMatrix();
+		m_renderer.PopMatrix();
 	}
 	m_particles.DrawParticles();
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -508,18 +444,18 @@ void CGameView::SetUpShadowMapDraw()
 	float cameraModelViewMatrix[16];
 	float cameraInverseModelViewMatrix[16];
 	float lightMatrix[16];
-	glGetFloatv(GL_MODELVIEW_MATRIX, cameraModelViewMatrix);
+	m_renderer.GetViewMatrix(cameraModelViewMatrix);
 	InvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
 
-	glPushMatrix();
-	glLoadIdentity();
-	glTranslatef(0.5, 0.5, 0.5); // + 0.5
-	glScalef(0.5, 0.5, 0.5); // * 0.5
+	m_renderer.PushMatrix();
+	m_renderer.ResetViewMatrix();
+	m_renderer.Translate(0.5, 0.5, 0.5); // + 0.5
+	m_renderer.Scale(0.5); // * 0.5
 	glMultMatrixf(m_lightProjectionMatrix);
 	glMultMatrixf(m_lightModelViewMatrix);
 	glMultMatrixf(cameraInverseModelViewMatrix);
-	glGetFloatv(GL_MODELVIEW_MATRIX, lightMatrix);
-	glPopMatrix();
+	m_renderer.GetViewMatrix(lightMatrix);
+	m_renderer.PopMatrix();
 
 	m_shader.SetUniformMatrix4("lightMatrix", 1, lightMatrix);
 }
@@ -530,11 +466,11 @@ void CGameView::DrawShadowMap()
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
-	glLoadIdentity();
+	m_renderer.ResetViewMatrix();
 	gluPerspective(m_shadowAngle, 1.0, 3.0, 300.0);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glLoadIdentity();
+	m_renderer.ResetViewMatrix();
 	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0, 0, m_shadowMapSize, m_shadowMapSize);
@@ -546,13 +482,13 @@ void CGameView::DrawShadowMap()
 	glGetFloatv(GL_PROJECTION_MATRIX, m_lightProjectionMatrix);
 	glGetFloatv(GL_MODELVIEW_MATRIX, m_lightModelViewMatrix);
 
-	if (m_tableListShadow == 0) DrawTable(true);
-	glCallList(m_tableListShadow);
+	if (!m_tableListShadow) DrawTable(true);
+	m_tableListShadow->Draw();
 
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
+		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		if (!object->CastsShadow()) continue;
 		glPushMatrix();
 		glTranslated(object->GetX(), object->GetY(), 0);
@@ -577,18 +513,7 @@ void CGameView::DrawShadowMap()
 	glDisable(GL_DEPTH_TEST);
 }
 
-void CGameView::OnReshape(int width, int height) 
-{
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	GLdouble aspect = (GLdouble)width / (GLdouble)height;
-	gluPerspective(60, aspect, 0.5, 1000.0);
-	glMatrixMode(GL_MODELVIEW);
-	CGameView::GetInstance().lock()->m_ui->Resize(height, width);
-}
-
-void CGameView::CreateSkybox(double size, std::string const& textureFolder)
+void CGameView::CreateSkybox(double size, string const& textureFolder)
 {
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, m_renderer));
 }
@@ -607,8 +532,8 @@ void CGameView::ResetController()
 {
 	m_input->DeleteAllSignalsByTag(g_controllerTag);
 	m_gameController.reset();
-	m_gameModel = std::make_unique<CGameModel>();
-	m_gameController = std::make_unique<CGameController>(*m_gameModel);
+	m_gameModel = make_unique<CGameModel>();
+	m_gameController = make_unique<CGameController>(*m_gameModel);
 }
 
 ICamera * CGameView::GetCamera()
@@ -664,10 +589,10 @@ IRenderer& CGameView::GetRenderer()
 
 void CGameView::ResizeWindow(int height, int width)
 {
-	glutReshapeWindow(width, height);
+	m_window->ResizeWindow(width, height);
 }
 
-void CGameView::NewShaderProgram(std::string const& vertex, std::string const& fragment, std::string const& geometry)
+void CGameView::NewShaderProgram(string const& vertex, string const& fragment, string const& geometry)
 {
 	m_shader.NewProgram(vertex, fragment, geometry);
 }
@@ -773,9 +698,9 @@ void CGameView::ClearResources()
 	ResetTable();
 }
 
-void CGameView::SetWindowTitle(std::string const& title)
+void CGameView::SetWindowTitle(string const& title)
 {
-	glutSetWindowTitle((title + " - Wargame Engine").c_str());
+	m_window->SetTitle(title + " - Wargame Engine");
 }
 
 CShaderManager const* CGameView::GetShaderManager() const
@@ -783,55 +708,29 @@ CShaderManager const* CGameView::GetShaderManager() const
 	return &m_shader;
 }
 
-void CGameView::Preload(std::string const& image)
+void CGameView::Preload(string const& image)
 {
 	if (!image.empty())
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
+		m_window->Enter2DMode();
 		m_renderer.SetTexture(image);
-		glBegin(GL_TRIANGLE_STRIP);
-		glTexCoord2d(0.0, 0.0);
-		glVertex2d(0.0, 0.0);
-		glTexCoord2d(0.0, 1.0);
-		glVertex2d(0.0, glutGet(GLUT_WINDOW_HEIGHT));
-		glTexCoord2d(1.0, 0.0);
-		glVertex2d(glutGet(GLUT_WINDOW_WIDTH), 0.0);
-		glTexCoord2d(1.0, 1.0);
-		glVertex2d(glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT));
-		glutSwapBuffers();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glutSwapBuffers();
+		float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
+		float height = 480.0f;//glutGet(GLUT_WINDOW_HEIGHT);
+		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
+		//glutSwapBuffers();
+		m_window->Leave2DMode();
 	}
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		std::shared_ptr<const IObject> object = m_gameModel->Get3DObject(i);
+		shared_ptr<const IObject> object = m_gameModel->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
 	}
 	m_renderer.SetTexture("");
 }
 
-void CGameView::LoadModuleCallback(int)
-{
-	auto view = CGameView::GetInstance().lock();
-	view->ResetController();
-	view->ClearResources();
-	view->GetUI()->ClearChildren();
-	view->GetController().Init();
-	view->InitInput();
-}
-
-void CGameView::LoadModule(std::string const& module)
+void CGameView::LoadModule(string const& module)
 {
 	ThreadPool::CancelAll();
 	sModule::Load(module);
@@ -839,42 +738,26 @@ void CGameView::LoadModule(std::string const& module)
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	memset(m_lightPosition, 0, sizeof(float) * 3);
-	glutTimerFunc(1, LoadModuleCallback, 0);
+	ThreadPool::QueueCallback([this]() {
+		ResetController();
+		ClearResources();
+		m_ui->ClearChildren();
+		GetController().Init();
+		InitInput();
+	});
 }
 
 void CGameView::ToggleFullscreen() const 
 {
-	glutFullScreenToggle();
+	m_window->ToggleFullscreen();
 }
 
-void CGameView::DrawLine(double beginX, double beginY, double beginZ, double endX, double endY, double endZ, unsigned char colorR, unsigned char colorG, unsigned char colorB) const
+void CGameView::DrawText3D(CVector3d const& pos, string const& text)
 {
-	glColor3ub(colorR, colorG, colorB);
-	glBegin(GL_LINES);
-	glVertex3d(beginX, beginY, beginZ);
-	glVertex3d(endX, endY, endZ);
-	glEnd();
-	glColor3d(255.0, 255.0, 255.0);
-}
-
-void CGameView::DrawLineLoop(double * points, unsigned int size, unsigned char colorR, unsigned char colorG, unsigned char colorB) const
-{
-	glColor3ub(colorR, colorG, colorB);
-	glBegin(GL_LINE_LOOP);
-	for (unsigned int i = 0; i < size; i += 3)
-	{
-		glVertex3d(points[i], points[i + 1], points[i + 2]);
-	}
-	glEnd();
-	glColor3d(255.0, 255.0, 255.0);
-}
-
-void CGameView::DrawText3D(double x, double y, double z, std::string const& text)
-{
-	glRasterPos3d(x, y, z); // location to start printing text
+	glRasterPos3d(pos.x, pos.y, pos.z); // location to start printing text
 	for (size_t i = 0; i < text.size(); i++) // loop until i is greater then l
 	{
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]); // Print a character on the screen
+		//glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]); // Print a character on the screen
 	}
 }
 
@@ -890,7 +773,7 @@ void CGameView::EnableLight(size_t index, bool enable)
 	}
 }
 
-static const std::map<LightningType, GLenum> lightningTypesMap = {
+static const map<LightningType, GLenum> lightningTypesMap = {
 	{ LightningType::DIFFUSE, GL_DIFFUSE },
 	{ LightningType::AMBIENT, GL_AMBIENT },
 	{ LightningType::SPECULAR, GL_SPECULAR }

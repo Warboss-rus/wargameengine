@@ -23,6 +23,8 @@ public:
 	//Task internal functions
 	static void AddTask(std::shared_ptr<ITask> task);
 	static void RemoveTask(ITask * task);
+	static size_t AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat = false, bool executeSkipped = false);
+	static void RemoveTimedCallback(size_t index);
 	enum flags
 	{
 		//Functions with this flag will be added to the beginning of the queue, not the end

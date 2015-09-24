@@ -15,6 +15,7 @@
 #include "../Ruler.h"
 #include "../UI/IUI.h"
 #include "../controller/GameController.h"
+#include "GameWindow.h"
 
 enum class LightningType
 {
@@ -44,6 +45,7 @@ public:
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
 	IRenderer& GetRenderer();
+	const CShaderManager * GetShaderManager() const;
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
@@ -55,26 +57,18 @@ public:
 	static float GetMaxAnisotropy();
 	void ClearResources();
 	void SetWindowTitle(std::string const& title);
-	const CShaderManager * GetShaderManager() const;
 	void Preload(std::string const& image);
 	void LoadModule(std::string const& module);
 	void ToggleFullscreen() const;
 
-	void DrawLine(double beginX, double beginY, double beginZ, double endX, double endY, double endZ, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
-	void DrawLineLoop(double * points, unsigned int size, unsigned char colorR, unsigned char colorG, unsigned char colorB) const;
-	void DrawText3D(double x, double y, double z, std::string const& text);
 	void EnableLight(size_t index, bool enable = true);
 	void SetLightColor(size_t index, LightningType type, float * values);
 	
-	static void OnDrawScene();
-	static void OnReshape(int width, int height);
-	static void OnTimer(int value);
-	static void OnChangeState(int state);
-	static void LoadModuleCallback(int);
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();
 	void Update();
+	void DrawRuler();
 	void DrawObjects(void);
 	void DrawBoundingBox();
 	void DrawShadowMap();
@@ -82,11 +76,13 @@ private:
 	void Init();
 	void InitInput();
 	void ResetController();
+	void DrawText3D(CVector3d const& pos, std::string const& text);
 	CGameView(void);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;
 
 	static std::shared_ptr<CGameView> m_instanse;
+	std::unique_ptr<CGameWindow> m_window;
 	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
 	CModelManager m_modelManager;
@@ -114,6 +110,6 @@ private:
 	static bool m_visible;
 	bool m_gpuSkinning;
 
-	unsigned int m_tableList;
-	unsigned int m_tableListShadow;
+	std::unique_ptr<IDrawingList> m_tableList;
+	std::unique_ptr<IDrawingList> m_tableListShadow;
 };
