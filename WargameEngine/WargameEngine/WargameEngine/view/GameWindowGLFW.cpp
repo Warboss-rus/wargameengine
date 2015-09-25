@@ -1,16 +1,16 @@
 #include <GL/glew.h>
-#include "GameWindow.h"
-#include "Input.h"
+#include "GameWindowGLFW.h"
+#include "InputGLFW.h"
 
-static CGameWindow* g_instance = nullptr;
-bool CGameWindow::m_visible = true;
+static CGameWindowGLFW* g_instance = nullptr;
+bool CGameWindowGLFW::m_visible = true;
 
-void CGameWindow::OnChangeState(GLFWwindow * /*window*/, int state)
+void CGameWindowGLFW::OnChangeState(GLFWwindow * /*window*/, int state)
 {
 	m_visible = (state == GLFW_VISIBLE);
 }
 
-void CGameWindow::OnReshape(GLFWwindow * /*window*/, int width, int height)
+void CGameWindowGLFW::OnReshape(GLFWwindow * /*window*/, int width, int height)
 {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
@@ -24,7 +24,7 @@ void CGameWindow::OnReshape(GLFWwindow * /*window*/, int width, int height)
 	}
 }
 
-void CGameWindow::OnShutdown(GLFWwindow * window)
+void CGameWindowGLFW::OnShutdown(GLFWwindow * window)
 {
 	if (g_instance->m_onShutdown)
 	{
@@ -34,7 +34,7 @@ void CGameWindow::OnShutdown(GLFWwindow * window)
 	g_instance->m_window = nullptr;
 }
 
-void CGameWindow::Init()
+void CGameWindowGLFW::Init()
 {
 	g_instance = this;
 
@@ -62,7 +62,7 @@ void CGameWindow::Init()
 	glfwTerminate();
 }
 
-void CGameWindow::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
+void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 {
 	if (m_window)
 	{
@@ -78,52 +78,52 @@ void CGameWindow::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glfwSetFramebufferSizeCallback(m_window, &OnReshape);
-	glfwSetKeyCallback(m_window, &CInput::OnKeyboard);
-	glfwSetCharCallback(m_window, &CInput::OnCharacter);
-	glfwSetMouseButtonCallback(m_window, &CInput::OnMouse);
-	glfwSetCursorPosCallback(m_window, &CInput::OnMouseMove);
-	glfwSetScrollCallback(m_window, &CInput::OnScroll);
-	glfwSetWindowCloseCallback(m_window, &CGameWindow::OnShutdown);
+	glfwSetWindowSizeCallback(m_window, &OnReshape);
+	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
+	glfwSetCharCallback(m_window, &CInputGLFW::OnCharacter);
+	glfwSetMouseButtonCallback(m_window, &CInputGLFW::OnMouse);
+	glfwSetCursorPosCallback(m_window, &CInputGLFW::OnMouseMove);
+	glfwSetScrollCallback(m_window, &CInputGLFW::OnScroll);
+	glfwSetWindowCloseCallback(m_window, &CGameWindowGLFW::OnShutdown);
 	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
 }
 
-void CGameWindow::Clear()
+void CGameWindowGLFW::Clear()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void CGameWindow::DoOnDrawScene(std::function<void()> const& handler)
+void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
 {
 	m_onDraw = handler;
 }
 
-void CGameWindow::DoOnResize(std::function<void(int, int)> const& handler)
+void CGameWindowGLFW::DoOnResize(std::function<void(int, int)> const& handler)
 {
 	m_onResize = handler;
 }
 
-void CGameWindow::DoOnShutdown(std::function<void()> const& handler)
+void CGameWindowGLFW::DoOnShutdown(std::function<void()> const& handler)
 {
 	m_onShutdown = handler;
 }
 
-void CGameWindow::ResizeWindow(int width, int height)
+void CGameWindowGLFW::ResizeWindow(int width, int height)
 {
 	glfwSetWindowSize(m_window, width, height);
 }
 
-void CGameWindow::SetTitle(std::string const& title)
+void CGameWindowGLFW::SetTitle(std::string const& title)
 {
 	glfwSetWindowTitle(m_window, title.c_str());
 }
 
-void CGameWindow::ToggleFullscreen()
+void CGameWindowGLFW::ToggleFullscreen()
 {
 	CreateNewWindow(glfwGetPrimaryMonitor());
 }
 
-void CGameWindow::Enter2DMode()
+void CGameWindowGLFW::Enter2DMode()
 {
 	if (!m_2dMode)
 	{
@@ -141,7 +141,7 @@ void CGameWindow::Enter2DMode()
 	}
 }
 
-void CGameWindow::Leave2DMode()
+void CGameWindowGLFW::Leave2DMode()
 {
 	if (m_2dMode)
 	{
@@ -154,13 +154,13 @@ void CGameWindow::Leave2DMode()
 	}
 }
 
-IInput& CGameWindow::GetInput()
+IInput& CGameWindowGLFW::GetInput()
 {
 	return *m_input;
 }
 
-void CGameWindow::ResetInput()
+void CGameWindowGLFW::ResetInput()
 {
-	m_input = std::make_unique<CInput>(m_window);
+	m_input = std::make_unique<CInputGLFW>(m_window);
 }
 

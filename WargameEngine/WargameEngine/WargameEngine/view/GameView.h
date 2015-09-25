@@ -1,19 +1,19 @@
 #include <memory>
-#include "../model/Object.h"
-#include "ModelManager.h"
-#include "../model/GameModel.h"
-#include "SkyBox.h"
+
 #include "ICamera.h"
-#include "Input.h"
-#include "ParticleSystem.h"
-#include "ShaderManager.h"
-#include "TextWriter.h"
-#include "OpenGLRenderer.h"
-#include "../TranslationManager.h"
-#include "../SoundPlayerFMod.h"
-#include "../Ruler.h"
+#include "IRenderer.h"
+#include "../ISoundPlayer.h"
+#include "IInput.h"
 #include "../UI/IUI.h"
 #include "../controller/GameController.h"
+#include "../model/GameModel.h"
+#include "IGameWindow.h"
+#include "ModelManager.h"
+#include "ParticleSystem.h"
+#include "TextWriter.h"
+#include "SkyBox.h"
+#include "../Ruler.h"
+#include "../TranslationManager.h"
 
 enum class LightningType
 {
@@ -21,8 +21,6 @@ enum class LightningType
 	AMBIENT,
 	SPECULAR
 };
-
-class CGameWindow;
 
 class CGameView
 {
@@ -45,7 +43,7 @@ public:
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
 	IRenderer& GetRenderer();
-	const CShaderManager * GetShaderManager() const;
+	const IShaderManager & GetShaderManager() const;
 	void ResizeWindow(int height, int width);
 	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
@@ -82,20 +80,20 @@ private:
 	CGameView& operator=(const CGameView&) = delete;
 
 	static std::shared_ptr<CGameView> m_instanse;
-	std::unique_ptr<CGameWindow> m_window;
+	std::unique_ptr<IGameWindow> m_window;
 	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
-	CModelManager m_modelManager;
-	CShaderManager m_shader;
-	CParticleSystem m_particles;
-	CTextWriter m_textWriter;
-	CSoundPlayerFMod m_soundPlayer;
-	COpenGLRenderer m_renderer;
-	CTranslationManager m_translationManager;
+	std::unique_ptr<IShaderManager> m_shaderManager;
+	std::unique_ptr<ISoundPlayer> m_soundPlayer;
+	std::unique_ptr<IRenderer> m_renderer;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
+	CModelManager m_modelManager;
+	CParticleSystem m_particles;
+	CTextWriter m_textWriter;
 	CRuler m_ruler;
+	CTranslationManager m_translationManager;
 
 	bool m_vertexLightning;
 	bool m_shadowMap;

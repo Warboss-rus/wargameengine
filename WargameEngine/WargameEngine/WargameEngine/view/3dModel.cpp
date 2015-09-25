@@ -72,10 +72,10 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 {
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
-		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
-		shader->SetUniformMatrix4("invBindMatrices", m_skeleton.size(), &m_gpuInverseMatrices[0]);
-		shader->SetVertexAttrib4(CShaderManager::eUniformIndex::WEIGHT, &m_gpuWeight[0]);
-		shader->SetVertexAttrib4(CShaderManager::eUniformIndex::WEIGHT_INDEX, &m_gpuWeightIndexes[0]);
+		auto& shader = CGameView::GetInstance().lock()->GetShaderManager();
+		shader.SetUniformMatrix4("invBindMatrices", m_skeleton.size(), &m_gpuInverseMatrices[0]);
+		shader.SetVertexAttribute(IShaderManager::eUniformIndex::WEIGHT, 4, &m_gpuWeight[0]);
+		shader.SetVertexAttribute(IShaderManager::eUniformIndex::WEIGHT_INDEX, 4, &m_gpuWeightIndexes[0]);
 	}
 	/*if (m_vbo)
 	{
@@ -145,11 +145,11 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	//if (m_vbo) glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	if (useGPUskinning)
 	{
-		const CShaderManager * shader = CGameView::GetInstance().lock()->GetShaderManager();
-		float def[1] = { 0.0f };
-		shader->DisableVertexAttrib4(16, def);
+		auto& shader = CGameView::GetInstance().lock()->GetShaderManager();
+		float def[] = { 0.0f };
+		shader.DisableVertexAttribute(IShaderManager::eUniformIndex::WEIGHT, 1, def);
 		int idef = 0;
-		shader->DisableVertexAttrib4(17, &idef);
+		shader.DisableVertexAttribute(IShaderManager::eUniformIndex::WEIGHT_INDEX, 1, &idef);
 	}
 }
 
@@ -330,7 +330,7 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 		{
 			CalculateGPUWeights();
 		}
-		CGameView::GetInstance().lock()->GetShaderManager()->SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
+		CGameView::GetInstance().lock()->GetShaderManager().SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
 		DrawModel(renderer, hideMeshes, vertexOnly, m_vertices, m_normals, true, teamcolor, replaceTextures);
 	}
 	else

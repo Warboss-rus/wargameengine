@@ -8,6 +8,7 @@
 #include "../view/CameraFirstPerson.h"
 #include "../Network.h"
 #include "../ThreadPool.h"
+#include "../view/OpenGLRenderer.h"
 
 int CreateTable(lua_State* L)
 {
@@ -552,7 +553,7 @@ int Uniform1i(lua_State* L)
 		return luaL_error(L, "2 arguments expected (uniform name, value)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
 	int value = CLUAScript::GetArgument<int>(2);
-	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue(name, value);
+	CGameView::GetInstance().lock()->GetShaderManager().SetUniformValue(name, 1, &value);
 	return 0;
 }
 
@@ -562,7 +563,7 @@ int Uniform1f(lua_State* L)
 		return luaL_error(L, "2 arguments expected (uniform name, value)");
 	std::string name = CLUAScript::GetArgument<const char*>(1);
 	float value = CLUAScript::GetArgument<float>(2);
-	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue(name, value);
+	CGameView::GetInstance().lock()->GetShaderManager().SetUniformValue(name, 1, &value);
 	return 0;
 }
 
@@ -574,7 +575,7 @@ int Uniform1fv(lua_State* L)
 	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager().SetUniformValue(name, count, &value[0]);
 	return 0;
 }
 
@@ -586,7 +587,7 @@ int Uniform2fv(lua_State* L)
 	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 2) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue2(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager().SetUniformValue2(name, count, &value[0]);
 	return 0;
 }
 
@@ -598,7 +599,7 @@ int Uniform3fv(lua_State* L)
 	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 3) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue3(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager().SetUniformValue3(name, count, &value[0]);
 	return 0;
 }
 
@@ -610,7 +611,7 @@ int Uniform4fv(lua_State* L)
 	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 4) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformValue4(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager().SetUniformValue4(name, count, &value[0]);
 	return 0;
 }
 
@@ -622,7 +623,7 @@ int UniformMatrix4fv(lua_State* L)
 	unsigned int count = CLUAScript::GetArgument<unsigned int>(2);
 	std::vector<float> value = CLUAScript::GetArray<float>(3);
 	if (value.size() < count * 16) return luaL_error(L, "Not enough elements in the array");
-	CGameView::GetInstance().lock()->GetShaderManager()->SetUniformMatrix4(name, count, &value[0]);
+	CGameView::GetInstance().lock()->GetShaderManager().SetUniformMatrix4(name, count, &value[0]);
 	return 0;
 }
 
