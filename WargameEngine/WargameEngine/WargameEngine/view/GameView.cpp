@@ -3,6 +3,7 @@
 #include <cstring>
 #include <gl/glew.h>
 #include "MathUtils.h"
+#include "ShaderManagerOpenGL.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
 #include "../LogWriter.h"
@@ -13,6 +14,10 @@
 #include "../OSSpecific.h"
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
+#include "../SoundPlayerFMod.h"
+#include "OpenGLRenderer.h"
+#include "InputGLUT.h"
+#include "GameWindowGLUT.h"
 
 using namespace std;
 using namespace placeholders;
@@ -44,12 +49,14 @@ CGameView::~CGameView()
 }
 
 CGameView::CGameView(void)
-	: m_textWriter(m_renderer)
-	, m_particles(m_renderer)
+	: m_renderer(make_unique<COpenGLRenderer>())
+	, m_shaderManager(make_unique<CShaderManagerOpenGL>())
+	, m_textWriter(*m_renderer)
+	, m_particles(*m_renderer)
 	, m_gameModel(make_unique<CGameModel>())
-	, m_modelManager(m_renderer, *m_gameModel)
+	, m_modelManager(*m_renderer, *m_gameModel)
 {
-	m_ui = make_unique<CUIElement>(m_renderer);
+	m_ui = make_unique<CUIElement>(*m_renderer);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
 }
 
@@ -58,7 +65,7 @@ void CGameView::Init()
 	setlocale(LC_ALL, ""); 
 	setlocale(LC_NUMERIC, "english");
 
-	m_window = make_unique<CGameWindow>();
+	m_window = make_unique<CGameWindowGLUT>();
 	
 	m_vertexLightning = false;
 	m_shadowMap = false;
@@ -70,7 +77,8 @@ void CGameView::Init()
 
 	m_gameController = make_unique<CGameController>(*m_gameModel);
 	m_gameController->Init();
-	m_soundPlayer.Init();
+	m_soundPlayer = std::make_unique<CSoundPlayerFMod>();
+	m_soundPlayer->Init();
 
 	InitInput();
 
@@ -117,7 +125,7 @@ static const string g_controllerTag = "controller";
 
 void CGameView::InitInput()
 {
-	m_input = make_unique<CInput>();
+	m_input = make_unique<CInputGLUT>();
 	m_camera->SetInput(*m_input);
 	//UI
 	m_input->DoOnLMBDown([this](int x, int y) {
@@ -273,7 +281,7 @@ void CGameView::DrawBoundingBox()
 					auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
 					if (bbox)
 					{
-						DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_renderer);
+						DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), *m_renderer);
 					}
 				}
 			}
@@ -281,7 +289,7 @@ void CGameView::DrawBoundingBox()
 		else
 		{
 			auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
-			if(bbox) DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), m_renderer);
+			if(bbox) DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), *m_renderer);
 		}
 	}
 }
@@ -292,10 +300,10 @@ void CGameView::Update()
 	const double * position = m_camera->GetPosition();
 	const double * direction = m_camera->GetDirection();
 	const double * up = m_camera->GetUpVector();
-	m_soundPlayer.SetListenerPosition(CVector3d(position), CVector3d(direction));
-	m_soundPlayer.Update();
+	m_soundPlayer->SetListenerPosition(CVector3d(position), CVector3d(direction));
+	m_soundPlayer->Update();
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
-	m_renderer.ResetViewMatrix();
+	m_renderer->ResetViewMatrix();
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
 	m_gameController->Update();
 	DrawObjects();
@@ -308,9 +316,9 @@ void CGameView::DrawRuler()
 {
 	if (m_ruler.IsVisible())
 	{
-		m_renderer.SetColor(255.0f, 255.0f, 0.0f);
-		m_renderer.RenderArrays(RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
-		m_renderer.SetColor(255.0f, 255.0f, 255.0f);
+		m_renderer->SetColor(255.0f, 255.0f, 0.0f);
+		m_renderer->RenderArrays(RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
+		m_renderer->SetColor(255.0f, 255.0f, 255.0f);
 		char str[10];
 		sprintf(str, "%0.2f", m_ruler.GetDistance());
 		DrawText3D(m_ruler.GetEnd(), str);
@@ -325,7 +333,7 @@ void CGameView::ResetTable()
 
 void CGameView::DrawTable(bool shadowOnly)
 {	
-	auto list = m_renderer.CreateDrawingList([this, shadowOnly] {
+	auto list = m_renderer->CreateDrawingList([this, shadowOnly] {
 		CLandscape const& landscape = m_gameModel->GetLandscape();
 		double x1 = -landscape.GetWidth() / 2.0;
 		double x2 = landscape.GetWidth() / 2.0;
@@ -333,7 +341,7 @@ void CGameView::DrawTable(bool shadowOnly)
 		double y2 = landscape.GetDepth() / 2.0;
 		double xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
 		double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
-		m_renderer.SetTexture(landscape.GetTexture());
+		m_renderer->SetTexture(landscape.GetTexture());
 		unsigned int k = 0;
 		for (double x = x1; x <= x2 - xstep; x += xstep)
 		{
@@ -346,19 +354,19 @@ void CGameView::DrawTable(bool shadowOnly)
 				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x + xstep, y, landscape.GetHeight(k + 1) });
 			}
-			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, vertex, {}, texCoord);
+			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, vertex, {}, texCoord);
 		}
-		m_renderer.SetTexture("");
+		m_renderer->SetTexture("");
 		for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
 		{
 			CStaticObject const& object = landscape.GetStaticObject(i);
 			if (!shadowOnly || object.CastsShadow())
 			{
-				m_renderer.PushMatrix();
-				m_renderer.Translate(object.GetX(), object.GetY(), 0.0);
-				m_renderer.Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
+				m_renderer->PushMatrix();
+				m_renderer->Translate(object.GetX(), object.GetY(), 0.0);
+				m_renderer->Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
 				m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_gpuSkinning);
-				m_renderer.PopMatrix();
+				m_renderer->PopMatrix();
 			}
 		}
 		if (!shadowOnly)//Down't draw decals because they don't cast shadows
@@ -366,20 +374,20 @@ void CGameView::DrawTable(bool shadowOnly)
 			for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 			{
 				sDecal const& decal = landscape.GetDecal(i);
-				m_renderer.SetTexture(decal.texture);
-				m_renderer.PushMatrix();
-				m_renderer.Translate(decal.x, decal.y, 0.0);
-				m_renderer.Rotate(decal.rotation, 0.0, 0.0, 1.0);
-				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, {
+				m_renderer->SetTexture(decal.texture);
+				m_renderer->PushMatrix();
+				m_renderer->Translate(decal.x, decal.y, 0.0);
+				m_renderer->Rotate(decal.rotation, 0.0, 0.0, 1.0);
+				m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
 					CVector3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.0001),
 					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.0001 },
 					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.0001 },
 					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.0001 }
 					}, {},{ CVector2d(0.0, 0.0), { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } });
-				m_renderer.PopMatrix();
+				m_renderer->PopMatrix();
 			}
 		}
-		m_renderer.SetTexture("");
+		m_renderer->SetTexture("");
 	});
 	if (shadowOnly)
 	{
@@ -395,7 +403,7 @@ void CGameView::DrawObjects(void)
 {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	m_shader.BindProgram();
+	m_shaderManager->BindProgram();
 	if (m_vertexLightning)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -408,31 +416,31 @@ void CGameView::DrawObjects(void)
 	for (size_t i = 0; i < countObjects; i++)
 	{
 		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
-		m_renderer.PushMatrix();
-		m_renderer.Translate(object->GetX(), object->GetY(), 0.0);
-		m_renderer.Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
+		m_renderer->PushMatrix();
+		m_renderer->Translate(object->GetX(), object->GetY(), 0.0);
+		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_gpuSkinning);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
 			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false, m_gpuSkinning);
 		}
-		m_renderer.PopMatrix();
+		m_renderer->PopMatrix();
 	}
-	m_shader.UnBindProgram();
+	m_shaderManager->UnBindProgram();
 	glDisable(GL_BLEND);
 	glDisable(GL_LIGHTING);
 	for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
 	{
 		CProjectile const& projectile = m_gameModel->GetProjectile(i);
-		m_renderer.PushMatrix();
-		m_renderer.Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
-		m_renderer.Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
+		m_renderer->PushMatrix();
+		m_renderer->Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
+		m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
 		if (!projectile.GetPathToModel().empty())
 			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_gpuSkinning);
 		if (!projectile.GetParticle().empty())
 			m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
-		m_renderer.PopMatrix();
+		m_renderer->PopMatrix();
 	}
 	m_particles.DrawParticles();
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -444,20 +452,20 @@ void CGameView::SetUpShadowMapDraw()
 	float cameraModelViewMatrix[16];
 	float cameraInverseModelViewMatrix[16];
 	float lightMatrix[16];
-	m_renderer.GetViewMatrix(cameraModelViewMatrix);
+	m_renderer->GetViewMatrix(cameraModelViewMatrix);
 	InvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
 
-	m_renderer.PushMatrix();
-	m_renderer.ResetViewMatrix();
-	m_renderer.Translate(0.5, 0.5, 0.5); // + 0.5
-	m_renderer.Scale(0.5); // * 0.5
+	m_renderer->PushMatrix();
+	m_renderer->ResetViewMatrix();
+	m_renderer->Translate(0.5, 0.5, 0.5); // + 0.5
+	m_renderer->Scale(0.5); // * 0.5
 	glMultMatrixf(m_lightProjectionMatrix);
 	glMultMatrixf(m_lightModelViewMatrix);
 	glMultMatrixf(cameraInverseModelViewMatrix);
-	m_renderer.GetViewMatrix(lightMatrix);
-	m_renderer.PopMatrix();
+	m_renderer->GetViewMatrix(lightMatrix);
+	m_renderer->PopMatrix();
 
-	m_shader.SetUniformMatrix4("lightMatrix", 1, lightMatrix);
+	m_shaderManager->SetUniformMatrix4("lightMatrix", 1, lightMatrix);
 }
 
 void CGameView::DrawShadowMap()
@@ -466,11 +474,11 @@ void CGameView::DrawShadowMap()
 	glEnable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
-	m_renderer.ResetViewMatrix();
+	m_renderer->ResetViewMatrix();
 	gluPerspective(m_shadowAngle, 1.0, 3.0, 300.0);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	m_renderer.ResetViewMatrix();
+	m_renderer->ResetViewMatrix();
 	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0, 0, m_shadowMapSize, m_shadowMapSize);
@@ -515,7 +523,7 @@ void CGameView::DrawShadowMap()
 
 void CGameView::CreateSkybox(double size, string const& textureFolder)
 {
-	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, m_renderer));
+	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
 }
 
 CGameController& CGameView::GetController()
@@ -569,7 +577,7 @@ CTextWriter& CGameView::GetTextWriter()
 
 ISoundPlayer& CGameView::GetSoundPlayer()
 {
-	return m_soundPlayer;
+	return *m_soundPlayer;
 }
 
 CTranslationManager& CGameView::GetTranslationManager()
@@ -584,7 +592,7 @@ CRuler& CGameView::GetRuler()
 
 IRenderer& CGameView::GetRenderer()
 {
-	return m_renderer;
+	return *m_renderer;
 }
 
 void CGameView::ResizeWindow(int height, int width)
@@ -594,7 +602,7 @@ void CGameView::ResizeWindow(int height, int width)
 
 void CGameView::NewShaderProgram(string const& vertex, string const& fragment, string const& geometry)
 {
-	m_shader.NewProgram(vertex, fragment, geometry);
+	m_shaderManager->NewProgram(vertex, fragment, geometry);
 }
 
 void CGameView::EnableVertexLightning(bool enable)
@@ -689,8 +697,8 @@ float CGameView::GetMaxAnisotropy()
 
 void CGameView::ClearResources()
 {
-	m_modelManager = CModelManager(m_renderer, *m_gameModel);
-	m_renderer.GetTextureManager().Reset();
+	m_modelManager = CModelManager(*m_renderer, *m_gameModel);
+	((COpenGLRenderer&)*m_renderer).GetTextureManager().Reset();
 	if (m_skybox)
 	{
 		m_skybox->ResetList();
@@ -703,9 +711,9 @@ void CGameView::SetWindowTitle(string const& title)
 	m_window->SetTitle(title + " - Wargame Engine");
 }
 
-CShaderManager const* CGameView::GetShaderManager() const
+IShaderManager const& CGameView::GetShaderManager() const
 {
-	return &m_shader;
+	return *m_shaderManager;
 }
 
 void CGameView::Preload(string const& image)
@@ -714,10 +722,10 @@ void CGameView::Preload(string const& image)
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		m_window->Enter2DMode();
-		m_renderer.SetTexture(image);
+		m_renderer->SetTexture(image);
 		float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
 		float height = 480.0f;//glutGet(GLUT_WINDOW_HEIGHT);
-		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
+		m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 		//glutSwapBuffers();
 		m_window->Leave2DMode();
 	}
@@ -727,7 +735,7 @@ void CGameView::Preload(string const& image)
 		shared_ptr<const IObject> object = m_gameModel->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
 	}
-	m_renderer.SetTexture("");
+	m_renderer->SetTexture("");
 }
 
 void CGameView::LoadModule(string const& module)
@@ -754,11 +762,17 @@ void CGameView::ToggleFullscreen() const
 
 void CGameView::DrawText3D(CVector3d const& pos, string const& text)
 {
-	glRasterPos3d(pos.x, pos.y, pos.z); // location to start printing text
-	for (size_t i = 0; i < text.size(); i++) // loop until i is greater then l
-	{
-		//glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]); // Print a character on the screen
-	}
+	double matModelView[16], matProjection[16];
+	int viewport[4];
+	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
+	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	CVector3d windowPos = {0.0, 0.0, 0.0};
+	gluProject(pos.x, pos.y, pos.z, matModelView, matProjection, viewport, &windowPos.x, &windowPos.y, &windowPos.z);
+	windowPos.y = viewport[3] - windowPos.y;
+	m_window->Enter2DMode();
+	m_textWriter.PrintText(static_cast<int>(windowPos.x), static_cast<int>(windowPos.y), "times.ttf", 24, text);
+	m_window->Leave2DMode();
 }
 
 void CGameView::EnableLight(size_t index, bool enable)

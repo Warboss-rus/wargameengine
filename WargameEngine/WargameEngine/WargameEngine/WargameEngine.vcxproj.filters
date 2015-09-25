@@ -110,9 +110,6 @@
     <ClCompile Include="LogWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view\ShaderManager.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="UI\UIScrollBar.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
@@ -230,17 +227,20 @@
     <ClCompile Include="view\MathUtils.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="view\Input.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GameWindow.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="controller\CommandPlayAnimation.cpp">
       <Filter>Source Files\controller\commands</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandGoTo.cpp">
       <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ShaderManagerOpenGL.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\GameWindowGLUT.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\InputGLUT.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -457,9 +457,6 @@
     <ClInclude Include="view\ParticleTracer.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\ShaderManager.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\SkyBox.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -496,13 +493,7 @@
     <ClInclude Include="Signal.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\Input.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\IInput.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\GameWindow.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="controller\IStateManager.h">
@@ -519,6 +510,21 @@
     </ClInclude>
     <ClInclude Include="model\IBoundingBoxManager.h">
       <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IShaderManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ShaderManagerOpenGL.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\GameWindowGLUT.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\InputGLUT.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IGameWindow.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

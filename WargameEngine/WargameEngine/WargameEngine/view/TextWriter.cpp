@@ -68,8 +68,9 @@ const sGlyph& CTextWriter::GetSymbol(FT_Face font, unsigned int size, char symbo
 		s.size = size;
 		s.symbol = symbol;
 		mbstowcs(&s.unicodeSymbol, &symbol, 1);
+		m_symbols.emplace(s, CreateSymbol(s));
 		m_symbols[s] = CreateSymbol(s);
-		return m_symbols[s];
+		return m_symbols.at(s);
 	}
 	return it->second;
 }
@@ -159,7 +160,31 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 
 bool sSymbol::operator< (const sSymbol &other) const
 {
-	return (symbol < other.symbol || size < other.size || face < other.face);
+	if (symbol < other.symbol)
+	{
+		return true;
+	}
+	if (symbol > other.symbol)
+	{
+		return false;
+	}
+	if (size < other.size)
+	{
+		return true;
+	}
+	if (size > other.size)
+	{
+		return false;
+	}
+	if (face < other.face)
+	{
+		return true;
+	}
+	if (face > other.face)
+	{
+		return false;
+	}
+	return false;
 }
 int CTextWriter::GetStringHeight(std::string const& font, unsigned int size, std::string const& text)
 {

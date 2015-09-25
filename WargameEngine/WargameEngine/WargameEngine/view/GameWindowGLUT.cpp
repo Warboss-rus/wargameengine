@@ -1,23 +1,23 @@
-#include "GameWindow.h"
+#include "GameWindowGLUT.h"
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "Input.h"
+#include "InputGLUT.h"
 
-static CGameWindow* g_instance = nullptr;
-bool CGameWindow::m_visible = true;
+static CGameWindowGLUT* g_instance = nullptr;
+bool CGameWindowGLUT::m_visible = true;
 
-void CGameWindow::OnTimer(int value)
+void CGameWindowGLUT::OnTimer(int value)
 {
 	if (m_visible) glutPostRedisplay();
 	glutTimerFunc(1, OnTimer, value);
 }
 
-void CGameWindow::OnChangeState(int state)
+void CGameWindowGLUT::OnChangeState(int state)
 {
 	m_visible = (state == GLUT_VISIBLE);
 }
 
-void CGameWindow::OnDrawScene()
+void CGameWindowGLUT::OnDrawScene()
 {
 	if (g_instance->m_onDraw)
 	{
@@ -26,7 +26,7 @@ void CGameWindow::OnDrawScene()
 	glutSwapBuffers();
 }
 
-void CGameWindow::OnReshape(int width, int height)
+void CGameWindowGLUT::OnReshape(int width, int height)
 {
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
@@ -40,7 +40,7 @@ void CGameWindow::OnReshape(int width, int height)
 	}
 }
 
-void CGameWindow::OnShutdown()
+void CGameWindowGLUT::OnShutdown()
 {
 	if (g_instance->m_onShutdown)
 	{
@@ -48,7 +48,7 @@ void CGameWindow::OnShutdown()
 	}
 }
 
-void CGameWindow::Init()
+void CGameWindowGLUT::Init()
 {
 	g_instance = this;
 	int argc = 0;
@@ -64,18 +64,18 @@ void CGameWindow::Init()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glutDisplayFunc(&CGameWindow::OnDrawScene);
+	glutDisplayFunc(&CGameWindowGLUT::OnDrawScene);
 	glutTimerFunc(1, OnTimer, 0);
 	glutReshapeFunc(&OnReshape);
-	glutKeyboardFunc(&CInput::OnKeyboard);
-	glutKeyboardUpFunc(&CInput::OnKeyboardUp);
-	glutSpecialFunc(&CInput::OnSpecialKeyPress);
-	glutSpecialUpFunc(&CInput::OnSpecialKeyRelease);
-	glutMouseFunc(&CInput::OnMouse);
-	glutMotionFunc(&CInput::OnMouseMove);
-	glutPassiveMotionFunc(&CInput::OnPassiveMouseMove);
-	glutMotionFunc(&CInput::OnMouseMove);
-	glutCloseFunc(&CGameWindow::OnShutdown);
+	glutKeyboardFunc(&CInputGLUT::OnKeyboard);
+	glutKeyboardUpFunc(&CInputGLUT::OnKeyboardUp);
+	glutSpecialFunc(&CInputGLUT::OnSpecialKeyPress);
+	glutSpecialUpFunc(&CInputGLUT::OnSpecialKeyRelease);
+	glutMouseFunc(&CInputGLUT::OnMouse);
+	glutMotionFunc(&CInputGLUT::OnMouseMove);
+	glutPassiveMotionFunc(&CInputGLUT::OnPassiveMouseMove);
+	glutMotionFunc(&CInputGLUT::OnMouseMove);
+	glutCloseFunc(&CGameWindowGLUT::OnShutdown);
 	glutWindowStatusFunc(OnChangeState);
 
 	glewInit();
@@ -83,42 +83,42 @@ void CGameWindow::Init()
 	glutMainLoop();
 }
 
-void CGameWindow::Clear()
+void CGameWindowGLUT::Clear()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void CGameWindow::DoOnDrawScene(std::function<void()> const& handler)
+void CGameWindowGLUT::DoOnDrawScene(std::function<void()> const& handler)
 {
 	m_onDraw = handler;
 }
 
-void CGameWindow::DoOnResize(std::function<void(int, int)> const& handler)
+void CGameWindowGLUT::DoOnResize(std::function<void(int, int)> const& handler)
 {
 	m_onResize = handler;
 }
 
-void CGameWindow::DoOnShutdown(std::function<void()> const& handler)
+void CGameWindowGLUT::DoOnShutdown(std::function<void()> const& handler)
 {
 	m_onShutdown = handler;
 }
 
-void CGameWindow::ResizeWindow(int width, int height)
+void CGameWindowGLUT::ResizeWindow(int width, int height)
 {
 	glutReshapeWindow(width, height);
 }
 
-void CGameWindow::SetTitle(std::string const& title)
+void CGameWindowGLUT::SetTitle(std::string const& title)
 {
 	glutSetWindowTitle(title.c_str());
 }
 
-void CGameWindow::ToggleFullscreen()
+void CGameWindowGLUT::ToggleFullscreen()
 {
 	glutFullScreenToggle();
 }
 
-void CGameWindow::Enter2DMode()
+void CGameWindowGLUT::Enter2DMode()
 {
 	if (!m_2dMode)
 	{
@@ -134,7 +134,7 @@ void CGameWindow::Enter2DMode()
 	}
 }
 
-void CGameWindow::Leave2DMode()
+void CGameWindowGLUT::Leave2DMode()
 {
 	if (m_2dMode)
 	{

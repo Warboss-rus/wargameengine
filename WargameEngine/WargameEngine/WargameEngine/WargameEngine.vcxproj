@@ -172,8 +172,8 @@
     <ClCompile Include="view\CameraStrategy.cpp" />
     <ClCompile Include="view\ColladaModelFactory.cpp" />
     <ClCompile Include="view\GameView.cpp" />
-    <ClCompile Include="view\GameWindow.cpp" />
-    <ClCompile Include="view\Input.cpp" />
+    <ClCompile Include="view\GameWindowGLUT.cpp" />
+    <ClCompile Include="view\InputGLUT.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
@@ -184,7 +184,7 @@
     <ClCompile Include="view\ParticleSystem.cpp" />
     <ClCompile Include="view\ParticleTracer.cpp" />
     <ClCompile Include="view\MathUtils.cpp" />
-    <ClCompile Include="view\ShaderManager.cpp" />
+    <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -237,14 +237,16 @@
     <ClInclude Include="UI\UIWindow.h" />
     <ClInclude Include="view\CameraFirstPerson.h" />
     <ClInclude Include="view\CameraStrategy.h" />
-    <ClInclude Include="view\GameWindow.h" />
+    <ClInclude Include="view\GameWindowGLUT.h" />
     <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IInput.h" />
     <ClInclude Include="view\ImageDecoderInterface.h" />
-    <ClInclude Include="view\Input.h" />
+    <ClInclude Include="view\InputGLUT.h" />
     <ClInclude Include="view\IParticleEffecth.h" />
     <ClInclude Include="view\IRenderer.h" />
+    <ClInclude Include="view\IShaderManager.h" />
+    <ClInclude Include="view\IGameWindow.h" />
     <ClInclude Include="view\KeyDefines.h" />
     <ClInclude Include="view\OpenGLRenderer.h" />
     <ClInclude Include="view\Particle.h" />
@@ -253,7 +255,7 @@
     <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\ParticleTracer.h" />
     <ClInclude Include="view\MathUtils.h" />
-    <ClInclude Include="view\ShaderManager.h" />
+    <ClInclude Include="view\ShaderManagerOpenGL.h" />
     <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />

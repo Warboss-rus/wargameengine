@@ -1,4 +1,4 @@
-#include "Input.h"
+#include "InputGLUT.h"
 #include <map>
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -7,7 +7,7 @@
 #endif
 #include "../Signal.h"
 
-struct CInput::sSignals
+struct CInputGLUT::sSignals
 {
 	CSignal<int, int> m_onLMBDown;
 	CSignal<int, int> m_onLMBUp;
@@ -21,8 +21,8 @@ struct CInput::sSignals
 	CSignal<int, int> m_onMouseMove;
 };
 
-std::unique_ptr<CInput::sSignals> CInput::m_signals = std::make_unique<CInput::sSignals>();
-bool CInput::m_cursorEnabled = true;
+std::unique_ptr<CInputGLUT::sSignals> CInputGLUT::m_signals = std::make_unique<CInputGLUT::sSignals>();
+bool CInputGLUT::m_cursorEnabled = true;
 static const int SCROLL_UP = 3;
 static const int SCROLL_DOWN = 4;
 static int g_prevX;
@@ -48,7 +48,7 @@ int GetModifiers()
 	return result;
 }
 
-void CInput::OnMouse(int button, int state, int x, int y)
+void CInputGLUT::OnMouse(int button, int state, int x, int y)
 {
 	switch(button)
 	{
@@ -88,12 +88,12 @@ bool HasModifier(int modifier)
 	return (glutGetModifiers() & modifier) != 0;
 }
 
-void CInput::OnKeyboard(unsigned char key, int /*x*/, int /*y*/)
+void CInputGLUT::OnKeyboard(unsigned char key, int /*x*/, int /*y*/)
 {
 	m_signals->m_onKeyDown(key, ::GetModifiers());
 }
 
-void CInput::OnKeyboardUp(unsigned char key, int , int)
+void CInputGLUT::OnKeyboardUp(unsigned char key, int , int)
 {
 	m_signals->m_onKeyUp(key, ::GetModifiers());
 	if (key >= 32 && key != 127)
@@ -131,57 +131,57 @@ int SpecialToKeyCode(int special)
 	return 0;
 }
 
-CInput::CInput()
+CInputGLUT::CInputGLUT()
 {
-	m_signals = std::make_unique<CInput::sSignals>();
+	m_signals = std::make_unique<CInputGLUT::sSignals>();
 }
 
-void CInput::DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onLMBDown.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onLMBUp.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onRMBDown.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onRMBUp.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnMouseWheelUp(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnMouseWheelUp(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onWheelUp.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnMouseWheelDown(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnMouseWheelDown(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onWheelDown.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onKeyDown.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onKeyUp.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onCharacter.Connect(handler, priority, tag);
 }
 
-void CInput::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+void CInputGLUT::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
 {
 	m_signals->m_onMouseMove.Connect(handler, priority, tag);
 }
@@ -191,7 +191,7 @@ static int screenCenterY = 240;
 static int g_lastMouseX = screenCenterX;
 static int g_lastMouseY = screenCenterY;
 
-void CInput::EnableCursor(bool enable /*= true*/)
+void CInputGLUT::EnableCursor(bool enable /*= true*/)
 {
 	if (enable)
 	{
@@ -212,24 +212,24 @@ void CInput::EnableCursor(bool enable /*= true*/)
 	m_cursorEnabled = enable;
 }
 
-void CInput::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
+void CInputGLUT::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
 {
 	int keycode = SpecialToKeyCode(key);
 	m_signals->m_onKeyDown(keycode, ::GetModifiers());
 }
 
-void CInput::OnSpecialKeyRelease(int key, int, int)
+void CInputGLUT::OnSpecialKeyRelease(int key, int, int)
 {
 	int keycode = SpecialToKeyCode(key);
 	m_signals->m_onKeyUp(keycode, ::GetModifiers());
 }
 
-void CInput::OnPassiveMouseMove(int x, int y)
+void CInputGLUT::OnPassiveMouseMove(int x, int y)
 {
 	OnMouseMove(x, y);
 }
 
-void CInput::OnMouseMove(int x, int y)
+void CInputGLUT::OnMouseMove(int x, int y)
 {
 	static bool just_warped = false;
 	if (just_warped)
@@ -255,17 +255,17 @@ void CInput::OnMouseMove(int x, int y)
 	}
 }
 
-int CInput::GetMouseX() const
+int CInputGLUT::GetMouseX() const
 {
 	return g_lastMouseX;
 }
 
-int CInput::GetMouseY() const
+int CInputGLUT::GetMouseY() const
 {
 	return g_lastMouseY;
 }
 
-void CInput::DeleteAllSignalsByTag(std::string const& tag)
+void CInputGLUT::DeleteAllSignalsByTag(std::string const& tag)
 {
 	m_signals->m_onLMBDown.RemoveByTag(tag);
 	m_signals->m_onLMBUp.RemoveByTag(tag);
@@ -279,7 +279,7 @@ void CInput::DeleteAllSignalsByTag(std::string const& tag)
 	m_signals->m_onMouseMove.RemoveByTag(tag);
 }
 
-int CInput::GetModifiers() const
+int CInputGLUT::GetModifiers() const
 {
 	return ::GetModifiers();
 }

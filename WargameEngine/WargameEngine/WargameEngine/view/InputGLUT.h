@@ -4,10 +4,10 @@
 
 class IObject;
 
-class CInput : public IInput
+class CInputGLUT : public IInput
 {
 public:
-	CInput();
+	CInputGLUT();
 	virtual void DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;

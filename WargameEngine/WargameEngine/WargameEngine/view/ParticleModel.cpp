@@ -3,8 +3,9 @@
 #include <map>
 #include <string>
 #include <cstring>
-#include "../rapidxml/rapidxml.hpp"
 #include <sstream>
+#include "../rapidxml/rapidxml.hpp"
+#include "ShaderManagerOpenGL.h"
 
 using namespace std;
 using namespace rapidxml;
@@ -57,9 +58,9 @@ CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
 	{
 		materialIds[material->first_attribute("id")->value()] =  m_textures.size();
 		m_textures.push_back(material->first_attribute("texture")->value());
-		CShaderManager shaderman;
-		if (material->first_attribute("shader")) shaderman.NewProgram(material->first_attribute("vertex_shader")->value(), material->first_attribute("fragment_shader")->value());
-		m_shaders.push_back(shaderman);
+		std::unique_ptr<IShaderManager> shaderman = std::make_unique<CShaderManagerOpenGL>();
+		if (material->first_attribute("shader")) shaderman->NewProgram(material->first_attribute("vertex_shader")->value(), material->first_attribute("fragment_shader")->value());
+		m_shaders.push_back(std::move(shaderman));
 		material = material->next_sibling("material");
 	}
 	map<string, unsigned int> particleIDs;
@@ -184,17 +185,17 @@ void CParticleModel::Draw(float time) const
 				position = InterpolateVectors(particle.GetPositions()[j], particle.GetPositions()[j - 1], (partTime - keyframes[j - 1]) / (keyframes[j] - keyframes[j - 1]));
 			}
 			m_renderer.SetTexture(m_textures[particle.GetMaterial()]);
-			m_shaders[particle.GetMaterial()].BindProgram();
+			m_shaders[particle.GetMaterial()]->BindProgram();
 			for (auto k = m_instances[i].uniforms.begin(); k != m_instances[i].uniforms.end(); ++k)
 			{
-				m_shaders[particle.GetMaterial()].SetUniformValue(k->first, k->second.size(), &k->second[0]);
+				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, k->second.size(), &k->second[0]);
 			}
 			DrawParticle(position, particle.GetWidth(), particle.GetHeight());
 			for (auto k = m_instances[i].uniforms.begin(); k != m_instances[i].uniforms.end(); ++k)
 			{
-				m_shaders[particle.GetMaterial()].SetUniformValue(k->first, 0, (float*)nullptr);
+				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, 0, (float*)nullptr);
 			}
-			m_shaders[particle.GetMaterial()].UnBindProgram();
+			m_shaders[particle.GetMaterial()]->UnBindProgram();
 			m_renderer.SetTexture("");
 			m_renderer.PopMatrix();
 		}

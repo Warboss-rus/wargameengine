@@ -2,7 +2,7 @@
 #include <string>
 #include <map>
 #include "Particle.h"
-#include "ShaderManager.h"
+#include "IShaderManager.h"
 #include "IRenderer.h"
 
 struct sParticleInstance {
@@ -27,7 +27,7 @@ private:
 	std::vector<sParticleInstance> m_instances;
 	std::vector<CParticle> m_particles;
 	std::vector<std::string> m_textures;
-	std::vector<CShaderManager> m_shaders;
+	std::vector<std::unique_ptr<IShaderManager>> m_shaders;
 	float m_duration;
 	IRenderer & m_renderer;
 };
