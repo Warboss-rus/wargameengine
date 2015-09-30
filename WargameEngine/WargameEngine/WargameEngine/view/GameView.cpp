@@ -1,8 +1,8 @@
 #include "GameView.h"
 #include <string>
 #include <cstring>
-#include <gl/glew.h>
 #include "MathUtils.h"
+#include <GL/glew.h>
 #include "ShaderManagerOpenGL.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
@@ -12,6 +12,7 @@
 #include "../Ruler.h"
 #include "../SoundPlayerOpenAl.h"
 #include "../OSSpecific.h"
+#include "TextWriter.h"
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
 #include "../SoundPlayerFMod.h"
@@ -23,7 +24,6 @@ using namespace std;
 using namespace placeholders;
 
 shared_ptr<CGameView> CGameView::m_instanse = NULL;
-bool CGameView::m_visible = true;
 
 weak_ptr<CGameView> CGameView::GetInstance()
 {
@@ -50,8 +50,9 @@ CGameView::~CGameView()
 
 CGameView::CGameView(void)
 	: m_renderer(make_unique<COpenGLRenderer>())
+	, m_viewHelper(reinterpret_cast<IViewHelper*>(m_renderer.get()))
 	, m_shaderManager(make_unique<CShaderManagerOpenGL>())
-	, m_textWriter(*m_renderer)
+	, m_textWriter(make_unique<CTextWriter>(*m_renderer))
 	, m_particles(*m_renderer)
 	, m_gameModel(make_unique<CGameModel>())
 	, m_modelManager(*m_renderer, *m_gameModel)
@@ -69,8 +70,6 @@ void CGameView::Init()
 	
 	m_vertexLightning = false;
 	m_shadowMap = false;
-	memset(m_lightPosition, 0, sizeof(float)* 3);
-	m_gpuSkinning = false;
 	m_camera = make_unique<CCameraStrategy>(0.0, 0.0, 2.8, 0.5);
 	m_tableList = 0;
 	m_tableListShadow = 0;
@@ -93,32 +92,13 @@ void CGameView::Init()
 	m_window->Init();
 }
 
-void WindowCoordsToWorldVector(int x, int y, double & startx, double & starty, double & startz, double & endx, double & endy, double & endz)
+void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ)
 {
-	//Get model, projection and viewport matrices
-	double matModelView[16], matProjection[16];
-	int viewport[4];
-	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
-	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	//Set OpenGL Windows coordinates
-	double winX = (double)x;
-	double winY = viewport[3] - (double)y;
-
-	//Cast a ray from eye to mouse cursor;
-	gluUnProject(winX, winY, 0.0, matModelView, matProjection,
-		viewport, &startx, &starty, &startz);
-	gluUnProject(winX, winY, 1.0, matModelView, matProjection,
-		viewport, &endx, &endy, &endz);
-}
-
-void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0)
-{
-	double startx, starty, startz, endx, endy, endz;
-	WindowCoordsToWorldVector(windowX, windowY, startx, starty, startz, endx, endy, endz);
-	double a = (worldZ - startz) / (endz - startz);
-	worldX = a * (endx - startx) + startx;
-	worldY = a * (endy - starty) + starty;
+	CVector3d start, end;
+	m_viewHelper->WindowCoordsToWorldVector(windowX, windowY, start, end);
+	double a = (worldZ - start.z) / (end.z - start.z);
+	worldX = a * (end.x - start.x) + start.x;
+	worldY = a * (end.y - start.y) + start.y;
 }
 
 static const string g_controllerTag = "controller";
@@ -187,7 +167,7 @@ void CGameView::InitInput()
 	//Game Controller
 	m_input->DoOnLMBDown([this](int x, int y) {
 		CVector3d begin, end;
-		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnLeftMouseDown(begin, end, m_input->GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
@@ -198,7 +178,7 @@ void CGameView::InitInput()
 	}, 5, g_controllerTag);
 	m_input->DoOnLMBUp([this](int x, int y) {
 		CVector3d begin, end;
-		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnLeftMouseUp(begin, end, m_input->GetModifiers());
 		if (result && !m_ruler.IsEnabled())
 		{
@@ -209,7 +189,7 @@ void CGameView::InitInput()
 	}, 5, g_controllerTag);
 	m_input->DoOnMouseMove([this](int x, int y) {
 		CVector3d begin, end;
-		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnMouseMove(begin, end, m_input->GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
@@ -220,12 +200,12 @@ void CGameView::InitInput()
 	}, 5, g_controllerTag);
 	m_input->DoOnRMBDown([this](int x, int y) {
 		CVector3d begin, end;
-		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
 		return m_gameController->OnRightMouseDown(begin, end, m_input->GetModifiers());
 	}, 5, g_controllerTag);
 	m_input->DoOnRMBUp([this](int x, int y) {
 		CVector3d begin, end;
-		WindowCoordsToWorldVector(x, y, begin.x, begin.y, begin.z, end.x, end.y, end.z);
+		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
 		return m_gameController->OnRightMouseUp(begin, end, m_input->GetModifiers());
 	}, 5, g_controllerTag);
 }
@@ -297,14 +277,14 @@ void CGameView::DrawBoundingBox()
 void CGameView::Update()
 {
 	ThreadPool::Update();
-	const double * position = m_camera->GetPosition();
-	const double * direction = m_camera->GetDirection();
-	const double * up = m_camera->GetUpVector();
-	m_soundPlayer->SetListenerPosition(CVector3d(position), CVector3d(direction));
+	CVector3d position = m_camera->GetPosition();
+	CVector3d direction = m_camera->GetDirection();
+	CVector3d up = m_camera->GetUpVector();
+	m_soundPlayer->SetListenerPosition(position, direction);
 	m_soundPlayer->Update();
 	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
 	m_renderer->ResetViewMatrix();
-	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
+	m_renderer->LookAt(position, direction, up);
 	m_gameController->Update();
 	DrawObjects();
 	DrawBoundingBox();
@@ -365,7 +345,7 @@ void CGameView::DrawTable(bool shadowOnly)
 				m_renderer->PushMatrix();
 				m_renderer->Translate(object.GetX(), object.GetY(), 0.0);
 				m_renderer->Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
-				m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_gpuSkinning);
+				m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly);
 				m_renderer->PopMatrix();
 			}
 		}
@@ -419,11 +399,11 @@ void CGameView::DrawObjects(void)
 		m_renderer->PushMatrix();
 		m_renderer->Translate(object->GetX(), object->GetY(), 0.0);
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_gpuSkinning);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, false);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false, m_gpuSkinning);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false);
 		}
 		m_renderer->PopMatrix();
 	}
@@ -437,7 +417,7 @@ void CGameView::DrawObjects(void)
 		m_renderer->Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
 		m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
 		if (!projectile.GetPathToModel().empty())
-			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_gpuSkinning);
+			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false);
 		if (!projectile.GetParticle().empty())
 			m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
 		m_renderer->PopMatrix();
@@ -479,10 +459,10 @@ void CGameView::DrawShadowMap()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	m_renderer->ResetViewMatrix();
-	gluLookAt(m_lightPosition[0], m_lightPosition[1], m_lightPosition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	m_renderer->LookAt(m_lightPosition, { 0.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 });
 	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(0, 0, m_shadowMapSize, m_shadowMapSize);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
+	m_shadowMapFBO->Bind();
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(2.0, 500.0);
@@ -498,21 +478,21 @@ void CGameView::DrawShadowMap()
 	{
 		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		if (!object->CastsShadow()) continue;
-		glPushMatrix();
-		glTranslated(object->GetX(), object->GetY(), 0);
-		glRotated(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, true, m_gpuSkinning);
+		m_renderer->PushMatrix();
+		m_renderer->Translate(object->GetX(), object->GetY(), 0.0);
+		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, true);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, true, m_gpuSkinning);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, true);
 		}
-		glPopMatrix();
+		m_renderer->PopMatrix();
 	}
 
 	glPolygonOffset(0.0f, 0.0f);
 	glDisable(GL_POLYGON_OFFSET_FILL);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_shadowMapFBO->UnBind();
 	glPopAttrib();
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
@@ -572,7 +552,7 @@ CParticleSystem& CGameView::GetParticleSystem()
 
 CTextWriter& CGameView::GetTextWriter()
 {
-	return m_textWriter;
+	return *m_textWriter;
 }
 
 ISoundPlayer& CGameView::GetSoundPlayer()
@@ -629,27 +609,21 @@ void CGameView::EnableShadowMap(int size, float angle)
 	}
 	glActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &m_shadowMapTexture);
-	glBindTexture(GL_TEXTURE_2D, m_shadowMapTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	m_shadowMapTexture = m_renderer->CreateTexture(NULL, size, size, CachedTextureType::DEPTH);
+	m_shadowMapTexture->Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size, size,
-		0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE, 0);
-	glGenFramebuffers(1, &m_shadowMapFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowMapFBO);
+	m_shadowMapFBO = NULL;
+	m_shadowMapFBO->Bind();
 	glDrawBuffer(GL_NONE);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowMapTexture, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_shadowMapFBO->AssignTexture(*m_shadowMapTexture, CachedTextureType::DEPTH);
+	m_shadowMapFBO->UnBind();
 	glActiveTexture(GL_TEXTURE0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
 		LogWriter::WriteLine("Cannot enable shadowmaps. Error creating framebuffer.");
-		glDeleteTextures(1, &m_shadowMapTexture);
+		m_shadowMapTexture.reset();
 		return;
 	}
 	m_shadowMap = true;
@@ -661,15 +635,15 @@ void CGameView::EnableShadowMap(int size, float angle)
 void CGameView::DisableShadowMap()
 {
 	if (!m_shadowMap) return;
-	glDeleteTextures(1, &m_shadowMapTexture);
-	glDeleteFramebuffersEXT(1, &m_shadowMapFBO);
+	m_shadowMapTexture.reset();
+	m_shadowMapFBO.reset();
 	m_shadowMap = false;
 }
 
 void CGameView::SetLightPosition(int index, float* pos)
 {
 	glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
-	if(index == 0) memcpy(m_lightPosition, pos, sizeof(float)* 3);
+	if (index == 0) m_lightPosition = {pos[0], pos[1], pos[2]};
 }
 
 void CGameView::EnableMSAA(bool enable)
@@ -720,7 +694,7 @@ void CGameView::Preload(string const& image)
 {
 	if (!image.empty())
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_window->Clear();
 		m_window->Enter2DMode();
 		m_renderer->SetTexture(image);
 		float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
@@ -745,7 +719,7 @@ void CGameView::LoadModule(string const& module)
 	ChangeWorkingDirectory(sModule::folder);
 	m_vertexLightning = false;
 	m_shadowMap = false;
-	memset(m_lightPosition, 0, sizeof(float) * 3);
+	m_lightPosition = CVector3d();
 	ThreadPool::QueueCallback([this]() {
 		ResetController();
 		ClearResources();
@@ -762,43 +736,24 @@ void CGameView::ToggleFullscreen() const
 
 void CGameView::DrawText3D(CVector3d const& pos, string const& text)
 {
-	double matModelView[16], matProjection[16];
-	int viewport[4];
-	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
-	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	CVector3d windowPos = {0.0, 0.0, 0.0};
-	gluProject(pos.x, pos.y, pos.z, matModelView, matProjection, viewport, &windowPos.x, &windowPos.y, &windowPos.z);
-	windowPos.y = viewport[3] - windowPos.y;
 	m_window->Enter2DMode();
-	m_textWriter.PrintText(static_cast<int>(windowPos.x), static_cast<int>(windowPos.y), "times.ttf", 24, text);
+	int x, y;
+	m_viewHelper->WorldCoordsToWindowCoords(pos, x, y);
+	m_textWriter->PrintText(x, y, "times.ttf", 24, text);
 	m_window->Leave2DMode();
 }
 
 void CGameView::EnableLight(size_t index, bool enable)
 {
-	if (enable)
-	{
-		glEnable(GL_LIGHT0 + index);
-	}
-	else
-	{
-		glDisable(GL_LIGHT0 + index);
-	}
+	m_viewHelper->EnableLight(index, enable);
 }
-
-static const map<LightningType, GLenum> lightningTypesMap = {
-	{ LightningType::DIFFUSE, GL_DIFFUSE },
-	{ LightningType::AMBIENT, GL_AMBIENT },
-	{ LightningType::SPECULAR, GL_SPECULAR }
-};
 
 void CGameView::SetLightColor(size_t index, LightningType type, float * values)
 {
-	glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
+	m_viewHelper->SetLightColor(index, type, values);
 }
 
 void CGameView::EnableGPUSkinning(bool enable)
 {
-	m_gpuSkinning = enable;
+	m_modelManager.EnableGPUSkinning(enable);
 }

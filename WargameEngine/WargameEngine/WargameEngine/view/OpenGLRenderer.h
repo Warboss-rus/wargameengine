@@ -1,47 +1,9 @@
 #pragma once
 #include "IRenderer.h"
 #include "TextureManager.h"
+#include "IViewHelper.h"
 
-class COpenGlCachedTexture : public ICachedTexture
-{
-public:
-	COpenGlCachedTexture();
-	~COpenGlCachedTexture();
-
-	virtual void Bind() const override;
-
-	operator unsigned int();
-private:
-	unsigned int m_id;
-};
-
-class COpenGLDrawingList : public IDrawingList
-{
-public:
-	COpenGLDrawingList(unsigned int id);
-	~COpenGLDrawingList();
-
-	virtual void Draw() const override;
-private:
-	unsigned int m_id;
-};
-
-class COpenGLVertexBuffer : public IVertexBuffer
-{
-public:
-	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr);
-	~COpenGLVertexBuffer();
-	virtual void Bind() const override;
-	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override;
-	virtual void DrawAll(size_t count) override;
-	virtual void UnBind() const override;
-private:
-	const float * m_vertex;
-	const float * m_normals;
-	const float * m_texCoords;
-};
-
-class COpenGLRenderer : public IRenderer
+class COpenGLRenderer : public IRenderer, IViewHelper
 {
 public:
 	COpenGLRenderer() {}
@@ -64,6 +26,7 @@ public:
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
 	virtual void ResetViewMatrix() override;
+	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) override;
 
 	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) override;
 
@@ -80,8 +43,15 @@ public:
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr) override;
 
+	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
+
 	CTextureManager & GetTextureManager();
 	CTextureManager const& GetTextureManager() const;
+
+	virtual void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const override;
+	virtual void WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const override;
+	virtual void EnableLight(size_t index, bool enable) override;
+	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
 private:
 	CTextureManager m_textureManager;
 };

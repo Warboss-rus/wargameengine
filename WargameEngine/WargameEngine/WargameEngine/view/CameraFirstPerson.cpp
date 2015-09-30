@@ -30,46 +30,42 @@ void CCameraFirstPerson::Reset()
 	m_rotZ = 0.0;
 }
 
-const double * CCameraFirstPerson::GetPosition() const
+CVector3d CCameraFirstPerson::GetPosition() const
 {
-	static double dir[3];
-	dir[0] = m_transX;
-	dir[1] = m_transY;
-	dir[2] = m_transZ;
-	return dir;
+	return { m_transX, m_transY, m_transZ };
 }
 
-const double * CCameraFirstPerson::GetDirection() const
+CVector3d CCameraFirstPerson::GetDirection() const
 {
-	static double pos[3];
-	pos[0] = 0.0;
-	pos[1] = 10.0;
-	pos[2] = 0.0;
+	CVector3d pos;
+	pos.x = 0.0;
+	pos.y = 10.0;
+	pos.z = 0.0;
 	//rotateX
-	double temp1 = pos[1] * cos(m_rotX * M_PI / 180) + pos[2] * sin(m_rotX * M_PI / 180);
-	pos[2] = pos[1] * sin(m_rotX * M_PI / 180) + pos[2] * cos(m_rotX * M_PI / 180);
-	pos[1] = temp1;
+	double temp1 = pos.y * cos(m_rotX * M_PI / 180) + pos.z * sin(m_rotX * M_PI / 180);
+	pos.z = pos.y * sin(m_rotX * M_PI / 180) + pos.z * cos(m_rotX * M_PI / 180);
+	pos.y = temp1;
 	//rotateZ
-	double temp = pos[0] * cos(m_rotZ * M_PI / 180) + pos[1] * sin(m_rotZ * M_PI / 180);
-	pos[1] = pos[0] * sin(m_rotZ * M_PI / 180) + pos[1] * cos(m_rotZ * M_PI / 180);
-	pos[0] = temp;
+	double temp = pos.x * cos(m_rotZ * M_PI / 180) + pos.y * sin(m_rotZ * M_PI / 180);
+	pos.y = pos.x * sin(m_rotZ * M_PI / 180) + pos.y * cos(m_rotZ * M_PI / 180);
+	pos.x = temp;
 	//translate
-	pos[0] += m_transX;
-	pos[1] += m_transY;
-	pos[2] += m_transZ;
+	pos.x += m_transX;
+	pos.y += m_transY;
+	pos.z += m_transZ;
 	return pos;
 }
 
-const double * CCameraFirstPerson::GetUpVector() const
+CVector3d CCameraFirstPerson::GetUpVector() const
 {
-	static double up[3];
-	up[0] = 0.0;
-	up[1] = 0.0;
-	up[2] = 1.0;
+	CVector3d up;
+	up.x = 0.0;
+	up.y = 0.0;
+	up.z = 1.0;
 	//rotateZ
 	double temp = up[0] * cos(m_rotZ * M_PI / 180) + up[1] * sin(m_rotZ * M_PI / 180);
-	up[1] = up[0] * sin(m_rotZ * M_PI / 180) + up[1] * cos(m_rotZ * M_PI / 180);
-	up[0] = temp;
+	up.y = up[0] * sin(m_rotZ * M_PI / 180) + up[1] * cos(m_rotZ * M_PI / 180);
+	up.x = temp;
 	return up;
 }
 

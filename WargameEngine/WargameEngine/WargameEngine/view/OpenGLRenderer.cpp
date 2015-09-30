@@ -6,6 +6,58 @@
 
 using namespace std;
 
+class COpenGlCachedTexture : public ICachedTexture
+{
+public:
+	COpenGlCachedTexture();
+	~COpenGlCachedTexture();
+
+	virtual void Bind() const override;
+
+	operator unsigned int();
+private:
+	unsigned int m_id;
+};
+
+class COpenGLDrawingList : public IDrawingList
+{
+public:
+	COpenGLDrawingList(unsigned int id);
+	~COpenGLDrawingList();
+
+	virtual void Draw() const override;
+private:
+	unsigned int m_id;
+};
+
+class COpenGLVertexBuffer : public IVertexBuffer
+{
+public:
+	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr);
+	~COpenGLVertexBuffer();
+	virtual void Bind() const override;
+	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override;
+	virtual void DrawAll(size_t count) override;
+	virtual void UnBind() const override;
+private:
+	const float * m_vertex;
+	const float * m_normals;
+	const float * m_texCoords;
+};
+
+class COpenGLFrameBuffer : public IFrameBuffer
+{
+public:
+	COpenGLFrameBuffer();
+	~COpenGLFrameBuffer();
+	virtual void Bind() const override;
+	virtual void UnBind() const override;
+	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override;
+private:
+	unsigned int m_id;
+};
+
+
 void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow, int flags)
 {
 	if (forceLoadNow)
@@ -158,6 +210,31 @@ void COpenGLRenderer::Translate(const float dx, const float dy, const float dz)
 	glTranslatef(dx, dy, dz);
 }
 
+void COpenGLRenderer::Scale(double scale)
+{
+	glScaled(scale, scale, scale);
+}
+
+void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
+{
+	glRotated(angle, x, y, z);
+}
+
+void COpenGLRenderer::GetViewMatrix(float * matrix) const
+{
+	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+}
+
+void COpenGLRenderer::ResetViewMatrix()
+{
+	glLoadIdentity();
+}
+
+void COpenGLRenderer::LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up)
+{
+	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
+}
+
 void COpenGLRenderer::SetColor(const float r, const float g, const float b)
 {
 	glColor3f(r, g, b);
@@ -229,7 +306,8 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_RGBA },
-		{ CachedTextureType::ALPHA, GL_ALPHA }
+		{ CachedTextureType::ALPHA, GL_ALPHA },
+		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
 	};
 	auto texture = std::make_unique<COpenGlCachedTexture>();
 	texture->Bind();
@@ -255,6 +333,11 @@ std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float *
 	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords);
 }
 
+std::unique_ptr<IFrameBuffer> COpenGLRenderer::CreateFramebuffer() const
+{
+	return std::make_unique<COpenGLFrameBuffer>();
+}
+
 CTextureManager & COpenGLRenderer::GetTextureManager()
 {
 	return m_textureManager;
@@ -271,26 +354,6 @@ void COpenGLRenderer::SetMaterial(const float * ambient, const float * diffuse, 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialf(GL_FRONT, GL_SHININESS, shininess);
-}
-
-void COpenGLRenderer::GetViewMatrix(float * matrix) const
-{
-	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
-}
-
-void COpenGLRenderer::ResetViewMatrix()
-{
-	glLoadIdentity();
-}
-
-void COpenGLRenderer::Scale(double scale)
-{
-	glScaled(scale, scale, scale);
-}
-
-void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
-{
-	glRotated(angle, x, y, z);
 }
 
 COpenGlCachedTexture::COpenGlCachedTexture()
@@ -372,4 +435,90 @@ void COpenGLVertexBuffer::UnBind() const
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+void COpenGLRenderer::WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const
+{
+	//Get model, projection and viewport matrices
+	double matModelView[16], matProjection[16];
+	int viewport[4];
+	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
+	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	//Set OpenGL Windows coordinates
+	double winX = (double)x;
+	double winY = viewport[3] - (double)y;
+
+	//Cast a ray from eye to mouse cursor;
+	gluUnProject(winX, winY, 0.0, matModelView, matProjection,
+		viewport, &start.x, &start.y, &start.z);
+	gluUnProject(winX, winY, 1.0, matModelView, matProjection,
+		viewport, &end.x, &end.y, &end.z);
+}
+
+void COpenGLRenderer::WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const
+{
+	double matModelView[16], matProjection[16];
+	int viewport[4];
+	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
+	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	CVector3d windowPos;
+	gluProject(worldCoords.x, worldCoords.y, worldCoords.z, matModelView, matProjection, viewport, &windowPos.x, &windowPos.y, &windowPos.z);
+	x = static_cast<int>(windowPos.x);
+	y = static_cast<int>(viewport[3] - windowPos.y);
+}
+
+void COpenGLRenderer::EnableLight(size_t index, bool enable)
+{
+	if (enable)
+	{
+		glEnable(GL_LIGHT0 + index);
+	}
+	else
+	{
+		glDisable(GL_LIGHT0 + index);
+	}
+}
+
+static const map<LightningType, GLenum> lightningTypesMap = {
+	{ LightningType::DIFFUSE, GL_DIFFUSE },
+	{ LightningType::AMBIENT, GL_AMBIENT },
+	{ LightningType::SPECULAR, GL_SPECULAR }
+};
+
+void COpenGLRenderer::SetLightColor(size_t index, LightningType type, float * values)
+{
+	glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
+}
+
+COpenGLFrameBuffer::COpenGLFrameBuffer()
+{
+	glGenFramebuffers(1, &m_id);
+	Bind();
+}
+
+COpenGLFrameBuffer::~COpenGLFrameBuffer()
+{
+	UnBind();
+}
+
+void COpenGLFrameBuffer::Bind() const
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_id);
+}
+
+void COpenGLFrameBuffer::UnBind() const
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+}
+
+void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureType type)
+{
+	static const std::map<CachedTextureType, GLenum> typeMap = {
+		{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
+		{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
+		{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
+	};
+	glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGlCachedTexture&)texture, 0);
 }

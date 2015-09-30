@@ -17,7 +17,8 @@ enum class RenderMode
 enum class CachedTextureType
 {
 	RGBA,
-	ALPHA
+	ALPHA,
+	DEPTH
 };
 
 enum class TextureSlot
@@ -87,6 +88,7 @@ public:
 	virtual void Scale(const double scale) = 0;
 	virtual void GetViewMatrix(float * matrix) const = 0;
 	virtual void ResetViewMatrix() = 0;
+	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) = 0;
 
 	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(std::string const& texture, TextureSlot slot, int flags = 0) = 0;
