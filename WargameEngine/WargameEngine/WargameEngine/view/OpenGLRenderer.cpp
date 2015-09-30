@@ -13,6 +13,7 @@ public:
 	~COpenGlCachedTexture();
 
 	virtual void Bind() const override;
+	virtual void UnBind() const override;
 
 	operator unsigned int();
 private:
@@ -371,6 +372,11 @@ void COpenGlCachedTexture::Bind() const
 	glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
+void COpenGlCachedTexture::UnBind() const
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 COpenGlCachedTexture::operator unsigned int()
 {
 	return m_id;
@@ -492,8 +498,25 @@ void COpenGLRenderer::SetLightColor(size_t index, LightningType type, float * va
 	glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
 }
 
+void COpenGLRenderer::SetLightPosition(size_t index, float* pos)
+{
+	glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
+}
+
+float COpenGLRenderer::GetMaximumAnisotropyLevel() const
+{
+	float aniso = 1.0f;
+	if (GLEW_EXT_texture_filter_anisotropic)
+		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
+	return aniso;
+}
+
 COpenGLFrameBuffer::COpenGLFrameBuffer()
 {
+	if (!GLEW_EXT_framebuffer_object)
+	{
+		throw std::runtime_error("GL_EXT_framebuffer_object is not supported");
+	}
 	glGenFramebuffers(1, &m_id);
 	Bind();
 }
@@ -520,5 +543,18 @@ void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureTy
 		{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
 		{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
 	};
+	const std::map<CachedTextureType, pair<GLboolean, string>> extensionMap = {
+		{ CachedTextureType::RGBA, {GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" }},
+		{ CachedTextureType::ALPHA, {GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" }},
+		{ CachedTextureType::DEPTH, {GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" }}
+	};
+	if (!extensionMap.at(type).first)
+	{
+		throw std::runtime_error(extensionMap.at(type).second + " is not supported");
+	}
 	glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGlCachedTexture&)texture, 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		throw std::runtime_error("Error creating framebuffer");
+	}
 }

@@ -1,6 +1,3 @@
-#version 130
-#extension GL_EXT_gpu_shader4 : enable
-
 attribute ivec4 weightIndices;
 attribute vec4 weights;
 

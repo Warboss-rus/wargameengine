@@ -14,6 +14,7 @@ public:
 	virtual void ToggleFullscreen() override;
 	virtual void Enter2DMode() override;
 	virtual void Leave2DMode() override;
+	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
 private:
 	static void OnTimer(int value);
 	static void OnChangeState(int state);

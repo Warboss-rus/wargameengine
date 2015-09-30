@@ -424,7 +424,7 @@ int GetMaxAnisotropy(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CLUAScript::SetArgument<double>(CGameView::GetMaxAnisotropy());
+	CLUAScript::SetArgument<double>(CGameView::GetInstance().lock()->GetMaxAnisotropy());
 	return 1;
 }
 

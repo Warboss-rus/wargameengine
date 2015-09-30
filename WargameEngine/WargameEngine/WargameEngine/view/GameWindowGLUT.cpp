@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "InputGLUT.h"
+#include <stdexcept>
 
 static CGameWindowGLUT* g_instance = nullptr;
 bool CGameWindowGLUT::m_visible = true;
@@ -144,6 +145,21 @@ void CGameWindowGLUT::Leave2DMode()
 		glPopMatrix();
 		glDisable(GL_BLEND);
 		m_2dMode = false;
+	}
+}
+
+void CGameWindowGLUT::EnableMultisampling(bool enable, int /*level*/)
+{
+	if (GLEW_ARB_multisample)
+	{
+		if (enable)
+			glEnable(GL_MULTISAMPLE_ARB);
+		else
+			glDisable(GL_MULTISAMPLE_ARB);
+	}
+	else
+	{
+		throw std::runtime_error("MSAA is not supported");
 	}
 }
 

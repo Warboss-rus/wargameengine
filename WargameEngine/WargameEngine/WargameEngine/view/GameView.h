@@ -45,8 +45,8 @@ public:
 	void EnableShadowMap(int size, float angle);
 	void DisableShadowMap();
 	void SetLightPosition(int index, float* pos);
-	void EnableMSAA(bool enable);
-	static float GetMaxAnisotropy();
+	void EnableMSAA(bool enable, int level = 1.0f);
+	float GetMaxAnisotropy() const;
 	void ClearResources();
 	void SetWindowTitle(std::string const& title);
 	void Preload(std::string const& image);

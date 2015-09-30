@@ -50,7 +50,7 @@ CGameView::~CGameView()
 
 CGameView::CGameView(void)
 	: m_renderer(make_unique<COpenGLRenderer>())
-	, m_viewHelper(reinterpret_cast<IViewHelper*>(m_renderer.get()))
+	, m_viewHelper(dynamic_cast<IViewHelper*>(m_renderer.get()))
 	, m_shaderManager(make_unique<CShaderManagerOpenGL>())
 	, m_textWriter(make_unique<CTextWriter>(*m_renderer))
 	, m_particles(*m_renderer)
@@ -597,16 +597,7 @@ void CGameView::EnableVertexLightning(bool enable)
 void CGameView::EnableShadowMap(int size, float angle)
 {
 	if (m_shadowMap) return;
-	if (!GLEW_ARB_depth_buffer_float)
-	{
-		LogWriter::WriteLine("GL_ARB_depth_buffer_float is not supported, shadow maps cannot be enabled");
-		return;
-	}
-	if (!GLEW_EXT_framebuffer_object)
-	{
-		LogWriter::WriteLine("GL_EXT_framebuffer_object is not supported, shadow maps cannot be enabled");
-		return;
-	}
+	
 	glActiveTexture(GL_TEXTURE1);
 	glEnable(GL_TEXTURE_2D);
 	m_shadowMapTexture = m_renderer->CreateTexture(NULL, size, size, CachedTextureType::DEPTH);
@@ -614,18 +605,31 @@ void CGameView::EnableShadowMap(int size, float angle)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glBindTexture(GL_TEXTURE, 0);
-	m_shadowMapFBO = NULL;
-	m_shadowMapFBO->Bind();
-	glDrawBuffer(GL_NONE);
-	m_shadowMapFBO->AssignTexture(*m_shadowMapTexture, CachedTextureType::DEPTH);
-	m_shadowMapFBO->UnBind();
-	glActiveTexture(GL_TEXTURE0);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	try
 	{
-		LogWriter::WriteLine("Cannot enable shadowmaps. Error creating framebuffer.");
+		m_shadowMapFBO = m_viewHelper->CreateFramebuffer();
+	}
+	catch (std::runtime_error const& e)
+	{
+		LogWriter::WriteLine(string(e.what()) + ", shadow maps cannot be enabled");
 		m_shadowMapTexture.reset();
 		return;
 	}
+	m_shadowMapFBO->Bind();
+	glDrawBuffer(GL_NONE);
+	try
+	{
+		m_shadowMapFBO->AssignTexture(*m_shadowMapTexture, CachedTextureType::DEPTH);
+	}
+	catch (std::runtime_error const& e)
+	{
+		LogWriter::WriteLine(string("Cannot enable shadowmaps. ") + e.what());
+		m_shadowMapFBO.reset();
+		m_shadowMapTexture.reset();
+		return;
+	}
+	m_shadowMapFBO->UnBind();
+	glActiveTexture(GL_TEXTURE0);
 	m_shadowMap = true;
 	m_shadowMapSize = size;
 	m_shadowAngle = angle;
@@ -642,31 +646,25 @@ void CGameView::DisableShadowMap()
 
 void CGameView::SetLightPosition(int index, float* pos)
 {
-	glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
+	m_viewHelper->SetLightPosition(index, pos);
 	if (index == 0) m_lightPosition = {pos[0], pos[1], pos[2]};
 }
 
-void CGameView::EnableMSAA(bool enable)
+void CGameView::EnableMSAA(bool enable, int level)
 {
-	if (GLEW_ARB_multisample)
+	try
 	{
-		if (enable)
-			glEnable(GL_MULTISAMPLE_ARB);
-		else
-			glDisable(GL_MULTISAMPLE_ARB);
+		m_window->EnableMultisampling(enable, level);
 	}
-	else
+	catch (std::runtime_error const& e)
 	{
-		LogWriter::WriteLine("MSAA is not supported");
+		LogWriter::WriteLine(e.what());
 	}
 }
 
-float CGameView::GetMaxAnisotropy()
+float CGameView::GetMaxAnisotropy() const
 {
-	float aniso = 1.0f;
-	if (GLEW_EXT_texture_filter_anisotropic)
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
-	return aniso;
+	return m_viewHelper->GetMaximumAnisotropyLevel();
 }
 
 void CGameView::ClearResources()

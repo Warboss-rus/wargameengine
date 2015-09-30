@@ -25,6 +25,8 @@ public:
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const = 0;
 	virtual void EnableLight(size_t index, bool enable) = 0;
 	virtual void SetLightColor(size_t index, LightningType type, float * values) = 0;
+	virtual void SetLightPosition(size_t index, float* pos) = 0;
+	virtual float GetMaximumAnisotropyLevel() const = 0;
 
 	virtual ~IViewHelper() {}
 };

@@ -3,7 +3,7 @@
 #include "TextureManager.h"
 #include "IViewHelper.h"
 
-class COpenGLRenderer : public IRenderer, IViewHelper
+class COpenGLRenderer : public IRenderer, public IViewHelper
 {
 public:
 	COpenGLRenderer() {}
@@ -52,6 +52,8 @@ public:
 	virtual void WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const override;
 	virtual void EnableLight(size_t index, bool enable) override;
 	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
+	virtual void SetLightPosition(size_t index, float* pos) override;
+	virtual float GetMaximumAnisotropyLevel() const override;
 private:
 	CTextureManager m_textureManager;
 };

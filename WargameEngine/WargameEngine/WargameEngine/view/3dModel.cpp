@@ -73,9 +73,9 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
 		auto& shader = CGameView::GetInstance().lock()->GetShaderManager();
-		shader.SetUniformMatrix4("invBindMatrices", m_skeleton.size(), &m_gpuInverseMatrices[0]);
-		shader.SetVertexAttribute(IShaderManager::eUniformIndex::WEIGHT, 4, &m_gpuWeight[0]);
-		shader.SetVertexAttribute(IShaderManager::eUniformIndex::WEIGHT_INDEX, 4, &m_gpuWeightIndexes[0]);
+		shader.SetUniformMatrix4("invBindMatrices", m_skeleton.size(), m_gpuInverseMatrices.data());
+		shader.SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT, 4, m_gpuWeight.data());
+		shader.SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT_INDEX, 4, m_gpuWeightIndexes.data());
 	}
 	/*if (m_vbo)
 	{
@@ -96,9 +96,9 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 			glTexCoordPointer(2, GL_FLOAT, 0, (void*)(vertices.size() * 3 * sizeof(float)+normals.size() * 3 * sizeof(float)));
 		}
 	}*/
-	const float * vertex = vertices.empty() ? nullptr : &vertices[0].x;
-	const float * normal = normals.empty() || vertexOnly ? nullptr : &normals[0].x;
-	const float * texCoord = m_textureCoords.empty() || vertexOnly ? nullptr : &m_textureCoords[0].x;
+	const float * vertex = vertices.empty() ? nullptr : &vertices.data()->x;
+	const float * normal = normals.empty() || vertexOnly ? nullptr : &normals.data()->x;
+	const float * texCoord = m_textureCoords.empty() || vertexOnly ? nullptr : &m_textureCoords.data()->x;
 	auto buffer = renderer.CreateVertexBuffer(vertex, normal, texCoord);
 	buffer->Bind();
 	renderer.PushMatrix();
@@ -147,9 +147,9 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	{
 		auto& shader = CGameView::GetInstance().lock()->GetShaderManager();
 		float def[] = { 0.0f };
-		shader.DisableVertexAttribute(IShaderManager::eUniformIndex::WEIGHT, 1, def);
+		shader.DisableVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT, 1, def);
 		int idef = 0;
-		shader.DisableVertexAttribute(IShaderManager::eUniformIndex::WEIGHT_INDEX, 1, &idef);
+		shader.DisableVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT_INDEX, 1, &idef);
 	}
 }
 
@@ -330,7 +330,7 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 		{
 			CalculateGPUWeights();
 		}
-		CGameView::GetInstance().lock()->GetShaderManager().SetUniformMatrix4("joints", m_skeleton.size(), &jointMatrices[0]);
+		CGameView::GetInstance().lock()->GetShaderManager().SetUniformMatrix4("joints", m_skeleton.size(), jointMatrices.data());
 		DrawModel(renderer, hideMeshes, vertexOnly, m_vertices, m_normals, true, teamcolor, replaceTextures);
 	}
 	else
