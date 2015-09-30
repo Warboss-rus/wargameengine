@@ -198,13 +198,13 @@ void CShaderManagerOpenGL::SetVertexAttribute(eVertexAttribute attributeIndex, i
 void CShaderManagerOpenGL::SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const
 {
 	glEnableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttribPointer(attributeLocationMap.at(attributeIndex), size, GL_INT, false, 0, values);
+	glVertexAttribIPointer(attributeLocationMap.at(attributeIndex), size, GL_INT, 0, values);
 }
 
 void CShaderManagerOpenGL::SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const
 {
 	glEnableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttribPointer(attributeLocationMap.at(attributeIndex), size, GL_UNSIGNED_INT, false, 0, values);
+	glVertexAttribIPointer(attributeLocationMap.at(attributeIndex), size, GL_UNSIGNED_INT, 0, values);
 }
 
 void CShaderManagerOpenGL::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* defaultValue) const
