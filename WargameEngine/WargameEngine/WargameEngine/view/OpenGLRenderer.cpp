@@ -166,6 +166,11 @@ void Render(RenderMode mode, std::vector<X> const& vertices, std::vector<Y> cons
 	glEnd();
 }
 
+COpenGLRenderer::COpenGLRenderer()
+	:m_textureManager(*this)
+{
+}
+
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
 	Render(mode, vertices, normals, texCoords);
@@ -509,6 +514,46 @@ float COpenGLRenderer::GetMaximumAnisotropyLevel() const
 	if (GLEW_EXT_texture_filter_anisotropic)
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
 	return aniso;
+}
+
+void COpenGLRenderer::ActivateTextureSlot(TextureSlot slot)
+{
+	glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
+}
+
+void COpenGLRenderer::UnbindTexture()
+{
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateEmptyTexture()
+{
+	return std::make_unique<COpenGlCachedTexture>();
+}
+
+void COpenGLRenderer::SetTextureAnisotropy(float value)
+{
+	if (GLEW_EXT_texture_filter_anisotropic)
+	{
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, value);
+	}
+}
+
+void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags)
+{
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flags & TEXTURE_BUILD_MIPMAPS ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	if (flags & TEXTURE_BUILD_MIPMAPS)
+	{
+		gluBuild2DMipmaps(GL_TEXTURE_2D, bpp / 8, width, height, format, GL_UNSIGNED_BYTE, data);
+	}
+	else
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	}
 }
 
 COpenGLFrameBuffer::COpenGLFrameBuffer()

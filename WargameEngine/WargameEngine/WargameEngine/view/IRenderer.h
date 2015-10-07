@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector3.h"
+#include "ITextureHelper.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -21,31 +22,10 @@ enum class CachedTextureType
 	DEPTH
 };
 
-enum class TextureSlot
-{
-	eDiffuse = 0,
-	//1 is reserved for shadowmap
-	eSpecular = 2,
-	eBump,
-};
-enum TextureFlags
-{
-	TEXTURE_NO_WRAP = 1,
-};
-
 struct sTeamColor
 {
 	std::string suffix;
 	unsigned char color[3];
-};
-
-
-class ICachedTexture
-{
-public:
-	virtual void Bind() const = 0;
-	virtual void UnBind() const = 0;
-	virtual ~ICachedTexture() {}
 };
 
 class IDrawingList

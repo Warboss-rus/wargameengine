@@ -247,6 +247,7 @@
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\IShaderManager.h" />
     <ClInclude Include="view\IGameWindow.h" />
+    <ClInclude Include="view\ITextureHelper.h" />
     <ClInclude Include="view\IViewHelper.h" />
     <ClInclude Include="view\KeyDefines.h" />
     <ClInclude Include="view\OpenGLRenderer.h" />

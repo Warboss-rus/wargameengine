@@ -3,10 +3,10 @@
 #include "TextureManager.h"
 #include "IViewHelper.h"
 
-class COpenGLRenderer : public IRenderer, public IViewHelper
+class COpenGLRenderer : public IRenderer, public IViewHelper, public ITextureHelper
 {
 public:
-	COpenGLRenderer() {}
+	COpenGLRenderer();
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
@@ -54,6 +54,12 @@ public:
 	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
 	virtual void SetLightPosition(size_t index, float* pos) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
+
+	virtual void ActivateTextureSlot(TextureSlot slot) override;
+	virtual void UnbindTexture() override;
+	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture() override;
+	virtual void SetTextureAnisotropy(float value = 1.0f) override;
+	virtual void UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags) override;
 private:
 	CTextureManager m_textureManager;
 };
