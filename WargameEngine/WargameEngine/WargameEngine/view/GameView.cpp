@@ -336,18 +336,6 @@ void CGameView::DrawTable(bool shadowOnly)
 			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, vertex, {}, texCoord);
 		}
 		m_renderer->SetTexture("");
-		for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
-		{
-			CStaticObject const& object = landscape.GetStaticObject(i);
-			if (!shadowOnly || object.CastsShadow())
-			{
-				m_renderer->PushMatrix();
-				m_renderer->Translate(object.GetX(), object.GetY(), 0.0);
-				m_renderer->Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
-				m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly);
-				m_renderer->PopMatrix();
-			}
-		}
 		if (!shadowOnly)//Down't draw decals because they don't cast shadows
 		{
 			for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
@@ -390,6 +378,7 @@ void CGameView::DrawObjects(void)
 	if (m_shadowMap) SetUpShadowMapDraw();
 	if (!m_tableList) DrawTable(false);
 	m_tableList->Draw();
+	DrawStaticObjects(false);
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
@@ -422,6 +411,23 @@ void CGameView::DrawObjects(void)
 	}
 	m_particles.DrawParticles();
 	m_viewHelper->EnableDepthTest(false);
+}
+
+void CGameView::DrawStaticObjects(bool shadowOnly)
+{
+	auto& landscape = m_gameModel->GetLandscape();
+	for (size_t i = 0; i < landscape.GetStaticObjectCount(); i++)
+	{
+		CStaticObject const& object = landscape.GetStaticObject(i);
+		if (!shadowOnly || object.CastsShadow())
+		{
+			m_renderer->PushMatrix();
+			m_renderer->Translate(object.GetX(), object.GetY(), object.GetZ());
+			m_renderer->Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
+			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly);
+			m_renderer->PopMatrix();
+		}
+	}
 }
 
 void CGameView::SetUpShadowMapDraw()
@@ -462,7 +468,7 @@ void CGameView::DrawShadowMap()
 		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		if (!object->CastsShadow()) continue;
 		m_renderer->PushMatrix();
-		m_renderer->Translate(object->GetX(), object->GetY(), 0.0);
+		m_renderer->Translate(object->GetX(), object->GetY(), object->GetZ());
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, true);
 		size_t secondaryModels = object->GetSecondaryModelsCount();

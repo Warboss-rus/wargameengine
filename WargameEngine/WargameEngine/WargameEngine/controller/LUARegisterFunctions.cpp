@@ -727,7 +727,6 @@ int NewDecal(lua_State* L)
 	decal.depth = CLUAScript::GetArgument<double>(6);
 	auto view = CGameView::GetInstance().lock();
 	view->GetModel().GetLandscape().AddNewDecal(decal);
-	view->ResetTable();
 	return 0;
 }
 
@@ -741,7 +740,6 @@ int NewStaticObject(lua_State* L)
 	double rotation = CLUAScript::GetArgument<double>(4);
 	auto view = CGameView::GetInstance().lock();
 	view->GetModel().GetLandscape().AddStaticObject(CStaticObject(model, x, y, rotation));
-	view->ResetTable();
 	return 0;
 }
 

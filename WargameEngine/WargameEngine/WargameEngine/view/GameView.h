@@ -62,6 +62,7 @@ private:
 	void Update();
 	void DrawRuler();
 	void DrawObjects(void);
+	void DrawStaticObjects(bool shadowOnly);
 	void DrawBoundingBox();
 	void DrawShadowMap();
 	void SetUpShadowMapDraw();
