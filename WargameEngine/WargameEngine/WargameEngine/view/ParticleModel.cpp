@@ -5,7 +5,6 @@
 #include <cstring>
 #include <sstream>
 #include "../rapidxml/rapidxml.hpp"
-#include "ShaderManagerOpenGL.h"
 
 using namespace std;
 using namespace rapidxml;
@@ -58,7 +57,7 @@ CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
 	{
 		materialIds[material->first_attribute("id")->value()] =  m_textures.size();
 		m_textures.push_back(material->first_attribute("texture")->value());
-		std::unique_ptr<IShaderManager> shaderman = std::make_unique<CShaderManagerOpenGL>();
+		std::unique_ptr<IShaderManager> shaderman = m_renderer.CreateShaderManager();
 		if (material->first_attribute("shader")) shaderman->NewProgram(material->first_attribute("vertex_shader")->value(), material->first_attribute("fragment_shader")->value());
 		m_shaders.push_back(std::move(shaderman));
 		material = material->next_sibling("material");

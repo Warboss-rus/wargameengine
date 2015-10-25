@@ -45,6 +45,8 @@ public:
 
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
 
+	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const override;
+
 	CTextureManager & GetTextureManager();
 	CTextureManager const& GetTextureManager() const;
 

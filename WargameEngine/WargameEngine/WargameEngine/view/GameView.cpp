@@ -2,22 +2,32 @@
 #include <string>
 #include <cstring>
 #include "Matrix4.h"
-#include "ShaderManagerOpenGL.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../Ruler.h"
-#include "../SoundPlayerOpenAl.h"
 #include "../OSSpecific.h"
 #include "TextWriter.h"
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
 #include "../SoundPlayerFMod.h"
+#ifdef DIRECTX
+
+#else
 #include "OpenGLRenderer.h"
+#define RENDERER_CLASS COpenGLRenderer
+#endif
+#ifdef DIRECTX
+
+#elif GLFW
+
+#else
 #include "InputGLUT.h"
 #include "GameWindowGLUT.h"
+#define WINDOW_CLASS CGameWindowGLUT
+#endif
 
 using namespace std;
 using namespace placeholders;
@@ -48,9 +58,9 @@ CGameView::~CGameView()
 }
 
 CGameView::CGameView(void)
-	: m_renderer(make_unique<COpenGLRenderer>())
+	: m_renderer(make_unique<RENDERER_CLASS>())
 	, m_viewHelper(dynamic_cast<IViewHelper*>(m_renderer.get()))
-	, m_shaderManager(make_unique<CShaderManagerOpenGL>())
+	, m_shaderManager(m_renderer->CreateShaderManager())
 	, m_textWriter(make_unique<CTextWriter>(*m_renderer))
 	, m_particles(*m_renderer)
 	, m_gameModel(make_unique<CGameModel>())
@@ -65,7 +75,7 @@ void CGameView::Init()
 	setlocale(LC_ALL, ""); 
 	setlocale(LC_NUMERIC, "english");
 
-	m_window = make_unique<CGameWindowGLUT>();
+	m_window = make_unique<WINDOW_CLASS>();
 	
 	m_vertexLightning = false;
 	m_shadowMap = false;

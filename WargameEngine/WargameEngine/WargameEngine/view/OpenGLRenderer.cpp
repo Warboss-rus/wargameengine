@@ -3,6 +3,7 @@
 #include "gl.h"
 #include "../LogWriter.h"
 #include "TextureManager.h"
+#include "ShaderManagerOpenGL.h"
 
 using namespace std;
 
@@ -347,6 +348,11 @@ std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float *
 std::unique_ptr<IFrameBuffer> COpenGLRenderer::CreateFramebuffer() const
 {
 	return std::make_unique<COpenGLFrameBuffer>();
+}
+
+std::unique_ptr<IShaderManager> COpenGLRenderer::CreateShaderManager() const
+{
+	return std::make_unique<CShaderManagerOpenGL>();
 }
 
 CTextureManager & COpenGLRenderer::GetTextureManager()
