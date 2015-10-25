@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include "IInput.h"
 
 class IGameWindow
 {
@@ -15,5 +16,7 @@ public:
 	virtual void ToggleFullscreen() = 0;
 	virtual void Enter2DMode() = 0;
 	virtual void Leave2DMode() = 0;
+	virtual IInput& GetInput() = 0;
+	virtual void ResetInput() = 0;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) = 0;
 };

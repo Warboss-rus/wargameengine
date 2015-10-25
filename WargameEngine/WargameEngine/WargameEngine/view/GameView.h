@@ -79,10 +79,9 @@ private:
 	std::unique_ptr<IGameWindow> m_window;
 	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
+	std::unique_ptr<IRenderer> m_renderer;
 	std::unique_ptr<IShaderManager> m_shaderManager;
 	std::unique_ptr<ISoundPlayer> m_soundPlayer;
-	std::unique_ptr<IRenderer> m_renderer;
-	std::unique_ptr<IInput> m_input;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
@@ -92,6 +91,7 @@ private:
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;
 	IViewHelper * m_viewHelper;
+	IInput * m_input;
 
 	bool m_vertexLightning;
 	bool m_shadowMap;

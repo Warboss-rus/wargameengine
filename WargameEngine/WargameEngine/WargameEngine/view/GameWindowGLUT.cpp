@@ -49,6 +49,16 @@ void CGameWindowGLUT::OnShutdown()
 	}
 }
 
+IInput& CGameWindowGLUT::GetInput()
+{
+	return *m_input;
+}
+
+void CGameWindowGLUT::ResetInput()
+{
+	m_input = std::make_unique<CInputGLUT>();
+}
+
 void CGameWindowGLUT::Init()
 {
 	g_instance = this;

@@ -1,5 +1,6 @@
 #pragma once
 #include "IGameWindow.h"
+#include <memory>
 
 class CGameWindowGLUT : public IGameWindow
 {
@@ -14,6 +15,8 @@ public:
 	virtual void Enter2DMode() override;
 	virtual void Leave2DMode() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
+	virtual IInput& GetInput() override;
+	virtual void ResetInput() override;
 private:
 	static void OnTimer(int value);
 	static void OnChangeState(int state);
@@ -24,6 +27,7 @@ private:
 	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;
 	std::function<void()> m_onShutdown;
+	std::unique_ptr<IInput>m_input;
 
 	bool m_2dMode;
 

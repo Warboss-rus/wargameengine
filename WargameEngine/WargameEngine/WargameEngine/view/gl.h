@@ -1,6 +1,6 @@
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
-#include <OpenGL\glu.h>
+#include <OpenGL/glu.h>
 #else
 #ifdef _WINDOWS
 #include <Windows.h>

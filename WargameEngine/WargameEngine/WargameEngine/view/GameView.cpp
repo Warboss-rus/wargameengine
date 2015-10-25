@@ -22,7 +22,8 @@
 #ifdef DIRECTX
 
 #elif GLFW
-
+#include "GameWindowGLFW.h"
+#define WINDOW_CLASS CGameWindowGLFW
 #else
 #include "InputGLUT.h"
 #include "GameWindowGLUT.h"
@@ -114,7 +115,8 @@ static const string g_controllerTag = "controller";
 
 void CGameView::InitInput()
 {
-	m_input = make_unique<CInputGLUT>();
+	m_window->ResetInput();
+	m_input = &m_window->GetInput();
 	m_camera->SetInput(*m_input);
 	//UI
 	m_input->DoOnLMBDown([this](int x, int y) {
