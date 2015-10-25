@@ -5,9 +5,9 @@
 enum class TextureSlot
 {
 	eDiffuse = 0,
-	//1 is reserved for shadowmap
+	eShadowMap = 1,
 	eSpecular = 2,
-	eBump,
+	eBump = 3,
 };
 enum TextureFlags
 {

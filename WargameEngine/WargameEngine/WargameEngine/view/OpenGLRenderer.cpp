@@ -322,6 +322,11 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
+	if (type == CachedTextureType::DEPTH)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	}
 	return move(texture);
 }
 
@@ -516,9 +521,92 @@ float COpenGLRenderer::GetMaximumAnisotropyLevel() const
 	return aniso;
 }
 
+void COpenGLRenderer::EnableVertexLightning(bool enable)
+{
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, enable ? GL_MODULATE : GL_REPLACE);
+	if (enable)
+	{
+		glEnable(GL_LIGHTING);
+		glEnable(GL_NORMALIZE);
+	}
+	else
+	{
+		glDisable(GL_LIGHTING);
+		glDisable(GL_NORMALIZE);
+	}
+}
+
+void COpenGLRenderer::GetProjectionMatrix(float * matrix) const
+{
+	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+}
+
+void COpenGLRenderer::EnableDepthTest(bool enable)
+{
+	if(enable)
+		glEnable(GL_DEPTH_TEST);
+	else
+		glDisable(GL_DEPTH_TEST);
+}
+
+void COpenGLRenderer::EnableBlending(bool enable)
+{
+	if (enable)
+		glEnable(GL_BLEND);
+	else
+		glDisable(GL_BLEND);
+}
+
+void COpenGLRenderer::SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
+{
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	GLdouble aspect = (GLdouble)viewportWidth / (GLdouble)viewportHeight;
+	gluPerspective(viewingAngle, aspect, nearPane, farPane);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	LookAt(position, target, { 0.0, 1.0, 0.0 });
+	glPushAttrib(GL_VIEWPORT_BIT);
+	glViewport(0, 0, viewportWidth, viewportHeight);
+}
+
+void COpenGLRenderer::RestoreViewport()
+{
+	glPopAttrib();
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void COpenGLRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
+{
+	if (enable)
+	{
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(factor, units);
+	}
+	else
+	{
+		glPolygonOffset(0.0f, 0.0f);
+		glDisable(GL_POLYGON_OFFSET_FILL);
+	}
+}
+
+void COpenGLRenderer::ClearBuffers(bool color, bool depth)
+{
+	GLbitfield mask = 0;
+	if (color) mask |= GL_COLOR_BUFFER_BIT;
+	if (depth) mask |= GL_DEPTH_BUFFER_BIT;
+	glClear(mask);
+}
+
 void COpenGLRenderer::ActivateTextureSlot(TextureSlot slot)
 {
 	glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
+	glEnable(GL_TEXTURE_2D);
 }
 
 void COpenGLRenderer::UnbindTexture()

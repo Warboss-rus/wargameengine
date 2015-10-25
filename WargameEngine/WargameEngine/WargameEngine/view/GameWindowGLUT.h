@@ -5,7 +5,6 @@ class CGameWindowGLUT : public IGameWindow
 {
 public:
 	virtual void Init() override;
-	virtual void Clear() override;
 	virtual void DoOnDrawScene(std::function<void()> const& handler) override;
 	virtual void DoOnResize(std::function<void(int, int)> const& handler) override;
 	virtual void DoOnShutdown(std::function<void()> const& handler) override;

@@ -183,7 +183,6 @@
     <ClCompile Include="view\ParticleModel.cpp" />
     <ClCompile Include="view\ParticleSystem.cpp" />
     <ClCompile Include="view\ParticleTracer.cpp" />
-    <ClCompile Include="view\MathUtils.cpp" />
     <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
@@ -241,7 +240,6 @@
     <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IInput.h" />
-    <ClInclude Include="view\ImageDecoderInterface.h" />
     <ClInclude Include="view\InputGLUT.h" />
     <ClInclude Include="view\IParticleEffecth.h" />
     <ClInclude Include="view\IRenderer.h" />
@@ -250,13 +248,13 @@
     <ClInclude Include="view\ITextureHelper.h" />
     <ClInclude Include="view\IViewHelper.h" />
     <ClInclude Include="view\KeyDefines.h" />
+    <ClInclude Include="view\Matrix4.h" />
     <ClInclude Include="view\OpenGLRenderer.h" />
     <ClInclude Include="view\Particle.h" />
     <ClInclude Include="view\ParticleEffect.h" />
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\ParticleTracer.h" />
-    <ClInclude Include="view\MathUtils.h" />
     <ClInclude Include="view\ShaderManagerOpenGL.h" />
     <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />

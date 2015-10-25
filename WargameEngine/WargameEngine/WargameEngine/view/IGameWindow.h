@@ -7,7 +7,6 @@ public:
 	virtual ~IGameWindow() {}
 
 	virtual void Init() = 0;
-	virtual void Clear() = 0;
 	virtual void DoOnDrawScene(std::function<void()> const& handler) = 0;
 	virtual void DoOnResize(std::function<void(int, int)> const& handler) = 0;
 	virtual void DoOnShutdown(std::function<void()> const& handler) = 0;

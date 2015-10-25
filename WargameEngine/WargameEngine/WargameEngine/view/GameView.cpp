@@ -1,8 +1,7 @@
 #include "GameView.h"
 #include <string>
 #include <cstring>
-#include "MathUtils.h"
-#include <GL/glew.h>
+#include "Matrix4.h"
 #include "ShaderManagerOpenGL.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
@@ -83,7 +82,7 @@ void CGameView::Init()
 
 	m_window->DoOnDrawScene([this] {
 		DrawShadowMap();
-		m_window->Clear();
+		m_viewHelper->ClearBuffers(true, true);
 		Update();
 	});
 	m_window->DoOnResize([this](int width, int height) {m_ui->Resize(height, width);});
@@ -381,13 +380,12 @@ void CGameView::DrawTable(bool shadowOnly)
 
 void CGameView::DrawObjects(void)
 {
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
+	m_viewHelper->EnableDepthTest(true);
+	m_viewHelper->EnableBlending(true);
 	m_shaderManager->BindProgram();
 	if (m_vertexLightning)
 	{
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glEnable(GL_LIGHTING);
+		m_viewHelper->EnableVertexLightning(true);
 	}
 	if (m_shadowMap) SetUpShadowMapDraw();
 	if (!m_tableList) DrawTable(false);
@@ -408,8 +406,8 @@ void CGameView::DrawObjects(void)
 		m_renderer->PopMatrix();
 	}
 	m_shaderManager->UnBindProgram();
-	glDisable(GL_BLEND);
-	glDisable(GL_LIGHTING);
+	m_viewHelper->EnableBlending(false);
+	m_viewHelper->EnableVertexLightning(false);
 	for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
 	{
 		CProjectile const& projectile = m_gameModel->GetProjectile(i);
@@ -423,27 +421,22 @@ void CGameView::DrawObjects(void)
 		m_renderer->PopMatrix();
 	}
 	m_particles.DrawParticles();
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glDisable(GL_DEPTH_TEST);
+	m_viewHelper->EnableDepthTest(false);
 }
 
 void CGameView::SetUpShadowMapDraw()
 {
-	float cameraModelViewMatrix[16];
-	float cameraInverseModelViewMatrix[16];
-	float lightMatrix[16];
+	Matrix4F cameraModelViewMatrix;
 	m_renderer->GetViewMatrix(cameraModelViewMatrix);
-	InvertMatrix(cameraModelViewMatrix, cameraInverseModelViewMatrix);
 
-	m_renderer->PushMatrix();
-	m_renderer->ResetViewMatrix();
-	m_renderer->Translate(0.5, 0.5, 0.5); // + 0.5
-	m_renderer->Scale(0.5); // * 0.5
-	glMultMatrixf(m_lightProjectionMatrix);
-	glMultMatrixf(m_lightModelViewMatrix);
-	glMultMatrixf(cameraInverseModelViewMatrix);
-	m_renderer->GetViewMatrix(lightMatrix);
-	m_renderer->PopMatrix();
+	Matrix4F cameraInverseModelViewMatrix = cameraModelViewMatrix.Invert();
+
+	Matrix4F lightMatrix;
+	lightMatrix.Scale(0.5f);
+	lightMatrix.Translate(0.5, 0.5, 0.5);
+	lightMatrix *= m_lightProjectionMatrix;
+	lightMatrix *= m_lightModelViewMatrix;
+	lightMatrix *= cameraInverseModelViewMatrix;
 
 	m_shaderManager->SetUniformMatrix4("lightMatrix", 1, lightMatrix);
 }
@@ -451,24 +444,14 @@ void CGameView::SetUpShadowMapDraw()
 void CGameView::DrawShadowMap()
 {
 	if (!m_shadowMap) return;
-	glEnable(GL_DEPTH_TEST);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	m_renderer->ResetViewMatrix();
-	gluPerspective(m_shadowAngle, 1.0, 3.0, 300.0);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	m_renderer->ResetViewMatrix();
-	m_renderer->LookAt(m_lightPosition, { 0.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 });
-	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(0, 0, m_shadowMapSize, m_shadowMapSize);
+	m_viewHelper->EnableDepthTest(true);
+	m_viewHelper->SetUpViewport(m_lightPosition, { 0.0, 0.0, 0.0 }, m_shadowMapSize, m_shadowMapSize, m_shadowAngle, 3.0, 300.0);
 	m_shadowMapFBO->Bind();
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(2.0, 500.0);
+	m_viewHelper->ClearBuffers(false, true);
+	m_viewHelper->EnablePolygonOffset(true, 2.0f, 500.0f);
 
-	glGetFloatv(GL_PROJECTION_MATRIX, m_lightProjectionMatrix);
-	glGetFloatv(GL_MODELVIEW_MATRIX, m_lightModelViewMatrix);
+	m_renderer->GetViewMatrix(m_lightModelViewMatrix);
+	m_viewHelper->GetProjectionMatrix(m_lightProjectionMatrix);
 
 	if (!m_tableListShadow) DrawTable(true);
 	m_tableListShadow->Draw();
@@ -490,15 +473,10 @@ void CGameView::DrawShadowMap()
 		m_renderer->PopMatrix();
 	}
 
-	glPolygonOffset(0.0f, 0.0f);
-	glDisable(GL_POLYGON_OFFSET_FILL);
+	m_viewHelper->EnablePolygonOffset(false);
 	m_shadowMapFBO->UnBind();
-	glPopAttrib();
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glDisable(GL_DEPTH_TEST);
+	m_viewHelper->RestoreViewport();
+	m_viewHelper->EnableDepthTest(false);
 }
 
 void CGameView::CreateSkybox(double size, string const& textureFolder)
@@ -588,23 +566,14 @@ void CGameView::NewShaderProgram(string const& vertex, string const& fragment, s
 void CGameView::EnableVertexLightning(bool enable)
 { 
 	m_vertexLightning = enable;
-	if (enable)
-		glEnable(GL_NORMALIZE);
-	else
-		glDisable(GL_NORMALIZE);
 }
 
 void CGameView::EnableShadowMap(int size, float angle)
 {
 	if (m_shadowMap) return;
 	
-	glActiveTexture(GL_TEXTURE1);
-	glEnable(GL_TEXTURE_2D);
+	m_viewHelper->ActivateTextureSlot(TextureSlot::eShadowMap);
 	m_shadowMapTexture = m_renderer->CreateTexture(NULL, size, size, CachedTextureType::DEPTH);
-	m_shadowMapTexture->Bind();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	glBindTexture(GL_TEXTURE, 0);
 	try
 	{
 		m_shadowMapFBO = m_viewHelper->CreateFramebuffer();
@@ -616,7 +585,7 @@ void CGameView::EnableShadowMap(int size, float angle)
 		return;
 	}
 	m_shadowMapFBO->Bind();
-	glDrawBuffer(GL_NONE);
+	//glDrawBuffer(GL_NONE);
 	try
 	{
 		m_shadowMapFBO->AssignTexture(*m_shadowMapTexture, CachedTextureType::DEPTH);
@@ -629,11 +598,10 @@ void CGameView::EnableShadowMap(int size, float angle)
 		return;
 	}
 	m_shadowMapFBO->UnBind();
-	glActiveTexture(GL_TEXTURE0);
+	m_viewHelper->ActivateTextureSlot(TextureSlot::eDiffuse);
 	m_shadowMap = true;
 	m_shadowMapSize = size;
 	m_shadowAngle = angle;
-	
 }
 
 void CGameView::DisableShadowMap()
@@ -692,7 +660,7 @@ void CGameView::Preload(string const& image)
 {
 	if (!image.empty())
 	{
-		m_window->Clear();
+		m_viewHelper->ClearBuffers(true, true);
 		m_window->Enter2DMode();
 		m_renderer->SetTexture(image);
 		float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);

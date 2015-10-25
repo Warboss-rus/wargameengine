@@ -30,6 +30,9 @@
     <Filter Include="Source Files\rapidxml">
       <UniqueIdentifier>{39bcbc2e-de4f-42e3-aef1-59a8dc028d8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\view\Particles">
+      <UniqueIdentifier>{6b5eae1d-58f0-4da4-8c2f-1fa1de237270}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -143,15 +146,6 @@
     <ClCompile Include="model\Object.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
-    <ClCompile Include="view\ParticleEffect.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ParticleModel.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ParticleSystem.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="model\Projectile.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -172,9 +166,6 @@
     </ClCompile>
     <ClCompile Include="model\Bounding.cpp">
       <Filter>Source Files\model</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ParticleTracer.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="TranslationManager.cpp">
       <Filter>Source Files</Filter>
@@ -212,9 +203,6 @@
     <ClCompile Include="controller\CommandHandler.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
-    <ClCompile Include="view\Particle.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="view\OpenGLRenderer.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -223,9 +211,6 @@
     </ClCompile>
     <ClCompile Include="SoundPlayerFMod.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\MathUtils.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandPlayAnimation.cpp">
       <Filter>Source Files\controller\commands</Filter>
@@ -241,6 +226,21 @@
     </ClCompile>
     <ClCompile Include="view\InputGLUT.cpp">
       <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Particle.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ParticleEffect.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ParticleModel.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ParticleSystem.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ParticleTracer.cpp">
+      <Filter>Source Files\view\Particles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -418,9 +418,6 @@
     <ClInclude Include="view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\ImageDecoderInterface.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\IParticleEffecth.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -440,21 +437,6 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\OpenGLRenderer.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\Particle.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleEffect.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleModel.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleSystem.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleTracer.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\SkyBox.h">
@@ -486,9 +468,6 @@
     </ClInclude>
     <ClInclude Include="SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\MathUtils.h">
-      <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="Signal.h">
       <Filter>Source Files</Filter>
@@ -530,6 +509,24 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\ITextureHelper.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Particle.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleEffect.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleModel.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleSystem.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ParticleTracer.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Matrix4.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
