@@ -126,15 +126,36 @@ void LoadTGA(void * data, unsigned int size, sImage & img)
 	}
 }
 
-void UseDDS(nv_dds::CDDSImage & image, ICachedTexture& texture)
+void UseDDS(nv_dds::CDDSImage & image, ICachedTexture& texture, ITextureHelper & helper)
 {
 	texture.Bind();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	if (image.get_num_mipmaps() == 0)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	int flags = TEXTURE_BGRA;
+	if (image.get_components() == 4) flags |= TEXTURE_HAS_ALPHA;
+	if (!image.get_num_mipmaps()) flags |= TEXTURE_BUILD_MIPMAPS;
+	TextureMipMaps mipmaps;
+	for (auto i = 0; i < image.get_num_mipmaps(); i++)
+	{
+		auto& mipmap = image.get_mipmap(i);
+		char * data = mipmap;
+		sTextureMipMap texMipMap = { reinterpret_cast<unsigned char*>(data), static_cast<unsigned int>(mipmap.get_width()), static_cast<unsigned int>(mipmap.get_height()), static_cast<unsigned int>(mipmap.get_size()) };
+		mipmaps.push_back(texMipMap);
+	}
+
+	char * data = image;
+	if (image.is_compressed())
+	{
+		static const std::map<int, TextureFlags> compressionMap = {
+			{ GL_COMPRESSED_RGB_S3TC_DXT1_EXT, TEXTURE_COMPRESSION_DXT1_NO_ALPHA },
+			{ GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, TEXTURE_COMPRESSION_DXT1 },
+			{ GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, TEXTURE_COMPRESSION_DXT3 },
+			{ GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, TEXTURE_COMPRESSION_DXT5 }
+		};
+		helper.UploadCompressedTexture(reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), image.get_size(), compressionMap.at(image.get_format()), mipmaps);
+	}
 	else
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	image.upload_texture2D(0, GL_TEXTURE_2D);
+	{
+		helper.UploadTexture(reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), static_cast<unsigned short>(image.get_components() * 8), flags, mipmaps);
+	}
 }
 
 void CTextureManager::UseTexture(sImage const& img, ICachedTexture& texture)
@@ -172,8 +193,8 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& 
 			{
 				throw std::exception(("Cannot open file " + path).c_str());
 			}
-		}, [image, &texRef]() {
-			UseDDS(*image, texRef);
+		}, [image, &texRef, this]() {
+			UseDDS(*image, texRef, m_helper);
 		});
 	}
 	else 

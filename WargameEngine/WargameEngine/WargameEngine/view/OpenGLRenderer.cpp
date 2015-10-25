@@ -539,7 +539,7 @@ void COpenGLRenderer::SetTextureAnisotropy(float value)
 	}
 }
 
-void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags)
+void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
 {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
@@ -553,6 +553,59 @@ void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, un
 	else
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	}
+	if (!mipmaps.empty())
+	{
+		for (size_t i = 0; i < mipmaps.size(); i++)
+		{
+			auto& mipmap = mipmaps[i];
+			glTexImage2D(GL_TEXTURE_2D, i + 1, bpp / 8,
+				mipmap.width,
+				mipmap.height, 0,
+				format,
+				GL_UNSIGNED_BYTE,
+				mipmap.data);
+		}
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+	}
+}
+
+void COpenGLRenderer::UploadCompressedTexture(unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
+{
+	if (!GLEW_EXT_texture_compression_s3tc)
+	{
+		LogWriter::WriteLine("Compressed textures are not supported");
+		return;
+	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+
+	static const std::map<int, int> compressionMap = {
+		{ TEXTURE_COMPRESSION_DXT1_NO_ALPHA, GL_COMPRESSED_RGB_S3TC_DXT1_EXT },
+		{ TEXTURE_COMPRESSION_DXT1, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT },
+		{ TEXTURE_COMPRESSION_DXT3, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT },
+		{ TEXTURE_COMPRESSION_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT }
+	};
+	GLenum format = compressionMap.at(flags & TEXTURE_COMPRESSION_MASK);
+
+	glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, size, data);
+
+	if (!mipmaps.empty())
+	{
+		for (size_t i = 0; i < mipmaps.size(); i++)
+		{
+			auto& mipmap = mipmaps[i];
+			glCompressedTexImage2DARB(GL_TEXTURE_2D, i + 1, format,
+				mipmap.width,
+				mipmap.height, 0,
+				mipmap.size,
+				mipmap.data);
+		}
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 	}
 }
 

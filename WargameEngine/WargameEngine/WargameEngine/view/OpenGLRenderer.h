@@ -59,7 +59,8 @@ public:
 	virtual void UnbindTexture() override;
 	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture() override;
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
-	virtual void UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags) override;
+	virtual void UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	virtual void UploadCompressedTexture(unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
 private:
 	CTextureManager m_textureManager;
 };
