@@ -1,9 +1,11 @@
 #pragma once
 #include "Vector3.h"
+#include "ITextureHelper.h"
 #include <string>
 #include <vector>
 #include <memory>
 #include <functional>
+#include "IShaderManager.h"
 
 enum class RenderMode
 {
@@ -17,34 +19,14 @@ enum class RenderMode
 enum class CachedTextureType
 {
 	RGBA,
-	ALPHA
-};
-
-enum class TextureSlot
-{
-	eDiffuse = 0,
-	//1 is reserved for shadowmap
-	eSpecular = 2,
-	eBump,
-};
-enum TextureFlags
-{
-	TEXTURE_NO_WRAP = 1,
+	ALPHA,
+	DEPTH
 };
 
 struct sTeamColor
 {
 	std::string suffix;
 	unsigned char color[3];
-};
-
-
-class ICachedTexture
-{
-public:
-	virtual void Bind() const = 0;
-
-	virtual ~ICachedTexture() {}
 };
 
 class IDrawingList
@@ -87,6 +69,7 @@ public:
 	virtual void Scale(const double scale) = 0;
 	virtual void GetViewMatrix(float * matrix) const = 0;
 	virtual void ResetViewMatrix() = 0;
+	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) = 0;
 
 	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(std::string const& texture, TextureSlot slot, int flags = 0) = 0;
@@ -99,6 +82,8 @@ public:
 	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void()> const& func) = 0;
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr) = 0;
+
+	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const = 0;
 
 	virtual ~IRenderer() {}
 };

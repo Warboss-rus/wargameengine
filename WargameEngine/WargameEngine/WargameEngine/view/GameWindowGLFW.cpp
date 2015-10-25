@@ -88,11 +88,6 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
 }
 
-void CGameWindowGLFW::Clear()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
 void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
 {
 	m_onDraw = handler;
@@ -152,6 +147,15 @@ void CGameWindowGLFW::Leave2DMode()
 		glDisable(GL_BLEND);
 		m_2dMode = false;
 	}
+}
+
+void CGameWindowGLFW::EnableMultisampling(bool enable, int level /*= 1.0f*/)
+{
+	if (enable)
+		glEnable(GL_MULTISAMPLE);
+	else
+		glDisable(GL_MULTISAMPLE);
+	glfwWindowHint(GLFW_SAMPLES, level);
 }
 
 IInput& CGameWindowGLFW::GetInput()

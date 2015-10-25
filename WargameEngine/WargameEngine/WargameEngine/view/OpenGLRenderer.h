@@ -1,50 +1,12 @@
 #pragma once
 #include "IRenderer.h"
 #include "TextureManager.h"
+#include "IViewHelper.h"
 
-class COpenGlCachedTexture : public ICachedTexture
+class COpenGLRenderer : public IRenderer, public IViewHelper
 {
 public:
-	COpenGlCachedTexture();
-	~COpenGlCachedTexture();
-
-	virtual void Bind() const override;
-
-	operator unsigned int();
-private:
-	unsigned int m_id;
-};
-
-class COpenGLDrawingList : public IDrawingList
-{
-public:
-	COpenGLDrawingList(unsigned int id);
-	~COpenGLDrawingList();
-
-	virtual void Draw() const override;
-private:
-	unsigned int m_id;
-};
-
-class COpenGLVertexBuffer : public IVertexBuffer
-{
-public:
-	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr);
-	~COpenGLVertexBuffer();
-	virtual void Bind() const override;
-	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override;
-	virtual void DrawAll(size_t count) override;
-	virtual void UnBind() const override;
-private:
-	const float * m_vertex;
-	const float * m_normals;
-	const float * m_texCoords;
-};
-
-class COpenGLRenderer : public IRenderer
-{
-public:
-	COpenGLRenderer() {}
+	COpenGLRenderer();
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
@@ -64,6 +26,7 @@ public:
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
 	virtual void ResetViewMatrix() override;
+	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) override;
 
 	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) override;
 
@@ -80,8 +43,34 @@ public:
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr) override;
 
+	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
+
+	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const override;
+
 	CTextureManager & GetTextureManager();
 	CTextureManager const& GetTextureManager() const;
+
+	virtual void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const override;
+	virtual void WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const override;
+	virtual void EnableLight(size_t index, bool enable) override;
+	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
+	virtual void SetLightPosition(size_t index, float* pos) override;
+	virtual float GetMaximumAnisotropyLevel() const override;
+	virtual void EnableVertexLightning(bool enable) override;
+	virtual void GetProjectionMatrix(float * matrix) const override;
+	virtual void EnableDepthTest(bool enable) override;
+	virtual void EnableBlending(bool enable) override;
+	virtual void SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
+	virtual void RestoreViewport() override;
+	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
+	virtual void ClearBuffers(bool color = true, bool depth = true) override;
+
+	virtual void ActivateTextureSlot(TextureSlot slot) override;
+	virtual void UnbindTexture() override;
+	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture() override;
+	virtual void SetTextureAnisotropy(float value = 1.0f) override;
+	virtual void UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	virtual void UploadCompressedTexture(unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
 private:
 	CTextureManager m_textureManager;
 };

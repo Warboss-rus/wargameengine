@@ -4,10 +4,10 @@
 class IShaderManager
 {
 public:
-	enum eUniformIndex
+	enum class eVertexAttribute
 	{
-		WEIGHT = 16,
-		WEIGHT_INDEX = 17,
+		WEIGHT,
+		WEIGHT_INDEX,
 	};
 
 	virtual ~IShaderManager() {}
@@ -31,11 +31,11 @@ public:
 
 	virtual void SetUniformMatrix4(std::string const& uniform, int count, float* value) const = 0;
 
-	virtual void SetVertexAttribute(eUniformIndex attributeIndex, int size, float* values) const= 0;
-	virtual void SetVertexAttribute(eUniformIndex attributeIndex, int size, int* values) const = 0;
-	virtual void SetVertexAttribute(eUniformIndex attributeIndex, int size, unsigned int* values) const = 0;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, float* values) const= 0;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const = 0;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const = 0;
 
-	virtual void DisableVertexAttribute(eUniformIndex attributeIndex, int size, float* defaultValue) const = 0;
-	virtual void DisableVertexAttribute(eUniformIndex attributeIndex, int size, int* defaultValue) const = 0;
-	virtual void DisableVertexAttribute(eUniformIndex attributeIndex, int size, unsigned int* defaultValue) const = 0;
+	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, float* defaultValue) const = 0;
+	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, int* defaultValue) const = 0;
+	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* defaultValue) const = 0;
 };

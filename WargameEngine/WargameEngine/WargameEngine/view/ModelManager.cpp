@@ -10,7 +10,7 @@
 #include "../model/IBoundingBoxManager.h"
 
 CModelManager::CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager)
-	:m_renderer(&renderer), m_bbManager(&bbmanager)
+	:m_renderer(&renderer), m_bbManager(&bbmanager), m_gpuSkinning(false)
 {
 }
 
@@ -98,13 +98,18 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning)
+void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly)
 {
 	LoadIfNotExist(path);
-	m_models[path]->Draw(*m_renderer, object, vertexOnly, gpuSkinning);
+	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning);
 }
 
 std::vector<std::string> CModelManager::GetAnimations(std::string const& path)
 {
 	return m_models[path]->GetAnimations();
+}
+
+void CModelManager::EnableGPUSkinning(bool enable)
+{
+	m_gpuSkinning = enable;
 }

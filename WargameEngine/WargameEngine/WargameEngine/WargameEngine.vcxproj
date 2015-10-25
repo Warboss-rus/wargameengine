@@ -72,7 +72,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -89,7 +89,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -108,7 +108,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -183,7 +183,6 @@
     <ClCompile Include="view\ParticleModel.cpp" />
     <ClCompile Include="view\ParticleSystem.cpp" />
     <ClCompile Include="view\ParticleTracer.cpp" />
-    <ClCompile Include="view\MathUtils.cpp" />
     <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
@@ -241,20 +240,21 @@
     <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IInput.h" />
-    <ClInclude Include="view\ImageDecoderInterface.h" />
     <ClInclude Include="view\InputGLFW.h" />
     <ClInclude Include="view\IParticleEffecth.h" />
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\IShaderManager.h" />
     <ClInclude Include="view\IGameWindow.h" />
+    <ClInclude Include="view\ITextureHelper.h" />
+    <ClInclude Include="view\IViewHelper.h" />
     <ClInclude Include="view\KeyDefines.h" />
+    <ClInclude Include="view\Matrix4.h" />
     <ClInclude Include="view\OpenGLRenderer.h" />
     <ClInclude Include="view\Particle.h" />
     <ClInclude Include="view\ParticleEffect.h" />
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\ParticleTracer.h" />
-    <ClInclude Include="view\MathUtils.h" />
     <ClInclude Include="view\ShaderManagerOpenGL.h" />
     <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />

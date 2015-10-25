@@ -102,3 +102,13 @@ int CUIWindow::GetHeight() const
 {
 	return CUIElement::GetWidth() + m_theme->window.headerHeight * m_windowWidth / 600;
 }
+
+int CUIWindow::GetX() const
+{
+	return m_x;
+}
+
+int CUIWindow::GetY() const
+{
+	return m_y;
+}

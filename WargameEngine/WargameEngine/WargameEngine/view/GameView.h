@@ -1,5 +1,4 @@
 #include <memory>
-
 #include "ICamera.h"
 #include "IRenderer.h"
 #include "../ISoundPlayer.h"
@@ -8,19 +7,14 @@
 #include "../controller/GameController.h"
 #include "../model/GameModel.h"
 #include "IGameWindow.h"
+#include "IViewHelper.h"
 #include "ModelManager.h"
 #include "ParticleSystem.h"
-#include "TextWriter.h"
 #include "SkyBox.h"
 #include "../Ruler.h"
 #include "../TranslationManager.h"
 
-enum class LightningType
-{
-	DIFFUSE,
-	AMBIENT,
-	SPECULAR
-};
+class CTextWriter;
 
 class CGameView
 {
@@ -51,8 +45,8 @@ public:
 	void EnableShadowMap(int size, float angle);
 	void DisableShadowMap();
 	void SetLightPosition(int index, float* pos);
-	void EnableMSAA(bool enable);
-	static float GetMaxAnisotropy();
+	void EnableMSAA(bool enable, int level = 1.0f);
+	float GetMaxAnisotropy() const;
 	void ClearResources();
 	void SetWindowTitle(std::string const& title);
 	void Preload(std::string const& image);
@@ -68,6 +62,7 @@ private:
 	void Update();
 	void DrawRuler();
 	void DrawObjects(void);
+	void DrawStaticObjects(bool shadowOnly);
 	void DrawBoundingBox();
 	void DrawShadowMap();
 	void SetUpShadowMapDraw();
@@ -75,6 +70,7 @@ private:
 	void InitInput();
 	void ResetController();
 	void DrawText3D(CVector3d const& pos, std::string const& text);
+	void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
 	CGameView(void);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;
@@ -83,29 +79,29 @@ private:
 	std::unique_ptr<IGameWindow> m_window;
 	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
+	std::unique_ptr<IRenderer> m_renderer;
 	std::unique_ptr<IShaderManager> m_shaderManager;
 	std::unique_ptr<ISoundPlayer> m_soundPlayer;
-	std::unique_ptr<IRenderer> m_renderer;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
+	std::unique_ptr<CTextWriter> m_textWriter;
 	CModelManager m_modelManager;
 	CParticleSystem m_particles;
-	CTextWriter m_textWriter;
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;
+	IViewHelper * m_viewHelper;
+	IInput * m_input;
 
 	bool m_vertexLightning;
 	bool m_shadowMap;
-	unsigned int m_shadowMapTexture;
-	unsigned int m_shadowMapFBO;
+	std::unique_ptr<ICachedTexture> m_shadowMapTexture;
+	std::unique_ptr<IFrameBuffer> m_shadowMapFBO;
 	int m_shadowMapSize;
 	float m_lightProjectionMatrix[16];
 	float m_lightModelViewMatrix[16];
-	float m_lightPosition[3];
+	CVector3d m_lightPosition;
 	float m_shadowAngle;
-	static bool m_visible;
-	bool m_gpuSkinning;
 
 	std::unique_ptr<IDrawingList> m_tableList;
 	std::unique_ptr<IDrawingList> m_tableListShadow;

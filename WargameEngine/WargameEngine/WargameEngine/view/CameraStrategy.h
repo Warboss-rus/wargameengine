@@ -6,9 +6,9 @@ class CCameraStrategy : public ICamera
 public:
 	CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale);
 	~CCameraStrategy();
-	virtual const double * GetPosition() const override;
-	virtual const double * GetDirection() const override;
-	virtual const double * GetUpVector() const override;
+	virtual CVector3d GetPosition() const override;
+	virtual CVector3d GetDirection() const override;
+	virtual CVector3d GetUpVector() const override;
 	virtual void SetInput(IInput & input) override;
 	virtual const double GetScale() const override;private:
 	void Reset();

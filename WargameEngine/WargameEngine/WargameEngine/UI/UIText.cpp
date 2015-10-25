@@ -1,6 +1,7 @@
 #include "UIText.h"
 #include "UITheme.h"
 #include "../view/GameView.h"
+#include "../view/TextWriter.h"
 
 void PrintText(IRenderer & renderer, int x, int y, int width, int height, std::string const& str, CUITheme::sText const& theme)
 {

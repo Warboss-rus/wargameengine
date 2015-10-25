@@ -1,6 +1,4 @@
 #include "TextureManager.h"
-#include <GL/glew.h>
-#include "gl.h"
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
@@ -17,10 +15,9 @@ struct sImage
 	std::string filename;
 	unsigned int width;
 	unsigned int height;
-	unsigned int bpp;
+	unsigned short bpp;
 	unsigned char * data;
-	int flags;
-	GLenum format;
+	int flags = 0;
 	std::vector<sTeamColor> teamcolor;
 	std::vector<unsigned char> uncompressedData;
 };
@@ -29,12 +26,13 @@ void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char c
 
 void LoadBMP(void * data, unsigned int /*size*/, sImage & img)
 {
-	unsigned char* imgData = (unsigned char*) data;
+	unsigned char* imgData = (unsigned char*)data;
 	unsigned int headerSize = *(int*)&(imgData[0x0A]);     // Position in the file where the actual data begins
 	img.width = *(int*)&(imgData[0x12]);
 	img.height = *(int*)&(imgData[0x16]);
 	img.bpp = *(short*)&(imgData[0x1C]);
-	img.format = (img.bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
+	if(img.bpp != 24)img.flags |= TEXTURE_HAS_ALPHA;
+	img.flags |= TEXTURE_BGRA;
 	if (headerSize==0)  // Some BMP files are misformatted, guess missing information
 		headerSize=54;
 	img.data = imgData + headerSize;
@@ -57,7 +55,7 @@ void UnpackTexture(void * data, unsigned int size, sImage & img)
 	img.width = width;
 	img.height = height;
 	img.bpp = 32;
-	img.format = GL_RGBA;
+	img.flags |= TEXTURE_HAS_ALPHA;
 	img.data = img.uncompressedData.data();
 	for (size_t i = 0; i < img.teamcolor.size(); ++i)
 	{
@@ -111,7 +109,8 @@ void LoadTGA(void * data, unsigned int size, sImage & img)
 	img.width = imgData[13] * 256 + imgData[12];
 	img.height = imgData[15] * 256 + imgData[14];
 	img.bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
-	img.format = (img.bpp == 24)?GL_BGR_EXT:GL_BGRA_EXT;
+	if (img.bpp != 24) img.flags |= TEXTURE_HAS_ALPHA;
+	img.flags |= TEXTURE_BGRA;
 	if(imgData[2] == 10) //Compressed
 	{
 		img.uncompressedData = UncompressTGA(imgData, img.width, img.height, img.bpp);
@@ -127,38 +126,52 @@ void LoadTGA(void * data, unsigned int size, sImage & img)
 	}
 }
 
-void UseDDS(nv_dds::CDDSImage & image, unsigned int id)
+void UseDDS(nv_dds::CDDSImage & image, ICachedTexture& texture, ITextureHelper & helper)
 {
-	glBindTexture(GL_TEXTURE_2D, id);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	if (image.get_num_mipmaps() == 0)
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	texture.Bind();
+	int flags = TEXTURE_BGRA;
+	if (image.get_components() == 4) flags |= TEXTURE_HAS_ALPHA;
+	if (!image.get_num_mipmaps()) flags |= TEXTURE_BUILD_MIPMAPS;
+	TextureMipMaps mipmaps;
+	for (auto i = 0; i < image.get_num_mipmaps(); i++)
+	{
+		auto& mipmap = image.get_mipmap(i);
+		char * data = mipmap;
+		sTextureMipMap texMipMap = { reinterpret_cast<unsigned char*>(data), static_cast<unsigned int>(mipmap.get_width()), static_cast<unsigned int>(mipmap.get_height()), static_cast<unsigned int>(mipmap.get_size()) };
+		mipmaps.push_back(texMipMap);
+	}
+
+	char * data = image;
+	if (image.is_compressed())
+	{
+		static const std::map<int, TextureFlags> compressionMap = {
+			{ GL_COMPRESSED_RGB_S3TC_DXT1_EXT, TEXTURE_COMPRESSION_DXT1_NO_ALPHA },
+			{ GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, TEXTURE_COMPRESSION_DXT1 },
+			{ GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, TEXTURE_COMPRESSION_DXT3 },
+			{ GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, TEXTURE_COMPRESSION_DXT5 }
+		};
+		helper.UploadCompressedTexture(reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), image.get_size(), compressionMap.at(image.get_format()), mipmaps);
+	}
 	else
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	image.upload_texture2D(0, GL_TEXTURE_2D);
+	{
+		helper.UploadTexture(reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), static_cast<unsigned short>(image.get_components() * 8), flags, mipmaps);
+	}
 }
 
-void UseTexture(sImage const& img, unsigned int id, float anisotropy)
+void CTextureManager::UseTexture(sImage const& img, ICachedTexture& texture)
 {
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, id);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (img.flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (img.flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	if (GLEW_EXT_texture_filter_anisotropic)
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-	// Give the image to OpenGL
-	gluBuild2DMipmaps(GL_TEXTURE_2D, img.bpp / 8, img.width, img.height, img.format, GL_UNSIGNED_BYTE, img.data);
+	texture.Bind();
+	m_helper.SetTextureAnisotropy(m_anisotropyLevel);
+	m_helper.UploadTexture(img.data, img.width, img.height, img.bpp, img.flags | TEXTURE_BUILD_MIPMAPS);
 }
 
-unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor, float anisotropy, bool now = false, int flags = 0)
+std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor, bool now, int flags)
 {
 	std::shared_ptr<sImage> img = std::make_shared<sImage>();
 	img->filename = path;
 	img->flags = flags;
-	unsigned int id;
-	glGenTextures(1, &id);
+	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
+	ICachedTexture& texRef = *tex;
 	unsigned int dotCoord = path.find_last_of('.') + 1;
 	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
 	img->teamcolor = teamcolor;
@@ -180,8 +193,8 @@ unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const&
 			{
 				throw std::exception(("Cannot open file " + path).c_str());
 			}
-		}, [image, id]() {
-			UseDDS(*image, id);
+		}, [image, &texRef, this]() {
+			UseDDS(*image, texRef, m_helper);
 		});
 	}
 	else 
@@ -189,8 +202,8 @@ unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const&
 			UnpackTexture(data, size, *img);
 		};
 	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(path, loadingFunc);
-	readTask->AddOnCompleteHandler([=]() {
-		UseTexture(*img, id, anisotropy);
+	readTask->AddOnCompleteHandler([=, &texRef]() {
+		UseTexture(*img, texRef);
 	});
 	readTask->AddOnFailHandler([](std::exception const& e) {
 		LogWriter::WriteLine(e.what());
@@ -200,33 +213,37 @@ unsigned int LoadTexture(std::string const& path, std::vector<sTeamColor> const&
 	{
 		WaitForTask(*readTask);
 	}
-	return id;
+	return tex;
+}
+
+CTextureManager::CTextureManager(ITextureHelper & helper)
+	:m_helper(helper)
+{
 }
 
 void CTextureManager::SetTexture(std::string const& path, const std::vector<sTeamColor> * teamcolor, int flags)
 {
 	if(path.empty()) 
 	{
-		glBindTexture(GL_TEXTURE_2D, 0);
+		m_helper.UnbindTexture();
 		return;	
 	}
 	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
 	if(m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, m_anisotropyLevel, false, flags);
+		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, false, flags);
 	}
-	glBindTexture(GL_TEXTURE_2D, m_textures[pair]);
+	m_textures[pair]->Bind();
 }
 
 void CTextureManager::SetAnisotropyLevel(float level)
 {
 	for (auto i = m_textures.begin(); i != m_textures.end(); ++i)
 	{
-		glBindTexture(GL_TEXTURE_2D, i->second);
-		if (GLEW_EXT_texture_filter_anisotropic)
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, level);
+		i->second->Bind();
+		m_helper.SetTextureAnisotropy(level);
 	}
-	glBindTexture(GL_TEXTURE_2D, 0);
+	m_helper.UnbindTexture();
 	m_anisotropyLevel = level;
 }
 
@@ -235,7 +252,7 @@ void CTextureManager::LoadTextureNow(std::string const& path, const std::vector<
 	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, m_anisotropyLevel, true, flags);
+		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, true, flags);
 	}
 }
 
@@ -244,30 +261,22 @@ void CTextureManager::Reset()
 	m_textures.clear();
 }
 
-CTextureManager::~CTextureManager()
-{
-	for (auto i = m_textures.begin(); i != m_textures.end(); ++i)
-	{
-		glDeleteTextures(1, &i->second);
-	}
-}
-
 void CTextureManager::SetTexture(std::string const& path, TextureSlot slot, int flags)
 {
-	glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
+	m_helper.ActivateTextureSlot(slot);
 	if (path.empty())
 	{
-		glBindTexture(GL_TEXTURE_2D, 0);
-		glActiveTexture(GL_TEXTURE0);
+		m_helper.UnbindTexture();
+		m_helper.ActivateTextureSlot(TextureSlot::eDiffuse);
 		return;
 	}
 	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, std::vector<sTeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, m_anisotropyLevel, false, flags);
+		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, false, flags);
 	}
-	glBindTexture(GL_TEXTURE_2D, m_textures[pair]);
-	glActiveTexture(GL_TEXTURE0);
+	m_textures[pair]->Bind();
+	m_helper.ActivateTextureSlot(TextureSlot::eDiffuse);
 }
 
 void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char * color)
@@ -289,7 +298,7 @@ void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char *
 	int maskHeight = *(int*)&(maskData[0x12]);
 	int maskWidth = *(int*)&(maskData[0x16]);
 	short maskbpp = *(short*)&(maskData[0x1C]);
-	if (image.format == GL_BGRA || image.format == GL_BGR)
+	if (image.flags & TEXTURE_HAS_ALPHA)
 	{
 		std::swap(color[0], color[2]);
 	}

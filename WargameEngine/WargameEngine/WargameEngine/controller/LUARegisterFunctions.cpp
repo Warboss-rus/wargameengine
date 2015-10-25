@@ -424,7 +424,7 @@ int GetMaxAnisotropy(lua_State* L)
 {
 	if (CLUAScript::GetArgumentCount() != 0)
 		return luaL_error(L, "no arguments expected");
-	CLUAScript::SetArgument<double>(CGameView::GetMaxAnisotropy());
+	CLUAScript::SetArgument<double>(CGameView::GetInstance().lock()->GetMaxAnisotropy());
 	return 1;
 }
 
@@ -725,7 +725,8 @@ int NewDecal(lua_State* L)
 	decal.rotation = CLUAScript::GetArgument<double>(4);
 	decal.width = CLUAScript::GetArgument<double>(5);
 	decal.depth = CLUAScript::GetArgument<double>(6);
-	CGameView::GetInstance().lock()->GetModel().GetLandscape().AddNewDecal(decal);
+	auto view = CGameView::GetInstance().lock();
+	view->GetModel().GetLandscape().AddNewDecal(decal);
 	return 0;
 }
 
@@ -739,7 +740,6 @@ int NewStaticObject(lua_State* L)
 	double rotation = CLUAScript::GetArgument<double>(4);
 	auto view = CGameView::GetInstance().lock();
 	view->GetModel().GetLandscape().AddStaticObject(CStaticObject(model, x, y, rotation));
-	view->ResetTable();
 	return 0;
 }
 

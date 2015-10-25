@@ -25,13 +25,13 @@ public:
 	virtual void SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const override;
 	virtual void SetUniformMatrix4(std::string const& uniform, int count, float* values) const override;
 
-	virtual void SetVertexAttribute(eUniformIndex attributeIndex, int size, float* values) const override;
-	virtual void SetVertexAttribute(eUniformIndex attributeIndex, int size, int* values) const override;
-	virtual void SetVertexAttribute(eUniformIndex attributeIndex, int size, unsigned int* values) const override;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, float* values) const override;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const override;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const override;
 
-	virtual void DisableVertexAttribute(eUniformIndex attributeIndex, int size, float* defaultValue) const override;
-	virtual void DisableVertexAttribute(eUniformIndex attributeIndex, int size, int* defaultValue) const override;
-	virtual void DisableVertexAttribute(eUniformIndex attributeIndex, int size, unsigned int* defaultValue) const override;
+	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, float* defaultValue) const override;
+	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, int* defaultValue) const override;
+	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* defaultValue) const override;
 
 
 private:
