@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "InputGLUT.h"
+#include "OpenGLRenderer.h"
 #include <stdexcept>
 
 static CGameWindowGLUT* g_instance = nullptr;
@@ -49,17 +50,23 @@ void CGameWindowGLUT::OnShutdown()
 	}
 }
 
-IInput& CGameWindowGLUT::GetInput()
+IInput& CGameWindowGLUT::ResetInput()
 {
+	m_input = std::make_unique<CInputGLUT>();
 	return *m_input;
 }
 
-void CGameWindowGLUT::ResetInput()
+IRenderer& CGameWindowGLUT::GetRenderer()
 {
-	m_input = std::make_unique<CInputGLUT>();
+	return *m_renderer;
 }
 
-void CGameWindowGLUT::Init()
+IViewHelper& CGameWindowGLUT::GetViewHelper()
+{
+	return *m_renderer;
+}
+
+CGameWindowGLUT::CGameWindowGLUT()
 {
 	g_instance = this;
 	int argc = 0;
@@ -91,6 +98,15 @@ void CGameWindowGLUT::Init()
 
 	glewInit();
 
+	m_renderer = std::make_unique<COpenGLRenderer>();
+}
+
+CGameWindowGLUT::~CGameWindowGLUT()
+{
+}
+
+void CGameWindowGLUT::LaunchMainLoop()
+{
 	glutMainLoop();
 }
 

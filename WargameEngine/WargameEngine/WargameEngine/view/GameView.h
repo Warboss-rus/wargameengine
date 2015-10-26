@@ -47,6 +47,7 @@ public:
 	void SetLightPosition(int index, float* pos);
 	void EnableMSAA(bool enable, int level = 1.0f);
 	float GetMaxAnisotropy() const;
+	void SetAnisotropyLevel(float level);
 	void ClearResources();
 	void SetWindowTitle(std::string const& title);
 	void Preload(std::string const& image);
@@ -77,9 +78,11 @@ private:
 
 	static std::shared_ptr<CGameView> m_instanse;
 	std::unique_ptr<IGameWindow> m_window;
+	IRenderer * m_renderer;
+	IViewHelper * m_viewHelper;
+	IInput * m_input;
 	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
-	std::unique_ptr<IRenderer> m_renderer;
 	std::unique_ptr<IShaderManager> m_shaderManager;
 	std::unique_ptr<ISoundPlayer> m_soundPlayer;
 	std::unique_ptr<ICamera> m_camera;
@@ -90,8 +93,6 @@ private:
 	CParticleSystem m_particles;
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;
-	IViewHelper * m_viewHelper;
-	IInput * m_input;
 
 	bool m_vertexLightning;
 	bool m_shadowMap;

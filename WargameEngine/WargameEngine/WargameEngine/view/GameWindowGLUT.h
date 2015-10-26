@@ -2,10 +2,14 @@
 #include "IGameWindow.h"
 #include <memory>
 
+class COpenGLRenderer;
+
 class CGameWindowGLUT : public IGameWindow
 {
 public:
-	virtual void Init() override;
+	CGameWindowGLUT();
+	~CGameWindowGLUT();
+	virtual void LaunchMainLoop() override;
 	virtual void DoOnDrawScene(std::function<void()> const& handler) override;
 	virtual void DoOnResize(std::function<void(int, int)> const& handler) override;
 	virtual void DoOnShutdown(std::function<void()> const& handler) override;
@@ -15,8 +19,9 @@ public:
 	virtual void Enter2DMode() override;
 	virtual void Leave2DMode() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
-	virtual IInput& GetInput() override;
-	virtual void ResetInput() override;
+	virtual IInput& ResetInput() override;
+	virtual IRenderer& GetRenderer() override;
+	virtual IViewHelper& GetViewHelper() override;
 private:
 	static void OnTimer(int value);
 	static void OnChangeState(int state);
@@ -28,6 +33,7 @@ private:
 	std::function<void(int, int)> m_onResize;
 	std::function<void()> m_onShutdown;
 	std::unique_ptr<IInput>m_input;
+	std::unique_ptr<COpenGLRenderer> m_renderer;
 
 	bool m_2dMode;
 

@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw", "..\glfw\glfw.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineGLFW", "WargameEngine\WargameEngineGLFW.vcxproj", "{C76D278D-0186-4B57-802C-1ADCFCDA7D80}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineDirectX", "WargameEngine\WargameEngineDirectX.vcxproj", "{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -117,6 +119,15 @@ Global
 		{C76D278D-0186-4B57-802C-1ADCFCDA7D80}.Release-XP|Win32.ActiveCfg = Release-XP|Win32
 		{C76D278D-0186-4B57-802C-1ADCFCDA7D80}.Release-XP|Win32.Build.0 = Release-XP|Win32
 		{C76D278D-0186-4B57-802C-1ADCFCDA7D80}.Release-XP|x64.ActiveCfg = Release-XP|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Debug|Win32.Build.0 = Debug|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Debug|x64.ActiveCfg = Debug|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Release|Win32.ActiveCfg = Release|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Release|Win32.Build.0 = Release|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Release|x64.ActiveCfg = Release|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Release-XP|Win32.ActiveCfg = Release-XP|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Release-XP|Win32.Build.0 = Release-XP|Win32
+		{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}.Release-XP|x64.ActiveCfg = Release-XP|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

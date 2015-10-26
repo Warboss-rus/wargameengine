@@ -360,11 +360,6 @@ CTextureManager & COpenGLRenderer::GetTextureManager()
 	return m_textureManager;
 }
 
-CTextureManager const& COpenGLRenderer::GetTextureManager() const
-{
-	return m_textureManager;
-}
-
 void COpenGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);

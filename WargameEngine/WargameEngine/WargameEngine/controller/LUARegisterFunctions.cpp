@@ -8,7 +8,6 @@
 #include "../view/CameraFirstPerson.h"
 #include "../Network.h"
 #include "../ThreadPool.h"
-#include "../view/OpenGLRenderer.h"
 
 int CreateTable(lua_State* L)
 {
@@ -416,7 +415,7 @@ int SetAnisotropy(lua_State* L)
 	if (CLUAScript::GetArgumentCount() != 1)
 		return luaL_error(L, "1 argument expected");
 	float a = CLUAScript::GetArgument<float>(1);
-	((COpenGLRenderer&)CGameView::GetInstance().lock()->GetRenderer()).GetTextureManager().SetAnisotropyLevel(a);
+	CGameView::GetInstance().lock()->SetAnisotropyLevel(a);
 	return 0;
 }
 
