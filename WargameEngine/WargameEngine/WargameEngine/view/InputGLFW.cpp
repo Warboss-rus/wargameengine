@@ -14,6 +14,7 @@ struct CInputGLFW::sSignals
 	CSignal<int, int> m_onKeyUp;
 	CSignal<unsigned int> m_onCharacter;
 	CSignal<int, int> m_onMouseMove;
+	int m_modifiers;
 };
 
 std::unique_ptr<CInputGLFW::sSignals> CInputGLFW::m_signals = std::make_unique<CInputGLFW::sSignals>();
@@ -71,16 +72,17 @@ void CInputGLFW::OnScroll(GLFWwindow* /*window*/, double /*xoffset*/, double yof
 	}
 }
 
-void CInputGLFW::OnKeyboard(GLFWwindow* /*window*/, int /*key*/, int scancode, int action, int mods)
+void CInputGLFW::OnKeyboard(GLFWwindow* /*window*/, int key, int /*scancode*/, int action, int mods)
 {
 	if (action == GLFW_RELEASE)
 	{
-		m_signals->m_onKeyUp(scancode, mods);
+		m_signals->m_onKeyUp(key, mods);
 	}
 	else
 	{
-		m_signals->m_onKeyDown(scancode, mods);
+		m_signals->m_onKeyDown(key, mods);
 	}
+	m_signals->m_modifiers = mods;
 }
 
 void CInputGLFW::OnCharacter(GLFWwindow* /*window*/, unsigned int key)
@@ -153,11 +155,41 @@ void CInputGLFW::EnableCursor(bool enable /*= true*/)
 {
 	glfwSetInputMode(m_window, GLFW_CURSOR, enable ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 	m_cursorEnabled = enable;
+	if (enable)
+	{
+		glfwSetCursorPos(m_window, g_lastMouseX, g_lastMouseY);
+	}
+	else
+	{
+		g_prevX = g_lastMouseX;
+		g_prevY = g_lastMouseY;
+		int width, height;
+		glfwGetWindowSize(m_window, &width, &height);
+		screenCenterX = width / 2;
+		screenCenterY = height / 2;
+		glfwSetCursorPos(m_window, screenCenterX, screenCenterY);
+		g_lastMouseX = screenCenterX;
+		g_lastMouseY = screenCenterY;
+	}
 }
 
-void CInputGLFW::OnMouseMove(GLFWwindow* /*window*/, double xpos, double ypos)
+void CInputGLFW::OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 {
 	m_signals->m_onMouseMove(static_cast<int>(xpos), static_cast<int>(ypos));
+	if (!m_cursorEnabled)
+	{
+		if (g_prevX == 0 && g_prevY)
+		{
+			g_prevX = xpos;
+			g_prevY = ypos;
+		}
+		glfwSetCursorPos(window, screenCenterX, screenCenterY);
+	}
+	else
+	{
+		g_lastMouseX = xpos;
+		g_lastMouseY = ypos;
+	}
 }
 
 int CInputGLFW::GetMouseX() const
@@ -186,5 +218,9 @@ void CInputGLFW::DeleteAllSignalsByTag(std::string const& tag)
 
 int CInputGLFW::GetModifiers() const
 {
-	return 0;//::GetModifiers();
+	int result = 0;
+	if (m_signals->m_modifiers & GLFW_MOD_ALT) result |= MODIFIER_ALT;
+	if (m_signals->m_modifiers & GLFW_MOD_SHIFT) result |= MODIFIER_SHIFT;
+	if (m_signals->m_modifiers & GLFW_MOD_CONTROL) result |= MODIFIER_CTRL;
+	return result;
 }

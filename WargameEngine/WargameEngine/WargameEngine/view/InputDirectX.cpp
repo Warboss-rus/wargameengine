@@ -130,13 +130,13 @@ void CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 	}break;
 	case WM_MOUSEWHEEL:
 	{
-		if (HIWORD(wParam) > 0)
+		if ((HIWORD(wParam) & 0xf000) == 0)
 		{
 			m_onWheelUp();
 		}
 		else
 		{
-			m_onWheelUp();
+			m_onWheelDown();
 		}
 	}break;
 	case WM_MOUSEMOVE:
