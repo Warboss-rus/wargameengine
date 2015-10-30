@@ -36,6 +36,7 @@ public:
 	virtual void EnableBlending(bool enable) = 0;
 	virtual void SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) = 0;
 	virtual void RestoreViewport() = 0;
+	virtual void SetUpViewport2D() = 0;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) = 0;
 	virtual void ClearBuffers(bool color = true, bool depth = true) = 0;
 	virtual CTextureManager& GetTextureManager() = 0;

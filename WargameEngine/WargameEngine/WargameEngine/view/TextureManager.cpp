@@ -128,7 +128,6 @@ void LoadTGA(void * data, unsigned int size, sImage & img)
 
 void UseDDS(nv_dds::CDDSImage & image, ICachedTexture& texture, ITextureHelper & helper)
 {
-	texture.Bind();
 	int flags = TEXTURE_BGRA;
 	if (image.get_components() == 4) flags |= TEXTURE_HAS_ALPHA;
 	if (!image.get_num_mipmaps()) flags |= TEXTURE_BUILD_MIPMAPS;
@@ -150,19 +149,18 @@ void UseDDS(nv_dds::CDDSImage & image, ICachedTexture& texture, ITextureHelper &
 			{ GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, TEXTURE_COMPRESSION_DXT3 },
 			{ GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, TEXTURE_COMPRESSION_DXT5 }
 		};
-		helper.UploadCompressedTexture(reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), image.get_size(), compressionMap.at(image.get_format()), mipmaps);
+		helper.UploadCompressedTexture(texture, reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), image.get_size(), compressionMap.at(image.get_format()), mipmaps);
 	}
 	else
 	{
-		helper.UploadTexture(reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), static_cast<unsigned short>(image.get_components() * 8), flags, mipmaps);
+		helper.UploadTexture(texture, reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), static_cast<unsigned short>(image.get_components() * 8), flags, mipmaps);
 	}
 }
 
 void CTextureManager::UseTexture(sImage const& img, ICachedTexture& texture)
 {
-	texture.Bind();
+	m_helper.UploadTexture(texture, img.data, img.width, img.height, img.bpp, img.flags | TEXTURE_BUILD_MIPMAPS);
 	m_helper.SetTextureAnisotropy(m_anisotropyLevel);
-	m_helper.UploadTexture(img.data, img.width, img.height, img.bpp, img.flags | TEXTURE_BUILD_MIPMAPS);
 }
 
 std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor, bool now, int flags)

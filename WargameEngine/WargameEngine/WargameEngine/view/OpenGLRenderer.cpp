@@ -628,8 +628,9 @@ void COpenGLRenderer::SetTextureAnisotropy(float value)
 	}
 }
 
-void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
+void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
 {
+	texture.Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -660,8 +661,9 @@ void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, un
 	}
 }
 
-void COpenGLRenderer::UploadCompressedTexture(unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
+void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
 {
+	texture.Bind();
 	if (!GLEW_EXT_texture_compression_s3tc)
 	{
 		LogWriter::WriteLine("Compressed textures are not supported");
@@ -696,6 +698,21 @@ void COpenGLRenderer::UploadCompressedTexture(unsigned char * data, unsigned int
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 	}
+}
+
+void COpenGLRenderer::SetUpViewport2D()
+{
+	glEnable(GL_BLEND);
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glPushAttrib(GL_VIEWPORT_BIT);
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glOrtho(0, viewport[2] - viewport[0], viewport[3] - viewport[1], 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 COpenGLFrameBuffer::COpenGLFrameBuffer()

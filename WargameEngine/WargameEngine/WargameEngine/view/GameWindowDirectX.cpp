@@ -4,8 +4,11 @@
 #include <d3d11.h>
 #include <atlcomcli.h>
 #include "DirectXRenderer.h"
+#include <DirectXMath.h>
 
 #pragma comment (lib, "d3d11.lib")
+
+using namespace DirectX;
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -34,7 +37,7 @@ public:
 
 		InitDirect3D();
 
-		m_renderer = std::make_unique<CDirectXRenderer>(m_dev, m_devcon);
+		m_renderer = std::make_unique<CDirectXRenderer>(m_dev, m_devcon, m_hWnd);
 	}
 
 	void LaunchMainLoop()
@@ -47,7 +50,7 @@ public:
 		while (true)
 		{
 			// Check to see if any messages are waiting in the queue
-			if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 			{
 				// translate keystroke messages into the right format
 				TranslateMessage(&msg);
@@ -57,7 +60,10 @@ public:
 
 				// check to see if it's time to quit
 				if (msg.message == WM_QUIT)
-					break;
+				{
+					ReleaseDirect3D();
+					return;
+				}
 			}
 
 			//Render next frame
@@ -65,8 +71,6 @@ public:
 
 			m_swapchain->Present(0, 0);
 		}
-
-		ReleaseDirect3D();
 	}
 
 	void DoOnDrawScene(std::function<void() > const& handler)
@@ -103,16 +107,6 @@ public:
 		m_swapchain->GetFullscreenState(&fullscreen, &pOutput);
 		m_swapchain->SetFullscreenState(!fullscreen, pOutput);
 		pOutput->Release();
-	}
-
-	void Enter2DMode()
-	{
-
-	}
-
-	void Leave2DMode()
-	{
-
 	}
 
 	IInput& ResetInput()
@@ -199,7 +193,7 @@ private:
 		D3D11CreateDeviceAndSwapChain(NULL,
 			D3D_DRIVER_TYPE_HARDWARE,
 			NULL,
-			NULL,
+			D3D11_CREATE_DEVICE_DEBUG,
 			NULL,
 			NULL,
 			D3D11_SDK_VERSION,
@@ -214,11 +208,12 @@ private:
 		m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 
 		// use the back buffer address to create the render target
-		m_dev->CreateRenderTargetView(pBackBuffer, NULL, &m_backbuffer);
+		ID3D11RenderTargetView* backBuffer;
+		m_dev->CreateRenderTargetView(pBackBuffer, NULL, &backBuffer);
 		pBackBuffer->Release();
-
 		// set the render target as the back buffer
-		m_devcon->OMSetRenderTargets(1, &m_backbuffer, NULL);
+		m_devcon->OMSetRenderTargets(1, &backBuffer, NULL);
+		backBuffer->Release();
 
 		// Set the viewport
 		D3D11_VIEWPORT viewport;
@@ -228,6 +223,7 @@ private:
 		viewport.TopLeftY = 0;
 		viewport.Width = 600;
 		viewport.Height = 600;
+		viewport.MaxDepth = 1.0f;
 
 		m_devcon->RSSetViewports(1, &viewport);
 	}
@@ -247,7 +243,6 @@ private:
 	CComPtr<IDXGISwapChain> m_swapchain;             // the pointer to the swap chain interface
 	CComPtr<ID3D11Device> m_dev;                     // the pointer to our Direct3D device interface
 	CComPtr<ID3D11DeviceContext> m_devcon;           // the pointer to our Direct3D device context
-	CComPtr<ID3D11RenderTargetView> m_backbuffer;
 };
 
 CGameWindowDirectX::CGameWindowDirectX()
@@ -292,16 +287,6 @@ void CGameWindowDirectX::SetTitle(std::string const& title)
 void CGameWindowDirectX::ToggleFullscreen()
 {
 	m_pImpl->ToggleFullscreen();
-}
-
-void CGameWindowDirectX::Enter2DMode()
-{
-	m_pImpl->Enter2DMode();
-}
-
-void CGameWindowDirectX::Leave2DMode()
-{
-	m_pImpl->Leave2DMode();
 }
 
 IInput& CGameWindowDirectX::ResetInput()

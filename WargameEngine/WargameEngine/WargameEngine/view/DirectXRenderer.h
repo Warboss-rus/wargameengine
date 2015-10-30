@@ -3,11 +3,15 @@
 #include "IViewHelper.h"
 #include <d3d11.h>
 #include "TextureManager.h"
+#include <atlcomcli.h>
+#include <DirectXMath.h>
+
+class CShaderManagerDirectX;
 
 class CDirectXRenderer : public IRenderer, public IViewHelper
 {
 public:
-	CDirectXRenderer(ID3D11Device *dev = nullptr, ID3D11DeviceContext *devcon = nullptr);
+	CDirectXRenderer(ID3D11Device *dev = nullptr, ID3D11DeviceContext *devcon = nullptr, HWND hWnd = NULL);
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
@@ -59,16 +63,38 @@ public:
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
 	virtual CTextureManager& GetTextureManager() override;
+	virtual void SetUpViewport2D() override;
 
 	virtual void ActivateTextureSlot(TextureSlot slot) override;
 	virtual void UnbindTexture() override;
 	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture() override;
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
-	virtual void UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
-	virtual void UploadCompressedTexture(unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+
+	void SetShaderManager(CShaderManagerDirectX * shaderManager);
+	void SetTextureResource(ID3D11ShaderResourceView * view);
 private:
+	void CreateBuffer(ID3D11Buffer ** bufferPtr, void * data, size_t size);
+	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize);
+	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget = false);
+	void UpdateMatrices();
+
 	CTextureManager m_textureManager;
-	std::unique_ptr<IShaderManager> m_defaultShaderManager;
+	std::unique_ptr<CShaderManagerDirectX> m_defaultShaderManager;
+	CShaderManagerDirectX * m_shaderManager;
 	ID3D11Device *m_dev;
 	ID3D11DeviceContext *m_devcon;
+	HWND m_hWnd;
+	unsigned int m_activeTextureSlot;
+
+	CComPtr<ID3D11Buffer> m_vertexBuffer2;
+	CComPtr<ID3D11Buffer> m_vertexBuffer3;
+	CComPtr<ID3D11Buffer> m_normalsBuffer;
+	CComPtr<ID3D11Buffer> m_texCoordBuffer;
+	CComPtr<ID3D11Buffer> m_weightBuffer;
+	CComPtr<ID3D11Buffer> m_weightIndexBuffer;
+
+	std::vector<DirectX::XMMATRIX> m_viewMatrices;
+	std::vector<DirectX::XMMATRIX> m_projectionMatrices;
 };

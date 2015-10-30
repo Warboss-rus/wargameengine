@@ -216,9 +216,12 @@ void CGameView::InitInput()
 
 void CGameView::DrawUI()
 {
-	m_window->Enter2DMode();
+	m_viewHelper->SetUpViewport2D();
+	m_renderer->PushMatrix();
+	m_renderer->ResetViewMatrix();
 	m_ui->Draw();
-	m_window->Leave2DMode();
+	m_renderer->PopMatrix();
+	m_viewHelper->RestoreViewport();
 }
 
 void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation, IRenderer & renderer)
@@ -677,13 +680,16 @@ void CGameView::Preload(string const& image)
 	if (!image.empty())
 	{
 		m_viewHelper->ClearBuffers(true, true);
-		m_window->Enter2DMode();
+		m_viewHelper->SetUpViewport2D();
+		m_renderer->PushMatrix();
+		m_renderer->ResetViewMatrix();
 		m_renderer->SetTexture(image);
 		float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
 		float height = 480.0f;//glutGet(GLUT_WINDOW_HEIGHT);
 		m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 		//glutSwapBuffers();
-		m_window->Leave2DMode();
+		m_renderer->PopMatrix();
+		m_viewHelper->RestoreViewport();
 	}
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
@@ -718,11 +724,14 @@ void CGameView::ToggleFullscreen() const
 
 void CGameView::DrawText3D(CVector3d const& pos, string const& text)
 {
-	m_window->Enter2DMode();
+	m_viewHelper->SetUpViewport2D();
+	m_renderer->PushMatrix();
+	m_renderer->ResetViewMatrix();
 	int x, y;
 	m_viewHelper->WorldCoordsToWindowCoords(pos, x, y);
 	m_textWriter->PrintText(x, y, "times.ttf", 24, text);
-	m_window->Leave2DMode();
+	m_renderer->PopMatrix();
+	m_viewHelper->RestoreViewport();
 }
 
 void CGameView::EnableLight(size_t index, bool enable)

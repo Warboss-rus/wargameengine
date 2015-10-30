@@ -16,8 +16,6 @@ public:
 	virtual void ResizeWindow(int width, int height) = 0;
 	virtual void SetTitle(std::string const& title) = 0;
 	virtual void ToggleFullscreen() = 0;
-	virtual void Enter2DMode() = 0;
-	virtual void Leave2DMode() = 0;
 	virtual IInput& ResetInput() = 0;
 	virtual IRenderer& GetRenderer() = 0;
 	virtual IViewHelper& GetViewHelper() = 0;

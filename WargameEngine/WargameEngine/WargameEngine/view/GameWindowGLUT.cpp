@@ -140,35 +140,6 @@ void CGameWindowGLUT::ToggleFullscreen()
 	glutFullScreenToggle();
 }
 
-void CGameWindowGLUT::Enter2DMode()
-{
-	if (!m_2dMode)
-	{
-		m_2dMode = true;
-		glEnable(GL_BLEND);
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-	}
-}
-
-void CGameWindowGLUT::Leave2DMode()
-{
-	if (m_2dMode)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glDisable(GL_BLEND);
-		m_2dMode = false;
-	}
-}
-
 void CGameWindowGLUT::EnableMultisampling(bool enable, int /*level*/)
 {
 	if (GLEW_ARB_multisample)

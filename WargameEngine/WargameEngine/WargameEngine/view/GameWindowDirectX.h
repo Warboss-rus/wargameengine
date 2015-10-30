@@ -15,8 +15,6 @@ public:
 	virtual void ResizeWindow(int width, int height) override;
 	virtual void SetTitle(std::string const& title) override;
 	virtual void ToggleFullscreen() override;
-	virtual void Enter2DMode() override;
-	virtual void Leave2DMode() override;
 	virtual IInput& ResetInput() override;
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;
