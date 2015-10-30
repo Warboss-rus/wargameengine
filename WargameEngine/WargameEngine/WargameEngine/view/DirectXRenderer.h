@@ -88,8 +88,7 @@ private:
 	HWND m_hWnd;
 	unsigned int m_activeTextureSlot;
 
-	CComPtr<ID3D11Buffer> m_vertexBuffer2;
-	CComPtr<ID3D11Buffer> m_vertexBuffer3;
+	CComPtr<ID3D11Buffer> m_vertexBuffer;
 	CComPtr<ID3D11Buffer> m_normalsBuffer;
 	CComPtr<ID3D11Buffer> m_texCoordBuffer;
 	CComPtr<ID3D11Buffer> m_weightBuffer;

@@ -164,8 +164,7 @@ CDirectXRenderer::CDirectXRenderer(ID3D11Device *dev, ID3D11DeviceContext *devco
 
 	m_defaultShaderManager->BindProgram();
 
-	CreateBuffer(&m_vertexBuffer2, sizeof(CVector2f) * 10000);
-	CreateBuffer(&m_vertexBuffer3, sizeof(CVector3f) * 10000);
+	CreateBuffer(&m_vertexBuffer, sizeof(CVector3f) * 10000);
 	CreateBuffer(&m_normalsBuffer, sizeof(CVector3f) * 10000);
 	CreateBuffer(&m_texCoordBuffer, sizeof(CVector2f) * 10000);
 	CreateBuffer(&m_weightBuffer, sizeof(float) * 4 * 10000);
@@ -212,9 +211,9 @@ std::map<RenderMode, D3D11_PRIMITIVE_TOPOLOGY> renderModeMap = {
 
 void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	UINT stride[] = { sizeof(CVector2i), sizeof(CVector2f), 0 };
+	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), 0 };
 	UINT offset[] = { 0, 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer2, m_texCoordBuffer, nullptr };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, nullptr };
 
 	std::vector<float> floatVertices;
 	floatVertices.reserve(vertices.size() * 2);
@@ -225,9 +224,9 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 	}
 
 	D3D11_MAPPED_SUBRESOURCE ms;
-	m_devcon->Map(m_vertexBuffer2, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+	m_devcon->Map(m_vertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
 	memcpy(ms.pData, floatVertices.data(), floatVertices.size() * sizeof(float));                // copy the data
-	m_devcon->Unmap(m_vertexBuffer2, NULL);                        // unmap the buffer
+	m_devcon->Unmap(m_vertexBuffer, NULL);                        // unmap the buffer
 
 	D3D11_MAPPED_SUBRESOURCE ms2;
 	m_devcon->Map(m_texCoordBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms2);   // map the buffer
@@ -244,36 +243,68 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> cons
 {
 	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f) };
 	UINT offset[] = { 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer2, m_texCoordBuffer, nullptr };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, nullptr };
 
 	D3D11_MAPPED_SUBRESOURCE ms;
-	m_devcon->Map(m_vertexBuffer2, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+	m_devcon->Map(m_vertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
 	memcpy(ms.pData, vertices.data(), vertices.size() * sizeof(CVector2f));                // copy the data
-	m_devcon->Unmap(m_vertexBuffer2, NULL);                        // unmap the buffer
+	m_devcon->Unmap(m_vertexBuffer, NULL);                        // unmap the buffer
 
 	D3D11_MAPPED_SUBRESOURCE ms2;
 	m_devcon->Map(m_texCoordBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms2);   // map the buffer
 	memcpy(ms2.pData, texCoords.data(), texCoords.size() * sizeof(CVector2f));                // copy the data
 	m_devcon->Unmap(m_texCoordBuffer, NULL);                        // unmap the buffer
 
-	m_shaderManager->SetInputLayout(DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT);
+	m_shaderManager->SetInputLayout(DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
 	m_devcon->IASetPrimitiveTopology(renderModeMap.at(mode));
 	m_devcon->Draw(vertices.size(), 0);
 }
 
+std::vector<float> ConvertVector3D(std::vector<CVector3d> const& vec)
+{
+	std::vector<float> result;
+	result.reserve(vec.size() * 3);
+	for (auto& item : vec)
+	{
+		result.push_back(item.x);
+		result.push_back(item.y);
+		result.push_back(item.z);
+	}
+	return std::move(result);
+}
+
 void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords)
 {
-	return;
-	UINT stride[] = { sizeof(CVector3d), sizeof(CVector2d), sizeof(CVector3d) };
+	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
 	UINT offset[] = { 0, 0, 0 };
-	CComPtr<ID3D11Buffer> vertexBuffer;
-	CComPtr<ID3D11Buffer> texCoordBuffer;
-	CComPtr<ID3D11Buffer> normalsBuffer;
-	CreateBuffer(&vertexBuffer, (void*)vertices.data(), vertices.size() * sizeof(CVector3d));
-	CreateBuffer(&texCoordBuffer, (void*)texCoords.data(), texCoords.size() * sizeof(CVector2d));
-	CreateBuffer(&normalsBuffer, (void*)normals.data(), normals.size() *sizeof(CVector3d));
-	ID3D11Buffer* buffers[] = { vertexBuffer, texCoordBuffer, normalsBuffer };
+
+	auto floatVertices = ConvertVector3D(vertices);
+	auto floatNormals = ConvertVector3D(normals);
+	std::vector<float> floatTexCoords;
+	floatTexCoords.reserve(texCoords.size() * 3);
+	for (auto& item : texCoords)
+	{
+		floatTexCoords.push_back(item.x);
+		floatTexCoords.push_back(item.y);
+	}
+
+	D3D11_MAPPED_SUBRESOURCE ms;
+	m_devcon->Map(m_vertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+	memcpy(ms.pData, floatVertices.data(), floatVertices.size() * sizeof(float));                // copy the data
+	m_devcon->Unmap(m_vertexBuffer, NULL);                        // unmap the buffer
+
+	D3D11_MAPPED_SUBRESOURCE ms2;
+	m_devcon->Map(m_texCoordBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms2);   // map the buffer
+	memcpy(ms2.pData, floatTexCoords.data(), floatTexCoords.size() * sizeof(float));                // copy the data
+	m_devcon->Unmap(m_texCoordBuffer, NULL);                        // unmap the buffer
+
+	D3D11_MAPPED_SUBRESOURCE ms3;
+	m_devcon->Map(m_normalsBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms3);   // map the buffer
+	memcpy(ms3.pData, floatNormals.data(), floatNormals.size() * sizeof(float));                // copy the data
+	m_devcon->Unmap(m_normalsBuffer, NULL);                        // unmap the buffer
+
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, m_normalsBuffer };
 
 	m_shaderManager->SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
@@ -285,12 +316,12 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> cons
 {
 	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
 	UINT offset[] = { 0, 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer3, m_texCoordBuffer, m_normalsBuffer };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, m_normalsBuffer };
 
 	D3D11_MAPPED_SUBRESOURCE ms;
-	m_devcon->Map(m_vertexBuffer2, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
+	m_devcon->Map(m_vertexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
 	memcpy(ms.pData, vertices.data(), vertices.size() * sizeof(CVector2f));                // copy the data
-	m_devcon->Unmap(m_vertexBuffer2, NULL);                        // unmap the buffer
+	m_devcon->Unmap(m_vertexBuffer, NULL);                        // unmap the buffer
 
 	D3D11_MAPPED_SUBRESOURCE ms2;
 	m_devcon->Map(m_texCoordBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms2);   // map the buffer
