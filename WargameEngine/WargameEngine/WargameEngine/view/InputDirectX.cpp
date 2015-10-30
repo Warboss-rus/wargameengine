@@ -1,5 +1,6 @@
 #include "InputDirectX.h"
 #include <stdexcept>
+#include <Windowsx.h>
 
 CInputDirectX::CInputDirectX(HWND hWnd)
 	:m_hWnd(hWnd)
@@ -58,10 +59,22 @@ void CInputDirectX::DoOnMouseMove(std::function<bool(int, int) > const& handler,
 
 void CInputDirectX::EnableCursor(bool enable /*= true*/)
 {
+	if (enable)
+	{
+		SetCapture(m_hWnd);
+	}
+	else
+	{
+		ReleaseCapture();
+	}
 }
 
 int CInputDirectX::GetModifiers() const
 {
+	int result = 0;
+	if (GetKeyState(VK_CONTROL)) result |= MODIFIER_CTRL;
+	if (GetKeyState(VK_SHIFT)) result |= MODIFIER_SHIFT;
+	if (GetKeyState(VK_MENU)) result |= MODIFIER_ALT;
 	return 0;
 }
 
@@ -93,4 +106,54 @@ void CInputDirectX::DeleteAllSignalsByTag(std::string const& tag)
 	m_onKeyUp.RemoveByTag(tag);
 	m_onCharacter.RemoveByTag(tag);
 	m_onMouseMove.RemoveByTag(tag);
+}
+
+void CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_LBUTTONDOWN:
+	{
+		m_onLMBDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+	}break;
+	case WM_LBUTTONUP:
+	{
+		m_onLMBUp(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+	}break;
+	case WM_RBUTTONDOWN:
+	{
+		m_onRMBDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+	}break;
+	case WM_RBUTTONUP:
+	{
+		m_onRMBUp(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+	}break;
+	case WM_MOUSEWHEEL:
+	{
+		if (HIWORD(wParam) > 0)
+		{
+			m_onWheelUp();
+		}
+		else
+		{
+			m_onWheelUp();
+		}
+	}break;
+	case WM_MOUSEMOVE:
+	{
+		m_onMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+	}
+	case WM_KEYDOWN:
+	{
+		m_onKeyDown(wParam, GetModifiers());
+	}
+	case WM_KEYUP:
+	{
+		m_onKeyUp(wParam, GetModifiers());
+	}
+	case WM_CHAR:
+	{
+		m_onCharacter(wParam);
+	}
+	}
 }

@@ -16,8 +16,8 @@ public:
 
 	~CDirectXCachedTexture()
 	{
-		m_resourceView->Release();
-		m_texture->Release();
+		if(m_resourceView) m_resourceView->Release();
+		if(m_texture) m_texture->Release();
 	}
 
 	virtual void Bind() const override
@@ -150,7 +150,7 @@ private:
 float GetAspectRatio(HWND m_hWnd)
 {
 	RECT rect;
-	GetWindowRect(m_hWnd, &rect);
+	GetClientRect(m_hWnd, &rect);
 	return static_cast<float>(rect.right - rect.left) / static_cast<float>(rect.bottom - rect.top);
 }
 
@@ -167,7 +167,6 @@ CDirectXRenderer::CDirectXRenderer(ID3D11Device *dev, ID3D11DeviceContext *devco
 	CreateBuffer(&m_vertexBuffer, sizeof(CVector3f) * 10000);
 	CreateBuffer(&m_normalsBuffer, sizeof(CVector3f) * 10000);
 	CreateBuffer(&m_texCoordBuffer, sizeof(CVector2f) * 10000);
-	CreateBuffer(&m_weightBuffer, sizeof(float) * 4 * 10000);
 }
 
 void CDirectXRenderer::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize)
@@ -219,8 +218,8 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 	floatVertices.reserve(vertices.size() * 2);
 	for (auto& vec : vertices)
 	{
-		floatVertices.push_back(vec.x);
-		floatVertices.push_back(vec.y);
+		floatVertices.push_back(static_cast<float>(vec.x));
+		floatVertices.push_back(static_cast<float>(vec.y));
 	}
 
 	D3D11_MAPPED_SUBRESOURCE ms;
@@ -267,9 +266,9 @@ std::vector<float> ConvertVector3D(std::vector<CVector3d> const& vec)
 	result.reserve(vec.size() * 3);
 	for (auto& item : vec)
 	{
-		result.push_back(item.x);
-		result.push_back(item.y);
-		result.push_back(item.z);
+		result.push_back(static_cast<float>(item.x));
+		result.push_back(static_cast<float>(item.y));
+		result.push_back(static_cast<float>(item.z));
 	}
 	return std::move(result);
 }
@@ -285,8 +284,8 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> cons
 	floatTexCoords.reserve(texCoords.size() * 3);
 	for (auto& item : texCoords)
 	{
-		floatTexCoords.push_back(item.x);
-		floatTexCoords.push_back(item.y);
+		floatTexCoords.push_back(static_cast<float>(item.x));
+		floatTexCoords.push_back(static_cast<float>(item.y));
 	}
 
 	D3D11_MAPPED_SUBRESOURCE ms;
@@ -373,7 +372,7 @@ void CDirectXRenderer::PopMatrix()
 void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixTranslation(dx, dy, dz);
+	matrix *= XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -382,7 +381,7 @@ void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 void CDirectXRenderer::Translate(const double dx, const double dy, const double dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixTranslation(dx, dy, dz);
+	matrix *= XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -399,9 +398,9 @@ void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 
 void CDirectXRenderer::Rotate(const double angle, const double x, const double y, const double z)
 {
-	XMVECTOR axis = { x, y, z, 1.0f };
+	XMVECTOR axis = { static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f };
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixRotationAxis(axis, angle);
+	matrix *= XMMatrixRotationAxis(axis, static_cast<float>(angle));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -410,7 +409,8 @@ void CDirectXRenderer::Rotate(const double angle, const double x, const double y
 void CDirectXRenderer::Scale(const double scale)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixScaling(scale, scale, scale);
+	float fscale = static_cast<float>(scale);
+	matrix *= XMMatrixScaling(fscale, fscale, fscale);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -579,6 +579,7 @@ void CDirectXRenderer::EnableBlending(bool enable)
 void CDirectXRenderer::SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
 {
 	m_projectionMatrices.push_back(XMMatrixPerspectiveFovLH(viewingAngle, static_cast<float>(viewportWidth) / viewportHeight, nearPane, farPane));
+	LookAt(position, target, { 0.0, 0.0, 1.0 });
 }
 
 void CDirectXRenderer::RestoreViewport()
@@ -596,7 +597,7 @@ void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/
 	ID3D11RenderTargetView * backbuffer;
 	ID3D11DepthStencilView * depthBuffer;
 	m_devcon->OMGetRenderTargets(1, &backbuffer, &depthBuffer);
-	FLOAT backgroundColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
+	FLOAT backgroundColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	if(backbuffer && color) m_devcon->ClearRenderTargetView(backbuffer, backgroundColor);
 	if (depthBuffer && depth) m_devcon->ClearDepthStencilView(depthBuffer, 0, 0.0f, 0);
 }
@@ -614,7 +615,7 @@ void CDirectXRenderer::ActivateTextureSlot(TextureSlot slot)
 void CDirectXRenderer::UnbindTexture()
 {
 	ID3D11ShaderResourceView* views[1] = { NULL };
-	//m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
+	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
 }
 
 std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateEmptyTexture()
@@ -632,7 +633,7 @@ void CDirectXRenderer::SetTextureAnisotropy(float value /*= 1.0f*/)
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.MipLODBias = 0;
-	desc.MaxAnisotropy = value;
+	desc.MaxAnisotropy = static_cast<UINT>(value);
 	desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
 	desc.MinLOD = 0;
 	desc.MaxLOD = 0;
@@ -675,14 +676,14 @@ void CDirectXRenderer::UpdateMatrices()
 void CDirectXRenderer::SetUpViewport2D()
 {
 	RECT rect;
-	GetWindowRect(m_hWnd, &rect);
-	m_projectionMatrices.push_back(XMMatrixOrthographicLH(rect.right - rect.left, rect.bottom - rect.top, -1.0f, 1.0f));
+	GetClientRect(m_hWnd, &rect);
+	m_projectionMatrices.push_back(XMMatrixOrthographicLH(static_cast<float>(rect.right - rect.left), static_cast<float>(rect.bottom - rect.top), 0.0f, 1.0f));
 }
 
 void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 {
 	ID3D11ShaderResourceView* views[1] = { view };
-	//m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
+	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
 }
 
 void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget)
@@ -694,7 +695,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.Format = flags & TEXTURE_BGRA ? ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM) : ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM);
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
-	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.Usage = renderTarget ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (renderTarget) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 	desc.CPUAccessFlags = renderTarget ? 0 : D3D11_CPU_ACCESS_WRITE;

@@ -41,11 +41,15 @@ public:
 private:
 	unsigned int GetVariableOffset(std::string const& buffer, std::string const& name, unsigned int * size = nullptr) const;
 	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
+	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size);
+	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
 
 	ID3D11Device *m_dev;
 	ID3D11DeviceContext *m_devcon;
 	CDirectXRenderer * m_render;
 	CComPtr<ID3D11Buffer> m_constantBuffer;
+	CComPtr<ID3D11Buffer> m_weightBuffer;
+	CComPtr<ID3D11Buffer> m_weightIndexBuffer;
 	CComPtr<ID3D11VertexShader> pVS;    // the vertex shader
 	CComPtr<ID3D11PixelShader> pPS;     // the pixel shader
 	CComPtr<ID3D11GeometryShader> pGS;     // the geometry shader

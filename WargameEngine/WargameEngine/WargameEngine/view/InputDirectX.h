@@ -22,6 +22,8 @@ public:
 	virtual int GetMouseX() const override;
 	virtual int GetMouseY() const override;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) override;
+
+	void ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	CSignal<int, int> m_onLMBDown;
 	CSignal<int, int> m_onLMBUp;

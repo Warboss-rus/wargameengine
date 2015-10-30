@@ -36,6 +36,7 @@ public:
 	}
 	void RemoveByTag(std::string const& tag)
 	{
+		if (m_callbacks.empty()) return;
 		std::remove_if(m_callbacks.begin(), m_callbacks.end(), [&](sCallback const& callback) {return callback.tag == tag;});
 	}
 private:

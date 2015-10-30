@@ -73,6 +73,19 @@ void CreateConstantBuffer(ID3D11Device * dev, unsigned int size, ID3D11Buffer **
 	dev->CreateBuffer(&cbDesc, nullptr, m_constantBuffer);
 }
 
+void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size)
+{
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+
+	bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+	bd.ByteWidth = size;             // size
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
+	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+
+	m_dev->CreateBuffer(&bd, NULL, bufferPtr);       // create the buffer
+}
+
 void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::string const& fragment /*= ""*/, std::string const& geometry /*= ""*/)
 {
 	CComPtr<ID3D10Blob> PS, GS;
@@ -93,6 +106,9 @@ void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::
 	m_devcon->VSSetConstantBuffers(0, 1, &buffer);
 	m_devcon->PSSetConstantBuffers(0, 1, &buffer);
 	m_devcon->GSSetConstantBuffers(0, 1, &buffer);
+
+	CreateBuffer(&m_weightBuffer, sizeof(float) * 4 * 10000);
+	CreateBuffer(&m_weightIndexBuffer, sizeof(int) * 10000);
 }
 
 void CShaderManagerDirectX::BindProgram() const
@@ -189,32 +205,74 @@ void CShaderManagerDirectX::SetUniformMatrix4(std::string const& uniform, int co
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, float* values) const
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	ID3D11Buffer * buffer = m_weightBuffer;
+	unsigned int index = 0;
+	unsigned int stride = sizeof(float) * 4;
+	unsigned int offset = 0;
+	if (attributeIndex == eVertexAttribute::WEIGHT)
+	{
+		buffer = m_weightBuffer;
+		index = 4;
+		stride = sizeof(float) * 4;
+	}
+	if (attributeIndex == eVertexAttribute::WEIGHT_INDEX)
+	{
+		buffer = m_weightIndexBuffer;
+		index = 3;
+		stride = sizeof(int);
+	}
+	CopyBufferData(m_weightBuffer, values, size);
+	m_devcon->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	ID3D11Buffer * buffer = m_weightBuffer;
+	unsigned int index = 4;
+	unsigned int stride = sizeof(float) * 4;
+	unsigned int offset = 0;
+	if (attributeIndex == eVertexAttribute::WEIGHT_INDEX)
+	{
+		buffer = m_weightIndexBuffer;
+		index = 3;
+		stride = sizeof(int);
+	}
+	CopyBufferData(m_weightBuffer, values, size);
+	m_devcon->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	ID3D11Buffer * buffer = m_weightBuffer;
+	unsigned int index = 4;
+	unsigned int stride = sizeof(float) * 4;
+	unsigned int offset = 0;
+	if (attributeIndex == eVertexAttribute::WEIGHT_INDEX)
+	{
+		buffer = m_weightIndexBuffer;
+		index = 3;
+		stride = sizeof(int);
+	}
+	CopyBufferData(m_weightBuffer, values, size);
+	m_devcon->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
 }
 
-void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int size, float* defaultValue) const
+void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* /*defaultValue*/) const
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	m_devcon->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
 }
 
-void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int size, int* defaultValue) const
+void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, int* /*defaultValue*/) const
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	m_devcon->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
 }
 
-void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* defaultValue) const
+void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, unsigned int* /*defaultValue*/) const
 {
-	throw std::logic_error("The method or operation is not implemented.");
+	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	m_devcon->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
 }
 
 void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat)
@@ -247,6 +305,14 @@ void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const voi
 	m_devcon->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy((char*)mappedResource.pData + begin, data, size);
 	m_devcon->Unmap(m_constantBuffer, 0);
+}
+
+void CShaderManagerDirectX::CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	m_devcon->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, data, size);
+	m_devcon->Unmap(buffer, 0);
 }
 
 unsigned int CShaderManagerDirectX::GetVariableOffset(std::string const& bufferName, std::string const& name, unsigned int * size) const

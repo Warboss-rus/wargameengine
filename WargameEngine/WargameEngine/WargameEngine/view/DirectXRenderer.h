@@ -91,8 +91,6 @@ private:
 	CComPtr<ID3D11Buffer> m_vertexBuffer;
 	CComPtr<ID3D11Buffer> m_normalsBuffer;
 	CComPtr<ID3D11Buffer> m_texCoordBuffer;
-	CComPtr<ID3D11Buffer> m_weightBuffer;
-	CComPtr<ID3D11Buffer> m_weightIndexBuffer;
 
 	std::vector<DirectX::XMMATRIX> m_viewMatrices;
 	std::vector<DirectX::XMMATRIX> m_projectionMatrices;

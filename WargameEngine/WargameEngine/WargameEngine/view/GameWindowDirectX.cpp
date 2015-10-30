@@ -58,6 +58,8 @@ public:
 				// send the message to the WindowProc function
 				DispatchMessage(&msg);
 
+				m_input->ProcessEvent(msg.message, msg.wParam, msg.lParam);
+
 				// check to see if it's time to quit
 				if (msg.message == WM_QUIT)
 				{
