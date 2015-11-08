@@ -10,7 +10,7 @@ class CDirectXCachedTexture : public ICachedTexture
 {
 public:
 	CDirectXCachedTexture(CDirectXRenderer *renderer)
-		: m_renderer(renderer)
+		: m_renderer(renderer), m_resourceView(nullptr), m_texture(nullptr)
 	{
 	}
 
@@ -167,6 +167,8 @@ CDirectXRenderer::CDirectXRenderer(ID3D11Device *dev, ID3D11DeviceContext *devco
 	CreateBuffer(&m_vertexBuffer, sizeof(CVector3f) * 10000);
 	CreateBuffer(&m_normalsBuffer, sizeof(CVector3f) * 10000);
 	CreateBuffer(&m_texCoordBuffer, sizeof(CVector2f) * 10000);
+
+	SetTextureAnisotropy(1.0f);
 }
 
 void CDirectXRenderer::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize)
@@ -372,7 +374,7 @@ void CDirectXRenderer::PopMatrix()
 void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	matrix *= DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -381,7 +383,7 @@ void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 void CDirectXRenderer::Translate(const double dx, const double dy, const double dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	matrix *= DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -390,7 +392,7 @@ void CDirectXRenderer::Translate(const double dx, const double dy, const double 
 void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixTranslation(dx, dy, dz);
+	matrix *= DirectX::XMMatrixTranslation(dx, dy, dz);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -400,7 +402,7 @@ void CDirectXRenderer::Rotate(const double angle, const double x, const double y
 {
 	XMVECTOR axis = { static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f };
 	auto matrix = m_viewMatrices.back();
-	matrix *= XMMatrixRotationAxis(axis, static_cast<float>(angle));
+	matrix *= DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -410,7 +412,7 @@ void CDirectXRenderer::Scale(const double scale)
 {
 	auto matrix = m_viewMatrices.back();
 	float fscale = static_cast<float>(scale);
-	matrix *= XMMatrixScaling(fscale, fscale, fscale);
+	matrix *= DirectX::XMMatrixScaling(fscale, fscale, fscale);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -419,23 +421,26 @@ void CDirectXRenderer::Scale(const double scale)
 void CDirectXRenderer::GetViewMatrix(float * matrix) const
 {
 	XMFLOAT4X4 view;
-	XMStoreFloat4x4(&view, m_viewMatrices.back());
+	auto mat = m_viewMatrices.back();
+	XMStoreFloat4x4(&view, mat);
 	memcpy(matrix, *view.m, sizeof(view));
 }
 
 void CDirectXRenderer::ResetViewMatrix()
 {
 	m_viewMatrices.pop_back();
-	m_viewMatrices.push_back(XMMatrixIdentity());
+	m_viewMatrices.push_back(DirectX::XMMatrixIdentity());
+	UpdateMatrices();
 }
 
 void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up)
 {
 	XMVECTOR pos = XMVectorSet(position.x, position.y, position.z, 1.0f);
 	XMVECTOR dir = XMVectorSet(direction.x, direction.y, direction.z, 1.0f);
-	XMVECTOR upVec = XMVectorSet(up.x, up.y, up.z, 1.0f);
+	XMVECTOR upVec = XMVectorSet(up.x, up.z, up.y, 1.0f);
 	m_viewMatrices.pop_back();
-	m_viewMatrices.push_back(XMMatrixLookAtLH(pos, dir, upVec));
+	m_viewMatrices.push_back(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
+	UpdateMatrices();
 }
 
 void CDirectXRenderer::SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
@@ -578,13 +583,15 @@ void CDirectXRenderer::EnableBlending(bool enable)
 
 void CDirectXRenderer::SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
 {
-	m_projectionMatrices.push_back(XMMatrixPerspectiveFovLH(viewingAngle, static_cast<float>(viewportWidth) / viewportHeight, nearPane, farPane));
+	m_projectionMatrices.push_back(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane)));
 	LookAt(position, target, { 0.0, 0.0, 1.0 });
+	UpdateMatrices();
 }
 
 void CDirectXRenderer::RestoreViewport()
 {
 	m_projectionMatrices.pop_back();
+	UpdateMatrices();
 }
 
 void CDirectXRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
@@ -625,6 +632,8 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateEmptyTexture()
 
 void CDirectXRenderer::SetTextureAnisotropy(float value /*= 1.0f*/)
 {
+	if (value == m_anisotropyLevel) return;
+	m_anisotropyLevel = value;
 	ID3D11SamplerState* state;
 	D3D11_SAMPLER_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
@@ -632,11 +641,11 @@ void CDirectXRenderer::SetTextureAnisotropy(float value /*= 1.0f*/)
 	desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	desc.MipLODBias = 0;
+	desc.MipLODBias = 0.0f;
 	desc.MaxAnisotropy = static_cast<UINT>(value);
 	desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	desc.MinLOD = 0;
-	desc.MaxLOD = 0;
+	desc.MinLOD = 0.0f;
+	desc.MaxLOD = D3D11_FLOAT32_MAX;
 	m_dev->CreateSamplerState(&desc, &state);
 
 	m_devcon->PSSetSamplers(0, 1, &state);
@@ -653,7 +662,7 @@ void CDirectXRenderer::UploadTexture(ICachedTexture & texture, unsigned char * d
 void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
 {
 	auto& dxtexture = dynamic_cast<CDirectXCachedTexture&>(texture);
-	CreateTexture(width, height, flags, data, dxtexture, dxtexture);
+	//CreateTexture(width, height, flags, data, dxtexture, dxtexture);
 }
 
 void CDirectXRenderer::SetShaderManager(CShaderManagerDirectX * shaderManager)
@@ -678,16 +687,18 @@ void CDirectXRenderer::SetUpViewport2D()
 	RECT rect;
 	GetClientRect(m_hWnd, &rect);
 	m_projectionMatrices.push_back(XMMatrixOrthographicLH(static_cast<float>(rect.right - rect.left), static_cast<float>(rect.bottom - rect.top), 0.0f, 1.0f));
+	UpdateMatrices();
 }
 
 void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 {
 	ID3D11ShaderResourceView* views[1] = { view };
-	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
+	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, view ? &view : views);
 }
 
 void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget)
 {
+	if (width == 0 || height == 0) return;
 	D3D11_TEXTURE2D_DESC desc;
 	desc.Width = width;
 	desc.Height = height;

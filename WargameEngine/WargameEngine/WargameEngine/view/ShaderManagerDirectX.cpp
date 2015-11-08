@@ -14,15 +14,31 @@ cbuffer Constant : register( b0 )\
 {\
 	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
 }\
-\
-float4 VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL, int4 indexes: WEIGHT_INDEX, float4 weight : WEIGHT ) : SV_POSITION\
+struct PixelInputType\
 {\
-	return mul(float4(Pos, 1.0f), WorldViewProjection);\
+	float4 position : SV_POSITION;\
+	float2 tex : TEXCOORD0;\
+};\
+\
+PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL, int4 indexes: WEIGHT_INDEX, float4 weight : WEIGHT )\
+{\
+	PixelInputType result;\
+	result.position = mul(float4(Pos, 1.0f), WorldViewProjection);\
+	result.tex = texCoords;\
+	return result;\
 }";
 static const std::string defaultPixelShader = "\
-float4 PShader( float4 Pos : SV_POSITION ) : SV_TARGET\
+Texture2D shaderTexture;\
+SamplerState SampleType;\
+struct PixelInputType\
 {\
-	return float4(1.0f, 1.0f, 1.0f, 0.0f);\
+	float4 position : SV_POSITION;\
+	float2 tex : TEXCOORD0;\
+};\
+float4 PShader( PixelInputType input) : SV_TARGET\
+{\
+	return float4(1.0f, 1.0f, 1.0f, 1.0f);\
+	return shaderTexture.Sample(SampleType, input.tex);\
 }";
 static const std::string defaultGeometryShader = "";
 
@@ -292,11 +308,12 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 
 void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 {
-	DirectX::XMMATRIX modelViewMatrix(modelView);
-	modelViewMatrix *= DirectX::XMMATRIX(projection);
+	DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(DirectX::XMMATRIX(modelView), DirectX::XMMATRIX(projection));
+	DirectX::XMFLOAT4X4 fmatrix;
+	DirectX::XMStoreFloat4x4(&fmatrix, matrix);
 	unsigned int begin = GetVariableOffset("Constant", "WorldViewProjection");
 
-	CopyConstantBufferData(begin, &modelViewMatrix, sizeof(float) * 16);
+	CopyConstantBufferData(begin, *fmatrix.m, sizeof(float) * 16);
 }
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const

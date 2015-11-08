@@ -7,7 +7,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../stb_image.h"
 #pragma warning( pop )
-#include "../nv_dds.h"
 #include "../AsyncReadTask.h"
 
 struct sImage
@@ -18,8 +17,10 @@ struct sImage
 	unsigned short bpp;
 	unsigned char * data;
 	int flags = 0;
+	size_t size = 0;//0 if uncompressed
 	std::vector<sTeamColor> teamcolor;
 	std::vector<unsigned char> uncompressedData;
+	TextureMipMaps mipmaps;
 };
 
 void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char color[3]);
@@ -126,40 +127,139 @@ void LoadTGA(void * data, unsigned int size, sImage & img)
 	}
 }
 
-void UseDDS(nv_dds::CDDSImage & image, ICachedTexture& texture, ITextureHelper & helper)
+inline int clamp_size(int size)
 {
-	int flags = TEXTURE_BGRA;
-	if (image.get_components() == 4) flags |= TEXTURE_HAS_ALPHA;
-	if (!image.get_num_mipmaps()) flags |= TEXTURE_BUILD_MIPMAPS;
-	TextureMipMaps mipmaps;
-	for (auto i = 0; i < image.get_num_mipmaps(); i++)
-	{
-		auto& mipmap = image.get_mipmap(i);
-		char * data = mipmap;
-		sTextureMipMap texMipMap = { reinterpret_cast<unsigned char*>(data), static_cast<unsigned int>(mipmap.get_width()), static_cast<unsigned int>(mipmap.get_height()), static_cast<unsigned int>(mipmap.get_size()) };
-		mipmaps.push_back(texMipMap);
-	}
+	return size <= 0 ? 1 : size;
+}
 
-	char * data = image;
-	if (image.is_compressed())
+inline int size_dxtc(int width, int height, int flags)
+{
+	return ((width + 3) / 4)*((height + 3) / 4)*
+		(flags & TEXTURE_COMPRESSION_DXT1 ? 8 : 16);
+}
+
+void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
+{
+	struct DDS_PIXELFORMAT
 	{
-		static const std::map<int, TextureFlags> compressionMap = {
-			{ GL_COMPRESSED_RGB_S3TC_DXT1_EXT, TEXTURE_COMPRESSION_DXT1_NO_ALPHA },
-			{ GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, TEXTURE_COMPRESSION_DXT1 },
-			{ GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, TEXTURE_COMPRESSION_DXT3 },
-			{ GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, TEXTURE_COMPRESSION_DXT5 }
-		};
-		helper.UploadCompressedTexture(texture, reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), image.get_size(), compressionMap.at(image.get_format()), mipmaps);
+		unsigned int dwSize;
+		unsigned int dwFlags;
+		unsigned int dwFourCC;
+		unsigned int dwRGBBitCount;
+		unsigned int dwRBitMask;
+		unsigned int dwGBitMask;
+		unsigned int dwBBitMask;
+		unsigned int dwABitMask;
+	};
+	struct DDS_HEADER
+	{
+		unsigned int dwSize;
+		unsigned int dwFlags;
+		unsigned int dwHeight;
+		unsigned int dwWidth;
+		unsigned int dwPitchOrLinearSize;
+		unsigned int dwDepth;
+		unsigned int dwMipMapCount;
+		unsigned int dwReserved1[11];
+		DDS_PIXELFORMAT ddspf;
+		unsigned int dwCaps1;
+		unsigned int dwCaps2;
+		unsigned int dwReserved2[3];
+	};
+	unsigned char* charData = (unsigned char*)data;
+	if (strncmp((char*)charData, "DDS ", 4) != 0)
+	{
+		return;
 	}
-	else
+	charData += 4;
+	DDS_HEADER ddsh;
+	memcpy(&ddsh, charData, sizeof(ddsh));
+	charData += sizeof(ddsh);
+	//swap_endian(&ddsh.dwSize);swap everything with _byteswap_ulong
+
+	const unsigned int DDS_FOURCC = 0x00000004;
+	const unsigned int FOURCC_DXT1 = 0x31545844; //(MAKEFOURCC('D','X','T','1'))
+	const unsigned int FOURCC_DXT3 = 0x33545844; //(MAKEFOURCC('D','X','T','3'))
+	const unsigned int FOURCC_DXT5 = 0x35545844; //(MAKEFOURCC('D','X','T','5'))
+	const unsigned int DDS_RGB = 0x00000040;
+	const unsigned int DDS_RGBA = 0x00000041;
+	const unsigned int DDS_DEPTH = 0x00800000;
+	const unsigned int DDS_CUBEMAP = 0x00000200;
+	const unsigned int DDS_VOLUME = 0x00200000;
+	if (ddsh.dwCaps2 & DDS_CUBEMAP || ddsh.dwCaps2 & DDS_VOLUME)
 	{
-		helper.UploadTexture(texture, reinterpret_cast<unsigned char*>(data), image.get_width(), image.get_height(), static_cast<unsigned short>(image.get_components() * 8), flags, mipmaps);
+		LogWriter::WriteLine("DDS Loader: Only 2D RGB/RGBA textures are supported");
+		return;
+	}
+	bool compressed = false;
+	img.bpp = 3;
+	img.flags |= TEXTURE_BGRA;
+	if (ddsh.ddspf.dwFlags & DDS_FOURCC)
+	{
+		compressed = true;
+		switch (ddsh.ddspf.dwFourCC)
+		{
+		case FOURCC_DXT1:
+			img.flags |= TEXTURE_COMPRESSION_DXT1;
+			break;
+		case FOURCC_DXT3:
+			img.flags |= TEXTURE_COMPRESSION_DXT3;
+			img.bpp = 4;
+			break;
+		case FOURCC_DXT5:
+			img.flags |= TEXTURE_COMPRESSION_DXT5;
+			img.bpp = 4;
+			break;
+		default:
+			LogWriter::WriteLine("DDS Loader: Unknown compression: " + std::to_string(ddsh.ddspf.dwFourCC));
+			return;
+		}
+	}
+	else if ((ddsh.ddspf.dwFlags == DDS_RGBA || ddsh.ddspf.dwFlags == DDS_RGB) && ddsh.ddspf.dwRGBBitCount == 32)
+	{
+		img.flags |= TEXTURE_HAS_ALPHA;
+		img.bpp = 4;
+	}
+	else if (!(ddsh.ddspf.dwFlags == DDS_RGB && ddsh.ddspf.dwRGBBitCount == 24))
+	{
+		LogWriter::WriteLine("DDS Loader: Unknown format");
+		return;
+	}
+	img.width = ddsh.dwWidth;
+	img.height = ddsh.dwHeight;
+	int depth = clamp_size(ddsh.dwDepth);
+	size_t imageSize = compressed ? size_dxtc(img.width, img.height, img.flags) : (img.width * img.height * depth);
+	img.size = compressed ? imageSize : 0;
+	//flip image
+	img.data = charData;
+	charData += imageSize;
+
+	int numMipmaps = ddsh.dwMipMapCount - 1;
+	unsigned int w = clamp_size(img.width >> 1);
+	unsigned int h = clamp_size(img.height >> 1);
+	int d = clamp_size(depth >> 1);
+	for (int i = 0; i < numMipmaps && (w || h); i++)
+	{
+		imageSize = compressed ? size_dxtc(w, h, img.flags) : (w * h * d);
+		//flip image
+		img.mipmaps.push_back({ charData, w, h, imageSize });
+		w = clamp_size(w >> 1);
+		h = clamp_size(h >> 1);
+		d = clamp_size(d >> 1);
+		charData += imageSize;
 	}
 }
 
 void CTextureManager::UseTexture(sImage const& img, ICachedTexture& texture)
 {
-	m_helper.UploadTexture(texture, img.data, img.width, img.height, img.bpp, img.flags | TEXTURE_BUILD_MIPMAPS);
+	if (img.size != 0)
+	{
+		m_helper.UploadCompressedTexture(texture, img.data, img.width, img.height, img.size, img.flags, img.mipmaps);
+	}
+	else
+	{
+		m_helper.UploadTexture(texture, img.data, img.width, img.height, img.bpp, img.flags | TEXTURE_BUILD_MIPMAPS);
+	}
 	m_helper.SetTextureAnisotropy(m_anisotropyLevel);
 }
 
@@ -184,16 +284,9 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& 
 		};
 	else if (extension == "dds")
 	{
-		std::shared_ptr<nv_dds::CDDSImage> image = std::make_shared<nv_dds::CDDSImage>();
-		ThreadPool::RunFunc([image, path] {
-			image->load(path);
-			if (!image->is_valid())
-			{
-				throw std::exception(("Cannot open file " + path).c_str());
-			}
-		}, [image, &texRef, this]() {
-			UseDDS(*image, texRef, m_helper);
-		});
+		loadingFunc = [img](void* data, unsigned int size) {
+			LoadDDS(data, size, *img);
+		};
 	}
 	else 
 		loadingFunc = [img](void* data, unsigned int size) {

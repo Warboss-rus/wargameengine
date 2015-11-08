@@ -94,4 +94,5 @@ private:
 
 	std::vector<DirectX::XMMATRIX> m_viewMatrices;
 	std::vector<DirectX::XMMATRIX> m_projectionMatrices;
+	float m_anisotropyLevel = 0.0f;
 };

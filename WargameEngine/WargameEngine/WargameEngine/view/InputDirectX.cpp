@@ -72,10 +72,10 @@ void CInputDirectX::EnableCursor(bool enable /*= true*/)
 int CInputDirectX::GetModifiers() const
 {
 	int result = 0;
-	if (GetKeyState(VK_CONTROL)) result |= MODIFIER_CTRL;
-	if (GetKeyState(VK_SHIFT)) result |= MODIFIER_SHIFT;
-	if (GetKeyState(VK_MENU)) result |= MODIFIER_ALT;
-	return 0;
+	if (GetKeyState(VK_CONTROL) & 0x8000) result |= MODIFIER_CTRL;
+	if (GetKeyState(VK_SHIFT) & 0x8000) result |= MODIFIER_SHIFT;
+	if (GetKeyState(VK_MENU) & 0x8000) result |= MODIFIER_ALT;
+	return result;
 }
 
 int CInputDirectX::GetMouseX() const

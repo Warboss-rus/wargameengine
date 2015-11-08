@@ -74,16 +74,16 @@ void CGameView::Init()
 	
 	m_vertexLightning = false;
 	m_shadowMap = false;
-	m_camera = make_unique<CCameraStrategy>(0.0, 0.0, 2.8, 0.5);
+	m_camera = make_unique<CCameraStrategy>(100.0, 100.0, 2.8, 0.5);
 	m_tableList = 0;
 	m_tableListShadow = 0;
+
+	InitInput();
 
 	m_gameController = make_unique<CGameController>(*m_gameModel);
 	m_gameController->Init();
 	m_soundPlayer = std::make_unique<CSoundPlayerFMod>();
 	m_soundPlayer->Init();
-
-	InitInput();
 
 	m_window->DoOnDrawScene([this] {
 		DrawShadowMap();

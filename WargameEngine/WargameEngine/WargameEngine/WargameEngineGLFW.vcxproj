@@ -150,7 +150,6 @@
     <ClCompile Include="model\ObjectGroup.cpp" />
     <ClCompile Include="Module.cpp" />
     <ClCompile Include="Network.cpp" />
-    <ClCompile Include="nv_dds.cpp" />
     <ClCompile Include="OSSpecific.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp" />
@@ -222,7 +221,6 @@
     <ClInclude Include="model\ObjectGroup.h" />
     <ClInclude Include="model\ObjectInterface.h" />
     <ClInclude Include="Module.h" />
-    <ClInclude Include="nv_dds.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="PluginManager.h" />
     <ClInclude Include="rapidxml\rapidxml.hpp" />
