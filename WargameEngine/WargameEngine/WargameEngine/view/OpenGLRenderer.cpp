@@ -634,7 +634,7 @@ void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * da
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flags & TEXTURE_BUILD_MIPMAPS ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
 	if (flags & TEXTURE_BUILD_MIPMAPS)
 	{
@@ -642,23 +642,15 @@ void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * da
 	}
 	else
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, bpp / 8, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	}
-	if (!mipmaps.empty())
+	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
-		for (size_t i = 0; i < mipmaps.size(); i++)
-		{
-			auto& mipmap = mipmaps[i];
-			glTexImage2D(GL_TEXTURE_2D, i + 1, bpp / 8,
-				mipmap.width,
-				mipmap.height, 0,
-				format,
-				GL_UNSIGNED_BYTE,
-				mipmap.data);
-		}
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+		auto& mipmap = mipmaps[i];
+		glTexImage2D(GL_TEXTURE_2D, i + 1, bpp / 8, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 }
 
 void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
@@ -684,20 +676,13 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned
 
 	glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, size, data);
 
-	if (!mipmaps.empty())
+	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
-		for (size_t i = 0; i < mipmaps.size(); i++)
-		{
-			auto& mipmap = mipmaps[i];
-			glCompressedTexImage2DARB(GL_TEXTURE_2D, i + 1, format,
-				mipmap.width,
-				mipmap.height, 0,
-				mipmap.size,
-				mipmap.data);
-		}
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+		auto& mipmap = mipmaps[i];
+		glCompressedTexImage2DARB(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, mipmap.size, mipmap.data);
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 }
 
 void COpenGLRenderer::SetUpViewport2D()

@@ -132,10 +132,9 @@ inline int clamp_size(int size)
 	return size <= 0 ? 1 : size;
 }
 
-inline int size_dxtc(int width, int height, int flags)
+inline size_t size_dxtc(unsigned int width, unsigned int height, int flags)
 {
-	return ((width + 3) / 4)*((height + 3) / 4)*
-		(flags & TEXTURE_COMPRESSION_DXT1 ? 8 : 16);
+	return ((width + 3) / 4)*((height + 3) / 4)* ((flags & TEXTURE_COMPRESSION_MASK) ==TEXTURE_COMPRESSION_DXT1 ? 8 : 16);
 }
 
 void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
@@ -192,7 +191,7 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 		return;
 	}
 	bool compressed = false;
-	img.bpp = 3;
+	img.bpp = 24;
 	img.flags |= TEXTURE_BGRA;
 	if (ddsh.ddspf.dwFlags & DDS_FOURCC)
 	{
@@ -204,11 +203,11 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 			break;
 		case FOURCC_DXT3:
 			img.flags |= TEXTURE_COMPRESSION_DXT3;
-			img.bpp = 4;
+			img.bpp = 32;
 			break;
 		case FOURCC_DXT5:
 			img.flags |= TEXTURE_COMPRESSION_DXT5;
-			img.bpp = 4;
+			img.bpp = 32;
 			break;
 		default:
 			LogWriter::WriteLine("DDS Loader: Unknown compression: " + std::to_string(ddsh.ddspf.dwFourCC));
@@ -218,7 +217,7 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 	else if ((ddsh.ddspf.dwFlags == DDS_RGBA || ddsh.ddspf.dwFlags == DDS_RGB) && ddsh.ddspf.dwRGBBitCount == 32)
 	{
 		img.flags |= TEXTURE_HAS_ALPHA;
-		img.bpp = 4;
+		img.bpp = 32;
 	}
 	else if (!(ddsh.ddspf.dwFlags == DDS_RGB && ddsh.ddspf.dwRGBBitCount == 24))
 	{
@@ -228,7 +227,7 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 	img.width = ddsh.dwWidth;
 	img.height = ddsh.dwHeight;
 	int depth = clamp_size(ddsh.dwDepth);
-	size_t imageSize = compressed ? size_dxtc(img.width, img.height, img.flags) : (img.width * img.height * depth);
+	size_t imageSize = compressed ? size_dxtc(img.width, img.height, img.flags) : (img.width * img.height * depth * img.bpp / 8);
 	img.size = compressed ? imageSize : 0;
 	//flip image
 	img.data = charData;
@@ -240,13 +239,17 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 	int d = clamp_size(depth >> 1);
 	for (int i = 0; i < numMipmaps && (w || h); i++)
 	{
-		imageSize = compressed ? size_dxtc(w, h, img.flags) : (w * h * d);
+		imageSize = compressed ? size_dxtc(w, h, img.flags) : (w * h * d * img.bpp / 8);
 		//flip image
 		img.mipmaps.push_back({ charData, w, h, imageSize });
 		w = clamp_size(w >> 1);
 		h = clamp_size(h >> 1);
 		d = clamp_size(d >> 1);
 		charData += imageSize;
+	}
+	if (numMipmaps > 0)
+	{
+		img.flags &= ~TEXTURE_BUILD_MIPMAPS;
 	}
 }
 
@@ -258,7 +261,7 @@ void CTextureManager::UseTexture(sImage const& img, ICachedTexture& texture)
 	}
 	else
 	{
-		m_helper.UploadTexture(texture, img.data, img.width, img.height, img.bpp, img.flags | TEXTURE_BUILD_MIPMAPS);
+		m_helper.UploadTexture(texture, img.data, img.width, img.height, img.bpp, img.flags, img.mipmaps);
 	}
 	m_helper.SetTextureAnisotropy(m_anisotropyLevel);
 }
@@ -267,7 +270,7 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& 
 {
 	std::shared_ptr<sImage> img = std::make_shared<sImage>();
 	img->filename = path;
-	img->flags = flags;
+	img->flags = flags | TEXTURE_BUILD_MIPMAPS;
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
 	ICachedTexture& texRef = *tex;
 	unsigned int dotCoord = path.find_last_of('.') + 1;
