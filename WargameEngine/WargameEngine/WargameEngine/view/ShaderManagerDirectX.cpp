@@ -28,7 +28,7 @@ PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, floa
 	return result;\
 }";
 static const std::string defaultPixelShader = "\
-Texture2D shaderTexture;\
+Texture2D shaderTexture : register( t0 );\
 SamplerState SampleType;\
 struct PixelInputType\
 {\
@@ -37,7 +37,6 @@ struct PixelInputType\
 };\
 float4 PShader( PixelInputType input) : SV_TARGET\
 {\
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);\
 	return shaderTexture.Sample(SampleType, input.tex);\
 }";
 static const std::string defaultGeometryShader = "";
@@ -309,6 +308,7 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 {
 	DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(DirectX::XMMATRIX(modelView), DirectX::XMMATRIX(projection));
+	matrix = DirectX::XMMatrixTranspose(matrix);
 	DirectX::XMFLOAT4X4 fmatrix;
 	DirectX::XMStoreFloat4x4(&fmatrix, matrix);
 	unsigned int begin = GetVariableOffset("Constant", "WorldViewProjection");

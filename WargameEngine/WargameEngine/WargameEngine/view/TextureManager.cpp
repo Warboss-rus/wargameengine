@@ -137,6 +137,29 @@ inline size_t size_dxtc(unsigned int width, unsigned int height, int flags)
 	return ((width + 3) / 4)*((height + 3) / 4)* ((flags & TEXTURE_COMPRESSION_MASK) ==TEXTURE_COMPRESSION_DXT1 ? 8 : 16);
 }
 
+unsigned char* FlipUncompressedDDS(unsigned char * data, size_t size, unsigned int /*width*/, unsigned int height, unsigned int depth)
+{
+	int imagesize = size / depth;
+	unsigned int linesize = imagesize / height;
+	unsigned char* tmp = new unsigned char[linesize];
+	for (unsigned int n = 0; n < depth; n++)
+	{
+		unsigned int offset = imagesize*n;
+		unsigned char *top = data + offset;
+		unsigned char *bottom = top + (imagesize - linesize);
+		for (unsigned int i = 0; i < (height >> 1); i++)
+		{
+			memcpy(tmp, bottom, linesize);
+			memcpy(bottom, top, linesize);
+			memcpy(top, tmp, linesize);
+			top += linesize;
+			bottom -= linesize;
+		}
+	}
+	delete[] tmp;
+	return data;
+}
+
 void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 {
 	struct DDS_PIXELFORMAT
@@ -230,7 +253,7 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 	size_t imageSize = compressed ? size_dxtc(img.width, img.height, img.flags) : (img.width * img.height * depth * img.bpp / 8);
 	img.size = compressed ? imageSize : 0;
 	//flip image
-	img.data = charData;
+	img.data = flip && !compressed ? FlipUncompressedDDS(charData, imageSize, img.width, img.height, depth) : charData;
 	charData += imageSize;
 
 	int numMipmaps = ddsh.dwMipMapCount - 1;

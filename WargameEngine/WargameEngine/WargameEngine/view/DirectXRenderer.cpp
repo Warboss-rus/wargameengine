@@ -435,9 +435,9 @@ void CDirectXRenderer::ResetViewMatrix()
 
 void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up)
 {
-	XMVECTOR pos = XMVectorSet(position.x, position.y, position.z, 1.0f);
-	XMVECTOR dir = XMVectorSet(direction.x, direction.y, direction.z, 1.0f);
-	XMVECTOR upVec = XMVectorSet(up.x, up.z, up.y, 1.0f);
+	XMVECTOR pos = XMVectorSet(-position.x, position.y, position.z, 1.0f);
+	XMVECTOR dir = XMVectorSet(-direction.x, direction.y, direction.z, 1.0f);
+	XMVECTOR upVec = XMVectorSet(up.x, -up.z, up.y, 1.0f);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
 	UpdateMatrices();
@@ -508,13 +508,13 @@ std::unique_ptr<IDrawingList> CDirectXRenderer::CreateDrawingList(std::function<
 	return std::make_unique<CDirectXDrawingList>(func);
 }
 
-std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/)
+std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t size)
 {
 	auto buffer = std::make_unique<CDirectXVertexBuffer>(m_dev, m_devcon);
 
-	CreateBuffer(buffer->GetVertexBuffer(), (void*)vertex, sizeof(vertex));
-	CreateBuffer(buffer->GetNormalBuffer(), (void*)normals, sizeof(normals));
-	CreateBuffer(buffer->GetTexCoordBuffer(), (void*)texcoords, sizeof(texcoords));
+	if(vertex) CreateBuffer(buffer->GetVertexBuffer(), (void*)vertex, sizeof(float) * size);
+	if(normals) CreateBuffer(buffer->GetNormalBuffer(), (void*)normals, sizeof(float) * size);
+	if(texcoords) CreateBuffer(buffer->GetTexCoordBuffer(), (void*)texcoords, sizeof(float) * size * 2 / 3);
 
 	return std::move(buffer);
 }
@@ -692,8 +692,8 @@ void CDirectXRenderer::SetUpViewport2D()
 
 void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 {
-	ID3D11ShaderResourceView* views[1] = { view };
-	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, view ? &view : views);
+	ID3D11ShaderResourceView* views[] = { view };
+	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
 }
 
 void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget)
@@ -716,9 +716,15 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 
 	D3D11_SUBRESOURCE_DATA texData;
 	texData.SysMemPitch = bpp * width;
+	texData.SysMemSlicePitch = texData.SysMemPitch * height;
 	texData.pSysMem = data;
 
-	m_dev->CreateTexture2D(&desc, data ? &texData : nullptr, texture);
+	auto hr = m_dev->CreateTexture2D(&desc, data ? &texData : nullptr, texture);
+	if (FAILED(hr) || !texture)
+	{
+		LogWriter::WriteLine("Cannot create texture: " + std::to_string(GetLastError()));
+		return;
+	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC rDesc;
 	ZeroMemory(&desc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
@@ -727,5 +733,10 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	rDesc.Texture2D.MostDetailedMip = 0;
 	rDesc.Texture2D.MipLevels = 1;
 
-	m_dev->CreateShaderResourceView(*texture, &rDesc, resourceView);
+	hr = m_dev->CreateShaderResourceView(*texture, &rDesc, resourceView);
+	if (FAILED(hr) || !resourceView)
+	{
+		LogWriter::WriteLine("Cannot create resourceView: " + std::to_string(GetLastError()));
+		return;
+	}
 }

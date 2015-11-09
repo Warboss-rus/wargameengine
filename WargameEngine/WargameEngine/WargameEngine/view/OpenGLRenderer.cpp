@@ -340,7 +340,7 @@ std::unique_ptr<IDrawingList> COpenGLRenderer::CreateDrawingList(std::function<v
 	return std::make_unique<COpenGLDrawingList>(list);
 }
 
-std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/)
+std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t /*size*/)
 {
 	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords);
 }

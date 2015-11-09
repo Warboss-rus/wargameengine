@@ -44,7 +44,7 @@ public:
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 
 	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void() > const& func) override;
-	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr) override;
+	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0) override;
 	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const override;
 
 	virtual void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const override;
