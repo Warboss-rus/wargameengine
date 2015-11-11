@@ -685,6 +685,16 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 }
 
+bool COpenGLRenderer::Force32Bits() const
+{
+	return false;
+}
+
+bool COpenGLRenderer::ForceFlipBMP() const
+{
+	return false;
+}
+
 void COpenGLRenderer::SetUpViewport2D()
 {
 	glEnable(GL_BLEND);

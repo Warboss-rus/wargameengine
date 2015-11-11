@@ -71,13 +71,15 @@ public:
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
 	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	virtual bool Force32Bits() const override;
+	virtual bool ForceFlipBMP() const override;
 
 	void SetShaderManager(CShaderManagerDirectX * shaderManager);
 	void SetTextureResource(ID3D11ShaderResourceView * view);
 private:
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, void * data, size_t size);
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize);
-	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget = false);
+	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget = false, size_t size = 0);
 	void UpdateMatrices();
 
 	CTextureManager m_textureManager;

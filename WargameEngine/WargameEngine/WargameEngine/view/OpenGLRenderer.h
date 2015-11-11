@@ -71,6 +71,8 @@ public:
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
 	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	virtual bool Force32Bits() const override;
+	virtual bool ForceFlipBMP() const override;
 private:
 	CTextureManager m_textureManager;
 };

@@ -23,8 +23,6 @@ struct sImage
 	TextureMipMaps mipmaps;
 };
 
-void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char color[3]);
-
 void LoadBMP(void * data, unsigned int /*size*/, sImage & img)
 {
 	unsigned char* imgData = (unsigned char*)data;
@@ -37,13 +35,9 @@ void LoadBMP(void * data, unsigned int /*size*/, sImage & img)
 	if (headerSize==0)  // Some BMP files are misformatted, guess missing information
 		headerSize=54;
 	img.data = imgData + headerSize;
-	for (size_t i = 0; i < img.teamcolor.size(); ++i)
-	{
-		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
-	}
 }
 
-void UnpackTexture(void * data, unsigned int size, sImage & img)
+void LoadSTBI(void * data, unsigned int size, sImage & img)
 {
 	int width, height, bpp;
 	unsigned char * newData = stbi_load_from_memory((const unsigned char*)data, size, &width, &height, &bpp, 4);
@@ -58,73 +52,6 @@ void UnpackTexture(void * data, unsigned int size, sImage & img)
 	img.bpp = 32;
 	img.flags |= TEXTURE_HAS_ALPHA;
 	img.data = img.uncompressedData.data();
-	for (size_t i = 0; i < img.teamcolor.size(); ++i)
-	{
-		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
-	}
-}
-
-std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int width, unsigned int height, unsigned int bpp)
-{
-	unsigned int iPixelSize = bpp / 8;
-	unsigned int imageSize = width * height * iPixelSize;
-	std::vector<unsigned char> uncompressedData;
-	uncompressedData.resize(imageSize);
-	unsigned int index = 0;
-	unsigned char *pCur = &data[0];
-	unsigned char bLength,bLoop;
-	while(index < imageSize) 
-	{
-		if(*pCur & 0x80) // Run length chunk (High bit = 1)
-		{
-			bLength =* pCur - 127; // Get run length
-			pCur++;            // Move to pixel data  
-
-			// Repeat the next pixel bLength times
-			for(bLoop = 0; bLoop != bLength; ++bLoop, index += iPixelSize)
-				memcpy(&uncompressedData[index],pCur,iPixelSize);
-
-			pCur += iPixelSize; // Move to the next descriptor chunk
-		}
-		else // Raw chunk
-		{
-			bLength =* pCur + 1; // Get run length
-			pCur++;          // Move to pixel data
-
-			// Write the next bLength pixels directly
-			for(bLoop=0;bLoop!=bLength;++bLoop,index+=iPixelSize,pCur+=iPixelSize)
-				memcpy(&uncompressedData[index],pCur,iPixelSize);
-		}
-	}
-	return uncompressedData;
-}
-
-void LoadTGA(void * data, unsigned int size, sImage & img)
-{
-	unsigned char* imgData = (unsigned char*) data;
-	if (imgData[2] != 2 && imgData[2] != 10)//use stb_image for non-RGB textures
-	{
-		UnpackTexture(data, size, img);
-		return;
-	}
-	img.width = imgData[13] * 256 + imgData[12];
-	img.height = imgData[15] * 256 + imgData[14];
-	img.bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
-	if (img.bpp != 24) img.flags |= TEXTURE_HAS_ALPHA;
-	img.flags |= TEXTURE_BGRA;
-	if(imgData[2] == 10) //Compressed
-	{
-		img.uncompressedData = UncompressTGA(imgData, img.width, img.height, img.bpp);
-		img.data = img.uncompressedData.data();
-	}
-	else
-	{
-		img.data = imgData + 18;
-	}
-	for (size_t i = 0; i < img.teamcolor.size(); ++i)
-	{
-		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
-	}
 }
 
 inline int clamp_size(int size)
@@ -134,33 +61,10 @@ inline int clamp_size(int size)
 
 inline size_t size_dxtc(unsigned int width, unsigned int height, int flags)
 {
-	return ((width + 3) / 4)*((height + 3) / 4)* ((flags & TEXTURE_COMPRESSION_MASK) ==TEXTURE_COMPRESSION_DXT1 ? 8 : 16);
+	return ((width + 3) / 4)*((height + 3) / 4)* ((flags & TEXTURE_COMPRESSION_MASK) == TEXTURE_COMPRESSION_DXT1 ? 8 : 16);
 }
 
-unsigned char* FlipUncompressedDDS(unsigned char * data, size_t size, unsigned int /*width*/, unsigned int height, unsigned int depth)
-{
-	int imagesize = size / depth;
-	unsigned int linesize = imagesize / height;
-	unsigned char* tmp = new unsigned char[linesize];
-	for (unsigned int n = 0; n < depth; n++)
-	{
-		unsigned int offset = imagesize*n;
-		unsigned char *top = data + offset;
-		unsigned char *bottom = top + (imagesize - linesize);
-		for (unsigned int i = 0; i < (height >> 1); i++)
-		{
-			memcpy(tmp, bottom, linesize);
-			memcpy(bottom, top, linesize);
-			memcpy(top, tmp, linesize);
-			top += linesize;
-			bottom -= linesize;
-		}
-	}
-	delete[] tmp;
-	return data;
-}
-
-void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
+void LoadDDS(void * data, unsigned int /*size*/, sImage & img)
 {
 	struct DDS_PIXELFORMAT
 	{
@@ -252,8 +156,7 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 	int depth = clamp_size(ddsh.dwDepth);
 	size_t imageSize = compressed ? size_dxtc(img.width, img.height, img.flags) : (img.width * img.height * depth * img.bpp / 8);
 	img.size = compressed ? imageSize : 0;
-	//flip image
-	img.data = flip && !compressed ? FlipUncompressedDDS(charData, imageSize, img.width, img.height, depth) : charData;
+	img.data = charData;
 	charData += imageSize;
 
 	int numMipmaps = ddsh.dwMipMapCount - 1;
@@ -273,6 +176,352 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img, bool flip = true)
 	if (numMipmaps > 0)
 	{
 		img.flags &= ~TEXTURE_BUILD_MIPMAPS;
+	}
+}
+
+void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char color[3]);
+#pragma region NV_DDS_H compressed image flipping code
+struct DXTColBlock
+{
+	unsigned short col0;
+	unsigned short col1;
+
+	unsigned char row[4];
+};
+
+void swap(void *byte1, void *byte2, int size)
+{
+	unsigned char *tmp = new unsigned char[size];
+
+	memcpy(tmp, byte1, size);
+	memcpy(byte1, byte2, size);
+	memcpy(byte2, tmp, size);
+
+	delete[] tmp;
+}
+
+void flip_blocks_dxtc1(DXTColBlock *line, int numBlocks)
+{
+	DXTColBlock *curblock = line;
+
+	for (int i = 0; i < numBlocks; i++)
+	{
+		swap(&curblock->row[0], &curblock->row[3], sizeof(unsigned char));
+		swap(&curblock->row[1], &curblock->row[2], sizeof(unsigned char));
+
+		curblock++;
+	}
+}
+
+void flip_blocks_dxtc3(DXTColBlock *line, int numBlocks)
+{
+	DXTColBlock *curblock = line;
+	struct DXT3AlphaBlock
+	{
+		unsigned short row[4];
+	};
+	DXT3AlphaBlock *alphablock;
+
+	for (int i = 0; i < numBlocks; i++)
+	{
+		alphablock = (DXT3AlphaBlock*)curblock;
+
+		swap(&alphablock->row[0], &alphablock->row[3], sizeof(unsigned short));
+		swap(&alphablock->row[1], &alphablock->row[2], sizeof(unsigned short));
+
+		curblock++;
+
+		swap(&curblock->row[0], &curblock->row[3], sizeof(unsigned char));
+		swap(&curblock->row[1], &curblock->row[2], sizeof(unsigned char));
+
+		curblock++;
+	}
+}
+
+struct DXT5AlphaBlock
+{
+	unsigned char alpha0;
+	unsigned char alpha1;
+
+	unsigned char row[6];
+};
+
+void flip_dxt5_alpha(DXT5AlphaBlock *block)
+{
+	unsigned char gBits[4][4];
+
+	const unsigned int mask = 0x00000007;          // bits = 00 00 01 11
+	unsigned int bits = 0;
+	memcpy(&bits, &block->row[0], sizeof(unsigned char) * 3);
+
+	gBits[0][0] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[0][1] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[0][2] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[0][3] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[1][0] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[1][1] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[1][2] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[1][3] = (unsigned char)(bits & mask);
+
+	bits = 0;
+	memcpy(&bits, &block->row[3], sizeof(unsigned char) * 3);
+
+	gBits[2][0] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[2][1] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[2][2] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[2][3] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[3][0] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[3][1] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[3][2] = (unsigned char)(bits & mask);
+	bits >>= 3;
+	gBits[3][3] = (unsigned char)(bits & mask);
+
+	// clear existing alpha bits
+	memset(block->row, 0, sizeof(unsigned char) * 6);
+
+	unsigned int *pBits = ((unsigned int*)&(block->row[0]));
+
+	*pBits = *pBits | (gBits[3][0] << 0);
+	*pBits = *pBits | (gBits[3][1] << 3);
+	*pBits = *pBits | (gBits[3][2] << 6);
+	*pBits = *pBits | (gBits[3][3] << 9);
+
+	*pBits = *pBits | (gBits[2][0] << 12);
+	*pBits = *pBits | (gBits[2][1] << 15);
+	*pBits = *pBits | (gBits[2][2] << 18);
+	*pBits = *pBits | (gBits[2][3] << 21);
+
+	pBits = ((unsigned int*)&(block->row[3]));
+
+	*pBits = *pBits | (gBits[1][0] << 0);
+	*pBits = *pBits | (gBits[1][1] << 3);
+	*pBits = *pBits | (gBits[1][2] << 6);
+	*pBits = *pBits | (gBits[1][3] << 9);
+
+	*pBits = *pBits | (gBits[0][0] << 12);
+	*pBits = *pBits | (gBits[0][1] << 15);
+	*pBits = *pBits | (gBits[0][2] << 18);
+	*pBits = *pBits | (gBits[0][3] << 21);
+}
+
+// flip a DXT5 color block
+void flip_blocks_dxtc5(DXTColBlock *line, int numBlocks)
+{
+	DXTColBlock *curblock = line;
+	DXT5AlphaBlock *alphablock;
+
+	for (int i = 0; i < numBlocks; i++)
+	{
+		alphablock = (DXT5AlphaBlock*)curblock;
+
+		flip_dxt5_alpha(alphablock);
+
+		curblock++;
+
+		swap(&curblock->row[0], &curblock->row[3], sizeof(unsigned char));
+		swap(&curblock->row[1], &curblock->row[2], sizeof(unsigned char));
+
+		curblock++;
+	}
+}
+#pragma endregion NV_DDS_H compressed image flipping code
+
+void FlipImage(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, bool compressed, int flags)
+{
+	if (!compressed)
+	{
+		unsigned char * temp = new unsigned char[width * bpp];
+		for (unsigned int y = 0; y < height; ++y)
+		{
+			memcpy(temp, &data[y * width * bpp], sizeof(unsigned char) * bpp * width);
+			memcpy(&data[y * width * bpp], &data[(height - y - 1) * width * bpp], sizeof(unsigned char) * bpp * width);
+			memcpy(&data[(height - y - 1) * width * bpp], temp, sizeof(unsigned char) * bpp * width);
+		}
+		delete[] temp;
+	}
+	else
+	{
+		void (*flipblocks)(DXTColBlock*, int) = nullptr;
+		int xblocks = width / 4;
+		int yblocks = height / 4;
+		int blocksize = 16;
+
+		switch (flags & TEXTURE_COMPRESSION_MASK)
+		{
+		case TEXTURE_COMPRESSION_DXT1:
+			blocksize = 8;
+			flipblocks = &flip_blocks_dxtc1;
+			break;
+		case TEXTURE_COMPRESSION_DXT3:
+			flipblocks = &flip_blocks_dxtc3;
+			break;
+		case TEXTURE_COMPRESSION_DXT5:
+			flipblocks = &flip_blocks_dxtc5;
+			break;
+		default:
+			return;
+		}
+
+		size_t linesize = xblocks * blocksize;
+
+		DXTColBlock *top;
+		DXTColBlock *bottom;
+
+		unsigned char * temp = new unsigned char[linesize];
+		for (int j = 0; j < (yblocks >> 1); j++)
+		{
+			top = (DXTColBlock*)(data + j * linesize);
+			bottom = (DXTColBlock*)(data + (((yblocks - j) - 1) * linesize));
+
+			(*flipblocks)(top, xblocks);
+			(*flipblocks)(bottom, xblocks);
+
+			swap(bottom, top, linesize);
+		}
+		delete[] temp;
+	}
+}
+
+unsigned char* Convert24To32Bit(unsigned char * data, unsigned int width, unsigned int height, std::vector<unsigned char> & result)
+{
+	size_t oldSize = result.size();
+	result.reserve(oldSize + width * height * 4);
+	for (size_t i = 0; i < width * height; ++i)
+	{
+		result.push_back(data[i * 3]);
+		result.push_back(data[i * 3 + 1]);
+		result.push_back(data[i * 3 + 2]);
+		result.push_back(255);
+	}
+	return result.data() + oldSize + 1;
+}
+
+void ConvertTo32Bit(sImage &img)
+{
+	std::vector<unsigned char> result;
+	Convert24To32Bit(img.data, img.width, img.height, result);
+	for (auto& mipmap : img.mipmaps)
+	{
+		mipmap.data = Convert24To32Bit(mipmap.data, mipmap.width, mipmap.height, result);
+	}
+	img.uncompressedData = std::move(result);
+	img.data = img.uncompressedData.data();
+	img.bpp = 32;
+	img.flags |= TEXTURE_HAS_ALPHA;
+}
+
+void LoadImage(void * data, unsigned int size, sImage & img, bool flipBmp = false, bool force32bit = false)
+{
+	bool flipped = true;
+	if (strncmp((char*)data, "BM", 2) == 0)
+	{
+		LoadBMP(data, size, img);
+		flipped = false;
+	}
+	else if (strncmp((char*)data, "DDS ", 4) == 0)
+	{
+		LoadDDS(data, size, img);
+	}
+	else
+	{
+		LoadSTBI(data, size, img);
+	}
+	bool compressed = img.size != 0;
+	if (!compressed)//don't apply teamcolor to compressed images
+	{
+		for (size_t i = 0; i < img.teamcolor.size(); ++i)
+		{
+			ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
+		}
+	}
+	if (flipBmp != flipped)
+	{
+		FlipImage(img.data, img.width, img.height, img.bpp / 8, compressed, img.flags);
+		for (auto& mipmap : img.mipmaps)
+		{
+			FlipImage(mipmap.data, mipmap.width, mipmap.height, img.bpp / 8, compressed, img.flags);
+		}
+	}
+	
+	if (force32bit && img.bpp == 24 && !compressed)
+	{
+		ConvertTo32Bit(img);
+	}
+}
+
+std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int width, unsigned int height, unsigned int bpp)
+{
+	unsigned int iPixelSize = bpp / 8;
+	unsigned int imageSize = width * height * iPixelSize;
+	std::vector<unsigned char> uncompressedData;
+	uncompressedData.resize(imageSize);
+	unsigned int index = 0;
+	unsigned char *pCur = &data[0];
+	unsigned char bLength,bLoop;
+	while(index < imageSize) 
+	{
+		if(*pCur & 0x80) // Run length chunk (High bit = 1)
+		{
+			bLength =* pCur - 127; // Get run length
+			pCur++;            // Move to pixel data  
+
+			// Repeat the next pixel bLength times
+			for(bLoop = 0; bLoop != bLength; ++bLoop, index += iPixelSize)
+				memcpy(&uncompressedData[index],pCur,iPixelSize);
+
+			pCur += iPixelSize; // Move to the next descriptor chunk
+		}
+		else // Raw chunk
+		{
+			bLength =* pCur + 1; // Get run length
+			pCur++;          // Move to pixel data
+
+			// Write the next bLength pixels directly
+			for(bLoop=0;bLoop!=bLength;++bLoop,index+=iPixelSize,pCur+=iPixelSize)
+				memcpy(&uncompressedData[index],pCur,iPixelSize);
+		}
+	}
+	return uncompressedData;
+}
+
+void LoadTGA(void * data, unsigned int size, sImage & img)
+{
+	unsigned char* imgData = (unsigned char*) data;
+	if (imgData[2] != 2 && imgData[2] != 10)//use stb_image for non-RGB textures
+	{
+		LoadSTBI(data, size, img);
+		return;
+	}
+	img.width = imgData[13] * 256 + imgData[12];
+	img.height = imgData[15] * 256 + imgData[14];
+	img.bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
+	if (img.bpp != 24) img.flags |= TEXTURE_HAS_ALPHA;
+	img.flags |= TEXTURE_BGRA;
+	if(imgData[2] == 10) //Compressed
+	{
+		img.uncompressedData = UncompressTGA(imgData, img.width, img.height, img.bpp);
+		img.data = img.uncompressedData.data();
+	}
+	else
+	{
+		img.data = imgData + 18;
+	}
+	for (size_t i = 0; i < img.teamcolor.size(); ++i)
+	{
+		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
 	}
 }
 
@@ -300,23 +549,15 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& 
 	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
 	img->teamcolor = teamcolor;
 	std::function<void(void* data, unsigned int size)> loadingFunc;
-	if(extension == "bmp")
-		loadingFunc = [img](void* data, unsigned int size) {
-			LoadBMP(data, size, *img);
-		};
-	else if(extension == "tga")
+	bool force32b = m_helper.Force32Bits();
+	bool forceFlip = m_helper.ForceFlipBMP();
+	if(extension == "tga")
 		loadingFunc = [img](void* data, unsigned int size) {
 			LoadTGA(data, size, *img);
 		};
-	else if (extension == "dds")
-	{
-		loadingFunc = [img](void* data, unsigned int size) {
-			LoadDDS(data, size, *img);
-		};
-	}
 	else 
-		loadingFunc = [img](void* data, unsigned int size) {
-			UnpackTexture(data, size, *img);
+		loadingFunc = [=](void* data, unsigned int size) {
+			LoadImage(data, size, *img, forceFlip, force32b);
 		};
 	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(path, loadingFunc);
 	readTask->AddOnCompleteHandler([=, &texRef]() {

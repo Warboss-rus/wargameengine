@@ -63,17 +63,8 @@ class CDirectXVertexBuffer : public IVertexBuffer
 {
 public:
 	CDirectXVertexBuffer(ID3D11Device *dev, ID3D11DeviceContext *devcon)
-		:m_dev(dev), m_devcon(devcon)
+		:m_dev(dev), m_devcon(devcon), m_indexBufferSize(0)
 	{
-		D3D11_BUFFER_DESC bd;
-		ZeroMemory(&bd, sizeof(bd));
-
-		bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-		bd.ByteWidth = sizeof(unsigned int) * 10000;             // size is the index
-		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;       // use as a index buffer
-		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
-
-		m_dev->CreateBuffer(&bd, NULL, &m_pIndexBuffer);       // create the buffer
 	}
 
 	virtual void Bind() const override
@@ -88,6 +79,23 @@ public:
 
 	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override
 	{		
+		if (count == 0) return;
+		if (count > m_indexBufferSize)
+		{
+			D3D11_BUFFER_DESC bd;
+			ZeroMemory(&bd, sizeof(bd));
+
+			bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
+			bd.ByteWidth = sizeof(unsigned int) * count;             // size is the index
+			bd.BindFlags = D3D11_BIND_INDEX_BUFFER;       // use as a index buffer
+			bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
+
+			m_pIndexBuffer = nullptr;
+			m_dev->CreateBuffer(&bd, NULL, &m_pIndexBuffer);       // create the buffer
+			m_indexBufferSize = count;
+			Bind();
+		}
+
 		D3D11_MAPPED_SUBRESOURCE ms;
 		m_devcon->Map(m_pIndexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
 		memcpy(ms.pData, indexPtr, sizeof(unsigned int) * count);                // copy the data
@@ -104,6 +112,7 @@ public:
 	virtual void UnBind() const override
 	{
 		m_devcon->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
+		m_devcon->IASetIndexBuffer(0, DXGI_FORMAT_UNKNOWN, 0);
 	}
 
 	ID3D11Buffer ** GetVertexBuffer()
@@ -127,6 +136,7 @@ private:
 	CComPtr<ID3D11Buffer> m_pIndexBuffer;
 	ID3D11DeviceContext *m_devcon;
 	ID3D11Device *m_dev;
+	size_t m_indexBufferSize;
 };
 
 class CDirectXFrameBuffer : public IFrameBuffer
@@ -374,7 +384,7 @@ void CDirectXRenderer::PopMatrix()
 void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	matrix = DirectX::XMMatrixMultiply(matrix, DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -383,7 +393,7 @@ void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 void CDirectXRenderer::Translate(const double dx, const double dy, const double dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	matrix = DirectX::XMMatrixMultiply(matrix, DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -392,7 +402,7 @@ void CDirectXRenderer::Translate(const double dx, const double dy, const double 
 void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix *= DirectX::XMMatrixTranslation(dx, dy, dz);
+	matrix = DirectX::XMMatrixMultiply(matrix, DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -400,9 +410,9 @@ void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 
 void CDirectXRenderer::Rotate(const double angle, const double x, const double y, const double z)
 {
-	XMVECTOR axis = { static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f };
+	XMVECTOR axis = { static_cast<float>(x), static_cast<float>(z), static_cast<float>(y), 1.0f };
 	auto matrix = m_viewMatrices.back();
-	matrix *= DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle));
+	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle)), matrix);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -662,7 +672,17 @@ void CDirectXRenderer::UploadTexture(ICachedTexture & texture, unsigned char * d
 void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
 {
 	auto& dxtexture = dynamic_cast<CDirectXCachedTexture&>(texture);
-	//CreateTexture(width, height, flags, data, dxtexture, dxtexture);
+	CreateTexture(width, height, flags, data, dxtexture, dxtexture, false, size);
+}
+
+bool CDirectXRenderer::Force32Bits() const
+{
+	return true;
+}
+
+bool CDirectXRenderer::ForceFlipBMP() const
+{
+	return true;
 }
 
 void CDirectXRenderer::SetShaderManager(CShaderManagerDirectX * shaderManager)
@@ -696,7 +716,7 @@ void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
 }
 
-void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget)
+void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget, size_t size)
 {
 	if (width == 0 || height == 0) return;
 	D3D11_TEXTURE2D_DESC desc;
@@ -704,6 +724,16 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.Height = height;
 	desc.MipLevels = desc.ArraySize = 1;
 	desc.Format = flags & TEXTURE_BGRA ? ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM) : ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM);
+	if (size)
+	{
+		static const std::map<int, DXGI_FORMAT> compressionMap = {
+			{ TEXTURE_COMPRESSION_DXT1_NO_ALPHA, DXGI_FORMAT_BC1_UNORM },
+			{ TEXTURE_COMPRESSION_DXT1, DXGI_FORMAT_BC1_UNORM },
+			{ TEXTURE_COMPRESSION_DXT3, DXGI_FORMAT_BC2_UNORM },
+			{ TEXTURE_COMPRESSION_DXT5, DXGI_FORMAT_BC3_UNORM }
+		};
+		desc.Format = compressionMap.at(flags & TEXTURE_COMPRESSION_MASK);
+	}
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = renderTarget ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
