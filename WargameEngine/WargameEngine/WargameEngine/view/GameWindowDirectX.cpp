@@ -10,34 +10,48 @@
 
 using namespace DirectX;
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	// sort through and find what code to run for the message given
-	switch (message)
-	{
-		// this message is read when the window is closed
-	case WM_DESTROY:
-	{
-		// close the application entirely
-		PostQuitMessage(0);
-		return 0;
-	} break;
-	}
-
-	// Handle any messages the switch statement didn't
-	return DefWindowProc(hWnd, message, wParam, lParam);
-}
-
 struct CGameWindowDirectX::Impl
 {
+	static Impl * g_instance;
 public:
 	Impl()
 	{
+		g_instance = this;
 		CreateMainWindow();
 
 		InitDirect3D();
 
 		m_renderer = std::make_unique<CDirectXRenderer>(m_dev, m_devcon, m_hWnd);
+	}
+
+	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		// sort through and find what code to run for the message given
+		switch (message)
+		{
+			// this message is read when the window is closed
+		case WM_DESTROY:
+		{
+			// close the application entirely
+			PostQuitMessage(0);
+			return 0;
+		} break;
+		case WM_SIZE:
+		{
+			g_instance->OnSize(lParam);
+		}break;
+		}
+
+		if (g_instance->m_input)
+		{
+			if (g_instance->m_input->ProcessEvent(message, wParam, lParam))
+			{
+				return TRUE;
+			}
+		}
+
+		// Handle any messages the switch statement didn't
+		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 
 	void LaunchMainLoop()
@@ -52,20 +66,14 @@ public:
 			// Check to see if any messages are waiting in the queue
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 			{
-				// translate keystroke messages into the right format
 				TranslateMessage(&msg);
-
-				// send the message to the WindowProc function
 				DispatchMessage(&msg);
+			}
 
-				m_input->ProcessEvent(msg.message, msg.wParam, msg.lParam);
-
-				// check to see if it's time to quit
-				if (msg.message == WM_QUIT)
-				{
-					ReleaseDirect3D();
-					return;
-				}
+			if (msg.message == WM_QUIT)
+			{
+				ReleaseDirect3D();
+				return;
 			}
 
 			//Render next frame
@@ -134,6 +142,23 @@ public:
 	{
 		return *m_renderer;
 	}
+
+	void OnSize(LPARAM lParam)
+	{
+		if (m_devcon)
+		{
+			D3D11_VIEWPORT viewport;
+			unsigned int num = 1;
+			m_devcon->RSGetViewports(&num, &viewport);
+			viewport.Width = LOWORD(lParam);
+			viewport.Height = HIWORD(lParam);
+			m_devcon->RSSetViewports(num, &viewport);
+		}
+		if (m_renderer)
+		{
+			m_renderer->OnResize();
+		}
+	}
 private:
 	void CreateMainWindow()
 	{
@@ -150,7 +175,7 @@ private:
 		wc.hInstance = NULL;
 		wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 		wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-		wc.lpszClassName = "WindowClass1";
+		wc.lpszClassName = "WargameEngineWnd";
 
 		// register the window class
 		RegisterClassEx(&wc);
@@ -160,7 +185,7 @@ private:
 
 															  // create the window and use the result as the handle
 		m_hWnd = CreateWindowEx(NULL,
-			"WindowClass1",    // name of the window class
+			"WargameEngineWnd",    // name of the window class
 			"WargameEngine",   // title of the window
 			WS_OVERLAPPEDWINDOW,    // window style
 			300,    // x-position of the window
@@ -188,7 +213,7 @@ private:
 		scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;     // use 32-bit color
 		scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;      // how swap chain is to be used
 		scd.OutputWindow = m_hWnd;                                // the window to be used
-		scd.SampleDesc.Count = 1;                               // how many multisamples
+		scd.SampleDesc.Count = 4;                               // how many multisamples
 		scd.Windowed = TRUE;                                    // windowed/full-screen mode
 		scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 		// create a device, device context and swap chain using the information in the scd struct
@@ -220,9 +245,6 @@ private:
 		// Set the viewport
 		D3D11_VIEWPORT viewport;
 		ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
 		viewport.Width = 600;
 		viewport.Height = 600;
 		viewport.MaxDepth = 1.0f;
@@ -232,6 +254,7 @@ private:
 
 	void ReleaseDirect3D()
 	{
+		m_renderer.reset();
 		m_swapchain->SetFullscreenState(FALSE, NULL);
 	}
 
@@ -246,6 +269,8 @@ private:
 	CComPtr<ID3D11Device> m_dev;                     // the pointer to our Direct3D device interface
 	CComPtr<ID3D11DeviceContext> m_devcon;           // the pointer to our Direct3D device context
 };
+
+CGameWindowDirectX::Impl* CGameWindowDirectX::Impl::g_instance = nullptr;
 
 CGameWindowDirectX::CGameWindowDirectX()
 	:m_pImpl(std::make_unique<Impl>())

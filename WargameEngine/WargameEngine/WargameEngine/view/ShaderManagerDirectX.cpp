@@ -49,8 +49,8 @@ std::wstring Str2Wstr(std::string const& str)
 }
 }
 
-CShaderManagerDirectX::CShaderManagerDirectX(ID3D11Device *dev, ID3D11DeviceContext *devcon, CDirectXRenderer * render)
-	:m_dev(dev), m_devcon(devcon), m_render(render)
+CShaderManagerDirectX::CShaderManagerDirectX(ID3D11Device *dev, CDirectXRenderer * render)
+	:m_dev(dev), m_render(render)
 {
 	NewProgram();
 }
@@ -118,9 +118,11 @@ void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::
 	unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
 	CreateConstantBuffer(m_dev, size, &m_constantBuffer);
 	ID3D11Buffer * buffer = m_constantBuffer;
-	m_devcon->VSSetConstantBuffers(0, 1, &buffer);
-	m_devcon->PSSetConstantBuffers(0, 1, &buffer);
-	m_devcon->GSSetConstantBuffers(0, 1, &buffer);
+	m_render->GetContext()->VSSetConstantBuffers(0, 1, &buffer);
+	m_render->GetContext()->PSSetConstantBuffers(0, 1, &buffer);
+	m_render->GetContext()->GSSetConstantBuffers(0, 1, &buffer);
+	m_constantBufferData.resize(size);
+	memset(m_constantBufferData.data(), 0, m_constantBufferData.size());
 
 	CreateBuffer(&m_weightBuffer, sizeof(float) * 4 * 10000);
 	CreateBuffer(&m_weightIndexBuffer, sizeof(int) * 10000);
@@ -128,9 +130,10 @@ void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::
 
 void CShaderManagerDirectX::BindProgram() const
 {
-	m_devcon->VSSetShader(pVS, 0, 0);
-	m_devcon->PSSetShader(pPS, 0, 0);
-	m_devcon->GSSetShader(pGS, 0, 0);
+	auto context = m_render->GetContext();
+	context->VSSetShader(pVS, 0, 0);
+	context->PSSetShader(pPS, 0, 0);
+	context->GSSetShader(pGS, 0, 0);
 
 	m_render->SetShaderManager((CShaderManagerDirectX*)this);
 }
@@ -237,7 +240,7 @@ void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, 
 		stride = sizeof(int);
 	}
 	CopyBufferData(m_weightBuffer, values, size);
-	m_devcon->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const
@@ -253,7 +256,7 @@ void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, 
 		stride = sizeof(int);
 	}
 	CopyBufferData(m_weightBuffer, values, size);
-	m_devcon->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const
@@ -269,25 +272,25 @@ void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, 
 		stride = sizeof(int);
 	}
 	CopyBufferData(m_weightBuffer, values, size);
-	m_devcon->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* /*defaultValue*/) const
 {
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
-	m_devcon->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
+	m_render->GetContext()->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, int* /*defaultValue*/) const
 {
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
-	m_devcon->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
+	m_render->GetContext()->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, unsigned int* /*defaultValue*/) const
 {
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
-	m_devcon->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
+	m_render->GetContext()->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
 }
 
 void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat)
@@ -301,8 +304,8 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 	ied.push_back({ "WEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 4, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 	CComPtr<ID3D11InputLayout> pLayout;
 	m_dev->CreateInputLayout(ied.data(), ied.size(), m_VS->GetBufferPointer(), m_VS->GetBufferSize(), &pLayout);
-	m_devcon->IASetInputLayout(pLayout);
-	m_devcon->VSSetShader(pVS, 0, 0);
+	m_render->GetContext()->IASetInputLayout(pLayout);
+	m_render->GetContext()->VSSetShader(pVS, 0, 0);
 }
 
 void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
@@ -318,18 +321,19 @@ void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const
 {
+	memcpy(m_constantBufferData.data() + begin, data, size);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	m_devcon->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	memcpy((char*)mappedResource.pData + begin, data, size);
-	m_devcon->Unmap(m_constantBuffer, 0);
+	m_render->GetContext()->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	memcpy(mappedResource.pData, m_constantBufferData.data(), m_constantBufferData.size());
+	m_render->GetContext()->Unmap(m_constantBuffer, 0);
 }
 
 void CShaderManagerDirectX::CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const
 {
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	m_devcon->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	m_render->GetContext()->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, data, size);
-	m_devcon->Unmap(buffer, 0);
+	m_render->GetContext()->Unmap(buffer, 0);
 }
 
 unsigned int CShaderManagerDirectX::GetVariableOffset(std::string const& bufferName, std::string const& name, unsigned int * size) const

@@ -23,7 +23,7 @@ public:
 	virtual int GetMouseY() const override;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) override;
 
-	void ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam);
+	bool ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	CSignal<int, int> m_onLMBDown;
 	CSignal<int, int> m_onLMBUp;
@@ -36,4 +36,5 @@ private:
 	CSignal<unsigned int> m_onCharacter;
 	CSignal<int, int> m_onMouseMove;
 	HWND m_hWnd;
+	bool m_cursorEnabled;
 };

@@ -179,6 +179,65 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img)
 	}
 }
 
+std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int width, unsigned int height, unsigned int bpp)
+{
+	unsigned int iPixelSize = bpp / 8;
+	unsigned int imageSize = width * height * iPixelSize;
+	std::vector<unsigned char> uncompressedData;
+	uncompressedData.resize(imageSize);
+	unsigned int index = 0;
+	unsigned char *pCur = &data[0];
+	unsigned char bLength, bLoop;
+	while (index < imageSize)
+	{
+		if (*pCur & 0x80) // Run length chunk (High bit = 1)
+		{
+			bLength = *pCur - 127; // Get run length
+			pCur++;            // Move to pixel data  
+
+							   // Repeat the next pixel bLength times
+			for (bLoop = 0; bLoop != bLength; ++bLoop, index += iPixelSize)
+				memcpy(&uncompressedData[index], pCur, iPixelSize);
+
+			pCur += iPixelSize; // Move to the next descriptor chunk
+		}
+		else // Raw chunk
+		{
+			bLength = *pCur + 1; // Get run length
+			pCur++;          // Move to pixel data
+
+							 // Write the next bLength pixels directly
+			for (bLoop = 0;bLoop != bLength;++bLoop, index += iPixelSize, pCur += iPixelSize)
+				memcpy(&uncompressedData[index], pCur, iPixelSize);
+		}
+	}
+	return uncompressedData;
+}
+
+void LoadTGA(void * data, unsigned int size, sImage & img)
+{
+	unsigned char* imgData = (unsigned char*)data;
+	if (imgData[2] != 2 && imgData[2] != 10)//use stb_image for non-RGB textures
+	{
+		LoadSTBI(data, size, img);
+		return;
+	}
+	img.width = imgData[13] * 256 + imgData[12];
+	img.height = imgData[15] * 256 + imgData[14];
+	img.bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
+	if (img.bpp != 24) img.flags |= TEXTURE_HAS_ALPHA;
+	img.flags |= TEXTURE_BGRA;
+	if (imgData[2] == 10) //Compressed
+	{
+		img.uncompressedData = UncompressTGA(imgData, img.width, img.height, img.bpp);
+		img.data = img.uncompressedData.data();
+	}
+	else
+	{
+		img.data = imgData + 18;
+	}
+}
+
 void ApplyTeamcolor(sImage & image, std::string const& maskFile, unsigned char color[3]);
 #pragma region NV_DDS_H compressed image flipping code
 struct DXTColBlock
@@ -426,7 +485,13 @@ void ConvertTo32Bit(sImage &img)
 void LoadImage(void * data, unsigned int size, sImage & img, bool flipBmp = false, bool force32bit = false)
 {
 	bool flipped = true;
-	if (strncmp((char*)data, "BM", 2) == 0)
+	std::string extension = img.filename.substr(img.filename.find_last_of('.') + 1);
+	if (extension == "tga")
+	{
+		LoadTGA(data, size, img);
+		flipped = false;
+	}
+	else if (strncmp((char*)data, "BM", 2) == 0)
 	{
 		LoadBMP(data, size, img);
 		flipped = false;
@@ -462,69 +527,6 @@ void LoadImage(void * data, unsigned int size, sImage & img, bool flipBmp = fals
 	}
 }
 
-std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int width, unsigned int height, unsigned int bpp)
-{
-	unsigned int iPixelSize = bpp / 8;
-	unsigned int imageSize = width * height * iPixelSize;
-	std::vector<unsigned char> uncompressedData;
-	uncompressedData.resize(imageSize);
-	unsigned int index = 0;
-	unsigned char *pCur = &data[0];
-	unsigned char bLength,bLoop;
-	while(index < imageSize) 
-	{
-		if(*pCur & 0x80) // Run length chunk (High bit = 1)
-		{
-			bLength =* pCur - 127; // Get run length
-			pCur++;            // Move to pixel data  
-
-			// Repeat the next pixel bLength times
-			for(bLoop = 0; bLoop != bLength; ++bLoop, index += iPixelSize)
-				memcpy(&uncompressedData[index],pCur,iPixelSize);
-
-			pCur += iPixelSize; // Move to the next descriptor chunk
-		}
-		else // Raw chunk
-		{
-			bLength =* pCur + 1; // Get run length
-			pCur++;          // Move to pixel data
-
-			// Write the next bLength pixels directly
-			for(bLoop=0;bLoop!=bLength;++bLoop,index+=iPixelSize,pCur+=iPixelSize)
-				memcpy(&uncompressedData[index],pCur,iPixelSize);
-		}
-	}
-	return uncompressedData;
-}
-
-void LoadTGA(void * data, unsigned int size, sImage & img)
-{
-	unsigned char* imgData = (unsigned char*) data;
-	if (imgData[2] != 2 && imgData[2] != 10)//use stb_image for non-RGB textures
-	{
-		LoadSTBI(data, size, img);
-		return;
-	}
-	img.width = imgData[13] * 256 + imgData[12];
-	img.height = imgData[15] * 256 + imgData[14];
-	img.bpp = imgData[16]; //bytes per pixel. Can be 24 (without alpha) or 32 (with alpha)
-	if (img.bpp != 24) img.flags |= TEXTURE_HAS_ALPHA;
-	img.flags |= TEXTURE_BGRA;
-	if(imgData[2] == 10) //Compressed
-	{
-		img.uncompressedData = UncompressTGA(imgData, img.width, img.height, img.bpp);
-		img.data = img.uncompressedData.data();
-	}
-	else
-	{
-		img.data = imgData + 18;
-	}
-	for (size_t i = 0; i < img.teamcolor.size(); ++i)
-	{
-		ApplyTeamcolor(img, img.teamcolor[i].suffix, img.teamcolor[i].color);
-	}
-}
-
 void CTextureManager::UseTexture(sImage const& img, ICachedTexture& texture)
 {
 	if (img.size != 0)
@@ -544,22 +546,13 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& 
 	img->filename = path;
 	img->flags = flags | TEXTURE_BUILD_MIPMAPS;
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
-	ICachedTexture& texRef = *tex;
-	unsigned int dotCoord = path.find_last_of('.') + 1;
-	std::string extension = path.substr(dotCoord, path.length() - dotCoord);
+	ICachedTexture& texRef = *tex;	
 	img->teamcolor = teamcolor;
-	std::function<void(void* data, unsigned int size)> loadingFunc;
 	bool force32b = m_helper.Force32Bits();
 	bool forceFlip = m_helper.ForceFlipBMP();
-	if(extension == "tga")
-		loadingFunc = [img](void* data, unsigned int size) {
-			LoadTGA(data, size, *img);
-		};
-	else 
-		loadingFunc = [=](void* data, unsigned int size) {
-			LoadImage(data, size, *img, forceFlip, force32b);
-		};
-	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(path, loadingFunc);
+	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(path, [=](void* data, unsigned int size) {
+		LoadImage(data, size, *img, forceFlip, force32b);
+	});
 	readTask->AddOnCompleteHandler([=, &texRef]() {
 		UseTexture(*img, texRef);
 	});

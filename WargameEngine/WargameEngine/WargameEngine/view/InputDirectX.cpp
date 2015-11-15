@@ -59,14 +59,20 @@ void CInputDirectX::DoOnMouseMove(std::function<bool(int, int) > const& handler,
 
 void CInputDirectX::EnableCursor(bool enable /*= true*/)
 {
-	if (enable)
+	if (!enable)
 	{
 		SetCapture(m_hWnd);
+		RECT screenSize;
+		GetClientRect(m_hWnd, &screenSize);
+		POINT center = { (screenSize.right - screenSize.left) / 2, (screenSize.bottom - screenSize.top) / 2 };
+		ClientToScreen(m_hWnd, &center);
+		SetCursorPos(center.x, center.y);
 	}
 	else
 	{
 		ReleaseCapture();
 	}
+	m_cursorEnabled = enable;
 }
 
 int CInputDirectX::GetModifiers() const
@@ -108,7 +114,7 @@ void CInputDirectX::DeleteAllSignalsByTag(std::string const& tag)
 	m_onMouseMove.RemoveByTag(tag);
 }
 
-void CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
+bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
@@ -141,19 +147,49 @@ void CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 	}break;
 	case WM_MOUSEMOVE:
 	{
+		static bool justWarped;
+		if (justWarped)
+		{
+			justWarped = false;
+			return true;
+		}
+		justWarped = false;
 		m_onMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-	}
+		if (!m_cursorEnabled)
+		{
+			RECT screenSize;
+			GetClientRect(m_hWnd, &screenSize);
+			POINT center = { (screenSize.right - screenSize.left) / 2, (screenSize.bottom - screenSize.top) / 2 };
+			ClientToScreen(m_hWnd, &center);
+			SetCursorPos(center.x, center.y);
+			justWarped = true;
+		}
+	}break;
 	case WM_KEYDOWN:
 	{
 		m_onKeyDown(wParam, GetModifiers());
-	}
+	}break;
 	case WM_KEYUP:
 	{
 		m_onKeyUp(wParam, GetModifiers());
-	}
+	}break;
 	case WM_CHAR:
 	{
 		m_onCharacter(wParam);
+	}break;
+	case WM_SETCURSOR:
+	{
+		if (!m_cursorEnabled)
+		{
+			SetCursor(NULL);
+		}
+		else
+		{
+			return false;
+		}
+	}break;
+	default:
+		return false;
 	}
-	}
+	return true;
 }

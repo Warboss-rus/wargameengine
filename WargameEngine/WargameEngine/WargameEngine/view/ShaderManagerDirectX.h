@@ -3,13 +3,14 @@
 #include <d3d11.h>
 #include <atlcomcli.h>
 #include <d3d11shader.h>
+#include <vector>
 
 class CDirectXRenderer;
 
 class CShaderManagerDirectX : public IShaderManager
 {
 public:
-	CShaderManagerDirectX(ID3D11Device *dev, ID3D11DeviceContext *devcon, CDirectXRenderer * render = nullptr);
+	CShaderManagerDirectX(ID3D11Device *dev, CDirectXRenderer * render = nullptr);
 
 	virtual void NewProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
 	virtual void BindProgram() const override;
@@ -45,7 +46,6 @@ private:
 	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
 
 	ID3D11Device *m_dev;
-	ID3D11DeviceContext *m_devcon;
 	CDirectXRenderer * m_render;
 	CComPtr<ID3D11Buffer> m_constantBuffer;
 	CComPtr<ID3D11Buffer> m_weightBuffer;
@@ -55,4 +55,5 @@ private:
 	CComPtr<ID3D11GeometryShader> pGS;     // the geometry shader
 	CComPtr<ID3D10Blob> m_VS;
 	CComPtr<ID3D11ShaderReflection> m_reflection;
+	mutable std::vector<unsigned char> m_constantBufferData;
 };

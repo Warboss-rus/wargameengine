@@ -76,18 +76,21 @@ public:
 
 	void SetShaderManager(CShaderManagerDirectX * shaderManager);
 	void SetTextureResource(ID3D11ShaderResourceView * view);
+	void OnResize();
+	ID3D11DeviceContext * GetContext();
+	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat);
 private:
-	void CreateBuffer(ID3D11Buffer ** bufferPtr, void * data, size_t size);
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize);
 	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget = false, size_t size = 0);
 	void UpdateMatrices();
+	void CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size);
 
-	CTextureManager m_textureManager;
-	std::unique_ptr<CShaderManagerDirectX> m_defaultShaderManager;
-	CShaderManagerDirectX * m_shaderManager;
 	ID3D11Device *m_dev;
 	ID3D11DeviceContext *m_devcon;
 	HWND m_hWnd;
+	CTextureManager m_textureManager;
+	std::unique_ptr<CShaderManagerDirectX> m_defaultShaderManager;
+	CShaderManagerDirectX * m_shaderManager;
 	unsigned int m_activeTextureSlot;
 
 	CComPtr<ID3D11Buffer> m_vertexBuffer;
