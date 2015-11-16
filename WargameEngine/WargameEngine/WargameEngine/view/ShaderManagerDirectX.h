@@ -39,13 +39,16 @@ public:
 
 	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat);
 	void SetMatrices(float * modelView, float * projection);
+	void SetColor(const float * color);
+	void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess);
 private:
+	void CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer);
 	unsigned int GetVariableOffset(std::string const& buffer, std::string const& name, unsigned int * size = nullptr) const;
 	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size);
 	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
 
-	ID3D11Device *m_dev;
+	CComPtr<ID3D11Device> m_dev;
 	CDirectXRenderer * m_render;
 	CComPtr<ID3D11Buffer> m_constantBuffer;
 	CComPtr<ID3D11Buffer> m_weightBuffer;

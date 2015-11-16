@@ -723,6 +723,7 @@ COpenGLFrameBuffer::COpenGLFrameBuffer()
 COpenGLFrameBuffer::~COpenGLFrameBuffer()
 {
 	UnBind();
+	glDeleteBuffers(1, &m_id);
 }
 
 void COpenGLFrameBuffer::Bind() const

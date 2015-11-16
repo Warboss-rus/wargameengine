@@ -29,17 +29,8 @@ public:
 	{
 		m_renderer->SetTextureResource(NULL);
 	}
-
-	operator ID3D11Texture2D**()
-	{
-		return &m_texture;
-	}
-
-	operator ID3D11ShaderResourceView**()
-	{
-		return &m_resourceView;
-	}
 private:
+	friend class CDirectXRenderer;
 	ID3D11ShaderResourceView* m_resourceView;
 	ID3D11Texture2D* m_texture;
 	CDirectXRenderer * m_renderer;
@@ -93,7 +84,11 @@ public:
 			bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
 
 			m_pIndexBuffer = nullptr;
-			m_dev->CreateBuffer(&bd, NULL, &m_pIndexBuffer);       // create the buffer
+			HRESULT hr = m_dev->CreateBuffer(&bd, NULL, &m_pIndexBuffer);       // create the buffer
+			if (FAILED(hr))
+			{
+				LogWriter::WriteLine("DirectX error: Cannot create render target view for texture rendering");
+			}
 			m_indexBufferSize = count;
 			Bind();
 		}
@@ -152,7 +147,7 @@ private:
 	CComPtr<ID3D11Buffer> m_pNormalBuffer;
 	CComPtr<ID3D11Buffer> m_pIndexBuffer;
 	CDirectXRenderer * m_renderer;
-	ID3D11Device *m_dev;
+	CComPtr<ID3D11Device> m_dev;
 	size_t m_indexBufferSize;
 };
 
@@ -185,9 +180,9 @@ CDirectXRenderer::CDirectXRenderer(ID3D11Device *dev, ID3D11DeviceContext *devco
 	:m_dev(dev), m_devcon(devcon), m_hWnd(hWnd)
 	, m_defaultShaderManager(std::make_unique<CShaderManagerDirectX>(dev, this)), m_textureManager(*this), m_activeTextureSlot(0)
 {
-	m_viewMatrices.push_back(XMMatrixIdentity());
+	m_viewMatrices.push_back(DirectX::XMMatrixIdentity());
 	float aspect = GetAspectRatio(m_hWnd);
-	m_projectionMatrices.push_back(XMMatrixPerspectiveFovLH(60.0f, aspect, 0.05f, 1000.0f));
+	m_projectionMatrices.push_back(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
 
 	m_defaultShaderManager->BindProgram();
 
@@ -208,7 +203,11 @@ void CDirectXRenderer::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elem
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
 
-	m_dev->CreateBuffer(&bd, NULL, bufferPtr);       // create the buffer
+	HRESULT hr = m_dev->CreateBuffer(&bd, NULL, bufferPtr);       // create the buffer
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create buffer");
+	}
 }
 
 std::map<RenderMode, D3D11_PRIMITIVE_TOPOLOGY> renderModeMap = {
@@ -315,22 +314,25 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> cons
 
 void CDirectXRenderer::SetColor(const int * color)
 {
-	
+	float fcolor[4] = { static_cast<float>(INT_MAX) / color[0], static_cast<float>(INT_MAX) / color[1], static_cast<float>(INT_MAX) / color[2], 1.0f };
+	m_shaderManager->SetColor(fcolor);
 }
 
 void CDirectXRenderer::SetColor(const float * color)
 {
-	
+	m_shaderManager->SetColor(color);
 }
 
 void CDirectXRenderer::SetColor(const int r, const int g, const int b)
 {
-	
+	float fcolor[4] = { static_cast<float>(INT_MAX) / r, static_cast<float>(INT_MAX) / g, static_cast<float>(INT_MAX) / b, 1.0f };
+	m_shaderManager->SetColor(fcolor);
 }
 
 void CDirectXRenderer::SetColor(const float r, const float g, const float b)
 {
-	
+	float fcolor[4] = { r, g, b, 1.0f };
+	m_shaderManager->SetColor(fcolor);
 }
 
 void CDirectXRenderer::PushMatrix()
@@ -347,7 +349,7 @@ void CDirectXRenderer::PopMatrix()
 void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(matrix, DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
+	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -356,7 +358,7 @@ void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 void CDirectXRenderer::Translate(const double dx, const double dy, const double dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(matrix, DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
+	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -365,7 +367,7 @@ void CDirectXRenderer::Translate(const double dx, const double dy, const double 
 void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(matrix, DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
+	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -373,7 +375,7 @@ void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 
 void CDirectXRenderer::Rotate(const double angle, const double x, const double y, const double z)
 {
-	XMVECTOR axis = { static_cast<float>(x), static_cast<float>(y), static_cast<float>(-z), 1.0f };
+	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(-z), 1.0f);
 	auto matrix = m_viewMatrices.back();
 	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle)), matrix);
 	m_viewMatrices.pop_back();
@@ -406,11 +408,16 @@ void CDirectXRenderer::ResetViewMatrix()
 	UpdateMatrices();
 }
 
+XMVECTOR Vec3ToXMVector(CVector3d const& vec)
+{
+	return  DirectX::XMVectorSet(-static_cast<float>(vec.x), static_cast<float>(vec.y), static_cast<float>(vec.z), static_cast<float>(vec.GetLength()));
+}
+
 void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up)
 {
-	XMVECTOR pos = XMVectorSet(-position.x, position.y, position.z, 1.0f);
-	XMVECTOR dir = XMVectorSet(-direction.x, direction.y, direction.z, 1.0f);
-	XMVECTOR upVec = XMVectorSet(up.y, up.x, -up.z, 1.0f);
+	XMVECTOR pos = Vec3ToXMVector(position);
+	XMVECTOR dir = Vec3ToXMVector(direction);
+	XMVECTOR upVec = DirectX::XMVectorSet(static_cast<float>(up.x), static_cast<float>(up.y), static_cast<float>(up.z), 1.0f);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
 	UpdateMatrices();
@@ -437,29 +444,29 @@ void CDirectXRenderer::SetTexture(std::string const& texture, bool forceLoadNow 
 
 std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
 {
-	ID3D11RenderTargetView* oldRenderTargetView;
-	ID3D11DepthStencilView* oldDepthStencilView;
+	CComPtr<ID3D11RenderTargetView> oldRenderTargetView;
+	CComPtr<ID3D11DepthStencilView> oldDepthStencilView;
 	m_devcon->OMGetRenderTargets(1, &oldRenderTargetView, &oldDepthStencilView);
 
 	auto tex = std::make_unique<CDirectXCachedTexture>(this);
-	CreateTexture(width, height, TEXTURE_HAS_ALPHA, NULL, *tex, *tex, true);
+	CreateTexture(width, height, TEXTURE_HAS_ALPHA, NULL, &tex->m_texture, &tex->m_resourceView, true);
 
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
 	renderTargetViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc.Texture2D.MipSlice = 0;
 	CComPtr<ID3D11RenderTargetView> renderTargetView;
-	ID3D11Texture2D ** texture = *tex;
-	m_dev->CreateRenderTargetView(*texture, &renderTargetViewDesc, &renderTargetView);
+	HRESULT hr = m_dev->CreateRenderTargetView(tex->m_texture, &renderTargetViewDesc, &renderTargetView);
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create render target view for texture rendering");
+	}
 
-	ID3D11RenderTargetView* view = renderTargetView;
-	m_devcon->OMSetRenderTargets(1, &view, nullptr);
+	m_devcon->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
 
 	func();
 
-	m_devcon->OMSetRenderTargets(1, &oldRenderTargetView, oldDepthStencilView);
-	if (oldRenderTargetView) oldRenderTargetView->Release();
-	if (oldDepthStencilView) oldDepthStencilView->Release();
+	m_devcon->OMSetRenderTargets(1, &oldRenderTargetView.p, oldDepthStencilView);
 
 	return std::move(tex);
 }
@@ -467,13 +474,13 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type /*= CachedTextureType::RGBA*/)
 {
 	auto tex = std::make_unique<CDirectXCachedTexture>(this);
-	CreateTexture(width, height, 0, data, *tex, *tex);
+	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView);
 	return std::move(tex);
 }
 
 void CDirectXRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
-	
+	m_shaderManager->SetMaterial(ambient, diffuse, specular, shininess);
 }
 
 std::unique_ptr<IDrawingList> CDirectXRenderer::CreateDrawingList(std::function<void() > const& func)
@@ -511,12 +518,31 @@ std::unique_ptr<IShaderManager> CDirectXRenderer::CreateShaderManager() const
 
 void CDirectXRenderer::WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const
 {
-	
+	RECT rect;
+	GetClientRect(m_hWnd, &rect);
+	auto projection = m_projectionMatrices.back();
+	auto view = m_viewMatrices.back();
+	XMVECTOR vec1 = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), 0.0f, 1.0f);
+	vec1 = DirectX::XMVector3Unproject(vec1, static_cast<float>(rect.left), static_cast<float>(rect.top), static_cast<float>(rect.right),
+		static_cast<float>(rect.bottom), 0.05f, 1000.0f, projection, view, DirectX::XMMatrixIdentity());
+	start = CVector3d(DirectX::XMVectorGetX(vec1), DirectX::XMVectorGetY(vec1), DirectX::XMVectorGetZ(vec1));
+	XMVECTOR vec2 = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), 1.0f, 1.0f);
+	vec2 = DirectX::XMVector3Unproject(vec2, static_cast<float>(rect.left), static_cast<float>(rect.top), static_cast<float>(rect.right),
+		static_cast<float>(rect.bottom), 0.05f, 1000.0f, projection, view, DirectX::XMMatrixIdentity());
+	end = CVector3d(DirectX::XMVectorGetX(vec2), DirectX::XMVectorGetY(vec2), DirectX::XMVectorGetZ(vec2));
 }
 
 void CDirectXRenderer::WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const
 {
-	
+	RECT rect;
+	GetClientRect(m_hWnd, &rect);
+	XMVECTOR vec = Vec3ToXMVector(worldCoords);
+	auto projection = m_projectionMatrices.back();
+	auto view = m_viewMatrices.back();
+	vec = DirectX::XMVector3Project(vec, static_cast<float>(rect.left), static_cast<float>(rect.top), static_cast<float>(rect.right), static_cast<float>(rect.bottom),
+		0.05f, 1000.0f, projection, view, DirectX::XMMatrixIdentity());
+	x = static_cast<int>(DirectX::XMVectorGetX(vec));
+	y = static_cast<int>(DirectX::XMVectorGetY(vec));
 }
 
 std::unique_ptr<IFrameBuffer> CDirectXRenderer::CreateFramebuffer() const
@@ -583,7 +609,12 @@ void CDirectXRenderer::EnableDepthTest(bool enable)
 
 	// Create depth stencil state
 	CComPtr<ID3D11DepthStencilState> pDSState;
-	m_dev->CreateDepthStencilState(&dsDesc, &pDSState);
+	HRESULT hr = m_dev->CreateDepthStencilState(&dsDesc, &pDSState);
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create depth state");
+	}
+
 	m_devcon->OMSetDepthStencilState(pDSState, 0);
 }
 
@@ -602,7 +633,11 @@ void CDirectXRenderer::EnableBlending(bool enable)
 	descr.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
 	CComPtr<ID3D11BlendState> pBlendState;
-	m_dev->CreateBlendState(&descr, &pBlendState);
+	HRESULT hr = m_dev->CreateBlendState(&descr, &pBlendState);
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create blend state");
+	}
 	m_devcon->OMSetBlendState(pBlendState, NULL, 0xffffffff);
 }
 
@@ -626,8 +661,8 @@ void CDirectXRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/,
 
 void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/)
 {
-	ID3D11RenderTargetView * backbuffer;
-	ID3D11DepthStencilView * depthBuffer;
+	CComPtr<ID3D11RenderTargetView> backbuffer;
+	CComPtr<ID3D11DepthStencilView> depthBuffer;
 	m_devcon->OMGetRenderTargets(1, &backbuffer, &depthBuffer);
 	FLOAT backgroundColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	if(backbuffer && color) m_devcon->ClearRenderTargetView(backbuffer, backgroundColor);
@@ -659,7 +694,7 @@ void CDirectXRenderer::SetTextureAnisotropy(float value /*= 1.0f*/)
 {
 	if (value == m_anisotropyLevel) return;
 	m_anisotropyLevel = value;
-	ID3D11SamplerState* state;
+	CComPtr<ID3D11SamplerState> state;
 	D3D11_SAMPLER_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -671,23 +706,27 @@ void CDirectXRenderer::SetTextureAnisotropy(float value /*= 1.0f*/)
 	desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
 	desc.MinLOD = -FLT_MAX;
 	desc.MaxLOD = FLT_MAX;
-	m_dev->CreateSamplerState(&desc, &state);
+	HRESULT hr = m_dev->CreateSamplerState(&desc, &state);
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create sampler state");
+	}
 
-	m_devcon->PSSetSamplers(0, 1, &state);
-
-	state->Release();
+	m_devcon->PSSetSamplers(0, 1, &state.p);
 }
 
 void CDirectXRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
 {
+	assert(bpp == 32);
 	auto& dxtexture = dynamic_cast<CDirectXCachedTexture&>(texture);
-	CreateTexture(width, height, flags, data, dxtexture, dxtexture);
+	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView);
+
 }
 
 void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
 {
 	auto& dxtexture = dynamic_cast<CDirectXCachedTexture&>(texture);
-	CreateTexture(width, height, flags, data, dxtexture, dxtexture, false, size);
+	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, size);
 }
 
 bool CDirectXRenderer::Force32Bits() const
@@ -734,7 +773,8 @@ void CDirectXRenderer::SetUpViewport2D()
 {
 	RECT rect;
 	GetClientRect(m_hWnd, &rect);
-	m_projectionMatrices.push_back(XMMatrixOrthographicOffCenterLH(rect.left, rect.right, rect.bottom, rect.top, 0.0f, 1.0f));
+	m_projectionMatrices.push_back(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(rect.left), static_cast<float>(rect.right), 
+		static_cast<float>(rect.top), static_cast<float>(rect.bottom), 0.0f, 100.0f));
 	UpdateMatrices();
 }
 
@@ -748,7 +788,7 @@ void CDirectXRenderer::OnResize()
 {
 	float aspect = GetAspectRatio(m_hWnd);
 	m_projectionMatrices.pop_back();
-	m_projectionMatrices.push_back(XMMatrixPerspectiveFovLH(60.0f, aspect, 0.05f, 1000.0f));
+	m_projectionMatrices.push_back(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
 	UpdateMatrices();
 }
 
@@ -763,7 +803,8 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	D3D11_TEXTURE2D_DESC desc;
 	desc.Width = width;
 	desc.Height = height;
-	desc.MipLevels = desc.ArraySize = 1;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
 	desc.Format = flags & TEXTURE_BGRA ? ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM) : ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM);
 	if (size)
 	{
@@ -781,7 +822,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (renderTarget) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 	desc.CPUAccessFlags = renderTarget ? 0 : D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = 0;
+	desc.MiscFlags = /*flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : */0;
 
 	int bpp = flags & TEXTURE_HAS_ALPHA ? 4 : 3;
 

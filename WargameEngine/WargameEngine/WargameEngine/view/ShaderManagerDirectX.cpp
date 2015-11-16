@@ -13,6 +13,11 @@ static const std::string defaultVertexShader = "\
 cbuffer Constant : register( b0 )\
 {\
 	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
+	float4 Color;\
+	float4 AmbientColor;\
+	float4 DiffuseColor;\
+	float4 SpecularColor;\
+	float Shininess;\
 }\
 struct PixelInputType\
 {\
@@ -30,6 +35,15 @@ PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, floa
 static const std::string defaultPixelShader = "\
 Texture2D shaderTexture : register( t0 );\
 SamplerState SampleType;\
+cbuffer Constant : register( b0 )\
+{\
+	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
+	float4 Color;\
+	float4 AmbientColor;\
+	float4 DiffuseColor;\
+	float4 SpecularColor;\
+	float Shininess;\
+}\
 struct PixelInputType\
 {\
 	float4 position : SV_POSITION;\
@@ -75,7 +89,7 @@ unsigned int GetShaderBufferSize(ID3D11ShaderReflectionConstantBuffer * buffer)
 	return desc.Size;
 }
 
-void CreateConstantBuffer(ID3D11Device * dev, unsigned int size, ID3D11Buffer ** m_constantBuffer)
+void CShaderManagerDirectX::CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer)
 {
 	D3D11_BUFFER_DESC cbDesc;
 	cbDesc.ByteWidth = size;
@@ -85,7 +99,7 @@ void CreateConstantBuffer(ID3D11Device * dev, unsigned int size, ID3D11Buffer **
 	cbDesc.MiscFlags = 0;
 	cbDesc.StructureByteStride = 0;
 
-	dev->CreateBuffer(&cbDesc, nullptr, m_constantBuffer);
+	m_dev->CreateBuffer(&cbDesc, nullptr, m_constantBuffer);
 }
 
 void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size)
@@ -116,7 +130,7 @@ void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::
 		IID_ID3D11ShaderReflection, (void**)&m_reflection);
 
 	unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
-	CreateConstantBuffer(m_dev, size, &m_constantBuffer);
+	CreateConstantBuffer(size, &m_constantBuffer);
 	ID3D11Buffer * buffer = m_constantBuffer;
 	m_render->GetContext()->VSSetConstantBuffers(0, 1, &buffer);
 	m_render->GetContext()->PSSetConstantBuffers(0, 1, &buffer);
@@ -317,6 +331,20 @@ void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 	unsigned int begin = GetVariableOffset("Constant", "WorldViewProjection");
 
 	CopyConstantBufferData(begin, *fmatrix.m, sizeof(float) * 16);
+}
+
+void CShaderManagerDirectX::SetColor(const float * color)
+{
+	auto begin = GetVariableOffset("Constant", "Color");
+	CopyConstantBufferData(begin, color, sizeof(float) * 4);
+}
+
+void CShaderManagerDirectX::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
+{
+	CopyConstantBufferData(GetVariableOffset("Constant", "AmbientColor"), ambient, sizeof(float) * 4);
+	CopyConstantBufferData(GetVariableOffset("Constant", "DiffuseColor"), diffuse, sizeof(float) * 4);
+	CopyConstantBufferData(GetVariableOffset("Constant", "SpecularColor"), specular, sizeof(float) * 4);
+	CopyConstantBufferData(GetVariableOffset("Constant", "Shininess"), &shininess, sizeof(float));
 }
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const

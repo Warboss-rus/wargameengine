@@ -85,8 +85,8 @@ private:
 	void UpdateMatrices();
 	void CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size);
 
-	ID3D11Device *m_dev;
-	ID3D11DeviceContext *m_devcon;
+	CComPtr<ID3D11Device> m_dev;
+	CComPtr<ID3D11DeviceContext> m_devcon;
 	HWND m_hWnd;
 	CTextureManager m_textureManager;
 	std::unique_ptr<CShaderManagerDirectX> m_defaultShaderManager;
