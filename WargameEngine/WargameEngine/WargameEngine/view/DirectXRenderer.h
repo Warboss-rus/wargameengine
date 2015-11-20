@@ -7,6 +7,14 @@
 #include <DirectXMath.h>
 
 class CShaderManagerDirectX;
+struct sLightSource
+{
+	bool enabled = false;
+	float pos[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float diffuse[4] = { 0.0f, 0.0f, 0.0f, 1.0f };;
+	float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };;
+	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };;
+};
 
 class CDirectXRenderer : public IRenderer, public IViewHelper
 {
@@ -81,7 +89,8 @@ public:
 	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat);
 private:
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize);
-	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget = false, size_t size = 0);
+	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, 
+		bool renderTarget = false, size_t size = 0, CachedTextureType type = CachedTextureType::RGBA, TextureMipMaps const& mipmaps = TextureMipMaps());
 	void UpdateMatrices();
 	void CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size);
 
@@ -92,11 +101,14 @@ private:
 	std::unique_ptr<CShaderManagerDirectX> m_defaultShaderManager;
 	CShaderManagerDirectX * m_shaderManager;
 	unsigned int m_activeTextureSlot;
+	CComPtr<ID3D11DepthStencilState> m_depthState[2];
+	CComPtr<ID3D11BlendState> m_blendStates[2];
 
 	CComPtr<ID3D11Buffer> m_vertexBuffer;
 	CComPtr<ID3D11Buffer> m_normalsBuffer;
 	CComPtr<ID3D11Buffer> m_texCoordBuffer;
 
+	std::vector<sLightSource> m_lightSources;
 	std::vector<DirectX::XMMATRIX> m_viewMatrices;
 	std::vector<DirectX::XMMATRIX> m_projectionMatrices;
 	float m_anisotropyLevel = 0.0f;

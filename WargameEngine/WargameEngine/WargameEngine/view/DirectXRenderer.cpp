@@ -31,6 +31,7 @@ public:
 	}
 private:
 	friend class CDirectXRenderer;
+	friend class CDirectXFrameBuffer;
 	ID3D11ShaderResourceView* m_resourceView;
 	ID3D11Texture2D* m_texture;
 	CDirectXRenderer * m_renderer;
@@ -154,18 +155,57 @@ private:
 class CDirectXFrameBuffer : public IFrameBuffer
 {
 public:
+	CDirectXFrameBuffer(ID3D11Device *dev, CDirectXRenderer * renderer)
+		:m_dev(dev), m_renderer(renderer)
+	{
+
+	}
 	virtual void Bind() const override
 	{
+		m_renderer->GetContext()->OMGetRenderTargets(1, &m_oldRenderTargetView, &m_oldDepthStencilView);
+		m_renderer->GetContext()->OMSetRenderTargets(1, &m_renderTargetView.p, m_depthStencilView);
 	}
 
 	virtual void UnBind() const override
 	{
+		m_renderer->GetContext()->OMSetRenderTargets(1, &m_oldRenderTargetView, m_oldDepthStencilView);
+		m_oldRenderTargetView = nullptr;
+		m_oldRenderTargetView = nullptr;
 	}
 
 	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override
 	{
+		auto& dxTexture = dynamic_cast<CDirectXCachedTexture&>(texture);
+		if (type == CachedTextureType::DEPTH)
+		{
+			m_depthStencilView = nullptr;
+
+			D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+			ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+			depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+
+			m_dev->CreateDepthStencilView(dxTexture.m_texture, &depthStencilViewDesc, &m_depthStencilView);
+		}
+		else
+		{
+			m_renderTargetView = nullptr;
+
+			D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+			renderTargetViewDesc.Format = type == CachedTextureType::RGBA ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_A8_UNORM;
+			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+			renderTargetViewDesc.Texture2D.MipSlice = 0;
+
+			m_dev->CreateRenderTargetView(dxTexture.m_texture, &renderTargetViewDesc, &m_renderTargetView);
+		}
 	}
 private:
+	CDirectXRenderer * m_renderer;
+	CComPtr<ID3D11Device> m_dev;
+	mutable CComPtr<ID3D11RenderTargetView> m_oldRenderTargetView;
+	mutable CComPtr<ID3D11DepthStencilView> m_oldDepthStencilView;
+	CComPtr<ID3D11RenderTargetView> m_renderTargetView;
+	CComPtr<ID3D11DepthStencilView> m_depthStencilView;
 };
 
 
@@ -218,11 +258,40 @@ std::map<RenderMode, D3D11_PRIMITIVE_TOPOLOGY> renderModeMap = {
 	{ RenderMode::TRIANGLE_STRIP, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP },
 };
 
+void FlipRectangleTopology(float * vertices, float * texcoords, float * normals, size_t stride, size_t count)
+{
+	float temp[3];
+	size_t index;
+	for (size_t i = 0; i < count ; i += 4)
+	{
+		index = (i + 2) * stride;
+		if (vertices)
+		{
+			memcpy(temp, vertices + index, sizeof(float) * stride);
+			memcpy(vertices + index, vertices + index + stride, sizeof(float) * stride);
+			memcpy(vertices + index + stride, temp, sizeof(float) * stride);
+
+		}
+		if (normals)
+		{
+			memcpy(temp, normals + index, sizeof(float) * stride);
+			memcpy(normals + index, normals + index + stride, sizeof(float) * stride);
+			memcpy(normals + index + stride, temp, sizeof(float) * stride);
+		}
+		if (texcoords)
+		{
+			memcpy(temp, vertices + index, sizeof(float) * 2);
+			memcpy(vertices + index, vertices + index + 2, sizeof(float) * 2);
+			memcpy(vertices + index + 2, temp, sizeof(float) * 2);
+		}
+	}
+}
+
 void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), 0 };
+	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), sizeof(CVector3f) };
 	UINT offset[] = { 0, 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, nullptr };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, NULL };
 
 	std::vector<float> floatVertices;
 	floatVertices.reserve(vertices.size() * 2);
@@ -231,11 +300,15 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 		floatVertices.push_back(static_cast<float>(vec.x));
 		floatVertices.push_back(static_cast<float>(vec.y));
 	}
+	if (mode == RenderMode::RECTANGLES)
+	{
+		FlipRectangleTopology(floatVertices.data(), !texCoords.empty() ? const_cast<float*>(&texCoords[0].x) : NULL, NULL, 2, vertices.size());
+	}
 
 	CopyDataToBuffer(m_vertexBuffer, floatVertices.data(), floatVertices.size() * sizeof(float));
 	CopyDataToBuffer(m_texCoordBuffer, texCoords.data(), texCoords.size() * sizeof(CVector2f));
 
-	m_shaderManager->SetInputLayout(DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT);
+	m_shaderManager->SetInputLayout(DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
 	m_devcon->IASetPrimitiveTopology(renderModeMap.at(mode));
 	m_devcon->Draw(vertices.size(), 0);
@@ -387,7 +460,7 @@ void CDirectXRenderer::Scale(const double scale)
 {
 	auto matrix = m_viewMatrices.back();
 	float fscale = static_cast<float>(scale);
-	matrix *= DirectX::XMMatrixScaling(fscale, fscale, fscale);
+	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), matrix);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -418,8 +491,9 @@ void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direct
 	XMVECTOR pos = Vec3ToXMVector(position);
 	XMVECTOR dir = Vec3ToXMVector(direction);
 	XMVECTOR upVec = DirectX::XMVectorSet(static_cast<float>(up.x), static_cast<float>(up.y), static_cast<float>(up.z), 1.0f);
+	auto old = m_viewMatrices.back();
 	m_viewMatrices.pop_back();
-	m_viewMatrices.push_back(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
+	m_viewMatrices.push_back(DirectX::XMMatrixMultiply(old, DirectX::XMMatrixLookAtLH(pos, dir, upVec)));
 	UpdateMatrices();
 }
 
@@ -474,7 +548,7 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type /*= CachedTextureType::RGBA*/)
 {
 	auto tex = std::make_unique<CDirectXCachedTexture>(this);
-	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView);
+	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, true, 0, type);
 	return std::move(tex);
 }
 
@@ -547,22 +621,40 @@ void CDirectXRenderer::WorldCoordsToWindowCoords(CVector3d const& worldCoords, i
 
 std::unique_ptr<IFrameBuffer> CDirectXRenderer::CreateFramebuffer() const
 {
-	return std::make_unique<CDirectXFrameBuffer>();
+	return std::make_unique<CDirectXFrameBuffer>(m_dev, const_cast<CDirectXRenderer*>(this));
 }
 
 void CDirectXRenderer::EnableLight(size_t index, bool enable)
 {
-	
+	if (m_lightSources.size() <= index)
+	{
+		m_lightSources.resize(index + 1);
+	}
+	m_lightSources[index].enabled = enable;
+	m_shaderManager->SetLight(index, m_lightSources[index]);
 }
 
 void CDirectXRenderer::SetLightColor(size_t index, LightningType type, float * values)
 {
-	
+	if (m_lightSources.size() <= index)
+	{
+		m_lightSources.resize(index + 1);
+	}
+	float * dest = m_lightSources[index].ambient;
+	if (type == LightningType::DIFFUSE) dest = m_lightSources[index].diffuse;
+	if (type == LightningType::SPECULAR) dest = m_lightSources[index].specular;
+	memcpy(dest, values, sizeof(float) * 3);
+	m_shaderManager->SetLight(index, m_lightSources[index]);
 }
 
 void CDirectXRenderer::SetLightPosition(size_t index, float* pos)
 {
-	
+	if (m_lightSources.size() <= index)
+	{
+		m_lightSources.resize(index + 1);
+	}
+	memcpy(m_lightSources[index].pos, pos, sizeof(float) * 3);
+	m_shaderManager->SetLight(index, m_lightSources[index]);
 }
 
 float CDirectXRenderer::GetMaximumAnisotropyLevel() const
@@ -572,7 +664,7 @@ float CDirectXRenderer::GetMaximumAnisotropyLevel() const
 
 void CDirectXRenderer::EnableVertexLightning(bool enable)
 {
-	
+	LogWriter::WriteLine("Vertex lightning is not supported in DirectX11");
 }
 
 void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
@@ -584,61 +676,63 @@ void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
 
 void CDirectXRenderer::EnableDepthTest(bool enable)
 {
-	D3D11_DEPTH_STENCIL_DESC dsDesc;
-
-	dsDesc.DepthEnable = enable ? TRUE : FALSE;
-	dsDesc.DepthWriteMask = enable ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-	dsDesc.DepthFunc = enable ? D3D11_COMPARISON_LESS : D3D11_COMPARISON_ALWAYS;
-
-	// Stencil test parameters
-	dsDesc.StencilEnable = FALSE;
-	dsDesc.StencilReadMask = 0xFF;
-	dsDesc.StencilWriteMask = 0xFF;
-
-	// Stencil operations if pixel is front-facing
-	dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-
-	// Stencil operations if pixel is back-facing
-	dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-
-	// Create depth stencil state
-	CComPtr<ID3D11DepthStencilState> pDSState;
-	HRESULT hr = m_dev->CreateDepthStencilState(&dsDesc, &pDSState);
-	if (FAILED(hr))
+	size_t index = enable ? 1 : 0;
+	if (!m_depthState[index])
 	{
-		LogWriter::WriteLine("DirectX error: Cannot create depth state");
+		D3D11_DEPTH_STENCIL_DESC dsDesc;
+
+		dsDesc.DepthEnable = enable ? TRUE : FALSE;
+		dsDesc.DepthWriteMask = enable ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+		dsDesc.DepthFunc = enable ? D3D11_COMPARISON_LESS : D3D11_COMPARISON_ALWAYS;
+
+		// Stencil test parameters
+		dsDesc.StencilEnable = FALSE;
+		dsDesc.StencilReadMask = 0xFF;
+		dsDesc.StencilWriteMask = 0xFF;
+		dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+		// Create depth stencil state
+		HRESULT hr = m_dev->CreateDepthStencilState(&dsDesc, &m_depthState[index]);
+		if (FAILED(hr))
+		{
+			LogWriter::WriteLine("DirectX error: Cannot create depth state");
+		}
 	}
 
-	m_devcon->OMSetDepthStencilState(pDSState, 0);
+	m_devcon->OMSetDepthStencilState(m_depthState[index], 0);
 }
 
 void CDirectXRenderer::EnableBlending(bool enable)
 {
-	D3D11_BLEND_DESC descr;
-	descr.AlphaToCoverageEnable = FALSE;
-	descr.IndependentBlendEnable = FALSE;
-	descr.RenderTarget[0].BlendEnable = enable ? TRUE : FALSE;
-	descr.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	descr.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-	descr.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	descr.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ZERO;
-	descr.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-	descr.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	descr.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-	CComPtr<ID3D11BlendState> pBlendState;
-	HRESULT hr = m_dev->CreateBlendState(&descr, &pBlendState);
-	if (FAILED(hr))
+	size_t index = enable ? 1 : 0;
+	if (!m_blendStates[index])
 	{
-		LogWriter::WriteLine("DirectX error: Cannot create blend state");
+		D3D11_BLEND_DESC descr;
+		descr.AlphaToCoverageEnable = FALSE;
+		descr.IndependentBlendEnable = FALSE;
+		descr.RenderTarget[0].BlendEnable = enable ? TRUE : FALSE;
+		descr.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		descr.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		descr.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		descr.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+		descr.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_DEST_ALPHA;
+		descr.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		descr.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+		HRESULT hr = m_dev->CreateBlendState(&descr, &m_blendStates[index]);
+		if (FAILED(hr))
+		{
+			LogWriter::WriteLine("DirectX error: Cannot create blend state");
+		}
 	}
-	m_devcon->OMSetBlendState(pBlendState, NULL, 0xffffffff);
+	m_devcon->OMSetBlendState(m_blendStates[index], NULL, 0xffffffff);
 }
 
 void CDirectXRenderer::SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
@@ -664,9 +758,9 @@ void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/
 	CComPtr<ID3D11RenderTargetView> backbuffer;
 	CComPtr<ID3D11DepthStencilView> depthBuffer;
 	m_devcon->OMGetRenderTargets(1, &backbuffer, &depthBuffer);
-	FLOAT backgroundColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	FLOAT backgroundColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	if(backbuffer && color) m_devcon->ClearRenderTargetView(backbuffer, backgroundColor);
-	if (depthBuffer && depth) m_devcon->ClearDepthStencilView(depthBuffer, 0, 0.0f, 0);
+	if (depthBuffer && depth) m_devcon->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 CTextureManager& CDirectXRenderer::GetTextureManager()
@@ -719,14 +813,14 @@ void CDirectXRenderer::UploadTexture(ICachedTexture & texture, unsigned char * d
 {
 	assert(bpp == 32);
 	auto& dxtexture = dynamic_cast<CDirectXCachedTexture&>(texture);
-	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView);
+	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, 0, CachedTextureType::RGBA, mipmaps);
 
 }
 
 void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
 {
 	auto& dxtexture = dynamic_cast<CDirectXCachedTexture&>(texture);
-	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, size);
+	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, size, CachedTextureType::RGBA, mipmaps);
 }
 
 bool CDirectXRenderer::Force32Bits() const
@@ -758,6 +852,7 @@ void CDirectXRenderer::UpdateMatrices()
 
 void CDirectXRenderer::CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size)
 {
+	if (size == 0) return;
 	D3D11_MAPPED_SUBRESOURCE ms;
 	m_devcon->Map(buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
 	memcpy(ms.pData, data, size);                // copy the data
@@ -774,7 +869,7 @@ void CDirectXRenderer::SetUpViewport2D()
 	RECT rect;
 	GetClientRect(m_hWnd, &rect);
 	m_projectionMatrices.push_back(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(rect.left), static_cast<float>(rect.right), 
-		static_cast<float>(rect.top), static_cast<float>(rect.bottom), 0.0f, 100.0f));
+		static_cast<float>(rect.top), static_cast<float>(rect.bottom), 0.0f, 1.0f));
 	UpdateMatrices();
 }
 
@@ -797,7 +892,8 @@ ID3D11DeviceContext * CDirectXRenderer::GetContext()
 	return m_devcon;
 }
 
-void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, bool renderTarget, size_t size)
+void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, 
+	bool renderTarget, size_t size, CachedTextureType type, TextureMipMaps const& mipmaps)
 {
 	if (width == 0 || height == 0) return;
 	D3D11_TEXTURE2D_DESC desc;
@@ -805,7 +901,9 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.Height = height;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
-	desc.Format = flags & TEXTURE_BGRA ? ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_B8G8R8A8_UNORM) : ((flags & TEXTURE_HAS_ALPHA) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM);
+	desc.Format = flags & TEXTURE_BGRA ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
+	if (type == CachedTextureType::DEPTH) desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	if (type == CachedTextureType::ALPHA) desc.Format = DXGI_FORMAT_A8_UNORM;
 	if (size)
 	{
 		static const std::map<int, DXGI_FORMAT> compressionMap = {
@@ -818,11 +916,11 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	}
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
-	desc.Usage = renderTarget ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
+	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	if (renderTarget) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	if (renderTarget || flags & TEXTURE_BUILD_MIPMAPS) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 	desc.CPUAccessFlags = renderTarget ? 0 : D3D11_CPU_ACCESS_WRITE;
-	desc.MiscFlags = /*flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : */0;
+	desc.MiscFlags = flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 
 	int bpp = flags & TEXTURE_HAS_ALPHA ? 4 : 3;
 
@@ -832,7 +930,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	texData.pSysMem = data;
 
 	auto hr = m_dev->CreateTexture2D(&desc, data ? &texData : nullptr, texture);
-	if (FAILED(hr) || !texture)
+	if (FAILED(hr) || !*texture)
 	{
 		LogWriter::WriteLine("Cannot create texture: " + std::to_string(GetLastError()));
 		return;

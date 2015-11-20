@@ -6,6 +6,7 @@
 #include "DirectXRenderer.h"
 #include <DirectXMath.h>
 #include "..\LogWriter.h"
+#include <thread>
 
 #pragma comment (lib, "d3d11.lib")
 
@@ -74,11 +75,11 @@ public:
 			if (msg.message == WM_QUIT)
 			{
 				ReleaseDirect3D();
-#ifdef _DEBUG
+/*#ifdef _DEBUG
 				CComPtr<ID3D11Debug> debugDev;
 				m_dev->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&debugDev));
 				debugDev->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-#endif
+#endif*/
 				return;
 			}
 
@@ -86,6 +87,8 @@ public:
 			m_onDraw();
 
 			m_swapchain->Present(0, 0);
+
+			std::this_thread::yield();
 		}
 	}
 
@@ -119,10 +122,9 @@ public:
 	void ToggleFullscreen()
 	{
 		BOOL fullscreen;
-		IDXGIOutput* pOutput;
+		CComPtr<IDXGIOutput> pOutput;
 		m_swapchain->GetFullscreenState(&fullscreen, &pOutput);
 		m_swapchain->SetFullscreenState(!fullscreen, pOutput);
-		pOutput->Release();
 	}
 
 	IInput& ResetInput()
@@ -153,8 +155,17 @@ public:
 	{
 		if (m_swapchain)
 		{
-			if (m_renderer) m_renderer->SetTextureResource(NULL);
 			m_swapchain->ResizeBuffers(1, LOWORD(lParam), HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
+		}
+		if (m_dev)
+		{
+			CComPtr<ID3D11Texture2D> pBackBuffer;
+			m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+			CComPtr<ID3D11RenderTargetView> backBuffer;
+			m_dev->CreateRenderTargetView(pBackBuffer, NULL, &backBuffer);
+			CComPtr<ID3D11DepthStencilView> pDepthStencilView;
+			CreateDepthBuffer(LOWORD(lParam), HIWORD(lParam), &pDepthStencilView);
+			m_devcon->OMSetRenderTargets(1, &backBuffer.p, pDepthStencilView);
 		}
 		if (m_devcon)
 		{
@@ -266,16 +277,10 @@ private:
 			LogWriter::WriteLine("DirectX error: Cannot create backbuffer");
 		}
 		pBackBuffer = NULL;
-
-		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
-		ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
-		depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
-		depthStencilViewDesc.Texture2D.MipSlice = 0;
-		CComPtr<ID3D11DepthStencilView> pDepthStencilView = nullptr;
-		CreateDepthTexture();
-		//m_dev->CreateDepthStencilView(m_pDepthStencilBuffer, &depthStencilViewDesc, &pDepthStencilView);
+		CComPtr<ID3D11DepthStencilView> pDepthStencilView;
+		CreateDepthBuffer(600, 600, &pDepthStencilView);
 		m_devcon->OMSetRenderTargets(1, &backBuffer.p, pDepthStencilView);
+		
 		backBuffer = NULL;
 		pDepthStencilView = NULL;
 
@@ -296,7 +301,7 @@ private:
 		rasterizerState.FillMode = D3D11_FILL_SOLID; // D3D11_FILL_SOLID  D3D11_FILL_WIREFRAME
 		rasterizerState.DepthBias = 0;
 		rasterizerState.DepthBiasClamp = 0.0f;
-		rasterizerState.DepthClipEnable = TRUE;
+		rasterizerState.DepthClipEnable = FALSE;
 		rasterizerState.FrontCounterClockwise = FALSE;
 		rasterizerState.MultisampleEnable = TRUE;
 		rasterizerState.ScissorEnable = FALSE;
@@ -311,14 +316,11 @@ private:
 		m_devcon->RSSetState(pRasterState);
 	}
 
-	void CreateDepthTexture()
+	void CreateDepthBuffer(unsigned int width, unsigned int height, ID3D11DepthStencilView ** buffer)
 	{
-		RECT rect;
-		GetClientRect(m_hWnd, &rect);
-		m_pDepthStencilBuffer = nullptr;
 		D3D11_TEXTURE2D_DESC depthBufferDesc;
-		depthBufferDesc.Width = rect.right - rect.left;
-		depthBufferDesc.Height = rect.bottom - rect.top;
+		depthBufferDesc.Width = width;
+		depthBufferDesc.Height = height;
 		depthBufferDesc.MipLevels = 1;
 		depthBufferDesc.ArraySize = 1;
 		depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -329,14 +331,21 @@ private:
 		depthBufferDesc.CPUAccessFlags = 0;
 		depthBufferDesc.MiscFlags = 0;
 
-		m_dev->CreateTexture2D(&depthBufferDesc, NULL, &m_pDepthStencilBuffer);
+		CComPtr<ID3D11Texture2D> pDepthStencilBuffer;
+		m_dev->CreateTexture2D(&depthBufferDesc, NULL, &pDepthStencilBuffer);
+
+		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+		ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+		depthStencilViewDesc.Format = depthBufferDesc.Format;
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		
+		m_dev->CreateDepthStencilView(pDepthStencilBuffer, &depthStencilViewDesc, buffer);
 	}
 
 	void ReleaseDirect3D()
 	{
 		m_swapchain->SetFullscreenState(FALSE, NULL);
 		m_renderer.reset();
-		m_pDepthStencilBuffer = NULL;
 		m_devcon = NULL;
 		m_swapchain = NULL;
 	}
@@ -351,7 +360,6 @@ private:
 	CComPtr<IDXGISwapChain> m_swapchain;             // the pointer to the swap chain interface
 	CComPtr<ID3D11Device> m_dev;                     // the pointer to our Direct3D device interface
 	CComPtr<ID3D11DeviceContext> m_devcon;           // the pointer to our Direct3D device context
-	CComPtr<ID3D11Texture2D> m_pDepthStencilBuffer;
 };
 
 CGameWindowDirectX::Impl* CGameWindowDirectX::Impl::g_instance = nullptr;

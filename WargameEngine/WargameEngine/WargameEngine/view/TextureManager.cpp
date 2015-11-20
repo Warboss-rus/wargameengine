@@ -123,6 +123,7 @@ void LoadDDS(void * data, unsigned int /*size*/, sImage & img)
 	if (ddsh.ddspf.dwFlags & DDS_FOURCC)
 	{
 		compressed = true;
+		img.flags |= TEXTURE_HAS_ALPHA;
 		switch (ddsh.ddspf.dwFourCC)
 		{
 		case FOURCC_DXT1:

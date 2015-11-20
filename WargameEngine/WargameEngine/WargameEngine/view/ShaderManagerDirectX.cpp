@@ -35,14 +35,27 @@ PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, floa
 static const std::string defaultPixelShader = "\
 Texture2D shaderTexture : register( t0 );\
 SamplerState SampleType;\
-cbuffer Constant : register( b0 )\
+struct sLightSource\
 {\
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
-	float4 Color;\
+	bool enabled;\
+	float4 pos;\
+	float4 diffuse;\
+	float4 ambient;\
+	float4 specular;\
+};\
+struct sMaterial\
+{\
 	float4 AmbientColor;\
 	float4 DiffuseColor;\
 	float4 SpecularColor;\
 	float Shininess;\
+};\
+cbuffer Constant : register( b0 )\
+{\
+	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
+	float4 Color;\
+	sMaterial Material;\
+	sLightSource Lights;\
 }\
 struct PixelInputType\
 {\
@@ -89,7 +102,7 @@ unsigned int GetShaderBufferSize(ID3D11ShaderReflectionConstantBuffer * buffer)
 	return desc.Size;
 }
 
-void CShaderManagerDirectX::CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer)
+void CShaderManagerDirectX::CreateConstantBuffer(unsigned int size, ID3D11Buffer ** constantBuffer) const
 {
 	D3D11_BUFFER_DESC cbDesc;
 	cbDesc.ByteWidth = size;
@@ -99,7 +112,7 @@ void CShaderManagerDirectX::CreateConstantBuffer(unsigned int size, ID3D11Buffer
 	cbDesc.MiscFlags = 0;
 	cbDesc.StructureByteStride = 0;
 
-	m_dev->CreateBuffer(&cbDesc, nullptr, m_constantBuffer);
+	m_dev->CreateBuffer(&cbDesc, nullptr, constantBuffer);
 }
 
 void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size)
@@ -339,21 +352,40 @@ void CShaderManagerDirectX::SetColor(const float * color)
 	CopyConstantBufferData(begin, color, sizeof(float) * 4);
 }
 
+struct sMaterial
+{
+	float AmbientColor[4];
+	float DiffuseColor[4];
+	float SpecularColor[4];
+	float Shininess;
+};
+
 void CShaderManagerDirectX::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
-	CopyConstantBufferData(GetVariableOffset("Constant", "AmbientColor"), ambient, sizeof(float) * 4);
-	CopyConstantBufferData(GetVariableOffset("Constant", "DiffuseColor"), diffuse, sizeof(float) * 4);
-	CopyConstantBufferData(GetVariableOffset("Constant", "SpecularColor"), specular, sizeof(float) * 4);
-	CopyConstantBufferData(GetVariableOffset("Constant", "Shininess"), &shininess, sizeof(float));
+	sMaterial material;
+	memcpy(&material.AmbientColor, ambient, sizeof(float) * 4);
+	memcpy(&material.DiffuseColor, diffuse, sizeof(float) * 4);
+	memcpy(&material.SpecularColor, specular, sizeof(float) * 4);
+	material.Shininess = shininess;
+	//CopyConstantBufferData(GetVariableOffset("Constant", "Material"), &material, sizeof(sMaterial));
+}
+
+void CShaderManagerDirectX::SetLight(size_t index, sLightSource & lightSource)
+{
+	//CopyConstantBufferData(GetVariableOffset("Constant", "Lights") + index * sizeof(sLightSource), &lightSource, sizeof(sLightSource));
 }
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const
 {
+	m_constantBuffer = nullptr;
+	CreateConstantBuffer(m_constantBufferData.size(), &m_constantBuffer);
 	memcpy(m_constantBufferData.data() + begin, data, size);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	m_render->GetContext()->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, m_constantBufferData.data(), m_constantBufferData.size());
 	m_render->GetContext()->Unmap(m_constantBuffer, 0);
+	m_render->GetContext()->VSSetConstantBuffers(0, 1, &m_constantBuffer.p);
+	m_render->GetContext()->PSSetConstantBuffers(0, 1, &m_constantBuffer.p);
 }
 
 void CShaderManagerDirectX::CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const

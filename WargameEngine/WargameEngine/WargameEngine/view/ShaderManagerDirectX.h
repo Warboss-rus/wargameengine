@@ -6,6 +6,7 @@
 #include <vector>
 
 class CDirectXRenderer;
+struct sLightSource;
 
 class CShaderManagerDirectX : public IShaderManager
 {
@@ -41,8 +42,9 @@ public:
 	void SetMatrices(float * modelView, float * projection);
 	void SetColor(const float * color);
 	void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess);
+	void SetLight(size_t index, sLightSource & lightSource);
 private:
-	void CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer);
+	void CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer) const;
 	unsigned int GetVariableOffset(std::string const& buffer, std::string const& name, unsigned int * size = nullptr) const;
 	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size);
@@ -50,7 +52,7 @@ private:
 
 	CComPtr<ID3D11Device> m_dev;
 	CDirectXRenderer * m_render;
-	CComPtr<ID3D11Buffer> m_constantBuffer;
+	mutable CComPtr<ID3D11Buffer> m_constantBuffer;
 	CComPtr<ID3D11Buffer> m_weightBuffer;
 	CComPtr<ID3D11Buffer> m_weightIndexBuffer;
 	CComPtr<ID3D11VertexShader> pVS;    // the vertex shader
