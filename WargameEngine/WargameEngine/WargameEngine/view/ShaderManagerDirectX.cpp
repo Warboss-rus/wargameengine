@@ -10,14 +10,27 @@
 #pragma comment (lib, "dxguid.lib")
 
 static const std::string defaultVertexShader = "\
-cbuffer Constant : register( b0 )\
+struct sLightSource\
 {\
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
-	float4 Color;\
+	bool enabled;\
+	float4 pos;\
+	float4 diffuse;\
+	float4 ambient;\
+	float4 specular;\
+};\
+struct sMaterial\
+{\
 	float4 AmbientColor;\
 	float4 DiffuseColor;\
 	float4 SpecularColor;\
 	float Shininess;\
+};\
+cbuffer Constant : register( b0 )\
+{\
+	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
+	float4 Color;\
+	sMaterial Material;\
+	sLightSource Lights;\
 }\
 struct PixelInputType\
 {\
@@ -64,7 +77,8 @@ struct PixelInputType\
 };\
 float4 PShader( PixelInputType input) : SV_TARGET\
 {\
-	return shaderTexture.Sample(SampleType, input.tex);\
+	float4 tex = shaderTexture.Sample(SampleType, input.tex);\
+	return float4(tex[0] + Color[0], tex[1] + Color[1], tex[2] + Color[2], tex[3]);\
 }";
 static const std::string defaultGeometryShader = "";
 
@@ -367,12 +381,12 @@ void CShaderManagerDirectX::SetMaterial(const float * ambient, const float * dif
 	memcpy(&material.DiffuseColor, diffuse, sizeof(float) * 4);
 	memcpy(&material.SpecularColor, specular, sizeof(float) * 4);
 	material.Shininess = shininess;
-	//CopyConstantBufferData(GetVariableOffset("Constant", "Material"), &material, sizeof(sMaterial));
+	CopyConstantBufferData(GetVariableOffset("Constant", "Material"), &material, sizeof(sMaterial));
 }
 
 void CShaderManagerDirectX::SetLight(size_t index, sLightSource & lightSource)
 {
-	//CopyConstantBufferData(GetVariableOffset("Constant", "Lights") + index * sizeof(sLightSource), &lightSource, sizeof(sLightSource));
+	CopyConstantBufferData(GetVariableOffset("Constant", "Lights") + index * sizeof(sLightSource), &lightSource, sizeof(sLightSource));
 }
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const

@@ -162,13 +162,15 @@ public:
 	}
 	virtual void Bind() const override
 	{
+		m_oldDepthStencilView = nullptr;
+		m_oldRenderTargetView = nullptr;
 		m_renderer->GetContext()->OMGetRenderTargets(1, &m_oldRenderTargetView, &m_oldDepthStencilView);
 		m_renderer->GetContext()->OMSetRenderTargets(1, &m_renderTargetView.p, m_depthStencilView);
 	}
 
 	virtual void UnBind() const override
 	{
-		m_renderer->GetContext()->OMSetRenderTargets(1, &m_oldRenderTargetView, m_oldDepthStencilView);
+		m_renderer->GetContext()->OMSetRenderTargets(1, &m_oldRenderTargetView.p, m_oldDepthStencilView);
 		m_oldRenderTargetView = nullptr;
 		m_oldRenderTargetView = nullptr;
 	}
@@ -520,7 +522,13 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 {
 	CComPtr<ID3D11RenderTargetView> oldRenderTargetView;
 	CComPtr<ID3D11DepthStencilView> oldDepthStencilView;
+	unsigned int numViewports = 1;
+	D3D11_VIEWPORT oldViewport;
 	m_devcon->OMGetRenderTargets(1, &oldRenderTargetView, &oldDepthStencilView);
+	m_devcon->RSGetViewports(&numViewports, &oldViewport);
+	m_projectionMatrices.push_back(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 0.0f, 1.0f));
+	PushMatrix();
+	ResetViewMatrix();
 
 	auto tex = std::make_unique<CDirectXCachedTexture>(this);
 	CreateTexture(width, height, TEXTURE_HAS_ALPHA, NULL, &tex->m_texture, &tex->m_resourceView, true);
@@ -537,10 +545,15 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 	}
 
 	m_devcon->OMSetRenderTargets(1, &renderTargetView.p, nullptr);
+	D3D11_VIEWPORT viewport = {0.0f, 0.0f, static_cast<FLOAT>(width), static_cast<FLOAT>(height), 0.0f, 1.0f};
+	m_devcon->RSSetViewports(numViewports, &viewport);
 
 	func();
 
 	m_devcon->OMSetRenderTargets(1, &oldRenderTargetView.p, oldDepthStencilView);
+	m_devcon->RSSetViewports(numViewports, &oldViewport);
+	m_projectionMatrices.pop_back();
+	PopMatrix();
 
 	return std::move(tex);
 }
@@ -670,7 +683,8 @@ void CDirectXRenderer::EnableVertexLightning(bool enable)
 void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
 {
 	XMFLOAT4X4 projection;
-	XMStoreFloat4x4(&projection, m_projectionMatrices.back());
+	auto mprojection = m_projectionMatrices.back();
+	XMStoreFloat4x4(&projection, mprojection);
 	memcpy(matrix, *projection.m, sizeof(projection));
 }
 
@@ -869,7 +883,7 @@ void CDirectXRenderer::SetUpViewport2D()
 	RECT rect;
 	GetClientRect(m_hWnd, &rect);
 	m_projectionMatrices.push_back(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(rect.left), static_cast<float>(rect.right), 
-		static_cast<float>(rect.top), static_cast<float>(rect.bottom), 0.0f, 1.0f));
+		static_cast<float>(rect.bottom), static_cast<float>(rect.top), 0.0f, 1.0f));
 	UpdateMatrices();
 }
 
@@ -919,7 +933,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (renderTarget || flags & TEXTURE_BUILD_MIPMAPS) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
-	desc.CPUAccessFlags = renderTarget ? 0 : D3D11_CPU_ACCESS_WRITE;
+	desc.CPUAccessFlags = 0;//renderTarget ? 0 : D3D11_CPU_ACCESS_WRITE;
 	desc.MiscFlags = flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 
 	int bpp = flags & TEXTURE_HAS_ALPHA ? 4 : 3;
