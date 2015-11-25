@@ -403,7 +403,6 @@ void CGameView::DrawObjects(void)
 		m_renderer->PopMatrix();
 	}
 	m_shaderManager->UnBindProgram();
-	m_viewHelper->EnableBlending(false);
 	m_viewHelper->EnableVertexLightning(false);
 	for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
 	{

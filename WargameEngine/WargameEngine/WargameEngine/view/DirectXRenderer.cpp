@@ -54,7 +54,7 @@ private:
 class CDirectXVertexBuffer : public IVertexBuffer
 {
 public:
-	CDirectXVertexBuffer(ID3D11Device *dev, CDirectXRenderer * renderer)
+	CDirectXVertexBuffer(CComPtr<ID3D11Device> dev, CDirectXRenderer * renderer)
 		:m_dev(dev), m_renderer(renderer), m_indexBufferSize(0)
 	{
 	}
@@ -155,7 +155,7 @@ private:
 class CDirectXFrameBuffer : public IFrameBuffer
 {
 public:
-	CDirectXFrameBuffer(ID3D11Device *dev, CDirectXRenderer * renderer)
+	CDirectXFrameBuffer(CComPtr<ID3D11Device> dev, CDirectXRenderer * renderer)
 		:m_dev(dev), m_renderer(renderer)
 	{
 
@@ -184,7 +184,7 @@ public:
 
 			D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 			ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
-			depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
 			depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
 			m_dev->CreateDepthStencilView(dxTexture.m_texture, &depthStencilViewDesc, &m_depthStencilView);
@@ -240,8 +240,8 @@ void CDirectXRenderer::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elem
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 
-	bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-	bd.ByteWidth = elementSize;             // size is the VERTEX struct * 3
+	bd.Usage = D3D11_USAGE_DYNAMIC;                // write access by CPU and GPU
+	bd.ByteWidth = elementSize;             // size is the VERTEX struct
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;       // use as a vertex buffer
 	bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
 
@@ -321,6 +321,11 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> cons
 	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), 0 };
 	UINT offset[] = { 0, 0, 0 };
 	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, nullptr };
+
+	if (mode == RenderMode::RECTANGLES)
+	{
+		FlipRectangleTopology(const_cast<float*>(&vertices[0].x), !texCoords.empty() ? const_cast<float*>(&texCoords[0].x) : NULL, NULL, 2, vertices.size());
+	}
 
 	CopyDataToBuffer(m_vertexBuffer, vertices.data(), vertices.size() * sizeof(CVector2f));
 	CopyDataToBuffer(m_texCoordBuffer, texCoords.data(), texCoords.size() * sizeof(CVector2f));
@@ -561,7 +566,7 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type /*= CachedTextureType::RGBA*/)
 {
 	auto tex = std::make_unique<CDirectXCachedTexture>(this);
-	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, true, 0, type);
+	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, type != CachedTextureType::ALPHA, 0, type);
 	return std::move(tex);
 }
 
@@ -609,11 +614,11 @@ void CDirectXRenderer::WindowCoordsToWorldVector(int x, int y, CVector3d & start
 	GetClientRect(m_hWnd, &rect);
 	auto projection = m_projectionMatrices.back();
 	auto view = m_viewMatrices.back();
-	XMVECTOR vec1 = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), 0.0f, 1.0f);
+	XMVECTOR vec1 = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), 0.05f, 1.0f);
 	vec1 = DirectX::XMVector3Unproject(vec1, static_cast<float>(rect.left), static_cast<float>(rect.top), static_cast<float>(rect.right),
 		static_cast<float>(rect.bottom), 0.05f, 1000.0f, projection, view, DirectX::XMMatrixIdentity());
 	start = CVector3d(DirectX::XMVectorGetX(vec1), DirectX::XMVectorGetY(vec1), DirectX::XMVectorGetZ(vec1));
-	XMVECTOR vec2 = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), 1.0f, 1.0f);
+	XMVECTOR vec2 = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), 1000.0f, 1.0f);
 	vec2 = DirectX::XMVector3Unproject(vec2, static_cast<float>(rect.left), static_cast<float>(rect.top), static_cast<float>(rect.right),
 		static_cast<float>(rect.bottom), 0.05f, 1000.0f, projection, view, DirectX::XMMatrixIdentity());
 	end = CVector3d(DirectX::XMVectorGetX(vec2), DirectX::XMVectorGetY(vec2), DirectX::XMVectorGetZ(vec2));
@@ -764,7 +769,7 @@ void CDirectXRenderer::RestoreViewport()
 
 void CDirectXRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
 {
-	
+	LogWriter::WriteLine("Polygon offset is not yet supported");
 }
 
 void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/)
@@ -772,7 +777,7 @@ void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/
 	CComPtr<ID3D11RenderTargetView> backbuffer;
 	CComPtr<ID3D11DepthStencilView> depthBuffer;
 	m_devcon->OMGetRenderTargets(1, &backbuffer, &depthBuffer);
-	FLOAT backgroundColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	FLOAT backgroundColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	if(backbuffer && color) m_devcon->ClearRenderTargetView(backbuffer, backgroundColor);
 	if (depthBuffer && depth) m_devcon->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
@@ -789,8 +794,7 @@ void CDirectXRenderer::ActivateTextureSlot(TextureSlot slot)
 
 void CDirectXRenderer::UnbindTexture()
 {
-	ID3D11ShaderResourceView* views[1] = { NULL };
-	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
+	SetTextureResource(NULL);
 }
 
 std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateEmptyTexture()
@@ -826,6 +830,7 @@ void CDirectXRenderer::SetTextureAnisotropy(float value /*= 1.0f*/)
 void CDirectXRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
 {
 	assert(bpp == 32);
+	bpp;
 	auto& dxtexture = dynamic_cast<CDirectXCachedTexture&>(texture);
 	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, 0, CachedTextureType::RGBA, mipmaps);
 
@@ -891,6 +896,8 @@ void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 {
 	ID3D11ShaderResourceView* views[] = { view };
 	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
+	float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	if (view) m_shaderManager->SetColor(color);
 }
 
 void CDirectXRenderer::OnResize()
@@ -913,11 +920,11 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	D3D11_TEXTURE2D_DESC desc;
 	desc.Width = width;
 	desc.Height = height;
-	desc.MipLevels = 1;
+	desc.MipLevels = mipmaps.size() + 1;
 	desc.ArraySize = 1;
-	desc.Format = flags & TEXTURE_BGRA ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
-	if (type == CachedTextureType::DEPTH) desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	if (type == CachedTextureType::ALPHA) desc.Format = DXGI_FORMAT_A8_UNORM;
+	DXGI_FORMAT format = flags & TEXTURE_BGRA ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
+	if (type == CachedTextureType::DEPTH) format = DXGI_FORMAT_R32_TYPELESS;
+	if (type == CachedTextureType::ALPHA) format = DXGI_FORMAT_A8_UNORM;
 	if (size)
 	{
 		static const std::map<int, DXGI_FORMAT> compressionMap = {
@@ -926,24 +933,36 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 			{ TEXTURE_COMPRESSION_DXT3, DXGI_FORMAT_BC2_UNORM },
 			{ TEXTURE_COMPRESSION_DXT5, DXGI_FORMAT_BC3_UNORM }
 		};
-		desc.Format = compressionMap.at(flags & TEXTURE_COMPRESSION_MASK);
+		format = compressionMap.at(flags & TEXTURE_COMPRESSION_MASK);
 	}
+	desc.Format = format;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	if (renderTarget || flags & TEXTURE_BUILD_MIPMAPS) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
-	desc.CPUAccessFlags = 0;//renderTarget ? 0 : D3D11_CPU_ACCESS_WRITE;
+	if (type == CachedTextureType::DEPTH)
+	{
+		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+		desc.BindFlags &= ~D3D11_BIND_RENDER_TARGET;
+	}
+	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 
-	int bpp = flags & TEXTURE_HAS_ALPHA ? 4 : 3;
+	int bpp = (type == CachedTextureType::ALPHA) ? 1 : 4;
 
-	D3D11_SUBRESOURCE_DATA texData;
-	texData.SysMemPitch = bpp * width;
-	texData.SysMemSlicePitch = texData.SysMemPitch * height;
-	texData.pSysMem = data;
+	D3D11_SUBRESOURCE_DATA* texData = new D3D11_SUBRESOURCE_DATA[mipmaps.size() + 1];
+	texData[0].SysMemPitch = bpp * width;
+	texData[0].SysMemSlicePitch = texData[0].SysMemPitch * height;
+	texData[0].pSysMem = data;
+	for (size_t i = 0; i < mipmaps.size(); ++i)
+	{
+		texData[i + 1].pSysMem = mipmaps[i].data;
+		texData[i + 1].SysMemPitch = bpp * mipmaps[i].width;
+		texData[i + 1].SysMemSlicePitch = texData[i + 1].SysMemSlicePitch * mipmaps[i].height;
+	}
 
-	auto hr = m_dev->CreateTexture2D(&desc, data ? &texData : nullptr, texture);
+	auto hr = m_dev->CreateTexture2D(&desc, data ? texData : nullptr, texture);
 	if (FAILED(hr) || !*texture)
 	{
 		LogWriter::WriteLine("Cannot create texture: " + std::to_string(GetLastError()));
@@ -951,11 +970,11 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	}
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC rDesc;
-	ZeroMemory(&desc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-	rDesc.Format = desc.Format;
+	ZeroMemory(&rDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
+	rDesc.Format = (type == CachedTextureType::DEPTH) ? DXGI_FORMAT_R32_FLOAT : format;
 	rDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	rDesc.Texture2D.MostDetailedMip = 0;
-	rDesc.Texture2D.MipLevels = 1;
+	rDesc.Texture2D.MipLevels = desc.MipLevels;
 
 	hr = m_dev->CreateShaderResourceView(*texture, &rDesc, resourceView);
 	if (FAILED(hr) || !resourceView)

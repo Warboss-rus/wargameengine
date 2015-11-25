@@ -9,7 +9,7 @@
 #pragma comment (lib, "D3dcompiler.lib")
 #pragma comment (lib, "dxguid.lib")
 
-static const std::string defaultVertexShader = "\
+static const std::string defaultShader = "\
 struct sLightSource\
 {\
 	bool enabled;\
@@ -31,12 +31,18 @@ cbuffer Constant : register( b0 )\
 	float4 Color;\
 	sMaterial Material;\
 	sLightSource Lights;\
+	matrix lightMatrix;\
+	float3 lightPos;\
+	float3 lightDir;\
 }\
 struct PixelInputType\
 {\
 	float4 position : SV_POSITION;\
 	float2 tex : TEXCOORD0;\
 };\
+Texture2D shaderTexture : register( t0 );\
+Texture2D shadowTexture : register( t1 );\
+SamplerState SampleType;\
 \
 PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL, int4 indexes: WEIGHT_INDEX, float4 weight : WEIGHT )\
 {\
@@ -44,43 +50,12 @@ PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, floa
 	result.position = mul(float4(Pos, 1.0f), WorldViewProjection);\
 	result.tex = texCoords;\
 	return result;\
-}";
-static const std::string defaultPixelShader = "\
-Texture2D shaderTexture : register( t0 );\
-SamplerState SampleType;\
-struct sLightSource\
-{\
-	bool enabled;\
-	float4 pos;\
-	float4 diffuse;\
-	float4 ambient;\
-	float4 specular;\
-};\
-struct sMaterial\
-{\
-	float4 AmbientColor;\
-	float4 DiffuseColor;\
-	float4 SpecularColor;\
-	float Shininess;\
-};\
-cbuffer Constant : register( b0 )\
-{\
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
-	float4 Color;\
-	sMaterial Material;\
-	sLightSource Lights;\
 }\
-struct PixelInputType\
-{\
-	float4 position : SV_POSITION;\
-	float2 tex : TEXCOORD0;\
-};\
 float4 PShader( PixelInputType input) : SV_TARGET\
 {\
 	float4 tex = shaderTexture.Sample(SampleType, input.tex);\
-	return float4(tex[0] + Color[0], tex[1] + Color[1], tex[2] + Color[2], tex[3]);\
+	return float4(tex[0] + Color[0], tex[1] + Color[1], tex[2] + Color[2], tex[3] + Color[3]);\
 }";
-static const std::string defaultGeometryShader = "";
 
 namespace
 {
@@ -145,9 +120,9 @@ void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int
 void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::string const& fragment /*= ""*/, std::string const& geometry /*= ""*/)
 {
 	CComPtr<ID3D10Blob> PS, GS;
-	CompileShader(vertex, "VShader", "vs_4_0", defaultVertexShader, &m_VS);
-	CompileShader(fragment, "PShader", "ps_4_0", defaultPixelShader, &PS);
-	CompileShader(geometry, "GShader", "gs_4_0", defaultGeometryShader, &GS);
+	CompileShader(vertex, "VShader", "vs_4_0", defaultShader, &m_VS);
+	CompileShader(fragment, "PShader", "ps_4_0", defaultShader, &PS);
+	CompileShader(geometry, "GShader", "gs_4_0", "", &GS);
 
 	if (m_VS) m_dev->CreateVertexShader(m_VS->GetBufferPointer(), m_VS->GetBufferSize(), NULL, &pVS);
 	if (PS) m_dev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &pPS);
@@ -157,11 +132,6 @@ void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::
 		IID_ID3D11ShaderReflection, (void**)&m_reflection);
 
 	unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
-	CreateConstantBuffer(size, &m_constantBuffer);
-	ID3D11Buffer * buffer = m_constantBuffer;
-	m_render->GetContext()->VSSetConstantBuffers(0, 1, &buffer);
-	m_render->GetContext()->PSSetConstantBuffers(0, 1, &buffer);
-	m_render->GetContext()->GSSetConstantBuffers(0, 1, &buffer);
 	m_constantBufferData.resize(size);
 	memset(m_constantBufferData.data(), 0, m_constantBufferData.size());
 
@@ -391,15 +361,15 @@ void CShaderManagerDirectX::SetLight(size_t index, sLightSource & lightSource)
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const
 {
-	m_constantBuffer = nullptr;
-	CreateConstantBuffer(m_constantBufferData.size(), &m_constantBuffer);
+	CComPtr<ID3D11Buffer> constantBuffer;
+	CreateConstantBuffer(m_constantBufferData.size(), &constantBuffer);
 	memcpy(m_constantBufferData.data() + begin, data, size);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	m_render->GetContext()->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	m_render->GetContext()->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, m_constantBufferData.data(), m_constantBufferData.size());
-	m_render->GetContext()->Unmap(m_constantBuffer, 0);
-	m_render->GetContext()->VSSetConstantBuffers(0, 1, &m_constantBuffer.p);
-	m_render->GetContext()->PSSetConstantBuffers(0, 1, &m_constantBuffer.p);
+	m_render->GetContext()->Unmap(constantBuffer, 0);
+	m_render->GetContext()->VSSetConstantBuffers(0, 1, &constantBuffer.p);
+	m_render->GetContext()->PSSetConstantBuffers(0, 1, &constantBuffer.p);
 }
 
 void CShaderManagerDirectX::CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const

@@ -52,7 +52,6 @@ private:
 
 	CComPtr<ID3D11Device> m_dev;
 	CDirectXRenderer * m_render;
-	mutable CComPtr<ID3D11Buffer> m_constantBuffer;
 	CComPtr<ID3D11Buffer> m_weightBuffer;
 	CComPtr<ID3D11Buffer> m_weightIndexBuffer;
 	CComPtr<ID3D11VertexShader> pVS;    // the vertex shader

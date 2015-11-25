@@ -7,11 +7,11 @@ public:
 	CUITheme();
 	void Load(std::string const& filename);
 	std::string texture;
-	float defaultColor[3];
-	float textfieldColor[3];
+	float defaultColor[4];
+	float textfieldColor[4];
 	struct sText
 	{
-		float color[3];
+		float color[4];
 		std::string font;
 		unsigned int fontSize;
 		enum eAligment
@@ -45,7 +45,7 @@ public:
 	{
 		int borderSize;
 		int elementSize;
-		float selectionColor[3];
+		float selectionColor[4];
 		sText text;
 	};
 	sList list;
@@ -60,7 +60,7 @@ public:
 	struct sEdit
 	{
 		int borderSize;
-		float selectionColor[3];
+		float selectionColor[4];
 		sText text;
 	};
 	sEdit edit;
