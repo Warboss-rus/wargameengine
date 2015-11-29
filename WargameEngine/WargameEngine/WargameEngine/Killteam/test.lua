@@ -155,8 +155,12 @@ SetLightPosition(1, 0, 0, 30)
 --EnableShadowMap(1024, 53)
 EnableMSAA()
 SetAnisotropy(GetMaxAnisotropy())
---SetShaders("gpu_skinning.vsh", "gpu_skinning.fsh")
---EnableGPUSkinning()
+if(GetRendererName() == "DirectX11") then
+	SetShaders("gpu_skinning.hlsl", "gpu_skinning.hlsl")
+else
+	SetShaders("gpu_skinning.vsh", "gpu_skinning.fsh")
+end
+EnableGPUSkinning()
 --EnableVertexLightning()
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 CreateTable(30, 15, "sand.dds")--Creates a table (width, height, texture)

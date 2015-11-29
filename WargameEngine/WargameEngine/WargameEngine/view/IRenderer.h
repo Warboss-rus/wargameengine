@@ -85,5 +85,7 @@ public:
 
 	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const = 0;
 
+	virtual std::string GetName() const = 0;
+
 	virtual ~IRenderer() {}
 };

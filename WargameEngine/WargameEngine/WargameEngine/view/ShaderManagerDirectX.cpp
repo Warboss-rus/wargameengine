@@ -31,9 +31,6 @@ cbuffer Constant : register( b0 )\
 	float4 Color;\
 	sMaterial Material;\
 	sLightSource Lights;\
-	matrix lightMatrix;\
-	float3 lightPos;\
-	float3 lightDir;\
 }\
 struct PixelInputType\
 {\
@@ -54,7 +51,7 @@ PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, floa
 float4 PShader( PixelInputType input) : SV_TARGET\
 {\
 	float4 tex = shaderTexture.Sample(SampleType, input.tex);\
-	return float4(tex[0] + Color[0], tex[1] + Color[1], tex[2] + Color[2], tex[3] + Color[3]);\
+	return tex + Color;\
 }";
 
 namespace
@@ -69,6 +66,8 @@ CShaderManagerDirectX::CShaderManagerDirectX(ID3D11Device *dev, CDirectXRenderer
 	:m_dev(dev), m_render(render)
 {
 	NewProgram();
+	CreateBuffer(&m_weightBuffer, sizeof(float) * 4 * 10000);
+	CreateBuffer(&m_weightIndexBuffer, sizeof(int) * 10000);
 }
 
 void CompileShader(std::string const& path, char * entryPoint, char * target, std::string const& defaultContent, ID3D10Blob ** blob)
@@ -119,24 +118,35 @@ void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int
 
 void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::string const& fragment /*= ""*/, std::string const& geometry /*= ""*/)
 {
+	if (!vertex.empty()) m_VS = nullptr;
 	CComPtr<ID3D10Blob> PS, GS;
 	CompileShader(vertex, "VShader", "vs_4_0", defaultShader, &m_VS);
 	CompileShader(fragment, "PShader", "ps_4_0", defaultShader, &PS);
 	CompileShader(geometry, "GShader", "gs_4_0", "", &GS);
 
-	if (m_VS) m_dev->CreateVertexShader(m_VS->GetBufferPointer(), m_VS->GetBufferSize(), NULL, &pVS);
-	if (PS) m_dev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &pPS);
-	if (GS) m_dev->CreateGeometryShader(GS->GetBufferPointer(), GS->GetBufferSize(), NULL, &pGS);
+	if (m_VS)
+	{
+		pVS = nullptr;
+		m_dev->CreateVertexShader(m_VS->GetBufferPointer(), m_VS->GetBufferSize(), NULL, &pVS);
+	}
+	if (PS)
+	{
+		pPS = nullptr;
+		m_dev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &pPS);
+	}
+	if (GS)
+	{
+		pGS = nullptr;
+		m_dev->CreateGeometryShader(GS->GetBufferPointer(), GS->GetBufferSize(), NULL, &pGS);
+	}
 
+	m_reflection = nullptr;
 	D3DReflect(m_VS->GetBufferPointer(), m_VS->GetBufferSize(),
 		IID_ID3D11ShaderReflection, (void**)&m_reflection);
 
 	unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
 	m_constantBufferData.resize(size);
 	memset(m_constantBufferData.data(), 0, m_constantBufferData.size());
-
-	CreateBuffer(&m_weightBuffer, sizeof(float) * 4 * 10000);
-	CreateBuffer(&m_weightIndexBuffer, sizeof(int) * 10000);
 }
 
 void CShaderManagerDirectX::BindProgram() const
@@ -289,19 +299,28 @@ void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* /*defaultValue*/) const
 {
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
-	m_render->GetContext()->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
+	unsigned int stride = sizeof(float) * 4;
+	unsigned int offset = 0;
+	ID3D11Buffer* buffers[] = { NULL };
+	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, int* /*defaultValue*/) const
 {
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
-	m_render->GetContext()->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
+	unsigned int stride = sizeof(int);
+	unsigned int offset = 0;
+	ID3D11Buffer* buffers[] = { NULL };
+	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, unsigned int* /*defaultValue*/) const
 {
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
-	m_render->GetContext()->IASetVertexBuffers(index, 1, NULL, NULL, NULL);
+	unsigned int stride = sizeof(int);
+	unsigned int offset = 0;
+	ID3D11Buffer* buffers[] = { NULL };
+	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
 }
 
 void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat)
@@ -361,6 +380,7 @@ void CShaderManagerDirectX::SetLight(size_t index, sLightSource & lightSource)
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const
 {
+	if (begin + size > m_constantBufferData.size()) return;
 	CComPtr<ID3D11Buffer> constantBuffer;
 	CreateConstantBuffer(m_constantBufferData.size(), &constantBuffer);
 	memcpy(m_constantBufferData.data() + begin, data, size);

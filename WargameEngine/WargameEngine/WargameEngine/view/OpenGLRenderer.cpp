@@ -695,6 +695,11 @@ bool COpenGLRenderer::ForceFlipBMP() const
 	return false;
 }
 
+std::string COpenGLRenderer::GetName() const
+{
+	return "OpenGL";
+}
+
 void COpenGLRenderer::SetUpViewport2D()
 {
 	glEnable(GL_BLEND);

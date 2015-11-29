@@ -751,6 +751,14 @@ int Print(lua_State* L)
 	return 0;
 }
 
+int GetRendererName(lua_State* L)
+{
+	if (CLUAScript::GetArgumentCount() != 0)
+		return luaL_error(L, "no argument expected");
+	CLUAScript::SetArgument(CGameView::GetInstance().lock()->GetRenderer().GetName().c_str());
+	return 1;
+}
+
 void RegisterFunctions(CLUAScript & lua)
 {
 	lua.RegisterConstant(CreateTable, "CreateTable");
@@ -820,4 +828,5 @@ void RegisterFunctions(CLUAScript & lua)
 	lua.RegisterConstant(NewDecal, "NewDecal");
 	lua.RegisterConstant(NewStaticObject, "NewStaticObject");
 	lua.RegisterConstant(Print, "print");
+	lua.RegisterConstant(GetRendererName, "GetRendererName");
 }

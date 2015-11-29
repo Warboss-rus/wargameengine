@@ -3,6 +3,8 @@
 #include "ShaderManagerDirectX.h"
 #include "..\LogWriter.h"
 #include <DirectXMath.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace DirectX;
 
@@ -455,9 +457,9 @@ void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 
 void CDirectXRenderer::Rotate(const double angle, const double x, const double y, const double z)
 {
-	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(-z), 1.0f);
+	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f);
 	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle)), matrix);
+	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), matrix);
 	m_viewMatrices.pop_back();
 	m_viewMatrices.push_back(matrix);
 	UpdateMatrices();
@@ -682,7 +684,10 @@ float CDirectXRenderer::GetMaximumAnisotropyLevel() const
 
 void CDirectXRenderer::EnableVertexLightning(bool enable)
 {
-	LogWriter::WriteLine("Vertex lightning is not supported in DirectX11");
+	if (enable)
+	{
+		LogWriter::WriteLine("Vertex lightning is not supported in DirectX11");
+	}
 }
 
 void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
@@ -850,6 +855,11 @@ bool CDirectXRenderer::Force32Bits() const
 bool CDirectXRenderer::ForceFlipBMP() const
 {
 	return true;
+}
+
+std::string CDirectXRenderer::GetName() const
+{
+	return "DirectX11";
 }
 
 void CDirectXRenderer::SetShaderManager(CShaderManagerDirectX * shaderManager)
