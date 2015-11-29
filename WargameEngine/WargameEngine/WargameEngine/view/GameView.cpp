@@ -9,32 +9,19 @@
 #include "../Module.h"
 #include "../Ruler.h"
 #include "../OSSpecific.h"
-#include "TextWriter.h"
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
-#include "../SoundPlayerFMod.h"
-#ifdef DIRECTX
-#include "GameWindowDirectX.h"
-#define WINDOW_CLASS CGameWindowDirectX
-#elif GLFW
-#include "GameWindowGLFW.h"
-#define WINDOW_CLASS CGameWindowGLFW
-#else
-#include "InputGLUT.h"
-#include "GameWindowGLUT.h"
-#define WINDOW_CLASS CGameWindowGLUT
-#endif
 
 using namespace std;
 using namespace placeholders;
 
 shared_ptr<CGameView> CGameView::m_instanse = NULL;
 
-weak_ptr<CGameView> CGameView::GetInstance()
+weak_ptr<CGameView> CGameView::GetInstance(sGameViewContext * context)
 {
 	if (!m_instanse.get())
 	{
-		m_instanse.reset(new CGameView());
+		m_instanse.reset(new CGameView(context));
 		m_instanse->Init();
 	}
 	weak_ptr<CGameView> pView(m_instanse);
@@ -53,15 +40,16 @@ CGameView::~CGameView()
 	DisableShadowMap();
 }
 
-CGameView::CGameView(void)
-	: m_window(make_unique<WINDOW_CLASS>())
+CGameView::CGameView(sGameViewContext * context)
+	: m_window(move(context->window))
 	, m_renderer(&m_window->GetRenderer())
 	, m_viewHelper(&m_window->GetViewHelper())
 	, m_shaderManager(m_renderer->CreateShaderManager())
-	, m_textWriter(make_unique<CTextWriter>(*m_renderer))
+	, m_textWriter(move(context->textWriter))
 	, m_particles(*m_renderer)
 	, m_gameModel(make_unique<CGameModel>())
 	, m_modelManager(*m_renderer, *m_gameModel)
+	, m_soundPlayer(move(context->soundPlayer))
 {
 	m_ui = make_unique<CUIElement>(*m_renderer);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
@@ -82,7 +70,6 @@ void CGameView::Init()
 
 	m_gameController = make_unique<CGameController>(*m_gameModel);
 	m_gameController->Init();
-	m_soundPlayer = std::make_unique<CSoundPlayerFMod>();
 	m_soundPlayer->Init();
 
 	m_window->DoOnDrawScene([this] {
@@ -122,7 +109,7 @@ void CGameView::InitInput()
 		return m_ui->OnCharacterInput(key);
 	}, 0);
 	m_input->DoOnKeyDown([this](int key, int modifiers) {
-		return m_ui->OnKeyPress(key, modifiers);
+		return m_ui->OnKeyPress(m_input->KeycodeToVirtualKey(key), modifiers);
 	}, 0);
 	m_input->DoOnMouseMove([this](int x, int y) {
 		m_ui->OnMouseMove(x, y);
@@ -541,7 +528,7 @@ CParticleSystem& CGameView::GetParticleSystem()
 	return m_particles;
 }
 
-CTextWriter& CGameView::GetTextWriter()
+ITextWriter& CGameView::GetTextWriter()
 {
 	return *m_textWriter;
 }

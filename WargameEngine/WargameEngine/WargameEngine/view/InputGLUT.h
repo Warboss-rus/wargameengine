@@ -23,6 +23,7 @@ public:
 	virtual int GetMouseX() const override;
 	virtual int GetMouseY() const override;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) override;
+	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
 
 	static void OnSpecialKeyPress(int key, int x, int y);
 	static void OnSpecialKeyRelease(int key, int x, int y);

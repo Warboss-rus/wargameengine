@@ -684,9 +684,11 @@ float CDirectXRenderer::GetMaximumAnisotropyLevel() const
 
 void CDirectXRenderer::EnableVertexLightning(bool enable)
 {
-	if (enable)
+	static bool warningDisplayed = false;
+	if (enable && !warningDisplayed)
 	{
-		LogWriter::WriteLine("Vertex lightning is not supported in DirectX11");
+		LogWriter::WriteLine("There is no built in vertex lightning in DirectX11");
+		warningDisplayed = true;
 	}
 }
 

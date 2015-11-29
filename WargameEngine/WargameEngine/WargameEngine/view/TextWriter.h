@@ -1,4 +1,5 @@
 #pragma once
+#include "ITextWriter.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <string>
@@ -25,17 +26,17 @@ struct sGlyph
 	int advancex;
 };
 
-class CTextWriter
+class CTextWriter : public ITextWriter
 {
 public:
 	CTextWriter(IRenderer & renderer);
 	~CTextWriter();
-	void PrintText(int x, int y, std::string const& font, unsigned int size, std::string const& text, int width = 0, int height = 0);
-	void PrintText(int x, int y, std::string const& font, unsigned int size, std::wstring const& text, int width = 0, int height = 0);
-	int GetStringHeight(std::string const& font, unsigned int size, std::string const& text);
-	int GetStringWidth(std::string const& font, unsigned int size, std::string const& text);
-	int GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text);
-	int GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text);
+	virtual void PrintText(int x, int y, std::string const& font, unsigned int size, std::string const& text, int width = 0, int height = 0) override;
+	virtual void PrintText(int x, int y, std::string const& font, unsigned int size, std::wstring const& text, int width = 0, int height = 0) override;
+	virtual int GetStringHeight(std::string const& font, unsigned int size, std::string const& text) override;
+	virtual int GetStringWidth(std::string const& font, unsigned int size, std::string const& text) override;
+	virtual int GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text) override;
+	virtual int GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text) override;
 private:
 	FT_Face GetFace(std::string const& name);
 	const sGlyph& GetSymbol(FT_Face font, unsigned int size, char symbol);

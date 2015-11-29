@@ -8,8 +8,6 @@
 #include "..\LogWriter.h"
 #include <thread>
 
-#pragma comment (lib, "d3d11.lib")
-
 using namespace DirectX;
 
 struct CGameWindowDirectX::Impl

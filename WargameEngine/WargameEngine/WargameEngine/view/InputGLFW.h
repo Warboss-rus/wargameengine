@@ -24,6 +24,7 @@ public:
 	virtual int GetMouseX() const override;
 	virtual int GetMouseY() const override;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) override;
+	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
 
 	static void OnMouse(GLFWwindow* window, int button, int action, int mods);
 	static void OnScroll(GLFWwindow* window, double xoffset, double yoffset);

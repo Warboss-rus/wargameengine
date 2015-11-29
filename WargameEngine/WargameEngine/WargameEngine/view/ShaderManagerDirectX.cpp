@@ -6,9 +6,6 @@
 #include "DirectXRenderer.h"
 #include <DirectXMath.h>
 
-#pragma comment (lib, "D3dcompiler.lib")
-#pragma comment (lib, "dxguid.lib")
-
 static const std::string defaultShader = "\
 struct sLightSource\
 {\

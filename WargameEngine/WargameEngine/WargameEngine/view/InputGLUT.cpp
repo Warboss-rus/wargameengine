@@ -248,6 +248,22 @@ void CInputGLUT::DeleteAllSignalsByTag(std::string const& tag)
 	m_signals->m_onMouseMove.RemoveByTag(tag);
 }
 
+VirtualKey CInputGLUT::KeycodeToVirtualKey(int key) const
+{
+	static const std::map<int, VirtualKey> virtualKeys = {
+		{8, KEY_BACKSPACE},
+		{GLUT_KEY_LEFT, KEY_LEFT },
+		{GLUT_KEY_UP, KEY_UP },
+		{GLUT_KEY_RIGHT, KEY_RIGHT },
+		{GLUT_KEY_DOWN, KEY_DOWN },
+		{GLUT_KEY_HOME, KEY_HOME },
+		{GLUT_KEY_END, KEY_END },
+		{127, KEY_DELETE },
+	};
+	auto it = virtualKeys.find(key);
+	return it == virtualKeys.end() ? KEY_UNKNOWN : it->second;
+}
+
 int CInputGLUT::GetModifiers() const
 {
 	return ::GetModifiers();

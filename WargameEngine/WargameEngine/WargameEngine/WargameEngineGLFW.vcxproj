@@ -75,10 +75,8 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -91,10 +89,8 @@
       <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -110,10 +106,8 @@
       <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,172 +117,6 @@
       <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="controller\CommandGoTo.cpp" />
-    <ClCompile Include="controller\CommandPlayAnimation.cpp" />
-    <ClCompile Include="controller\LUARegisterFunctions.cpp" />
-    <ClCompile Include="controller\LUARegisterObject.cpp" />
-    <ClCompile Include="controller\LUARegisterUI.cpp" />
-    <ClCompile Include="controller\LUAScriptHandler.cpp" />
-    <ClCompile Include="model\Bounding.cpp" />
-    <ClCompile Include="model\Landscape.cpp" />
-    <ClCompile Include="model\Projectile.cpp" />
-    <ClCompile Include="NetSocket.cpp" />
-    <ClCompile Include="controller\CommandChangeGlobalProperty.cpp" />
-    <ClCompile Include="controller\CommandChangeProperty.cpp" />
-    <ClCompile Include="controller\CommandCompound.cpp" />
-    <ClCompile Include="controller\CommandCreateObject.cpp" />
-    <ClCompile Include="controller\CommandDeleteObject.cpp" />
-    <ClCompile Include="controller\CommandHandler.cpp" />
-    <ClCompile Include="controller\CommandMoveObject.cpp" />
-    <ClCompile Include="controller\CommandRotateObject.cpp" />
-    <ClCompile Include="controller\GameController.cpp" />
-    <ClCompile Include="LogWriter.cpp" />
-    <ClCompile Include="model\Object.cpp" />
-    <ClCompile Include="model\GameModel.cpp" />
-    <ClCompile Include="model\MovementLimiter.cpp" />
-    <ClCompile Include="model\ObjectGroup.cpp" />
-    <ClCompile Include="Module.cpp" />
-    <ClCompile Include="Network.cpp" />
-    <ClCompile Include="OSSpecific.cpp" />
-    <ClCompile Include="Plugin.cpp" />
-    <ClCompile Include="PluginManager.cpp" />
-    <ClCompile Include="Ruler.cpp" />
-    <ClCompile Include="SoundPlayerFMod.cpp" />
-    <ClCompile Include="ThreadPool.cpp" />
-    <ClCompile Include="TranslationManager.cpp" />
-    <ClCompile Include="UI\UIButton.cpp" />
-    <ClCompile Include="UI\UICheckBox.cpp" />
-    <ClCompile Include="UI\UIEdit.cpp" />
-    <ClCompile Include="UI\UIElement.cpp" />
-    <ClCompile Include="UI\UIList.cpp" />
-    <ClCompile Include="UI\UIComboBox.cpp" />
-    <ClCompile Include="UI\UIPanel.cpp" />
-    <ClCompile Include="UI\UIRadioGroup.cpp" />
-    <ClCompile Include="UI\UIScrollBar.cpp" />
-    <ClCompile Include="UI\UIStaticText.cpp" />
-    <ClCompile Include="UI\UIText.cpp" />
-    <ClCompile Include="UI\UITheme.cpp" />
-    <ClCompile Include="UI\UIWindow.cpp" />
-    <ClCompile Include="view\3dModel.cpp" />
-    <ClCompile Include="view\CameraFirstPerson.cpp" />
-    <ClCompile Include="view\CameraStrategy.cpp" />
-    <ClCompile Include="view\ColladaModelFactory.cpp" />
-    <ClCompile Include="view\GameView.cpp" />
-    <ClCompile Include="view\GameWindowGLFW.cpp" />
-    <ClCompile Include="view\InputGLFW.cpp" />
-    <ClCompile Include="view\MaterialManager.cpp" />
-    <ClCompile Include="view\ModelManager.cpp" />
-    <ClCompile Include="view\OBJModelFactory.cpp" />
-    <ClCompile Include="view\OpenGLRenderer.cpp" />
-    <ClCompile Include="view\Particle.cpp" />
-    <ClCompile Include="view\ParticleEffect.cpp" />
-    <ClCompile Include="view\ParticleModel.cpp" />
-    <ClCompile Include="view\ParticleSystem.cpp" />
-    <ClCompile Include="view\ParticleTracer.cpp" />
-    <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
-    <ClCompile Include="view\SkyBox.cpp" />
-    <ClCompile Include="view\TextureManager.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="view\TextWriter.cpp" />
-    <ClCompile Include="view\WBMModelFactory.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AsyncReadTask.h" />
-    <ClInclude Include="controller\IStateManager.h" />
-    <ClInclude Include="controller\CommandGoTo.h" />
-    <ClInclude Include="controller\CommandPlayAnimation.h" />
-    <ClInclude Include="controller\LUARegisterFunctions.h" />
-    <ClInclude Include="controller\LUAScriptHandler.h" />
-    <ClInclude Include="ISoundPlayer.h" />
-    <ClInclude Include="ITask.h" />
-    <ClInclude Include="model\Bounding.h" />
-    <ClInclude Include="model\IBoundingBoxManager.h" />
-    <ClInclude Include="model\IGameModel.h" />
-    <ClInclude Include="model\Landscape.h" />
-    <ClInclude Include="model\ObjectStatic.h" />
-    <ClInclude Include="model\Projectile.h" />
-    <ClInclude Include="Network.h" />
-    <ClInclude Include="OSSpecific.h" />
-    <ClInclude Include="NetSocket.h" />
-    <ClInclude Include="controller\CommandChangeGlobalProperty.h" />
-    <ClInclude Include="controller\CommandChangeProperty.h" />
-    <ClInclude Include="controller\CommandCompound.h" />
-    <ClInclude Include="controller\CommandRotateObject.h" />
-    <ClInclude Include="LogWriter.h" />
-    <ClInclude Include="model\Object.h" />
-    <ClInclude Include="model\MovementLimiter.h" />
-    <ClInclude Include="model\ObjectGroup.h" />
-    <ClInclude Include="model\ObjectInterface.h" />
-    <ClInclude Include="Module.h" />
-    <ClInclude Include="Plugin.h" />
-    <ClInclude Include="PluginManager.h" />
-    <ClInclude Include="rapidxml\rapidxml.hpp" />
-    <ClInclude Include="rapidxml\rapidxml_iterators.hpp" />
-    <ClInclude Include="rapidxml\rapidxml_print.hpp" />
-    <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
-    <ClInclude Include="Signal.h" />
-    <ClInclude Include="SoundPlayerFMod.h" />
-    <ClInclude Include="stb_image.h" />
-    <ClInclude Include="Task.h" />
-    <ClInclude Include="ThreadPool.h" />
-    <ClInclude Include="TranslationManager.h" />
-    <ClInclude Include="UI\UIRadioGroup.h" />
-    <ClInclude Include="UI\UIScrollBar.h" />
-    <ClInclude Include="UI\UIWindow.h" />
-    <ClInclude Include="view\CameraFirstPerson.h" />
-    <ClInclude Include="view\CameraStrategy.h" />
-    <ClInclude Include="view\GameWindowGLFW.h" />
-    <ClInclude Include="view\gl.h" />
-    <ClInclude Include="view\ICamera.h" />
-    <ClInclude Include="view\IInput.h" />
-    <ClInclude Include="view\InputGLFW.h" />
-    <ClInclude Include="view\IParticleEffecth.h" />
-    <ClInclude Include="view\IRenderer.h" />
-    <ClInclude Include="view\IShaderManager.h" />
-    <ClInclude Include="view\IGameWindow.h" />
-    <ClInclude Include="view\ITextureHelper.h" />
-    <ClInclude Include="view\IViewHelper.h" />
-    <ClInclude Include="view\KeyDefines.h" />
-    <ClInclude Include="view\Matrix4.h" />
-    <ClInclude Include="view\OpenGLRenderer.h" />
-    <ClInclude Include="view\Particle.h" />
-    <ClInclude Include="view\ParticleEffect.h" />
-    <ClInclude Include="view\ParticleModel.h" />
-    <ClInclude Include="view\ParticleSystem.h" />
-    <ClInclude Include="view\ParticleTracer.h" />
-    <ClInclude Include="view\ShaderManagerOpenGL.h" />
-    <ClInclude Include="view\TextWriter.h" />
-    <ClInclude Include="view\Vector2.h" />
-    <ClInclude Include="view\Vector3.h" />
-    <ClInclude Include="controller\CommandCreateObject.h" />
-    <ClInclude Include="controller\CommandDeleteObject.h" />
-    <ClInclude Include="controller\CommandHandler.h" />
-    <ClInclude Include="controller\CommandMoveObject.h" />
-    <ClInclude Include="controller\GameController.h" />
-    <ClInclude Include="controller\ICommand.h" />
-    <ClInclude Include="model\GameModel.h" />
-    <ClInclude Include="Ruler.h" />
-    <ClInclude Include="UI\IUI.h" />
-    <ClInclude Include="UI\UIButton.h" />
-    <ClInclude Include="UI\UICheckBox.h" />
-    <ClInclude Include="UI\UIEdit.h" />
-    <ClInclude Include="UI\UIElement.h" />
-    <ClInclude Include="UI\UIList.h" />
-    <ClInclude Include="UI\UIComboBox.h" />
-    <ClInclude Include="UI\UIPanel.h" />
-    <ClInclude Include="UI\UIStaticText.h" />
-    <ClInclude Include="UI\UIText.h" />
-    <ClInclude Include="UI\UITheme.h" />
-    <ClInclude Include="view\3dModel.h" />
-    <ClInclude Include="view\GameView.h" />
-    <ClInclude Include="view\Material.h" />
-    <ClInclude Include="view\MaterialManager.h" />
-    <ClInclude Include="view\ModelManager.h" />
-    <ClInclude Include="view\OBJModelFactory.h" />
-    <ClInclude Include="view\SkyBox.h" />
-    <ClInclude Include="view\TextureManager.h" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
@@ -305,6 +133,26 @@
     <ProjectReference Include="..\MathLib\MathLib.vcxproj">
       <Project>{ac364c0b-39cd-45d1-ac21-4a048568cb58}</Project>
     </ProjectReference>
+    <ProjectReference Include="WargameEngine.vcxproj">
+      <Project>{525b45ef-5fb2-495e-8f33-27363e097e50}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="SoundPlayerFMod.cpp" />
+    <ClCompile Include="view\GameWindowGLFW.cpp" />
+    <ClCompile Include="view\InputGLFW.cpp" />
+    <ClCompile Include="view\OpenGLRenderer.cpp" />
+    <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
+    <ClCompile Include="view\TextWriter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SoundPlayerFMod.h" />
+    <ClInclude Include="view\GameWindowGLFW.h" />
+    <ClInclude Include="view\InputGLFW.h" />
+    <ClInclude Include="view\OpenGLRenderer.h" />
+    <ClInclude Include="view\ShaderManagerOpenGL.h" />
+    <ClInclude Include="view\TextWriter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -22,6 +22,7 @@ public:
 	virtual int GetMouseX() const override;
 	virtual int GetMouseY() const override;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) override;
+	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
 
 	bool ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam);
 private:

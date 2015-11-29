@@ -89,8 +89,8 @@ void CCameraFirstPerson::SetInput(IInput & input)
 		Rotate(x - m_oldX, y - m_oldY);
 		return true;
 	}, 1, g_cameraTag);
-	input.DoOnKeyDown([this](int key, int) {
-		switch (key)
+	input.DoOnKeyDown([this, &input](int key, int) {
+		switch (input.KeycodeToVirtualKey(key))
 		{
 		case KEY_LEFT:
 		{

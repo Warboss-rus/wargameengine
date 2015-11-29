@@ -180,15 +180,15 @@ void CInputGLFW::OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 	{
 		if (g_prevX == 0 && g_prevY)
 		{
-			g_prevX = xpos;
-			g_prevY = ypos;
+			g_prevX = static_cast<int>(xpos);
+			g_prevY = static_cast<int>(ypos);
 		}
 		glfwSetCursorPos(window, screenCenterX, screenCenterY);
 	}
 	else
 	{
-		g_lastMouseX = xpos;
-		g_lastMouseY = ypos;
+		g_lastMouseX = static_cast<int>(xpos);
+		g_lastMouseY = static_cast<int>(ypos);
 	}
 }
 
@@ -214,6 +214,22 @@ void CInputGLFW::DeleteAllSignalsByTag(std::string const& tag)
 	m_signals->m_onKeyUp.RemoveByTag(tag);
 	m_signals->m_onCharacter.RemoveByTag(tag);
 	m_signals->m_onMouseMove.RemoveByTag(tag);
+}
+
+VirtualKey CInputGLFW::KeycodeToVirtualKey(int key) const
+{
+	static const std::map<int, VirtualKey> virtualKeys = {
+		{ GLFW_KEY_BACKSPACE, KEY_BACKSPACE },
+		{ GLFW_KEY_LEFT, KEY_LEFT },
+		{ GLFW_KEY_UP, KEY_UP },
+		{ GLFW_KEY_RIGHT, KEY_RIGHT },
+		{ GLFW_KEY_DOWN, KEY_DOWN },
+		{ GLFW_KEY_HOME, KEY_HOME },
+		{ GLFW_KEY_END, KEY_END },
+		{ GLFW_KEY_DELETE, KEY_DELETE },
+	};
+	auto it = virtualKeys.find(key);
+	return it == virtualKeys.end() ? KEY_UNKNOWN : it->second;
 }
 
 int CInputGLFW::GetModifiers() const

@@ -8,18 +8,24 @@
 #include "../model/GameModel.h"
 #include "IGameWindow.h"
 #include "IViewHelper.h"
+#include "ITextWriter.h"
 #include "ModelManager.h"
 #include "ParticleSystem.h"
 #include "SkyBox.h"
 #include "../Ruler.h"
 #include "../TranslationManager.h"
 
-class CTextWriter;
+struct sGameViewContext
+{
+	std::unique_ptr<IGameWindow> window;
+	std::unique_ptr<ISoundPlayer> soundPlayer;
+	std::unique_ptr<ITextWriter> textWriter;
+};
 
 class CGameView
 {
 public:
-	static std::weak_ptr<CGameView> GetInstance();
+	static std::weak_ptr<CGameView> GetInstance(sGameViewContext * context = nullptr);
 	static void FreeInstance();
 	~CGameView();
 
@@ -32,7 +38,7 @@ public:
 	void SetCamera(ICamera * camera);
 	CModelManager& GetModelManager();
 	CParticleSystem& GetParticleSystem();
-	CTextWriter& GetTextWriter();
+	ITextWriter& GetTextWriter();
 	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
@@ -72,7 +78,7 @@ private:
 	void ResetController();
 	void DrawText3D(CVector3d const& pos, std::string const& text);
 	void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
-	CGameView(void);
+	CGameView(sGameViewContext * context);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;
 
@@ -88,7 +94,7 @@ private:
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
-	std::unique_ptr<CTextWriter> m_textWriter;
+	std::unique_ptr<ITextWriter> m_textWriter;
 	CModelManager m_modelManager;
 	CParticleSystem m_particles;
 	CRuler m_ruler;

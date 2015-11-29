@@ -15,9 +15,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}</ProjectGuid>
+    <ProjectGuid>{2F8D8554-D588-48AB-A183-88D376423755}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>WargameEngineDirectX</RootNamespace>
+    <RootNamespace>WargameEngineGLUT</RootNamespace>
+    <TargetPlatformVersion>8.1</TargetPlatformVersion>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -55,32 +56,32 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IntDir>$(Configuration)DirectX\</IntDir>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IntDir>$(Configuration)DirectX\</IntDir>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IntDir>$(Configuration)DirectX\</IntDir>
+    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
+    <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;DIRECTX;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmod_vc.lib;d3d11.lib;D3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,14 +90,14 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;DIRECTX;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;d3d11.lib;D3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -106,19 +107,22 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;DIRECTX;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;d3d11.lib;D3dcompiler.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\glew-1.12.0\build\vc12\glew_static.vcxproj">
+      <Project>{664e6f0d-6784-4760-9565-d54f8eb1edf4}</Project>
     </ProjectReference>
     <ProjectReference Include="..\LUA\LUA.vcxproj">
       <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
@@ -133,18 +137,18 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SoundPlayerFMod.cpp" />
-    <ClCompile Include="view\DirectXRenderer.cpp" />
-    <ClCompile Include="view\GameWindowDirectX.cpp" />
-    <ClCompile Include="view\InputDirectX.cpp" />
-    <ClCompile Include="view\ShaderManagerDirectX.cpp" />
+    <ClCompile Include="view\GameWindowGLUT.cpp" />
+    <ClCompile Include="view\InputGLUT.cpp" />
+    <ClCompile Include="view\OpenGLRenderer.cpp" />
+    <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
     <ClCompile Include="view\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SoundPlayerFMod.h" />
-    <ClInclude Include="view\DirectXRenderer.h" />
-    <ClInclude Include="view\GameWindowDirectX.h" />
-    <ClInclude Include="view\InputDirectX.h" />
-    <ClInclude Include="view\ShaderManagerDirectX.h" />
+    <ClInclude Include="view\GameWindowGLUT.h" />
+    <ClInclude Include="view\InputGLUT.h" />
+    <ClInclude Include="view\OpenGLRenderer.h" />
+    <ClInclude Include="view\ShaderManagerOpenGL.h" />
     <ClInclude Include="view\TextWriter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

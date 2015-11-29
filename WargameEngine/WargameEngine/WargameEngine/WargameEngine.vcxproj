@@ -19,23 +19,24 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WargameEngine</RootNamespace>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -54,25 +55,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
-  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -87,9 +78,8 @@
       <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -106,9 +96,8 @@
       <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -150,7 +139,6 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="Ruler.cpp" />
-    <ClCompile Include="SoundPlayerFMod.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="TranslationManager.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
@@ -171,22 +159,16 @@
     <ClCompile Include="view\CameraStrategy.cpp" />
     <ClCompile Include="view\ColladaModelFactory.cpp" />
     <ClCompile Include="view\GameView.cpp" />
-    <ClCompile Include="view\GameWindowGLUT.cpp" />
-    <ClCompile Include="view\InputGLUT.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
-    <ClCompile Include="view\OpenGLRenderer.cpp" />
     <ClCompile Include="view\Particle.cpp" />
     <ClCompile Include="view\ParticleEffect.cpp" />
     <ClCompile Include="view\ParticleModel.cpp" />
     <ClCompile Include="view\ParticleSystem.cpp" />
     <ClCompile Include="view\ParticleTracer.cpp" />
-    <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="view\TextWriter.cpp" />
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -224,7 +206,6 @@
     <ClInclude Include="rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="Signal.h" />
-    <ClInclude Include="SoundPlayerFMod.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="ThreadPool.h" />
@@ -234,27 +215,23 @@
     <ClInclude Include="UI\UIWindow.h" />
     <ClInclude Include="view\CameraFirstPerson.h" />
     <ClInclude Include="view\CameraStrategy.h" />
-    <ClInclude Include="view\GameWindowGLUT.h" />
     <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IInput.h" />
-    <ClInclude Include="view\InputGLUT.h" />
     <ClInclude Include="view\IParticleEffecth.h" />
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\IShaderManager.h" />
     <ClInclude Include="view\IGameWindow.h" />
     <ClInclude Include="view\ITextureHelper.h" />
+    <ClInclude Include="view\ITextWriter.h" />
     <ClInclude Include="view\IViewHelper.h" />
     <ClInclude Include="view\KeyDefines.h" />
     <ClInclude Include="view\Matrix4.h" />
-    <ClInclude Include="view\OpenGLRenderer.h" />
     <ClInclude Include="view\Particle.h" />
     <ClInclude Include="view\ParticleEffect.h" />
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\ParticleTracer.h" />
-    <ClInclude Include="view\ShaderManagerOpenGL.h" />
-    <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />
     <ClInclude Include="controller\CommandCreateObject.h" />
@@ -284,20 +261,6 @@
     <ClInclude Include="view\OBJModelFactory.h" />
     <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\TextureManager.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
-      <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\glew-1.12.0\build\vc12\glew_static.vcxproj">
-      <Project>{664e6f0d-6784-4760-9565-d54f8eb1edf4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LUA\LUA.vcxproj">
-      <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\MathLib\MathLib.vcxproj">
-      <Project>{ac364c0b-39cd-45d1-ac21-4a048568cb58}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

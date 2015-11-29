@@ -35,9 +35,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Ruler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -94,9 +91,6 @@
     </ClCompile>
     <ClCompile Include="UI\UIComboBox.cpp">
       <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="view\TextWriter.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="model\GameModel.cpp">
       <Filter>Source Files\model</Filter>
@@ -200,29 +194,14 @@
     <ClCompile Include="controller\CommandHandler.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
-    <ClCompile Include="view\OpenGLRenderer.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="UI\UIWindow.cpp">
       <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="SoundPlayerFMod.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandPlayAnimation.cpp">
       <Filter>Source Files\controller\commands</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandGoTo.cpp">
       <Filter>Source Files\controller\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ShaderManagerOpenGL.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GameWindowGLUT.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\InputGLUT.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\Particle.cpp">
       <Filter>Source Files\view\Particles</Filter>
@@ -430,16 +409,10 @@
     <ClInclude Include="view\OBJModelFactory.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\OpenGLRenderer.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\SkyBox.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\TextureManager.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\TextWriter.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\Vector2.h">
@@ -458,9 +431,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ISoundPlayer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Signal.h">
@@ -485,15 +455,6 @@
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="view\IShaderManager.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ShaderManagerOpenGL.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\GameWindowGLUT.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\InputGLUT.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\IGameWindow.h">
@@ -521,6 +482,9 @@
       <Filter>Source Files\view\Particles</Filter>
     </ClInclude>
     <ClInclude Include="view\Matrix4.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ITextWriter.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>

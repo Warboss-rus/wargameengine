@@ -1,5 +1,4 @@
 #include "UIWindow.h"
-#include "../view/TextWriter.h"
 #include "../view/GameView.h"
 #include "UIText.h"
 

@@ -11,3 +11,10 @@ Thumbs.db
 /WargameEngine/WargameEngine/WargameEngine/Debug_GLFW
 /WargameEngine/WargameEngine/WargameEngine/DebugDirectX
 /WargameEngine/WargameEngine/WargameEngine/ReleaseDirectX
+/WargameEngine/WargameEngine/WargameEngine/Debug_GLUT
+/WargameEngine/WargameEngine/WargameEngine/Release_GLFW
+/WargameEngine/WargameEngine/WargameEngine/Release_GLUT
+/WargameEngine/WargameEngine/WargameEngine/Release-XP_GLFW
+/WargameEngine/WargameEngine/WargameEngine/Release-XP_GLUT
+/WargameEngine/WargameEngine/WargameEngine/Release-XP
+/WargameEngine/WargameEngine/WargameEngine/Release-XPDirectX

@@ -1,7 +1,6 @@
 #include "UIText.h"
 #include "UITheme.h"
 #include "../view/GameView.h"
-#include "../view/TextWriter.h"
 
 void PrintText(IRenderer & renderer, int x, int y, int width, int height, std::string const& str, CUITheme::sText const& theme)
 {
@@ -11,7 +10,7 @@ void PrintText(IRenderer & renderer, int x, int y, int width, int height, std::s
 
 void PrintText(IRenderer & renderer, int x, int y, int width, int height, std::wstring const& str, CUITheme::sText const& theme)
 {
-	CTextWriter & text = CGameView::GetInstance().lock()->GetTextWriter();
+	ITextWriter & text = CGameView::GetInstance().lock()->GetTextWriter();
 	if(theme.aligment == theme.center)
 		x = (width - text.GetStringWidth(theme.font, theme.fontSize, str)) / 2;
 	if(theme.aligment == theme.right)

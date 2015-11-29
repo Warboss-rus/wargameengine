@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include "KeyDefines.h"
 
 class IInput
 {
@@ -25,6 +26,7 @@ public:
 	virtual int GetMouseX() const = 0;
 	virtual int GetMouseY() const = 0;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) = 0;
+	virtual VirtualKey KeycodeToVirtualKey(int key) const = 0;
 
 	virtual ~IInput() {}
 };

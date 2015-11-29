@@ -1,6 +1,7 @@
 #include "InputDirectX.h"
 #include <stdexcept>
 #include <Windowsx.h>
+#include <map>
 
 CInputDirectX::CInputDirectX(HWND hWnd)
 	:m_hWnd(hWnd)
@@ -112,6 +113,22 @@ void CInputDirectX::DeleteAllSignalsByTag(std::string const& tag)
 	m_onKeyUp.RemoveByTag(tag);
 	m_onCharacter.RemoveByTag(tag);
 	m_onMouseMove.RemoveByTag(tag);
+}
+
+VirtualKey CInputDirectX::KeycodeToVirtualKey(int key) const
+{
+	static const std::map<int, VirtualKey> virtualKeys = {
+		{ VK_BACK, KEY_BACKSPACE },
+		{ VK_LEFT, KEY_LEFT },
+		{ VK_UP, KEY_UP },
+		{ VK_RIGHT, KEY_RIGHT },
+		{ VK_DOWN, KEY_DOWN },
+		{ VK_HOME, KEY_HOME },
+		{ VK_END, KEY_END },
+		{ VK_DELETE, KEY_DELETE },
+	};
+	auto it = virtualKeys.find(key);
+	return it == virtualKeys.end() ? KEY_UNKNOWN : it->second;
 }
 
 bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
