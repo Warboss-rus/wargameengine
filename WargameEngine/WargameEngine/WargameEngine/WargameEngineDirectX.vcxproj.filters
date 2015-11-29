@@ -200,9 +200,6 @@
     <ClCompile Include="controller\CommandHandler.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
-    <ClCompile Include="view\OpenGLRenderer.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="UI\UIWindow.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
@@ -214,15 +211,6 @@
     </ClCompile>
     <ClCompile Include="controller\CommandGoTo.cpp">
       <Filter>Source Files\controller\commands</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ShaderManagerOpenGL.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GameWindowGLUT.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\InputGLUT.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\Particle.cpp">
       <Filter>Source Files\view\Particles</Filter>
@@ -238,6 +226,18 @@
     </ClCompile>
     <ClCompile Include="view\ParticleTracer.cpp">
       <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="view\GameWindowDirectX.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\InputDirectX.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\DirectXRenderer.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ShaderManagerDirectX.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -406,9 +406,6 @@
     <ClInclude Include="view\GameView.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\gl.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -428,9 +425,6 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\OBJModelFactory.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\OpenGLRenderer.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\SkyBox.h">
@@ -487,15 +481,6 @@
     <ClInclude Include="view\IShaderManager.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\ShaderManagerOpenGL.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\GameWindowGLUT.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\InputGLUT.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\IGameWindow.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -521,6 +506,18 @@
       <Filter>Source Files\view\Particles</Filter>
     </ClInclude>
     <ClInclude Include="view\Matrix4.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\GameWindowDirectX.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\InputDirectX.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\DirectXRenderer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ShaderManagerDirectX.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>

@@ -125,9 +125,6 @@
     <ClCompile Include="ThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="nv_dds.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OSSpecific.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -272,9 +269,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Network.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="nv_dds.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="OSSpecific.h">

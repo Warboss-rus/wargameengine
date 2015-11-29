@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "InputGLUT.h"
+#include "OpenGLRenderer.h"
 #include <stdexcept>
 
 static CGameWindowGLUT* g_instance = nullptr;
@@ -49,17 +50,23 @@ void CGameWindowGLUT::OnShutdown()
 	}
 }
 
-IInput& CGameWindowGLUT::GetInput()
+IInput& CGameWindowGLUT::ResetInput()
 {
+	m_input = std::make_unique<CInputGLUT>();
 	return *m_input;
 }
 
-void CGameWindowGLUT::ResetInput()
+IRenderer& CGameWindowGLUT::GetRenderer()
 {
-	m_input = std::make_unique<CInputGLUT>();
+	return *m_renderer;
 }
 
-void CGameWindowGLUT::Init()
+IViewHelper& CGameWindowGLUT::GetViewHelper()
+{
+	return *m_renderer;
+}
+
+CGameWindowGLUT::CGameWindowGLUT()
 {
 	g_instance = this;
 	int argc = 0;
@@ -91,6 +98,15 @@ void CGameWindowGLUT::Init()
 
 	glewInit();
 
+	m_renderer = std::make_unique<COpenGLRenderer>();
+}
+
+CGameWindowGLUT::~CGameWindowGLUT()
+{
+}
+
+void CGameWindowGLUT::LaunchMainLoop()
+{
 	glutMainLoop();
 }
 
@@ -122,35 +138,6 @@ void CGameWindowGLUT::SetTitle(std::string const& title)
 void CGameWindowGLUT::ToggleFullscreen()
 {
 	glutFullScreenToggle();
-}
-
-void CGameWindowGLUT::Enter2DMode()
-{
-	if (!m_2dMode)
-	{
-		m_2dMode = true;
-		glEnable(GL_BLEND);
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT), 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-	}
-}
-
-void CGameWindowGLUT::Leave2DMode()
-{
-	if (m_2dMode)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glDisable(GL_BLEND);
-		m_2dMode = false;
-	}
 }
 
 void CGameWindowGLUT::EnableMultisampling(bool enable, int /*level*/)

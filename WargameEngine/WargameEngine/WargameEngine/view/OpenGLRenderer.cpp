@@ -340,7 +340,7 @@ std::unique_ptr<IDrawingList> COpenGLRenderer::CreateDrawingList(std::function<v
 	return std::make_unique<COpenGLDrawingList>(list);
 }
 
-std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/)
+std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t /*size*/)
 {
 	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords);
 }
@@ -356,11 +356,6 @@ std::unique_ptr<IShaderManager> COpenGLRenderer::CreateShaderManager() const
 }
 
 CTextureManager & COpenGLRenderer::GetTextureManager()
-{
-	return m_textureManager;
-}
-
-CTextureManager const& COpenGLRenderer::GetTextureManager() const
 {
 	return m_textureManager;
 }
@@ -633,12 +628,13 @@ void COpenGLRenderer::SetTextureAnisotropy(float value)
 	}
 }
 
-void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
+void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
 {
+	texture.Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, flags & TEXTURE_BUILD_MIPMAPS ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
 	if (flags & TEXTURE_BUILD_MIPMAPS)
 	{
@@ -646,27 +642,20 @@ void COpenGLRenderer::UploadTexture(unsigned char * data, unsigned int width, un
 	}
 	else
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, bpp / 8, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	}
-	if (!mipmaps.empty())
+	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
-		for (size_t i = 0; i < mipmaps.size(); i++)
-		{
-			auto& mipmap = mipmaps[i];
-			glTexImage2D(GL_TEXTURE_2D, i + 1, bpp / 8,
-				mipmap.width,
-				mipmap.height, 0,
-				format,
-				GL_UNSIGNED_BYTE,
-				mipmap.data);
-		}
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+		auto& mipmap = mipmaps[i];
+		glTexImage2D(GL_TEXTURE_2D, i + 1, bpp / 8, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 }
 
-void COpenGLRenderer::UploadCompressedTexture(unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
+void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
 {
+	texture.Bind();
 	if (!GLEW_EXT_texture_compression_s3tc)
 	{
 		LogWriter::WriteLine("Compressed textures are not supported");
@@ -687,20 +676,43 @@ void COpenGLRenderer::UploadCompressedTexture(unsigned char * data, unsigned int
 
 	glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, size, data);
 
-	if (!mipmaps.empty())
+	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
-		for (size_t i = 0; i < mipmaps.size(); i++)
-		{
-			auto& mipmap = mipmaps[i];
-			glCompressedTexImage2DARB(GL_TEXTURE_2D, i + 1, format,
-				mipmap.width,
-				mipmap.height, 0,
-				mipmap.size,
-				mipmap.data);
-		}
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+		auto& mipmap = mipmaps[i];
+		glCompressedTexImage2DARB(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, mipmap.size, mipmap.data);
 	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+}
+
+bool COpenGLRenderer::Force32Bits() const
+{
+	return false;
+}
+
+bool COpenGLRenderer::ForceFlipBMP() const
+{
+	return false;
+}
+
+std::string COpenGLRenderer::GetName() const
+{
+	return "OpenGL";
+}
+
+void COpenGLRenderer::SetUpViewport2D()
+{
+	glEnable(GL_BLEND);
+	glPushMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glPushAttrib(GL_VIEWPORT_BIT);
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glOrtho(0, viewport[2] - viewport[0], viewport[3] - viewport[1], 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 COpenGLFrameBuffer::COpenGLFrameBuffer()
@@ -716,6 +728,7 @@ COpenGLFrameBuffer::COpenGLFrameBuffer()
 COpenGLFrameBuffer::~COpenGLFrameBuffer()
 {
 	UnBind();
+	glDeleteBuffers(1, &m_id);
 }
 
 void COpenGLFrameBuffer::Bind() const

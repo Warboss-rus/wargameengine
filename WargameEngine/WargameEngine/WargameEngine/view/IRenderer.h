@@ -81,9 +81,11 @@ public:
 
 	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void()> const& func) = 0;
 
-	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr) = 0;
+	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0) = 0;
 
 	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const = 0;
+
+	virtual std::string GetName() const = 0;
 
 	virtual ~IRenderer() {}
 };

@@ -15,10 +15,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C76D278D-0186-4B57-802C-1ADCFCDA7D80}</ProjectGuid>
+    <ProjectGuid>{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>WargameEngineGLFW</RootNamespace>
-    <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <RootNamespace>WargameEngineDirectX</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -56,19 +55,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IntDir>$(Configuration)_GLFW\</IntDir>
+    <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IntDir>$(Configuration)_GLFW\</IntDir>
+    <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
-    <IntDir>$(Configuration)_GLFW\</IntDir>
+    <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -76,14 +75,14 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;DIRECTX;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -93,7 +92,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;DIRECTX;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -101,7 +100,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -112,7 +111,7 @@
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;DIRECTX;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\MathLib;..\LUA;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -120,7 +119,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -174,19 +173,19 @@
     <ClCompile Include="view\CameraFirstPerson.cpp" />
     <ClCompile Include="view\CameraStrategy.cpp" />
     <ClCompile Include="view\ColladaModelFactory.cpp" />
+    <ClCompile Include="view\DirectXRenderer.cpp" />
     <ClCompile Include="view\GameView.cpp" />
-    <ClCompile Include="view\GameWindowGLFW.cpp" />
-    <ClCompile Include="view\InputGLFW.cpp" />
+    <ClCompile Include="view\GameWindowDirectX.cpp" />
+    <ClCompile Include="view\InputDirectX.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
-    <ClCompile Include="view\OpenGLRenderer.cpp" />
     <ClCompile Include="view\Particle.cpp" />
     <ClCompile Include="view\ParticleEffect.cpp" />
     <ClCompile Include="view\ParticleModel.cpp" />
     <ClCompile Include="view\ParticleSystem.cpp" />
     <ClCompile Include="view\ParticleTracer.cpp" />
-    <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
+    <ClCompile Include="view\ShaderManagerDirectX.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -238,11 +237,11 @@
     <ClInclude Include="UI\UIWindow.h" />
     <ClInclude Include="view\CameraFirstPerson.h" />
     <ClInclude Include="view\CameraStrategy.h" />
-    <ClInclude Include="view\GameWindowGLFW.h" />
-    <ClInclude Include="view\gl.h" />
+    <ClInclude Include="view\DirectXRenderer.h" />
+    <ClInclude Include="view\GameWindowDirectX.h" />
     <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IInput.h" />
-    <ClInclude Include="view\InputGLFW.h" />
+    <ClInclude Include="view\InputDirectX.h" />
     <ClInclude Include="view\IParticleEffecth.h" />
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\IShaderManager.h" />
@@ -251,13 +250,12 @@
     <ClInclude Include="view\IViewHelper.h" />
     <ClInclude Include="view\KeyDefines.h" />
     <ClInclude Include="view\Matrix4.h" />
-    <ClInclude Include="view\OpenGLRenderer.h" />
     <ClInclude Include="view\Particle.h" />
     <ClInclude Include="view\ParticleEffect.h" />
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\ParticleTracer.h" />
-    <ClInclude Include="view\ShaderManagerOpenGL.h" />
+    <ClInclude Include="view\ShaderManagerDirectX.h" />
     <ClInclude Include="view\TextWriter.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />
@@ -292,12 +290,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\glew-1.12.0\build\vc12\glew_static.vcxproj">
-      <Project>{664e6f0d-6784-4760-9565-d54f8eb1edf4}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\glfw\glfw.vcxproj">
-      <Project>{a1e46d6e-6f4c-4974-8fda-17203ff36f1e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\LUA\LUA.vcxproj">
       <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>

@@ -18,6 +18,9 @@ CUITheme::CUITheme()
 		textfieldColor[i] = 1.0f;
 		text.color[i] = 0.0f;
 	}
+	defaultColor[3] = 1.0f;
+	textfieldColor[3] = 1.0f;
+	text.color[3] = 1.0f;
 	//text
 	text.font = "times.ttf";
 	text.fontSize = 18;
@@ -53,6 +56,7 @@ CUITheme::CUITheme()
 	list.selectionColor[0] = 0.2f;
 	list.selectionColor[1] = 0.2f;
 	list.selectionColor[2] = 1.0f;
+	list.selectionColor[3] = 1.0f;
 	//checkbox
 	checkbox.texCoord[0] = 0.121f;
 	checkbox.texCoord[1] = 0.789f;
@@ -70,6 +74,7 @@ CUITheme::CUITheme()
 	edit.selectionColor[0] = 0.0f;
 	edit.selectionColor[1] = 0.0f;
 	edit.selectionColor[2] = 1.0f;
+	edit.selectionColor[3] = 1.0f;
 	//radiogroup
 	radiogroup.texCoord[0] = 0.379f;
 	radiogroup.texCoord[1] = 0.793f;

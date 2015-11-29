@@ -99,7 +99,7 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	const float * vertex = vertices.empty() ? nullptr : &vertices.data()->x;
 	const float * normal = normals.empty() || vertexOnly ? nullptr : &normals.data()->x;
 	const float * texCoord = m_textureCoords.empty() || vertexOnly ? nullptr : &m_textureCoords.data()->x;
-	auto buffer = renderer.CreateVertexBuffer(vertex, normal, texCoord);
+	auto buffer = renderer.CreateVertexBuffer(vertex, normal, texCoord, vertices.size() * 3);
 	buffer->Bind();
 	renderer.PushMatrix();
 	renderer.Rotate(m_rotX, 1.0, 0.0, 0.0);//causes transparent models

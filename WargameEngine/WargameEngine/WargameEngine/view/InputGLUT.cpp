@@ -102,35 +102,6 @@ void CInputGLUT::OnKeyboardUp(unsigned char key, int , int)
 	}
 }
 
-int SpecialToKeyCode(int special)
-{
-	if(special >= GLUT_KEY_F1 && special <= GLUT_KEY_F12)
-	{
-		return 112 + special - GLUT_KEY_F1;
-	}
-	if(special >= GLUT_KEY_LEFT && special <= GLUT_KEY_DOWN)
-	{
-		return 37 + special - GLUT_KEY_LEFT;
-	}
-	if(special == GLUT_KEY_PAGE_UP || special == GLUT_KEY_PAGE_DOWN)
-	{
-		return 33 + special - GLUT_KEY_PAGE_UP;
-	}
-	if(special == GLUT_KEY_END)
-	{
-		return 35;
-	}
-	if (special == GLUT_KEY_HOME)
-	{
-		return 36;
-	}
-	if (special == GLUT_KEY_INSERT)
-	{
-		return 45;
-	}
-	return 0;
-}
-
 CInputGLUT::CInputGLUT()
 {
 	m_signals = std::make_unique<CInputGLUT::sSignals>();
@@ -214,14 +185,12 @@ void CInputGLUT::EnableCursor(bool enable /*= true*/)
 
 void CInputGLUT::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
 {
-	int keycode = SpecialToKeyCode(key);
-	m_signals->m_onKeyDown(keycode, ::GetModifiers());
+	m_signals->m_onKeyDown(key, ::GetModifiers());
 }
 
 void CInputGLUT::OnSpecialKeyRelease(int key, int, int)
 {
-	int keycode = SpecialToKeyCode(key);
-	m_signals->m_onKeyUp(keycode, ::GetModifiers());
+	m_signals->m_onKeyUp(key, ::GetModifiers());
 }
 
 void CInputGLUT::OnPassiveMouseMove(int x, int y)

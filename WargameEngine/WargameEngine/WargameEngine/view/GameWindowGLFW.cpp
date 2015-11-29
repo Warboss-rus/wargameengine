@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include "GameWindowGLFW.h"
 #include "InputGLFW.h"
+#include "OpenGLRenderer.h"
 
 static CGameWindowGLFW* g_instance = nullptr;
 bool CGameWindowGLFW::m_visible = true;
@@ -34,19 +35,8 @@ void CGameWindowGLFW::OnShutdown(GLFWwindow * window)
 	g_instance->m_window = nullptr;
 }
 
-void CGameWindowGLFW::Init()
+void CGameWindowGLFW::LaunchMainLoop()
 {
-	g_instance = this;
-
-	glfwInit();
-	glfwWindowHint(GLFW_SAMPLES, 16);
-
-	CreateNewWindow();
-	
-	glewInit();
-
-	//glfwSwapInterval(1);
-
 	while (m_window && !glfwWindowShouldClose(m_window))
 	{
 		if (m_visible)
@@ -88,6 +78,23 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
 }
 
+CGameWindowGLFW::CGameWindowGLFW()
+{
+	g_instance = this;
+
+	glfwInit();
+	glfwWindowHint(GLFW_SAMPLES, 16);
+
+	CreateNewWindow();
+
+	m_renderer = std::make_unique<COpenGLRenderer>();
+
+	glewInit();
+
+	//glfwSwapInterval(1);
+
+}
+
 void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
 {
 	m_onDraw = handler;
@@ -118,37 +125,6 @@ void CGameWindowGLFW::ToggleFullscreen()
 	CreateNewWindow(glfwGetPrimaryMonitor());
 }
 
-void CGameWindowGLFW::Enter2DMode()
-{
-	if (!m_2dMode)
-	{
-		m_2dMode = true;
-		glEnable(GL_BLEND);
-		glPushMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		int width, height;
-		glfwGetFramebufferSize(m_window, &width, &height);
-		glOrtho(0, width, height, 0, -1, 1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-	}
-}
-
-void CGameWindowGLFW::Leave2DMode()
-{
-	if (m_2dMode)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-		glDisable(GL_BLEND);
-		m_2dMode = false;
-	}
-}
-
 void CGameWindowGLFW::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 {
 	if (enable)
@@ -158,13 +134,19 @@ void CGameWindowGLFW::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 	glfwWindowHint(GLFW_SAMPLES, level);
 }
 
-IInput& CGameWindowGLFW::GetInput()
+IInput& CGameWindowGLFW::ResetInput()
 {
+	m_input = std::make_unique<CInputGLFW>(m_window);
 	return *m_input;
 }
 
-void CGameWindowGLFW::ResetInput()
+IRenderer& CGameWindowGLFW::GetRenderer()
 {
-	m_input = std::make_unique<CInputGLFW>(m_window);
+	return *m_renderer;
+}
+
+IViewHelper& CGameWindowGLFW::GetViewHelper()
+{
+	return *m_renderer;
 }
 

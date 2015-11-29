@@ -14,13 +14,8 @@
 #include "../UI/UIElement.h"
 #include "../SoundPlayerFMod.h"
 #ifdef DIRECTX
-
-#else
-#include "OpenGLRenderer.h"
-#define RENDERER_CLASS COpenGLRenderer
-#endif
-#ifdef DIRECTX
-
+#include "GameWindowDirectX.h"
+#define WINDOW_CLASS CGameWindowDirectX
 #elif GLFW
 #include "GameWindowGLFW.h"
 #define WINDOW_CLASS CGameWindowGLFW
@@ -59,8 +54,9 @@ CGameView::~CGameView()
 }
 
 CGameView::CGameView(void)
-	: m_renderer(make_unique<RENDERER_CLASS>())
-	, m_viewHelper(dynamic_cast<IViewHelper*>(m_renderer.get()))
+	: m_window(make_unique<WINDOW_CLASS>())
+	, m_renderer(&m_window->GetRenderer())
+	, m_viewHelper(&m_window->GetViewHelper())
 	, m_shaderManager(m_renderer->CreateShaderManager())
 	, m_textWriter(make_unique<CTextWriter>(*m_renderer))
 	, m_particles(*m_renderer)
@@ -75,21 +71,19 @@ void CGameView::Init()
 {
 	setlocale(LC_ALL, ""); 
 	setlocale(LC_NUMERIC, "english");
-
-	m_window = make_unique<WINDOW_CLASS>();
 	
 	m_vertexLightning = false;
 	m_shadowMap = false;
-	m_camera = make_unique<CCameraStrategy>(0.0, 0.0, 2.8, 0.5);
+	m_camera = make_unique<CCameraStrategy>(100.0, 100.0, 2.8, 0.5);
 	m_tableList = 0;
 	m_tableListShadow = 0;
+
+	InitInput();
 
 	m_gameController = make_unique<CGameController>(*m_gameModel);
 	m_gameController->Init();
 	m_soundPlayer = std::make_unique<CSoundPlayerFMod>();
 	m_soundPlayer->Init();
-
-	InitInput();
 
 	m_window->DoOnDrawScene([this] {
 		DrawShadowMap();
@@ -99,7 +93,7 @@ void CGameView::Init()
 	m_window->DoOnResize([this](int width, int height) {m_ui->Resize(height, width);});
 	m_window->DoOnShutdown(FreeInstance);
 
-	m_window->Init();
+	m_window->LaunchMainLoop();
 }
 
 void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ)
@@ -115,8 +109,7 @@ static const string g_controllerTag = "controller";
 
 void CGameView::InitInput()
 {
-	m_window->ResetInput();
-	m_input = &m_window->GetInput();
+	m_input = &m_window->ResetInput();
 	m_camera->SetInput(*m_input);
 	//UI
 	m_input->DoOnLMBDown([this](int x, int y) {
@@ -223,9 +216,12 @@ void CGameView::InitInput()
 
 void CGameView::DrawUI()
 {
-	m_window->Enter2DMode();
+	m_viewHelper->SetUpViewport2D();
+	m_renderer->PushMatrix();
+	m_renderer->ResetViewMatrix();
 	m_ui->Draw();
-	m_window->Leave2DMode();
+	m_renderer->PopMatrix();
+	m_viewHelper->RestoreViewport();
 }
 
 void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation, IRenderer & renderer)
@@ -407,7 +403,6 @@ void CGameView::DrawObjects(void)
 		m_renderer->PopMatrix();
 	}
 	m_shaderManager->UnBindProgram();
-	m_viewHelper->EnableBlending(false);
 	m_viewHelper->EnableVertexLightning(false);
 	for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
 	{
@@ -653,10 +648,15 @@ float CGameView::GetMaxAnisotropy() const
 	return m_viewHelper->GetMaximumAnisotropyLevel();
 }
 
+void CGameView::SetAnisotropyLevel(float level)
+{
+	m_viewHelper->GetTextureManager().SetAnisotropyLevel(level);
+}
+
 void CGameView::ClearResources()
 {
 	m_modelManager = CModelManager(*m_renderer, *m_gameModel);
-	((COpenGLRenderer&)*m_renderer).GetTextureManager().Reset();
+	m_viewHelper->GetTextureManager().Reset();
 	if (m_skybox)
 	{
 		m_skybox->ResetList();
@@ -679,13 +679,16 @@ void CGameView::Preload(string const& image)
 	if (!image.empty())
 	{
 		m_viewHelper->ClearBuffers(true, true);
-		m_window->Enter2DMode();
+		m_viewHelper->SetUpViewport2D();
+		m_renderer->PushMatrix();
+		m_renderer->ResetViewMatrix();
 		m_renderer->SetTexture(image);
 		float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
 		float height = 480.0f;//glutGet(GLUT_WINDOW_HEIGHT);
 		m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 		//glutSwapBuffers();
-		m_window->Leave2DMode();
+		m_renderer->PopMatrix();
+		m_viewHelper->RestoreViewport();
 	}
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
@@ -720,11 +723,14 @@ void CGameView::ToggleFullscreen() const
 
 void CGameView::DrawText3D(CVector3d const& pos, string const& text)
 {
-	m_window->Enter2DMode();
+	m_viewHelper->SetUpViewport2D();
+	m_renderer->PushMatrix();
+	m_renderer->ResetViewMatrix();
 	int x, y;
 	m_viewHelper->WorldCoordsToWindowCoords(pos, x, y);
 	m_textWriter->PrintText(x, y, "times.ttf", 24, text);
-	m_window->Leave2DMode();
+	m_renderer->PopMatrix();
+	m_viewHelper->RestoreViewport();
 }
 
 void CGameView::EnableLight(size_t index, bool enable)

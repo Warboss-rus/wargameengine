@@ -9,3 +9,5 @@ Thumbs.db
 *.user
 *.suo
 /WargameEngine/WargameEngine/WargameEngine/Debug_GLFW
+/WargameEngine/WargameEngine/WargameEngine/DebugDirectX
+/WargameEngine/WargameEngine/WargameEngine/ReleaseDirectX
