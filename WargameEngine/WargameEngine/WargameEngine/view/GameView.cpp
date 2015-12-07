@@ -585,7 +585,6 @@ void CGameView::EnableShadowMap(int size, float angle)
 		return;
 	}
 	m_shadowMapFBO->Bind();
-	//glDrawBuffer(GL_NONE);
 	try
 	{
 		m_shadowMapFBO->AssignTexture(*m_shadowMapTexture, CachedTextureType::DEPTH);

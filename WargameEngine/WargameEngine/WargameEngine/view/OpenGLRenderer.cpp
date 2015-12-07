@@ -757,8 +757,14 @@ void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureTy
 	{
 		throw std::runtime_error(extensionMap.at(type).second + " is not supported");
 	}
+	if (type == CachedTextureType::DEPTH)
+	{
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+	}
 	glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGlCachedTexture&)texture, 0);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
 		throw std::runtime_error("Error creating framebuffer");
 	}

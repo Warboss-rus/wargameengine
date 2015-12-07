@@ -74,8 +74,8 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	{
 		auto& shader = CGameView::GetInstance().lock()->GetShaderManager();
 		shader.SetUniformMatrix4("invBindMatrices", m_skeleton.size(), m_gpuInverseMatrices.data());
-		shader.SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT, 4, m_gpuWeight.data());
-		shader.SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT_INDEX, 4, m_gpuWeightIndexes.data());
+		shader.SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT, 4, m_gpuWeight.size(), m_gpuWeight.data());
+		shader.SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT_INDEX, 4, m_gpuWeightIndexes.size(), m_gpuWeightIndexes.data());
 	}
 	/*if (m_vbo)
 	{

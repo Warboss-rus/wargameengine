@@ -63,8 +63,6 @@ CShaderManagerDirectX::CShaderManagerDirectX(ID3D11Device *dev, CDirectXRenderer
 	:m_dev(dev), m_render(render)
 {
 	NewProgram();
-	CreateBuffer(&m_weightBuffer, sizeof(float) * 4 * 10000);
-	CreateBuffer(&m_weightIndexBuffer, sizeof(int) * 10000);
 }
 
 void CompileShader(std::string const& path, char * entryPoint, char * target, std::string const& defaultContent, ID3D10Blob ** blob)
@@ -100,7 +98,7 @@ void CShaderManagerDirectX::CreateConstantBuffer(unsigned int size, ID3D11Buffer
 	m_dev->CreateBuffer(&cbDesc, nullptr, constantBuffer);
 }
 
-void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size)
+void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size) const
 {
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -239,58 +237,37 @@ void CShaderManagerDirectX::SetUniformMatrix4(std::string const& uniform, int co
 	CopyConstantBufferData(begin, value, sizeof(float) * count * 16);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, float* values) const
+void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const
 {
-	ID3D11Buffer * buffer = m_weightBuffer;
-	unsigned int index = 0;
-	unsigned int stride = sizeof(float) * 4;
+	CComPtr<ID3D11Buffer> buffer;
+	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	if (attributeIndex == eVertexAttribute::WEIGHT)
-	{
-		buffer = m_weightBuffer;
-		index = 4;
-		stride = sizeof(float) * 4;
-	}
-	if (attributeIndex == eVertexAttribute::WEIGHT_INDEX)
-	{
-		buffer = m_weightIndexBuffer;
-		index = 3;
-		stride = sizeof(int);
-	}
-	CopyBufferData(m_weightBuffer, values, size);
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
+	CreateBuffer(&buffer, totalSize * sizeof(float));
+	CopyBufferData(buffer, values, totalSize * sizeof(float));
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const
+void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const
 {
-	ID3D11Buffer * buffer = m_weightBuffer;
-	unsigned int index = 4;
-	unsigned int stride = sizeof(float) * 4;
+	CComPtr<ID3D11Buffer> buffer;
+	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	if (attributeIndex == eVertexAttribute::WEIGHT_INDEX)
-	{
-		buffer = m_weightIndexBuffer;
-		index = 3;
-		stride = sizeof(int);
-	}
-	CopyBufferData(m_weightBuffer, values, size);
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
+	CreateBuffer(&buffer, totalSize * sizeof(int));
+	CopyBufferData(buffer, values, totalSize * sizeof(int));
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const
+void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, unsigned int* values) const
 {
-	ID3D11Buffer * buffer = m_weightBuffer;
-	unsigned int index = 4;
-	unsigned int stride = sizeof(float) * 4;
+	CComPtr<ID3D11Buffer> buffer;
+	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	if (attributeIndex == eVertexAttribute::WEIGHT_INDEX)
-	{
-		buffer = m_weightIndexBuffer;
-		index = 3;
-		stride = sizeof(int);
-	}
-	CopyBufferData(m_weightBuffer, values, size);
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer, &stride, &offset);
+	CreateBuffer(&buffer, totalSize * sizeof(unsigned int));
+	CopyBufferData(buffer, values, totalSize * sizeof(unsigned int));
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* /*defaultValue*/) const

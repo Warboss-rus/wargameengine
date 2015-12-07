@@ -31,9 +31,9 @@ public:
 
 	virtual void SetUniformMatrix4(std::string const& uniform, int count, float* value) const = 0;
 
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, float* values) const= 0;
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const = 0;
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const = 0;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const= 0;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const = 0;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, unsigned int* values) const = 0;
 
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, float* defaultValue) const = 0;
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, int* defaultValue) const = 0;

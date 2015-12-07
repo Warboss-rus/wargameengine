@@ -1,3 +1,4 @@
+#version 130
 attribute ivec4 weightIndices;
 attribute vec4 weights;
 

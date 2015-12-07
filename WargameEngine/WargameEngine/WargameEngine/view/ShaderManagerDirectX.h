@@ -31,9 +31,9 @@ public:
 	virtual void SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const override;
 	virtual void SetUniformMatrix4(std::string const& uniform, int count, float* value) const override;
 
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, float* values) const override;
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, int* values) const override;
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* values) const override;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const override;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const override;
+	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, unsigned int* values) const override;
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, float* defaultValue) const override;
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, int* defaultValue) const override;
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* defaultValue) const override;
@@ -47,13 +47,11 @@ private:
 	void CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer) const;
 	unsigned int GetVariableOffset(std::string const& buffer, std::string const& name, unsigned int * size = nullptr) const;
 	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
-	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size);
+	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size) const;
 	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
 
 	CComPtr<ID3D11Device> m_dev;
 	CDirectXRenderer * m_render;
-	CComPtr<ID3D11Buffer> m_weightBuffer;
-	CComPtr<ID3D11Buffer> m_weightIndexBuffer;
 	CComPtr<ID3D11VertexShader> pVS;    // the vertex shader
 	CComPtr<ID3D11PixelShader> pPS;     // the pixel shader
 	CComPtr<ID3D11GeometryShader> pGS;     // the geometry shader
