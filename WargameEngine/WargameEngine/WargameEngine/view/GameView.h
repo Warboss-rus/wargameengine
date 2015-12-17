@@ -1,4 +1,5 @@
 #include <memory>
+#include <functional>
 #include "ICamera.h"
 #include "IRenderer.h"
 #include "../ISoundPlayer.h"
@@ -15,11 +16,14 @@
 #include "../Ruler.h"
 #include "../TranslationManager.h"
 
+class IScriptHandler;
+
 struct sGameViewContext
 {
 	std::unique_ptr<IGameWindow> window;
 	std::unique_ptr<ISoundPlayer> soundPlayer;
 	std::unique_ptr<ITextWriter> textWriter;
+	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
 };
 
 class CGameView

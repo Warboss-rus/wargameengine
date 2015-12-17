@@ -487,5 +487,8 @@
     <ClInclude Include="view\ITextWriter.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="IScriptHandler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

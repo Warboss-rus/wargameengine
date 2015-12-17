@@ -178,6 +178,7 @@
     <ClInclude Include="controller\CommandPlayAnimation.h" />
     <ClInclude Include="controller\LUARegisterFunctions.h" />
     <ClInclude Include="controller\LUAScriptHandler.h" />
+    <ClInclude Include="IScriptHandler.h" />
     <ClInclude Include="ISoundPlayer.h" />
     <ClInclude Include="ITask.h" />
     <ClInclude Include="model\Bounding.h" />

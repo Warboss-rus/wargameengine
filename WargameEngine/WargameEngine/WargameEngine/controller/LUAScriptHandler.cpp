@@ -322,11 +322,11 @@ int CLUAScript::NewInstanceClass(void* instance, std::string const& className)
     lua_newtable(m_lua_state);      // Create table to represent instance. Stack:: table
 
     // Set first argument of new to metatable of instance
-    lua_pushvalue(m_lua_state,1);       //Stack: table, 1
+    lua_pushvalue(m_lua_state,1);       //Stack: table, table
     lua_setmetatable(m_lua_state, -2); //stack: table
 
     // Do function lookups in metatable. Need to change for properties to work
-    lua_pushvalue(m_lua_state,1); //Stack: table, 1
+    lua_pushvalue(m_lua_state,1); //Stack: table, table
     lua_setfield(m_lua_state, 1, "__index");  //Stack: table
 
 	void **s = (void **)lua_newuserdata(m_lua_state, sizeof(void *));//Stack: table, userdata
