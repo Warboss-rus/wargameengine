@@ -111,10 +111,10 @@
   <ItemGroup>
     <ClCompile Include="controller\CommandGoTo.cpp" />
     <ClCompile Include="controller\CommandPlayAnimation.cpp" />
-    <ClCompile Include="controller\LUARegisterFunctions.cpp" />
-    <ClCompile Include="controller\LUARegisterObject.cpp" />
-    <ClCompile Include="controller\LUARegisterUI.cpp" />
-    <ClCompile Include="controller\LUAScriptHandler.cpp" />
+    <ClCompile Include="controller\Network.cpp" />
+    <ClCompile Include="controller\ScriptRegisterFunctions.cpp" />
+    <ClCompile Include="controller\ScriptRegisterObject.cpp" />
+    <ClCompile Include="controller\ScriptRegisterUI.cpp" />
     <ClCompile Include="model\Bounding.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
     <ClCompile Include="model\Projectile.cpp" />
@@ -134,7 +134,6 @@
     <ClCompile Include="model\MovementLimiter.cpp" />
     <ClCompile Include="model\ObjectGroup.cpp" />
     <ClCompile Include="Module.cpp" />
-    <ClCompile Include="Network.cpp" />
     <ClCompile Include="OSSpecific.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp" />
@@ -173,12 +172,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncReadTask.h" />
+    <ClInclude Include="controller\IScriptHandler.h" />
     <ClInclude Include="controller\IStateManager.h" />
     <ClInclude Include="controller\CommandGoTo.h" />
     <ClInclude Include="controller\CommandPlayAnimation.h" />
-    <ClInclude Include="controller\LUARegisterFunctions.h" />
-    <ClInclude Include="controller\LUAScriptHandler.h" />
-    <ClInclude Include="ISoundPlayer.h" />
+    <ClInclude Include="controller\Network.h" />
+    <ClInclude Include="controller\ScriptFunctionsProtocol.h" />
+    <ClInclude Include="controller\ScriptObjectProtocol.h" />
+    <ClInclude Include="controller\ScriptRegisterFunctions.h" />
+    <ClInclude Include="controller\ScriptUIProtocol.h" />
     <ClInclude Include="ITask.h" />
     <ClInclude Include="model\Bounding.h" />
     <ClInclude Include="model\IBoundingBoxManager.h" />
@@ -186,7 +188,6 @@
     <ClInclude Include="model\Landscape.h" />
     <ClInclude Include="model\ObjectStatic.h" />
     <ClInclude Include="model\Projectile.h" />
-    <ClInclude Include="Network.h" />
     <ClInclude Include="OSSpecific.h" />
     <ClInclude Include="NetSocket.h" />
     <ClInclude Include="controller\CommandChangeGlobalProperty.h" />
@@ -215,13 +216,13 @@
     <ClInclude Include="UI\UIWindow.h" />
     <ClInclude Include="view\CameraFirstPerson.h" />
     <ClInclude Include="view\CameraStrategy.h" />
-    <ClInclude Include="view\gl.h" />
     <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IInput.h" />
     <ClInclude Include="view\IParticleEffecth.h" />
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\IShaderManager.h" />
     <ClInclude Include="view\IGameWindow.h" />
+    <ClInclude Include="view\ISoundPlayer.h" />
     <ClInclude Include="view\ITextureHelper.h" />
     <ClInclude Include="view\ITextWriter.h" />
     <ClInclude Include="view\IViewHelper.h" />

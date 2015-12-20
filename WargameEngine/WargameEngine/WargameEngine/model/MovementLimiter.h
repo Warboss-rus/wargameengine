@@ -1,7 +1,8 @@
+#pragma once
 #include <math.h>
 #include <string>
+#include <functional>
 #include "../view/Vector3.h"
-#pragma once
 class IMoveLimiter
 {
 public:
@@ -53,8 +54,9 @@ public:
 class CCustomMoveLimiter : public IMoveLimiter
 {
 public:
-	CCustomMoveLimiter(std::string const& function);
+	typedef std::function<void(CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation)> CustomMoveLimiterHandler;
+	CCustomMoveLimiter(CustomMoveLimiterHandler const& function);
 	void FixPosition(CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) const;
 private:
-	std::string m_function;
+	CustomMoveLimiterHandler m_function;
 };

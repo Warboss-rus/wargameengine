@@ -50,6 +50,7 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_gameModel(make_unique<CGameModel>())
 	, m_modelManager(*m_renderer, *m_gameModel)
 	, m_soundPlayer(move(context->soundPlayer))
+	, m_scriptHandlerFactory(context->scriptHandlerFactory)
 {
 	m_ui = make_unique<CUIElement>(*m_renderer);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
@@ -68,8 +69,8 @@ void CGameView::Init()
 
 	InitInput();
 
-	m_gameController = make_unique<CGameController>(*m_gameModel);
-	m_gameController->Init();
+	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
+	m_gameController->Init(*this);
 	m_soundPlayer->Init();
 
 	m_window->DoOnDrawScene([this] {
@@ -499,7 +500,7 @@ void CGameView::ResetController()
 	m_input->DeleteAllSignalsByTag(g_controllerTag);
 	m_gameController.reset();
 	m_gameModel = make_unique<CGameModel>();
-	m_gameController = make_unique<CGameController>(*m_gameModel);
+	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
 }
 
 ICamera * CGameView::GetCamera()
@@ -697,7 +698,7 @@ void CGameView::LoadModule(string const& module)
 		ResetController();
 		ClearResources();
 		m_ui->ClearChildren();
-		GetController().Init();
+		GetController().Init(*this);
 		InitInput();
 	});
 }

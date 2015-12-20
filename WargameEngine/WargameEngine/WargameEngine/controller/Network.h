@@ -1,10 +1,10 @@
 #pragma once
-#include "NetSocket.h"
 #include <vector>
 #include <memory>
 #include <map>
 #include <string>
 #include <functional>
+#include "../NetSocket.h"
 
 class IStateManager;
 class CCommandHandler;
@@ -34,7 +34,6 @@ private:
 	unsigned int GetAddress(std::shared_ptr<IObject> obj);
 	unsigned int GetAddress(IObject* obj);
 	std::unique_ptr<CNetSocket> m_socket;
-	std::vector<CNetSocket> m_children;
 	std::map<uintptr_t, std::shared_ptr<IObject>> m_translator;
 	bool m_host;
 	int m_netRecievedSize;

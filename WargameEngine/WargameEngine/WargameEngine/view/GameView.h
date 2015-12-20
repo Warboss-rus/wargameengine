@@ -1,7 +1,8 @@
 #include <memory>
+#include <functional>
 #include "ICamera.h"
 #include "IRenderer.h"
-#include "../ISoundPlayer.h"
+#include "ISoundPlayer.h"
 #include "IInput.h"
 #include "../UI/IUI.h"
 #include "../controller/GameController.h"
@@ -15,11 +16,14 @@
 #include "../Ruler.h"
 #include "../TranslationManager.h"
 
+class IScriptHandler;
+
 struct sGameViewContext
 {
 	std::unique_ptr<IGameWindow> window;
 	std::unique_ptr<ISoundPlayer> soundPlayer;
 	std::unique_ptr<ITextWriter> textWriter;
+	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
 };
 
 class CGameView
@@ -99,6 +103,7 @@ private:
 	CParticleSystem m_particles;
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;
+	std::function<std::unique_ptr<IScriptHandler>()> m_scriptHandlerFactory;
 
 	bool m_vertexLightning;
 	bool m_shadowMap;

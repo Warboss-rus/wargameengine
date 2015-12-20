@@ -1,14 +1,19 @@
 #include "GameController.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "LUARegisterFunctions.h"
+#include "ScriptRegisterFunctions.h"
 #include "../model/ObjectGroup.h"
 #include "../model/Object.h"
 #include "../view/IInput.h"
 #include "../Module.h"
 #include "../LogWriter.h"
 
-void CGameController::Init()
+CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler)
+	:m_model(model), m_scriptHandler(std::move(scriptHandler))
+{
+}
+
+void CGameController::Init(CGameView & view)
 {
 	m_commandHandler = std::make_unique<CCommandHandler>();
 	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model);
@@ -19,11 +24,10 @@ void CGameController::Init()
 		}
 	});
 
-	m_lua = std::make_unique<CLUAScript>();
-	RegisterFunctions(*m_lua);
-	RegisterUI(*m_lua);
-	RegisterObject(*m_lua);
-	m_lua->RunScript(sModule::script);
+	RegisterFunctions(*m_scriptHandler, *this);
+	RegisterUI(*m_scriptHandler, view);
+	RegisterObject(*m_scriptHandler, *this, m_model);
+	m_scriptHandler->RunScript(sModule::script);
 }
 
 void CGameController::Update()
@@ -38,7 +42,7 @@ void CGameController::Update()
 	m_model.Update();
 }
 
-CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0)
+CVector3d CGameController::RayToPoint(CVector3d const& begin, CVector3d const& end, double z)
 {
 	CVector3d result;
 	double a = (z - begin.z) / (end.z - begin.z);
@@ -183,11 +187,6 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 	}break;
 	}
 	if (m_selectionCallback) m_selectionCallback();
-}
-
-CGameController::CGameController(CGameModel& model)
-	:m_model(model)
-{
 }
 
 std::shared_ptr<IObject> CGameController::GetNearestObject(const double * start, const double * end)
@@ -362,7 +361,7 @@ void CGameController::SetSelectionCallback(std::function<void()> const& onSelect
 	m_selectionCallback = onSelect;
 }
 
-std::vector<char> PackProperties(std::map<std::string, std::string> const&properties)
+std::vector<char> CGameController::PackProperties(std::map<std::string, std::string> const&properties)
 {
 	std::vector<char> result;
 	result.resize(4);
@@ -546,11 +545,6 @@ void CGameController::SetRMBCallback(MouseButtonCallback const& callback)
 	m_rmbCallback = callback;
 }
 
-bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind const& two)
-{
-	return one.key < two.key;
-}
-
 void CGameController::BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func)
 {
 	sKeyBind keybind(key, shift, ctrl, alt);
@@ -626,3 +620,7 @@ CNetwork& CGameController::GetNetwork()
 	return *m_network;
 }
 
+bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind const& two)
+{
+	return one.key < two.key;
+}
