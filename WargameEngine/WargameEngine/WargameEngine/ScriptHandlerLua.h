@@ -1,5 +1,5 @@
 #pragma once
-#include "IScriptHandler.h"
+#include "controller/IScriptHandler.h"
 #include <map>
 
 struct lua_State;
@@ -10,11 +10,12 @@ public:
 	CScriptHandlerLua();
 	~CScriptHandlerLua();
 	virtual void RunScript(std::string const& path) override;
-	virtual void CallFunction(std::string const& funcName, FunctionArgument const& argument) override;
+	virtual void CallFunction(std::string const& funcName, FunctionArguments const& arguments = FunctionArguments()) override;
 	virtual void RegisterConstant(std::string const& name, std::string const& value) override;
 	virtual void RegisterFunction(std::string const& name, FunctionHandler const& handler) override;
 	virtual void RegisterMethod(std::string const& className, std::string const& methodName, MethodHandler const& handler) override;
 	virtual void RegisterProperty(std::string const& className, std::string const& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) override;
+	virtual void RegisterProperty(std::string const& className, std::string const& propertyName, GetterHandler const& getterHandler) override;
 	static void* GetUserData(lua_State *L, int index);
 private:
 	static int FunctionCallee(lua_State* L);

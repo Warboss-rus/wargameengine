@@ -1,18 +1,18 @@
-#include "CScriptHandlerLua.h"
+#include "ScriptHandlerLua.h"
 #include "..\LUA\lua.hpp"
 #include "LogWriter.h"
 
 class CLuaArguments : public IArguments
 {
 public:
-	CLuaArguments(lua_State* lua_state, int diff = 1)
+	CLuaArguments(lua_State* lua_state, int diff = 0)
 		:m_lua_state(lua_state), m_diff(diff)
 	{
 	}
 
 	virtual int GetCount() const override
 	{
-		return lua_gettop(m_lua_state) - m_diff + 1;
+		return lua_gettop(m_lua_state) - m_diff;
 	}
 
 	virtual bool GetBool(int index) const override
@@ -32,12 +32,17 @@ public:
 
 	virtual double GetDbl(int index) const override
 	{
-		return luaL_checknumber(m_lua_state, index + m_diff);
+		return static_cast<double>(luaL_checknumber(m_lua_state, index + m_diff));
 	}
 
 	virtual float GetFloat(int index) const override
 	{
 		return static_cast<float>(luaL_checknumber(m_lua_state, index + m_diff));
+	}
+
+	virtual long GetLong(int index) const override
+	{
+		return static_cast<long>(luaL_checkinteger(m_lua_state, index + m_diff));
 	}
 
 	virtual void* GetClassInstance(int index) const override
@@ -93,6 +98,11 @@ public:
 		return result;
 	}
 
+	virtual bool IsNil(int index) const override
+	{
+		return lua_isnil(m_lua_state, index + m_diff);
+	}
+
 	virtual bool IsBool(int index) const override
 	{
 		return lua_isboolean(m_lua_state, index + m_diff);
@@ -145,6 +155,17 @@ int CScriptHandlerLua::luaError(lua_State *L)
 	throw std::runtime_error(str);
 }
 
+template <class T>
+void PushLuaArray(lua_State* L, std::vector<T> const& arr, std::function<void(T const& value)> const& func)
+{
+	lua_createtable(L, arr.size(), 0);
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		func(arr[i]);
+		lua_rawseti(L, -2, i + 1);
+	}
+}
+
 int CScriptHandlerLua::PushReturnValue(lua_State *L, FunctionArgument const& arg)
 {
 	switch (arg.type)
@@ -164,11 +185,38 @@ int CScriptHandlerLua::PushReturnValue(lua_State *L, FunctionArgument const& arg
 	case FunctionArgument::Type::STRING:
 		lua_pushstring(L, static_cast<std::string*>(arg.data.get())->c_str());
 		break;
-	//TODO: arrays
+	case FunctionArgument::Type::WSTRING:
+	{
+		auto wstr = static_cast<std::wstring*>(arg.data.get());
+		lua_pushstring(L, std::string(wstr->begin(), wstr->end()).c_str());
+	}break;
+	case FunctionArgument::Type::INT_ARRAY:
+		PushLuaArray<int>(L, *static_cast<std::vector<int>*>(arg.data.get()), [L](int const& value) {lua_pushinteger(L, value);});
+		break;
+	case FunctionArgument::Type::DOUBLE_ARRAY:
+		PushLuaArray<double>(L, *static_cast<std::vector<double>*>(arg.data.get()), [L](double const& value) {lua_pushnumber(L, value);});
+		break;
+	case FunctionArgument::Type::STRING_ARRAY:
+		PushLuaArray<std::string>(L, *static_cast<std::vector<std::string>*>(arg.data.get()), [L](std::string const& value) {lua_pushstring(L, value.c_str());});
+		break;
 	case FunctionArgument::Type::CLASS_INSTANCE:
 	{
 		auto inst = static_cast<FunctionArgument::sClassInstance*>(arg.data.get());
 		CScriptHandlerLua::NewClassInstance(L, inst->ptr, inst->className);
+	}break;
+	case FunctionArgument::Type::ARRAY:
+		PushLuaArray<FunctionArgument>(L, *static_cast<std::vector<FunctionArgument>*>(arg.data.get()), [L](FunctionArgument const& arg) { PushReturnValue(L, arg); });
+		break;
+	case FunctionArgument::Type::MAP:
+	{
+		auto arr = static_cast<std::map<std::string, FunctionArgument>*>(arg.data.get());
+		lua_createtable(L, arr->size(), 0);
+		for (auto& pair : *arr)
+		{
+			lua_pushstring(L, pair.first.c_str());
+			PushReturnValue(L, pair.second);
+			lua_rawset(L, -3);
+		}
 	}break;
 	default:
 		lua_pushnil(L);
@@ -200,11 +248,14 @@ void CScriptHandlerLua::RunScript(std::string const& path)
 	}
 }
 
-void CScriptHandlerLua::CallFunction(std::string const& funcName, FunctionArgument const& argument)
+void CScriptHandlerLua::CallFunction(std::string const& funcName, FunctionArguments const& arguments)
 {
 	lua_getglobal(m_lua_state, funcName.c_str());
-	int argsCount = PushReturnValue(m_lua_state, argument);
-	int result = lua_pcall(m_lua_state, argsCount, 0, 0);
+	for (auto& arg : arguments)
+	{
+		PushReturnValue(m_lua_state, arg);
+	}
+	int result = lua_pcall(m_lua_state, arguments.size(), 0, 0);
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);
@@ -258,6 +309,16 @@ void CScriptHandlerLua::RegisterProperty(std::string const& className, std::stri
 	cl.setters.emplace(propertyName, setterHandler);
 }
 
+void CScriptHandlerLua::RegisterProperty(std::string const& className, std::string const& propertyName, GetterHandler const& getterHandler)
+{
+	if (m_classes.find(className) == m_classes.end())
+	{
+		RegisterClass(className);
+	}
+	auto& cl = m_classes[className];
+	cl.getters.emplace(propertyName, getterHandler);
+}
+
 int CScriptHandlerLua::FunctionCallee(lua_State* L)
 {
 	auto ptr = static_cast<CScriptHandlerLua*>(lua_touserdata(L, lua_upvalueindex(1)));
@@ -282,34 +343,8 @@ int CScriptHandlerLua::FunctionCallee(lua_State* L)
 	}
 }
 
-std::string DumpStack(lua_State* L)
-{
-	std::string result;
-	int i;
-	int top = lua_gettop(L);
-	for (i = 1; i <= top; i++) {  /* repeat for each level */
-		int t = lua_type(L, i);
-		result += lua_typename(L, t);
-		if (t == LUA_TTABLE)
-		{
-			for (int j = 0;;j++)
-			{
-				lua_rawgeti(L, i, j);
-				int t = lua_type(L, -1);
-				result += " ";
-				result += lua_typename(L, t);
-				lua_pop(L, 1);
-				if (t == LUA_TNIL) break;
-			}
-		}
-		result += '\n';
-	}
-	return result;
-}
-
 int CScriptHandlerLua::MethodCallee(lua_State* L)
 {
-	auto stack = DumpStack(L);
 	void* instance;
 	sLuaClass* cl;
 	int result = GetClassAndInstance(L, &instance, &cl);
@@ -321,7 +356,7 @@ int CScriptHandlerLua::MethodCallee(lua_State* L)
 	{
 		try
 		{
-			CLuaArguments args(L, 2);
+			CLuaArguments args(L, 1);
 			return PushReturnValue(L, method->second(instance, args));
 		}
 		catch (std::exception const& e)
