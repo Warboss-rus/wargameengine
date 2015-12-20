@@ -5,10 +5,6 @@
 #include <cstring>
 #include "OSSpecific.h"
 #include <time.h>
-#ifdef _WINDOWS
-#include <windows.h>
-#include "Plugin.h"
-
 #ifdef DIRECTX
 #include "view\GameWindowDirectX.h"
 #define WINDOW_CLASS CGameWindowDirectX
@@ -21,7 +17,9 @@
 #endif
 #include "SoundPlayerFMod.h"
 #include "view\TextWriter.h"
-#include "CScriptHandlerLua.h"
+#include "ScriptHandlerLua.h"
+#ifdef _WINDOWS
+#include <windows.h>
 
 int WINAPI WinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {

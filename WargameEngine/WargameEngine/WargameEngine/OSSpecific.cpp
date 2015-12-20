@@ -1,8 +1,8 @@
 #include "OSSpecific.h"
 #include "LogWriter.h"
 #ifdef _WINDOWS
-#include <direct.h>
 #include <Windows.h>
+#include <direct.h>
 
 void ChangeWorkingDirectory(std::string const& path)
 {

@@ -2,7 +2,7 @@
 #include <functional>
 #include "ICamera.h"
 #include "IRenderer.h"
-#include "../ISoundPlayer.h"
+#include "ISoundPlayer.h"
 #include "IInput.h"
 #include "../UI/IUI.h"
 #include "../controller/GameController.h"
@@ -103,6 +103,7 @@ private:
 	CParticleSystem m_particles;
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;
+	std::function<std::unique_ptr<IScriptHandler>()> m_scriptHandlerFactory;
 
 	bool m_vertexLightning;
 	bool m_shadowMap;

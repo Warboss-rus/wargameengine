@@ -4,19 +4,21 @@
 #include <map>
 #include <functional>
 #include "IStateManager.h"
-#include "LUAScriptHandler.h"
+#include "IScriptHandler.h"
 #include "CommandHandler.h"
 #include "../model/GameModel.h"
 #include "../view/Vector3.h"
-#include "../Network.h"
+#include "Network.h"
+
+class CGameView;
 
 class CGameController : public IStateManager
 {
 public:
 	typedef std::function<bool(std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z)> MouseButtonCallback;
 
-	CGameController(CGameModel& model);
-	void Init();
+	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler);
+	void Init(CGameView & view);
 	void Update();
 
 	virtual std::vector<char> GetState(bool hasAdresses = false) const override;
@@ -63,6 +65,8 @@ private:
 	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
 	bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target);
 	int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject);
+	CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0);
+	static std::vector<char> PackProperties(std::map<std::string, std::string> const&properties);
 
 	CGameModel& m_model;
 	CVector3d m_selectedObjectCapturePoint;
@@ -71,7 +75,7 @@ private:
 	double m_selectedObjectPrevRotation;
 	std::unique_ptr<CVector3d> m_rotationPosBegin;
 
-	std::unique_ptr<CLUAScript> m_lua;
+	std::unique_ptr<IScriptHandler> m_scriptHandler;
 	std::unique_ptr<CCommandHandler> m_commandHandler;
 	std::unique_ptr<CNetwork> m_network;
 

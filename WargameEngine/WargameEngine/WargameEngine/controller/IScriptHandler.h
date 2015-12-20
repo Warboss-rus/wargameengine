@@ -3,6 +3,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <map>
 
 class IArguments
 {
@@ -14,6 +15,7 @@ public:
 	virtual bool GetBool(int index) const = 0;
 	virtual std::string GetStr(int index) const = 0;
 	virtual int GetInt(int index) const = 0;
+	virtual long GetLong(int index) const = 0;
 	virtual double GetDbl(int index) const = 0;
 	virtual float GetFloat(int index) const = 0;
 	virtual void* GetClassInstance(int index) const = 0;
@@ -28,6 +30,7 @@ public:
 	virtual bool IsIntArray(int index) const = 0;
 	virtual bool IsFloatArray(int index) const = 0;
 	virtual bool IsStrArray(int index) const = 0;
+	virtual bool IsNil(int index) const = 0;
 };
 
 struct FunctionArgument
@@ -53,17 +56,26 @@ struct FunctionArgument
 	FunctionArgument(std::string value)
 		: type(Type::STRING), data(std::make_shared<std::string>(value))
 	{}
+	FunctionArgument(std::wstring value)
+		: type(Type::WSTRING), data(std::make_shared<std::wstring>(value))
+	{}
 	FunctionArgument(std::vector<int> value)
 		: type(Type::INT_ARRAY), data(std::make_shared<std::vector<int>>(value))
 	{}
-	FunctionArgument(std::vector<float> value)
-		: type(Type::FLOAT_ARRAY), data(std::make_shared<std::vector<float>>(value))
+	FunctionArgument(std::vector<double> value)
+		: type(Type::DOUBLE_ARRAY), data(std::make_shared<std::vector<double>>(value))
 	{}
 	FunctionArgument(std::vector<std::string> value)
 		: type(Type::STRING_ARRAY), data(std::make_shared<std::vector<std::string>>(value))
 	{}
 	FunctionArgument(void* ptr, std::string const& className)
 		:type(Type::CLASS_INSTANCE), data(std::make_shared<sClassInstance>(ptr, className))
+	{}
+	FunctionArgument(std::vector<FunctionArgument> const& arr)
+		:type(Type::ARRAY), data(std::make_shared<std::vector<FunctionArgument>>(arr))
+	{}
+	FunctionArgument(std::map<std::string, FunctionArgument> const& map)
+		:type(Type::MAP), data(std::make_shared<std::map<std::string, FunctionArgument>>(map))
 	{}
 
 	enum class Type
@@ -74,10 +86,13 @@ struct FunctionArgument
 		FLOAT,
 		DOUBLE,
 		STRING,
+		WSTRING,
 		INT_ARRAY,
-		FLOAT_ARRAY,
+		DOUBLE_ARRAY,
 		STRING_ARRAY,
-		CLASS_INSTANCE
+		CLASS_INSTANCE,
+		ARRAY,
+		MAP
 	} type;
 	struct sClassInstance
 	{
@@ -89,6 +104,7 @@ struct FunctionArgument
 	};
 	std::shared_ptr<void> data;
 };
+typedef std::vector<FunctionArgument> FunctionArguments;
 
 class IScriptHandler
 {
@@ -96,7 +112,7 @@ public:
 	virtual ~IScriptHandler() {}
 
 	virtual void RunScript(std::string const& path) = 0;
-	virtual void CallFunction(std::string const& funcName, FunctionArgument const& argument) = 0;
+	virtual void CallFunction(std::string const& funcName, FunctionArguments const& arguments = FunctionArguments()) = 0;
 	virtual void RegisterConstant(std::string const& name, std::string const& value) = 0;
 	typedef std::function<FunctionArgument(IArguments const& args)> FunctionHandler;
 	virtual void RegisterFunction(std::string const& name, FunctionHandler const& handler) = 0;
@@ -105,4 +121,5 @@ public:
 	typedef std::function<void(void* instance, IArguments const& args)> SetterHandler;
 	typedef std::function<FunctionArgument(void* instance)> GetterHandler;
 	virtual void RegisterProperty(std::string const& className, std::string const& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) = 0;
+	virtual void RegisterProperty(std::string const& className, std::string const& propertyName, GetterHandler const& getterHandler) = 0;
 };

@@ -32,7 +32,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CScriptHandlerLua.cpp">
+    <ClCompile Include="ScriptHandlerLua.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -55,7 +55,7 @@
     <ClInclude Include="view\TextWriter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="CScriptHandlerLua.h">
+    <ClInclude Include="ScriptHandlerLua.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

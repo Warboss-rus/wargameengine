@@ -24,14 +24,14 @@
     <Filter Include="Source Files\controller\commands">
       <UniqueIdentifier>{6658bfbb-27ee-465f-a4df-d7c741985eb0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\controller\luaRegisters">
-      <UniqueIdentifier>{8ca9dadd-2879-42df-93e1-a9cc3a9686d7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\rapidxml">
       <UniqueIdentifier>{39bcbc2e-de4f-42e3-aef1-59a8dc028d8c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\view\Particles">
       <UniqueIdentifier>{6b5eae1d-58f0-4da4-8c2f-1fa1de237270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\controller\functionRegisters">
+      <UniqueIdentifier>{8ca9dadd-2879-42df-93e1-a9cc3a9686d7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -122,16 +122,10 @@
     <ClCompile Include="OSSpecific.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Network.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="view\ColladaModelFactory.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="controller\GameController.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\LUAScriptHandler.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="model\Object.cpp">
@@ -182,15 +176,6 @@
     <ClCompile Include="controller\CommandRotateObject.cpp">
       <Filter>Source Files\controller\commands</Filter>
     </ClCompile>
-    <ClCompile Include="controller\LUARegisterFunctions.cpp">
-      <Filter>Source Files\controller\luaRegisters</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\LUARegisterObject.cpp">
-      <Filter>Source Files\controller\luaRegisters</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\LUARegisterUI.cpp">
-      <Filter>Source Files\controller\luaRegisters</Filter>
-    </ClCompile>
     <ClCompile Include="controller\CommandHandler.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
@@ -217,6 +202,18 @@
     </ClCompile>
     <ClCompile Include="view\ParticleTracer.cpp">
       <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\ScriptRegisterFunctions.cpp">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\ScriptRegisterObject.cpp">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\ScriptRegisterUI.cpp">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\Network.cpp">
+      <Filter>Source Files\controller</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -247,9 +244,6 @@
     <ClInclude Include="NetSocket.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Network.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="OSSpecific.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -275,12 +269,6 @@
       <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\GameController.h">
-      <Filter>Source Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\LUARegisterFunctions.h">
-      <Filter>Source Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\LUAScriptHandler.h">
       <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandChangeGlobalProperty.h">
@@ -385,9 +373,6 @@
     <ClInclude Include="view\GameView.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\gl.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -428,9 +413,6 @@
       <Filter>Source Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ISoundPlayer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Signal.h">
@@ -487,8 +469,26 @@
     <ClInclude Include="view\ITextWriter.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="IScriptHandler.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="controller\IScriptHandler.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ScriptRegisterFunctions.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ScriptFunctionsProtocol.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ScriptObjectProtocol.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ISoundPlayer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\Network.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ScriptUIProtocol.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

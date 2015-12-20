@@ -32,6 +32,9 @@
     <ClCompile Include="SoundPlayerFMod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ScriptHandlerLua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="view\GameWindowGLFW.h">
@@ -50,6 +53,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="SoundPlayerFMod.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptHandlerLua.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

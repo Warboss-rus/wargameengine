@@ -1,10 +1,10 @@
 #include "Network.h"
 #include <string.h>
-#include "LogWriter.h"
-#include "model/GameModel.h"
-#include "model/Object.h"
-#include "controller/CommandHandler.h"
-#include "controller/IStateManager.h"
+#include "../LogWriter.h"
+#include "../model/GameModel.h"
+#include "../model/Object.h"
+#include "CommandHandler.h"
+#include "IStateManager.h"
 
 CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model)
 	:m_host(true)
@@ -43,7 +43,6 @@ void CNetwork::Client(const char * ip, unsigned short port)
 void CNetwork::Stop()
 {
 	m_socket.reset();
-	m_children.clear();
 	m_host = true;
 	m_netData = NULL;
 	m_netRecievedSize = 0;
