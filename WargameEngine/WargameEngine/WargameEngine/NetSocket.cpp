@@ -91,7 +91,7 @@ void LogError()
 
 }
 
-CNetSocket::CNetSocket(unsigned short port)//Server
+void CNetSocket::InitHost(unsigned short port)
 {
 	if(!InitSocket()) return;
 	m_socket = socket(AF_INET, SOCK_STREAM, 0/*IPPROTO_TCP*/);
@@ -139,7 +139,7 @@ CNetSocket::CNetSocket(unsigned short port)//Server
 	LogWriter::WriteLine(std::string("Net OK. Client ") + textAddr + " is accepted by the host.");
 }
 
-CNetSocket::CNetSocket(const char * ip, unsigned short port)//Client
+void CNetSocket::InitClient(const char * ip, unsigned short port)
 {
 	if (!InitSocket()) return;
 	m_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -173,7 +173,11 @@ CNetSocket::CNetSocket(const char * ip, unsigned short port)//Client
 	LogWriter::WriteLine("Net OK. Client is connected to the host.");
 }
 
-CNetSocket::CNetSocket(unsigned int socket, void* sockAddr) :m_socket(socket), m_sockAddr(sockAddr){}
+void CNetSocket::InitFromAnotherSocket(unsigned int socket, void* sockAddr)
+{
+	m_socket = socket;
+	m_sockAddr = sockAddr;
+}
 
 bool CNetSocket::ChangeAddress(const char* ip, unsigned short port)
 {
@@ -270,7 +274,7 @@ int CNetSocket::RecieveData(char * data, int maxLength)
 	}
 	if (count == SOCKET_ERROR)
 	{	
-                int wsError = GET_ERROR;
+        int wsError = GET_ERROR;
 		if (wsError != WSAEWOULDBLOCK)
 		{
 			LogError();

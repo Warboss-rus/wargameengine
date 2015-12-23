@@ -37,13 +37,14 @@ bool CUIElement::GetVisible() const
 	return m_visible;
 }
 
-CUIElement::CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer) : m_x(x), m_y(y), m_height(height), m_width(width),
-m_visible(true), m_parent(parent), m_focused(nullptr), m_renderer(renderer)
+CUIElement::CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) : m_x(x), m_y(y), m_height(height), m_width(width),
+m_visible(true), m_parent(parent), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter)
 {
 
 }
 
-CUIElement::CUIElement(IRenderer & renderer) :m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_windowHeight(640), m_windowWidth(640), m_renderer(renderer)
+CUIElement::CUIElement(IRenderer & renderer, ITextWriter & textWriter) 
+	:m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_windowHeight(640), m_windowWidth(640), m_renderer(renderer), m_textWriter(textWriter)
 {
 
 }
@@ -164,35 +165,35 @@ void CUIElement::OnMouseMove(int x, int y)
 
 IUIElement* CUIElement::AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIButton(x, y, height, width, text, onClick, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIStaticText(x, y, height, width, text, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIStaticText(x, y, height, width, text, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewPanel(std::string const& name, int x, int y, int height, int width)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIPanel(x, y, height, width, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIPanel(x, y, height, width, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUICheckBox(x, y, height, width, text, initState, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUICheckBox(x, y, height, width, text, initState, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring> * items /*= nullptr*/)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIComboBox(x, y, height, width, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIComboBox(x, y, height, width, this, m_renderer, m_textWriter));
 	if(items)
 	{
 		for(auto i = items->begin(); i != items->end(); i++)
@@ -206,28 +207,28 @@ IUIElement* CUIElement::AddNewComboBox(std::string const& name, int x, int y, in
 
 IUIElement* CUIElement::AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIEdit(x, y, height, width, text, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIEdit(x, y, height, width, text, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewList(std::string const& name, int x, int y, int height, int width)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIList(x, y, height, width, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIList(x, y, height, width, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewRadioGroup(std::string const& name, int x, int y, int height, int width)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIRadioGroup(x, y, height, width, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIRadioGroup(x, y, height, width, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }
 
 IUIElement* CUIElement::AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText)
 {
-	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIWindow(height, width, headerText, this, m_renderer));
+	std::shared_ptr<IUIElement> item = std::shared_ptr<IUIElement>(new CUIWindow(height, width, headerText, this, m_renderer, m_textWriter));
 	AddChild(name, item);
 	return item.get();
 }

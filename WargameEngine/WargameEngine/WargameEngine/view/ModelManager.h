@@ -10,7 +10,7 @@ class CModelManager
 {
 public:
 	CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager);
-	void DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly = false);
+	void DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly = false, IShaderManager * shaderManager = nullptr);
 	void LoadIfNotExist(std::string const& path);
 	std::vector<std::string> GetAnimations(std::string const& path);
 	void EnableGPUSkinning(bool enable);

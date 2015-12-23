@@ -2,14 +2,14 @@
 #include "../model/ObjectInterface.h"
 #include "../view/3dModel.h"
 
-CCommandPlayAnimation::CCommandPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed)
+CCommandPlayAnimation::CCommandPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed)
 	:m_object(object), m_animation(animation), m_loopMode(loopMode), m_speed(speed)
 {
 }
 
 void CCommandPlayAnimation::Execute()
 {
-	m_object->PlayAnimation(m_animation, sAnimation::eLoopMode(m_loopMode), m_speed);
+	m_object->PlayAnimation(m_animation, eAnimationLoopMode(m_loopMode), m_speed);
 }
 
 void CCommandPlayAnimation::Rollback()

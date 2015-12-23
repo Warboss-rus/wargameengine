@@ -1,5 +1,4 @@
 #include "Ruler.h"
-#include "view/GameView.h"
 #include <math.h>
 #include <string>
 #include <cstring>

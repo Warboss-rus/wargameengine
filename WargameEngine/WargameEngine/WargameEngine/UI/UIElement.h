@@ -1,13 +1,14 @@
 #pragma once
 #include "IUI.h"
 #include <map>
-#include "../view/IRenderer.h"
+#include "..\view\IRenderer.h"
 
+class ITextWriter;
 
 class CUIElement : public IUIElement
 {
 public:
-	CUIElement(IRenderer & renderer);
+	CUIElement(IRenderer & renderer, ITextWriter & textWriter);
 	virtual void Draw() const override;
 	IUIElement* GetChildByName(std::string const& name) override;
 	virtual void DeleteChild(std::string const& name) override;
@@ -55,7 +56,7 @@ public:
 	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) override;
 	virtual IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) override;
 protected:
-	CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
+	CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element);
 	virtual bool PointIsOnElement(int x, int y) const;
 
@@ -71,5 +72,6 @@ protected:
 	IUIElement * m_focused;
 	std::shared_ptr<CUITheme> m_theme;
 	IRenderer & m_renderer;
+	ITextWriter & m_textWriter;
 	mutable std::unique_ptr<ICachedTexture> m_cache;
 };

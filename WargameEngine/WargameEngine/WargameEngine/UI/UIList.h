@@ -5,7 +5,7 @@
 class CUIList : public CUIElement
 {
 public:
-	CUIList(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
+	CUIList(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 	virtual void Draw() const override;
 	virtual bool LeftMouseButtonUp(int x, int y) override;
 	virtual bool LeftMouseButtonDown(int x, int y) override;

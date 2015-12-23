@@ -113,9 +113,6 @@
     <ClCompile Include="Module.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NetSocket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -151,9 +148,6 @@
     </ClCompile>
     <ClCompile Include="model\Bounding.cpp">
       <Filter>Source Files\model</Filter>
-    </ClCompile>
-    <ClCompile Include="TranslationManager.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="controller\CommandChangeGlobalProperty.cpp">
       <Filter>Source Files\controller\commands</Filter>
@@ -215,6 +209,9 @@
     <ClCompile Include="controller\Network.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
+    <ClCompile Include="view\TranslationManager.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -241,9 +238,6 @@
     <ClInclude Include="Module.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="NetSocket.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="OSSpecific.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -260,9 +254,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ThreadPool.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TranslationManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandHandler.h">
@@ -489,6 +480,18 @@
     </ClInclude>
     <ClInclude Include="controller\ScriptUIProtocol.h">
       <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\INetSocket.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Animation.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\TeamColor.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\TranslationManager.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

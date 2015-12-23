@@ -5,8 +5,9 @@
 #include "../model/Object.h"
 #include "CommandHandler.h"
 #include "IStateManager.h"
+#include "INetSocket.h"
 
-CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model)
+CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory)
 	:m_host(true)
 	, m_netData(NULL)
 	, m_netRecievedSize(0)
@@ -14,6 +15,7 @@ CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandle
 	, m_stateManager(stateManager)
 	, m_commandHandler(commandHandler)
 	, m_model(model)
+	, m_socketFactory(socketFactory)
 {
 }
 
@@ -24,7 +26,8 @@ void CNetwork::Host(unsigned short port)
 		LogWriter::WriteLine("Net error. Already connected");
 		return;
 	}
-	m_socket.reset(new CNetSocket(port));
+	m_socket = m_socketFactory();
+	m_socket->InitHost(port);
 	m_host = true;
 	SendState();
 }
@@ -36,7 +39,8 @@ void CNetwork::Client(const char * ip, unsigned short port)
 		LogWriter::WriteLine("Net error. Already connected");
 		return;
 	}
-	m_socket.reset(new CNetSocket(ip, port));
+	m_socket = m_socketFactory();
+	m_socket->InitClient(ip, port);
 	m_host = false;
 }
 
@@ -190,7 +194,7 @@ void CNetwork::Update()
 				memcpy(&size, data + 11, sizeof(unsigned int));
 				anim.resize(size);
 				memcpy(&anim[0], data + 15, size);
-				m_commandHandler.AddNewPlayAnimation(GetObject(address), anim, loop, speed, false);
+				m_commandHandler.AddNewPlayAnimation(GetObject(address), anim, static_cast<eAnimationLoopMode>(loop), speed, false);
 				LogWriter::WriteLine("PlayAnimation received");
 			}break;
 			case 7://GoTo

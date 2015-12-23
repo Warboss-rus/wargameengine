@@ -1,8 +1,8 @@
 #include "UIRadioGroup.h"
 #include "UIText.h"
 
-CUIRadioGroup::CUIRadioGroup(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer)
-	: CUIElement(x, y, height, width, parent, renderer), m_selected(0)
+CUIRadioGroup::CUIRadioGroup(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
+	: CUIElement(x, y, height, width, parent, renderer, textWriter), m_selected(0)
 {
 }
 
@@ -24,7 +24,7 @@ void CUIRadioGroup::Draw() const
 				{ CVector2f(0.0f, y), { 0.0f, y + m_theme->radiogroup.buttonSize }, { m_theme->radiogroup.buttonSize, y }, { m_theme->radiogroup.buttonSize, y + m_theme->radiogroup.buttonSize} },
 				{ CVector2f(texCoord), {texCoord[0], texCoord[3]}, {texCoord[2], texCoord[1]}, {texCoord[2], texCoord[3]} });
 				int intSize = static_cast<int>(m_theme->radiogroup.elementSize);
-				PrintText(m_renderer, static_cast<int>(m_theme->radiogroup.buttonSize) + 1, intSize * i, GetWidth(), intSize, m_items[i], m_theme->text);
+				PrintText(m_renderer, m_textWriter, static_cast<int>(m_theme->radiogroup.buttonSize) + 1, intSize * i, GetWidth(), intSize, m_items[i], m_theme->text);
 			}
 		}, GetWidth(), GetHeight()));
 	}

@@ -2,8 +2,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "UITheme.h"
 #include <functional>
+
+class CUITheme;
 
 class IUIElement
 {

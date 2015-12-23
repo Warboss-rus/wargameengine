@@ -1,7 +1,7 @@
 #include "UIComboBox.h"
 #include "UIText.h"
 
-CUIComboBox::CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer) : CUIElement(x, y, height, width, parent, renderer),
+CUIComboBox::CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) : CUIElement(x, y, height, width, parent, renderer, textWriter),
 m_selected(-1), m_expanded(false), m_pressed(false), m_scrollbar(m_theme, renderer)
 {
 }
@@ -29,7 +29,7 @@ void CUIComboBox::Draw() const
 			m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
 			if (m_selected >= 0)
 			{
-				PrintText(m_renderer, m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
+				PrintText(m_renderer, m_textWriter, m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
 			}
 
 			m_renderer.SetColor(m_theme->defaultColor);
@@ -51,7 +51,7 @@ void CUIComboBox::Draw() const
 				for (size_t i = m_scrollbar.GetPosition() / m_theme->combobox.elementSize; i < m_items.size(); ++i)
 				{
 					if (GetHeight() + m_theme->combobox.elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight) break;
-					PrintText(m_renderer, m_theme->combobox.borderSize, GetHeight() + m_theme->combobox.elementSize * i - m_scrollbar.GetPosition(), GetWidth(), m_theme->combobox.elementSize, m_items[i], m_theme->combobox.text);
+					PrintText(m_renderer, m_textWriter, m_theme->combobox.borderSize, GetHeight() + m_theme->combobox.elementSize * i - m_scrollbar.GetPosition(), GetWidth(), m_theme->combobox.elementSize, m_items[i], m_theme->combobox.text);
 				}
 
 				m_renderer.PushMatrix();

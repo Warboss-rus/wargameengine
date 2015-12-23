@@ -1,8 +1,8 @@
 #include "UIButton.h"
 #include "UIText.h"
 
-CUIButton::CUIButton(int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick, IUIElement * parent, IRenderer & renderer) :
-	CUIElement(x, y, height, width, parent, renderer), m_text(text), m_onClick(onClick), m_isPressed(false)
+CUIButton::CUIButton(int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) :
+	CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text), m_onClick(onClick), m_isPressed(false)
 {
 }
 
@@ -30,7 +30,7 @@ void CUIButton::Draw() const
 				{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
 				{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
 			}
-			PrintText(m_renderer, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->button.text);
+			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->button.text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();

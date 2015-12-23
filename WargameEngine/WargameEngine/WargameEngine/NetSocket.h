@@ -1,25 +1,22 @@
 #pragma once
 #include <string>
+#include "controller\INetSocket.h"
 
-class CNetSocket
+class CNetSocket : public INetSocket
 {
 public:
-	//Server
-	CNetSocket(unsigned short port = 0);
-	//Client
-	CNetSocket(const char * ip, unsigned short port = 0);
-	//serverToClient 
-	CNetSocket(unsigned int socket, void* sockAddr);
-	bool ChangeAddress(const char* ip, unsigned short port = 0);
-	bool ChangeAddress(unsigned short port = 0);
-	bool SendData(const char * data, int len) const;
-	//Return -1 then error occures, 0 then connection is closed by other side or number of bytes recieved.
-	int RecieveData(char* data, int maxLength);
+	virtual void InitHost(unsigned short port = 0) override;
+	virtual void InitClient(const char * ip, unsigned short port = 0) override;
+	virtual void InitFromAnotherSocket(unsigned int socket, void* sockAddr) override;
+	virtual bool SendData(const char * data, int len) const override;
+	virtual int RecieveData(char* data, int maxLength) override;
 	std::string GetIP() const;
 	unsigned short GetPort() const;
 	~CNetSocket();
 private:
 	bool InitSocket();
+	bool ChangeAddress(const char* ip, unsigned short port = 0);
+	bool ChangeAddress(unsigned short port = 0);
     unsigned int m_socket;
 	void * m_sockAddr;
 };

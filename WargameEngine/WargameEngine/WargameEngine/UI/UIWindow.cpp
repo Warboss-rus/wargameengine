@@ -1,9 +1,8 @@
 #include "UIWindow.h"
-#include "../view/GameView.h"
 #include "UIText.h"
 
-CUIWindow::CUIWindow(int width, int height, std::wstring const& headerText, IUIElement * parent, IRenderer & renderer)
-	:CUIElement(parent->GetWidth() / 2, parent->GetHeight() / 2, height, width, parent, renderer)
+CUIWindow::CUIWindow(int width, int height, std::wstring const& headerText, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
+	:CUIElement(parent->GetWidth() / 2, parent->GetHeight() / 2, height, width, parent, renderer, textWriter)
 	, m_headerText(headerText), m_dragging(false)
 {
 	m_x = (600 - m_width) / 2;
@@ -32,7 +31,7 @@ void CUIWindow::Draw() const
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(0, m_theme->window.headerHeight),{ GetWidth(), m_theme->window.headerHeight },{ 0, GetHeight() },{ GetWidth(), GetHeight() }, }, {});
-			PrintText(m_renderer, 0, 0, GetWidth() - m_theme->window.buttonSize, m_theme->window.headerHeight, m_headerText, m_theme->window.headerText);
+			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth() - m_theme->window.buttonSize, m_theme->window.headerHeight, m_headerText, m_theme->window.headerText);
 
 		}, GetWidth(), GetHeight()));
 	}

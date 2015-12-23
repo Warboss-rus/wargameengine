@@ -1,9 +1,10 @@
 #include "UIEdit.h"
 #include "UIText.h"
 #include "../view/KeyDefines.h"
+#include "../view/ITextWriter.h"
 
-CUIEdit::CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer) :
-	CUIElement(x, y, height, width, parent, renderer), m_isPressed(false), m_pos(0), m_beginSelection(0), m_text(text)
+CUIEdit::CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) :
+	CUIElement(x, y, height, width, parent, renderer, textWriter), m_isPressed(false), m_pos(0), m_beginSelection(0), m_text(text)
 {
 
 }
@@ -25,20 +26,20 @@ void CUIEdit::Draw() const
 			int fonty = (GetHeight() + m_theme->edit.text.fontSize) / 2;
 			if (IsFocused(nullptr))
 			{
-				int cursorpos = m_theme->edit.borderSize + GetStringWidth(m_theme->edit.text, m_text.substr(0, m_pos));
+				int cursorpos = m_theme->edit.borderSize + m_textWriter.GetStringWidth(m_theme->edit.text.font, m_theme->edit.text.fontSize, m_text.substr(0, m_pos));
 				m_renderer.SetColor(0, 0, 0);
 				m_renderer.RenderArrays(RenderMode::LINES, { CVector2i(cursorpos, fonty), { cursorpos, fonty - static_cast<int>(m_theme->edit.text.fontSize) } }, {});
 			}
 			if (m_pos != m_beginSelection)
 			{
 				m_renderer.SetColor(m_theme->edit.selectionColor);
-				int selectionBegin = GetStringWidth(m_theme->edit.text, m_text.substr(0, m_beginSelection));
-				int selectionEnd = GetStringWidth(m_theme->edit.text, m_text.substr(0, m_pos));
-				int fontHeight = GetStringHeight(m_theme->edit.text, m_text);
+				int selectionBegin = m_textWriter.GetStringWidth(m_theme->edit.text.font, m_theme->edit.text.fontSize, m_text.substr(0, m_beginSelection));
+				int selectionEnd = m_textWriter.GetStringWidth(m_theme->edit.text.font, m_theme->edit.text.fontSize, m_text.substr(0, m_pos));
+				int fontHeight = m_textWriter.GetStringHeight(m_theme->edit.text.font, m_theme->edit.text.fontSize, m_text);
 				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize + selectionBegin, fonty),
 				{ borderSize + selectionBegin, fonty - fontHeight }, {borderSize + selectionEnd, fonty - fontHeight }, {borderSize + selectionEnd, fonty} }, {});
 			}
-			PrintText(m_renderer, m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 * m_theme->edit.borderSize, m_text, m_theme->text);
+			PrintText(m_renderer, m_textWriter, m_theme->edit.borderSize, m_theme->edit.borderSize, m_width - 2 * m_theme->edit.borderSize, m_height - 2 * m_theme->edit.borderSize, m_text, m_theme->text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();
@@ -175,7 +176,7 @@ bool CUIEdit::LeftMouseButtonDown(int x, int y)
 void CUIEdit::SetCursorPos(int x)
 {
 	int pos = x - GetX();
-	if (pos > GetStringWidth(m_theme->edit.text, m_text))
+	if (pos > m_textWriter.GetStringWidth(m_theme->edit.text.font, m_theme->edit.text.fontSize, m_text))
 	{
 		m_pos = m_text.size();
 		return;
@@ -185,7 +186,7 @@ void CUIEdit::SetCursorPos(int x)
 	while (begin < end - 1)
 	{
 		size_t divider = (end + begin) / 2;
-		if (GetStringWidth(m_theme->edit.text, m_text.substr(0, divider)) > pos)
+		if (m_textWriter.GetStringWidth(m_theme->edit.text.font, m_theme->edit.text.fontSize, m_text.substr(0, divider)) > pos)
 		{
 			end = divider;
 		}

@@ -14,9 +14,10 @@
 #include "ParticleSystem.h"
 #include "SkyBox.h"
 #include "../Ruler.h"
-#include "../TranslationManager.h"
+#include "TranslationManager.h"
 
 class IScriptHandler;
+class INetSocket;
 
 struct sGameViewContext
 {
@@ -24,6 +25,7 @@ struct sGameViewContext
 	std::unique_ptr<ISoundPlayer> soundPlayer;
 	std::unique_ptr<ITextWriter> textWriter;
 	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
+	std::function<std::unique_ptr<INetSocket>()> socketFactory;
 };
 
 class CGameView
@@ -104,6 +106,7 @@ private:
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;
 	std::function<std::unique_ptr<IScriptHandler>()> m_scriptHandlerFactory;
+	std::function<std::unique_ptr<INetSocket>()> m_socketFactory;
 
 	bool m_vertexLightning;
 	bool m_shadowMap;

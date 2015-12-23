@@ -3,7 +3,7 @@
 class CUIEdit : public CUIElement
 {
 public:
-	CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer);
+	CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 	void Draw() const override;
 	bool OnCharacterInput(unsigned int key) override;
 	bool OnKeyPress(int key, int modifiers) override;

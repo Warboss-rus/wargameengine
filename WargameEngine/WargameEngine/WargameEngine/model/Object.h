@@ -27,14 +27,14 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter) override;
 	std::map<std::string, std::string> const& GetAllProperties() const override;
 	bool CastsShadow() const override;
-	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed) override;
+	void PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
 	void AddSecondaryModel(std::string const& model) override;
 	void RemoveSecondaryModel(std::string const& model) override;
 	size_t GetSecondaryModelsCount() const override;
 	std::string GetSecondaryModel(unsigned int index) const override;
-	sAnimation::eLoopMode GetAnimationLoop() const override;
+	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) override;
 	void Update() override;
@@ -54,7 +54,7 @@ private:
 	bool m_castsShadow;
 	std::string m_animation;
 	long long m_animationBegin;
-	sAnimation::eLoopMode m_animationLoop;
+	eAnimationLoopMode m_animationLoop;
 	float m_animationSpeed;
 	CVector3d m_goTarget;
 	double m_goSpeed;

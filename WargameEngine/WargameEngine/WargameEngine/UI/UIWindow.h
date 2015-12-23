@@ -4,7 +4,7 @@
 class CUIWindow : public CUIElement
 {
 public:
-	CUIWindow(int width, int height, std::wstring const& headerText, IUIElement * parent, IRenderer & renderer);
+	CUIWindow(int width, int height, std::wstring const& headerText, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 
 	virtual void Draw() const override;
 	virtual bool LeftMouseButtonDown(int x, int y) override;

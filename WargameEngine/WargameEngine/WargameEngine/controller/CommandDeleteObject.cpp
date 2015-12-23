@@ -1,4 +1,5 @@
 #include "CommandDeleteObject.h"
+#include "..\model\IGameModel.h"
 
 CCommandDeleteObject::CCommandDeleteObject(std::shared_ptr<IObject> object, IGameModel& model)
 	:m_pObject(object), m_model(model)

@@ -5,7 +5,7 @@
 class CUIComboBox : public CUIElement
 {
 public:
-	CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
+	CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 	virtual void Draw() const override;
 	virtual bool LeftMouseButtonDown(int x, int y) override;
 	virtual bool LeftMouseButtonUp(int x, int y) override;

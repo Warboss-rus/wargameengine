@@ -7,16 +7,17 @@
 #include "../view/IInput.h"
 #include "../Module.h"
 #include "../LogWriter.h"
+#include "../view/GameView.h"
 
 CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler)
 	:m_model(model), m_scriptHandler(std::move(scriptHandler))
 {
 }
 
-void CGameController::Init(CGameView & view)
+void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory)
 {
 	m_commandHandler = std::make_unique<CCommandHandler>();
-	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model);
+	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model, socketFactory);
 	m_commandHandler->DoOnNewCommand([this] (ICommand * command){
 		if (m_network->IsConnected())
 		{
@@ -25,8 +26,8 @@ void CGameController::Init(CGameView & view)
 	});
 
 	RegisterFunctions(*m_scriptHandler, *this);
-	RegisterUI(*m_scriptHandler, view);
-	RegisterObject(*m_scriptHandler, *this, m_model);
+	RegisterUI(*m_scriptHandler, view.GetUI(), view.GetTranslationManager());
+	RegisterObject(*m_scriptHandler, *this, m_model, view.GetModelManager());
 	m_scriptHandler->RunScript(sModule::script);
 }
 
@@ -600,7 +601,7 @@ void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::strin
 	m_commandHandler->AddNewChangeProperty(obj, key, value);
 }
 
-void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed)
+void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed)
 {
 	m_commandHandler->AddNewPlayAnimation(object, animation, loopMode, speed);
 }

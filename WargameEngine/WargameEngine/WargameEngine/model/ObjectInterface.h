@@ -2,10 +2,12 @@
 #include <string>
 #include <set>
 #include <map>
+#include <vector>
 #include "../view/Vector3.h"
-#include "MovementLimiter.h"
-#include "../view/3dModel.h"
-#include "../view/TextureManager.h"
+#include "Animation.h"
+#include "TeamColor.h"
+
+class IMoveLimiter;
 
 class IObject
 {
@@ -32,14 +34,14 @@ public:
 	virtual void SetMovementLimiter(IMoveLimiter * limiter) = 0;
 	virtual std::map<std::string, std::string> const& GetAllProperties() const = 0;
 	virtual bool CastsShadow() const = 0;
-	virtual void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop = sAnimation::NONLOOPING, float speed = 1.0f) = 0;
+	virtual void PlayAnimation(std::string const& animation, eAnimationLoopMode loop = eAnimationLoopMode::NONLOOPING, float speed = 1.0f) = 0;
 	virtual std::string GetAnimation() const = 0;
 	virtual float GetAnimationTime() const = 0;
 	virtual void AddSecondaryModel(std::string const& model) = 0;
 	virtual void RemoveSecondaryModel(std::string const& model) = 0;
 	virtual size_t GetSecondaryModelsCount() const = 0;
 	virtual std::string GetSecondaryModel(unsigned int index) const = 0;
-	virtual sAnimation::eLoopMode GetAnimationLoop() const = 0;
+	virtual eAnimationLoopMode GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;
 	virtual void Update() = 0;
 	virtual std::vector<sTeamColor> const& GetTeamColor() const = 0;

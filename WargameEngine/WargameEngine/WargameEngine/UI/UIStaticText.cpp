@@ -1,8 +1,8 @@
 #include "UIStaticText.h"
 #include "UIText.h"
 
-CUIStaticText::CUIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer)
-	: CUIElement(x, y, height, width, parent, renderer), m_text(text)
+CUIStaticText::CUIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
+	: CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text)
 {
 }
 
@@ -15,7 +15,7 @@ void CUIStaticText::Draw() const
 	if (!m_cache)
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
-			PrintText(m_renderer, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
+			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();

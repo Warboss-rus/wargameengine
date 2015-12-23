@@ -118,7 +118,6 @@
     <ClCompile Include="model\Bounding.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
     <ClCompile Include="model\Projectile.cpp" />
-    <ClCompile Include="NetSocket.cpp" />
     <ClCompile Include="controller\CommandChangeGlobalProperty.cpp" />
     <ClCompile Include="controller\CommandChangeProperty.cpp" />
     <ClCompile Include="controller\CommandCompound.cpp" />
@@ -139,7 +138,6 @@
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
-    <ClCompile Include="TranslationManager.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
     <ClCompile Include="UI\UIEdit.cpp" />
@@ -168,10 +166,12 @@
     <ClCompile Include="view\ParticleTracer.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
+    <ClCompile Include="view\TranslationManager.cpp" />
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AsyncReadTask.h" />
+    <ClInclude Include="controller\INetSocket.h" />
     <ClInclude Include="controller\IScriptHandler.h" />
     <ClInclude Include="controller\IStateManager.h" />
     <ClInclude Include="controller\CommandGoTo.h" />
@@ -182,14 +182,15 @@
     <ClInclude Include="controller\ScriptRegisterFunctions.h" />
     <ClInclude Include="controller\ScriptUIProtocol.h" />
     <ClInclude Include="ITask.h" />
+    <ClInclude Include="model\Animation.h" />
     <ClInclude Include="model\Bounding.h" />
     <ClInclude Include="model\IBoundingBoxManager.h" />
     <ClInclude Include="model\IGameModel.h" />
     <ClInclude Include="model\Landscape.h" />
     <ClInclude Include="model\ObjectStatic.h" />
     <ClInclude Include="model\Projectile.h" />
+    <ClInclude Include="model\TeamColor.h" />
     <ClInclude Include="OSSpecific.h" />
-    <ClInclude Include="NetSocket.h" />
     <ClInclude Include="controller\CommandChangeGlobalProperty.h" />
     <ClInclude Include="controller\CommandChangeProperty.h" />
     <ClInclude Include="controller\CommandCompound.h" />
@@ -210,7 +211,6 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="ThreadPool.h" />
-    <ClInclude Include="TranslationManager.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
     <ClInclude Include="UI\UIWindow.h" />
@@ -233,6 +233,7 @@
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
     <ClInclude Include="view\ParticleTracer.h" />
+    <ClInclude Include="view\TranslationManager.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />
     <ClInclude Include="controller\CommandCreateObject.h" />

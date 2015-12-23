@@ -1,5 +1,6 @@
 #include "CommandCreateObject.h"
 #include "../model/ObjectInterface.h"
+#include "../model/IGameModel.h"
 
 CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object, IGameModel& model):m_pObject(object), m_model(model) {}
 

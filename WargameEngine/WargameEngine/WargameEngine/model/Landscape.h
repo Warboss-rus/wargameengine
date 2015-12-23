@@ -1,8 +1,10 @@
+#pragma once
 #include <vector>
 #include <string>
 #include <memory>
+#include <functional>
 #include "ObjectStatic.h"
-#pragma once
+
 
 struct sDecal
 {
@@ -37,6 +39,7 @@ public:
 	void AddStaticObject(CStaticObject const& object);
 	size_t GetStaticObjectCount() const { return m_staticObjects.size(); }
 	CStaticObject const& GetStaticObject(unsigned int index) const { return m_staticObjects[index]; }
+	void DoOnUpdated(std::function<void()> const& onUpdated);
 private:
 	double m_width;
 	double m_depth;
@@ -51,4 +54,5 @@ private:
 	double m_horizontalTextureScale;
 	double m_verticalTextureScale;
 	std::vector<CStaticObject> m_staticObjects;
+	std::function<void()> m_onUpdated;
 };

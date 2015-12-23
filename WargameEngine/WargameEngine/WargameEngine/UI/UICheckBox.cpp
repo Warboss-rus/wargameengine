@@ -1,8 +1,8 @@
 #include "UICheckBox.h"
 #include "UIText.h"
 
-CUICheckBox::CUICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement * parent, IRenderer & renderer) :
-	CUIElement(x, y, height, width, parent, renderer), m_text(text), m_state(initState), m_pressed(false)
+CUICheckBox::CUICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) :
+	CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text), m_state(initState), m_pressed(false)
 {
 
 }
@@ -22,7 +22,7 @@ void CUICheckBox::Draw() const
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2f(0.0f, 0.0f), {0.0f, size}, {size, size}, {size, 0.0f} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
-			PrintText(m_renderer, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
+			PrintText(m_renderer, m_textWriter, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 		}, GetWidth(), GetHeight()));
 	}
 	m_cache->Bind();

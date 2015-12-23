@@ -4,17 +4,18 @@
 #include <map>
 #include <string>
 #include <functional>
-#include "../NetSocket.h"
+#include "INetSocket.h"
 
 class IStateManager;
 class CCommandHandler;
 class IObject;
 class IGameModel;
+typedef std::function<std::unique_ptr<INetSocket>()> SocketFactory;
 
 class CNetwork
 {
 public:
-	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model);
+	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory);
 	void Host(unsigned short port = 0);
 	void Client(const char * ip, unsigned short port = 0);
 	void Update();
@@ -33,7 +34,8 @@ public:
 private:
 	unsigned int GetAddress(std::shared_ptr<IObject> obj);
 	unsigned int GetAddress(IObject* obj);
-	std::unique_ptr<CNetSocket> m_socket;
+	SocketFactory m_socketFactory;
+	std::unique_ptr<INetSocket> m_socket;
 	std::map<uintptr_t, std::shared_ptr<IObject>> m_translator;
 	bool m_host;
 	int m_netRecievedSize;

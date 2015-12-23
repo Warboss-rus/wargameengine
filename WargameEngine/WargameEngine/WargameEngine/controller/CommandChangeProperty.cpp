@@ -1,5 +1,5 @@
 #include "CommandChangeProperty.h"
-#include "../model/GameModel.h"
+#include "..\model\ObjectInterface.h"
 
 CCommandChangeProperty::CCommandChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value) :m_key(key), m_newValue(value), m_pObject(object),
 	m_oldValue(m_pObject->GetProperty(key))

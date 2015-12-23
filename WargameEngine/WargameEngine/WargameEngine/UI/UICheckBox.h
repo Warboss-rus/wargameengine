@@ -3,7 +3,7 @@
 class CUICheckBox : public CUIElement
 {
 public:
-	CUICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement * parent, IRenderer & renderer);
+	CUICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 	void Draw() const override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	bool LeftMouseButtonDown(int x, int y) override;

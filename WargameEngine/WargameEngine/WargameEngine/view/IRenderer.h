@@ -6,6 +6,7 @@
 #include <memory>
 #include <functional>
 #include "IShaderManager.h"
+#include "../model/TeamColor.h"
 
 enum class RenderMode
 {
@@ -21,12 +22,6 @@ enum class CachedTextureType
 	RGBA,
 	ALPHA,
 	DEPTH
-};
-
-struct sTeamColor
-{
-	std::string suffix;
-	unsigned char color[3];
 };
 
 class IDrawingList

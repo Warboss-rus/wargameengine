@@ -1,7 +1,8 @@
 #include "ObjectInterface.h"
 #include <memory>
 #include <vector>
-#include "IGameModel.h"
+
+class IGameModel;
 
 class CObjectGroup : public IObject
 {
@@ -35,14 +36,14 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter) override;
 	std::map<std::string, std::string> const& GetAllProperties() const override;
 	bool CastsShadow() const override;
-	void PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed) override;
+	void PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
 	void AddSecondaryModel(std::string const& model) override;
 	void RemoveSecondaryModel(std::string const& model) override;
 	unsigned int GetSecondaryModelsCount() const override;
 	std::string GetSecondaryModel(unsigned int index) const override;
-	sAnimation::eLoopMode GetAnimationLoop() const override;
+	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) override;
 	void Update() override;

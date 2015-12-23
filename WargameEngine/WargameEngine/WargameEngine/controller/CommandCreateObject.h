@@ -1,9 +1,9 @@
 #include "ICommand.h"
 #include <string>
 #include <memory>
-#include "../model/IGameModel.h"
 
 class IObject;
+class IGameModel;
 
 class CCommandCreateObject : public ICommand
 {

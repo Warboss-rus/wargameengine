@@ -18,6 +18,7 @@
 #include "SoundPlayerFMod.h"
 #include "view\TextWriter.h"
 #include "ScriptHandlerLua.h"
+#include "NetSocket.h"
 #ifdef _WINDOWS
 #include <windows.h>
 
@@ -56,6 +57,9 @@ int main(int argc, char* argv[])
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
 	context.scriptHandlerFactory = []() {
 		return std::make_unique<CScriptHandlerLua>();
+	};
+	context.socketFactory = []() {
+		return std::make_unique<CNetSocket>();
 	};
 
 	CGameView::GetInstance(&context);

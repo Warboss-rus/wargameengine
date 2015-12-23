@@ -1,5 +1,4 @@
 #include "Landscape.h"
-#include "../view/GameView.h"
 
 CLandscape::CLandscape()
 	:m_width(10.0), m_depth(10.0), m_texture(""), m_pointsPerWidth(2), m_pointsPerDepth(2), m_stretchTexture(false), m_horizontalTextureScale(2.0), m_verticalTextureScale(2.0)
@@ -23,13 +22,13 @@ CLandscape::CLandscape(double width, double depth, std::string const& texture, u
 	}
 	m_deltaX = width / pointsPerWidth;
 	m_deltaY = depth / pointsPerDepth;
-	CGameView::GetInstance().lock()->ResetTable();
+	if (m_onUpdated) m_onUpdated();
 }
 
 void CLandscape::SetHeight(double x, double y, double value)
 {
 	m_heights[static_cast<size_t>(round((-m_width / 2 + x) * m_pointsPerWidth - m_depth / 2 + y))] = value;
-	CGameView::GetInstance().lock()->ResetTable();
+	if (m_onUpdated) m_onUpdated();
 }
 
 double CLandscape::GetHeight(double x, double y) const
@@ -40,7 +39,7 @@ double CLandscape::GetHeight(double x, double y) const
 void CLandscape::AddNewDecal(sDecal const& decal)
 {
 	m_decals.push_back(decal);
-	CGameView::GetInstance().lock()->ResetTable();
+	if (m_onUpdated) m_onUpdated();
 }
 
 bool CLandscape::isCoordsOnTable(double worldX, double worldY) const
@@ -76,5 +75,10 @@ double CLandscape::GetVerticalTextureScale() const
 void CLandscape::AddStaticObject(CStaticObject const& object)
 { 
 	m_staticObjects.push_back(object); 
-	CGameView::GetInstance().lock()->ResetTable();
+	if (m_onUpdated) m_onUpdated();
+}
+
+void CLandscape::DoOnUpdated(std::function<void()> const& onUpdated)
+{
+	m_onUpdated = onUpdated;
 }

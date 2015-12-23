@@ -18,7 +18,7 @@ public:
 	typedef std::function<bool(std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z)> MouseButtonCallback;
 
 	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler);
-	void Init(CGameView & view);
+	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory);
 	void Update();
 
 	virtual std::vector<char> GetState(bool hasAdresses = false) const override;
@@ -42,7 +42,7 @@ public:
 	std::shared_ptr<IObject> CreateObject(std::string const& model, double x, double y, double rotation);
 	void DeleteObject(std::shared_ptr<IObject> obj);
 	void SetObjectProperty(std::shared_ptr<IObject> obj, std::string const& key, std::string const& value);
-	void PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed);
+	void PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
 	void ObjectGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed);
 	CCommandHandler & GetCommandHandler();
 	CNetwork& GetNetwork();

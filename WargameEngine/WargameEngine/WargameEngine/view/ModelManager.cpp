@@ -98,10 +98,10 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly)
+void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly, IShaderManager * shaderManager)
 {
 	LoadIfNotExist(path);
-	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning);
+	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning, shaderManager);
 }
 
 std::vector<std::string> CModelManager::GetAnimations(std::string const& path)

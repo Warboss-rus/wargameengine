@@ -1,6 +1,7 @@
 #include "Object.h"
 #include <sys/timeb.h> 
 #include <algorithm>
+#include "MovementLimiter.h"
 
 CObject::CObject(std::string const& model, double x, double y, double z, double rotation, bool hasShadow)
 	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
@@ -126,7 +127,7 @@ bool CObject::CastsShadow() const
 	return m_castsShadow;
 }
 
-void CObject::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed)
+void CObject::PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed)
 {
 	m_animation = animation;
 	m_animationLoop = loop;
@@ -176,7 +177,7 @@ std::string CObject::GetSecondaryModel(unsigned int index) const
 	return m_secondaryModels[index];
 }
 
-sAnimation::eLoopMode CObject::GetAnimationLoop() const
+eAnimationLoopMode CObject::GetAnimationLoop() const
 {
 	return m_animationLoop;
 }
@@ -190,7 +191,7 @@ void CObject::GoTo(CVector3d const& coords, double speed, std::string const& ani
 {
 	m_goTarget = coords;
 	m_goSpeed = speed;
-	PlayAnimation(animation, sAnimation::LOOPING, animationSpeed);
+	PlayAnimation(animation, eAnimationLoopMode::LOOPING, animationSpeed);
 }
 
 void CObject::Update()
@@ -213,7 +214,7 @@ void CObject::Update()
 	if ((m_coords - m_goTarget).GetLength() < 0.0001)
 	{
 		m_goSpeed = 0.0;
-		PlayAnimation("", sAnimation::NONLOOPING, 0.0f);
+		PlayAnimation("", eAnimationLoopMode::NONLOOPING, 0.0f);
 	}
 }
 

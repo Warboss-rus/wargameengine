@@ -131,6 +131,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="NetSocket.cpp" />
     <ClCompile Include="ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SoundPlayerFMod.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="view\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="NetSocket.h" />
     <ClInclude Include="ScriptHandlerLua.h" />
     <ClInclude Include="SoundPlayerFMod.h" />
     <ClInclude Include="view\DirectXRenderer.h" />

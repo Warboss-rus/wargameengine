@@ -11,6 +11,8 @@
 #include "../OSSpecific.h"
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
+#include "../UI/UITheme.h"
+#include "TextureManager.h"
 
 using namespace std;
 using namespace placeholders;
@@ -51,8 +53,9 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_modelManager(*m_renderer, *m_gameModel)
 	, m_soundPlayer(move(context->soundPlayer))
 	, m_scriptHandlerFactory(context->scriptHandlerFactory)
+	, m_socketFactory(context->socketFactory)
 {
-	m_ui = make_unique<CUIElement>(*m_renderer);
+	m_ui = make_unique<CUIElement>(*m_renderer, *m_textWriter);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
 }
 
@@ -67,10 +70,14 @@ void CGameView::Init()
 	m_tableList = 0;
 	m_tableListShadow = 0;
 
+	m_gameModel->GetLandscape().DoOnUpdated([this] {
+		ResetTable();
+	});
+
 	InitInput();
 
 	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
-	m_gameController->Init(*this);
+	m_gameController->Init(*this, m_socketFactory);
 	m_soundPlayer->Init();
 
 	m_window->DoOnDrawScene([this] {
@@ -382,11 +389,11 @@ void CGameView::DrawObjects(void)
 		m_renderer->PushMatrix();
 		m_renderer->Translate(object->GetX(), object->GetY(), 0.0);
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, false);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_shaderManager.get());
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false, m_shaderManager.get());
 		}
 		m_renderer->PopMatrix();
 	}
@@ -399,7 +406,7 @@ void CGameView::DrawObjects(void)
 		m_renderer->Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
 		m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
 		if (!projectile.GetPathToModel().empty())
-			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false);
+			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_shaderManager.get());
 		if (!projectile.GetParticle().empty())
 			m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
 		m_renderer->PopMatrix();
@@ -419,7 +426,7 @@ void CGameView::DrawStaticObjects(bool shadowOnly)
 			m_renderer->PushMatrix();
 			m_renderer->Translate(object.GetX(), object.GetY(), object.GetZ());
 			m_renderer->Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
-			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly);
+			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_shaderManager.get());
 			m_renderer->PopMatrix();
 		}
 	}
@@ -465,11 +472,11 @@ void CGameView::DrawShadowMap()
 		m_renderer->PushMatrix();
 		m_renderer->Translate(object->GetX(), object->GetY(), object->GetZ());
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, true);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, true, m_shaderManager.get());
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, true);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, true, m_shaderManager.get());
 		}
 		m_renderer->PopMatrix();
 	}
@@ -698,7 +705,7 @@ void CGameView::LoadModule(string const& module)
 		ResetController();
 		ClearResources();
 		m_ui->ClearChildren();
-		GetController().Init(*this);
+		GetController().Init(*this, m_socketFactory);
 		InitInput();
 	});
 }

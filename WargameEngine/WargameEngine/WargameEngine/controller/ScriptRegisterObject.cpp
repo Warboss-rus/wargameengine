@@ -5,11 +5,12 @@
 #include "../controller/GameController.h"
 #include "../model/Object.h"
 #include "../model/ObjectGroup.h"
-#include "../view/GameView.h"
+#include "../view/ModelManager.h"
 #include <algorithm>
+#include "../model/MovementLimiter.h"
 
 
-void RegisterObject(IScriptHandler & handler, CGameController & controller, CGameModel & model)
+void RegisterObject(IScriptHandler & handler, CGameController & controller, CGameModel & model, CModelManager & modelManager)
 {
 	handler.RegisterMethod(CLASS_OBJECT, NEW_OBJECT, [&](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 4)
@@ -320,9 +321,9 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (n == 2) sloop = args.GetStr(2);
 		if (n == 3) speed = args.GetFloat(3);
 		transform(sloop.begin(), sloop.end(), sloop.begin(), ::tolower);
-		sAnimation::eLoopMode loop = sAnimation::NONLOOPING;
-		if (sloop == "looping") loop = sAnimation::LOOPING;
-		if (sloop == "holdend") loop = sAnimation::HOLDEND;
+		eAnimationLoopMode loop = eAnimationLoopMode::NONLOOPING;
+		if (sloop == "looping") loop = eAnimationLoopMode::LOOPING;
+		if (sloop == "holdend") loop = eAnimationLoopMode::HOLDEND;
 		if (!object)
 		{
 			throw std::runtime_error("needs to be called on valid object");
@@ -339,7 +340,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		std::vector<std::string> anims = CGameView::GetInstance().lock()->GetModelManager().GetAnimations(object->GetPathToModel());
+		std::vector<std::string> anims = modelManager.GetAnimations(object->GetPathToModel());
 		return anims;
 	});
 

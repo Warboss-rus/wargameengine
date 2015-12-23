@@ -4,6 +4,7 @@
 #include <memory>
 #include <functional>
 #include "CommandCompound.h"
+#include "..\model\Animation.h"
 
 class IObject;
 class IGameModel;
@@ -18,7 +19,7 @@ public:
 	void AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation, bool local = true);
 	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value, bool local = true);
 	void AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model, bool local = true);
-	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed, bool local = true);
+	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed, bool local = true);
 	void AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed, bool local = true);
 	void Undo();
 	void Redo();

@@ -1,5 +1,5 @@
 #include "ObjectGroup.h"
-#include "GameModel.h"
+#include "IGameModel.h"
 
 CObjectGroup::CObjectGroup(IGameModel & model) :m_current(0), m_model(model)
 {
@@ -227,7 +227,7 @@ bool CObjectGroup::CastsShadow() const
 	return m_children[m_current]->CastsShadow();
 }
 
-void CObjectGroup::PlayAnimation(std::string const& animation, sAnimation::eLoopMode loop, float speed)
+void CObjectGroup::PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed)
 {
 	for (size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -275,9 +275,9 @@ std::string CObjectGroup::GetSecondaryModel(unsigned int index) const
 	return m_children[m_current]->GetSecondaryModel(index);
 }
 
-sAnimation::eLoopMode CObjectGroup::GetAnimationLoop() const
+eAnimationLoopMode CObjectGroup::GetAnimationLoop() const
 {
-	if (m_children.empty()) return sAnimation::eLoopMode::NONLOOPING;
+	if (m_children.empty()) return eAnimationLoopMode::NONLOOPING;
 	return m_children[m_current]->GetAnimationLoop();
 }
 

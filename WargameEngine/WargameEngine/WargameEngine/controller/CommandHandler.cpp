@@ -76,7 +76,7 @@ void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::st
 	AddNewCommand(std::move(action), local);
 }
 
-void CCommandHandler::AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, int loopMode, float speed, bool local)
+void CCommandHandler::AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed, bool local)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandPlayAnimation>(object, animation, loopMode, speed);
 	action->Execute();

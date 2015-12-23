@@ -4,7 +4,7 @@
 class CUIRadioGroup : public CUIElement
 {
 public:
-	CUIRadioGroup(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer);
+	CUIRadioGroup(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 	void Draw() const override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	void AddItem(std::wstring const& str) override;

@@ -1,4 +1,5 @@
 #include "UIPanel.h"
+#include "UITheme.h"
 
 void CUIPanel::Draw() const
 {
