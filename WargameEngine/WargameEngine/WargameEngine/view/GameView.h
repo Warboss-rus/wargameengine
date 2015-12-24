@@ -37,14 +37,12 @@ public:
 
 	void ResetTable();
 	void CreateSkybox(double size, std::string const& textureFolder);
-	CGameController& GetController();
 	CGameModel& GetModel();
 	IUIElement * GetUI() const;
 	ICamera * GetCamera();
 	void SetCamera(ICamera * camera);
 	CModelManager& GetModelManager();
 	CParticleSystem& GetParticleSystem();
-	ITextWriter& GetTextWriter();
 	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();

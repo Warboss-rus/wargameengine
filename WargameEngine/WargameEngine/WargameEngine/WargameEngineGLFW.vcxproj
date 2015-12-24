@@ -56,18 +56,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew-1.12.0\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -121,7 +121,7 @@
     <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\glew-1.12.0\build\vc12\glew_static.vcxproj">
+    <ProjectReference Include="..\..\glew\build\vc12\glew_static.vcxproj">
       <Project>{664e6f0d-6784-4760-9565-d54f8eb1edf4}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\glfw\glfw.vcxproj">

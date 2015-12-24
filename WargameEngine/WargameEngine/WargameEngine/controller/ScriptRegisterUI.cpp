@@ -7,7 +7,7 @@
 
 void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManager & transMan)
 {
-	handler.RegisterMethod(CLASS_UI, NEW_BUTTON, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_BUTTON, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 7)
 			throw std::runtime_error("7 arguments expected(name, x, y, height, width, text, callback)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -26,7 +26,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(button, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_STATIC_TEXT, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_STATIC_TEXT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 6)
 			throw std::runtime_error("6 arguments expected (name, x, y, height, width, text");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -40,7 +40,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(text, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_PANEL, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_PANEL, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 arguments expected (name, x, y, height, width)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -53,7 +53,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(panel, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_CHECKBOX, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_CHECKBOX, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 7)
 			throw std::runtime_error("7 arguments expected(name, x, y, height, width, text, initState)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -68,7 +68,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(checkbox, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_COMBOBOX, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_COMBOBOX, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 arguments expected (name, x, y, height, width)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -81,7 +81,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(listbox, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_EDIT, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_EDIT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 6)
 			throw std::runtime_error("6 arguments expected (name, x, y, height, width, text)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -95,7 +95,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(edit, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_LIST, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_LIST, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 arguments expected (name, x, y, height, width)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -108,7 +108,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(listbox, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_RADIOGROUP, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_RADIOGROUP, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 arguments expected (name, x, y, height, width)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -121,7 +121,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(listbox, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, NEW_WINDOW, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, NEW_WINDOW, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 arguments expected (name, width, height, headerText, modal");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -134,7 +134,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(panel, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET_CHILD, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET_CHILD, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (childname)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -142,7 +142,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return FunctionArgument(c->GetChildByName(name), "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, SET_VISIBLE, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, SET_VISIBLE, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (visibility)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -150,14 +150,14 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET_VISIBLE, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET_VISIBLE, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetVisible();
 	});
 
-	handler.RegisterMethod(CLASS_UI, SET_TEXT, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, SET_TEXT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (text)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -165,21 +165,21 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET_TEXT, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET_TEXT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetText();
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET_STATE, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET_STATE, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetState();
 	});
 
-	handler.RegisterMethod(CLASS_UI, ADD_ITEM, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, ADD_ITEM, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (item)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -187,7 +187,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, DELETE_ITEM, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, DELETE_ITEM, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -203,21 +203,21 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET_SELECTED_INDEX, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET_SELECTED_INDEX, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetSelectedIndex() + 1;
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET_ITEMS_COUNT, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET_ITEMS_COUNT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return (long)c->GetItemsCount();
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET_ITEM, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET_ITEM, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -232,7 +232,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		}
 	});
 
-	handler.RegisterMethod(CLASS_UI, CLEAR_ITEMS, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, CLEAR_ITEMS, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -240,7 +240,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, SET_SELECTED_INDEX, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, SET_SELECTED_INDEX, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -256,7 +256,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, SET_ON_CHANGE_CALLBACK, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, SET_ON_CHANGE_CALLBACK, [&, uiRoot](void* instance, IArguments const& args) {
 		if(args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -273,7 +273,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, SET_ON_CLICK_CALLBACK, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, SET_ON_CLICK_CALLBACK, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -290,7 +290,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, SET_BACKGROUND_IMAGE, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, SET_BACKGROUND_IMAGE, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (image)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -299,13 +299,13 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, GET, [&](void* /*instance*/, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, GET, [&, uiRoot](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		return FunctionArgument(uiRoot, "UI");
 	});
 
-	handler.RegisterMethod(CLASS_UI, CLEAR_CHILDREN, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, CLEAR_CHILDREN, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -313,7 +313,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, DELETE_CHILD, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, DELETE_CHILD, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (name)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -322,7 +322,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterMethod(CLASS_UI, APPLY_THEME, [&](void* instance, IArguments const& args) {
+	handler.RegisterMethod(CLASS_UI, APPLY_THEME, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (theme file)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
@@ -333,40 +333,40 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
-	handler.RegisterProperty(CLASS_UI, PROPERTY_VISIBLE, [&](void* instance, IArguments const& args){
+	handler.RegisterProperty(CLASS_UI, PROPERTY_VISIBLE, [&, uiRoot](void* instance, IArguments const& args){
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected (visible)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		c->SetVisible(args.GetBool(1));
-	}, [&](void* instance) {
+	}, [&, uiRoot](void* instance) {
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetVisible();
 	});
 
-	handler.RegisterProperty(CLASS_UI, PROPERTY_TEXT, [&](void* instance, IArguments const& args) {
+	handler.RegisterProperty(CLASS_UI, PROPERTY_TEXT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected (text)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		c->SetText(transMan.GetTranslation(args.GetStr(1)));
-	}, [&](void* instance) {
+	}, [&, uiRoot](void* instance) {
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetText();
 	});
 
-	handler.RegisterProperty(CLASS_UI, PROPERTY_X, [&](void* instance) {
+	handler.RegisterProperty(CLASS_UI, PROPERTY_X, [&, uiRoot](void* instance) {
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetX();
 	});
 
-	handler.RegisterProperty(CLASS_UI, PROPERTY_Y, [&](void* instance) {
+	handler.RegisterProperty(CLASS_UI, PROPERTY_Y, [&, uiRoot](void* instance) {
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetY();
 	});
 
-	handler.RegisterProperty(CLASS_UI, PROPERTY_WIDTH, [&](void* instance) {
+	handler.RegisterProperty(CLASS_UI, PROPERTY_WIDTH, [&, uiRoot](void* instance) {
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetWidth();
 	});
 
-	handler.RegisterProperty(CLASS_UI, PROPERTY_HEIGHT, [&](void* instance) {
+	handler.RegisterProperty(CLASS_UI, PROPERTY_HEIGHT, [&, uiRoot](void* instance) {
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetHeight();
 	});

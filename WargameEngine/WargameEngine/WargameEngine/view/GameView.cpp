@@ -492,11 +492,6 @@ void CGameView::CreateSkybox(double size, string const& textureFolder)
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
 }
 
-CGameController& CGameView::GetController()
-{
-	return *m_gameController;
-}
-
 CGameModel& CGameView::GetModel()
 {
 	return *m_gameModel;
@@ -534,11 +529,6 @@ IUIElement * CGameView::GetUI() const
 CParticleSystem& CGameView::GetParticleSystem()
 {
 	return m_particles;
-}
-
-ITextWriter& CGameView::GetTextWriter()
-{
-	return *m_textWriter;
 }
 
 ISoundPlayer& CGameView::GetSoundPlayer()
@@ -705,7 +695,7 @@ void CGameView::LoadModule(string const& module)
 		ResetController();
 		ClearResources();
 		m_ui->ClearChildren();
-		GetController().Init(*this, m_socketFactory);
+		m_gameController->Init(*this, m_socketFactory);
 		InitInput();
 	});
 }

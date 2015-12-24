@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngine", "WargameEngine\WargameEngine.vcxproj", "{525B45EF-5FB2-495E-8F33-27363E097E50}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -17,8 +17,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MathLib", "MathLib\MathLib.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glew_static", "..\glew-1.12.0\build\vc12\glew_static.vcxproj", "{664E6F0D-6784-4760-9565-D54F8EB1EDF4}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw", "..\glfw\glfw.vcxproj", "{A1E46D6E-6F4C-4974-8FDA-17203FF36F1E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineGLFW", "WargameEngine\WargameEngineGLFW.vcxproj", "{C76D278D-0186-4B57-802C-1ADCFCDA7D80}"
@@ -26,6 +24,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineDirectX", "WargameEngine\WargameEngineDirectX.vcxproj", "{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineGLUT", "WargameEngine\WargameEngineGLUT.vcxproj", "{2F8D8554-D588-48AB-A183-88D376423755}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glew_static", "..\glew\build\vc12\glew_static.vcxproj", "{664E6F0D-6784-4760-9565-D54F8EB1EDF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,18 +88,6 @@ Global
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release-XP|Win32.Build.0 = Release-XP|Win32
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release-XP|x64.ActiveCfg = Release-XP|x64
 		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}.Release-XP|x64.Build.0 = Release-XP|x64
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|Win32.ActiveCfg = Debug|Win32
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|Win32.Build.0 = Debug|Win32
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|x64.ActiveCfg = Debug|x64
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|x64.Build.0 = Debug|x64
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|Win32.ActiveCfg = Release|Win32
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|Win32.Build.0 = Release|Win32
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|x64.ActiveCfg = Release|x64
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|x64.Build.0 = Release|x64
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|Win32.ActiveCfg = Release-XP|Win32
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|Win32.Build.0 = Release-XP|Win32
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|x64.ActiveCfg = Release MX|x64
-		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|x64.Build.0 = Release MX|x64
 		{A1E46D6E-6F4C-4974-8FDA-17203FF36F1E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{A1E46D6E-6F4C-4974-8FDA-17203FF36F1E}.Debug|Win32.Build.0 = Debug|Win32
 		{A1E46D6E-6F4C-4974-8FDA-17203FF36F1E}.Debug|x64.ActiveCfg = Debug|x64
@@ -139,6 +127,18 @@ Global
 		{2F8D8554-D588-48AB-A183-88D376423755}.Release-XP|Win32.ActiveCfg = Release-XP|Win32
 		{2F8D8554-D588-48AB-A183-88D376423755}.Release-XP|Win32.Build.0 = Release-XP|Win32
 		{2F8D8554-D588-48AB-A183-88D376423755}.Release-XP|x64.ActiveCfg = Release-XP|Win32
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|Win32.Build.0 = Debug|Win32
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|x64.ActiveCfg = Debug|x64
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Debug|x64.Build.0 = Debug|x64
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|Win32.ActiveCfg = Release|Win32
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|Win32.Build.0 = Release|Win32
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|x64.ActiveCfg = Release|x64
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release|x64.Build.0 = Release|x64
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|Win32.ActiveCfg = Release-XP|Win32
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|Win32.Build.0 = Release-XP|Win32
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|x64.ActiveCfg = Release-XP|x64
+		{664E6F0D-6784-4760-9565-D54F8EB1EDF4}.Release-XP|x64.Build.0 = Release-XP|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
