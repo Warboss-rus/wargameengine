@@ -25,7 +25,9 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 		}
 	});
 
-	RegisterFunctions(*m_scriptHandler, *this);
+	RegisterModelFunctions(*m_scriptHandler, m_model);
+	RegisterViewFunctions(*m_scriptHandler, view);
+	RegisterControllerFunctions(*m_scriptHandler, *this);
 	RegisterUI(*m_scriptHandler, view.GetUI(), view.GetTranslationManager());
 	RegisterObject(*m_scriptHandler, *this, m_model, view.GetModelManager());
 	m_scriptHandler->RunScript(sModule::script);

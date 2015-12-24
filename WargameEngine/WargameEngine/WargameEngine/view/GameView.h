@@ -31,15 +31,10 @@ struct sGameViewContext
 class CGameView
 {
 public:
-	static std::weak_ptr<CGameView> GetInstance(sGameViewContext * context = nullptr);
-	static void FreeInstance();
+	CGameView(sGameViewContext * context);
 	~CGameView();
-
-	void ResetTable();
 	void CreateSkybox(double size, std::string const& textureFolder);
-	CGameModel& GetModel();
 	IUIElement * GetUI() const;
-	ICamera * GetCamera();
 	void SetCamera(ICamera * camera);
 	CModelManager& GetModelManager();
 	CParticleSystem& GetParticleSystem();
@@ -47,9 +42,8 @@ public:
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
 	IRenderer& GetRenderer();
-	const IShaderManager & GetShaderManager() const;
+	IShaderManager & GetShaderManager();
 	void ResizeWindow(int height, int width);
-	void NewShaderProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "");
 	void EnableVertexLightning(bool enable);
 	void EnableGPUSkinning(bool enable);
 	void EnableShadowMap(int size, float angle);
@@ -62,8 +56,6 @@ public:
 	void SetWindowTitle(std::string const& title);
 	void Preload(std::string const& image);
 	void LoadModule(std::string const& module);
-	void ToggleFullscreen() const;
-
 	void EnableLight(size_t index, bool enable = true);
 	void SetLightColor(size_t index, LightningType type, float * values);
 	
@@ -78,15 +70,16 @@ private:
 	void DrawShadowMap();
 	void SetUpShadowMapDraw();
 	void Init();
+
+	void InitLandscape();
+
 	void InitInput();
 	void ResetController();
 	void DrawText3D(CVector3d const& pos, std::string const& text);
 	void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
-	CGameView(sGameViewContext * context);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;
 
-	static std::shared_ptr<CGameView> m_instanse;
 	std::unique_ptr<IGameWindow> m_window;
 	IRenderer * m_renderer;
 	IViewHelper * m_viewHelper;

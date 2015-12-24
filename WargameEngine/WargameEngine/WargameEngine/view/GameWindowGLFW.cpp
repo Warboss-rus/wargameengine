@@ -1,5 +1,6 @@
-#include <GL/glew.h>
 #include "GameWindowGLFW.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "InputGLFW.h"
 #include "OpenGLRenderer.h"
 

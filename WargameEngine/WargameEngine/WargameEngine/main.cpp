@@ -1,7 +1,6 @@
 #include "view/GameView.h"
 #include "LogWriter.h"
 #include "Module.h"
-#include "UI/UIElement.h"
 #include <cstring>
 #include "OSSpecific.h"
 #include <time.h>
@@ -62,6 +61,6 @@ int main(int argc, char* argv[])
 		return std::make_unique<CNetSocket>();
 	};
 
-	CGameView::GetInstance(&context);
+	CGameView view(&context);
 	return 0;
 }

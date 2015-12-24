@@ -119,7 +119,7 @@ CProjectile const& CGameModel::GetProjectile(unsigned int index) const
 
 void CGameModel::ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
-	m_landscape = CLandscape(width, depth, texture, pointsPerWidth, pointsPerDepth);
+	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
 
 std::shared_ptr<IBounding> CGameModel::GetBoundingBox(std::string const& path) const

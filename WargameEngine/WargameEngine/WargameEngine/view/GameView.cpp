@@ -17,25 +17,6 @@
 using namespace std;
 using namespace placeholders;
 
-shared_ptr<CGameView> CGameView::m_instanse = NULL;
-
-weak_ptr<CGameView> CGameView::GetInstance(sGameViewContext * context)
-{
-	if (!m_instanse.get())
-	{
-		m_instanse.reset(new CGameView(context));
-		m_instanse->Init();
-	}
-	weak_ptr<CGameView> pView(m_instanse);
-
-	return pView;
-}
-
-void CGameView::FreeInstance()
-{
-	m_instanse.reset();
-}
-
 CGameView::~CGameView()
 {
 	ThreadPool::CancelAll();
@@ -57,6 +38,7 @@ CGameView::CGameView(sGameViewContext * context)
 {
 	m_ui = make_unique<CUIElement>(*m_renderer, *m_textWriter);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
+	Init();
 }
 
 void CGameView::Init()
@@ -70,9 +52,7 @@ void CGameView::Init()
 	m_tableList = 0;
 	m_tableListShadow = 0;
 
-	m_gameModel->GetLandscape().DoOnUpdated([this] {
-		ResetTable();
-	});
+	InitLandscape();
 
 	InitInput();
 
@@ -86,9 +66,20 @@ void CGameView::Init()
 		Update();
 	});
 	m_window->DoOnResize([this](int width, int height) {m_ui->Resize(height, width);});
-	m_window->DoOnShutdown(FreeInstance);
+	m_window->DoOnShutdown([this] {
+		ThreadPool::CancelAll();
+		DisableShadowMap();
+	});
 
 	m_window->LaunchMainLoop();
+}
+
+void CGameView::InitLandscape()
+{
+	m_gameModel->GetLandscape().DoOnUpdated([this]() {
+		m_tableList.reset();
+		m_tableListShadow.reset();
+	});
 }
 
 void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ)
@@ -306,13 +297,6 @@ void CGameView::DrawRuler()
 		DrawText3D(m_ruler.GetEnd(), str);
 	}
 }
-
-void CGameView::ResetTable()
-{
-	m_tableList.reset();
-	m_tableListShadow.reset();
-}
-
 void CGameView::DrawTable(bool shadowOnly)
 {	
 	auto list = m_renderer->CreateDrawingList([this, shadowOnly] {
@@ -492,22 +476,13 @@ void CGameView::CreateSkybox(double size, string const& textureFolder)
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
 }
 
-CGameModel& CGameView::GetModel()
-{
-	return *m_gameModel;
-}
-
 void CGameView::ResetController()
 {
 	m_input->DeleteAllSignalsByTag(g_controllerTag);
 	m_gameController.reset();
 	m_gameModel = make_unique<CGameModel>();
+	InitLandscape();
 	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
-}
-
-ICamera * CGameView::GetCamera()
-{
-	return m_camera.get();
 }
 
 void CGameView::SetCamera(ICamera * camera)
@@ -554,11 +529,6 @@ IRenderer& CGameView::GetRenderer()
 void CGameView::ResizeWindow(int height, int width)
 {
 	m_window->ResizeWindow(width, height);
-}
-
-void CGameView::NewShaderProgram(string const& vertex, string const& fragment, string const& geometry)
-{
-	m_shaderManager->NewProgram(vertex, fragment, geometry);
 }
 
 void CGameView::EnableVertexLightning(bool enable)
@@ -645,7 +615,8 @@ void CGameView::ClearResources()
 	{
 		m_skybox->ResetList();
 	}
-	ResetTable();
+	m_tableList.reset();
+	m_tableListShadow.reset();
 }
 
 void CGameView::SetWindowTitle(string const& title)
@@ -653,7 +624,7 @@ void CGameView::SetWindowTitle(string const& title)
 	m_window->SetTitle(title + " - Wargame Engine");
 }
 
-IShaderManager const& CGameView::GetShaderManager() const
+IShaderManager& CGameView::GetShaderManager()
 {
 	return *m_shaderManager;
 }
@@ -698,11 +669,6 @@ void CGameView::LoadModule(string const& module)
 		m_gameController->Init(*this, m_socketFactory);
 		InitInput();
 	});
-}
-
-void CGameView::ToggleFullscreen() const 
-{
-	m_window->ToggleFullscreen();
 }
 
 void CGameView::DrawText3D(CVector3d const& pos, string const& text)

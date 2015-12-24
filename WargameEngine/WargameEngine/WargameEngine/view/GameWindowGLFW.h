@@ -2,10 +2,11 @@
 #include <functional>
 #include <memory>
 #include "IGameWindow.h"
-#include <GLFW\glfw3.h>
 #include "IInput.h"
 
 class COpenGLRenderer;
+struct GLFWwindow;
+struct GLFWmonitor;
 
 class CGameWindowGLFW : public IGameWindow
 {
