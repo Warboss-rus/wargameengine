@@ -3,15 +3,17 @@
 #include <memory>
 
 class IObject;
+class IGameModel;
 
 class CCommandMoveObject :
 	public ICommand
 {
 public:
 	CCommandMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY);
+	CCommandMoveObject(IReadMemoryStream & stream, IGameModel& model);
 	void Execute();
 	void Rollback();
-	std::vector<char> Serialize() const;
+	void Serialize(IWriteMemoryStream & stream) const;
 private:
 	std::shared_ptr<IObject> m_pObject;
 	double m_deltaX;

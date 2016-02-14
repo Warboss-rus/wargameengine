@@ -7,6 +7,7 @@
 #include "CommandChangeGlobalProperty.h"
 #include "CommandPlayAnimation.h"
 #include "CommandGoTo.h"
+#include "..\IMemoryStream.h"
 
 void CCommandHandler::AddNewCommand(std::unique_ptr<ICommand> && command, bool local)
 {
@@ -25,7 +26,7 @@ void CCommandHandler::AddNewCommand(std::unique_ptr<ICommand> && command, bool l
 	m_current = m_commands.size();
 	if (local && m_onNewCommand)
 	{
-		m_onNewCommand(command.get());
+		m_onNewCommand(m_commands.back().get());
 	}
 }
 
@@ -34,60 +35,58 @@ CCommandHandler::CCommandHandler()
 {
 }
 
-void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, IGameModel & model, bool local)
+void CCommandHandler::AddNewCreateObject(std::shared_ptr<IObject> object, IGameModel & model)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandCreateObject>(object, model);
 	action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model, bool local)
+void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandDeleteObject>(object, model);
 	action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY, bool local)
+void CCommandHandler::AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandMoveObject>(object, deltaX, deltaY);
-	if (!local) action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation, bool local)
+void CCommandHandler::AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandRotateObject>(object, deltaRotation);
-	if (!local) action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value, bool local)
+void CCommandHandler::AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandChangeProperty>(object, key, value);
 	action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model, bool local)
+void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CommandChangeGlobalProperty>(key, value, model);
 	action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed, bool local)
+void CCommandHandler::AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandPlayAnimation>(object, animation, loopMode, speed);
 	action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed, bool local)
+void CCommandHandler::AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandGoTo>(object, x, y, speed, animation, animationSpeed);
 	action->Execute();
-	AddNewCommand(std::move(action), local);
+	AddNewCommand(std::move(action));
 }
 
 void CCommandHandler::Undo()
@@ -121,4 +120,48 @@ void CCommandHandler::EndCompound()
 void CCommandHandler::DoOnNewCommand(std::function<void(ICommand*)> const& handler)
 {
 	m_onNewCommand = handler;
+}
+
+void CCommandHandler::ReadCommandFromStream(IReadMemoryStream & stream, IGameModel & model)
+{
+	unsigned char command = stream.ReadByte();
+	std::unique_ptr<ICommand> action;
+	switch (command)
+	{
+	case 0://CreateObject
+	{
+		action = std::make_unique<CCommandCreateObject>(stream, model);
+	}break;
+	case 1://DeleteObject
+	{
+		action = std::make_unique<CCommandDeleteObject>(stream, model);
+	}break;
+	case 2://MoveObject
+	{
+		action = std::make_unique<CCommandMoveObject>(stream, model);
+	}break;
+	case 3://RotateObject
+	{
+		action = std::make_unique<CCommandRotateObject>(stream, model);
+	}break;
+	case 4://ChangeProperty
+	{
+		action = std::make_unique<CCommandChangeProperty>(stream, model);
+	}break;
+	case 5://ChangeGlobalProperty
+	{
+		action = std::make_unique<CommandChangeGlobalProperty>(stream, model);
+	}break;
+	case 6://PlayAnimation
+	{
+		action = std::make_unique<CCommandPlayAnimation>(stream, model);
+	}break;
+	case 7://GoTo
+	{
+		action = std::make_unique<CCommandGoTo>(stream, model);
+	}break;
+	default:return;
+	}
+	action->Execute();
+	AddNewCommand(std::move(action), false);
 }

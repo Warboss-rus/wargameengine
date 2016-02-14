@@ -553,7 +553,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
 		std::string func = args.GetStr(1);
-		std::function<void(const char*)> function;
+		std::function<void(std::string const&)> function;
 		if (!func.empty())
 		{
 			function = [func, &handler](const std::string param)

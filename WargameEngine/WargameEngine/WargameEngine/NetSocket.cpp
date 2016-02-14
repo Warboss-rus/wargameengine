@@ -184,7 +184,11 @@ bool CNetSocket::ChangeAddress(const char* ip, unsigned short port)
 	struct sockaddr_in * addr = (struct sockaddr_in *)m_sockAddr;
 	addr->sin_family = AF_INET;
 	addr->sin_port = htons(port);
-	inet_pton(AF_INET, ip, (void*)addr->sin_addr.s_addr);
+	if (inet_pton(AF_INET, ip, (void*)&addr->sin_addr) == -1)
+	{
+		LogError();
+		return false;
+	}
 	return true;
 }
 

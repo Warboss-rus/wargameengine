@@ -11,7 +11,7 @@ public:
 	size_t GetChildrenCount() const;
 	void Execute();
 	void Rollback();
-	std::vector<char> Serialize() const { return std::vector<char>(); }
+	void Serialize(IWriteMemoryStream & stream) const;
 private:
 	std::vector<std::unique_ptr<ICommand>> m_children;
 };

@@ -1,8 +1,26 @@
 #include "CommandCreateObject.h"
 #include "../model/ObjectInterface.h"
 #include "../model/IGameModel.h"
+#include "../IMemoryStream.h"
+#include "../model/Object.h"
 
-CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object, IGameModel& model):m_pObject(object), m_model(model) {}
+CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object, IGameModel& model)
+	:m_pObject(object), m_model(model) 
+{
+}
+
+CCommandCreateObject::CCommandCreateObject(IReadMemoryStream & stream, IGameModel& model)
+	: m_model(model)
+{
+	stream.ReadPointer();//skip pointer
+	double x = stream.ReadDouble();
+	double y = stream.ReadDouble();
+	double z = stream.ReadDouble();
+	double rotation = stream.ReadDouble();
+	std::string path = stream.ReadString();
+	bool shadow = stream.ReadBool();
+	m_pObject = std::make_shared<CObject>(path, x, y, z, rotation, shadow);
+}
 
 void CCommandCreateObject::Execute()
 {
@@ -14,22 +32,14 @@ void CCommandCreateObject::Rollback()
 	m_model.DeleteObjectByPtr(m_pObject);
 }
 
-std::vector<char> CCommandCreateObject::Serialize() const
+void CCommandCreateObject::Serialize(IWriteMemoryStream & stream) const
 {
-	std::string path = m_pObject->GetPathToModel();
-	std::vector<char> result;
-	result.resize(path.size() + 33);
-	result[0] = 0;//This is a CCommandCreateObject action
-	IObject* address = m_pObject.get();
-	memcpy(&result[1], &address, 4);
-	double pos = m_pObject->GetX();
-	memcpy(&result[5], &pos, 8);
-	pos = m_pObject->GetY();
-	memcpy(&result[13], &pos, 8);
-	pos = m_pObject->GetRotation();
-	memcpy(&result[21], &pos, 8);
-	unsigned int size = path.size();
-	memcpy(&result[29], &size, 4);
-	memcpy(&result[33], &path[0], size);
-	return result;
+	stream.WriteByte(0);//This is a CCommandCreateObject action
+	stream.WritePointer(m_pObject.get());
+	stream.WriteDouble(m_pObject->GetX());
+	stream.WriteDouble(m_pObject->GetY());
+	stream.WriteDouble(m_pObject->GetZ());
+	stream.WriteDouble(m_pObject->GetRotation());
+	stream.WriteString(m_pObject->GetPathToModel());
+	stream.WriteBool(m_pObject->CastsShadow());
 }

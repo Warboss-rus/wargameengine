@@ -1,10 +1,20 @@
 #include "CommandChangeProperty.h"
 #include "..\model\ObjectInterface.h"
+#include "..\IMemoryStream.h"
+#include "..\model\IGameModel.h"
 
 CCommandChangeProperty::CCommandChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value) :m_key(key), m_newValue(value), m_pObject(object),
 	m_oldValue(m_pObject->GetProperty(key))
 {
 
+}
+
+CCommandChangeProperty::CCommandChangeProperty(IReadMemoryStream & stream, IGameModel& model)
+{
+	m_pObject = model.Get3DObject(reinterpret_cast<IObject*>(stream.ReadPointer()));
+	m_key = stream.ReadString();
+	m_newValue = stream.ReadString();
+	m_oldValue = stream.ReadString();
 }
 
 void CCommandChangeProperty::Execute()
@@ -17,23 +27,11 @@ void CCommandChangeProperty::Rollback()
 	m_pObject->SetProperty(m_key, m_oldValue);
 }
 
-std::vector<char> CCommandChangeProperty::Serialize() const
+void CCommandChangeProperty::Serialize(IWriteMemoryStream & stream) const
 {
-	std::vector<char> result;
-	result.resize(m_key.size() + m_newValue.size() + m_oldValue.size() + 17);
-	result[0] = 4;//This is a CCommandChangeProperty action
-	void* address = m_pObject.get();
-	memcpy(&result[1], &address, 4);
-	unsigned int size = m_key.size();
-	memcpy(&result[5], &size, 4);
-	memcpy(&result[9], m_key.c_str(), size);
-	unsigned int begin = size + 9;
-	size = m_newValue.size();
-	memcpy(&result[begin], &size, 4);
-	memcpy(&result[begin + 4], m_newValue.c_str(), size);
-	begin += size;
-	size = m_oldValue.size();
-	memcpy(&result[begin], &size, 4);
-	memcpy(&result[begin + 4], m_oldValue.c_str(), size);
-	return result;
+	stream.WriteByte(4);//This is a CCommandChangeProperty action
+	stream.WritePointer(m_pObject.get());
+	stream.WriteString(m_key);
+	stream.WriteString(m_newValue);
+	stream.WriteString(m_oldValue);
 }

@@ -1,4 +1,5 @@
 #include "CommandCompound.h"
+#include "..\IMemoryStream.h"
 
 void CCommandCompound::Execute()
 {
@@ -12,7 +13,17 @@ void CCommandCompound::Rollback()
 {
 	for(auto i = m_children.end(); i != m_children.begin(); --i)
 	{
-		(*i)->Execute();
+		(*i)->Rollback();
+	}
+}
+
+void CCommandCompound::Serialize(IWriteMemoryStream & stream) const
+{
+	stream.WriteByte(255);//its an action compound
+	stream.WriteSizeT(m_children.size());
+	for (auto& child : m_children)
+	{
+		child->Serialize(stream);
 	}
 }
 

@@ -10,10 +10,13 @@ class IStateManager;
 class CCommandHandler;
 class IObject;
 class IGameModel;
+class ICommand;
 typedef std::function<std::unique_ptr<INetSocket>()> SocketFactory;
 
 class CNetwork
 {
+	typedef std::function<void()> OnStateRecievedHandler;
+	typedef std::function<void(std::string const&)> OnStringReceivedHandler;
 public:
 	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory);
 	void Host(unsigned short port = 0);
@@ -23,26 +26,24 @@ public:
 	void Stop();
 	void SendState();
 	void SendMessage(std::string const& message);
-	void SendAction(std::vector<char> const& command, bool execute);
+	void SendAction(ICommand const& command);
 	bool IsConnected();
-	std::shared_ptr<IObject> GetObject(unsigned int address);
 	void AddAddressLocal(std::shared_ptr<IObject> obj);
 	void AddAddress(std::shared_ptr<IObject> obj, unsigned int address);
-	void SetStateRecievedCallback(std::function<void()> onStateRecieved);
-	void SetStringRecievedCallback(std::function<void(const char*)> onStringRecieved);
+	void SetStateRecievedCallback(OnStateRecievedHandler const& onStateRecieved);
+	void SetStringRecievedCallback(OnStringReceivedHandler const& onStringRecieved);
 	void CallStateRecievedCallback();
 private:
-	unsigned int GetAddress(std::shared_ptr<IObject> obj);
-	unsigned int GetAddress(IObject* obj);
+	unsigned int GetAddress(uint32_t obj);
 	SocketFactory m_socketFactory;
 	std::unique_ptr<INetSocket> m_socket;
-	std::map<uintptr_t, std::shared_ptr<IObject>> m_translator;
+	std::map<uint32_t, uint32_t> m_translator;
 	bool m_host;
 	int m_netRecievedSize;
 	int m_netTotalSize;
 	char * m_netData;
-	std::function<void()> m_stateRecievedCallback;
-	std::function<void(const char*)>m_stringRecievedCallback;
+	OnStateRecievedHandler m_stateRecievedCallback;
+	OnStringReceivedHandler m_stringRecievedCallback;
 	IStateManager & m_stateManager;
 	CCommandHandler & m_commandHandler;
 	IGameModel & m_model;

@@ -3,14 +3,16 @@
 #include <memory>
 
 class IObject;
+class IGameModel;
 
 class CCommandChangeProperty : public ICommand
 {
 public:
 	CCommandChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value);
+	CCommandChangeProperty(IReadMemoryStream & stream, IGameModel& model);
 	void Execute();
 	void Rollback();
-	std::vector<char> Serialize() const;
+	void Serialize(IWriteMemoryStream & stream) const;
 private:
 	std::shared_ptr<IObject> m_pObject;
 	std::string m_key;

@@ -9,9 +9,10 @@ class CommandChangeGlobalProperty : public ICommand
 {
 public:
 	CommandChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel& model);
+	CommandChangeGlobalProperty(IReadMemoryStream & stream, IGameModel& model);
 	void Execute();
 	void Rollback();
-	std::vector<char> Serialize() const;
+	void Serialize(IWriteMemoryStream & stream) const;
 private:
 	std::string m_key;
 	std::string m_oldValue;

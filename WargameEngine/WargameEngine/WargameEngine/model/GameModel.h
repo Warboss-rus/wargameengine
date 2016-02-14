@@ -14,11 +14,11 @@ class CGameModel : public IGameModel, public IBoundingBoxManager
 {
 public:
 	CGameModel() = default;
-	size_t GetObjectCount() const;
+	virtual size_t GetObjectCount() const override;
 	void Clear();
-	std::shared_ptr<const IObject> Get3DObject(unsigned long number) const;
-	std::shared_ptr<IObject> Get3DObject(unsigned long number);
-	std::shared_ptr<IObject> Get3DObject(IObject * obj);
+	std::shared_ptr<const IObject> Get3DObject(size_t number) const;
+	virtual std::shared_ptr<IObject> Get3DObject(size_t number) override;
+	virtual std::shared_ptr<IObject> Get3DObject(IObject * obj) override;
 	virtual void AddObject(std::shared_ptr<IObject> pObject) override;
 	virtual void DeleteObjectByPtr(std::shared_ptr<IObject> pObject) override;
 	void SelectObject(std::shared_ptr<IObject> pObject);

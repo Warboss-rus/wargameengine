@@ -1,11 +1,14 @@
 #pragma once
 #include <vector>
 
+class IWriteMemoryStream;
+class IReadMemoryStream;
+
 class IStateManager
 {
 public:
 	virtual ~IStateManager() {};
 
-	virtual std::vector<char> GetState(bool hasAdresses = false) const = 0;
-	virtual void SetState(char* data, bool hasAdresses = false) = 0;
+	virtual void SerializeState(IWriteMemoryStream & stream, bool hasAdresses = false) const = 0;
+	virtual void LoadState(IReadMemoryStream & stream, bool hasAdresses = false) = 0;
 };

@@ -8,26 +8,28 @@
 
 class IObject;
 class IGameModel;
+class IReadMemoryStream;
 
 class CCommandHandler
 {
 public:
 	CCommandHandler();
-	void AddNewCreateObject(std::shared_ptr<IObject> object, IGameModel & model, bool local = true);
-	void AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model, bool local = true);
-	void AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY, bool local = true);
-	void AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation, bool local = true);
-	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value, bool local = true);
-	void AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model, bool local = true);
-	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed, bool local = true);
-	void AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed, bool local = true);
+	void AddNewCreateObject(std::shared_ptr<IObject> object, IGameModel & model);
+	void AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model);
+	void AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY);
+	void AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation);
+	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value);
+	void AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model);
+	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
+	void AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed);
 	void Undo();
 	void Redo();
 	void BeginCompound();
 	void EndCompound();
 	void DoOnNewCommand(std::function<void(ICommand*)> const& handler);
+	void ReadCommandFromStream(IReadMemoryStream & stream, IGameModel & model);
 private:
-	void AddNewCommand(std::unique_ptr<ICommand> && command, bool local);
+	void AddNewCommand(std::unique_ptr<ICommand> && command, bool local = true);
 	std::unique_ptr<CCommandCompound> m_compound;
 	std::vector<std::unique_ptr<ICommand>> m_commands;
 	size_t m_current;

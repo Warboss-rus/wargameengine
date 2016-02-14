@@ -78,12 +78,16 @@ end
 
 function Host()
 	NetHost(UI:GetChild("WindowNetwork"):GetChild("EditNetowkPort"):GetText())
-	UI:DeleteChild("WindowNetwork")
+	SetTimedCallback("CloseNetwork", 10, false)--Can't delete element from its callback. Delete it after 10 ms
 end
 
 function Client()
 	local window = UI:GetChild("WindowNetwork")
 	NetClient(window:GetChild("EditNetowkIp"):GetText(), window:GetChild("EditNetowkPort"):GetText())
+	SetTimedCallback("CloseNetwork", 10, false)--Can't delete element from its callback. Delete it after 10 ms
+end
+
+function CloseNetwork()
 	UI:DeleteChild("WindowNetwork")
 end
 

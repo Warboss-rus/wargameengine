@@ -9,12 +9,12 @@ size_t CGameModel::GetObjectCount() const
 	return m_objects.size();
 }
 
-std::shared_ptr<const IObject> CGameModel::Get3DObject(unsigned long number) const
+std::shared_ptr<const IObject> CGameModel::Get3DObject(size_t number) const
 {
 	return m_objects[number];
 }
 
-std::shared_ptr<IObject> CGameModel::Get3DObject(unsigned long number)
+std::shared_ptr<IObject> CGameModel::Get3DObject(size_t number)
 {
 	return m_objects[number];
 }

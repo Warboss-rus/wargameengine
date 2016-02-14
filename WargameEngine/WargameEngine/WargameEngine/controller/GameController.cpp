@@ -7,6 +7,7 @@
 #include "../view/IInput.h"
 #include "../LogWriter.h"
 #include "../view/GameView.h"
+#include "../MemoryStream.h"
 
 CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler)
 	:m_model(model), m_scriptHandler(std::move(scriptHandler))
@@ -20,7 +21,7 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 	m_commandHandler->DoOnNewCommand([this] (ICommand * command){
 		if (m_network->IsConnected())
 		{
-			m_network->SendAction(command->Serialize(), true);
+			m_network->SendAction(*command);
 		}
 	});
 
@@ -363,124 +364,78 @@ void CGameController::SetSelectionCallback(std::function<void()> const& onSelect
 	m_selectionCallback = onSelect;
 }
 
-std::vector<char> CGameController::PackProperties(std::map<std::string, std::string> const&properties)
+void CGameController::PackProperties(std::map<std::string, std::string> const&properties, IWriteMemoryStream & stream)
 {
-	std::vector<char> result;
-	result.resize(4);
-	*((unsigned int*)&result[0]) = properties.size();
+	stream.WriteSizeT(properties.size());
 	for (auto i = properties.begin(); i != properties.end(); ++i)
 	{
-		unsigned int begin = result.size();
-		result.resize(begin + 10 + i->first.size() + i->second.size());
-		*((unsigned int*)&result[begin]) = i->first.size() + 1;
-		memcpy(&result[begin + 4], i->first.c_str(), i->first.size() + 1);
-		begin += i->first.size() + 5;
-		*((unsigned int*)&result[begin]) = i->second.size() + 1;
-		memcpy(&result[begin + 4], i->second.c_str(), i->second.size() + 1);
+		stream.WriteString(i->first);
+		stream.WriteString(i->second);
 	}
-	return result;
 }
 
-std::vector<char> CGameController::GetState(bool hasAdresses) const
+void CGameController::SerializeState(IWriteMemoryStream & stream, bool hasAdresses /*= false*/) const
 {
-	std::vector<char> result;
-	result.resize(9);
-	result[0] = 1;
 	size_t count = m_model.GetObjectCount();
-	*((unsigned int*)&result[5]) = count;
+	stream.WriteSizeT(count);
 	for (size_t i = 0; i < count; ++i)
 	{
-		const IObject * object = m_model.Get3DObject(i).get();
-		std::vector<char> current;
-		std::string path = object->GetPathToModel();
-		current.resize(36 + path.size() + 1, 0);
-		*((double*)&current[0]) = object->GetX();
-		*((double*)&current[8]) = object->GetY();
-		*((double*)&current[16]) = object->GetZ();
-		*((double*)&current[24]) = object->GetRotation();
-		*((unsigned int*)&current[32]) = path.size() + 1;
-		memcpy(&current[36], path.c_str(), path.size() + 1);
+		IObject * object = m_model.Get3DObject(i).get();
+		stream.WriteDouble(object->GetX());
+		stream.WriteDouble(object->GetY());
+		stream.WriteDouble(object->GetZ());
+		stream.WriteDouble(object->GetRotation());
+		stream.WriteString(object->GetPathToModel());
 		if (hasAdresses)
 		{
-			std::vector<char> address;
-			address.resize(4);
-			*((unsigned int*)&address[0]) = (uintptr_t)object;
-			current.insert(current.end(), address.begin(), address.end());
+			stream.WritePointer(object);
 		}
-		std::vector<char> properties = PackProperties(object->GetAllProperties());
-		current.insert(current.end(), properties.begin(), properties.end());
-		result.insert(result.end(), current.begin(), current.end());
+		PackProperties(object->GetAllProperties(), stream);
 	}
-	std::vector<char> globalProperties = PackProperties(m_model.GetAllProperties());
-	result.insert(result.end(), globalProperties.begin(), globalProperties.end());
-	*((unsigned int*)&result[1]) = result.size();
-	return result;
+	PackProperties(m_model.GetAllProperties(), stream);
 }
 
-void CGameController::SetState(char* data, bool hasAdresses)
+void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 {
-	unsigned int count = *(unsigned int*)&data[0];
-	unsigned int current = 4;
+	size_t count = stream.ReadSizeT();
 	m_model.Clear();
 	for (size_t i = 0; i < count; ++i)
 	{
-		double x = *((double*)&data[current]);
-		double y = *((double*)&data[current + 8]);
-		double z = *((double*)&data[current + 16]);
-		double rotation = *((double*)&data[current + 24]);
-		unsigned int pathSize = *((unsigned int*)&data[current + 32]);
-		char * path = new char[pathSize];
-		memcpy(path, &data[current + 36], pathSize);
+		double x = stream.ReadDouble();
+		double y = stream.ReadDouble();
+		double z = stream.ReadDouble();
+		double rotation = stream.ReadDouble();
+		std::string path = stream.ReadString();
 		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, x, y, z, rotation));
 		m_model.AddObject(object);
-		delete[] path;
-		current += 36 + pathSize;
 		if (hasAdresses)
 		{
-			unsigned int address = *((unsigned int*)&data[current]);
-			current += 4;
+			unsigned int address = reinterpret_cast<unsigned int>(stream.ReadPointer());
 			m_network->AddAddress(object, address);
 		}
-		unsigned int propertiesCount = *((unsigned int*)&data[current]);
-		current += 4;
+		unsigned int propertiesCount = stream.ReadSizeT();
 		for (unsigned int j = 0; j < propertiesCount; ++j)
 		{
-			unsigned int firstSize = *((unsigned int*)&data[current]);
-			char * first = new char[firstSize];
-			memcpy(first, &data[current + 4], firstSize);
-			current += firstSize + 4;
-			unsigned int secondSize = *((unsigned int*)&data[current]);
-			char * second = new char[secondSize];
-			memcpy(second, &data[current + 4], secondSize);
-			current += secondSize + 4;
+			std::string first = stream.ReadString();
+			std::string second = stream.ReadString();
 			object->SetProperty(first, second);
-			delete[] first;
-			delete[] second;
 		}
 	}
-	unsigned int globalPropertiesCount = *((unsigned int*)&data[current]);
-	current += 4;
+	unsigned int globalPropertiesCount = stream.ReadSizeT();
 	for (unsigned int i = 0; i < globalPropertiesCount; ++i)
 	{
-		unsigned int firstSize = *((unsigned int*)&data[current]);
-		char * first = new char[firstSize];
-		memcpy(first, &data[current + 4], firstSize);
-		current += firstSize + 4;
-		unsigned int secondSize = *((unsigned int*)&data[current]);
-		char * second = new char[secondSize];
-		memcpy(second, &data[current + 4], secondSize);
-		current += secondSize + 4;
+		std::string first = stream.ReadString();
+		std::string second = stream.ReadString();
 		m_model.SetProperty(first, second);
-		delete[] first;
-		delete[] second;
 	}
 }
 
 void CGameController::Save(std::string const& filename)
 {
 	FILE* file = fopen(filename.c_str(), "wb");
-	std::vector<char> state = GetState();
-	fwrite(&state[0], 1, state.size(), file);
+	CWriteMemoryStream stream;
+	SerializeState(stream);
+	fwrite(stream.GetData(), 1, stream.GetSize(), file);
 	fclose(file);
 }
 
@@ -498,7 +453,8 @@ void CGameController::Load(std::string const& filename)
 	std::unique_ptr<char> data(new char[size]);
 	fread(data.get(), 1, size, file);
 	fclose(file);
-	SetState(data.get() + 5);
+	CReadMemoryStream stream(data.get(), size);
+	LoadState(stream);
 	m_network->CallStateRecievedCallback();
 }
 

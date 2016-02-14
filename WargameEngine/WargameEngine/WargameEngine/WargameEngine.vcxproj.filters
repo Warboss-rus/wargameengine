@@ -215,6 +215,9 @@
     <ClCompile Include="AsyncFileProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -494,6 +497,12 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="AsyncFileProvider.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IMemoryStream.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStream.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

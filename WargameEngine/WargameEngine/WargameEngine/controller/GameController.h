@@ -21,8 +21,8 @@ public:
 	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::string const& scriptPath);
 	void Update();
 
-	virtual std::vector<char> GetState(bool hasAdresses = false) const override;
-	virtual void SetState(char* data, bool hasAdresses = false) override;
+	virtual void SerializeState(IWriteMemoryStream & stream, bool hasAdresses = false) const override;
+	virtual void LoadState(IReadMemoryStream & stream, bool hasAdresses = false) override;
 
 	bool OnLeftMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
 	bool OnLeftMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
@@ -66,7 +66,7 @@ private:
 	bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target);
 	int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject);
 	CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0);
-	static std::vector<char> PackProperties(std::map<std::string, std::string> const&properties);
+	static void PackProperties(std::map<std::string, std::string> const&properties, IWriteMemoryStream & stream);
 
 	CGameModel& m_model;
 	CVector3d m_selectedObjectCapturePoint;

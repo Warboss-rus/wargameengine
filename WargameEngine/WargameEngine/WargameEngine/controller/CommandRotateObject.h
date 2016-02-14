@@ -3,15 +3,17 @@
 #include <memory>
 
 class IObject;
+class IGameModel;
 
 class CCommandRotateObject :
 	public ICommand
 {
 public:
 	CCommandRotateObject(std::shared_ptr<IObject> object, double deltaRotation);
+	CCommandRotateObject(IReadMemoryStream & stream, IGameModel& model);
 	void Execute();
 	void Rollback();
-	std::vector<char> Serialize() const;
+	void Serialize(IWriteMemoryStream & stream) const;
 private:
 	std::shared_ptr<IObject> m_pObject;
 	double m_deltaRotation;

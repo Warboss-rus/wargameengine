@@ -1,9 +1,16 @@
 #include "CommandDeleteObject.h"
 #include "..\model\IGameModel.h"
+#include "..\IMemoryStream.h"
 
 CCommandDeleteObject::CCommandDeleteObject(std::shared_ptr<IObject> object, IGameModel& model)
 	:m_pObject(object), m_model(model)
 {
+}
+
+CCommandDeleteObject::CCommandDeleteObject(IReadMemoryStream & stream, IGameModel& model)
+	:m_model(model)
+{
+	m_pObject = m_model.Get3DObject(reinterpret_cast<IObject*>(stream.ReadPointer()));
 }
 
 void CCommandDeleteObject::Execute()
@@ -16,12 +23,8 @@ void CCommandDeleteObject::Rollback()
 	m_model.AddObject(m_pObject);
 }
 
-std::vector<char> CCommandDeleteObject::Serialize() const
+void CCommandDeleteObject::Serialize(IWriteMemoryStream & stream) const
 {
-	std::vector<char> result;
-	result.resize(5);
-	result[0] = 1;//This is a CCommandDeleteObject action
-	void* address = m_pObject.get();
-	memcpy(&result[1], &address, 4);
-	return result;
+	stream.WriteByte(1);//This is a CCommandDeleteObject action
+	stream.WritePointer(m_pObject.get());
 }
