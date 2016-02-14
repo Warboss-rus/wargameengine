@@ -306,10 +306,11 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 
 	handler.RegisterFunction(SET_SHADERS, [&](IArguments const& args) {
 		int n = args.GetCount();
+		auto pathSource = view.GetAsyncFileProvider();
 		std::string vertex, fragment, geometry;
-		if (n > 0) vertex = args.GetStr(1);
-		if (n > 1) fragment = args.GetStr(2);
-		if (n > 2) geometry = args.GetStr(3);
+		if (n > 0) vertex = pathSource.GetShaderAbsolutePath(args.GetStr(1));
+		if (n > 1) fragment = pathSource.GetShaderAbsolutePath(args.GetStr(2));
+		if (n > 2) geometry = pathSource.GetShaderAbsolutePath(args.GetStr(3));
 		if (n > 3) throw std::runtime_error("up to 3 argument expected (vertex shader, fragment shader, geometry shader)");
 		view.GetShaderManager().NewProgram(vertex, fragment, geometry);
 		return nullptr;
@@ -391,7 +392,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(NEW_PARTICLE_EFFECT, [&](IArguments const& args) {
 		if (args.GetCount() != 7)
 			throw std::runtime_error("7 arguments expected (effect file, x, y, z coordinates, rotation, scale, lifetime)");
-		std::string file = args.GetStr(1);
+		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
 		double x = args.GetDbl(2);
 		double y = args.GetDbl(3);
 		double z = args.GetDbl(4);
@@ -405,7 +406,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(NEW_PARTICLE_TRACER, [&](IArguments const& args) {
 		if (args.GetCount() != 10)
 			throw std::runtime_error("10 arguments expected (effect file, begin coordinates, end coordinates, rotation, scale, speed)");
-		std::string file = args.GetStr(1);
+		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
 		CVector3d begin, end;
 		begin.x = args.GetDbl(2);
 		begin.y = args.GetDbl(3);
@@ -423,7 +424,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(PLAY_SOUND, [&](IArguments const& args) {
 		if (args.GetCount() < 1 || args.GetCount() > 2)
 			throw std::runtime_error("1 or 2 arguments expected (file, volume)");
-		std::string file = args.GetStr(1);
+		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
 		float volume = args.GetFloat(2);
 		view.GetSoundPlayer().Play(file, volume);
 		return nullptr;
@@ -432,7 +433,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(PLAY_SOUND_POSITION, [&](IArguments const& args) {
 		if (args.GetCount() < 4 || args.GetCount() > 5)
 			throw std::runtime_error("4 or 5 arguments expected (file, x, y, z, volume)");
-		std::string file = args.GetStr(1);
+		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
 		double x = args.GetDbl(2);
 		double y = args.GetDbl(3);
 		double z = args.GetDbl(4);
@@ -447,6 +448,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 			throw std::runtime_error("2 to 5 arguments expected (name, list or tracks, volume, shuffle, repeat)");
 		std::string name = args.GetStr(1);
 		std::vector<std::string> files = args.GetStrArray(2);
+		for (auto& file : files)
+		{
+			file = view.GetAsyncFileProvider().GetAbsolutePath(file);
+		}
 		float volume = n > 2 ? args.GetFloat(3) : 1.0f;
 		bool shuffle = n > 3 ? args.GetBool(4) : false;
 		bool repeat = n > 4 ? args.GetBool(5) : false;
@@ -478,13 +483,13 @@ auto GetCallbackFunction (IScriptHandler & handler, IArguments const& args, int 
 	return function;
 };
 
-void RegisterControllerFunctions(IScriptHandler & handler, CGameController & controller)
+void RegisterControllerFunctions(IScriptHandler & handler, CGameController & controller, CAsyncFileProvider & fileProvider, ThreadPool & threadPool)
 {
 	handler.RegisterFunction(DELETE_TIMED_CALLBACK, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (ID)");
 		unsigned int id = args.GetLong(1);
-		ThreadPool::RemoveTimedCallback(id);
+		threadPool.RemoveTimedCallback(id);
 		return nullptr;
 	});
 
@@ -492,7 +497,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (path, mask, recursive)");
-		std::string path = args.GetStr(1);
+		std::string path = fileProvider.GetAbsolutePath(args.GetStr(1));
 		std::string mask = args.GetStr(2);
 		bool recursive = args.GetBool(3);
 		std::vector<std::string> files = GetFiles(path, mask, recursive);
@@ -511,7 +516,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	handler.RegisterFunction(RUN_SCRIPT, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (filename)");
-		std::string filename = args.GetStr(1);
+		std::string filename = fileProvider.GetAbsolutePath(args.GetStr(1));
 		handler.RunScript(filename);
 		return nullptr;
 	});
@@ -560,14 +565,14 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		return nullptr;
 	});
 
-	handler.RegisterFunction(SET_TIMED_CALLBACK, [&handler](IArguments const& args)
+	handler.RegisterFunction(SET_TIMED_CALLBACK, [&](IArguments const& args)
 	{
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 argument expected (funcName, time, repeat)");
 		std::string func = args.GetStr(1);
 		unsigned int time = args.GetLong(2);
 		bool repeat = args.GetBool(3);
-		unsigned int index = ThreadPool::AddTimedCallback([=, &handler]() {handler.CallFunction(func);}, time, repeat);
+		unsigned int index = threadPool.AddTimedCallback([=, &handler]() {handler.CallFunction(func);}, time, repeat);
 		return (int)index;
 	});
 
@@ -699,5 +704,13 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		std::string path = args.GetStr(1);
 		controller.Load(path);
 		return nullptr;
+	});
+
+	handler.RegisterFunction(GET_ABSOLUTE_PATH, [&](IArguments const& args)
+	{
+		if (args.GetCount() != 1)
+			throw std::runtime_error("1 arguments expected (relative path)");
+		std::string path = args.GetStr(1);
+		return fileProvider.GetAbsolutePath(path);
 	});
 }

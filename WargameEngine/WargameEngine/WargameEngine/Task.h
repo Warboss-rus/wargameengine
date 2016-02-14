@@ -8,9 +8,10 @@ template<class T>
 class TaskBase : public IAsyncTask<T>
 {
 public:
-	TaskBase(AsyncHandler const& func, bool start = false)
+	TaskBase(AsyncHandler const& func, ThreadPool & threadPool, bool start = false)
 		: m_handler(func)
 		, m_state(TaskState::CREATED)
+		, m_threadPool(threadPool)
 	{
 		
 	}
@@ -39,7 +40,7 @@ public:
 	{
 		std::lock_guard<std::mutex> lk(m_sync);
 		m_state = TaskState::CANCELLED;
-		ThreadPool::RemoveTask(this);
+		m_threadPool.RemoveTask(this);
 	}
 
 	virtual void Queue() override
@@ -58,8 +59,9 @@ public:
 		return m_state;
 	}
 protected:
-	TaskBase()
+	TaskBase(ThreadPool & threadPool)
 		: m_state(TaskState::CREATED)
+		, m_threadPool(threadPool)
 	{
 	}
 	void SetTaskState(TaskState state)
@@ -72,6 +74,7 @@ protected:
 	CallbackHandler m_callback;
 	OnFailHandler m_onFail;
 	TaskState m_state;
+	ThreadPool & m_threadPool;
 	mutable std::mutex m_sync;
 };
 
@@ -79,8 +82,8 @@ template <class T>
 class Task : public TaskBase<T>
 {
 public:
-	Task(AsyncHandler const& func)
-		: TaskBase(func)
+	Task(AsyncHandler const& func, ThreadPool & threadPool)
+		: TaskBase(func, threadPool)
 	{
 	}
 private:
@@ -99,9 +102,9 @@ private:
 			SetTaskState(TaskState::COMPLETED);
 			if (m_callback)
 			{
-				ThreadPool::QueueCallback([this, result] {
+				m_threadPool.QueueCallback([this, result] {
 					m_callback(result); 
-					ThreadPool::RemoveTask(this);
+					m_threadPool.RemoveTask(this);
 				});
 			}
 		}

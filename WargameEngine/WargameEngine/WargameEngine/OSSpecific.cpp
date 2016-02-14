@@ -2,15 +2,6 @@
 #include "LogWriter.h"
 #ifdef _WINDOWS
 #include <Windows.h>
-#include <direct.h>
-
-void ChangeWorkingDirectory(std::string const& path)
-{
-	if (_chdir(path.c_str()) != 0)
-	{
-		LogWriter::WriteLine("Cannot change working directory. Check if " + path + " exists");
-	}
-}
 
 std::vector<std::string> GetFiles(std::string const& path, std::string const& mask, bool recursive)
 {
@@ -58,11 +49,6 @@ void ShowMessageBox(std::string const& text, std::string const& caption)
 #include <cstring>
 #include <dirent.h>
 #include <algorithm>
-
-void ChangeWorkingDirectory(std::string const& path)
-{
-    chdir(path.c_str());
-}
 
 std::vector<std::string> GetFiles(std::string const& path, std::string const& mask, bool recursive)
 {

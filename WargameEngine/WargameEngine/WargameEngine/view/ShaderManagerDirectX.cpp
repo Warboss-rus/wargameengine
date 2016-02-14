@@ -5,6 +5,7 @@
 #include "..\LogWriter.h"
 #include "DirectXRenderer.h"
 #include <DirectXMath.h>
+#include "..\AsyncFileProvider.h"
 
 static const std::string defaultShader = "\
 struct sLightSource\
@@ -71,6 +72,7 @@ void CompileShader(std::string const& path, char * entryPoint, char * target, st
 	if (path.empty())
 		D3DCompile(defaultContent.c_str(), defaultContent.size() + 1, "", NULL, NULL, entryPoint, target, 0, 0, blob, &errorBlob);
 	else
+		
 		D3DCompileFromFile(Str2Wstr(path).c_str(), NULL, NULL, entryPoint, target, 0, 0, blob, &errorBlob);
 	if (errorBlob)
 	{
@@ -136,12 +138,15 @@ void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::
 	}
 
 	m_reflection = nullptr;
-	D3DReflect(m_VS->GetBufferPointer(), m_VS->GetBufferSize(),
-		IID_ID3D11ShaderReflection, (void**)&m_reflection);
+	if (m_VS)
+	{
+		D3DReflect(m_VS->GetBufferPointer(), m_VS->GetBufferSize(),
+			IID_ID3D11ShaderReflection, (void**)&m_reflection);
 
-	unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
-	m_constantBufferData.resize(size);
-	memset(m_constantBufferData.data(), 0, m_constantBufferData.size());
+		unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
+		m_constantBufferData.resize(size);
+		memset(m_constantBufferData.data(), 0, m_constantBufferData.size());
+	}
 }
 
 void CShaderManagerDirectX::BindProgram() const

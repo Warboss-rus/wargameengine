@@ -132,7 +132,7 @@ function OnRMB(obj, x, y, z)--obj has no methods for some reason
 	end
 end
 
-dofile("rtsunits.lua")
+RunScript("rtsunits.lua")
 Init()
 CreateUI()
 SetGlobalProperty("Player1Money", 1000)

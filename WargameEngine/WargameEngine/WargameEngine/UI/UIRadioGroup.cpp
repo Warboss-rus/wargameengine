@@ -64,6 +64,10 @@ void CUIRadioGroup::AddItem(std::wstring const& str)
 
 std::wstring const CUIRadioGroup::GetText() const
 {
+	if (m_selected > m_items.size())
+	{
+		return L"";
+	}
 	return m_items[m_selected];
 }
 

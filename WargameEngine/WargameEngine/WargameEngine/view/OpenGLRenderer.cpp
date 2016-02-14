@@ -64,19 +64,19 @@ void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow, 
 {
 	if (forceLoadNow)
 	{
-		m_textureManager.LoadTextureNow(texture, nullptr, flags);
+		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
-	m_textureManager.SetTexture(texture, nullptr, flags);
+	m_textureManager->SetTexture(texture, nullptr, flags);
 }
 
 void COpenGLRenderer::SetTexture(std::string const& texture, TextureSlot slot, int flags /*= 0*/)
 {
-	m_textureManager.SetTexture(texture, slot, flags);
+	m_textureManager->SetTexture(texture, slot, flags);
 }
 
 void COpenGLRenderer::SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
-	m_textureManager.SetTexture(texture, teamcolor, flags);
+	m_textureManager->SetTexture(texture, teamcolor, flags);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
@@ -168,7 +168,7 @@ void Render(RenderMode mode, std::vector<X> const& vertices, std::vector<Y> cons
 }
 
 COpenGLRenderer::COpenGLRenderer()
-	:m_textureManager(*this)
+	:m_textureManager(nullptr)
 {
 }
 
@@ -355,9 +355,9 @@ std::unique_ptr<IShaderManager> COpenGLRenderer::CreateShaderManager() const
 	return std::make_unique<CShaderManagerOpenGL>();
 }
 
-CTextureManager & COpenGLRenderer::GetTextureManager()
+void COpenGLRenderer::SetTextureManager(CTextureManager & textureManager)
 {
-	return m_textureManager;
+	m_textureManager = &textureManager;
 }
 
 void COpenGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)

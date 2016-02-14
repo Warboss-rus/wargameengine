@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include "../LogWriter.h"
+#include "../AsyncFileProvider.h"
 
 struct FaceIndex
 {
@@ -41,7 +42,7 @@ FaceIndex ParseFaceIndex(std::string const& str)
 std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 {
 	std::map<std::string, sMaterial> materials;
-	std::ifstream iFile("models\\" + path);
+	std::ifstream iFile(path);
 	if (!iFile.good())
 	{
 		iFile.close();
@@ -119,8 +120,10 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 	return materials;
 }
 
-void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader)
+void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader, std::string const& modelPath)
 {
+	auto slashPos = modelPath.find_last_of("\\/");
+	std::string parentPath = slashPos == modelPath.npos ? modelPath : modelPath.substr(0, slashPos);
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
@@ -203,7 +206,11 @@ void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader)
 		{
 			std::string path;
 			iFile >> path;
-			loader.materialManager.InsertMaterials(LoadMTL(path));
+			if (path.size() > 2 && path.front() == '.')
+			{
+				path = path.substr(2);
+			}
+			loader.materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, path)));
 		}
 		if(type == "usemtl")//apply material
 		{

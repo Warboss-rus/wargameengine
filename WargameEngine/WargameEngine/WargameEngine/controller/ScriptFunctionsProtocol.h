@@ -159,3 +159,5 @@
 #define SAVE_GAME "SaveGame"
 
 #define LOAD_GAME "LoadGame"
+
+#define GET_ABSOLUTE_PATH "GetAbsolutePath"

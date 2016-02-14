@@ -1,18 +1,6 @@
 #include "Module.h"
 #include <fstream>
 
-std::string sModule::name;
-int sModule::version;
-std::string sModule::author;
-std::string sModule::site;
-int sModule::minVersion;
-bool sModule::playable;
-std::string sModule::folder;
-std::string sModule::script;
-std::string sModule::models;
-std::string sModule::textures;
-std::string sModule::shaders;
-
 std::string RemoveSpaces(std::string const& str)
 {
 	size_t begin = str.find_first_not_of(' ');

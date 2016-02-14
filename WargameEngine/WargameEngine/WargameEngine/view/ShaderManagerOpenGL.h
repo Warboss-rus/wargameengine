@@ -5,8 +5,7 @@
 class CShaderManagerOpenGL : public IShaderManager
 {
 public:
-	
-	CShaderManagerOpenGL():m_program(0) {}
+	CShaderManagerOpenGL();
 	void NewProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
 	void BindProgram() const override;
 	void UnBindProgram() const override;
@@ -32,8 +31,6 @@ public:
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, float* defaultValue) const override;
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, int* defaultValue) const override;
 	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* defaultValue) const override;
-
-
 private:
 	unsigned int m_program;
 };

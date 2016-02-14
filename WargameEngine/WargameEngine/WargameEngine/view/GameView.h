@@ -15,6 +15,10 @@
 #include "SkyBox.h"
 #include "../Ruler.h"
 #include "TranslationManager.h"
+#include "../AsyncFileProvider.h"
+#include "../ThreadPool.h"
+#include "../Module.h"
+#include "TextureManager.h"
 
 class IScriptHandler;
 class INetSocket;
@@ -26,6 +30,8 @@ struct sGameViewContext
 	std::unique_ptr<ITextWriter> textWriter;
 	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
+	sModule module;
+	std::string workingDir;
 };
 
 class CGameView
@@ -43,6 +49,8 @@ public:
 	CRuler& GetRuler();
 	IRenderer& GetRenderer();
 	IShaderManager & GetShaderManager();
+	CAsyncFileProvider& GetAsyncFileProvider();
+	ThreadPool& GetThreadPool();
 	void ResizeWindow(int height, int width);
 	void EnableVertexLightning(bool enable);
 	void EnableGPUSkinning(bool enable);
@@ -92,7 +100,11 @@ private:
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
 	std::unique_ptr<ITextWriter> m_textWriter;
+	sModule m_module;
+	ThreadPool m_threadPool;
+	CAsyncFileProvider m_asyncFileProvider;
 	CModelManager m_modelManager;
+	CTextureManager m_textureManager;
 	CParticleSystem m_particles;
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;

@@ -42,26 +42,3 @@ public:
 	virtual void AddOnFailHandler(OnFailHandler const& handler) = 0;
 	virtual void Cancel() = 0;
 };
-
-inline void WaitForTask(ITask & task)
-{
-	for (;;)
-	{
-		switch (task.GetState())
-		{
-		case ITask::TaskState::QUEUED:
-		case ITask::TaskState::STARTED:
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			ThreadPool::Update();
-		} break;
-		case ITask::TaskState::COMPLETED:
-		case ITask::TaskState::READY_FOR_DISPOSE:
-		case ITask::TaskState::CANCELLED:
-		case ITask::TaskState::FAILED:
-			return;
-		default:
-			throw std::exception("Invalid task state");
-		}
-	}
-}

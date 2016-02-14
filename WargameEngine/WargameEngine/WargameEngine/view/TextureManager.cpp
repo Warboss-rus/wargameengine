@@ -1,13 +1,11 @@
 #include "TextureManager.h"
 #include "../LogWriter.h"
-#include "../ThreadPool.h"
-#include "../Module.h"
 #pragma warning( push )
 #pragma warning( disable : 4457 4456)
 #define STB_IMAGE_IMPLEMENTATION
 #include "../stb_image.h"
+#include "../AsyncFileProvider.h"
 #pragma warning( pop )
-#include "../AsyncReadTask.h"
 
 struct sImage
 {
@@ -551,25 +549,18 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& 
 	img->teamcolor = teamcolor;
 	bool force32b = m_helper.Force32Bits();
 	bool forceFlip = m_helper.ForceFlipBMP();
-	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(path, [=](void* data, unsigned int size) {
+	m_asyncFileProvider.GetTextureAsync(path, [=](void* data, unsigned int size) {
 		LoadImage(data, size, *img, forceFlip, force32b);
-	});
-	readTask->AddOnCompleteHandler([=, &texRef]() {
+	}, [=, &texRef]() {
 		UseTexture(*img, texRef);
-	});
-	readTask->AddOnFailHandler([](std::exception const& e) {
+	}, [](std::exception const& e) {
 		LogWriter::WriteLine(e.what());
-	});
-	ThreadPool::AddTask(readTask);
-	if (now)
-	{
-		WaitForTask(*readTask);
-	}
+	}, now);
 	return tex;
 }
 
-CTextureManager::CTextureManager(ITextureHelper & helper)
-	:m_helper(helper)
+CTextureManager::CTextureManager(ITextureHelper & helper, CAsyncFileProvider & asyncFileProvider)
+	:m_helper(helper), m_asyncFileProvider(asyncFileProvider)
 {
 }
 
@@ -583,7 +574,7 @@ void CTextureManager::SetTexture(std::string const& path, const std::vector<sTea
 	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
 	if(m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, false, flags);
+		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
 	}
 	m_textures[pair]->Bind();
 }
@@ -604,7 +595,7 @@ void CTextureManager::LoadTextureNow(std::string const& path, const std::vector<
 	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, true, flags);
+		m_textures[pair] = LoadTexture(path, pair.second, true, flags);
 	}
 }
 
@@ -625,7 +616,7 @@ void CTextureManager::SetTexture(std::string const& path, TextureSlot slot, int 
 	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, std::vector<sTeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(sModule::textures + path, pair.second, false, flags);
+		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
 	}
 	m_textures[pair]->Bind();
 	m_helper.ActivateTextureSlot(TextureSlot::eDiffuse);

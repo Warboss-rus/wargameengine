@@ -5,7 +5,6 @@
 #include "../model/ObjectGroup.h"
 #include "../model/Object.h"
 #include "../view/IInput.h"
-#include "../Module.h"
 #include "../LogWriter.h"
 #include "../view/GameView.h"
 
@@ -14,7 +13,7 @@ CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandl
 {
 }
 
-void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory)
+void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::string const& scriptPath)
 {
 	m_commandHandler = std::make_unique<CCommandHandler>();
 	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model, socketFactory);
@@ -27,10 +26,10 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 
 	RegisterModelFunctions(*m_scriptHandler, m_model);
 	RegisterViewFunctions(*m_scriptHandler, view);
-	RegisterControllerFunctions(*m_scriptHandler, *this);
+	RegisterControllerFunctions(*m_scriptHandler, *this, view.GetAsyncFileProvider(), view.GetThreadPool());
 	RegisterUI(*m_scriptHandler, view.GetUI(), view.GetTranslationManager());
 	RegisterObject(*m_scriptHandler, *this, m_model, view.GetModelManager());
-	m_scriptHandler->RunScript(sModule::script);
+	m_scriptHandler->RunScript(scriptPath);
 }
 
 void CGameController::Update()

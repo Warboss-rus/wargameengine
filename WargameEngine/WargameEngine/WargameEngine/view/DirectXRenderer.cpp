@@ -227,7 +227,7 @@ float GetAspectRatio(HWND m_hWnd)
 
 CDirectXRenderer::CDirectXRenderer(ID3D11Device *dev, ID3D11DeviceContext *devcon, HWND hWnd)
 	:m_dev(dev), m_devcon(devcon), m_hWnd(hWnd)
-	, m_defaultShaderManager(std::make_unique<CShaderManagerDirectX>(dev, this)), m_textureManager(*this), m_activeTextureSlot(0)
+	, m_defaultShaderManager(std::make_unique<CShaderManagerDirectX>(dev, this)), m_textureManager(nullptr), m_activeTextureSlot(0)
 {
 	m_viewMatrices.push_back(DirectX::XMMatrixIdentity());
 	float aspect = GetAspectRatio(m_hWnd);
@@ -513,21 +513,21 @@ void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direct
 
 void CDirectXRenderer::SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
 {
-	m_textureManager.SetTexture(texture, teamcolor, flags);
+	m_textureManager->SetTexture(texture, teamcolor, flags);
 }
 
 void CDirectXRenderer::SetTexture(std::string const& texture, TextureSlot slot, int flags /*= 0*/)
 {
-	m_textureManager.SetTexture(texture, slot, flags);
+	m_textureManager->SetTexture(texture, slot, flags);
 }
 
 void CDirectXRenderer::SetTexture(std::string const& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
 {
 	if (forceLoadNow)
 	{
-		m_textureManager.LoadTextureNow(texture, nullptr, flags);
+		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
-	m_textureManager.SetTexture(texture, nullptr, flags);
+	m_textureManager->SetTexture(texture, nullptr, flags);
 }
 
 std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
@@ -794,9 +794,9 @@ void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/
 	if (depthBuffer && depth) m_devcon->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-CTextureManager& CDirectXRenderer::GetTextureManager()
+void CDirectXRenderer::SetTextureManager(CTextureManager& texMan)
 {
-	return m_textureManager;
+	m_textureManager = &texMan;
 }
 
 void CDirectXRenderer::ActivateTextureSlot(TextureSlot slot)

@@ -8,23 +8,26 @@ class ITask;
 class ThreadPool
 {
 public:
+	ThreadPool();
+	~ThreadPool();
 	typedef std::function<void()> FunctionHandler;
 	typedef std::function<void()> CallbackHandler;
 	//Runs function in thread pool. doneCallback will be called in main thread when finished
-	static void RunFunc(FunctionHandler const& func, CallbackHandler const& callback = CallbackHandler(), unsigned int flags = 0);
+	void RunFunc(FunctionHandler const& func, CallbackHandler const& callback = CallbackHandler(), unsigned int flags = 0);
 	//Queues function to be executed on the main thread
-	static void QueueCallback(CallbackHandler const& func, unsigned int flags = 0);
+	void QueueCallback(CallbackHandler const& func, unsigned int flags = 0);
 	//Runs additional working threads and queued doneCallbacks. Call from main thread as often as possible
-	static void Update();
+	void Update();
 	//Returns number of tasks and functions queued
-	static size_t GetTasksAndFuncsCount();
+	size_t GetTasksAndFuncsCount();
 	//Removes all queued operations and callbacks
-	static void CancelAll();
+	void CancelAll();
 	//Task internal functions
-	static void AddTask(std::shared_ptr<ITask> task);
-	static void RemoveTask(ITask * task);
-	static size_t AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat = false, bool executeSkipped = false);
-	static void RemoveTimedCallback(size_t index);
+	void AddTask(std::shared_ptr<ITask> task);
+	void RemoveTask(ITask * task);
+	void WaitForTask(ITask & task);
+	size_t AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat = false, bool executeSkipped = false);
+	void RemoveTimedCallback(size_t index);
 	enum flags
 	{
 		//Functions with this flag will be added to the beginning of the queue, not the end
@@ -34,5 +37,5 @@ public:
 	};
 	struct Impl;
 private:
-	static std::unique_ptr<Impl> m_pImpl;
+	std::unique_ptr<Impl> m_pImpl;
 };

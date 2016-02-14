@@ -11,6 +11,10 @@ static const std::map<IShaderManager::eVertexAttribute, unsigned int> attributeL
 	{ IShaderManager::eVertexAttribute::WEIGHT_INDEX, 10 }
 };
 
+CShaderManagerOpenGL::CShaderManagerOpenGL() :m_program(0)
+{
+}
+
 void CShaderManagerOpenGL::BindProgram() const
 {
 	if(m_program != 0)
@@ -66,7 +70,7 @@ void CShaderManagerOpenGL::NewProgram(std::string const& vertex, std::string con
 		}
 		else
 		{
-			vertexShader = CompileShader(sModule::shaders + vertex, m_program, GL_VERTEX_SHADER);
+			vertexShader = CompileShader(vertex, m_program, GL_VERTEX_SHADER);
 		}
 	}
 	if(!fragment.empty())
@@ -77,7 +81,7 @@ void CShaderManagerOpenGL::NewProgram(std::string const& vertex, std::string con
 		}
 		else
 		{
-			framgentShader = CompileShader(sModule::shaders + fragment, m_program, GL_FRAGMENT_SHADER);
+			framgentShader = CompileShader(fragment, m_program, GL_FRAGMENT_SHADER);
 		}
 	}
 	if(!geometry.empty())
@@ -88,7 +92,7 @@ void CShaderManagerOpenGL::NewProgram(std::string const& vertex, std::string con
 		}
 		else
 		{
-			geometryShader = CompileShader(sModule::shaders + geometry, m_program, GL_GEOMETRY_SHADER);
+			geometryShader = CompileShader(geometry, m_program, GL_GEOMETRY_SHADER);
 		}
 	}
 	glBindAttribLocation(m_program, attributeLocationMap.at(eVertexAttribute::WEIGHT), "weights");

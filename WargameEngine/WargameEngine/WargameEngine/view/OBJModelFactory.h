@@ -16,6 +16,6 @@ struct sOBJLoader
 	std::vector<sAnimation> animations;
 };
 
-void LoadObjModel(void* data, unsigned int size, sOBJLoader & loader);
+void LoadObjModel(void* data, unsigned int size, sOBJLoader & loader, std::string const& path);
 void LoadWbmModel(void* data, unsigned int dataSize, sOBJLoader & loader);
 void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader);

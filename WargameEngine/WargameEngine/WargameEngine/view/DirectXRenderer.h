@@ -70,7 +70,7 @@ public:
 	virtual void RestoreViewport() override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
-	virtual CTextureManager& GetTextureManager() override;
+	virtual void SetTextureManager(CTextureManager & textureManager) override;
 	virtual void SetUpViewport2D() override;
 
 	virtual void ActivateTextureSlot(TextureSlot slot) override;
@@ -99,7 +99,7 @@ private:
 	CComPtr<ID3D11Device> m_dev;
 	CComPtr<ID3D11DeviceContext> m_devcon;
 	HWND m_hWnd;
-	CTextureManager m_textureManager;
+	CTextureManager *  m_textureManager;
 	std::unique_ptr<CShaderManagerDirectX> m_defaultShaderManager;
 	CShaderManagerDirectX * m_shaderManager;
 	unsigned int m_activeTextureSlot;

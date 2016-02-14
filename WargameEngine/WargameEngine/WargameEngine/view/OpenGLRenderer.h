@@ -1,6 +1,5 @@
 #pragma once
 #include "IRenderer.h"
-#include "TextureManager.h"
 #include "IViewHelper.h"
 
 class COpenGLRenderer : public IRenderer, public IViewHelper
@@ -47,7 +46,7 @@ public:
 
 	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const override;
 
-	virtual CTextureManager & GetTextureManager() override;
+	virtual void SetTextureManager(CTextureManager & textureManager) override;
 
 	virtual void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const override;
 	virtual void WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const override;
@@ -76,5 +75,5 @@ public:
 
 	virtual std::string GetName() const override;
 private:
-	CTextureManager m_textureManager;
+	CTextureManager* m_textureManager;
 };

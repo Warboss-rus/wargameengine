@@ -2,7 +2,6 @@
 #include "LogWriter.h"
 #include "Module.h"
 #include <cstring>
-#include "OSSpecific.h"
 #include <time.h>
 #ifdef DIRECTX
 #include "view\GameWindowDirectX.h"
@@ -30,6 +29,7 @@ int main(int argc, char* argv[])
 {
 #endif
 	srand(static_cast<unsigned int>(time(NULL)));
+	sGameViewContext context;
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "-module"))
@@ -40,17 +40,15 @@ int main(int argc, char* argv[])
 				LogWriter::WriteLine("Module filename expected");
 				return 1;
 			}
-			sModule::Load(argv[i]);
-			ChangeWorkingDirectory(sModule::folder.c_str());
+			context.module.Load(argv[i]);
 		}
 	}
-	if (sModule::name.empty())
+	if (context.module.name.empty())
 	{
-		sModule::script = "main.lua";
-		sModule::textures = "texture\\";
-		sModule::models = "models\\";
+		context.module.script = "main.lua";
+		context.module.textures = "texture\\";
+		context.module.models = "models\\";
 	}
-	sGameViewContext context;
 	context.window = std::make_unique<WINDOW_CLASS>();
 	context.soundPlayer = std::make_unique<CSoundPlayerFMod>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());

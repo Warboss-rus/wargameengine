@@ -63,7 +63,7 @@ function Battle()
 	for i=1, #Player2Roster do
 		Player2[i] = CreateUnit(Player2Army, Player2Roster[i], math.floor(-20 - (i - 1) / 2.5), (i - 1) % 5 * 2 - 5, 90, "2")
 	end
-	LoadMap(ui:GetChild("CBox3"):GetText())
+	LoadMap(GetAbsolutePath(ui:GetChild("CBox3"):GetText()))
 	SetTimedCallback("ClearUI", 10, false)--Can't delete element from its callback. Delete it after 10 ms
 end
 
@@ -91,9 +91,11 @@ function Recalculate()
 		list:AddItem(Player1Roster[i].Name .. "(" .. cost .. ")")
 		sum = sum + cost
 	end
-	list:SetSelectedIndex(selected)
+	if(list:GetItemsCount() > 0) then
+		list:SetSelectedIndex(selected)
+	end
 	ui:GetChild("Label4"):SetText("Points: " .. sum .. "/200")
-	--Chaos
+	--Player2
 	list = ui:GetChild("List4")
 	selected = list:GetSelectedIndex()
 	list:ClearItems()
@@ -103,7 +105,9 @@ function Recalculate()
 		list:AddItem(Player2Roster[i].Name .. "(" .. cost .. ")")
 		sum = sum + cost
 	end
-	list:SetSelectedIndex(selected)
+	if(list:GetItemsCount() > 0) then
+		list:SetSelectedIndex(selected)
+	end
 	ui:GetChild("Label8"):SetText("Points: " .. sum .. "/200")
 end
 
@@ -169,14 +173,15 @@ function OnUnitChange1()
 	weapons:ClearItems()
 	if(unitName ~= "") then
 		local weaponList = Player1Army.units[unitName].SupportedWeapons
-		weapons:SetSelectedIndex(1)
+		local selectedIndex = 1
 		for i=1, #weaponList do
 			local text = weaponList[i] .. " (" .. Player1Army.weapons[weaponList[i]].Cost .. ")"
 			weapons:AddItem(text)
 			if(weaponList[i] == Player1Roster[ui:GetChild("List2"):GetSelectedIndex()].Weapon) then
-				weapons:SetSelectedIndex(i)
+				selectedIndex = i
 			end
 		end
+		weapons:SetSelectedIndex(selectedIndex)
 	end
 end
 
@@ -188,14 +193,15 @@ function OnUnitChange2()
 	weapons:ClearItems()
 	if(unitName ~= "") then
 		local weaponList = Player2Army.units[unitName].SupportedWeapons
-		weapons:SetSelectedIndex(1)
+		local selectedIndex = 1
 		for i=1, #weaponList do
 			local text = weaponList[i] .. " (" .. Player2Army.weapons[weaponList[i]].Cost .. ")"
 			weapons:AddItem(text)
 			if(weaponList[i] == Player2Roster[ui:GetChild("List4"):GetSelectedIndex()].Weapon) then
-				weapons:SetSelectedIndex(i)
+				selectedIndex = i
 			end
 		end
+		weapons:SetSelectedIndex(selectedIndex)
 	end
 end
 
@@ -226,10 +232,10 @@ function OnArmyChange2()
 end
 
 --ResizeWindow(600, 600)
-dofile("killteam.lua")
---dofile all your races here
-dofile("Chaos.lua")
-dofile("SpaceMarines.lua")
+RunScript("killteam.lua")
+--RunScript all your races here
+RunScript("Chaos.lua")
+RunScript("SpaceMarines.lua")
 local ui = UI:NewPanel("Panel1", 0, 0, 640, 640)
 local cbox = ui:NewCombobox("CBox1", 10, 0, 30, 180)
 local raceslist = getKeysSorted(races, function(a, b) return a < b end)

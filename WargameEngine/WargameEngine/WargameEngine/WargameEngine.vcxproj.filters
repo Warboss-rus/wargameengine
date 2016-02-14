@@ -212,6 +212,9 @@
     <ClCompile Include="view\TranslationManager.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="AsyncFileProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -225,9 +228,6 @@
     </ClInclude>
     <ClInclude Include="rapidxml\rapidxml_utils.hpp">
       <Filter>Source Files\rapidxml</Filter>
-    </ClInclude>
-    <ClInclude Include="AsyncReadTask.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ITask.h">
       <Filter>Source Files</Filter>
@@ -492,6 +492,9 @@
     </ClInclude>
     <ClInclude Include="view\TranslationManager.h">
       <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="AsyncFileProvider.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

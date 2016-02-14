@@ -19,7 +19,6 @@ using namespace placeholders;
 
 CGameView::~CGameView()
 {
-	ThreadPool::CancelAll();
 	DisableShadowMap();
 }
 
@@ -29,13 +28,18 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_viewHelper(&m_window->GetViewHelper())
 	, m_shaderManager(m_renderer->CreateShaderManager())
 	, m_textWriter(move(context->textWriter))
-	, m_particles(*m_renderer)
 	, m_gameModel(make_unique<CGameModel>())
-	, m_modelManager(*m_renderer, *m_gameModel)
+	, m_asyncFileProvider(m_threadPool, context->workingDir)
+	, m_modelManager(*m_renderer, *m_gameModel, m_asyncFileProvider)
+	, m_textureManager(m_window->GetViewHelper(), m_asyncFileProvider)
 	, m_soundPlayer(move(context->soundPlayer))
+	, m_particles(*m_renderer)
 	, m_scriptHandlerFactory(context->scriptHandlerFactory)
 	, m_socketFactory(context->socketFactory)
+	, m_module(context->module)
 {
+	m_viewHelper->SetTextureManager(m_textureManager);
+	m_asyncFileProvider.SetModule(context->module);
 	m_ui = make_unique<CUIElement>(*m_renderer, *m_textWriter);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
 	Init();
@@ -57,7 +61,7 @@ void CGameView::Init()
 	InitInput();
 
 	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
-	m_gameController->Init(*this, m_socketFactory);
+	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(m_module.script));
 	m_soundPlayer->Init();
 
 	m_window->DoOnDrawScene([this] {
@@ -67,7 +71,7 @@ void CGameView::Init()
 	});
 	m_window->DoOnResize([this](int width, int height) {m_ui->Resize(height, width);});
 	m_window->DoOnShutdown([this] {
-		ThreadPool::CancelAll();
+		m_threadPool.CancelAll();
 		DisableShadowMap();
 	});
 
@@ -269,7 +273,7 @@ void CGameView::DrawBoundingBox()
 
 void CGameView::Update()
 {
-	ThreadPool::Update();
+	m_threadPool.Update();
 	CVector3d position = m_camera->GetPosition();
 	CVector3d direction = m_camera->GetDirection();
 	CVector3d up = m_camera->GetUpVector();
@@ -604,13 +608,13 @@ float CGameView::GetMaxAnisotropy() const
 
 void CGameView::SetAnisotropyLevel(float level)
 {
-	m_viewHelper->GetTextureManager().SetAnisotropyLevel(level);
+	m_textureManager.SetAnisotropyLevel(level);
 }
 
 void CGameView::ClearResources()
 {
-	m_modelManager = CModelManager(*m_renderer, *m_gameModel);
-	m_viewHelper->GetTextureManager().Reset();
+	m_modelManager = CModelManager(*m_renderer, *m_gameModel, m_asyncFileProvider);
+	m_textureManager.Reset();
 	if (m_skybox)
 	{
 		m_skybox->ResetList();
@@ -627,6 +631,16 @@ void CGameView::SetWindowTitle(string const& title)
 IShaderManager& CGameView::GetShaderManager()
 {
 	return *m_shaderManager;
+}
+
+CAsyncFileProvider& CGameView::GetAsyncFileProvider()
+{
+	return m_asyncFileProvider;
+}
+
+ThreadPool& CGameView::GetThreadPool()
+{
+	return m_threadPool;
 }
 
 void CGameView::Preload(string const& image)
@@ -656,17 +670,17 @@ void CGameView::Preload(string const& image)
 
 void CGameView::LoadModule(string const& module)
 {
-	ThreadPool::CancelAll();
-	sModule::Load(module);
-	ChangeWorkingDirectory(sModule::folder);
+	m_threadPool.CancelAll();
+	m_module.Load(module);
+	m_asyncFileProvider.SetModule(m_module);
 	m_vertexLightning = false;
 	m_shadowMap = false;
 	m_lightPosition = CVector3d();
-	ThreadPool::QueueCallback([this]() {
+	m_threadPool.QueueCallback([this]() {
 		ResetController();
 		ClearResources();
 		m_ui->ClearChildren();
-		m_gameController->Init(*this, m_socketFactory);
+		m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(m_module.script));
 		InitInput();
 	});
 }

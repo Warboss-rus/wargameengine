@@ -171,6 +171,29 @@ public:
 		m_timedCallbacks.erase(std::find_if(m_timedCallbacks.begin(), m_timedCallbacks.end(), [=](std::deque<sTimedCallback>::value_type& callback) {return callback.index == index;}));
 	}
 
+	void WaitForTask(ITask & task)
+	{
+		for (;;)
+		{
+			switch (task.GetState())
+			{
+			case ITask::TaskState::QUEUED:
+			case ITask::TaskState::STARTED:
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				Update();
+			} break;
+			case ITask::TaskState::COMPLETED:
+			case ITask::TaskState::READY_FOR_DISPOSE:
+			case ITask::TaskState::CANCELLED:
+			case ITask::TaskState::FAILED:
+				return;
+			default:
+				throw std::exception("Invalid task state");
+			}
+		}
+	}
+
 	void WorkerThread()
 	{
 		for (;;)
@@ -232,7 +255,15 @@ public:
 	std::mutex m_tasksMutex;
 };
 
-std::unique_ptr<ThreadPool::Impl> ThreadPool::m_pImpl(std::unique_ptr<ThreadPool::Impl>(new ThreadPool::Impl()));
+ThreadPool::ThreadPool()
+	:m_pImpl(std::make_unique<Impl>())
+{
+}
+
+ThreadPool::~ThreadPool()
+{
+	CancelAll();
+}
 
 void ThreadPool::RunFunc(FunctionHandler const& func, CallbackHandler const& callback, unsigned int flags)
 {
@@ -267,6 +298,11 @@ void ThreadPool::AddTask(std::shared_ptr<ITask> task)
 void ThreadPool::RemoveTask(ITask * task)
 {
 	m_pImpl->RemoveTask(task);
+}
+
+void ThreadPool::WaitForTask(ITask & task)
+{
+	m_pImpl->WaitForTask(task);
 }
 
 size_t ThreadPool::AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat /*= false*/, bool executeSkipped /*= false*/)

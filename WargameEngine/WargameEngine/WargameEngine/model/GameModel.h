@@ -43,7 +43,6 @@ private:
 	std::vector<std::shared_ptr<IObject>> m_objects;
 	std::vector<CProjectile> m_projectiles;
 	std::shared_ptr<IObject> m_selectedObject;
-	static std::shared_ptr<CGameModel> m_instanse;
 	std::map<std::string, std::string> m_properties;
 	CLandscape m_landscape;
 	std::map<std::string, std::shared_ptr<IBounding>> m_boundings;

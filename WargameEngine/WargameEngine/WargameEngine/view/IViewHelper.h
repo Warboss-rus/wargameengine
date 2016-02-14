@@ -39,7 +39,7 @@ public:
 	virtual void SetUpViewport2D() = 0;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) = 0;
 	virtual void ClearBuffers(bool color = true, bool depth = true) = 0;
-	virtual CTextureManager& GetTextureManager() = 0;
+	virtual void SetTextureManager(CTextureManager & textureManager) = 0;
 
 	virtual ~IViewHelper() {}
 };

@@ -18,7 +18,7 @@ public:
 	typedef std::function<bool(std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z)> MouseButtonCallback;
 
 	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler);
-	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory);
+	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::string const& scriptPath);
 	void Update();
 
 	virtual std::vector<char> GetState(bool hasAdresses = false) const override;
