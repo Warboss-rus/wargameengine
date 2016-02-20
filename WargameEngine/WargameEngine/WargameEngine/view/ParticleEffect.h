@@ -1,5 +1,5 @@
 #pragma once
-#include "IParticleEffecth.h"
+#include "IParticleEffect.h"
 
 class CParticleEffect: public IParticleEffect
 {

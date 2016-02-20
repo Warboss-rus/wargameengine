@@ -1,6 +1,7 @@
 #include "view/GameView.h"
 #include "LogWriter.h"
 #include "Module.h"
+#include "view/BuiltInImageReaders.h"
 #include <cstring>
 #include <time.h>
 #ifdef DIRECTX
@@ -58,6 +59,10 @@ int main(int argc, char* argv[])
 	context.socketFactory = []() {
 		return std::make_unique<CNetSocket>();
 	};
+	context.imageReaders.push_back(std::make_unique<CBmpImageReader>());
+	context.imageReaders.push_back(std::make_unique<CTgaImageReader>());
+	context.imageReaders.push_back(std::make_unique<CDdsImageReader>());
+	context.imageReaders.push_back(std::make_unique<CStbImageReader>());
 
 	CGameView view(&context);
 	return 0;

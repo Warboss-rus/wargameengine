@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 #include "ParticleModel.h"
-#include "IParticleEffecth.h"
+#include "IParticleEffect.h"
 #include "IRenderer.h"
 
 class CParticleSystem

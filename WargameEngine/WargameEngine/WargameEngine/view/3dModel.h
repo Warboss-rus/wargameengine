@@ -83,7 +83,7 @@ private:
 	double m_rotX;
 	double m_rotY;
 	double m_rotZ;
-	int m_count;
+	size_t m_count;
 	std::vector<int> m_gpuWeightIndexes;
 	std::vector<float> m_gpuWeight;
 	std::vector<float> m_gpuInverseMatrices;

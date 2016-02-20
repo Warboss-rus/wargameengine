@@ -98,6 +98,7 @@ public:
 	void DoOnResize(std::function<void(int, int) > const& handler)
 	{
 		m_onResize = handler;
+		m_onResize(600, 600);
 	}
 
 	void DoOnShutdown(std::function<void() > const& handler)

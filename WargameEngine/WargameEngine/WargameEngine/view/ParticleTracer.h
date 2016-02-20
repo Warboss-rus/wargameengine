@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "IParticleEffecth.h"
+#include "IParticleEffect.h"
 
 class CParticleTracer: public IParticleEffect
 {

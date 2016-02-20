@@ -12,7 +12,7 @@
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
 #include "../UI/UITheme.h"
-#include "TextureManager.h"
+#include "IImageReader.h"
 
 using namespace std;
 using namespace placeholders;
@@ -40,6 +40,10 @@ CGameView::CGameView(sGameViewContext * context)
 {
 	m_viewHelper->SetTextureManager(m_textureManager);
 	m_asyncFileProvider.SetModule(context->module);
+	for (auto& reader : context->imageReaders)
+	{
+		m_textureManager.RegisterImageReader(std::move(reader));
+	}
 	m_ui = make_unique<CUIElement>(*m_renderer, *m_textWriter);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
 	Init();
@@ -710,4 +714,8 @@ void CGameView::SetLightColor(size_t index, LightningType type, float * values)
 void CGameView::EnableGPUSkinning(bool enable)
 {
 	m_modelManager.EnableGPUSkinning(enable);
+}
+
+sGameViewContext::~sGameViewContext()
+{
 }

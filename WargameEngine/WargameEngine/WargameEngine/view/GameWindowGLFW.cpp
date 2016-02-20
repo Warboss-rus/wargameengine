@@ -104,6 +104,9 @@ void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
 void CGameWindowGLFW::DoOnResize(std::function<void(int, int)> const& handler)
 {
 	m_onResize = handler;
+	int width, height;
+	glfwGetWindowSize(m_window, &width, &height);
+	OnReshape(m_window, width, height);
 }
 
 void CGameWindowGLFW::DoOnShutdown(std::function<void()> const& handler)

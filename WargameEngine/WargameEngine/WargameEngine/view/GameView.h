@@ -22,9 +22,11 @@
 
 class IScriptHandler;
 class INetSocket;
+class IImageReader;
 
 struct sGameViewContext
 {
+	~sGameViewContext();
 	std::unique_ptr<IGameWindow> window;
 	std::unique_ptr<ISoundPlayer> soundPlayer;
 	std::unique_ptr<ITextWriter> textWriter;
@@ -32,6 +34,7 @@ struct sGameViewContext
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
 	sModule module;
 	std::string workingDir;
+	std::vector<std::unique_ptr<IImageReader>> imageReaders;
 };
 
 class CGameView

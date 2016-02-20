@@ -218,6 +218,9 @@
     <ClCompile Include="MemoryStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="view\BuiltInImageReaders.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -370,9 +373,6 @@
     <ClInclude Include="view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\IParticleEffecth.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\IRenderer.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -504,6 +504,15 @@
     </ClInclude>
     <ClInclude Include="MemoryStream.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IParticleEffect.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IImageReader.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\BuiltInImageReaders.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
