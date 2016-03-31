@@ -258,9 +258,9 @@ unsigned short CNetSocket::GetPort() const
 	return ntohs(name.sin_port);
 }
 
-bool CNetSocket::SendData(const char * data, int len) const
+bool CNetSocket::SendData(const char * data, size_t len) const
 {
-	int count = send(m_socket, data, len, 0);
+	int count = send(m_socket, data, static_cast<int>(len), 0);
 	if (count == SOCKET_ERROR)
 	{
 		LogError();
@@ -269,9 +269,9 @@ bool CNetSocket::SendData(const char * data, int len) const
 	return count == len;
 }
 
-int CNetSocket::RecieveData(char * data, int maxLength)
+int CNetSocket::RecieveData(char* data, size_t maxLength)
 {
-	int count = recv(m_socket, data, maxLength, 0);
+	int count = recv(m_socket, data, static_cast<int>(maxLength), 0);
 	if (count == 0)
 	{
 		LogWriter::WriteLine("Net OK. Connection is closed by the other side.");

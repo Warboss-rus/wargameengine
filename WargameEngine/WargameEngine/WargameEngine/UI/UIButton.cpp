@@ -1,5 +1,6 @@
 #include "UIButton.h"
 #include "UIText.h"
+#include "../view/IRenderer.h"
 
 CUIButton::CUIButton(int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) :
 	CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text), m_onClick(onClick), m_isPressed(false)

@@ -1,4 +1,5 @@
 #include "CommandHandler.h"
+#include "ICommand.h"
 #include "CommandCreateObject.h"
 #include "CommandDeleteObject.h"
 #include "CommandMoveObject.h"
@@ -7,6 +8,7 @@
 #include "CommandChangeGlobalProperty.h"
 #include "CommandPlayAnimation.h"
 #include "CommandGoTo.h"
+#include "CommandCompound.h"
 #include "..\IMemoryStream.h"
 
 void CCommandHandler::AddNewCommand(std::unique_ptr<ICommand> && command, bool local)
@@ -32,6 +34,10 @@ void CCommandHandler::AddNewCommand(std::unique_ptr<ICommand> && command, bool l
 
 CCommandHandler::CCommandHandler()
 	:m_current(0)
+{
+}
+
+CCommandHandler::~CCommandHandler()
 {
 }
 

@@ -1,10 +1,13 @@
 #include "OBJModelFactory.h"
+#include "IRenderer.h"
+#include "3dModel.h"
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <map>
 #include <vector>
 #include "../LogWriter.h"
+#include <algorithm>
 #include "../AsyncFileProvider.h"
 
 struct FaceIndex
@@ -31,7 +34,6 @@ unsigned int ParseStringUntilSlash(std::stringstream& indexStream, char ch = 0)
 FaceIndex ParseFaceIndex(std::string const& str)
 {
 	std::stringstream indexStream(str);
-	std::string index;
 	FaceIndex res;
 	res.vertex = ParseStringUntilSlash(indexStream, '/');
 	res.textureCoord = ParseStringUntilSlash(indexStream, '/');
@@ -120,16 +122,26 @@ std::map<std::string, sMaterial> LoadMTL(std::string const& path)
 	return materials;
 }
 
-void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader, std::string const& modelPath)
+std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::string const& filePath)
 {
-	auto slashPos = modelPath.find_last_of("\\/");
-	std::string parentPath = slashPos == modelPath.npos ? modelPath : modelPath.substr(0, slashPos);
+	auto slashPos = filePath.find_last_of("\\/");
+	std::string parentPath = slashPos == filePath.npos ? filePath : filePath.substr(0, slashPos);
+	std::vector<CVector3f> tempVertices;
+	std::vector<CVector2f> tempTextureCoords;
+	std::vector<CVector3f> tempNormals;
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
 	std::map<std::string, unsigned int> faces;
+	std::vector<unsigned int> indexes;
+	CMaterialManager materialManager;
+	std::vector<sMesh> meshes;
+	std::vector<unsigned int> weightsCount;
+	std::vector<unsigned int> weightsIndexes;
+	std::vector<float> weights;
+	std::vector<sJoint> joints;
+	std::vector<sAnimation> animations;
 	std::stringstream iFile((char*)data);
-	std::string line;
 	std::string type;
 	CVector3f p3;
 	CVector2f p2;
@@ -148,7 +160,7 @@ void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader, std::s
 			iFile >> p3.x;
 			iFile >> p3.y;
 			iFile >> p3.z;
-			vertices.push_back(p3);
+			tempVertices.push_back(p3);
 		}
 
 		if(type == "vt")// Texture coords
@@ -156,7 +168,7 @@ void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader, std::s
 			useUVs = true;
 			iFile >> p2.x;
 			iFile >> p2.y;
-			textureCoords.push_back(p2);
+			tempTextureCoords.push_back(p2);
 		}
 		if(type == "vn")// Normals
 		{
@@ -164,7 +176,7 @@ void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader, std::s
 			iFile >> p3.x;
 			iFile >> p3.y;
 			iFile >> p3.z;
-			normals.push_back(p3);
+			tempNormals.push_back(p3);
 		}
 		if(type == "f")// faces
 		{
@@ -175,54 +187,54 @@ void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader, std::s
 				iFile >> index3;
 				if(faces.find(index3) != faces.end()) //This vertex/texture coord/normal already exist
 				{
-					loader.indexes.push_back(faces[index3]);
+					indexes.push_back(faces[index3]);
 				}
 				else//New vertex/texcoord/normal
 				{
 					FaceIndex faceIndex  = ParseFaceIndex(index3);
-					loader.vertices.push_back(vertices[faceIndex.vertex - 1]);
+					vertices.push_back(tempVertices[faceIndex.vertex - 1]);
 					if(faceIndex.textureCoord != 0)
 					{
-						loader.textureCoords.push_back(textureCoords[faceIndex.textureCoord - 1]);
+						textureCoords.push_back(tempTextureCoords[faceIndex.textureCoord - 1]);
 					}
 					else
 					{
-						loader.textureCoords.push_back(CVector2f());
+						textureCoords.push_back(CVector2f());
 					}
 					if(faceIndex.normal != 0)
 					{
-						loader.normals.push_back(normals[faceIndex.normal - 1]);
+						normals.push_back(tempNormals[faceIndex.normal - 1]);
 					}
 					else
 					{
-						loader.normals.push_back(CVector3f());
+						normals.push_back(CVector3f());
 					}
-					loader.indexes.push_back(loader.vertices.size() - 1);
-					faces[index3] = loader.vertices.size() - 1;
+					indexes.push_back(static_cast<int>(vertices.size() - 1));
+					faces[index3] = static_cast<unsigned>(vertices.size() - 1);
 				}
 			}
 		}
 		if(type == "mtllib")//Load materials file
 		{
-			std::string path;
-			iFile >> path;
-			if (path.size() > 2 && path.front() == '.')
+			std::string mtlPath;
+			iFile >> mtlPath;
+			if (mtlPath.size() > 2 && mtlPath.front() == '.')
 			{
-				path = path.substr(2);
+				mtlPath = mtlPath.substr(2);
 			}
-			loader.materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, path)));
+			materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, mtlPath)));
 		}
 		if(type == "usemtl")//apply material
 		{
 			iFile >> mesh.materialName;
-			mesh.polygonIndex = loader.indexes.size();
-			if(!loader.meshes.empty() && mesh.polygonIndex == loader.meshes.back().polygonIndex)
+			mesh.polygonIndex = indexes.size();
+			if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
 			{
-				loader.meshes.back() = mesh;
+				meshes.back() = mesh;
 			}
 			else
 			{
-				loader.meshes.push_back(mesh);
+				meshes.push_back(mesh);
 			}
 		}
 		if(type == "g")//apply material
@@ -233,30 +245,42 @@ void LoadObjModel(void* data, unsigned int /*size*/, sOBJLoader & loader, std::s
 			if(!name.empty())
 			{
 				mesh.name = name;
-				mesh.polygonIndex = loader.indexes.size();
-				if(!loader.meshes.empty() && mesh.polygonIndex == loader.meshes.back().polygonIndex)
+				mesh.polygonIndex = indexes.size();
+				if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
 				{
-					loader.meshes.back() = mesh;
+					meshes.back() = mesh;
 				}
 				else
 				{
-					loader.meshes.push_back(mesh);
+					meshes.push_back(mesh);
 				}
 			}
 		}
 	}
 	if(!useNormals)
 	{
-		loader.normals.clear();
+		tempNormals.clear();
 	}
 	if(!useUVs)
 	{
-		loader.textureCoords.clear();
+		tempTextureCoords.clear();
 	}
 	if(!useFaces)
 	{
-		loader.vertices.swap(vertices);
-		loader.textureCoords.swap(textureCoords);
-		loader.normals.swap(normals);
+		vertices.swap(tempVertices);
+		textureCoords.swap(tempTextureCoords);
+		normals.swap(tempNormals);
 	}
+	auto result = std::make_unique<C3DModel>(dummyModel);
+	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
+	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
+	return std::move(result);
+}
+
+bool CObjModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::string const& filePath) const
+{
+	size_t dotCoord = filePath.find_last_of('.') + 1;
+	std::string extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	return extension == "obj";
 }

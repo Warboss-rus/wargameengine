@@ -13,7 +13,7 @@ public:
 	virtual void AddItem(std::wstring const& str) override;
 	virtual void DeleteItem(size_t index) override;
 	virtual std::wstring const GetText() const override;
-	virtual int GetSelectedIndex() const override;
+	virtual size_t GetSelectedIndex() const override;
 	virtual size_t GetItemsCount() const override;
 	virtual std::wstring GetItem(size_t index) const override;
 	virtual void ClearItems() override;

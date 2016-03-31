@@ -35,7 +35,7 @@ void CParticleSystem::AddEffect(string const& file, double x, double y, double z
 	{
 		m_models.emplace(file, CParticleModel(file, m_renderer));
 	}
-	if (lifetime == 0.0f)
+	if (abs(lifetime) < FLT_EPSILON)
 	{
 		lifetime = m_models.at(file).GetDuration();
 	}

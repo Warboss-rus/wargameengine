@@ -263,13 +263,13 @@ void CObjectGroup::RemoveSecondaryModel(std::string const& model)
 	}
 }
 
-unsigned int CObjectGroup::GetSecondaryModelsCount() const
+size_t CObjectGroup::GetSecondaryModelsCount() const
 {
 	if (m_children.empty()) return 0;
 	return m_children[m_current]->GetSecondaryModelsCount();
 }
 
-std::string CObjectGroup::GetSecondaryModel(unsigned int index) const
+std::string CObjectGroup::GetSecondaryModel(size_t index) const
 {
 	if (m_children.empty()) return "";
 	return m_children[m_current]->GetSecondaryModel(index);

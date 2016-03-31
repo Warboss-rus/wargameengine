@@ -19,7 +19,8 @@ struct sLightSource
 class CDirectXRenderer : public IRenderer, public IViewHelper
 {
 public:
-	CDirectXRenderer(ID3D11Device *dev = nullptr, ID3D11DeviceContext *devcon = nullptr, HWND hWnd = NULL);
+	CDirectXRenderer(HWND hWnd = NULL);
+	~CDirectXRenderer();
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
@@ -86,16 +87,21 @@ public:
 
 	void SetShaderManager(CShaderManagerDirectX * shaderManager);
 	void SetTextureResource(ID3D11ShaderResourceView * view);
-	void OnResize();
+	void OnResize(unsigned int width, unsigned int height);
 	ID3D11DeviceContext * GetContext();
 	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat);
+	void Present();
+	void ToggleFullscreen();
+	void EnableMultisampling(bool enable, int level = 1.0f);
 private:
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize);
 	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, 
 		bool renderTarget = false, size_t size = 0, CachedTextureType type = CachedTextureType::RGBA, TextureMipMaps const& mipmaps = TextureMipMaps());
 	void UpdateMatrices();
 	void CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size);
+	void CreateDepthBuffer(unsigned int width, unsigned int height, ID3D11DepthStencilView ** buffer);
 
+	CComPtr<IDXGISwapChain> m_swapchain;// the pointer to the swap chain interface
 	CComPtr<ID3D11Device> m_dev;
 	CComPtr<ID3D11DeviceContext> m_devcon;
 	HWND m_hWnd;

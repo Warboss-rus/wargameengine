@@ -1,19 +1,20 @@
 #pragma once
-#include "ICommand.h"
 #include <vector>
 #include <memory>
 #include <functional>
-#include "CommandCompound.h"
 #include "..\model\Animation.h"
 
+class ICommand;
 class IObject;
 class IGameModel;
 class IReadMemoryStream;
+class CCommandCompound;
 
 class CCommandHandler
 {
 public:
 	CCommandHandler();
+	~CCommandHandler();
 	void AddNewCreateObject(std::shared_ptr<IObject> object, IGameModel & model);
 	void AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model);
 	void AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY);

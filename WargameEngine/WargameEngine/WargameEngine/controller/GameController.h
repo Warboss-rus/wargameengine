@@ -29,7 +29,7 @@ public:
 	bool OnRightMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
 	bool OnRightMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
 	bool OnMouseMove(CVector3d const& begin, CVector3d const& end, int modifiers);
-	int GetLineOfSight(IObject * shooter, IObject * target);
+	size_t GetLineOfSight(IObject * shooter, IObject * target);
 	void SetSelectionCallback(std::function<void()> const& onSelect);
 	void SetUpdateCallback(std::function<void()> const& onUpdate);
 	void SetSingleCallback(std::function<void()> const& onSingleUpdate);
@@ -64,7 +64,7 @@ private:
 	void MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY);
 	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
 	bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target);
-	int BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject);
+	size_t BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject);
 	CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0);
 	static void PackProperties(std::map<std::string, std::string> const&properties, IWriteMemoryStream & stream);
 
@@ -72,7 +72,7 @@ private:
 	CVector3d m_selectedObjectCapturePoint;
 	std::unique_ptr<CVector3d> m_selectedObjectBeginCoords;
 	std::unique_ptr<CVector2d> m_selectionRectangleBegin;
-	double m_selectedObjectPrevRotation;
+	double m_selectedObjectPrevRotation = 0;
 	std::unique_ptr<CVector3d> m_rotationPosBegin;
 
 	std::unique_ptr<IScriptHandler> m_scriptHandler;

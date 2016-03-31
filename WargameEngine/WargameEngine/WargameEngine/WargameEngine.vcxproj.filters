@@ -33,6 +33,9 @@
     <Filter Include="Source Files\controller\functionRegisters">
       <UniqueIdentifier>{8ca9dadd-2879-42df-93e1-a9cc3a9686d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\view\Readers">
+      <UniqueIdentifier>{3277a43f-59f5-4307-943b-4083e49616d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ruler.cpp">
@@ -62,9 +65,6 @@
     <ClCompile Include="view\ModelManager.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="view\OBJModelFactory.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="view\SkyBox.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -82,9 +82,6 @@
     </ClCompile>
     <ClCompile Include="UI\UITheme.cpp">
       <Filter>Source Files\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="view\WBMModelFactory.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="UI\UIList.cpp">
       <Filter>Source Files\UI</Filter>
@@ -118,9 +115,6 @@
     </ClCompile>
     <ClCompile Include="OSSpecific.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ColladaModelFactory.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="controller\GameController.cpp">
       <Filter>Source Files\controller</Filter>
@@ -219,7 +213,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="view\BuiltInImageReaders.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\view\Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="view\ColladaModelFactory.cpp">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="view\OBJModelFactory.cpp">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="view\WBMModelFactory.cpp">
+      <Filter>Source Files\view\Readers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -385,9 +388,6 @@
     <ClInclude Include="view\ModelManager.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\OBJModelFactory.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\SkyBox.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -511,8 +511,20 @@
     <ClInclude Include="view\IImageReader.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\BuiltInImageReaders.h">
+    <ClInclude Include="view\IModelReader.h">
       <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\BuiltInImageReaders.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="view\OBJModelFactory.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ColladaModelFactory.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="view\WBMModelFactory.h">
+      <Filter>Source Files\view\Readers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -35,6 +35,7 @@ struct sGameViewContext
 	sModule module;
 	std::string workingDir;
 	std::vector<std::unique_ptr<IImageReader>> imageReaders;
+	std::vector<std::unique_ptr<IModelReader>> modelReaders;
 };
 
 class CGameView

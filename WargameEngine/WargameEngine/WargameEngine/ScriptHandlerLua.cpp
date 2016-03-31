@@ -158,7 +158,7 @@ int CScriptHandlerLua::luaError(lua_State *L)
 template <class T>
 void PushLuaArray(lua_State* L, std::vector<T> const& arr, std::function<void(T const& value)> const& func)
 {
-	lua_createtable(L, arr.size(), 0);
+	lua_createtable(L, static_cast<int>(arr.size()), 0);
 	for (size_t i = 0; i < arr.size(); ++i)
 	{
 		func(arr[i]);
@@ -210,7 +210,7 @@ int CScriptHandlerLua::PushReturnValue(lua_State *L, FunctionArgument const& arg
 	case FunctionArgument::Type::MAP:
 	{
 		auto arr = static_cast<std::map<std::string, FunctionArgument>*>(arg.data.get());
-		lua_createtable(L, arr->size(), 0);
+		lua_createtable(L, static_cast<int>(arr->size()), 0);
 		for (auto& pair : *arr)
 		{
 			lua_pushstring(L, pair.first.c_str());
@@ -255,7 +255,7 @@ void CScriptHandlerLua::CallFunction(std::string const& funcName, FunctionArgume
 	{
 		PushReturnValue(m_lua_state, arg);
 	}
-	int result = lua_pcall(m_lua_state, arguments.size(), 0, 0);
+	int result = lua_pcall(m_lua_state, static_cast<int>(arguments.size()), 0, 0);
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);

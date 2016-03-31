@@ -35,10 +35,10 @@ public:
 	bool isCoordsOnTable(double worldX, double worldY) const;
 	void AddNewDecal(sDecal const& decal);
 	size_t GetNumberOfDecals() const;
-	sDecal const& GetDecal(unsigned int index) const;
+	sDecal const& GetDecal(size_t index) const;
 	void AddStaticObject(CStaticObject const& object);
 	size_t GetStaticObjectCount() const;
-	CStaticObject const& GetStaticObject(unsigned int index) const;
+	CStaticObject const& GetStaticObject(size_t index) const;
 	void DoOnUpdated(std::function<void()> const& onUpdated);
 private:
 	double m_width;

@@ -1,5 +1,6 @@
 #include "UIRadioGroup.h"
 #include "UIText.h"
+#include "../view/IRenderer.h"
 
 CUIRadioGroup::CUIRadioGroup(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
 	: CUIElement(x, y, height, width, parent, renderer, textWriter), m_selected(0)
@@ -18,13 +19,15 @@ void CUIRadioGroup::Draw() const
 			for (size_t i = 0; i < m_items.size(); ++i)
 			{
 				m_renderer.SetTexture(m_theme->texture, true);
-				float y = m_theme->radiogroup.elementSize * i + (m_theme->radiogroup.elementSize - m_theme->radiogroup.buttonSize) / 2;
-				float * texCoord = (i == m_selected) ? m_theme->radiogroup.selectedTexCoord : m_theme->radiogroup.texCoord;
+				auto& theme = m_theme->radiogroup;
+				float buttonSize = theme.buttonSize;
+				float y = theme.elementSize * i + (theme.elementSize - buttonSize) / 2;
+				float * texCoord = (i == m_selected) ? theme.selectedTexCoord : theme.texCoord;
 				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-				{ CVector2f(0.0f, y), { 0.0f, y + m_theme->radiogroup.buttonSize }, { m_theme->radiogroup.buttonSize, y }, { m_theme->radiogroup.buttonSize, y + m_theme->radiogroup.buttonSize} },
+				{ CVector2f(0.0f, y), { 0.0f, y + buttonSize }, { buttonSize, y }, { buttonSize, y + buttonSize} },
 				{ CVector2f(texCoord), {texCoord[0], texCoord[3]}, {texCoord[2], texCoord[1]}, {texCoord[2], texCoord[3]} });
-				int intSize = static_cast<int>(m_theme->radiogroup.elementSize);
-				PrintText(m_renderer, m_textWriter, static_cast<int>(m_theme->radiogroup.buttonSize) + 1, intSize * i, GetWidth(), intSize, m_items[i], m_theme->text);
+				int intSize = static_cast<int>(theme.elementSize);
+				PrintText(m_renderer, m_textWriter, static_cast<int>(buttonSize) + 1, intSize * static_cast<int>(i), GetWidth(), intSize, m_items[i], m_theme->text);
 			}
 		}, GetWidth(), GetHeight()));
 	}
@@ -48,7 +51,7 @@ bool CUIRadioGroup::LeftMouseButtonUp(int x, int y)
 	if(PointIsOnElement(x, y))
 	{
 		size_t index = static_cast<size_t>((y - GetY()) / m_theme->radiogroup.elementSize);
-		if(index >= 0 && index < m_items.size()) m_selected = index;
+		if(index < m_items.size()) m_selected = index;
 		if(m_onChange) m_onChange();
 		SetFocus();
 		return true;
@@ -97,7 +100,7 @@ void CUIRadioGroup::SetText(std::wstring const& text)
 	}
 }
 
-int CUIRadioGroup::GetSelectedIndex() const
+size_t CUIRadioGroup::GetSelectedIndex() const
 { 
 	return m_selected; 
 }

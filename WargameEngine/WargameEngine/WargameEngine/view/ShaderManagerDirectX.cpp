@@ -236,7 +236,7 @@ void CShaderManagerDirectX::SetUniformValue4(std::string const& uniform, int cou
 	CopyConstantBufferData(begin, value, sizeof(unsigned int) * count * 4);
 }
 
-void CShaderManagerDirectX::SetUniformMatrix4(std::string const& uniform, int count, float* value) const
+void CShaderManagerDirectX::SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const
 {
 	unsigned int begin = GetVariableOffset("Constant", uniform);
 	CopyConstantBufferData(begin, value, sizeof(float) * count * 16);

@@ -28,7 +28,7 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& 
 	bool force32b = m_helper.Force32Bits();
 	bool forceFlip = m_helper.ForceFlipBMP();
 	std::shared_ptr<CImage> img = std::make_shared<CImage>();
-	m_asyncFileProvider.GetTextureAsync(path, [=](void* data, unsigned int size) {
+	m_asyncFileProvider.GetTextureAsync(path, [=](void* data, size_t size) {
 		unsigned char* charData = reinterpret_cast<unsigned char*>(data);
 		for (auto& reader : m_imageReaders)
 		{

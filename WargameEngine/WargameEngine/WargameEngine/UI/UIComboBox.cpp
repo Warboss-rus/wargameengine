@@ -1,5 +1,6 @@
 #include "UIComboBox.h"
 #include "UIText.h"
+#include "../view/IRenderer.h"
 
 CUIComboBox::CUIComboBox(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) : CUIElement(x, y, height, width, parent, renderer, textWriter),
 m_selected(-1), m_expanded(false), m_pressed(false), m_scrollbar(m_theme, renderer)
@@ -13,29 +14,32 @@ void CUIComboBox::Draw() const
 	m_renderer.PushMatrix();
 	m_renderer.Translate(GetX(), GetY(), 0);
 	int realHeight = GetHeight();
-	if (m_expanded) realHeight += m_theme->combobox.elementSize * m_items.size();
+	if (m_expanded) realHeight += m_theme->combobox.elementSize * static_cast<int>(m_items.size());
 	if (!m_cache)
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
+			auto& theme = m_theme->combobox;
+			int elementSize = theme.elementSize;
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
 
-			m_renderer.SetColor(m_theme->textfieldColor[0], m_theme->textfieldColor[1], m_theme->textfieldColor[2]);
-			int borderSize = m_theme->combobox.borderSize;
+			m_renderer.SetColor(m_theme->textfieldColor);
+			int borderSize = theme.borderSize;
 			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize},
 			{GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
 
-			m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
+			auto& textTheme = theme.text;
+			m_renderer.SetColor(textTheme.color);
 			if (m_selected >= 0)
 			{
-				PrintText(m_renderer, m_textWriter, m_theme->combobox.borderSize, m_theme->combobox.borderSize, GetWidth(), GetHeight(), m_items[m_selected], m_theme->combobox.text);
+				PrintText(m_renderer, m_textWriter, borderSize, borderSize, GetWidth(), GetHeight(), m_items[m_selected], textTheme);
 			}
 
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.SetTexture(m_theme->texture, true);
-			float * texCoords = m_expanded ? m_theme->combobox.expandedTexCoord : m_theme->combobox.texCoord;
-			int firstX = GetWidth() - static_cast<int>(GetHeight() * m_theme->combobox.buttonWidthCoeff);
+			float * texCoords = m_expanded ? theme.expandedTexCoord : theme.texCoord;
+			int firstX = GetWidth() - static_cast<int>(GetHeight() * theme.buttonWidthCoeff);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(firstX, 0), { firstX, GetHeight() }, {GetWidth(), GetHeight()}, {GetWidth(), 0} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
@@ -44,14 +48,14 @@ void CUIComboBox::Draw() const
 			if (m_expanded)
 			{
 				m_renderer.SetColor(m_theme->textfieldColor);
-				int totalHeight = GetHeight() + m_theme->combobox.elementSize * m_items.size();
+				int totalHeight = GetHeight() + elementSize * static_cast<int>(m_items.size());
 				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, GetHeight()), { 0, totalHeight }, {GetWidth(), totalHeight}, {GetWidth(), GetHeight()} }, {});
 
-				m_renderer.SetColor(m_theme->text.color[0], m_theme->text.color[1], m_theme->text.color[2]);
-				for (size_t i = m_scrollbar.GetPosition() / m_theme->combobox.elementSize; i < m_items.size(); ++i)
+				m_renderer.SetColor(textTheme.color);
+				for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 				{
-					if (GetHeight() + m_theme->combobox.elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight) break;
-					PrintText(m_renderer, m_textWriter, m_theme->combobox.borderSize, GetHeight() + m_theme->combobox.elementSize * i - m_scrollbar.GetPosition(), GetWidth(), m_theme->combobox.elementSize, m_items[i], m_theme->combobox.text);
+					if (GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight) break;
+					PrintText(m_renderer, m_textWriter, borderSize, GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition(), GetWidth(), elementSize, m_items[i], textTheme);
 				}
 
 				m_renderer.PushMatrix();
@@ -132,7 +136,8 @@ void CUIComboBox::AddItem(std::wstring const& str)
 	{
 		m_selected = 0;
 	}
-	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme->combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme->combobox.elementSize);
+	int elementSize = m_theme->combobox.elementSize;
+	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
 	Invalidate();
 }
 
@@ -143,7 +148,7 @@ std::wstring const CUIComboBox::GetText() const
 
 void CUIComboBox::SetSelected(size_t index)
 {
-	m_selected = index;
+	m_selected = static_cast<int>(index);
 	Invalidate();
 }
 
@@ -152,7 +157,7 @@ bool CUIComboBox::PointIsOnElement(int x, int y) const
 	int height = GetHeight();
 	if(m_expanded)
 	{
-		height += m_theme->combobox.elementSize * m_items.size();
+		height += m_theme->combobox.elementSize * static_cast<int>(m_items.size());
 	}
 	if(x > GetX() && x < GetX() + GetWidth() && y > GetY() && y < GetY() + height)
 		return true;
@@ -164,7 +169,8 @@ void CUIComboBox::DeleteItem(size_t index)
 	m_items.erase(m_items.begin() + index);
 	if(m_selected == static_cast<int>(index)) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
-	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme->combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme->combobox.elementSize);
+	int elementSize = m_theme->combobox.elementSize;
+	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
 	Invalidate();
 }
 
@@ -175,7 +181,7 @@ void CUIComboBox::SetText(std::wstring const& text)
 	{
 		if(m_items[i] == text)
 		{
-			m_selected = i;
+			m_selected = static_cast<int>(i);
 			return;
 		}
 	}
@@ -184,11 +190,12 @@ void CUIComboBox::SetText(std::wstring const& text)
 void CUIComboBox::Resize(int windowHeight, int windowWidth) 
 {
 	CUIElement::Resize(windowHeight, windowWidth);
-	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), m_theme->combobox.elementSize * (m_items.size() + 1), GetWidth(), m_theme->combobox.elementSize);
+	int elementSize = m_theme->combobox.elementSize;
+	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
 	Invalidate();
 }
 
-int CUIComboBox::GetSelectedIndex() const
+size_t CUIComboBox::GetSelectedIndex() const
 { 
 	return m_selected; 
 }

@@ -1,21 +1,9 @@
-#include <string>
-#include "3dModel.h"
+#pragma once
+#include "IModelReader.h"
 
-struct sOBJLoader
+class CObjModelFactory : public IModelReader
 {
-	std::vector<CVector3f> vertices;
-	std::vector<CVector2f> textureCoords;
-	std::vector<CVector3f> normals;
-	std::vector<unsigned int> indexes;
-	CMaterialManager materialManager;
-	std::vector<sMesh> meshes;
-	std::vector<unsigned int> weightsCount;
-	std::vector<unsigned int> weightsIndexes;
-	std::vector<float> weights;
-	std::vector<sJoint> joints;
-	std::vector<sAnimation> animations;
+public:
+	virtual bool ModelIsSupported(unsigned char * data, size_t size, std::string const& filePath) const override;
+	virtual std::unique_ptr<C3DModel> LoadModel(unsigned char * data, size_t size, C3DModel const& dummyModel, std::string const& filePath) override;
 };
-
-void LoadObjModel(void* data, unsigned int size, sOBJLoader & loader, std::string const& path);
-void LoadWbmModel(void* data, unsigned int dataSize, sOBJLoader & loader);
-void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader);

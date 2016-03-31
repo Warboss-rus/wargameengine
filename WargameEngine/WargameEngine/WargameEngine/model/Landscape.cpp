@@ -116,7 +116,7 @@ std::string const& CLandscape::GetTexture() const
 	return m_texture;
 }
 
-sDecal const& CLandscape::GetDecal(unsigned int index) const
+sDecal const& CLandscape::GetDecal(size_t index) const
 {
 	return m_decals[index];
 }
@@ -132,7 +132,7 @@ size_t CLandscape::GetStaticObjectCount() const
 	return m_staticObjects.size();
 }
 
-CStaticObject const& CLandscape::GetStaticObject(unsigned int index) const
+CStaticObject const& CLandscape::GetStaticObject(size_t index) const
 {
 	return m_staticObjects[index];
 }

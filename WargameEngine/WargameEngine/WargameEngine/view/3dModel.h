@@ -6,12 +6,13 @@
 #include <map>
 #include "MaterialManager.h"
 #include "Vector3.h"
-#include "IRenderer.h"
 #include "..\model\Animation.h"
 #include "..\model\TeamColor.h"
 
 class IObject;
 class IShaderManager;
+class IDrawingList;
+class IRenderer;
 
 struct sMesh
 {
@@ -55,8 +56,8 @@ class C3DModel
 {
 public:
 	C3DModel(double scale, double rotateX, double rotateY, double rotateZ);
-	C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-		CMaterialManager & materials, std::vector<sMesh> & meshes, double scale);
+	~C3DModel();
+	C3DModel(C3DModel const& other);
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes);
 	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);
@@ -80,9 +81,7 @@ private:
 	CMaterialManager m_materials;
 	std::map<sModelCallListKey, std::unique_ptr<IDrawingList>> m_lists;
 	double m_scale;
-	double m_rotX;
-	double m_rotY;
-	double m_rotZ;
+	CVector3d m_rotation;
 	size_t m_count;
 	std::vector<int> m_gpuWeightIndexes;
 	std::vector<float> m_gpuWeight;

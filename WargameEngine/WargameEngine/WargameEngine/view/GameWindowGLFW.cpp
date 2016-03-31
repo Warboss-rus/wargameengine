@@ -1,5 +1,4 @@
 #include "GameWindowGLFW.h"
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "InputGLFW.h"
 #include "OpenGLRenderer.h"
@@ -14,12 +13,7 @@ void CGameWindowGLFW::OnChangeState(GLFWwindow * /*window*/, int state)
 
 void CGameWindowGLFW::OnReshape(GLFWwindow * /*window*/, int width, int height)
 {
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	GLdouble aspect = (GLdouble)width / (GLdouble)height;
-	gluPerspective(60, aspect, 0.5, 1000.0);
-	glMatrixMode(GL_MODELVIEW);
+	g_instance->m_renderer->OnResize(width, height);
 	if (g_instance->m_onResize)
 	{
 		g_instance->m_onResize(width, height);
@@ -30,7 +24,7 @@ void CGameWindowGLFW::OnShutdown(GLFWwindow * window)
 {
 	if (g_instance->m_onShutdown)
 	{
-		g_instance->m_onShutdown;
+		g_instance->m_onShutdown();
 	}
 	glfwDestroyWindow(window);
 	g_instance->m_window = nullptr;
@@ -61,13 +55,6 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	}
 	m_window = glfwCreateWindow(600, 600, "WargameEngine", monitor, NULL);
 	glfwMakeContextCurrent(m_window);
-	//glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.01f);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glfwSetWindowSizeCallback(m_window, &OnReshape);
 	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
@@ -89,11 +76,6 @@ CGameWindowGLFW::CGameWindowGLFW()
 	CreateNewWindow();
 
 	m_renderer = std::make_unique<COpenGLRenderer>();
-
-	glewInit();
-
-	//glfwSwapInterval(1);
-
 }
 
 void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
@@ -131,10 +113,7 @@ void CGameWindowGLFW::ToggleFullscreen()
 
 void CGameWindowGLFW::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 {
-	if (enable)
-		glEnable(GL_MULTISAMPLE);
-	else
-		glDisable(GL_MULTISAMPLE);
+	m_renderer->EnableMultisampling(enable);
 	glfwWindowHint(GLFW_SAMPLES, level);
 }
 

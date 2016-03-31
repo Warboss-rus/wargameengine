@@ -41,8 +41,8 @@ public:
 	float GetAnimationTime() const override;
 	void AddSecondaryModel(std::string const& model) override;
 	void RemoveSecondaryModel(std::string const& model) override;
-	unsigned int GetSecondaryModelsCount() const override;
-	std::string GetSecondaryModel(unsigned int index) const override;
+	size_t GetSecondaryModelsCount() const override;
+	std::string GetSecondaryModel(size_t index) const override;
 	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) override;

@@ -225,14 +225,102 @@ float GetAspectRatio(HWND m_hWnd)
 	return static_cast<float>(rect.right - rect.left) / static_cast<float>(rect.bottom - rect.top);
 }
 
-CDirectXRenderer::CDirectXRenderer(ID3D11Device *dev, ID3D11DeviceContext *devcon, HWND hWnd)
-	:m_dev(dev), m_devcon(devcon), m_hWnd(hWnd)
-	, m_defaultShaderManager(std::make_unique<CShaderManagerDirectX>(dev, this)), m_textureManager(nullptr), m_activeTextureSlot(0)
+CDirectXRenderer::CDirectXRenderer(HWND hWnd)
+	:m_hWnd(hWnd)
+	, m_textureManager(nullptr)
+	, m_activeTextureSlot(0)
 {
+	DXGI_SWAP_CHAIN_DESC scd;
+
+	// clear out the struct for use
+	ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
+
+	// fill the swap chain description struct
+	scd.BufferCount = 1;                                    // one back buffer
+	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;     // use 32-bit color
+	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;      // how swap chain is to be used
+	scd.OutputWindow = m_hWnd;                                // the window to be used
+	scd.SampleDesc.Count = 4;                               // how many multisamples
+	scd.Windowed = TRUE;                                    // windowed/full-screen mode
+	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	// create a device, device context and swap chain using the information in the scd struct
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL,
+		D3D_DRIVER_TYPE_HARDWARE,
+		NULL,
+#ifdef _DEBUG
+		D3D11_CREATE_DEVICE_DEBUG,
+#else
+		0,
+#endif
+		NULL,
+		NULL,
+		D3D11_SDK_VERSION,
+		&scd,
+		&m_swapchain,
+		&m_dev,
+		NULL,
+		&m_devcon);
+
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create Swapchain");
+	}
+
+	// get the address of the back buffer
+	CComPtr<ID3D11Texture2D> pBackBuffer;
+	m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+
+	// use the back buffer address to create the render target
+	CComPtr<ID3D11RenderTargetView> backBuffer;
+	hr = m_dev->CreateRenderTargetView(pBackBuffer, NULL, &backBuffer);
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create backbuffer");
+	}
+	pBackBuffer = NULL;
+	CComPtr<ID3D11DepthStencilView> pDepthStencilView;
+	CreateDepthBuffer(600, 600, &pDepthStencilView);
+	m_devcon->OMSetRenderTargets(1, &backBuffer.p, pDepthStencilView);
+
+	backBuffer = NULL;
+	pDepthStencilView = NULL;
+
+	// Set the viewport
+	D3D11_VIEWPORT viewport;
+	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+	viewport.Width = 600;
+	viewport.Height = 600;
+	viewport.MaxDepth = 1.0f;
+
+	m_devcon->RSSetViewports(1, &viewport);
+
+	D3D11_RASTERIZER_DESC rasterizerState;
+	ZeroMemory(&rasterizerState, sizeof(D3D11_RASTERIZER_DESC));
+
+	rasterizerState.AntialiasedLineEnable = TRUE;
+	rasterizerState.CullMode = D3D11_CULL_NONE; // D3D11_CULL_FRONT or D3D11_CULL_NONE D3D11_CULL_BACK
+	rasterizerState.FillMode = D3D11_FILL_SOLID; // D3D11_FILL_SOLID  D3D11_FILL_WIREFRAME
+	rasterizerState.DepthBias = 0;
+	rasterizerState.DepthBiasClamp = 0.0f;
+	rasterizerState.DepthClipEnable = FALSE;
+	rasterizerState.FrontCounterClockwise = FALSE;
+	rasterizerState.MultisampleEnable = TRUE;
+	rasterizerState.ScissorEnable = FALSE;
+	rasterizerState.SlopeScaledDepthBias = 0.0f;
+
+	CComPtr<ID3D11RasterizerState> pRasterState;
+	hr = m_dev->CreateRasterizerState(&rasterizerState, &pRasterState);
+	if (FAILED(hr))
+	{
+		LogWriter::WriteLine("DirectX error: Cannot create rasterizer state");
+	}
+	m_devcon->RSSetState(pRasterState);
+	
 	m_viewMatrices.push_back(DirectX::XMMatrixIdentity());
 	float aspect = GetAspectRatio(m_hWnd);
 	m_projectionMatrices.push_back(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
 
+	m_defaultShaderManager = std::make_unique<CShaderManagerDirectX>(m_dev, this);
 	m_defaultShaderManager->BindProgram();
 
 	CreateBuffer(&m_vertexBuffer, sizeof(CVector3f) * 10000);
@@ -240,6 +328,20 @@ CDirectXRenderer::CDirectXRenderer(ID3D11Device *dev, ID3D11DeviceContext *devco
 	CreateBuffer(&m_texCoordBuffer, sizeof(CVector2f) * 10000);
 
 	SetTextureAnisotropy(1.0f);
+}
+
+CDirectXRenderer::~CDirectXRenderer()
+{
+	m_swapchain->SetFullscreenState(FALSE, NULL);
+/*#ifdef _DEBUG
+	CComPtr<ID3D11Debug> debugDev;
+	m_dev->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&debugDev));
+	debugDev->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+#endif*/
+	m_devcon = NULL;
+	m_dev = NULL;
+	m_swapchain = NULL;
+
 }
 
 void CDirectXRenderer::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize)
@@ -485,7 +587,7 @@ void CDirectXRenderer::GetViewMatrix(float * matrix) const
 	XMFLOAT4X4 view;
 	auto mat = m_viewMatrices.back();
 	XMStoreFloat4x4(&view, mat);
-	memcpy(matrix, *view.m, sizeof(view));
+	memcpy(matrix, *view.m, sizeof(float) * 16);
 }
 
 void CDirectXRenderer::ResetViewMatrix()
@@ -702,7 +804,7 @@ void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
 	XMFLOAT4X4 projection;
 	auto mprojection = m_projectionMatrices.back();
 	XMStoreFloat4x4(&projection, mprojection);
-	memcpy(matrix, *projection.m, sizeof(projection));
+	memcpy(matrix, *projection.m, sizeof(float) * 16);
 }
 
 void CDirectXRenderer::EnableDepthTest(bool enable)
@@ -900,6 +1002,27 @@ void CDirectXRenderer::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texC
 	m_shaderManager->SetInputLayout(vertexFormat, texCoordFormat, normalFormat);
 }
 
+void CDirectXRenderer::Present()
+{
+	m_swapchain->Present(0, 0);
+}
+
+void CDirectXRenderer::ToggleFullscreen()
+{
+	BOOL fullscreen;
+	CComPtr<IDXGIOutput> pOutput;
+	m_swapchain->GetFullscreenState(&fullscreen, &pOutput);
+	m_swapchain->SetFullscreenState(!fullscreen, pOutput);
+}
+
+void CDirectXRenderer::EnableMultisampling(bool enable, int level /*= 1.0f*/)
+{
+	DXGI_SWAP_CHAIN_DESC scd;
+	m_swapchain->GetDesc(&scd);
+	scd.SampleDesc.Count = enable ? static_cast<UINT>(level) : 1;
+	//Recreate swap chain?
+}
+
 void CDirectXRenderer::SetUpViewport2D()
 {
 	RECT rect;
@@ -917,8 +1040,32 @@ void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 	if (view) m_shaderManager->SetColor(color);
 }
 
-void CDirectXRenderer::OnResize()
+void CDirectXRenderer::OnResize(unsigned int width, unsigned int height)
 {
+	if (m_swapchain)
+	{
+		m_swapchain->ResizeBuffers(1, width, height, DXGI_FORMAT_UNKNOWN, 0);
+	}
+	if (m_dev)
+	{
+		CComPtr<ID3D11Texture2D> pBackBuffer;
+		m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+		CComPtr<ID3D11RenderTargetView> backBuffer;
+		m_dev->CreateRenderTargetView(pBackBuffer, NULL, &backBuffer);
+		CComPtr<ID3D11DepthStencilView> pDepthStencilView;
+		CreateDepthBuffer(width, height, &pDepthStencilView);
+		m_devcon->OMSetRenderTargets(1, &backBuffer.p, pDepthStencilView);
+	}
+	if (m_devcon)
+	{
+		D3D11_VIEWPORT viewport;
+		unsigned int num = 1;
+		m_devcon->RSGetViewports(&num, &viewport);
+		viewport.Width = static_cast<FLOAT>(width);
+		viewport.Height = static_cast<FLOAT>(height);
+		m_devcon->RSSetViewports(num, &viewport);
+	}
+	
 	float aspect = GetAspectRatio(m_hWnd);
 	m_projectionMatrices.pop_back();
 	m_projectionMatrices.push_back(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
@@ -999,4 +1146,30 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 		LogWriter::WriteLine("Cannot create resourceView: " + std::to_string(GetLastError()));
 		return;
 	}
+}
+
+void CDirectXRenderer::CreateDepthBuffer(unsigned int width, unsigned int height, ID3D11DepthStencilView ** buffer)
+{
+	D3D11_TEXTURE2D_DESC depthBufferDesc;
+	depthBufferDesc.Width = width;
+	depthBufferDesc.Height = height;
+	depthBufferDesc.MipLevels = 1;
+	depthBufferDesc.ArraySize = 1;
+	depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthBufferDesc.SampleDesc.Count = 4;
+	depthBufferDesc.SampleDesc.Quality = 0;
+	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthBufferDesc.CPUAccessFlags = 0;
+	depthBufferDesc.MiscFlags = 0;
+
+	CComPtr<ID3D11Texture2D> pDepthStencilBuffer;
+	m_dev->CreateTexture2D(&depthBufferDesc, NULL, &pDepthStencilBuffer);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+	ZeroMemory(&depthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
+	depthStencilViewDesc.Format = depthBufferDesc.Format;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+
+	m_dev->CreateDepthStencilView(pDepthStencilBuffer, &depthStencilViewDesc, buffer);
 }

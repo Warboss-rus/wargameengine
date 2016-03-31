@@ -1,5 +1,6 @@
 #include "UICheckBox.h"
 #include "UIText.h"
+#include "../view/IRenderer.h"
 
 CUICheckBox::CUICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) :
 	CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text), m_state(initState), m_pressed(false)
@@ -17,8 +18,9 @@ void CUICheckBox::Draw() const
 	{
 		m_cache = move(m_renderer.RenderToTexture([this]() {
 			m_renderer.SetTexture(m_theme->texture, true);
-			float * texCoords = m_state ? m_theme->checkbox.checkedTexCoord : m_theme->checkbox.texCoord;
-			float size = GetHeight() * m_theme->checkbox.checkboxSizeCoeff;
+			auto& theme = m_theme->checkbox;
+			float * texCoords = m_state ? theme.checkedTexCoord : theme.texCoord;
+			float size = GetHeight() * theme.checkboxSizeCoeff;
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2f(0.0f, 0.0f), {0.0f, size}, {size, size}, {size, 0.0f} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });

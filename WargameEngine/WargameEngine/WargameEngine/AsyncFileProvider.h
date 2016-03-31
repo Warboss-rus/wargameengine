@@ -10,7 +10,7 @@ class CAsyncFileProvider
 public:
 	CAsyncFileProvider(ThreadPool & threadPool, std::string const& workingDir);
 	void SetModule(sModule const& module);
-	typedef std::function<void(void*, unsigned int)> ProcessHandler;
+	typedef std::function<void(void*, size_t)> ProcessHandler;
 	typedef std::function<void()> CompletionHandler;
 	typedef std::function<void(std::exception const&)> ErrorHandler;
 	void GetTextureAsync(std::string const& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler(), bool now = false);

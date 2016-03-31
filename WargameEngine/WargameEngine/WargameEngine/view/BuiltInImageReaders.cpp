@@ -52,7 +52,7 @@ struct DXTColBlock
 	unsigned char row[4];
 };
 
-void swap(void *byte1, void *byte2, int size)
+void swap(void *byte1, void *byte2, size_t size)
 {
 	unsigned char *tmp = new unsigned char[size];
 
@@ -117,40 +117,26 @@ void flip_dxt5_alpha(DXT5AlphaBlock *block)
 	unsigned int bits = 0;
 	memcpy(&bits, &block->row[0], sizeof(unsigned char) * 3);
 
-	gBits[0][0] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[0][1] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[0][2] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[0][3] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[1][0] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[1][1] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[1][2] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[1][3] = (unsigned char)(bits & mask);
+	for (size_t i = 0; i < 2; ++i)
+	{
+		for (size_t j = 0; j < 4; ++j)
+		{
+			gBits[i][j] = (unsigned char)(bits & mask);
+			bits >>= 3;
+		}
+	}
 
 	bits = 0;
 	memcpy(&bits, &block->row[3], sizeof(unsigned char) * 3);
 
-	gBits[2][0] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[2][1] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[2][2] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[2][3] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[3][0] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[3][1] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[3][2] = (unsigned char)(bits & mask);
-	bits >>= 3;
-	gBits[3][3] = (unsigned char)(bits & mask);
+	for (size_t i = 2; i < 4; ++i)
+	{
+		for (size_t j = 0; j < 4; ++j)
+		{
+			gBits[i][j] = (unsigned char)(bits & mask);
+			bits >>= 3;
+		}
+	}
 
 	// clear existing alpha bits
 	memset(block->row, 0, sizeof(unsigned char) * 6);
@@ -495,7 +481,7 @@ bool CStbImageReader::ImageIsSupported(unsigned char * /*data*/, size_t /*size*/
 CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, std::string const& /*filePath*/, bool flipBmp /*= false*/, bool /*force32bit*/)
 {
 	int width, height, bpp;
-	unsigned char * newData = stbi_load_from_memory(data, size, &width, &height, &bpp, 4);
+	unsigned char * newData = stbi_load_from_memory(data, static_cast<int>(size), &width, &height, &bpp, 4);
 	if (!newData)
 	{
 		throw std::runtime_error(stbi_failure_reason());

@@ -4,7 +4,7 @@
 #include <map>
 
 CInputDirectX::CInputDirectX(HWND hWnd)
-	:m_hWnd(hWnd)
+	:m_hWnd(hWnd), m_cursorEnabled(true)
 {
 }
 

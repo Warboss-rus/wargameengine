@@ -170,6 +170,13 @@ void Render(RenderMode mode, std::vector<X> const& vertices, std::vector<Y> cons
 COpenGLRenderer::COpenGLRenderer()
 	:m_textureManager(nullptr)
 {
+	glDepthFunc(GL_LESS);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.01f);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glewInit();
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
@@ -698,6 +705,31 @@ bool COpenGLRenderer::ForceFlipBMP() const
 std::string COpenGLRenderer::GetName() const
 {
 	return "OpenGL";
+}
+
+void COpenGLRenderer::EnableMultisampling(bool enable)
+{
+	if (GLEW_ARB_multisample)
+	{
+		if (enable)
+			glEnable(GL_MULTISAMPLE_ARB);
+		else
+			glDisable(GL_MULTISAMPLE_ARB);
+	}
+	else
+	{
+		throw std::runtime_error("MSAA is not supported");
+	}
+}
+
+void COpenGLRenderer::OnResize(int width, int height)
+{
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	GLdouble aspect = (GLdouble)width / (GLdouble)height;
+	gluPerspective(60, aspect, 0.5, 1000.0);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void COpenGLRenderer::SetUpViewport2D()

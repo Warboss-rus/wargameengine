@@ -123,7 +123,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(ENABLE_LIGHT_SOURCE, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
-		size_t i = args.GetLong(1) - 1;
+		long i = args.GetLong(1) - 1;
 		if (i < 0 || i > 7) throw std::runtime_error("only 8 light sources are supported");
 		view.EnableLight(i, true);
 		return nullptr;
@@ -154,7 +154,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(SET_LIGHT_SOURCE_AMBIENT, [&](IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 argument expected (index, r, g, b, a)");
-		size_t i = args.GetLong(1) - 1;
+		long i = args.GetLong(1) - 1;
 		if (i < 0 || i > 7) throw std::runtime_error("only 8 light sources are supported");
 		float color[4];
 		color[0] = args.GetFloat(2);
@@ -168,7 +168,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(SET_LIGHT_SOURCE_DIFFUSE, [&](IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 argument expected (index, r, g, b, a)");
-		size_t i = args.GetLong(1) - 1;
+		long i = args.GetLong(1) - 1;
 		if (i < 0 || i > 7) throw std::runtime_error("only 8 light sources are supported");
 		float color[4];
 		color[0] = args.GetFloat(2);
@@ -182,7 +182,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(SET_LIGHT_SOURCE_SPECULAR, [&](IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 argument expected (index, r, g, b, a)");
-		size_t i = args.GetLong(1) - 1;
+		long i = args.GetLong(1) - 1;
 		if (i < 0 || i > 7) throw std::runtime_error("only 8 light sources are supported");
 		float color[4];
 		color[0] = args.GetFloat(2);
@@ -572,7 +572,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		std::string func = args.GetStr(1);
 		unsigned int time = args.GetLong(2);
 		bool repeat = args.GetBool(3);
-		unsigned int index = threadPool.AddTimedCallback([=, &handler]() {handler.CallFunction(func);}, time, repeat);
+		size_t index = threadPool.AddTimedCallback([=, &handler]() {handler.CallFunction(func);}, time, repeat);
 		return (int)index;
 	});
 
@@ -641,7 +641,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 			throw std::runtime_error("2 argument expected (source, target)");
 		IObject* shootingModel = (IObject*)args.GetClassInstance(1);
 		IObject* target = (IObject*)args.GetClassInstance(2);
-		return controller.GetLineOfSight(shootingModel, target);
+		return static_cast<long>(controller.GetLineOfSight(shootingModel, target));
 	});
 
 	handler.RegisterFunction(BEGIN_ACTION_COMPOUND, [&](IArguments const& args)

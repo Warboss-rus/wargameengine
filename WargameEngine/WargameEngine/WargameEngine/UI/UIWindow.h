@@ -16,6 +16,6 @@ public:
 private:
 	std::wstring m_headerText;
 	bool m_dragging;
-	int m_prevX;
-	int m_prevY;
+	int m_prevX = 0;
+	int m_prevY = 0;
 };

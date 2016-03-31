@@ -7,7 +7,7 @@
 class AsyncReadTask : public TaskBase<void>
 {
 public:
-	typedef std::function<void(void*, unsigned int)> AsyncReadHandler;
+	typedef std::function<void(void*, size_t)> AsyncReadHandler;
 	AsyncReadTask(std::string const& file, AsyncReadHandler const& handler, ThreadPool & threadPool)
 		: TaskBase(threadPool)
 		, m_handler(handler)
@@ -32,7 +32,7 @@ public:
 				throw std::exception(("Cannot open file " + m_path).c_str());
 			}
 			fseek(file, 0L, SEEK_END);
-			unsigned int size = ftell(file);
+			size_t size = ftell(file);
 			fseek(file, 0L, SEEK_SET);
 			m_data.resize(size);
 			fread(m_data.data(), 1, size, file);

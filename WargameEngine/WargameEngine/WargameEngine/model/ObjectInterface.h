@@ -40,7 +40,7 @@ public:
 	virtual void AddSecondaryModel(std::string const& model) = 0;
 	virtual void RemoveSecondaryModel(std::string const& model) = 0;
 	virtual size_t GetSecondaryModelsCount() const = 0;
-	virtual std::string GetSecondaryModel(unsigned int index) const = 0;
+	virtual std::string GetSecondaryModel(size_t index) const = 0;
 	virtual eAnimationLoopMode GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;
 	virtual void Update() = 0;

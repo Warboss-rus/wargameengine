@@ -7,6 +7,7 @@
 #include "IStateManager.h"
 #include "INetSocket.h"
 #include "../MemoryStream.h"
+#include "ICommand.h"
 
 CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory)
 	:m_host(true)
@@ -110,9 +111,9 @@ void CNetwork::Update()
 			{
 				uint32_t address;
 				memcpy(&address, m_netData + 6, sizeof(uint32_t));
-				auto translated = m_translator.at(address);
+				auto translated = m_translator.at(reinterpret_cast<void*>(address));
 				memcpy(m_netData + 6, &translated, sizeof(uint32_t));
-				m_translator.erase(address);
+				m_translator.erase(reinterpret_cast<void*>(address));
 				LogWriter::WriteLine("DeleteObject received");
 			}break;
 			case 2://MoveObject
@@ -123,7 +124,7 @@ void CNetwork::Update()
 			{//replace address
 				uint32_t address;
 				memcpy(&address, m_netData + 6, sizeof(uint32_t));
-				auto translated = m_translator.at(address);
+				auto translated = m_translator.at(reinterpret_cast<void*>(address));
 				memcpy(m_netData + 6, &translated, sizeof(uint32_t));
 				LogWriter::WriteLine("Action received");
 			}break;
@@ -140,7 +141,7 @@ void CNetwork::Update()
 			{
 				uint32_t address;
 				memcpy(&address, m_netData + 6, sizeof(uint32_t));
-				m_translator[address] = reinterpret_cast<uint32_t>(m_model.Get3DObject(m_model.GetObjectCount() - 1).get());
+				m_translator[reinterpret_cast<void*>(address)] = m_model.Get3DObject(m_model.GetObjectCount() - 1).get();
 				LogWriter::WriteLine("CreateObject received");
 			}
 		}
@@ -204,7 +205,7 @@ void CNetwork::SendAction(ICommand const& command)
 	{
 		uint32_t addr;
 		memcpy(&addr, &result.GetData()[6], sizeof(uint32_t));
-		auto newAddr = GetAddress(addr);
+		auto newAddr = GetAddress(reinterpret_cast<void*>(addr));
 		memcpy(&result.GetData()[6], &newAddr, sizeof(uint32_t));
 	}
 	uint32_t size = static_cast<uint32_t>(result.GetSize());
@@ -218,7 +219,7 @@ bool CNetwork::IsConnected()
 	return m_socket.get() != NULL;
 }
 
-unsigned int CNetwork::GetAddress(uint32_t object)
+void* CNetwork::GetAddress(void* object)
 {
 	for (auto i = m_translator.begin(); i != m_translator.end(); ++i)
 	{
@@ -232,13 +233,12 @@ unsigned int CNetwork::GetAddress(uint32_t object)
 
 void CNetwork::AddAddressLocal(std::shared_ptr<IObject> obj)
 {
-	uint32_t addr = reinterpret_cast<uint32_t>(obj.get());
-	m_translator[addr] = addr;
+	m_translator[obj.get()] = obj.get();
 }
 
-void CNetwork::AddAddress(std::shared_ptr<IObject> obj, unsigned int address)
+void CNetwork::AddAddress(std::shared_ptr<IObject> obj, void* address)
 {
-	m_translator[address] = reinterpret_cast<uint32_t>(obj.get());;
+	m_translator[address] = obj.get();
 }
 
 void CNetwork::SetStateRecievedCallback(OnStateRecievedHandler const& onStateRecieved)

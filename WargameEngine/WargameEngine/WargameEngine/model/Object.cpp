@@ -2,6 +2,8 @@
 #include <sys/timeb.h> 
 #include <algorithm>
 #include "MovementLimiter.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 CObject::CObject(std::string const& model, double x, double y, double z, double rotation, bool hasShadow)
 	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
@@ -172,7 +174,7 @@ size_t CObject::GetSecondaryModelsCount() const
 	return m_secondaryModels.size();
 }
 
-std::string CObject::GetSecondaryModel(unsigned int index) const
+std::string CObject::GetSecondaryModel(size_t index) const
 {
 	return m_secondaryModels[index];
 }
@@ -199,14 +201,14 @@ void CObject::Update()
 	struct timeb time;
 	ftime(&time);
 	long long current = 1000 * time.time + time.millitm;
-	if (m_goSpeed == 0.0)
+	if (abs(m_goSpeed) < DBL_EPSILON)
 	{
 		m_lastUpdateTime = current;
 		return;
 	}
 	CVector3d dir = m_goTarget - m_coords;
 	dir.Normalize();
-	m_rotation = atan2(dir.y, dir.x) * 180 / 3.1415;
+	m_rotation = atan2(dir.y, dir.x) * 180 / M_PI;
 	dir = dir * static_cast<double>(current - m_lastUpdateTime) / 1000.0 * m_goSpeed;
 	if (dir.GetLength() > (m_goTarget - m_coords).GetLength()) dir = (m_goTarget - m_coords);
 	m_coords += dir;

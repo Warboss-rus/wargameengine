@@ -35,7 +35,7 @@ public:
 	virtual void AddItem(std::wstring const& str) = 0;
 	virtual void DeleteItem(size_t index) = 0;
 	virtual void ClearItems() = 0;
-	virtual int GetSelectedIndex() const = 0;
+	virtual size_t GetSelectedIndex() const = 0;
 	virtual size_t GetItemsCount() const = 0;
 	virtual std::wstring GetItem(size_t index) const = 0;
 	virtual void SetSelected(size_t index) = 0;

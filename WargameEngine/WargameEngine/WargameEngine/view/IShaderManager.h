@@ -29,7 +29,7 @@ public:
 	virtual void SetUniformValue4(std::string const& uniform, int count, const int* value) const = 0;
 	virtual void SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const = 0;
 
-	virtual void SetUniformMatrix4(std::string const& uniform, int count, float* value) const = 0;
+	virtual void SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const = 0;
 
 	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const= 0;
 	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const = 0;

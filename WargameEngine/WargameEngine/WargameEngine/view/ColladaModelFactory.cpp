@@ -1,4 +1,5 @@
-#include "OBJModelFactory.h"
+#include "ColladaModelFactory.h"
+#include "3dModel.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -81,26 +82,26 @@ void LoadJoints(xml_node<> * element, vector<sJoint> & arr, int parent)
 	}
 	else//todo: matrix from translation and rotation
 	{
-		float resultMatrix[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+		/*float resultMatrix[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 		xml_node<> * translate = element->first_node("translate");
 		vector<float> translatef = GetValues<float>(translate);
-		//resultMatrix *= translatef
+		resultMatrix *= translatef
 		xml_node<> * rotate = element->first_node("rotate");
 		while (rotate)
 		{
 			vector<float> rotatef = GetValues<float>(rotate);
-			//resultMatrix *= rotatef
+			resultMatrix *= rotatef
 			rotate = rotate->next_sibling("rotate");
-		}
+		}*/
 	}
-	int index = arr.size();
+	size_t index = arr.size();
 	arr.push_back(joint);
 	xml_node<> * child = element->first_node("node");
 	while (child)
 	{
 		if (child->first_attribute("type")->value() == string("JOINT"))
 		{
-			LoadJoints(child, arr, index);
+			LoadJoints(child, arr, static_cast<int>(index));
 		}
 		child = child->next_sibling("node");
 	}
@@ -170,7 +171,7 @@ void LoadAnimations(xml_node<> * element, vector<sJoint> const& joints, vector<s
 						}
 						anim.matrices = result;
 					}
-					anim.boneIndex = i;
+					anim.boneIndex = static_cast<unsigned>(i);
 					anim.duration = 0.0f;
 					for (size_t j = 0; j < anim.keyframes.size(); ++j)
 					{
@@ -181,18 +182,18 @@ void LoadAnimations(xml_node<> * element, vector<sJoint> const& joints, vector<s
 					}
 					anims.push_back(anim);
 					if (parent != -1)
-						anims[parent].children.push_back(anims.size() - 1);
+						anims[parent].children.push_back(static_cast<unsigned>(anims.size() - 1));
 					break;
 				}
 			}
 			channel = channel->next_sibling("channel");
 		}
-		LoadAnimations(animation, joints, anims, anims.size() - 1);
+		LoadAnimations(animation, joints, anims, static_cast<int>(anims.size()) - 1);
 		animation = animation->next_sibling("animation");
 	}
 }
 
-void LoadVisualScenes(xml_node<>* library_visual_scenes, map<string, string> &materialTranslator, sOBJLoader &loader)
+void LoadVisualScenes(xml_node<>* library_visual_scenes, map<string, string> &materialTranslator, vector<sJoint> & joints)
 {
 	xml_node<>* scene = library_visual_scenes->first_node("visual_scene");
 	while (scene)
@@ -223,7 +224,7 @@ void LoadVisualScenes(xml_node<>* library_visual_scenes, map<string, string> &ma
 			}
 			else if (node->first_attribute("type")->value() == string("JOINT"))
 			{
-				LoadJoints(node, loader.joints, -1);
+				LoadJoints(node, joints, -1);
 			}
 			node = node->next_sibling("node");
 		}
@@ -305,7 +306,7 @@ void LoadPhongModel(xml_node<>* phong, sMaterial &material, map<string, string>&
 	}
 }
 
-void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageTranslator, map<string, string> &materialTranslator, sOBJLoader &loader)
+void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageTranslator, map<string, string> &materialTranslator, CMaterialManager & materialManager)
 {
 	xml_node<>* effect = library_effects->first_node("effect");
 	while (effect)
@@ -345,7 +346,7 @@ void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageT
 		{
 			if (i->second == effect->first_attribute("id")->value())
 			{
-				loader.materialManager.AddMaterial(i->first, material);
+				materialManager.AddMaterial(i->first, material);
 				break;
 			}
 		}
@@ -354,7 +355,7 @@ void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageT
 	}
 }
 
-void LoadAnimationClips(xml_node<>* clipsLib, sOBJLoader &loader)
+void LoadAnimationClips(xml_node<>* clipsLib, std::vector<sAnimation> & animations)
 {
 	xml_node<>* clip = clipsLib->first_node("animation_clip");
 	while (clip)
@@ -367,11 +368,11 @@ void LoadAnimationClips(xml_node<>* clipsLib, sOBJLoader &loader)
 		while (animation)
 		{
 			string animName = animation->first_attribute("url")->value() + 1;
-			for (size_t i = 0; i < loader.animations.size(); ++i)
+			for (size_t i = 0; i < animations.size(); ++i)
 			{
-				if (loader.animations[i].id == animName)
+				if (animations[i].id == animName)
 				{
-					anim.children.push_back(i);
+					anim.children.push_back(static_cast<unsigned>(i));
 					break;
 				}
 			}
@@ -379,13 +380,13 @@ void LoadAnimationClips(xml_node<>* clipsLib, sOBJLoader &loader)
 		}
 		if (anim.children.size() > 0)
 		{
-			loader.animations.push_back(anim);
+			animations.push_back(anim);
 		}
 		clip = clip->next_sibling("animation_clip");
 	}
 }
 
-void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
+std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, size_t size, C3DModel const& dummyModel, std::string const& /*filePath*/)
 {
 	std::vector<char> normalizedData;
 	normalizedData.resize(size);
@@ -397,8 +398,19 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 	if (!root)//No root
 	{
 		LogWriter::WriteLine("Cannot load model. No root.");
-		return;
+		return std::make_unique<C3DModel>(dummyModel);
 	}
+	std::vector<CVector3f> vertices;
+	std::vector<CVector2f> textureCoords;
+	std::vector<CVector3f> normals;
+	std::vector<unsigned int> indexes;
+	CMaterialManager materialManager;
+	std::vector<sMesh> meshes;
+	std::vector<unsigned int> weightsCount;
+	std::vector<unsigned int> weightsIndexes;
+	std::vector<float> weights;
+	std::vector<sJoint> joints;
+	std::vector<sAnimation> animations;
 	map<string, string> imageTranslator;
 	//Process textures
 	xml_node<>* library_images = root->first_node("library_images");
@@ -420,7 +432,7 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 	xml_node<>* library_visual_scenes = root->first_node("library_visual_scenes");
 	if (library_visual_scenes)
 	{
-		LoadVisualScenes(library_visual_scenes, materialTranslator, loader);
+		LoadVisualScenes(library_visual_scenes, materialTranslator, joints);
 	}
 	else
 	{
@@ -440,7 +452,7 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 	xml_node<>* library_effects = root->first_node("library_effects");
 	if (library_effects)
 	{
-		LoadEffectsLibrary(library_effects, imageTranslator, materialTranslator, loader);
+		LoadEffectsLibrary(library_effects, imageTranslator, materialTranslator, materialManager);
 	}
 	else
 	{
@@ -449,7 +461,7 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 	//Animation step1: Process weights
 	map<string, vector<unsigned int>> weightCount;
 	map<string, vector<unsigned int>> weightIndexes;
-	map<string, vector<float>> weights;
+	map<string, vector<float>> tempWeights;
 	map<string, vector<float>> bindShapeMatrices;
 	xml_node<>* controllerLib = root->first_node("library_controllers");
 	if (controllerLib)
@@ -499,8 +511,8 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 					{
 						string fl;
 						sstream >> fl;
-						auto it = find_if(loader.joints.begin(), loader.joints.end(), [&](sJoint const& joint) {return joint.bone == fl;});
-						if(it != loader.joints.end())
+						auto it = find_if(joints.begin(), joints.end(), [&](sJoint const& joint) {return joint.bone == fl;});
+						if(it != joints.end())
 						{
 							memcpy(it->invBindMatrix, &inv[index * 16], sizeof(float) * 16);
 						}
@@ -550,12 +562,12 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 								continue;
 							}
 							unsigned int weightIndex = v[l + k * 2 + 1];
-							for (size_t m = 0; m < loader.joints.size(); ++m)
+							for (size_t m = 0; m < joints.size(); ++m)
 							{
-								if (loader.joints[m].bone == jointNames[jointIndex])
+								if (joints[m].bone == jointNames[jointIndex])
 								{
-									weightIndexes[geometryId].push_back(m);
-									weights[geometryId].push_back(weightArray[weightIndex]);
+									weightIndexes[geometryId].push_back(static_cast<unsigned>(m));
+									tempWeights[geometryId].push_back(weightArray[weightIndex]);
 									break;
 								}
 							}
@@ -572,16 +584,16 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 	xml_node<>* animationLib = root->first_node("library_animations");
 	if (animationLib && controllerLib)
 	{
-		LoadAnimations(animationLib, loader.joints, loader.animations, -1);
+		LoadAnimations(animationLib, joints, animations, -1);
 	}
 	xml_node<>* clipsLib = root->first_node("library_animation_clips");
 	if (clipsLib)
 	{
-		LoadAnimationClips(clipsLib, loader);
+		LoadAnimationClips(clipsLib, animations);
 	}
 	//Geometry: Process geometry
 	xml_node<>* geometry = root->first_node("library_geometries");
-	unsigned int indexOffset = 0;
+	size_t indexOffset = 0;
 	xml_node<>* geometryElement = geometry->first_node("geometry");
 	while (geometryElement != NULL)
 	{
@@ -594,7 +606,7 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 		xml_node<>* mesh = geometryElement->first_node("mesh");
 		while (mesh != NULL)//Parse a mesh
 		{
-			indexOffset = loader.vertices.size();
+			indexOffset = vertices.size();
 			map<string, xml_node<>*> sources;//Parse sources;
 			xml_node<>* source = mesh->first_node("source");
 			while (source != NULL)
@@ -611,8 +623,8 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 			if (triangles)
 			{
 				m.materialName = triangles->first_attribute("material")->value();
-				m.polygonIndex = loader.indexes.size();
-				loader.meshes.push_back(m);
+				m.polygonIndex = indexes.size();
+				meshes.push_back(m);
 				xml_node<>* input = triangles->first_node("input");
 				unsigned int vertexOffset = 0;
 				unsigned int normalOffset = 0;
@@ -631,10 +643,10 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 						vertexOffset = atoi(input->first_attribute("offset")->value());
 						string id = input->first_attribute("source")->value();
 						id.erase(0, 1);
-						xml_node<>* vertices = mesh->first_node("vertices");//parse vertices
-						if (vertices && vertices->first_attribute("id")->value() == id)
+						xml_node<>* verticesNode = mesh->first_node("vertices");//parse vertices
+						if (verticesNode && verticesNode->first_attribute("id")->value() == id)
 						{
-							xml_node<>* vertEntry = vertices->first_node("input");
+							xml_node<>* vertEntry = verticesNode->first_node("input");
 							while (vertEntry != NULL)
 							{
 								string inputType = vertEntry->first_attribute("semantic")->value();
@@ -676,61 +688,61 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 				if (simple)
 				{
 					//temp
-					unsigned int oldSize = loader.vertices.size();
-					loader.vertices.resize(oldSize + vert.size() / 3);
-					memcpy(&loader.vertices[oldSize], vert.data(), vert.size() * sizeof(float));
-					oldSize = loader.normals.size();
-					loader.normals.resize(oldSize + normal.size() / 3);
-					memcpy(&loader.normals[oldSize], normal.data(), normal.size() * sizeof(float));
-					oldSize = loader.textureCoords.size();
-					loader.textureCoords.resize(oldSize + texcoord.size() / 2);
-					memcpy(&loader.textureCoords[oldSize], texcoord.data(), texcoord.size() * sizeof(float));
+					size_t oldSize = vertices.size();
+					vertices.resize(oldSize + vert.size() / 3);
+					memcpy(&vertices[oldSize], vert.data(), vert.size() * sizeof(float));
+					oldSize = normals.size();
+					normals.resize(oldSize + normal.size() / 3);
+					memcpy(&normals[oldSize], normal.data(), normal.size() * sizeof(float));
+					oldSize = textureCoords.size();
+					textureCoords.resize(oldSize + texcoord.size() / 2);
+					memcpy(&textureCoords[oldSize], texcoord.data(), texcoord.size() * sizeof(float));
 					vector<unsigned int>& weightCountPtr = weightCount[meshId];
-					loader.weightsCount.insert(loader.weightsCount.end(), weightCountPtr.begin(), weightCountPtr.end());
+					weightsCount.insert(weightsCount.end(), weightCountPtr.begin(), weightCountPtr.end());
 					vector<unsigned int>& weightIndex = weightIndexes[meshId];
-					loader.weightsIndexes.insert(loader.weightsIndexes.end(), weightIndex.begin(), weightIndex.end());
-					vector<float>& weightPtr = weights[meshId];
-					loader.weights.insert(loader.weights.end(), weightPtr.begin(), weightPtr.end());
+					weightsIndexes.insert(weightsIndexes.end(), weightIndex.begin(), weightIndex.end());
+					vector<float>& weightPtr = tempWeights[meshId];
+					weights.insert(weights.end(), weightPtr.begin(), weightPtr.end());
 				}
-				vector<unsigned int> indexes;
+				vector<unsigned int> currentIndexes;
 				xml_node<>* polygons = triangles->first_node("p");
 				while (polygons)
 				{
 					string value = polygons->value();
-					int indexCount = (std::count(value.begin(), value.end(), ' ') + 1) / maxOffset;
-					loader.indexes.reserve(loader.indexes.size() + indexCount);
-					loader.vertices.reserve(loader.vertices.size() + indexCount);
-					loader.normals.reserve(loader.normals.size() + indexCount);
-					loader.textureCoords.reserve(loader.textureCoords.size() + indexCount);
+					size_t indexCount = (std::count(value.begin(), value.end(), ' ') + 1) / maxOffset;
+					indexes.reserve(indexes.size() + indexCount);
+					vertices.reserve(vertices.size() + indexCount);
+					normals.reserve(normals.size() + indexCount);
+					textureCoords.reserve(textureCoords.size() + indexCount);
 					stringstream sstream(value);
 					while (!sstream.eof())
 					{
-						int i;
+						size_t i;
 						sstream >> i;
 						if (simple)
 						{
-							loader.indexes.push_back(i + indexOffset);
+							indexes.push_back(static_cast<unsigned>(i + indexOffset));
 						}
 						else
 						{
-							indexes.push_back(i);
-							if (indexes.size() == maxOffset)
+							currentIndexes.push_back(static_cast<unsigned>(i));
+							if (currentIndexes.size() == maxOffset)
 							{
-								CVector3f vertex(&vert[indexes[vertexOffset] * 3]);
+								CVector3f vertex(&vert[currentIndexes[vertexOffset] * 3]);
 								MultiplyVectorToMatrix(vertex, bindShapeMatrices[meshId].data());
-								loader.vertices.push_back(vertex);
-								loader.normals.push_back(CVector3f(&normal[indexes[normalOffset] * 3]));
-								loader.textureCoords.push_back(CVector2f(&texcoord[indexes[texcoordOffset] * texCoordStride]));
-								loader.indexes.push_back(loader.vertices.size() - 1);
+								vertices.push_back(vertex);
+								normals.push_back(CVector3f(&normal[currentIndexes[normalOffset] * 3]));
+								textureCoords.push_back(CVector2f(&texcoord[currentIndexes[texcoordOffset] * texCoordStride]));
+								indexes.push_back(static_cast<unsigned>(vertices.size() - 1));
 								if (controllerLib)
 								{
-									unsigned int count = weightCount[meshId][indexes[vertexOffset]];
-									loader.weightsCount.push_back(count);
-									unsigned int start = accumulate(weightCount[meshId].begin(), weightCount[meshId].begin() + indexes[vertexOffset], 0);//Get the starting index of the current vertex weight
-									loader.weightsIndexes.insert(loader.weightsIndexes.end(), weightIndexes[meshId].begin() + start, weightIndexes[meshId].begin() + start + count);
-									loader.weights.insert(loader.weights.end(), weights[meshId].begin() + start, weights[meshId].begin() + start + count);
+									unsigned int count = weightCount[meshId][currentIndexes[vertexOffset]];
+									weightsCount.push_back(count);
+									unsigned int start = accumulate(weightCount[meshId].begin(), weightCount[meshId].begin() + currentIndexes[vertexOffset], 0);//Get the starting index of the current vertex weight
+									weightsIndexes.insert(weightsIndexes.end(), weightIndexes[meshId].begin() + start, weightIndexes[meshId].begin() + start + count);
+									weights.insert(weights.end(), tempWeights[meshId].begin() + start, tempWeights[meshId].begin() + start + count);
 								}
-								indexes.clear();
+								currentIndexes.clear();
 							}
 						}
 					}
@@ -741,8 +753,20 @@ void LoadColladaModel(void* data, unsigned int size, sOBJLoader & loader)
 		}
 		geometryElement = geometryElement->next_sibling("geometry");
 	}
-	loader.weightsCount.shrink_to_fit();
-	loader.weightsIndexes.shrink_to_fit();
-	loader.weights.shrink_to_fit();
+	weightsCount.shrink_to_fit();
+	weightsIndexes.shrink_to_fit();
+	weights.shrink_to_fit();
 	doc->clear();
+	auto result = std::make_unique<C3DModel>(dummyModel);
+	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
+	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
+	return std::move(result);
+}
+
+bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::string const& filePath) const
+{
+	size_t dotCoord = filePath.find_last_of('.') + 1;
+	std::string extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	return extension == "dae";
 }

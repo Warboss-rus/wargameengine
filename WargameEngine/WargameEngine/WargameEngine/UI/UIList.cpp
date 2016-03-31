@@ -1,5 +1,6 @@
 #include "UIList.h"
 #include "UIText.h"
+#include "../view/IRenderer.h"
 
 CUIList::CUIList(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
 	: CUIElement(x, y, height, width, parent, renderer, textWriter), m_selected(0), m_scrollbar(m_theme, m_renderer)
@@ -19,22 +20,23 @@ void CUIList::Draw() const
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
 			m_renderer.SetColor(m_theme->textfieldColor);
-			int borderSize = m_theme->list.borderSize;
+			auto& theme = m_theme->list;
+			int borderSize = theme.borderSize;
+			int elementSize = theme.elementSize;
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
 			if (m_items.size() > 0)
 			{
-				m_renderer.SetColor(m_theme->list.selectionColor);
-				int elementSize = m_theme->list.elementSize;
+				m_renderer.SetColor(theme.selectionColor);
 				int intSelected = static_cast<int>(m_selected);
 				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize + elementSize * intSelected), {borderSize, 2 * borderSize + elementSize * (intSelected + 1)},
 					{GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * intSelected } }, {});
 			}
-			m_renderer.SetColor(m_theme->text.color);
-			for (size_t i = m_scrollbar.GetPosition() / m_theme->list.elementSize; i < m_items.size(); ++i)
+			m_renderer.SetColor(theme.text.color);
+			for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 			{
-				if (m_theme->list.borderSize + m_theme->list.elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / m_theme->list.elementSize) > GetHeight()) break;
-				PrintText(m_renderer, m_textWriter, m_theme->list.borderSize, m_theme->list.borderSize + m_theme->list.elementSize * (i - m_scrollbar.GetPosition() / m_theme->list.elementSize), GetWidth(), m_theme->list.text.fontSize, m_items[i], m_theme->text);
+				if (borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize) > GetHeight()) break;
+				PrintText(m_renderer, m_textWriter, borderSize, borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize), GetWidth(), theme.text.fontSize, m_items[i], theme.text);
 			}
 			m_scrollbar.Draw();
 		}, GetWidth(), GetHeight()));
@@ -86,13 +88,14 @@ void CUIList::AddItem(std::wstring const& str)
 	{
 		m_selected = 0;
 	}
-	m_scrollbar.Update(GetHeight(), m_theme->list.elementSize * m_items.size(), GetWidth(), m_theme->list.elementSize);
+	int elementSize = m_theme->list.elementSize;
+	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
 
 std::wstring const CUIList::GetText() const
 {
-	if (m_selected >= 0)
+	if (m_selected < m_items.size())
 	{
 		return m_items[m_selected];
 	}
@@ -110,7 +113,8 @@ void CUIList::DeleteItem(size_t index)
 	m_items.erase(m_items.begin() + index);
 	if(m_selected == index) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
-	m_scrollbar.Update(GetHeight(), m_theme->list.elementSize * m_items.size(), GetWidth(), m_theme->list.elementSize);
+	int elementSize = m_theme->list.elementSize;
+	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
 
@@ -130,11 +134,12 @@ void CUIList::SetText(std::wstring const& text)
 void CUIList::Resize(int windowHeight, int windowWidth)
 {
 	CUIElement::Resize(windowHeight, windowWidth);
-	m_scrollbar.Update(GetHeight(), m_theme->list.elementSize * m_items.size(), GetWidth(), m_theme->list.elementSize);
+	int elementSize = m_theme->list.elementSize;
+	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
 
-int CUIList::GetSelectedIndex() const
+size_t CUIList::GetSelectedIndex() const
 { 
 	return m_selected; 
 }

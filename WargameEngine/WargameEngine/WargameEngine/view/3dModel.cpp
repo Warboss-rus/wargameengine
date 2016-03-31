@@ -1,12 +1,18 @@
 #include "3dModel.h"
 #include "../model/Object.h"
+#include "IRenderer.h"
 
-C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotX(rotateX), m_rotY(rotateY), m_rotZ(rotateZ) {}
+C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
 
-C3DModel::C3DModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-				   CMaterialManager & materials, std::vector<sMesh> & meshes, double scale):m_scale(scale)
+C3DModel::C3DModel(C3DModel const& other)
+	:m_scale(other.m_scale), m_rotation(other.m_rotation), m_count(other.m_count), m_vertices(other.m_vertices), m_normals(other.m_normals), m_textureCoords(other.m_textureCoords)
+	, m_indexes(other.m_indexes), m_weightsCount(other.m_weightsCount), m_weightsIndexes(other.m_weightsIndexes), m_weights(other.m_weights), m_skeleton(other.m_skeleton)
+	, m_animations(other.m_animations), m_meshes(other.m_meshes), m_materials(other.m_materials)
 {
-	SetModel(vertices, textureCoords, normals, indexes, materials, meshes);
+}
+
+C3DModel::~C3DModel()
+{
 }
 
 void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
@@ -64,14 +70,14 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	auto buffer = renderer.CreateVertexBuffer(vertex, normal, texCoord, vertices.size() * 3);
 	buffer->Bind();
 	renderer.PushMatrix();
-	renderer.Rotate(m_rotX, 1.0, 0.0, 0.0);//causes transparent models
-	renderer.Rotate(m_rotY, 0.0, 1.0, 0.0);
-	renderer.Rotate(m_rotZ, 0.0, 0.0, 1.0); 
+	renderer.Rotate(m_rotation.x, 1.0, 0.0, 0.0);//causes transparent models
+	renderer.Rotate(m_rotation.y, 0.0, 1.0, 0.0);
+	renderer.Rotate(m_rotation.z, 0.0, 0.0, 1.0); 
 	renderer.Scale(m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{
-		unsigned int begin = 0;
-		unsigned int end;
+		size_t begin = 0;
+		size_t end;
 		for (size_t i = 0; i < m_meshes.size(); ++i)
 		{
 			if (hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
@@ -157,7 +163,7 @@ void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
 			result[i] += matrix[i * 4 + j] * ((j == 3)?1.0f:vect[j]);
 		}
 	}
-	if (result[3] != 0.0f)
+	if (abs(result[3]) > FLT_EPSILON)
 	{
 		for (int i = 0; i < 3; ++i)
 		{
@@ -222,7 +228,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 		{
 			if (animations[i].id == animationToPlay)
 			{
-				AddAllChildren(animations, i, animsToPlay);
+				AddAllChildren(animations, static_cast<unsigned>(i), animsToPlay);
 				if (time > animations[i].duration)
 				{
 					if (loop == eAnimationLoopMode::LOOPING)

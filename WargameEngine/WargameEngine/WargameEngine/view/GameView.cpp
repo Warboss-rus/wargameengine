@@ -13,6 +13,7 @@
 #include "../UI/UIElement.h"
 #include "../UI/UITheme.h"
 #include "IImageReader.h"
+#include "IModelReader.h"
 
 using namespace std;
 using namespace placeholders;
@@ -43,6 +44,10 @@ CGameView::CGameView(sGameViewContext * context)
 	for (auto& reader : context->imageReaders)
 	{
 		m_textureManager.RegisterImageReader(std::move(reader));
+	}
+	for (auto& reader : context->modelReaders)
+	{
+		m_modelManager.RegisterModelReader(std::move(reader));
 	}
 	m_ui = make_unique<CUIElement>(*m_renderer, *m_textWriter);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
@@ -617,7 +622,7 @@ void CGameView::SetAnisotropyLevel(float level)
 
 void CGameView::ClearResources()
 {
-	m_modelManager = CModelManager(*m_renderer, *m_gameModel, m_asyncFileProvider);
+	m_modelManager.Reset(*m_gameModel);
 	m_textureManager.Reset();
 	if (m_skybox)
 	{

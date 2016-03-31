@@ -189,10 +189,10 @@ void CShaderManagerOpenGL::SetUniformValue4(std::string const& uniform, int coun
 	glUniform4uiv(unfrm, count, value);
 }
 
-void CShaderManagerOpenGL::SetUniformMatrix4(std::string const& uniform, int count, float* values) const
+void CShaderManagerOpenGL::SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const
 {
 	int unfrm = glGetUniformLocation(m_program, uniform.c_str());
-	glUniformMatrix4fv(unfrm, count, false, values);
+	glUniformMatrix4fv(unfrm, count, false, value);
 }
 
 void CShaderManagerOpenGL::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t /*totalSize*/, float* values) const

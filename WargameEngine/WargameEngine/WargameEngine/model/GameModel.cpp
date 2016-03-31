@@ -112,7 +112,7 @@ size_t CGameModel::GetProjectileCount() const
 	return m_projectiles.size();
 }
 
-CProjectile const& CGameModel::GetProjectile(unsigned int index) const
+CProjectile const& CGameModel::GetProjectile(size_t index) const
 {
 	return m_projectiles[index];
 }

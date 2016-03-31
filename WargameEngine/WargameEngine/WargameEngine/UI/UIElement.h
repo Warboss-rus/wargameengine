@@ -1,14 +1,16 @@
 #pragma once
 #include "IUI.h"
 #include <map>
-#include "..\view\IRenderer.h"
 
 class ITextWriter;
+class IRenderer;
+class ICachedTexture;
 
 class CUIElement : public IUIElement
 {
 public:
 	CUIElement(IRenderer & renderer, ITextWriter & textWriter);
+	~CUIElement();
 	virtual void Draw() const override;
 	IUIElement* GetChildByName(std::string const& name) override;
 	virtual void DeleteChild(std::string const& name) override;
@@ -33,7 +35,7 @@ public:
 	virtual void SetText(std::wstring const& text) override;
 	virtual void AddItem(std::wstring const& str) override;
 	virtual void DeleteItem(size_t index) override;
-	virtual int GetSelectedIndex() const override;
+	virtual size_t GetSelectedIndex() const override;
 	virtual size_t GetItemsCount() const override;
 	virtual std::wstring GetItem(size_t index) const override;
 	virtual void ClearItems() override;

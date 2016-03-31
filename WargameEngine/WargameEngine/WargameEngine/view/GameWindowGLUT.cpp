@@ -1,5 +1,4 @@
 #include "GameWindowGLUT.h"
-#include <GL/glew.h>
 #include <GL/freeglut.h>
 #include "InputGLUT.h"
 #include "OpenGLRenderer.h"
@@ -30,12 +29,7 @@ void CGameWindowGLUT::OnDrawScene()
 
 void CGameWindowGLUT::OnReshape(int width, int height)
 {
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	GLdouble aspect = (GLdouble)width / (GLdouble)height;
-	gluPerspective(60, aspect, 0.5, 1000.0);
-	glMatrixMode(GL_MODELVIEW);
+	g_instance->m_renderer->OnResize(width, height);
 	if (g_instance->m_onResize)
 	{
 		g_instance->m_onResize(width, height);
@@ -46,7 +40,7 @@ void CGameWindowGLUT::OnShutdown()
 {
 	if (g_instance->m_onShutdown)
 	{
-		g_instance->m_onShutdown;
+		g_instance->m_onShutdown();
 	}
 }
 
@@ -75,12 +69,7 @@ CGameWindowGLUT::CGameWindowGLUT()
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glutInitWindowSize(600, 600);
 	glutCreateWindow("WargameEngine");
-	glDepthFunc(GL_LESS);
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.01f);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 
 	glutDisplayFunc(&CGameWindowGLUT::OnDrawScene);
 	glutTimerFunc(1, OnTimer, 0);
@@ -95,8 +84,6 @@ CGameWindowGLUT::CGameWindowGLUT()
 	glutMotionFunc(&CInputGLUT::OnMouseMove);
 	glutCloseFunc(&CGameWindowGLUT::OnShutdown);
 	glutWindowStatusFunc(OnChangeState);
-
-	glewInit();
 
 	m_renderer = std::make_unique<COpenGLRenderer>();
 }
@@ -142,16 +129,6 @@ void CGameWindowGLUT::ToggleFullscreen()
 
 void CGameWindowGLUT::EnableMultisampling(bool enable, int /*level*/)
 {
-	if (GLEW_ARB_multisample)
-	{
-		if (enable)
-			glEnable(GL_MULTISAMPLE_ARB);
-		else
-			glDisable(GL_MULTISAMPLE_ARB);
-	}
-	else
-	{
-		throw std::runtime_error("MSAA is not supported");
-	}
+	m_renderer->EnableMultisampling(enable);
 }
 

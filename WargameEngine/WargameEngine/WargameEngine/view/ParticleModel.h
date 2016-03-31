@@ -28,6 +28,6 @@ private:
 	std::vector<CParticle> m_particles;
 	std::vector<std::string> m_textures;
 	std::vector<std::unique_ptr<IShaderManager>> m_shaders;
-	float m_duration;
+	float m_duration = 0.0f;
 	IRenderer & m_renderer;
 };

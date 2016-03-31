@@ -33,7 +33,7 @@ public:
 	void AddSecondaryModel(std::string const& model) override;
 	void RemoveSecondaryModel(std::string const& model) override;
 	size_t GetSecondaryModelsCount() const override;
-	std::string GetSecondaryModel(unsigned int index) const override;
+	std::string GetSecondaryModel(size_t index) const override;
 	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) override;
@@ -54,8 +54,8 @@ private:
 	bool m_castsShadow;
 	std::string m_animation;
 	long long m_animationBegin;
-	eAnimationLoopMode m_animationLoop;
-	float m_animationSpeed;
+	eAnimationLoopMode m_animationLoop = eAnimationLoopMode::HOLDEND;
+	float m_animationSpeed = 1.0f;
 	CVector3d m_goTarget;
 	double m_goSpeed;
 	long long m_lastUpdateTime;

@@ -29,15 +29,15 @@ public:
 	void SendAction(ICommand const& command);
 	bool IsConnected();
 	void AddAddressLocal(std::shared_ptr<IObject> obj);
-	void AddAddress(std::shared_ptr<IObject> obj, unsigned int address);
+	void AddAddress(std::shared_ptr<IObject> obj, void* address);
 	void SetStateRecievedCallback(OnStateRecievedHandler const& onStateRecieved);
 	void SetStringRecievedCallback(OnStringReceivedHandler const& onStringRecieved);
 	void CallStateRecievedCallback();
 private:
-	unsigned int GetAddress(uint32_t obj);
+	void* GetAddress(void* obj);
 	SocketFactory m_socketFactory;
 	std::unique_ptr<INetSocket> m_socket;
-	std::map<uint32_t, uint32_t> m_translator;
+	std::map<void*, void*> m_translator;
 	bool m_host;
 	int m_netRecievedSize;
 	int m_netTotalSize;

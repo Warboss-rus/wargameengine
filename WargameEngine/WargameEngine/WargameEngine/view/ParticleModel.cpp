@@ -58,7 +58,7 @@ CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
 	map<string, unsigned int> materialIds;
 	while (material)
 	{
-		materialIds[material->first_attribute("id")->value()] =  m_textures.size();
+		materialIds[material->first_attribute("id")->value()] = static_cast<unsigned>(m_textures.size());
 		m_textures.push_back(material->first_attribute("texture")->value());
 		std::unique_ptr<IShaderManager> shaderman = m_renderer.CreateShaderManager();
 		std::string vertexShader = material->first_attribute("vertex_shader") ? material->first_attribute("vertex_shader")->value() : "";
@@ -78,7 +78,7 @@ CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
 	{
 		vector<float> keyframes = GetFloatsArray(particle->first_node("keyframes"));
 		vector<float> positions = GetFloatsArray(particle->first_node("positions"));
-		particleIDs[particle->first_attribute("id")->value()] = m_particles.size();
+		particleIDs[particle->first_attribute("id")->value()] = static_cast<unsigned>(m_particles.size());
 		float width = static_cast<float>(atof(particle->first_attribute("width")->value()));
 		float height = static_cast<float>(atof(particle->first_attribute("height")->value()));
 		m_particles.push_back(CParticle(keyframes, positions, materialIds.at(particle->first_attribute("material")->value()), width, height));
@@ -193,12 +193,13 @@ void CParticleModel::Draw(float time) const
 			}
 			m_renderer.SetTexture(m_textures[particle.GetMaterial()]);
 			m_shaders[particle.GetMaterial()]->BindProgram();
-			for (auto k = m_instances[i].uniforms.begin(); k != m_instances[i].uniforms.end(); ++k)
+			auto& uniforms = m_instances[i].uniforms;
+			for (auto k = uniforms.begin(); k != uniforms.end(); ++k)
 			{
-				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, k->second.size(), &k->second[0]);
+				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, static_cast<int>(k->second.size()), &k->second[0]);
 			}
 			DrawParticle(position, particle.GetWidth(), particle.GetHeight());
-			for (auto k = m_instances[i].uniforms.begin(); k != m_instances[i].uniforms.end(); ++k)
+			for (auto k = uniforms.begin(); k != uniforms.end(); ++k)
 			{
 				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, 0, (float*)nullptr);
 			}

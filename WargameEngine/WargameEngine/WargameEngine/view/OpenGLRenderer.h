@@ -74,6 +74,9 @@ public:
 	virtual bool ForceFlipBMP() const override;
 
 	virtual std::string GetName() const override;
+
+	void EnableMultisampling(bool enable);
+	void OnResize(int width, int height);
 private:
 	CTextureManager* m_textureManager;
 };

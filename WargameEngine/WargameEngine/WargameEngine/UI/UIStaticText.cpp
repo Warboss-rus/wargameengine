@@ -1,5 +1,6 @@
 #include "UIStaticText.h"
 #include "UIText.h"
+#include "../view/IRenderer.h"
 
 CUIStaticText::CUIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
 	: CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text)

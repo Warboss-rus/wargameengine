@@ -1,5 +1,6 @@
 #include "UIPanel.h"
 #include "UITheme.h"
+#include "../view/IRenderer.h"
 
 void CUIPanel::Draw() const
 {

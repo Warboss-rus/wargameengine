@@ -13,6 +13,7 @@
 #include "Math/float3x3.h"
 
 CBoundingBox::CBoundingBox(double min[3], double max[3]) 
+	:m_scale(1.0)
 { 
 	memcpy(m_min, min, sizeof(double) * 3); 
 	memcpy(m_max, max, sizeof(double) * 3); 
@@ -27,14 +28,12 @@ AABB GetAABB(CBoundingBox const& bounding)
 {
 	const double *min = bounding.GetMin();
 	const double *max = bounding.GetMax();
-	float min1[3] = {static_cast<float>(min[0]), static_cast<float>(min[1]), static_cast<float>(min[2])};
-	float max1[3] = { static_cast<float>(max[0]), static_cast<float>(max[1]), static_cast<float>(max[2])};
 	math::float3 minVector = ToFloat3(min);
 	math::float3 maxVector = ToFloat3(max);
 	return AABB(minVector, maxVector);
 }
 
-OBB GetOBB(CBoundingBox const& bounding, float3 translate, double angle)
+OBB GetOBB(CBoundingBox const& bounding, float3 const& translate, double angle)
 {
 	OBB res( GetAABB(bounding) );
 	float z = res.r.z;
@@ -199,12 +198,12 @@ size_t CBoundingCompound::GetChildCount() const
 	return m_children.size(); 
 }
 
-IBounding * CBoundingCompound::GetChild(unsigned int index)
+IBounding * CBoundingCompound::GetChild(size_t index)
 { 
 	return m_children[index].get(); 
 }
 
-const IBounding * CBoundingCompound::GetChild(unsigned int index) const
+const IBounding * CBoundingCompound::GetChild(size_t index) const
 { 
 	return m_children[index].get(); 
 }

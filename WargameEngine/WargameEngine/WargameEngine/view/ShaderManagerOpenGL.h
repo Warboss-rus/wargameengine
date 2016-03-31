@@ -22,7 +22,7 @@ public:
 	virtual void SetUniformValue4(std::string const& uniform, int count, const float* value) const override;
 	virtual void SetUniformValue4(std::string const& uniform, int count, const int* value) const override;
 	virtual void SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformMatrix4(std::string const& uniform, int count, float* values) const override;
+	virtual void SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const override;
 
 	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const override;
 	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const override;

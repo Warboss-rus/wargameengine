@@ -10,7 +10,7 @@ public:
 	void AddItem(std::wstring const& str) override;
 	void DeleteItem(size_t index) override;
 	std::wstring const GetText() const override;
-	int GetSelectedIndex() const override;
+	size_t GetSelectedIndex() const override;
 	size_t GetItemsCount() const override;
 	std::wstring GetItem(size_t index) const override;
 	void ClearItems() override;

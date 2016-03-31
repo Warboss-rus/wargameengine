@@ -2,6 +2,9 @@
 #include "LogWriter.h"
 #include "Module.h"
 #include "view/BuiltInImageReaders.h"
+#include "view/OBJModelFactory.h"
+#include "view/ColladaModelFactory.h"
+#include "view/WBMModelFactory.h"
 #include <cstring>
 #include <time.h>
 #ifdef DIRECTX
@@ -63,6 +66,9 @@ int main(int argc, char* argv[])
 	context.imageReaders.push_back(std::make_unique<CTgaImageReader>());
 	context.imageReaders.push_back(std::make_unique<CDdsImageReader>());
 	context.imageReaders.push_back(std::make_unique<CStbImageReader>());
+	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
+	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
+	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
 
 	CGameView view(&context);
 	return 0;

@@ -166,7 +166,7 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 	double minY = (beginY < endY) ? beginY : endY;
 	double maxY = (beginY > endY) ? beginY : endY;
 	auto group = std::make_shared<CObjectGroup>(m_model);
-	for (unsigned long i = 0; i < m_model.GetObjectCount(); ++i)
+	for (size_t i = 0; i < m_model.GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
 		if (object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY && object->IsSelectable())
@@ -196,7 +196,7 @@ std::shared_ptr<IObject> CGameController::GetNearestObject(const double * start,
 {
 	std::shared_ptr<IObject> selectedObject = NULL;
 	double minDistance = 10000000.0;
-	for (unsigned long i = 0; i < m_model.GetObjectCount(); ++i)
+	for (size_t i = 0; i < m_model.GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
 		if (!object) continue;
@@ -314,10 +314,10 @@ bool CGameController::TestRay(double *origin, double *dir, IObject * shooter, IO
 	return true;
 }
 
-int CGameController::BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject)
+size_t CGameController::BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject)
 {
-	int result = 0;
-	int total = 0;
+	size_t result = 0;
+	size_t total = 0;
 	CBoundingBox * tarBox = dynamic_cast<CBoundingBox *>(target);
 	if (!tarBox)
 	{
@@ -351,9 +351,9 @@ int CGameController::BBoxlos(double origin[3], IBounding * target, IObject * sho
 	return result * 100 / total;
 }
 
-int CGameController::GetLineOfSight(IObject * shooter, IObject * target)
+size_t CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 {
-	if (!shooter || !target) return -1;
+	if (!shooter || !target) return 0;
 	IBounding * targetBound = m_model.GetBoundingBox(target->GetPathToModel()).get();
 	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
 	return BBoxlos(center, targetBound, shooter, target);
@@ -410,19 +410,18 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 		m_model.AddObject(object);
 		if (hasAdresses)
 		{
-			unsigned int address = reinterpret_cast<unsigned int>(stream.ReadPointer());
-			m_network->AddAddress(object, address);
+			m_network->AddAddress(object, stream.ReadPointer());
 		}
-		unsigned int propertiesCount = stream.ReadSizeT();
-		for (unsigned int j = 0; j < propertiesCount; ++j)
+		size_t propertiesCount = stream.ReadSizeT();
+		for (size_t j = 0; j < propertiesCount; ++j)
 		{
 			std::string first = stream.ReadString();
 			std::string second = stream.ReadString();
 			object->SetProperty(first, second);
 		}
 	}
-	unsigned int globalPropertiesCount = stream.ReadSizeT();
-	for (unsigned int i = 0; i < globalPropertiesCount; ++i)
+	size_t globalPropertiesCount = stream.ReadSizeT();
+	for (size_t i = 0; i < globalPropertiesCount; ++i)
 	{
 		std::string first = stream.ReadString();
 		std::string second = stream.ReadString();
@@ -450,10 +449,10 @@ void CGameController::Load(std::string const& filename)
 	fseek(file, 0L, SEEK_END);
 	unsigned int size = ftell(file);
 	fseek(file, 0L, SEEK_SET);
-	std::unique_ptr<char> data(new char[size]);
-	fread(data.get(), 1, size, file);
+	std::vector<char> data(size);
+	fread(data.data(), 1, size, file);
 	fclose(file);
-	CReadMemoryStream stream(data.get(), size);
+	CReadMemoryStream stream(data.data(), size);
 	LoadState(stream);
 	m_network->CallStateRecievedCallback();
 }

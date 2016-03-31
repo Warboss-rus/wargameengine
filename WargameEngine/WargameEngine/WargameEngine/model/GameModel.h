@@ -30,7 +30,7 @@ public:
 	std::map<std::string, std::string> const& GetAllProperties() const;
 	void AddProjectile(CProjectile const& projectile);
 	size_t GetProjectileCount() const;
-	CProjectile const& GetProjectile(unsigned int index) const;
+	CProjectile const& GetProjectile(size_t index) const;
 	void Update();
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
