@@ -84,6 +84,7 @@ CGameWindowGLUT::CGameWindowGLUT()
 	glutMotionFunc(&CInputGLUT::OnMouseMove);
 	glutCloseFunc(&CGameWindowGLUT::OnShutdown);
 	glutWindowStatusFunc(OnChangeState);
+	glutJoystickFunc(&CInputGLUT::OnJoystick, 10);
 
 	m_renderer = std::make_unique<COpenGLRenderer>();
 }

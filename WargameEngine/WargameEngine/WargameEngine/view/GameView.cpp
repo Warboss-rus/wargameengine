@@ -211,6 +211,12 @@ void CGameView::InitInput()
 		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
 		return m_gameController->OnRightMouseUp(begin, end, m_input->GetModifiers());
 	}, 5, g_controllerTag);
+	m_input->DoOnGamepadButtonStateChange([this](int gamepadIndex, int buttonIndex, bool newState){
+		return m_gameController->OnGamepadButtonStateChange(gamepadIndex, buttonIndex, newState);
+	}, 5, g_controllerTag);
+	m_input->DoOnGamepadAxisChange([this](int gamepadIndex, int axisIndex, double horizontal, double vertical) {
+		return m_gameController->OnGamepadAxisChange(gamepadIndex, axisIndex, horizontal, vertical);
+	}, 5, g_controllerTag);
 }
 
 void CGameView::DrawUI()

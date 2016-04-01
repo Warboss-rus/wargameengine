@@ -155,6 +155,12 @@ function Music()
 	}, 1.0, true, true)
 end
 
+function GamepadButtons(gamepadIndex, buttonIndex, state)
+	if state then
+		MessageBox("Button #" .. buttonIndex .. " pressed on gamepad #" .. gamepadIndex)
+	end
+end
+
 SetLightPosition(1, 0, 0, 30)
 --EnableShadowMap(1024, 53)
 EnableMSAA()
@@ -206,3 +212,4 @@ NewDecal("chaos_crater_02.tga", 2.5, 2.5, 0, 5, 5)
 SetOnStringRecievedCallback("StringRecieved")
 SetRMBCallback("RMB", false)
 NewParticleEffect("effect.xml", 0, 0, 0, 0, 0, -1)
+SetGamepadButtonsCallback("GamepadButtons")

@@ -18,6 +18,8 @@ public:
 	virtual void DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
+	virtual void DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority = 0, std::string const& tag = "") override;
+	virtual void DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void EnableCursor(bool enable = true) override;
 	virtual int GetModifiers() const override;
 	virtual int GetMouseX() const override;
@@ -32,8 +34,12 @@ public:
 	static void OnKeyboardUp(unsigned char key, int x, int y);
 	static void OnPassiveMouseMove(int x, int y);
 	static void OnMouseMove(int x, int y);
+
+	static void OnJoystick(unsigned int buttonMask, int x, int y, int z);
 private:
 	struct sSignals;
 	static std::unique_ptr<sSignals> m_signals;
 	static bool m_cursorEnabled;
+	static unsigned int m_joystickButtons;
+	static int m_joystickAxes[3];
 };

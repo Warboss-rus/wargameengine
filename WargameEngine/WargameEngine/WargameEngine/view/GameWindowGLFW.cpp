@@ -36,6 +36,7 @@ void CGameWindowGLFW::LaunchMainLoop()
 	{
 		if (m_visible)
 		{
+			g_instance->m_input->UpdateControllers();
 			if (g_instance->m_onDraw)
 			{
 				g_instance->m_onDraw();
@@ -76,6 +77,10 @@ CGameWindowGLFW::CGameWindowGLFW()
 	CreateNewWindow();
 
 	m_renderer = std::make_unique<COpenGLRenderer>();
+}
+
+CGameWindowGLFW::~CGameWindowGLFW()
+{
 }
 
 void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)

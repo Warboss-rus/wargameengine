@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <Windowsx.h>
 #include <map>
+#include <intsafe.h>
 
 CInputDirectX::CInputDirectX(HWND hWnd)
 	:m_hWnd(hWnd), m_cursorEnabled(true)
@@ -56,6 +57,16 @@ void CInputDirectX::DoOnCharacter(std::function<bool(unsigned int character) > c
 void CInputDirectX::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
 {
 	m_onMouseMove.Connect(handler, priority, tag);
+}
+
+void CInputDirectX::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority/* = 0*/, std::string const& tag/* = ""*/)
+{
+	m_onGamepadButton.Connect(handler, priority, tag);
+}
+
+void CInputDirectX::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+{
+	m_onGamepadAxis.Connect(handler, priority, tag);
 }
 
 void CInputDirectX::EnableCursor(bool enable /*= true*/)
@@ -209,4 +220,59 @@ bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 		return false;
 	}
 	return true;
+}
+
+void CInputDirectX::UpdateControllers()
+{
+	DWORD dwResult;
+	XINPUT_STATE state;
+	for (DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+	{
+		ZeroMemory(&state, sizeof(XINPUT_STATE));
+
+		dwResult = XInputGetState(i, &state);
+
+		if (dwResult == ERROR_SUCCESS)
+		{
+			if (m_gamepadStates.size() <= i)
+			{
+				XINPUT_STATE emptyState;
+				ZeroMemory(&emptyState, sizeof(XINPUT_STATE));
+				m_gamepadStates.resize(i + 1, emptyState);
+			}
+			auto& oldState = m_gamepadStates.at(i).Gamepad;
+			for (WORD j = XINPUT_GAMEPAD_DPAD_UP, k = 0; k < 16; j *= 2, ++k)
+			{
+				if ((state.Gamepad.wButtons & j) != (oldState.wButtons & j))
+				{
+					m_onGamepadButton(i, k, !!(state.Gamepad.wButtons & j));
+				}
+			}
+			if ((abs(state.Gamepad.sThumbLX - oldState.sThumbLX) > 0) || (abs(state.Gamepad.sThumbLY - oldState.sThumbLY) > 0))
+			{
+				m_onGamepadAxis(i, 0, state.Gamepad.sThumbLX / SHORT_MAX, state.Gamepad.sThumbLY / SHORT_MAX);
+			}
+			if ((abs(state.Gamepad.sThumbRX - oldState.sThumbRX) > 0) || (abs(state.Gamepad.sThumbRY - oldState.sThumbRY) > 0))
+			{
+				m_onGamepadAxis(i, 1, state.Gamepad.sThumbLX / SHORT_MAX, state.Gamepad.sThumbLY / SHORT_MAX);
+			}
+			if (state.Gamepad.bLeftTrigger != oldState.bLeftTrigger)//left trigger
+			{
+				if ((state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) != (oldState.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD))
+				{
+					m_onGamepadButton(i, 16, state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+				}
+				//position callback
+			}
+			if (state.Gamepad.bRightTrigger != oldState.bRightTrigger)//right trigger
+			{
+				if ((state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) != (oldState.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD))
+				{
+					m_onGamepadButton(i, 17, state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+				}
+				//position callback
+			}
+			m_gamepadStates[i] = state;
+		}
+	}
 }

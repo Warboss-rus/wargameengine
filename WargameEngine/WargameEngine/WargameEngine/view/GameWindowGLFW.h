@@ -5,6 +5,7 @@
 #include "IInput.h"
 
 class COpenGLRenderer;
+class CInputGLFW;
 struct GLFWwindow;
 struct GLFWmonitor;
 
@@ -12,6 +13,7 @@ class CGameWindowGLFW : public IGameWindow
 {
 public:
 	CGameWindowGLFW();
+	~CGameWindowGLFW();
 	virtual void LaunchMainLoop() override;
 	virtual void DoOnDrawScene(std::function<void()> const& handler) override;
 	virtual void DoOnResize(std::function<void(int, int)> const& handler) override;
@@ -31,7 +33,7 @@ private:
 	static void OnShutdown(GLFWwindow * window);
 
 	GLFWwindow * m_window = NULL;
-	std::unique_ptr<IInput>m_input;
+	std::unique_ptr<CInputGLFW>m_input;
 	std::unique_ptr<COpenGLRenderer> m_renderer;
 
 	std::function<void()> m_onDraw;

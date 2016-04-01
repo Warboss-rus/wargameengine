@@ -266,7 +266,7 @@ bool CNetSocket::SendData(const char * data, size_t len) const
 		LogError();
 		return false;
 	}
-	return count == len;
+	return count == static_cast<int>(len);
 }
 
 int CNetSocket::RecieveData(char* data, size_t maxLength)

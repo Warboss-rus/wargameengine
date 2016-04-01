@@ -14,6 +14,8 @@ struct CInputGLFW::sSignals
 	CSignal<int, int> m_onKeyUp;
 	CSignal<unsigned int> m_onCharacter;
 	CSignal<int, int> m_onMouseMove;
+	CSignal<int, int, bool> m_onGamepadButton;
+	CSignal<int, int, double, double> m_onGamepadAxis;
 	int m_modifiers;
 };
 
@@ -146,6 +148,16 @@ void CInputGLFW::DoOnMouseMove(std::function<bool(int, int) > const& handler, in
 	m_signals->m_onMouseMove.Connect(handler, priority, tag);
 }
 
+void CInputGLFW::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+{
+	m_signals->m_onGamepadButton.Connect(handler, priority, tag);
+}
+
+void CInputGLFW::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+{
+	m_signals->m_onGamepadAxis.Connect(handler, priority, tag);
+}
+
 static int screenCenterX = 320;
 static int screenCenterY = 240;
 static int g_lastMouseX = screenCenterX;
@@ -189,6 +201,51 @@ void CInputGLFW::OnMouseMove(GLFWwindow* window, double xpos, double ypos)
 	{
 		g_lastMouseX = static_cast<int>(xpos);
 		g_lastMouseY = static_cast<int>(ypos);
+	}
+}
+
+void CInputGLFW::UpdateControllers()
+{
+	for (auto i = GLFW_JOYSTICK_1; i <= GLFW_JOYSTICK_LAST; ++i)
+	{
+		if (glfwJoystickPresent(i) == GL_TRUE)
+		{
+			if (m_gamepadStates.size() <= static_cast<size_t>(i))
+			{
+				m_gamepadStates.resize(static_cast<size_t>(i + 1));
+			}
+			auto& oldState = m_gamepadStates[i];
+			sControllerState state;
+			int count;
+			const unsigned char* buttons = glfwGetJoystickButtons(i, &count);
+			state.buttons.assign(buttons, buttons + count);
+			if (oldState.buttons.size() <= static_cast<size_t>(count))
+			{
+				oldState.buttons.resize(static_cast<size_t>(count));
+			}
+			for (int j = 0; j < count; ++j)
+			{
+				
+				if (buttons[j] != oldState.buttons[j])
+				{
+					m_signals->m_onGamepadButton(i, j, buttons[j] == GL_TRUE);
+				}
+			}
+			const float* axes = glfwGetJoystickAxes(i, &count);
+			state.axes.assign(axes, axes + count);
+			if (oldState.axes.size() <= static_cast<size_t>(count))
+			{
+				oldState.axes.resize(static_cast<size_t>(count));
+			}
+			for (int j = 0; j < count; j += 2)
+			{
+				if (axes[j] != oldState.axes[j] || (count > j + 1 && axes[j + 1] != oldState.axes[j + 1]))
+				{
+					m_signals->m_onGamepadAxis(i, j / 2, axes[j], axes[j+1]);
+				}
+			}
+			m_gamepadStates[i] = state;
+		}
 	}
 }
 

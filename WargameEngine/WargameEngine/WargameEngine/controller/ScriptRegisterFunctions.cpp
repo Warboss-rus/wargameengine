@@ -713,4 +713,42 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		std::string path = args.GetStr(1);
 		return fileProvider.GetAbsolutePath(path);
 	});
+
+	handler.RegisterFunction(SET_GAMEPAD_BUTTONS_CALLBACK, [&](IArguments const& args) {
+		if (args.GetCount() < 1)
+			throw std::runtime_error("at least 1 arguments expected (function name, gamepadIndex, buttonIndex)");
+		std::string functionName = args.GetStr(1);
+		int filterGamepadIndex = -1;
+		int filterButtonIndex = -1;
+		if (args.GetCount() > 1)
+			filterGamepadIndex = args.GetInt(2);
+		if (args.GetCount() > 2)
+			filterButtonIndex = args.GetInt(3);
+		controller.SetGamepadButtonCallback([=, &handler](int gamepadIndex, int buttonIndex, bool state) {
+			if (filterGamepadIndex != -1 && gamepadIndex + 1 != filterGamepadIndex) return false;
+			if (filterButtonIndex != -1 && buttonIndex + 1 != filterButtonIndex) return false;
+			handler.CallFunction(functionName, {gamepadIndex + 1, buttonIndex + 1, state});
+			return true;
+		});
+		return nullptr;
+	});
+
+	handler.RegisterFunction(SET_GAMEPAD_AXIS_CALLBACK, [&](IArguments const& args) {
+		if (args.GetCount() < 1)
+			throw std::runtime_error("at least 1 arguments expected (function name, gamepadIndex, axisIndex)");
+		std::string functionName = args.GetStr(1);
+		int filterGamepadIndex = -1;
+		int filterAxisIndex = -1;
+		if (args.GetCount() > 1)
+			filterGamepadIndex = args.GetInt(2);
+		if (args.GetCount() > 2)
+			filterAxisIndex = args.GetInt(3);
+		controller.SetGamepadAxisCallback([=, &handler](int gamepadIndex, int axisIndex, double horizontal, double vertical) {
+			if (filterGamepadIndex != -1 && gamepadIndex + 1 != filterGamepadIndex) return false;
+			if (filterAxisIndex != -1 && axisIndex + 1 != filterAxisIndex) return false;
+			handler.CallFunction(functionName, { gamepadIndex + 1, axisIndex + 1, horizontal, vertical });
+			return true;
+		});
+		return nullptr;
+	});
 }

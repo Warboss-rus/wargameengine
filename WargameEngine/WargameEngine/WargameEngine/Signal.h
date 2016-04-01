@@ -20,7 +20,7 @@ public:
 		}
 		m_callbacks.push_back({ handler, priority, tag });
 	}
-	void operator() (Arguments... args)
+	bool operator() (Arguments... args)
 	{
 		for (auto callback : m_callbacks)
 		{
@@ -30,9 +30,10 @@ public:
 			}
 			if (callback.func(args...))
 			{
-				return;
+				return true;
 			}
 		}
+		return false;
 	}
 	void RemoveByTag(std::string const& tag)
 	{

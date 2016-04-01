@@ -19,6 +19,8 @@ struct CInputGLUT::sSignals
 	CSignal<int, int> m_onKeyUp;
 	CSignal<unsigned int> m_onCharacter;
 	CSignal<int, int> m_onMouseMove;
+	CSignal<int, int, bool> m_onGamepadButton;
+	CSignal<int, int, double, double> m_onGamepadAxis;
 };
 
 std::unique_ptr<CInputGLUT::sSignals> CInputGLUT::m_signals = std::make_unique<CInputGLUT::sSignals>();
@@ -27,6 +29,8 @@ static const int SCROLL_UP = 3;
 static const int SCROLL_DOWN = 4;
 static int g_prevX;
 static int g_prevY;
+unsigned int CInputGLUT::m_joystickButtons = 0;
+int CInputGLUT::m_joystickAxes[3] = {0, 0, 0};
 
 static const std::map<int, IInput::Modifiers> modifiersMap = {
 	{ GLUT_ACTIVE_ALT, IInput::MODIFIER_ALT },
@@ -157,6 +161,16 @@ void CInputGLUT::DoOnMouseMove(std::function<bool(int, int) > const& handler, in
 	m_signals->m_onMouseMove.Connect(handler, priority, tag);
 }
 
+void CInputGLUT::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+{
+	m_signals->m_onGamepadButton.Connect(handler, priority, tag);
+}
+
+void CInputGLUT::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+{
+	m_signals->m_onGamepadAxis.Connect(handler, priority, tag);
+}
+
 static int screenCenterX = 320;
 static int screenCenterY = 240;
 static int g_lastMouseX = screenCenterX;
@@ -222,6 +236,29 @@ void CInputGLUT::OnMouseMove(int x, int y)
 		g_lastMouseX = x;
 		g_lastMouseY = y;
 	}
+}
+
+void CInputGLUT::OnJoystick(unsigned int buttonMask, int x, int y, int z)
+{
+	for (unsigned int i = 0, k = 1; i < 32; ++i, k *= 2)
+	{
+		if ((buttonMask & k) != (m_joystickButtons & k))
+		{
+			m_signals->m_onGamepadButton(0, i, !!(buttonMask & k));
+		}
+	}
+	m_joystickButtons = buttonMask;
+	if (x != m_joystickAxes[0] || y != m_joystickAxes[1])
+	{
+		m_signals->m_onGamepadAxis(0, 0, x / 1000, y / 1000);
+	}
+	if (z != m_joystickAxes[2])
+	{
+		m_signals->m_onGamepadAxis(0, 1, z / 1000, 0);
+	}
+	m_joystickAxes[0] = x;
+	m_joystickAxes[1] = y;
+	m_joystickAxes[2] = z;
 }
 
 int CInputGLUT::GetMouseX() const

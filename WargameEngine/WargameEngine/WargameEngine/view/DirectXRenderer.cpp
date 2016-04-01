@@ -247,11 +247,11 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
 		NULL,
-#ifdef _DEBUG
-		D3D11_CREATE_DEVICE_DEBUG,
-#else
+//#ifdef _DEBUG
+//		D3D11_CREATE_DEVICE_DEBUG,
+//#else
 		0,
-#endif
+//#endif
 		NULL,
 		NULL,
 		D3D11_SDK_VERSION,

@@ -159,6 +159,16 @@ bool CGameController::OnMouseMove(CVector3d const& begin, CVector3d const& end, 
 	return false;
 }
 
+bool CGameController::OnGamepadButtonStateChange(int gamepadIndex, int buttonIndex, bool newState)
+{
+	return m_onGamepadButton(gamepadIndex, buttonIndex, newState);
+}
+
+bool CGameController::OnGamepadAxisChange(int gamepadIndex, int axisIndex, double horizontal, double vertical)
+{
+	return m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
+}
+
 void CGameController::SelectObjectGroup(double beginX, double beginY, double endX, double endY)
 {
 	double minX = (beginX < endX) ? beginX : endX;
@@ -500,6 +510,16 @@ void CGameController::SetLMBCallback(MouseButtonCallback const& callback)
 void CGameController::SetRMBCallback(MouseButtonCallback const& callback)
 {
 	m_rmbCallback = callback;
+}
+
+void CGameController::SetGamepadButtonCallback(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler)
+{
+	m_onGamepadButton.Connect(handler);
+}
+
+void CGameController::SetGamepadAxisCallback(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler)
+{
+	m_onGamepadAxis.Connect(handler);
 }
 
 void CGameController::BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func)

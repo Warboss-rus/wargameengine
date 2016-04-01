@@ -161,3 +161,7 @@
 #define LOAD_GAME "LoadGame"
 
 #define GET_ABSOLUTE_PATH "GetAbsolutePath"
+
+#define SET_GAMEPAD_BUTTONS_CALLBACK "SetGamepadButtonsCallback"
+
+#define SET_GAMEPAD_AXIS_CALLBACK "SetGamepadAxisCallback"

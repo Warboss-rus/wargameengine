@@ -9,6 +9,7 @@
 #include "../model/GameModel.h"
 #include "../view/Vector3.h"
 #include "Network.h"
+#include "../Signal.h"
 
 class CGameView;
 
@@ -29,12 +30,16 @@ public:
 	bool OnRightMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
 	bool OnRightMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
 	bool OnMouseMove(CVector3d const& begin, CVector3d const& end, int modifiers);
+	bool OnGamepadButtonStateChange(int gamepadIndex, int buttonIndex, bool newState);
+	bool OnGamepadAxisChange(int gamepadIndex, int axisIndex, double horizontal, double vertical);
 	size_t GetLineOfSight(IObject * shooter, IObject * target);
 	void SetSelectionCallback(std::function<void()> const& onSelect);
 	void SetUpdateCallback(std::function<void()> const& onUpdate);
 	void SetSingleCallback(std::function<void()> const& onSingleUpdate);
 	void SetLMBCallback(MouseButtonCallback const& callback);
 	void SetRMBCallback(MouseButtonCallback const& callback);
+	void SetGamepadButtonCallback(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler);
+	void SetGamepadAxisCallback(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler);
 	void Save(std::string const& filename);
 	void Load(std::string const& filename);
 	void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);
@@ -83,6 +88,8 @@ private:
 	std::function<void()> m_selectionCallback;
 	std::function<void()> m_updateCallback;
 	std::function<void()>m_singleCallback;
+	CSignal<int, int, bool> m_onGamepadButton;
+	CSignal<int, int, double, double> m_onGamepadAxis;
 	MouseButtonCallback m_lmbCallback;
 	MouseButtonCallback m_rmbCallback;
 

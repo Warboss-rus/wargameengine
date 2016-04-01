@@ -69,6 +69,8 @@ public:
 				return;
 			}
 
+			m_input->UpdateControllers();
+
 			//Render next frame
 			m_onDraw();
 
