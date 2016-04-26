@@ -40,8 +40,6 @@
 
 #define ENABLE_RULER "Ruler"
 
-#define MESSAGE_BOX "MessageBox"
-
 #define RESIZE_WINDOW "ResizeWindow"
 
 #define ENABLE_LIGHT_SOURCE "EnableLight"

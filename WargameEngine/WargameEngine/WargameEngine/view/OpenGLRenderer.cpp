@@ -87,84 +87,30 @@ static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
 };
 
-void RenderVertex(CVector3f const& vector)
+void Bind(const void* vertices, const void* normals, const void* texCoords, GLenum vertexType, GLenum normalType, GLenum texCoordType, int vertexAxesCount)
 {
-	glVertex3f(vector.x, vector.y, vector.z);
-}
-
-void RenderVertex(CVector3d const& vector)
-{
-	glVertex3d(vector.x, vector.y, vector.z);
-}
-
-void RenderVertex(CVector3<int> const& vector)
-{
-	glVertex3i(vector.x, vector.y, vector.z);
-}
-
-void RenderVertex(CVector2f const& vector)
-{
-	glVertex2f(vector.x, vector.y);
-}
-
-void RenderVertex(CVector2d const& vector)
-{
-	glVertex2d(vector.x, vector.y);
-}
-
-void RenderVertex(CVector2i const& vector)
-{
-	glVertex2i(vector.x, vector.y);
-}
-
-void RenderNormal(CVector3f const& vector)
-{
-	glNormal3f(vector.x, vector.y, vector.z);
-}
-
-void RenderNormal(CVector3d const& vector)
-{
-	glNormal3d(vector.x, vector.y, vector.z);
-}
-
-void RenderNormal(CVector3i const& vector)
-{
-	glNormal3i(vector.x, vector.y, vector.z);
-}
-
-void RenderTexCoord(CVector2f const& vector)
-{
-	glTexCoord2f(vector.x, vector.y);
-}
-
-void RenderTexCoord(CVector2d const& vector)
-{
-	glTexCoord2d(vector.x, vector.y);
-}
-
-template<class X, class Y, class Z>
-void Render(RenderMode mode, std::vector<X> const& vertices, std::vector<Y> const& normals, std::vector<Z> const& texCoords)
-{
-	glBegin(renderModeMap.at(mode));
-	for (size_t i = 0; i < vertices.size(); ++i)
+	if (vertices)
 	{
-		if (i < texCoords.size()) RenderTexCoord(texCoords[i]);
-		if (i < normals.size()) RenderNormal(normals[i]);
-		RenderVertex(vertices[i]);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glVertexPointer(vertexAxesCount, vertexType, 0, vertices);
 	}
-	glEnd();
+	if (normals)
+	{
+		glEnableClientState(GL_NORMAL_ARRAY);
+		glNormalPointer(normalType, 0, normals);
+	}
+	if (texCoords)
+	{
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(2, texCoordType, 0, texCoords);
+	}
 }
 
-template<class X, class Y>
-void Render(RenderMode mode, std::vector<X> const& vertices, std::vector<Y> const& texCoords)
+void Unbind()
 {
-	glBegin(renderModeMap.at(mode));
-	for (size_t i = 0; i < vertices.size(); ++i)
-	{
-		if (i < texCoords.size()) RenderTexCoord(texCoords[i]);
-		RenderVertex(vertices[i]);
-	}
-	glEnd();
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 COpenGLRenderer::COpenGLRenderer()
@@ -181,22 +127,30 @@ COpenGLRenderer::COpenGLRenderer()
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
-	Render(mode, vertices, normals, texCoords);
+	Bind(vertices.data(), normals.data(), texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 3);
+	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
+	Unbind();
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords)
 {
-	Render(mode, vertices, normals, texCoords);
+	Bind(vertices.data(), normals.data(), texCoords.data(), GL_DOUBLE, GL_DOUBLE, GL_DOUBLE, 3);
+	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
+	Unbind();
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	Render(mode, vertices, texCoords);
+	Bind(vertices.data(), NULL, texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 2);
+	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
+	Unbind();
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	Render(mode, vertices, texCoords);
+	Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
+	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
+	Unbind();
 }
 
 void COpenGLRenderer::PushMatrix()
@@ -730,6 +684,22 @@ void COpenGLRenderer::OnResize(int width, int height)
 	GLdouble aspect = (GLdouble)width / (GLdouble)height;
 	gluPerspective(60, aspect, 0.5, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void COpenGLRenderer::RenderToExistingTexture(unsigned int texture, std::function<void()> const& handler)
+{
+	GLuint framebuffer = 0;
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+	{
+		LogWriter::WriteLine("framebuffer error code=" + std::to_string(status));
+	}
+	handler();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &framebuffer);
 }
 
 void COpenGLRenderer::SetUpViewport2D()

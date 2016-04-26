@@ -2,7 +2,6 @@
 #include <functional>
 #include <memory>
 #include "IGameWindow.h"
-#include "IInput.h"
 
 class COpenGLRenderer;
 class CInputGLFW;

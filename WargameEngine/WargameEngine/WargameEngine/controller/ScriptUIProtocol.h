@@ -146,3 +146,8 @@
 
 //Returns the height of an element.
 #define PROPERTY_HEIGHT "height"
+
+/*FUNCTIONS*/
+//void MessageBox(string text, string caption)
+//Displays message box with specified text and caption
+#define MESSAGE_BOX "MessageBox"

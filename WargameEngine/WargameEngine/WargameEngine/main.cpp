@@ -13,6 +13,9 @@
 #elif GLFW
 #include "view\GameWindowGLFW.h"
 #define WINDOW_CLASS CGameWindowGLFW
+#elif VR
+#include "view/GameWindowVR.h"
+#define WINDOW_CLASS CGameWindowVR
 #else
 #include "view\GameWindowGLUT.h"
 #define WINDOW_CLASS CGameWindowGLUT

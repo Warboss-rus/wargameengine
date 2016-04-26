@@ -370,4 +370,22 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetHeight();
 	});
+
+	handler.RegisterFunction(MESSAGE_BOX, [&, uiRoot](IArguments const& args) {
+		if (args.GetCount() < 1 || args.GetCount() > 2)
+			throw std::runtime_error("1 or 2 argument expected (text, caption)");
+		std::string text = args.GetStr(1);
+		std::string caption = "";
+		if (args.GetCount() == 2)
+			caption = args.GetStr(2);
+		const std::string windowName = "MessageBox";
+		const int width = 200;
+		const int border = 10;
+		const int buttonWidth = 50;
+		const int buttonHeight = 20;
+		auto window = uiRoot->AddNewWindow(windowName, 100, width, transMan.GetTranslation(caption));
+		window->AddNewStaticText("text", border, border, window->GetHeight() - 2 * border, window->GetWidth() - 2 * border, transMan.GetTranslation(text));
+		window->AddNewButton("close", (window->GetWidth() - buttonWidth) / 2, window->GetHeight() - border - buttonHeight, buttonHeight, buttonWidth, L"OK", [=] {uiRoot->DeleteChild(windowName);});
+		return nullptr;
+	});
 }

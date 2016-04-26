@@ -262,7 +262,7 @@ void CInputDirectX::UpdateControllers()
 				{
 					m_onGamepadButton(i, 16, state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
 				}
-				//position callback
+				m_onGamepadAxis(i, 2, static_cast<double>(state.Gamepad.bLeftTrigger - state.Gamepad.bRightTrigger) / BYTE_MAX, 0.0);
 			}
 			if (state.Gamepad.bRightTrigger != oldState.bRightTrigger)//right trigger
 			{
@@ -270,7 +270,7 @@ void CInputDirectX::UpdateControllers()
 				{
 					m_onGamepadButton(i, 17, state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
 				}
-				//position callback
+				m_onGamepadAxis(i, 2, static_cast<double>(state.Gamepad.bLeftTrigger - state.Gamepad.bRightTrigger) / BYTE_MAX, 0.0);
 			}
 			m_gamepadStates[i] = state;
 		}

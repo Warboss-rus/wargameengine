@@ -77,6 +77,7 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 					auto mdl = loader->LoadModel(charData, size, *model, fullPath);;
 					std::unique_lock<std::mutex> lk(m_mutex);
 					m_models[path] = std::move(mdl);
+					return;
 				}
 			}
 			throw std::runtime_error("Cannot load model " + path + ". None of installed readers cannot load it");

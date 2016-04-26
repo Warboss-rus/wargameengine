@@ -77,6 +77,8 @@ public:
 
 	void EnableMultisampling(bool enable);
 	void OnResize(int width, int height);
+
+	void RenderToExistingTexture(unsigned int texture, std::function<void()> const& handler);
 private:
 	CTextureManager* m_textureManager;
 };

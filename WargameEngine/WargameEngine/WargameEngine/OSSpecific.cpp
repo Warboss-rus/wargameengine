@@ -39,11 +39,6 @@ std::vector<std::string> GetFiles(std::string const& path, std::string const& ma
 	}
 	return result;
 }
-
-void ShowMessageBox(std::string const& text, std::string const& caption)
-{
-	MessageBoxA(NULL, text.c_str(), caption.c_str(), 0);
-}
 #else
 #include <unistd.h>
 #include <cstring>
@@ -88,33 +83,4 @@ std::vector<std::string> GetFiles(std::string const& path, std::string const& ma
     std::sort(result.begin(), result.end());
     return result;
 }
-
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-void ShowMessageBox(std::string const& text, std::string const& caption)
-{
-	CFUserNotificationRef pDlg = NULL;
-	const void* keys[] = { kCFUserNotificationAlertHeaderKey,
-		kCFUserNotificationAlertMessageKey };
-	const void* vals[] = {
-		CFSTR(caption),
-		CFSTR(text)
-	};
-
-	CFDictionaryRef dict = CFDictionaryCreate(0, keys, vals,
-		sizeof(keys) / sizeof(*keys),
-		&kCFTypeDictionaryKeyCallBacks,
-		&kCFTypeDictionaryValueCallBacks);
-
-	pDlg = CFUserNotificationCreate(kCFAllocatorDefault, 0,
-		kCFUserNotificationPlainAlertLevel,
-		&nRes, dict);
-}
-#else
-void ShowMessageBox(std::string const& text, std::string const& caption)
-{
-	LogWriter::WriteLine(caption);
-	LogWriter::WriteLine(text);
-}
-#endif
 #endif

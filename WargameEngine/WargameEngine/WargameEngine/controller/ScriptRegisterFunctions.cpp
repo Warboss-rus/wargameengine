@@ -99,18 +99,6 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		return nullptr;
 	});
 
-	handler.RegisterFunction(MESSAGE_BOX, [&](IArguments const& args) {
-		//TODO: rewrite within UI class
-		if (args.GetCount() < 1 || args.GetCount() > 2)
-			throw std::runtime_error("1 or 2 argument expected (text, caption)");
-		std::string text = args.GetStr(1);
-		std::string caption = "";
-		if (args.GetCount() == 2)
-			caption = args.GetStr(2);
-		ShowMessageBox(text, caption);
-		return nullptr;
-	});
-
 	handler.RegisterFunction(RESIZE_WINDOW, [&](IArguments const& args) {
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 argument expected (height, width)");
