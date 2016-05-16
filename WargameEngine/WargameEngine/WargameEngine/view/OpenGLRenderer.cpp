@@ -676,9 +676,9 @@ void COpenGLRenderer::EnableMultisampling(bool enable)
 	}
 }
 
-void COpenGLRenderer::OnResize(int width, int height)
+void COpenGLRenderer::OnResize(int width, int height, int left)
 {
-	glViewport(0, 0, width, height);
+	glViewport(left, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	GLdouble aspect = (GLdouble)width / (GLdouble)height;

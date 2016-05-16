@@ -104,13 +104,13 @@ void CGameWindowVR::LaunchMainLoop()
 			{
 				LogError(ovr_GetTextureSwapChainBufferGL(m_vrSession, m_swapChain, -1, &textureId));
 				m_renderer->RenderToExistingTexture(textureId, [this] {
+					//left eye
 					m_renderer->OnResize(m_viewPortSize[0] / 2, m_viewPortSize[1]);
 					g_instance->m_onDraw();
-				});
-				m_renderer->RenderToExistingTexture(textureId, [this] {
-					m_renderer->OnResize(m_viewPortSize[0] / 2, m_viewPortSize[1]);
-					glViewport(m_viewPortSize[0] / 2, 0, m_viewPortSize[0] / 2, m_viewPortSize[1]);
+					//right eye
+					m_renderer->OnResize(m_viewPortSize[0] / 2, m_viewPortSize[1], m_viewPortSize[0] / 2);
 					g_instance->m_onDraw();
+					m_renderer->OnResize(m_viewPortSize[0], m_viewPortSize[1]);
 				});
 				LogError(ovr_CommitTextureSwapChain(m_vrSession, m_swapChain));
 			}
@@ -121,7 +121,7 @@ void CGameWindowVR::LaunchMainLoop()
 			m_renderer->SetUpViewport2D();
 			int width, height;
 			glfwGetFramebufferSize(m_window, &width, &height);
-			m_renderer->RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, 0), {0, height }, { width, height }, { width, 0} }, { { 0.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f }, {1.0f, 0.0f} });
+			m_renderer->RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, height), {0, 0 }, { width, 0 }, { width, height} }, { { 0.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f }, {1.0f, 0.0f} });
 			m_renderer->RestoreViewport();
 			glfwSwapBuffers(g_instance->m_window);
 		}

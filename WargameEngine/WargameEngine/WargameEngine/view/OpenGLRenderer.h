@@ -76,7 +76,7 @@ public:
 	virtual std::string GetName() const override;
 
 	void EnableMultisampling(bool enable);
-	void OnResize(int width, int height);
+	void OnResize(int width, int height, int left = 0);
 
 	void RenderToExistingTexture(unsigned int texture, std::function<void()> const& handler);
 private:
