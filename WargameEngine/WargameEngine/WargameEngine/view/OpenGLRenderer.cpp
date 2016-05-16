@@ -712,7 +712,7 @@ void COpenGLRenderer::SetUpViewport2D()
 	glPushAttrib(GL_VIEWPORT_BIT);
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glOrtho(0, viewport[2] - viewport[0], viewport[3] - viewport[1], 0, -1, 1);
+	glOrtho(viewport[0], viewport[2], viewport[3], viewport[1], -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 }

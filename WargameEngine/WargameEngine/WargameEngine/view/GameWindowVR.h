@@ -2,13 +2,12 @@
 #include <functional>
 #include <memory>
 #include "IGameWindow.h"
+#include <OVR_CAPI.h>
 
 class COpenGLRenderer;
 class CInputGLFW;
 struct GLFWwindow;
 struct GLFWmonitor;
-struct ovrHmdStruct;
-struct ovrTextureSwapChainData;
 
 class CGameWindowVR : public IGameWindow
 {
@@ -35,7 +34,7 @@ private:
 
 	GLFWwindow * m_window = NULL;
 	ovrHmdStruct* m_vrSession;
-	ovrTextureSwapChainData* m_swapChain;
+	ovrTextureSwapChain m_swapChain;
 	std::unique_ptr<CInputGLFW>m_input;
 	std::unique_ptr<COpenGLRenderer> m_renderer;
 
