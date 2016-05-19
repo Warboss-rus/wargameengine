@@ -17,8 +17,8 @@ CCameraFirstPerson::~CCameraFirstPerson()
 	if (m_input)
 	{
 		m_input->EnableCursor(true);
+		m_input->DeleteAllSignalsByTag(g_cameraTag);
 	}
-	m_input->DeleteAllSignalsByTag(g_cameraTag);
 }
 
 void CCameraFirstPerson::Reset()

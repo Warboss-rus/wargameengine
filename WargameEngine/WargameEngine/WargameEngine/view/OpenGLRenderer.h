@@ -5,7 +5,7 @@
 class COpenGLRenderer : public IRenderer, public IViewHelper
 {
 public:
-	COpenGLRenderer();
+	COpenGLRenderer(bool ignoreClear = false);
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
@@ -81,4 +81,5 @@ public:
 	void RenderToExistingTexture(unsigned int texture, std::function<void()> const& handler);
 private:
 	CTextureManager* m_textureManager;
+	bool m_ignoreClear;
 };

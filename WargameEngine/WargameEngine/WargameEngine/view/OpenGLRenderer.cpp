@@ -113,8 +113,8 @@ void Unbind()
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-COpenGLRenderer::COpenGLRenderer()
-	:m_textureManager(nullptr)
+COpenGLRenderer::COpenGLRenderer(bool ignoreClear)
+	:m_textureManager(nullptr), m_ignoreClear(ignoreClear)
 {
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
@@ -148,9 +148,16 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> const
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
+	/*Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
+	Unbind();*/
+	glBegin(renderModeMap.at(mode));
+	for (size_t i = 0; i < vertices.size(); ++i)
+	{
+		if (i < texCoords.size()) glTexCoord2f(texCoords[i].x, texCoords[i].y);
+		glVertex2i(vertices[i].x, vertices[i].y);
+	}
+	glEnd();
 }
 
 void COpenGLRenderer::PushMatrix()
@@ -559,10 +566,13 @@ void COpenGLRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, 
 
 void COpenGLRenderer::ClearBuffers(bool color, bool depth)
 {
-	GLbitfield mask = 0;
-	if (color) mask |= GL_COLOR_BUFFER_BIT;
-	if (depth) mask |= GL_DEPTH_BUFFER_BIT;
-	glClear(mask);
+	if (!m_ignoreClear)
+	{
+		GLbitfield mask = 0;
+		if (color) mask |= GL_COLOR_BUFFER_BIT;
+		if (depth) mask |= GL_DEPTH_BUFFER_BIT;
+		glClear(mask);
+	}
 }
 
 void COpenGLRenderer::ActivateTextureSlot(TextureSlot slot)

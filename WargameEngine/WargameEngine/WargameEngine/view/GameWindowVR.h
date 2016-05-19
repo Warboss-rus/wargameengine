@@ -33,7 +33,7 @@ private:
 	static void OnShutdown(GLFWwindow * window);
 
 	GLFWwindow * m_window = NULL;
-	ovrHmdStruct* m_vrSession;
+	ovrHmdStruct* m_vrSession = NULL;
 	ovrTextureSwapChain m_swapChain;
 	std::unique_ptr<CInputGLFW>m_input;
 	std::unique_ptr<COpenGLRenderer> m_renderer;
