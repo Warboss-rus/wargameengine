@@ -54,6 +54,11 @@ void CGameWindowVR::OnChangeState(GLFWwindow * /*window*/, int state)
 
 void CGameWindowVR::OnReshape(GLFWwindow * /*window*/, int width, int height)
 {
+	if (g_instance->m_vrSession)
+	{
+		width = g_instance->m_viewPortSize[0];
+		height = g_instance->m_viewPortSize[1];
+	}
 	g_instance->m_renderer->OnResize(width, height);
 	if (g_instance->m_onResize)
 	{
@@ -118,8 +123,10 @@ void CGameWindowVR::LaunchMainLoop()
 				LogError(ovr_SubmitFrame(m_vrSession, 0, NULL, layers, 1));
 				glBindTexture(GL_TEXTURE_2D, textureId);
 				m_renderer->SetUpViewport2D();
-				auto mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-				m_renderer->RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, mode->height),{ 0, 0 },{ mode->width, 0 },{ mode->width, mode->height } }, { { 0.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f },{ 1.0f, 0.0f } });
+				int width, height;
+				glfwGetFramebufferSize(m_window, &width, &height);
+				glOrtho(0, width, height, 0, -1, 1);
+				m_renderer->RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, height),{ 0, 0 },{ width, 0 },{ width, height } }, { { 0.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f },{ 1.0f, 0.0f } });
 				m_renderer->RestoreViewport();
 			}
 			else
@@ -147,7 +154,7 @@ void CGameWindowVR::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	{
 		glfwDestroyWindow(m_window);
 	}
-	m_window = glfwCreateWindow(m_viewPortSize[0], m_viewPortSize[1], "WargameEngine", monitor, NULL);
+	m_window = glfwCreateWindow(1280, 720, "WargameEngine", monitor, NULL);
 
 	glfwMakeContextCurrent(m_window);
 
