@@ -2,12 +2,16 @@
 #include <functional>
 #include <memory>
 #include "IGameWindow.h"
-#include <OVR_CAPI.h>
 
 class COpenGLRenderer;
 class CInputGLFW;
 struct GLFWwindow;
 struct GLFWmonitor;
+
+namespace vr
+{
+	class IVRSystem;
+}
 
 class CGameWindowVR : public IGameWindow
 {
@@ -33,15 +37,14 @@ private:
 	static void OnShutdown(GLFWwindow * window);
 
 	GLFWwindow * m_window = NULL;
-	ovrHmdStruct* m_vrSession = NULL;
-	ovrTextureSwapChain m_swapChain;
+	vr::IVRSystem* m_vrSystem = NULL;
 	std::unique_ptr<CInputGLFW>m_input;
 	std::unique_ptr<COpenGLRenderer> m_renderer;
 
 	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;
 	std::function<void()> m_onShutdown;
-	int m_viewPortSize[2];
+	uint32_t m_viewPortSize[2];
 
 	static bool m_visible;
 };

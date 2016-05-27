@@ -696,24 +696,6 @@ void COpenGLRenderer::OnResize(int width, int height, int left)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void COpenGLRenderer::RenderToExistingTexture(unsigned int texture, std::function<void()> const& handler)
-{
-	GLuint framebuffer = 0;
-	glGenFramebuffers(1, &framebuffer);
-	GLenum l_GLDrawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, l_GLDrawBuffers);
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-	{
-		LogWriter::WriteLine("framebuffer error code=" + std::to_string(status));
-	}
-	handler();
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteFramebuffers(1, &framebuffer);
-}
-
 void COpenGLRenderer::SetUpViewport2D()
 {
 	glEnable(GL_BLEND);

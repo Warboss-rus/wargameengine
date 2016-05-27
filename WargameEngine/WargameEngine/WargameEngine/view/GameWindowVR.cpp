@@ -1,50 +1,24 @@
 #include "GameWindowVR.h"
-#include <OVR_CAPI_GL.h>
+#include <gl/glew.h>
 #include <GLFW/glfw3.h>
 #include "InputGLFW.h"
 #include "OpenGLRenderer.h"
 #include "../LogWriter.h"
-#include <algorithm>
+#include <openvr.h>
 
 static CGameWindowVR* g_instance = nullptr;
 bool CGameWindowVR::m_visible = true;
 
-#define GL_FRAMEBUFFER_SRGB 0x8DB9
+using namespace vr;
 
-std::string GetErrorMessage(ovrResult result)
-{
-	switch (result)
-	{
-	case ovrError_Initialize:
-		return "Generic initialization error.";
-	case ovrError_LibLoad:
-		return "Couldn't load LibOVRRT.";
-	case ovrError_LibVersion:
-		return "LibOVRRT version incompatibility.";
-	case ovrError_ServiceConnection:
-		return " Couldn't connect to the OVR Service.";
-	case ovrError_ServiceVersion:
-		return "OVR Service version incompatibility.";
-	case ovrError_IncompatibleOS:
-		return "The operating system version is incompatible.";
-	case ovrError_DisplayInit:
-		return "Unable to initialize the HMD display.";
-	case ovrError_ServerStart:
-		return "Unable to start the server. Is it already running?";
-	case ovrError_Reinitialization:
-		return "Attempted to re-initialize with a different version.";
-	default:
-		return "Unknown error";
-	}
-}
+#define GL_DEPTH_COMPONENT24 0x81A6
 
-ovrResult LogError(ovrResult result, std::string const& prefix = "OVR error. ")
+void LogError(HmdError result, std::string const& prefix = "OVR error. ")
 {
-	if (OVR_FAILURE(result))
+	if (result != VRInitError_None)
 	{
-		LogWriter::WriteLine(prefix + GetErrorMessage(result));
+		LogWriter::WriteLine(prefix + VR_GetVRInitErrorAsEnglishDescription(result));
 	}
-	return result;
 }
 
 void CGameWindowVR::OnChangeState(GLFWwindow * /*window*/, int state)
@@ -54,7 +28,7 @@ void CGameWindowVR::OnChangeState(GLFWwindow * /*window*/, int state)
 
 void CGameWindowVR::OnReshape(GLFWwindow * /*window*/, int width, int height)
 {
-	if (g_instance->m_vrSession)
+	if (g_instance->m_vrSystem)
 	{
 		width = g_instance->m_viewPortSize[0];
 		height = g_instance->m_viewPortSize[1];
@@ -78,68 +52,78 @@ void CGameWindowVR::OnShutdown(GLFWwindow * window)
 
 void CGameWindowVR::LaunchMainLoop()
 {
+	unsigned int textures[2];
+	glGenTextures(2, textures);
+	unsigned int depthTextures[2];
+	glGenTextures(2, depthTextures);
+	unsigned int buffers[2];
+	glGenFramebuffers(2, buffers);
+	for (int i = 0; i < 2; ++i)
+	{
+		glBindTexture(GL_TEXTURE_2D, textures[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_viewPortSize[0], m_viewPortSize[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glBindTexture(GL_TEXTURE_2D, depthTextures[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_viewPortSize[0], m_viewPortSize[1], 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+		glBindFramebuffer(GL_FRAMEBUFFER, buffers[i]);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTextures[i], 0);
+		GLenum l_GLDrawBuffers[] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, l_GLDrawBuffers);
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			LogWriter::WriteLine("framebuffer error code=" + std::to_string(status));
+		}
+	}
+	auto compositor = m_vrSystem ? VRCompositor() : nullptr;
+	TrackedDevicePose_t m_rTrackedDevicePose[k_unMaxTrackedDeviceCount];
+	TrackedDevicePose_t m_rTrackedGamePose[k_unMaxTrackedDeviceCount];
 	while (m_window && !glfwWindowShouldClose(m_window))
 	{
-		if (m_visible)
+		if (m_visible || compositor)
 		{
-			g_instance->m_input->UpdateControllers();
-			if (m_vrSession)
+			m_renderer->OnResize(m_viewPortSize[0], m_viewPortSize[1]);
+			if (compositor)
 			{
-				ovrEyeRenderDesc eyeRenderDesc[2];
-				ovrVector3f hmdToEyeViewOffset[2];
-				ovrHmdDesc hmdDesc = ovr_GetHmdDesc(m_vrSession);
-				eyeRenderDesc[0] = ovr_GetRenderDesc(m_vrSession, ovrEye_Left, hmdDesc.DefaultEyeFov[0]);
-				eyeRenderDesc[1] = ovr_GetRenderDesc(m_vrSession, ovrEye_Right, hmdDesc.DefaultEyeFov[1]);
-				hmdToEyeViewOffset[0] = eyeRenderDesc[0].HmdToEyeOffset;
-				hmdToEyeViewOffset[1] = eyeRenderDesc[1].HmdToEyeOffset;
-				// Initialize our single full screen Fov layer.
-				ovrLayerEyeFov layer;
-				layer.Header.Type = ovrLayerType_EyeFov;
-				layer.Header.Flags = 0;
-				layer.ColorTexture[0] = m_swapChain;
-				layer.ColorTexture[1] = m_swapChain;
-				layer.Fov[0] = eyeRenderDesc[0].Fov;
-				layer.Fov[1] = eyeRenderDesc[1].Fov;
-				layer.Viewport[0] = { 0, 0, m_viewPortSize[0] / 2, m_viewPortSize[1] };
-				layer.Viewport[1] = { m_viewPortSize[0] / 2, 0, m_viewPortSize[0] / 2, m_viewPortSize[1] };
-				// ld.RenderPose and ld.SensorSampleTime are updated later per frame.
-
-				unsigned int textureId;
-				if (g_instance->m_onDraw)
-				{
-					LogError(ovr_GetTextureSwapChainBufferGL(m_vrSession, m_swapChain, -1, &textureId));
-					m_renderer->RenderToExistingTexture(textureId, [this] {
-						glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-						//left eye
-						m_renderer->OnResize(m_viewPortSize[0] / 2, m_viewPortSize[1]);
-						g_instance->m_onDraw();
-						//right eye
-						m_renderer->OnResize(m_viewPortSize[0] / 2, m_viewPortSize[1], m_viewPortSize[0] / 2);
-						g_instance->m_onDraw();
-					});
-					LogError(ovr_CommitTextureSwapChain(m_vrSession, m_swapChain));
-				}
-				ovrLayerHeader* layers[] = { &layer.Header };
-				LogError(ovr_SubmitFrame(m_vrSession, 0, NULL, layers, 1));
-				glBindTexture(GL_TEXTURE_2D, textureId);
-				m_renderer->SetUpViewport2D();
-				int width, height;
-				glfwGetFramebufferSize(m_window, &width, &height);
-				glOrtho(0, width, height, 0, -1, 1);
-				m_renderer->RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, height),{ 0, 0 },{ width, 0 },{ width, height } }, { { 0.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f },{ 1.0f, 0.0f } });
-				m_renderer->RestoreViewport();
+				compositor->WaitGetPoses(m_rTrackedDevicePose, k_unMaxTrackedDeviceCount, m_rTrackedGamePose, k_unMaxTrackedDeviceCount);
 			}
-			else
+			g_instance->m_input->UpdateControllers();
+			if (g_instance->m_onDraw)
 			{
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				int width, height;
-				glfwGetFramebufferSize(m_window, &width, &height);
-				m_renderer->OnResize(width / 2, height);
-				g_instance->m_onDraw();
-				//right eye
-				m_renderer->OnResize(width / 2, height, width / 2);
-				g_instance->m_onDraw();
-				m_renderer->OnResize(width, height);
+				for (size_t i = 0; i < 2; ++i)
+				{
+					glBindFramebuffer(GL_FRAMEBUFFER, buffers[i]);
+					//modify camera
+					g_instance->m_onDraw();
+				}
+				glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
+			}
+			int width, height;
+			glfwGetFramebufferSize(m_window, &width, &height);
+			m_renderer->OnResize(width, height);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GL_NONE);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			width /= 2;
+			for (int i = 0; i < 2; ++i)
+			{
+				glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers[i]);
+				glReadBuffer(GL_COLOR_ATTACHMENT0);
+				glBlitFramebuffer(0, 0, m_viewPortSize[0], m_viewPortSize[1], width * i, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+			}
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);
+			if (compositor)
+			{
+				for (int i = 0; i < 2; ++i)
+				{
+					const vr::Texture_t tex = { reinterpret_cast<void*>(textures[i]), API_OpenGL, ColorSpace_Gamma };
+					EVRCompositorError err = compositor->Submit(vr::EVREye(i), &tex);
+					if (err)
+					{
+						return;
+					}
+				}
+				glFlush();
+				compositor->PostPresentHandoff();
 			}
 			glfwSwapBuffers(g_instance->m_window);
 		}
@@ -172,27 +156,21 @@ CGameWindowVR::CGameWindowVR()
 {
 	g_instance = this;
 
-	LogError(ovr_Initialize(NULL));
-
-	ovrGraphicsLuid luid;
-	LogError(ovr_Create(&m_vrSession, &luid));
-	if (m_vrSession)
+	HmdError err;
+	m_vrSystem = VR_Init(&err, VRApplication_Scene);
+	LogError(err);
+	m_viewPortSize[0] = 1280;
+	m_viewPortSize[1] = 720;
+	if (m_vrSystem)
 	{
-		auto hdmDesc = ovr_GetHmdDesc(m_vrSession);
-
-		ovrSizei recommenedTex0Size = ovr_GetFovTextureSize(m_vrSession, ovrEye_Left,
-			hdmDesc.DefaultEyeFov[0], 1.0f);
-		ovrSizei recommenedTex1Size = ovr_GetFovTextureSize(m_vrSession, ovrEye_Right,
-			hdmDesc.DefaultEyeFov[1], 1.0f);
-		m_viewPortSize[0] = recommenedTex0Size.w + recommenedTex1Size.w;
-		m_viewPortSize[1] = std::max(recommenedTex0Size.h, recommenedTex1Size.h);
-
-		glfwWindowHint(GLFW_DECORATED, GL_FALSE);
-	}
-	else
-	{
-		m_viewPortSize[0] = 1280;
-		m_viewPortSize[1] = 720;
+		m_vrSystem->GetRecommendedRenderTargetSize(&m_viewPortSize[0], &m_viewPortSize[1]);
+		auto compositor = VR_GetGenericInterface(IVRCompositor_Version, &err);
+		LogError(err);
+		if (!compositor)
+		{
+			VR_Shutdown();
+			m_vrSystem = nullptr;
+		}
 	}
 	
 	glfwInit();
@@ -200,37 +178,13 @@ CGameWindowVR::CGameWindowVR()
 
 	CreateNewWindow();
 
-	m_renderer = std::make_unique<COpenGLRenderer>(true);
-
-	if (m_vrSession)
-	{
-		glEnable(GL_FRAMEBUFFER_SRGB);
-		ovrTextureSwapChainDesc desc = {};
-		desc.Type = ovrTexture_2D;
-		desc.ArraySize = 1;
-		desc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
-		desc.Width = m_viewPortSize[0];
-		desc.Height = m_viewPortSize[1];
-		desc.MipLevels = 1;
-		desc.SampleCount = 1;
-		desc.StaticImage = ovrFalse;
-		m_swapChain = 0;
-		if (LogError(ovr_CreateTextureSwapChainGL(m_vrSession, &desc, &m_swapChain)) == ovrSuccess)
-		{
-			// Sample texture access:
-			unsigned int texId;
-			ovr_GetTextureSwapChainBufferGL(m_vrSession, m_swapChain, -1, &texId);
-			glBindTexture(GL_TEXTURE_2D, texId);
-		}
-	}
+	m_renderer = std::make_unique<COpenGLRenderer>();
 }
 
 CGameWindowVR::~CGameWindowVR()
 {
 	glfwTerminate();
-	ovr_DestroyTextureSwapChain(m_vrSession, m_swapChain);
-	ovr_Destroy(m_vrSession);
-	ovr_Shutdown();
+	VR_Shutdown();
 }
 
 void CGameWindowVR::DoOnDrawScene(std::function<void()> const& handler)
