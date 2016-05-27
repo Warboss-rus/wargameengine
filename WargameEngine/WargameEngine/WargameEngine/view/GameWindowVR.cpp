@@ -98,19 +98,18 @@ void CGameWindowVR::LaunchMainLoop()
 				}
 				glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 			}
+			/*glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GL_NONE);
 			int width, height;
 			glfwGetFramebufferSize(m_window, &width, &height);
-			m_renderer->OnResize(width, height);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GL_NONE);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			width /= 2;
-			for (int i = 0; i < 2; ++i)
+			glEnable(GL_TEXTURE_2D);
+			for (int i = 1; i < 2; ++i)
 			{
 				glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers[i]);
 				glReadBuffer(GL_COLOR_ATTACHMENT0);
-				glBlitFramebuffer(0, 0, m_viewPortSize[0], m_viewPortSize[1], width * i, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+				//glBlitFramebuffer(0, 0, m_viewPortSize[0], m_viewPortSize[1], width * i, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_LINEAR);
 			}
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);*/
 			if (compositor)
 			{
 				for (int i = 0; i < 2; ++i)
@@ -122,7 +121,6 @@ void CGameWindowVR::LaunchMainLoop()
 						return;
 					}
 				}
-				glFlush();
 				compositor->PostPresentHandoff();
 			}
 			glfwSwapBuffers(g_instance->m_window);
