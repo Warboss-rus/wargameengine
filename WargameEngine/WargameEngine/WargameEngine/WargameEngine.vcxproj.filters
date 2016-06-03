@@ -224,6 +224,9 @@
     <ClCompile Include="view\WBMModelFactory.cpp">
       <Filter>Source Files\view\Readers</Filter>
     </ClCompile>
+    <ClCompile Include="MathLibLite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -525,6 +528,9 @@
     </ClInclude>
     <ClInclude Include="view\WBMModelFactory.h">
       <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="MathLibLite.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

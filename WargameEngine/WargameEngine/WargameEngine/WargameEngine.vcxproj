@@ -168,6 +168,7 @@
     <ClCompile Include="controller\ScriptRegisterFunctions.cpp" />
     <ClCompile Include="controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="controller\ScriptRegisterUI.cpp" />
+    <ClCompile Include="MathLibLite.cpp" />
     <ClCompile Include="MemoryStream.cpp" />
     <ClCompile Include="model\Bounding.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
@@ -238,6 +239,7 @@
     <ClInclude Include="controller\ScriptUIProtocol.h" />
     <ClInclude Include="IMemoryStream.h" />
     <ClInclude Include="ITask.h" />
+    <ClInclude Include="MathLibLite.h" />
     <ClInclude Include="MemoryStream.h" />
     <ClInclude Include="model\Animation.h" />
     <ClInclude Include="model\Bounding.h" />
