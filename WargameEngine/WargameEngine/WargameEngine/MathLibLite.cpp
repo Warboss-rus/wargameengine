@@ -5,7 +5,7 @@
 
 namespace MathLibLite
 {
-
+#define DOT3(v1, v2) ((v1)[0] * (v2)[0] + (v1)[1] * (v2)[1] + (v1)[2] * (v2)[2])
 const float3 float3::nan = float3(NAN, NAN, NAN);
 const float3 float3::unitX = float3(1, 0, 0);
 const float3 float3::unitY = float3(0, 1, 0);
@@ -143,13 +143,11 @@ void OBBTransform(OBB &o, const Matrix &transform)
 
 void OBB::Transform(const float3x3 &transform)
 {
-	assume(transform.IsColOrthogonal());
 	OBBTransform(*this, transform);
 }
 
 void OBB::Transform(const float3x4 &transform)
 {
-	assume(transform.IsColOrthogonal());
 	OBBTransform(*this, transform);
 }
 
@@ -160,11 +158,6 @@ bool OBB::Intersects(const AABB &aabb) const
 
 bool OBB::Intersects(const OBB &b, float epsilon) const
 {
-	assume(pos.IsFinite());
-	assume(b.pos.IsFinite());
-	assume(float3::AreOrthonormal(axis[0], axis[1], axis[2]));
-	assume(float3::AreOrthonormal(b.axis[0], b.axis[1], b.axis[2]));
-
 	// Generate a rotation matrix that transforms from world space to this OBB's coordinate space.
 	float3x3 R;
 	for (int i = 0; i < 3; ++i)
@@ -287,15 +280,11 @@ float3x4 OBB::LocalToWorld() const
 	return m;
 	*/
 
-	assume(axis[0].IsNormalized());
-	assume(axis[1].IsNormalized());
-	assume(axis[2].IsNormalized());
 	float3x4 m;
 	m.SetCol(0, axis[0]);
 	m.SetCol(1, axis[1]);
 	m.SetCol(2, axis[2]);
 	m.SetCol(3, pos - axis[0] * r.x - axis[1] * r.y - axis[2] * r.z);
-	assume(m.IsOrthonormal());
 	return m;
 }
 
@@ -355,7 +344,6 @@ float3 &float3::operator +=(const float3 &rhs)
 
 float float3::Normalize()
 {
-	assume(IsFinite());
 	float length = Length();
 	if (length > 1e-6f)
 	{
@@ -422,7 +410,7 @@ float3 float3x3::operator *(const float3 &rhs) const
 		DOT3(v[2], rhs));
 }
 
-bool MUST_USE_RESULT float3::AreOrthonormal(const float3 &a, const float3 &b, const float3 &c, float epsilon)
+bool float3::AreOrthonormal(const float3 &a, const float3 &b, const float3 &c, float epsilon)
 {
 	return a.IsPerpendicular(b, epsilon) &&
 		a.IsPerpendicular(c, epsilon) &&
@@ -496,7 +484,6 @@ void float3x4::SetRow(int row, float m_r0, float m_r1, float m_r2, float m_r3)
 
 void float3x4::InverseOrthonormal()
 {
-	assume(IsOrthonormal());
 	/* In this function, we seek to optimize the matrix inverse in the case this
 	matrix is orthonormal, i.e. it can be written in the following form:
 
@@ -1439,7 +1426,6 @@ float2 Polygon::MapTo2D(int i) const
 
 float2 Polygon::MapTo2D(const float3 &point) const
 {
-	assume(!p.empty());
 	float3 basisU = BasisU();
 	float3 basisV = BasisV();
 	float3 pt = point - p[0];
@@ -1518,7 +1504,7 @@ void Plane::Set(const float3 &point, const float3 &normal_)
 	d = Dot(point, normal);
 }
 
-bool MUST_USE_RESULT float3::AreCollinear(const float3 &p1, const float3 &p2, const float3 &p3, float epsilon)
+bool float3::AreCollinear(const float3 &p1, const float3 &p2, const float3 &p3, float epsilon)
 {
 	return (p2 - p1).Cross(p3 - p1).LengthSq() <= epsilon;
 }
