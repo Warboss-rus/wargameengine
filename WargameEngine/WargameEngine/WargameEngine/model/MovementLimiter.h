@@ -28,8 +28,8 @@ public:
 	void FixPosition(CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) const;
 private:
 	double m_minX;
-	double m_minY;
 	double m_maxX;
+	double m_minY;
 	double m_maxY;
 };
 

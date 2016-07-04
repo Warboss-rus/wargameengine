@@ -6,8 +6,7 @@
 #include "../view/Vector3.h"
 #include "Animation.h"
 #include "TeamColor.h"
-
-class IMoveLimiter;
+#include "MovementLimiter.h"
 
 class IObject
 {

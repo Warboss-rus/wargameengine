@@ -1,16 +1,24 @@
 #include "Object.h"
-#include <sys/timeb.h> 
 #include <algorithm>
 #include "MovementLimiter.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <float.h>
+#include <chrono>
+
+namespace
+{
+long long GetCurrentTime()
+{
+	using namespace std::chrono;
+	return time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
+}
+}
 
 CObject::CObject(std::string const& model, double x, double y, double z, double rotation, bool hasShadow)
 	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
 {
-	struct timeb time;
-	ftime(&time);
-	m_lastUpdateTime = 1000 * time.time + time.millitm;
+	m_lastUpdateTime = GetCurrentTime();
 }
 
 std::string CObject::GetPathToModel() const
@@ -134,9 +142,7 @@ void CObject::PlayAnimation(std::string const& animation, eAnimationLoopMode loo
 	m_animation = animation;
 	m_animationLoop = loop;
 	m_animationSpeed = speed;
-	struct timeb time;
-	ftime(&time);
-	m_animationBegin = 1000 * time.time + time.millitm;
+	m_animationBegin =GetCurrentTime();
 }
 
 std::string CObject::GetAnimation() const
@@ -147,9 +153,7 @@ std::string CObject::GetAnimation() const
 float CObject::GetAnimationTime() const
 {
 	if (m_animationBegin == 0L) return 0.0f;
-	struct timeb time;
-	ftime(&time);
-	long long delta = 1000 * time.time + time.millitm - m_animationBegin;
+	long long delta = GetCurrentTime() - m_animationBegin;
 	return static_cast<float>((double)delta / 1000.0);
 }
 
@@ -198,9 +202,7 @@ void CObject::GoTo(CVector3d const& coords, double speed, std::string const& ani
 
 void CObject::Update()
 {
-	struct timeb time;
-	ftime(&time);
-	long long current = 1000 * time.time + time.millitm;
+	long long current = GetCurrentTime();
 	if (abs(m_goSpeed) < DBL_EPSILON)
 	{
 		m_lastUpdateTime = current;

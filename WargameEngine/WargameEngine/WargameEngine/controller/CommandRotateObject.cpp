@@ -3,7 +3,7 @@
 #include "../IMemoryStream.h"
 
 CCommandRotateObject::CCommandRotateObject(std::shared_ptr<IObject> object, double deltaRotation) :
-	m_deltaRotation(deltaRotation), m_pObject(object)
+	m_pObject(object), m_deltaRotation(deltaRotation)
 {
 }
 

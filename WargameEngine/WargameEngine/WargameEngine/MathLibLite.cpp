@@ -1,6 +1,8 @@
 #include <vector>
-#include <sal.h>
 #include <limits>
+#include <math.h>
+#include <float.h>
+#include <stdlib.h>
 #include "MathLibLite.h"
 
 namespace MathLibLite
@@ -127,6 +129,11 @@ void OBB::Scale(const float3 &centerPoint, const float3 &scaleFactor)
 	///@bug This scales in global axes, not local axes.
 	float3x4 transform = float3x4::Scale(scaleFactor, centerPoint);
 	Transform(transform);
+}
+
+float3 operator *(float scalar, const float3 &rhs)
+{
+	return float3(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z);
 }
 
 template<typename Matrix>
@@ -452,11 +459,6 @@ float3 float3x3::Mul(const float3 &rhs) const { return *this * rhs; }
 float3 Polyhedron::ClosestPoint(const LineSegment &lineSegment) const
 {
 	return ClosestPoint(lineSegment, 0);
-}
-
-float3 operator *(float scalar, const float3 &rhs)
-{
-	return float3(scalar * rhs.x, scalar * rhs.y, scalar * rhs.z);
 }
 
 Line operator *(const float3x4 &transform, const Line &l)

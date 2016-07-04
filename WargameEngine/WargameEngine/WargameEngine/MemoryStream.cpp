@@ -1,6 +1,6 @@
 #include "MemoryStream.h"
 
-CReadMemoryStream::CReadMemoryStream(const char* data, size_t size) :m_data(data), m_size(size), m_position(0)
+CReadMemoryStream::CReadMemoryStream(const char* data) :m_data(data), m_position(0)
 {
 }
 

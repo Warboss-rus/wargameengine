@@ -10,14 +10,14 @@
 #include "ICommand.h"
 
 CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory)
-	:m_host(true)
-	, m_netData(NULL)
+	: m_socketFactory(socketFactory)
+	, m_host(true)
 	, m_netRecievedSize(0)
 	, m_netTotalSize(0)
+	, m_netData(NULL)
 	, m_stateManager(stateManager)
 	, m_commandHandler(commandHandler)
 	, m_model(model)
-	, m_socketFactory(socketFactory)
 {
 }
 
@@ -82,7 +82,7 @@ void CNetwork::Update()
 	}
 	if (m_netData && m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
 	{
-		CReadMemoryStream stream(m_netData, m_netTotalSize);
+		CReadMemoryStream stream(m_netData);
 		unsigned char type = stream.ReadByte();
 		if (type == 0) //string
 		{

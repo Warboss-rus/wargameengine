@@ -1,0 +1,534 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="android_native_app_glue.h" />
+    <ClInclude Include="..\..\WargameEngine\AsyncFileProvider.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\IMemoryStream.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\ITask.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\MemoryStream.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\OSSpecific.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\LogWriter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\Module.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\Plugin.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\PluginManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\Signal.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\stb_image.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\Task.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\ThreadPool.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\Ruler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIRadioGroup.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIScrollBar.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIWindow.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\IUI.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIButton.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UICheckBox.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIEdit.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIElement.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIList.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIComboBox.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIPanel.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIStaticText.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UIText.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\UI\UITheme.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\MathLibLite.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\CameraFirstPerson.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\CameraStrategy.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ICamera.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IImageReader.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IInput.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IModelReader.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IParticleEffect.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IRenderer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IShaderManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IGameWindow.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ISoundPlayer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ITextureHelper.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ITextWriter.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\IViewHelper.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\KeyDefines.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\Matrix4.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\TranslationManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\Vector2.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\Vector3.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\3dModel.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\GameView.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\Material.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\MaterialManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ModelManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\SkyBox.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\TextureManager.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\Particle.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ParticleEffect.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ParticleModel.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ParticleSystem.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ParticleTracer.h">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\BuiltInImageReaders.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ColladaModelFactory.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\OBJModelFactory.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\WBMModelFactory.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\Animation.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\Bounding.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\IBoundingBoxManager.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\IGameModel.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\Landscape.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\ObjectStatic.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\Projectile.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\TeamColor.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\Object.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\MovementLimiter.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\ObjectGroup.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\ObjectInterface.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\GameModel.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\INetSocket.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\IScriptHandler.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\IStateManager.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\Network.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandHandler.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\GameController.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandGoTo.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandPlayAnimation.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandChangeGlobalProperty.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandChangeProperty.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandCompound.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandRotateObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandCreateObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandDeleteObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\CommandMoveObject.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\ICommand.h">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptFunctionsProtocol.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptObjectProtocol.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptRegisterFunctions.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptUIProtocol.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml.hpp">
+      <Filter>Source Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_iterators.hpp">
+      <Filter>Source Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_print.hpp">
+      <Filter>Source Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp">
+      <Filter>Source Files\rapidxml</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="android_native_app_glue.c" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\..\WargameEngine\AsyncFileProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\MathLibLite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\MemoryStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\LogWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\Module.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\OSSpecific.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\Plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\PluginManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\Ruler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\ThreadPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIButton.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UICheckBox.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIEdit.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIElement.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIList.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIComboBox.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIPanel.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIRadioGroup.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIScrollBar.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIStaticText.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIText.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UITheme.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\UI\UIWindow.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\3dModel.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\CameraFirstPerson.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\CameraStrategy.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\GameView.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\MaterialManager.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\ModelManager.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\SkyBox.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\TextureManager.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\TranslationManager.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\Particle.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\ParticleEffect.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\ParticleModel.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\ParticleSystem.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\ParticleTracer.cpp">
+      <Filter>Source Files\view\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\BuiltInImageReaders.cpp">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\ColladaModelFactory.cpp">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\OBJModelFactory.cpp">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\model\Bounding.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\model\Landscape.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\model\Projectile.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\model\Object.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\model\GameModel.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\model\MovementLimiter.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\model\ObjectGroup.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\Network.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandHandler.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\GameController.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandGoTo.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandPlayAnimation.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandChangeGlobalProperty.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandChangeProperty.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandCompound.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandCreateObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandDeleteObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandMoveObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\CommandRotateObject.cpp">
+      <Filter>Source Files\controller\commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterFunctions.cpp">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterObject.cpp">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterUI.cpp">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{7729b1dd-86bf-4824-b3c7-556e509b3921}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{5db6f862-5a30-4f88-8f49-a8844a6ccffa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\view">
+      <UniqueIdentifier>{0ee227cd-cfe7-4f3a-b5ad-e0e10d9e7117}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\view\Particles">
+      <UniqueIdentifier>{e109fa0e-f457-43eb-958f-76997e456859}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\view\Readers">
+      <UniqueIdentifier>{f489bf95-e6b0-4696-9ecf-c9b10dbdfb4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\model">
+      <UniqueIdentifier>{93ffeff0-3569-4058-a759-54553b6de8e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\controller">
+      <UniqueIdentifier>{3e6425db-1edb-4dc8-a6c0-2dc0133a0544}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\controller\commands">
+      <UniqueIdentifier>{61e25daa-2c10-4d07-856d-20401c30f9a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\controller\functionRegisters">
+      <UniqueIdentifier>{093403e8-dc19-4f3a-8098-bbbededb16b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\rapidxml">
+      <UniqueIdentifier>{22c80e6d-406d-4642-a213-be9f53fd7846}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

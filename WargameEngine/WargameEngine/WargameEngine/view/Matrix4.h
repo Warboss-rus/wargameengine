@@ -1,4 +1,5 @@
 #pragma once
+#include <float.h>
 
 template<class T>
 class Matrix4T

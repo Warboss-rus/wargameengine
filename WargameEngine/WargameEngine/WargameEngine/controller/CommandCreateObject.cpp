@@ -4,7 +4,7 @@
 #include "../IMemoryStream.h"
 #include "../model/Object.h"
 
-CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> object, IGameModel& model)
+CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> const& object, IGameModel& model)
 	:m_pObject(object), m_model(model) 
 {
 }

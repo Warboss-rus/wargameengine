@@ -1,19 +1,23 @@
 #include "Projectile.h"
-#include <sys/timeb.h> 
+#include <chrono>
+namespace
+{
+	long long GetCurrentTime()
+	{
+		using namespace std::chrono;
+		return time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
+	}
+}
 
 CProjectile::CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::string const& model, std::string const& particleFile, std::function<void()> const& onHit, std::function<void()> const& onCollision)
-	:CStaticObject(model, origin.x, origin.y, 0.0, model.empty()), m_target(target), m_particle(particleFile), m_speed(speed), m_onHit(onHit), m_onCollision(onCollision)
+	:CStaticObject(model, origin.x, origin.y, 0.0, model.empty()), m_target(target), m_speed(speed), m_particle(particleFile), m_onHit(onHit), m_onCollision(onCollision)
 {
-	struct timeb time;
-	ftime(&time);
-	m_lastUpdateTime = 1000 * time.time + time.millitm;
+	m_lastUpdateTime = GetCurrentTime();
 }
 
 bool CProjectile::Update()
 {
-	struct timeb time;
-	ftime(&time);
-	long long current = 1000 * time.time + time.millitm;
+	long long current = GetCurrentTime();
 	CVector3d dir = m_target - m_coords;
 	dir.Normalize();
 	dir = dir * static_cast<double>(current - m_lastUpdateTime) / 1000.0f * m_speed;

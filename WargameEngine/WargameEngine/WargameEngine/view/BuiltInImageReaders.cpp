@@ -3,6 +3,19 @@
 #include "../stb_image.h"
 #include <algorithm>
 #include <string>
+#ifdef TO_STRING_HACK
+#include <sstream>
+namespace std
+{
+	template<class T>
+	std::string to_string(T _Val)
+	{
+		std::stringstream stream;
+		stream << _Val;
+		return stream.str();
+	}
+}
+#endif
 
 unsigned char* Convert24To32Bit(unsigned char * data, unsigned int width, unsigned int height, std::vector<unsigned char> & result)
 {

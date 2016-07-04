@@ -3,7 +3,7 @@
 #include "../IMemoryStream.h"
 
 CommandChangeGlobalProperty::CommandChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel& model)
-	:m_key(key), m_newValue(value), m_model(model), m_oldValue(model.GetProperty(key))
+	:m_key(key), m_oldValue(model.GetProperty(key)), m_newValue(value), m_model(model)
 {
 
 }

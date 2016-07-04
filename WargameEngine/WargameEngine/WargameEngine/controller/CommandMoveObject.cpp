@@ -3,7 +3,7 @@
 #include "../IMemoryStream.h"
 
 CCommandMoveObject::CCommandMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY) :
-	m_deltaX(deltaX), m_deltaY(deltaY), m_pObject(object)
+	m_pObject(object), m_deltaX(deltaX), m_deltaY(deltaY)
 {
 }
 

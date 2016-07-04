@@ -4,6 +4,19 @@
 #include "../UI/IUI.h"
 #include "../view/TranslationManager.h"
 #include "../UI/UITheme.h"
+#ifdef TO_STRING_HACK
+#include <sstream>
+namespace std
+{
+	template<class T>
+	std::string to_string(T _Val)
+	{
+		std::stringstream stream;
+		stream << _Val;
+		return stream.str();
+	}
+}
+#endif
 
 void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManager & transMan)
 {
@@ -207,14 +220,14 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		return static_cast<long>(c->GetSelectedIndex() + 1);
+		return static_cast<int>(c->GetSelectedIndex() + 1);
 	});
 
 	handler.RegisterMethod(CLASS_UI, GET_ITEMS_COUNT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		return (long)c->GetItemsCount();
+		return (int)c->GetItemsCount();
 	});
 
 	handler.RegisterMethod(CLASS_UI, GET_ITEM, [&, uiRoot](void* instance, IArguments const& args) {
@@ -226,10 +239,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		{
 			return c->GetItem(index);
 		}
-		else
-		{
-			throw std::runtime_error("Invalid index:" + std::to_string(index) + ". Element only have " + std::to_string(c->GetItemsCount()) + " items.");
-		}
+		throw std::runtime_error("Invalid index:" + std::to_string(index) + ". Element only have " + std::to_string(c->GetItemsCount()) + " items.");
 	});
 
 	handler.RegisterMethod(CLASS_UI, CLEAR_ITEMS, [&, uiRoot](void* instance, IArguments const& args) {

@@ -4,11 +4,14 @@
 #include "ITask.h"
 #include "ThreadPool.h"
 
-template<class T>
-class TaskBase : public IAsyncTask<T>
+class TaskBase : public ITask
 {
 public:
-	TaskBase(AsyncHandler const& func, ThreadPool & threadPool, bool start = false)
+	typedef std::function<void()> AsyncHandler;
+	typedef std::function<void()> CallbackHandler;
+	typedef std::function<void(std::exception const&)> OnFailHandler;
+
+	TaskBase(AsyncHandler const& func, ThreadPool & threadPool)
 		: m_handler(func)
 		, m_state(TaskState::CREATED)
 		, m_threadPool(threadPool)
@@ -16,7 +19,7 @@ public:
 		
 	}
 
-	virtual void AddOnCompleteHandler(CallbackHandler const& handler) override
+	virtual void AddOnCompleteHandler(CallbackHandler const& handler)
 	{
 		std::lock_guard<std::mutex> lk(m_sync);
 		if (m_state != TaskState::QUEUED && m_state != TaskState::CREATED)
@@ -26,7 +29,7 @@ public:
 		m_callback = handler;
 	}
 
-	virtual void AddOnFailHandler(OnFailHandler const& handler) override
+	virtual void AddOnFailHandler(OnFailHandler const& handler)
 	{
 		std::lock_guard<std::mutex> lk(m_sync);
 		if (m_state != TaskState::QUEUED && m_state != TaskState::CREATED)
@@ -36,7 +39,7 @@ public:
 		m_onFail = handler;
 	}
 
-	virtual void Cancel() override
+	virtual void Cancel()
 	{
 		std::lock_guard<std::mutex> lk(m_sync);
 		m_state = TaskState::CANCELLED;
@@ -78,8 +81,7 @@ protected:
 	mutable std::mutex m_sync;
 };
 
-template <class T>
-class Task : public TaskBase<T>
+class Task : public TaskBase
 {
 public:
 	Task(AsyncHandler const& func, ThreadPool & threadPool)
@@ -98,12 +100,12 @@ private:
 		lk.unlock();
 		try
 		{
-			T result = m_handler();
+			m_handler();
 			SetTaskState(TaskState::COMPLETED);
 			if (m_callback)
 			{
-				m_threadPool.QueueCallback([this, result] {
-					m_callback(result); 
+				m_threadPool.QueueCallback([this] {
+					m_callback(); 
 					m_threadPool.RemoveTask(this);
 				});
 			}
@@ -113,7 +115,7 @@ private:
 			SetTaskState(TaskState::FAILED);
 			if (m_onFail)
 			{
-				ThreadPool::QueueCallback([this]() {m_onFail(e);});
+				m_threadPool.QueueCallback([this, &e]() {m_onFail(e);});
 			}
 		}
 	}

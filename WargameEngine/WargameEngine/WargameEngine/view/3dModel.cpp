@@ -1,6 +1,7 @@
 #include "3dModel.h"
 #include "../model/Object.h"
 #include "IRenderer.h"
+#include <float.h>
 
 C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
 
@@ -163,7 +164,7 @@ void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
 			result[i] += matrix[i * 4 + j] * ((j == 3)?1.0f:vect[j]);
 		}
 	}
-	if (abs(result[3]) > FLT_EPSILON)
+	if (fabs(result[3]) > FLT_EPSILON)
 	{
 		for (int i = 0; i < 3; ++i)
 		{

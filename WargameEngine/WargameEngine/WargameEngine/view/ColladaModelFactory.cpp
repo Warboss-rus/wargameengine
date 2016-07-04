@@ -767,6 +767,6 @@ bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*s
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
 	std::string extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 	return extension == "dae";
 }

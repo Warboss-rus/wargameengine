@@ -33,7 +33,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 	handler.RegisterMethod(CLASS_OBJECT, GET_COUNT, [&](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no argument expected");
-		return (long)model.GetObjectCount();
+		return (int)model.GetObjectCount();
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_AT, [&](void* /*instance*/, IArguments const& args) {
@@ -283,11 +283,11 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			throw std::runtime_error("should be called with a valid instance");
 		if (object)
 		{
-			if (!CGameModel::IsGroup(object)) return 1l; //single object
+			if (!CGameModel::IsGroup(object)) return 1; //single object
 			CObjectGroup * group = (CObjectGroup *)object;
-			return (long)group->GetCount();
+			return (int)group->GetCount();
 		}
-		return 0l;//NULL contains no objects
+		return 0;//NULL contains no objects
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_GROUP_CHILDREN_AT, [&](void* instance, IArguments const& args)
@@ -471,6 +471,6 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 	});
 
 	handler.RegisterProperty(CLASS_OBJECT, PROPERTY_COUNT, [&](void* /*instance*/) {
-		return (long)model.GetObjectCount();
+		return (int)model.GetObjectCount();
 	});
 }

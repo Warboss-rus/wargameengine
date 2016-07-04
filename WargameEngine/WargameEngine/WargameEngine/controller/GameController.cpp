@@ -462,7 +462,7 @@ void CGameController::Load(std::string const& filename)
 	std::vector<char> data(size);
 	fread(data.data(), 1, size, file);
 	fclose(file);
-	CReadMemoryStream stream(data.data(), size);
+	CReadMemoryStream stream(data.data());
 	LoadState(stream);
 	m_network->CallStateRecievedCallback();
 }

@@ -38,7 +38,7 @@ struct FunctionArgument
 	FunctionArgument()
 		:type(Type::TNULL)
 	{}
-	FunctionArgument(nullptr_t)
+	FunctionArgument(std::nullptr_t)
 		:type(Type::TNULL)
 	{}
 	FunctionArgument(bool value)
