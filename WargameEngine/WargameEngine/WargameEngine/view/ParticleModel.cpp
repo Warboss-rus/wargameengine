@@ -21,7 +21,7 @@ vector<float> GetFloatsArray(xml_node<>* data)
 		res.push_back(val);
 	}
 	res.shrink_to_fit();
-	return move(res);
+	return res;
 }
 
 float StrToFloat(xml_attribute<>* strAttr, float defaultValue)
@@ -177,7 +177,7 @@ void CParticleModel::Draw(float time) const
 			//calculate the position to draw
 			vector<float> const& keyframes = particle.GetKeyFrames();
 			unsigned int j = 0;//a frame to draw
-			for (j; j < keyframes.size(); ++j)
+			for (; j < keyframes.size(); ++j)
 			{
 				if (partTime <= keyframes[j] && (j == 0 || keyframes[j - 1] <= partTime))
 				{

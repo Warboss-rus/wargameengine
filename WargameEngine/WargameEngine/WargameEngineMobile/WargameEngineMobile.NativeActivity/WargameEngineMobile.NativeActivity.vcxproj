@@ -76,14 +76,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Gcc_4_9</PlatformToolset>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
     <UseOfStl>gnustl_static</UseOfStl>
+    <AndroidAPILevel>android-21</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
     <UseOfStl>gnustl_static</UseOfStl>
-    <AndroidAPILevel>android-19</AndroidAPILevel>
+    <AndroidAPILevel>android-21</AndroidAPILevel>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -155,6 +156,7 @@
     </ClCompile>
     <Link>
       <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <AdditionalOptions>-lm %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -254,6 +256,7 @@
     <ClInclude Include="..\..\WargameEngine\model\Projectile.h" />
     <ClInclude Include="..\..\WargameEngine\model\TeamColor.h" />
     <ClInclude Include="..\..\WargameEngine\Module.h" />
+    <ClInclude Include="..\..\WargameEngine\NetSocket.h" />
     <ClInclude Include="..\..\WargameEngine\OSSpecific.h" />
     <ClInclude Include="..\..\WargameEngine\Plugin.h" />
     <ClInclude Include="..\..\WargameEngine\PluginManager.h" />
@@ -345,6 +348,7 @@
     <ClCompile Include="..\..\WargameEngine\model\ObjectGroup.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\Projectile.cpp" />
     <ClCompile Include="..\..\WargameEngine\Module.cpp" />
+    <ClCompile Include="..\..\WargameEngine\NetSocket.cpp" />
     <ClCompile Include="..\..\WargameEngine\OSSpecific.cpp" />
     <ClCompile Include="..\..\WargameEngine\Plugin.cpp" />
     <ClCompile Include="..\..\WargameEngine\PluginManager.cpp" />

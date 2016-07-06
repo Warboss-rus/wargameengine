@@ -10,7 +10,7 @@ namespace
 }
 
 CParticleTracer::CParticleTracer(std::string const& file, CVector3d const& start, CVector3d const& end, double rotation, double scale, double speed)
-	:m_file(file), m_coords(start), m_end(end), m_rotation(rotation), m_scale(scale), m_speed(speed)
+	:m_file(file), m_coords(start), m_end(end), m_speed(speed), m_rotation(rotation), m_scale(scale)
 {
 	m_beginTime = GetCurrentTime();
 	m_prevTime = m_beginTime;

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-CParticle::CParticle(vector<float> const& keyframes, vector<float> const& positions, unsigned int material, float width, float height) :m_material(material), m_width(width), m_height(height), m_keyframes(keyframes)
+CParticle::CParticle(vector<float> const& keyframes, vector<float> const& positions, unsigned int material, float width, float height) : m_keyframes(keyframes), m_material(material), m_width(width), m_height(height)
 {
 	m_positions.resize(positions.size() / 3);
 	memcpy(m_positions.data(), positions.data(), sizeof(float) * positions.size());

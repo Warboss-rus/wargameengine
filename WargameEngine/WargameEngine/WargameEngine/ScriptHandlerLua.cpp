@@ -190,15 +190,6 @@ int CScriptHandlerLua::PushReturnValue(lua_State *L, FunctionArgument const& arg
 		auto wstr = static_cast<std::wstring*>(arg.data.get());
 		lua_pushstring(L, std::string(wstr->begin(), wstr->end()).c_str());
 	}break;
-	case FunctionArgument::Type::INT_ARRAY:
-		PushLuaArray<int>(L, *static_cast<std::vector<int>*>(arg.data.get()), [L](int const& value) {lua_pushinteger(L, value);});
-		break;
-	case FunctionArgument::Type::DOUBLE_ARRAY:
-		PushLuaArray<double>(L, *static_cast<std::vector<double>*>(arg.data.get()), [L](double const& value) {lua_pushnumber(L, value);});
-		break;
-	case FunctionArgument::Type::STRING_ARRAY:
-		PushLuaArray<std::string>(L, *static_cast<std::vector<std::string>*>(arg.data.get()), [L](std::string const& value) {lua_pushstring(L, value.c_str());});
-		break;
 	case FunctionArgument::Type::CLASS_INSTANCE:
 	{
 		auto inst = static_cast<FunctionArgument::sClassInstance*>(arg.data.get());

@@ -305,6 +305,7 @@
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp">
       <Filter>Source Files\rapidxml</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\NetSocket.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />
@@ -498,6 +499,7 @@
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterUI.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\NetSocket.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

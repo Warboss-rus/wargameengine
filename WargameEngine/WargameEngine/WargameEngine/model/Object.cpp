@@ -203,7 +203,7 @@ void CObject::GoTo(CVector3d const& coords, double speed, std::string const& ani
 void CObject::Update()
 {
 	long long current = GetCurrentTime();
-	if (abs(m_goSpeed) < DBL_EPSILON)
+	if (fabs(m_goSpeed) < DBL_EPSILON)
 	{
 		m_lastUpdateTime = current;
 		return;

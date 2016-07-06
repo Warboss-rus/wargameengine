@@ -96,7 +96,7 @@ std::vector<std::string> SplitPath(std::string const &path)
 	{
 		pathElements.push_back(path.substr(begin));
 	}
-	return std::move(pathElements);
+	return pathElements;
 }
 
 std::string MakePath(std::vector<std::string> const& parts)

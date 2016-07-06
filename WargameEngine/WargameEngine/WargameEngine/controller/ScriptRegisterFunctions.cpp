@@ -501,7 +501,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		std::string mask = args.GetStr(2);
 		bool recursive = args.GetBool(3);
 		std::vector<std::string> files = GetFiles(path, mask, recursive);
-		return files;
+		return TransformVector(files);
 	});
 
 	handler.RegisterFunction(PRINT, [&](IArguments const& args)

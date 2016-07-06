@@ -15,7 +15,7 @@ void CUIButton::Draw() const
 	m_renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = move(m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.RenderToTexture([this]() {
 			if (m_backgroundImage.empty())
 			{
 				m_renderer.SetTexture(m_theme->texture, true);
@@ -32,7 +32,7 @@ void CUIButton::Draw() const
 				{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
 			}
 			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->button.text);
-		}, GetWidth(), GetHeight()));
+		}, GetWidth(), GetHeight());
 	}
 	m_cache->Bind();
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

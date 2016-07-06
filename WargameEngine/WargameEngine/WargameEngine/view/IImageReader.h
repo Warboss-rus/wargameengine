@@ -7,13 +7,13 @@ class CImage
 public:
 	virtual ~CImage() {}
 	CImage()
-		:m_data(nullptr), m_size(0), m_flags(0), m_width(0), m_height(0), m_bpp(0)
+		:m_width(0), m_height(0), m_bpp(0),m_data(nullptr), m_flags(0), m_size(0)
 	{}
 	CImage(unsigned char* data, unsigned int width, unsigned int height, unsigned short bpp, int flags = 0, size_t size = 0)
-		:m_data(data), m_width(width), m_height(height), m_bpp(bpp), m_flags(flags), m_size(size)
+		:m_width(width), m_height(height), m_bpp(bpp), m_data(data), m_flags(flags), m_size(size)
 	{}
 	CImage(std::vector<unsigned char> && uncompressedData, unsigned int width, unsigned int height, unsigned short bpp, int flags = 0, size_t size = 0)
-		:m_uncompressedData(uncompressedData), m_width(width), m_height(height), m_bpp(bpp), m_flags(flags), m_size(size)
+		:m_width(width), m_height(height), m_bpp(bpp), m_flags(flags), m_size(size),m_uncompressedData(uncompressedData)
 	{
 		m_data = m_uncompressedData.data();
 	}

@@ -5,7 +5,7 @@
 #include "../view/IRenderer.h"
 
 CUIEdit::CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) :
-	CUIElement(x, y, height, width, parent, renderer, textWriter), m_isPressed(false), m_pos(0), m_beginSelection(0), m_text(text)
+	CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text), m_pos(0), m_beginSelection(0)
 {
 
 }
@@ -18,7 +18,7 @@ void CUIEdit::Draw() const
 	m_renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = move(m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.RenderToTexture([this]() {
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
 			m_renderer.SetColor(m_theme->textfieldColor);
@@ -43,7 +43,7 @@ void CUIEdit::Draw() const
 				{ borderSize + selectionBegin, fonty - fontHeight }, {borderSize + selectionEnd, fonty - fontHeight }, {borderSize + selectionEnd, fonty} }, {});
 			}
 			PrintText(m_renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme);
-		}, GetWidth(), GetHeight()));
+		}, GetWidth(), GetHeight());
 	}
 	m_cache->Bind();
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

@@ -36,13 +36,8 @@ private:
 class CMoveLimiterStatic : public IMoveLimiter
 {
 public:
-	CMoveLimiterStatic(double x, double y, double z, double rotation):m_x(x), m_y(y), m_z(z), m_rotation(rotation) {}
+	CMoveLimiterStatic() {}
 	void FixPosition(CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) const;
-private:
-	double m_x;
-	double m_y;
-	double m_z;
-	double m_rotation;
 };
 
 class CMoveLimiterTiles : public IMoveLimiter

@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <errno.h>
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define SOCKET int
@@ -106,10 +107,7 @@ void CNetSocket::InitHost(unsigned short port)
 	listen(m_socket, 10);
 	LogWriter::WriteLine("Net OK. Host is up and running.");
 	sockaddr_in addr;
-#ifdef __unix 
-	unsigned 
-#endif 
-	int size = sizeof(struct sockaddr_in);
+	socklen_t size = sizeof(struct sockaddr_in);
 	SOCKET socket = accept(m_socket, (struct sockaddr *)&addr, &size);
 	if (socket == INVALID_SOCKET)
 	{
@@ -119,7 +117,7 @@ void CNetSocket::InitHost(unsigned short port)
 #ifdef _WINDOWS
 	closesocket(m_socket);
 #else
-        int err = close(m_socket);
+	close(m_socket);
 #endif
 	m_socket = socket;
 	unsigned long iMode = 1UL;
@@ -229,10 +227,7 @@ bool CNetSocket::InitSocket()
 std::string CNetSocket::GetIP() const
 {
 	struct sockaddr_in name;
-#ifndef _WINDOWS
-	unsigned
-#endif 
-	int namelen = sizeof (struct sockaddr_in);
+	socklen_t namelen = sizeof (struct sockaddr_in);
 	int error = getsockname(m_socket, (struct sockaddr *) &name, &namelen);
 	if (error == SOCKET_ERROR)
 	{
@@ -246,10 +241,7 @@ std::string CNetSocket::GetIP() const
 unsigned short CNetSocket::GetPort() const
 {
 	struct sockaddr_in name;
-#ifdef __unix 
-	unsigned
-#endif 
-	int namelen = sizeof (struct sockaddr_in);
+	socklen_t namelen = sizeof (struct sockaddr_in);
 	int error = getsockname(m_socket, (struct sockaddr *) &name, &namelen);
 	if (error == SOCKET_ERROR)
 	{
@@ -299,7 +291,7 @@ CNetSocket::~CNetSocket()
 	wsError = WSACleanup();
 	if (wsError) LogError();
 #else
-        int err = close (m_socket);
+    close (m_socket);
 #endif
 	delete (struct sockaddr_in*) m_sockAddr;
 	LogWriter::WriteLine("Net OK. Socket is closed.");

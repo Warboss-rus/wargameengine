@@ -6,7 +6,7 @@
 #include "KeyDefines.h"
 
 CCameraStrategy::CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
-	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false), m_input(nullptr), m_oldX(0), m_oldY(0)
+	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false), m_oldX(0), m_oldY(0), m_input(nullptr)
 {
 	Reset();
 }

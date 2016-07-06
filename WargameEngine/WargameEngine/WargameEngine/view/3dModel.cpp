@@ -6,9 +6,9 @@
 C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
 
 C3DModel::C3DModel(C3DModel const& other)
-	:m_scale(other.m_scale), m_rotation(other.m_rotation), m_count(other.m_count), m_vertices(other.m_vertices), m_normals(other.m_normals), m_textureCoords(other.m_textureCoords)
-	, m_indexes(other.m_indexes), m_weightsCount(other.m_weightsCount), m_weightsIndexes(other.m_weightsIndexes), m_weights(other.m_weights), m_skeleton(other.m_skeleton)
-	, m_animations(other.m_animations), m_meshes(other.m_meshes), m_materials(other.m_materials)
+	: m_vertices(other.m_vertices), m_textureCoords(other.m_textureCoords), m_normals(other.m_normals), m_indexes(other.m_indexes), m_weightsCount(other.m_weightsCount)
+	, m_weightsIndexes(other.m_weightsIndexes), m_weights(other.m_weights), m_skeleton(other.m_skeleton)
+	, m_animations(other.m_animations), m_meshes(other.m_meshes), m_materials(other.m_materials), m_scale(other.m_scale), m_rotation(other.m_rotation), m_count(other.m_count)
 {
 }
 
@@ -128,7 +128,7 @@ void C3DModel::CalculateGPUWeights()
 	{
 		unsigned int j = 0;
 		float sum = 0.0f;
-		for (j; j < m_weightsCount[i]; ++j, ++k)
+		for (; j < m_weightsCount[i]; ++j, ++k)
 		{
 			if (j < 4)
 			{
@@ -137,7 +137,7 @@ void C3DModel::CalculateGPUWeights()
 			}
 			sum += m_weights[k];
 		}
-		for (j; j < 4; ++j)
+		for (; j < 4; ++j)
 		{
 			m_gpuWeight.push_back(0.0f);
 			m_gpuWeightIndexes.push_back(0);

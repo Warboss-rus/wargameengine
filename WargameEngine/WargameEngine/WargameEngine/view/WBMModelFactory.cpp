@@ -81,7 +81,7 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 	auto result = std::make_unique<C3DModel>(dummyModel);
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
-	return std::move(result);
+	return result;
 }
 
 bool CWBMModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::string const& filePath) const

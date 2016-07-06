@@ -51,7 +51,7 @@ std::string CReadMemoryStream::ReadString()
 	size_t size = ReadSizeT();
 	std::string result(&m_data[m_position], size);
 	m_position += size;
-	return std::move(result);
+	return result;
 }
 
 void* CReadMemoryStream::ReadPointer()

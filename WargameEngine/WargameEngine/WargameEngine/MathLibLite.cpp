@@ -15,7 +15,7 @@ const float3 float3::unitZ = float3(0, 0, 1);
 
 bool EqualAbs(float a, float b, float epsilon = FLT_EPSILON)
 {
-	return abs(a - b) < epsilon;
+	return fabs(a - b) < epsilon;
 }
 
 template<typename T>
@@ -178,14 +178,14 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
 	float3x3 absR;
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 3; ++j)
-			absR[i][j] = abs(R[i][j]) + epsilon;
+			absR[i][j] = fabs(R[i][j]) + epsilon;
 
 	// Test the three major axes of this OBB.
 	for (int i = 0; i < 3; ++i)
 	{
 		float ra = r[i];
 		float rb = DOT3(b.r, absR[i]);
-		if (abs(t[i]) > ra + rb)
+		if (fabs(t[i]) > ra + rb)
 			return false;
 	}
 
@@ -194,7 +194,7 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
 	{
 		float ra = r[0] * absR[0][i] + r[1] * absR[1][i] + r[2] * absR[2][i];
 		float rb = b.r[i];
-		if (abs(t.x * R[0][i] + t.y * R[1][i] + t.z * R[2][i]) > ra + rb)
+		if (fabs(t.x * R[0][i] + t.y * R[1][i] + t.z * R[2][i]) > ra + rb)
 			return false;
 	}
 
@@ -203,55 +203,55 @@ bool OBB::Intersects(const OBB &b, float epsilon) const
 	// A.x <cross> B.x
 	float ra = r.y * absR[2][0] + r.z * absR[1][0];
 	float rb = b.r.y * absR[0][2] + b.r.z * absR[0][1];
-	if (abs(t.z * R[1][0] - t.y * R[2][0]) > ra + rb)
+	if (fabs(t.z * R[1][0] - t.y * R[2][0]) > ra + rb)
 		return false;
 
 	// A.x < cross> B.y
 	ra = r.y * absR[2][1] + r.z * absR[1][1];
 	rb = b.r.x * absR[0][2] + b.r.z * absR[0][0];
-	if (abs(t.z * R[1][1] - t.y * R[2][1]) > ra + rb)
+	if (fabs(t.z * R[1][1] - t.y * R[2][1]) > ra + rb)
 		return false;
 
 	// A.x <cross> B.z
 	ra = r.y * absR[2][2] + r.z * absR[1][2];
 	rb = b.r.x * absR[0][1] + b.r.y * absR[0][0];
-	if (abs(t.z * R[1][2] - t.y * R[2][2]) > ra + rb)
+	if (fabs(t.z * R[1][2] - t.y * R[2][2]) > ra + rb)
 		return false;
 
 	// A.y <cross> B.x
 	ra = r.x * absR[2][0] + r.z * absR[0][0];
 	rb = b.r.y * absR[1][2] + b.r.z * absR[1][1];
-	if (abs(t.x * R[2][0] - t.z * R[0][0]) > ra + rb)
+	if (fabs(t.x * R[2][0] - t.z * R[0][0]) > ra + rb)
 		return false;
 
 	// A.y <cross> B.y
 	ra = r.x * absR[2][1] + r.z * absR[0][1];
 	rb = b.r.x * absR[1][2] + b.r.z * absR[1][0];
-	if (abs(t.x * R[2][1] - t.z * R[0][1]) > ra + rb)
+	if (fabs(t.x * R[2][1] - t.z * R[0][1]) > ra + rb)
 		return false;
 
 	// A.y <cross> B.z
 	ra = r.x * absR[2][2] + r.z * absR[0][2];
 	rb = b.r.x * absR[1][1] + b.r.y * absR[1][0];
-	if (abs(t.x * R[2][2] - t.z * R[0][2]) > ra + rb)
+	if (fabs(t.x * R[2][2] - t.z * R[0][2]) > ra + rb)
 		return false;
 
 	// A.z <cross> B.x
 	ra = r.x * absR[1][0] + r.y * absR[0][0];
 	rb = b.r.y * absR[2][2] + b.r.z * absR[2][1];
-	if (abs(t.y * R[0][0] - t.x * R[1][0]) > ra + rb)
+	if (fabs(t.y * R[0][0] - t.x * R[1][0]) > ra + rb)
 		return false;
 
 	// A.z <cross> B.y
 	ra = r.x * absR[1][1] + r.y * absR[0][1];
 	rb = b.r.x * absR[2][2] + b.r.z * absR[2][0];
-	if (abs(t.y * R[0][1] - t.x * R[1][1]) > ra + rb)
+	if (fabs(t.y * R[0][1] - t.x * R[1][1]) > ra + rb)
 		return false;
 
 	// A.z <cross> B.z
 	ra = r.x * absR[1][2] + r.y * absR[0][2];
 	rb = b.r.x * absR[2][1] + b.r.y * absR[2][0];
-	if (abs(t.y * R[0][2] - t.x * R[1][2]) > ra + rb)
+	if (fabs(t.y * R[0][2] - t.x * R[1][2]) > ra + rb)
 		return false;
 
 	// No separating axis exists, so the two OBB don't intersect.
@@ -1106,9 +1106,9 @@ float3 Triangle::BarycentricUVW(const float3 &point) const
 	float nu, nv, ood;
 
 	// Absolute components for determining projection plane.
-	float x = abs(m.x);
-	float y = abs(m.y);
-	float z = abs(m.z);
+	float x = fabs(m.x);
+	float y = fabs(m.y);
+	float z = fabs(m.z);
 
 	if (x >= y && x >= z)
 	{
@@ -1311,7 +1311,7 @@ bool IntersectLineLine2D(const float2 &a1, const float2 &a2, const float2 &b1, c
 	float v = (a2.x - a1.x)*(a1.y - b1.y) - (a2.y - a1.y)*(a1.x - b1.x);
 
 	float det = (b2.y - b1.y)*(a2.x - a1.x) - (b2.x - b1.x)*(a2.y - a1.y);
-	if (abs(det) < 1e-4f)
+	if (fabs(det) < 1e-4f)
 		return false;
 	det = 1.f / det;
 	out.x = u * det;
@@ -1551,7 +1551,7 @@ bool Polyhedron::Contains(const float3 &point) const
 		// <normal, point_on_ray> == d
 		// n.x * t == d
 		//       t == d / n.x
-		if (abs(p.normal.x) > 1e-5f)
+		if (fabs(p.normal.x) > 1e-5f)
 		{
 			float t = p.d / p.normal.x;
 			// If t >= 0, the plane and the ray intersect, and the ray potentially also intersects the polygon.
@@ -1593,12 +1593,12 @@ bool Polyhedron::FaceContains(int faceIndex, const float3 &worldSpacePoint, floa
 	const float epsilon = 1e-4f;
 
 	float2 p0 = float2(Dot(v[vertices.back()], basisU), Dot(v[vertices.back()], basisV)) - localSpacePoint;
-	if (abs(p0.y) < epsilon)
+	if (fabs(p0.y) < epsilon)
 		p0.y = -epsilon; // Robustness check - if the ray (0,0) -> (+inf, 0) would pass through a vertex, move the vertex slightly.
 	for (size_t i = 0; i < vertices.size(); ++i)
 	{
 		float2 p1 = float2(Dot(v[vertices[i]], basisU), Dot(v[vertices[i]], basisV)) - localSpacePoint;
-		if (abs(p1.y) < epsilon)
+		if (fabs(p1.y) < epsilon)
 			p1.y = -epsilon; // Robustness check - if the ray (0,0) -> (+inf, 0) would pass through a vertex, move the vertex slightly.
 
 		if (p0.y * p1.y < 0.f)
@@ -1614,7 +1614,7 @@ bool Polyhedron::FaceContains(int faceIndex, const float3 &worldSpacePoint, floa
 
 				// Test whether the lines (0,0) -> (+inf,0) and p0 -> p1 intersect at a positive X-coordinate.
 				float2 d = p1 - p0;
-				if (abs(d.y) > 1e-5f)
+				if (fabs(d.y) > 1e-5f)
 				{
 					float t = -p0.y / d.y;
 					float x = p0.x + t * d.x;
@@ -1631,7 +1631,7 @@ bool Polyhedron::FaceContains(int faceIndex, const float3 &worldSpacePoint, floa
 
 float Plane::Distance(const float3 &point) const
 {
-	return abs(SignedDistance(point));
+	return fabs(SignedDistance(point));
 }
 
 float Plane::SignedDistance(const float3 &point) const

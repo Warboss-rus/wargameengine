@@ -2,7 +2,7 @@
 #include "TextureManager.h"
 
 CSkyBox::CSkyBox(double width, double height, double length, std::string const& imageFolder, IRenderer & renderer) 
-	: m_width(static_cast<float>(width)), m_height(static_cast<float>(height)), m_length(static_cast<float>(length))
+	: m_height(static_cast<float>(height)), m_width(static_cast<float>(width)), m_length(static_cast<float>(length))
 	, m_imageFolder(imageFolder), m_renderer(renderer)
 {
 }

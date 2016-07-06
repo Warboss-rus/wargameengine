@@ -17,5 +17,4 @@ private:
 	std::wstring m_text;
 	size_t m_pos;
 	size_t m_beginSelection;
-	bool m_isPressed;
 };

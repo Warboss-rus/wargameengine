@@ -39,13 +39,13 @@ bool CUIElement::GetVisible() const
 }
 
 CUIElement::CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) : m_x(x), m_y(y), m_height(height), m_width(width),
-m_visible(true), m_parent(parent), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter), m_windowHeight(640), m_windowWidth(640)
+m_windowHeight(640), m_windowWidth(640), m_visible(true), m_parent(parent), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter)
 {
 
 }
 
 CUIElement::CUIElement(IRenderer & renderer, ITextWriter & textWriter) 
-	:m_x(0), m_y(0), m_height(0), m_width(0), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_windowHeight(640), m_windowWidth(640), m_renderer(renderer), m_textWriter(textWriter)
+	:m_x(0), m_y(0), m_height(0), m_width(0), m_windowHeight(640), m_windowWidth(640), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter)
 {
 
 }
