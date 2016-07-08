@@ -19,7 +19,7 @@ void CUIWindow::Draw() const
 	auto& theme = m_theme->window;
 	if (!m_cache)
 	{
-		m_cache = move(m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.RenderToTexture([this]() {
 			m_renderer.SetColor(0.4f, 0.4f, 1.0f);
 			auto& theme = m_theme->window;
 			int headerHeight = theme.headerHeight;
@@ -38,7 +38,7 @@ void CUIWindow::Draw() const
 			{ CVector2i(0, headerHeight),{ GetWidth(), headerHeight },{ 0, GetHeight() },{ GetWidth(), GetHeight() }, }, {});
 			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth() - buttonSize, headerHeight, m_headerText, theme.headerText);
 
-		}, GetWidth(), GetHeight()));
+		}, GetWidth(), GetHeight());
 	}
 	m_cache->Bind();
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

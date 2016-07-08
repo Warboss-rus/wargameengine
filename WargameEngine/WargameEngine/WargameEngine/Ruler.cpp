@@ -4,7 +4,7 @@
 #include <cstring>
 
 CRuler::CRuler()
-	:m_enabled(false)
+	: m_enabled(false)
 	, m_isVisible(false)
 	, m_worldBeginX(0.0), m_worldEndX(0.0), m_worldBeginY(0.0), m_worldEndY(0.0)
 {

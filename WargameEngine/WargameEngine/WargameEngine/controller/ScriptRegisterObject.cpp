@@ -33,7 +33,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 	handler.RegisterMethod(CLASS_OBJECT, GET_COUNT, [&](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no argument expected");
-		return (long)model.GetObjectCount();
+		return (int)model.GetObjectCount();
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_AT, [&](void* /*instance*/, IArguments const& args) {
@@ -202,7 +202,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		{
 			if (args.GetCount() != 1)
 				throw std::runtime_error("1 argument expected(moveLimiterType)");
-			object->SetMovementLimiter(new CMoveLimiterStatic(object->GetX(), object->GetY(), object->GetZ(), object->GetRotation()));
+			object->SetMovementLimiter(new CMoveLimiterStatic());
 		}
 		if(limiterType == "circle")
 		{
@@ -236,7 +236,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			std::string functionName = args.GetStr(1);
 			auto function = [&, functionName](CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) {
 				auto vector3DConvert = [](CVector3d const& vec) {
-					return std::vector<double>{vec.x, vec.y, vec.z};
+					return std::vector<FunctionArgument>{vec.x, vec.y, vec.z};
 				};
 				handler.CallFunction(functionName, { vector3DConvert(position), rotation, vector3DConvert(oldPosition), oldRotation });
 				//TODO: get updated values from the function return
@@ -283,11 +283,11 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			throw std::runtime_error("should be called with a valid instance");
 		if (object)
 		{
-			if (!CGameModel::IsGroup(object)) return 1l; //single object
+			if (!CGameModel::IsGroup(object)) return 1; //single object
 			CObjectGroup * group = (CObjectGroup *)object;
-			return (long)group->GetCount();
+			return (int)group->GetCount();
 		}
-		return 0l;//NULL contains no objects
+		return 0;//NULL contains no objects
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_GROUP_CHILDREN_AT, [&](void* instance, IArguments const& args)
@@ -341,7 +341,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
 		std::vector<std::string> anims = modelManager.GetAnimations(object->GetPathToModel());
-		return anims;
+		return TransformVector(anims);
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, ADDITIONAL_MODEL, [&](void* instance, IArguments const& args)
@@ -471,6 +471,6 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 	});
 
 	handler.RegisterProperty(CLASS_OBJECT, PROPERTY_COUNT, [&](void* /*instance*/) {
-		return (long)model.GetObjectCount();
+		return (int)model.GetObjectCount();
 	});
 }

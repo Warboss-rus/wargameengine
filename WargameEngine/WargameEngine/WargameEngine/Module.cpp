@@ -1,5 +1,6 @@
 #include "Module.h"
 #include <fstream>
+#include <stdlib.h>
 
 std::string RemoveSpaces(std::string const& str)
 {

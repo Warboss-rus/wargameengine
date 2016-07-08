@@ -16,10 +16,10 @@ public:
 	CVector3d GetBegin() const;
 	CVector3d GetEnd() const;
 private:
-	double m_worldBeginX;
-	double m_worldBeginY;
-	double m_worldEndX;
-	double m_worldEndY;
-	bool m_isVisible;
 	bool m_enabled;
+	bool m_isVisible;
+	double m_worldBeginX;
+	double m_worldEndX;
+	double m_worldBeginY;
+	double m_worldEndY;
 };

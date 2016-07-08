@@ -4,6 +4,8 @@
 #include <functional>
 #include <memory>
 #include <map>
+#include <algorithm>
+#include <iterator>
 
 class IArguments
 {
@@ -38,7 +40,7 @@ struct FunctionArgument
 	FunctionArgument()
 		:type(Type::TNULL)
 	{}
-	FunctionArgument(nullptr_t)
+	FunctionArgument(std::nullptr_t)
 		:type(Type::TNULL)
 	{}
 	FunctionArgument(bool value)
@@ -59,15 +61,6 @@ struct FunctionArgument
 	FunctionArgument(std::wstring value)
 		: type(Type::WSTRING), data(std::make_shared<std::wstring>(value))
 	{}
-	FunctionArgument(std::vector<int> value)
-		: type(Type::INT_ARRAY), data(std::make_shared<std::vector<int>>(value))
-	{}
-	FunctionArgument(std::vector<double> value)
-		: type(Type::DOUBLE_ARRAY), data(std::make_shared<std::vector<double>>(value))
-	{}
-	FunctionArgument(std::vector<std::string> value)
-		: type(Type::STRING_ARRAY), data(std::make_shared<std::vector<std::string>>(value))
-	{}
 	FunctionArgument(void* ptr, std::string const& className)
 		:type(Type::CLASS_INSTANCE), data(std::make_shared<sClassInstance>(ptr, className))
 	{}
@@ -87,9 +80,6 @@ struct FunctionArgument
 		DOUBLE,
 		STRING,
 		WSTRING,
-		INT_ARRAY,
-		DOUBLE_ARRAY,
-		STRING_ARRAY,
 		CLASS_INSTANCE,
 		ARRAY,
 		MAP
@@ -105,6 +95,13 @@ struct FunctionArgument
 	std::shared_ptr<void> data;
 };
 typedef std::vector<FunctionArgument> FunctionArguments;
+template<class T>
+std::vector<FunctionArgument> TransformVector(std::vector<T> const& src)
+{
+	std::vector<FunctionArgument> result;
+	std::transform(src.begin(), src.end(), std::back_inserter(result), [](T const& val) { return val;});
+	return result;
+}
 
 class IScriptHandler
 {

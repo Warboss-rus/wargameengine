@@ -59,7 +59,7 @@ public:
 	virtual IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) override;
 protected:
 	CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
-	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element);
+	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element) override;
 	virtual bool PointIsOnElement(int x, int y) const;
 
 	std::map<std::string, std::shared_ptr<IUIElement>> m_children;

@@ -1,16 +1,9 @@
 #include "Bounding.h"
 #include <cstring>
 #include <math.h>
-#pragma warning( push )
-#pragma warning( disable : 4458 4996 4244)
-#include "Geometry/Ray.h"
-#include "Geometry/Polyhedron.h"
-#include "Geometry/LineSegment.h"
-#include "Geometry/Line.h"
-#include "Geometry/OBB.h"
-#include "Geometry/AABB.h"
-#include "Math/float3.h"
-#include "Math/float3x3.h"
+#include "../MathLibLite.h"
+
+using namespace MathLibLite;
 
 CBoundingBox::CBoundingBox(double min[3], double max[3]) 
 	:m_scale(1.0)
@@ -28,8 +21,8 @@ AABB GetAABB(CBoundingBox const& bounding)
 {
 	const double *min = bounding.GetMin();
 	const double *max = bounding.GetMax();
-	math::float3 minVector = ToFloat3(min);
-	math::float3 maxVector = ToFloat3(max);
+	float3 minVector = ToFloat3(min);
+	float3 maxVector = ToFloat3(max);
 	return AABB(minVector, maxVector);
 }
 
@@ -207,5 +200,3 @@ const IBounding * CBoundingCompound::GetChild(size_t index) const
 { 
 	return m_children[index].get(); 
 }
-
-#pragma warning( pop )

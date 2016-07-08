@@ -489,7 +489,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		std::string mask = args.GetStr(2);
 		bool recursive = args.GetBool(3);
 		std::vector<std::string> files = GetFiles(path, mask, recursive);
-		return files;
+		return TransformVector(files);
 	});
 
 	handler.RegisterFunction(PRINT, [&](IArguments const& args)
@@ -629,7 +629,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 			throw std::runtime_error("2 argument expected (source, target)");
 		IObject* shootingModel = (IObject*)args.GetClassInstance(1);
 		IObject* target = (IObject*)args.GetClassInstance(2);
-		return static_cast<long>(controller.GetLineOfSight(shootingModel, target));
+		return FunctionArgument(static_cast<int>(controller.GetLineOfSight(shootingModel, target)));
 	});
 
 	handler.RegisterFunction(BEGIN_ACTION_COMPOUND, [&](IArguments const& args)

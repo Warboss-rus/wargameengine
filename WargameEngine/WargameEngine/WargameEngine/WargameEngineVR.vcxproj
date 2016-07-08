@@ -129,9 +129,6 @@
     <ProjectReference Include="..\LUA\LUA.vcxproj">
       <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\MathLib\MathLib.vcxproj">
-      <Project>{ac364c0b-39cd-45d1-ac21-4a048568cb58}</Project>
-    </ProjectReference>
     <ProjectReference Include="WargameEngine.vcxproj">
       <Project>{525b45ef-5fb2-495e-8f33-27363e097e50}</Project>
     </ProjectReference>

@@ -1,5 +1,18 @@
 #include "TranslationManager.h"
 #include <fstream>
+#ifdef TO_STRING_HACK
+#include <sstream>
+namespace std
+{
+	template<class T>
+	std::wstring to_wstring(T _Val)
+	{
+		std::wstringstream stream;
+		stream << _Val;
+		return stream.str();
+	}
+}
+#endif
 
 void CTranslationManager::LoadFile(std::string const& path)
 {

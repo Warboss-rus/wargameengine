@@ -4,14 +4,14 @@
 #include "Module.h"
 #include "Task.h"
 
-class AsyncReadTask : public TaskBase<void>
+class AsyncReadTask : public TaskBase
 {
 public:
 	typedef std::function<void(void*, size_t)> AsyncReadHandler;
 	AsyncReadTask(std::string const& file, AsyncReadHandler const& handler, ThreadPool & threadPool)
 		: TaskBase(threadPool)
-		, m_handler(handler)
 		, m_path(file)
+		, m_handler(handler)
 	{
 
 	}
@@ -29,7 +29,7 @@ public:
 			FILE * file = fopen(m_path.c_str(), "rb");
 			if (!file)
 			{
-				throw std::exception(("Cannot open file " + m_path).c_str());
+				throw std::runtime_error(("Cannot open file " + m_path).c_str());
 			}
 			fseek(file, 0L, SEEK_END);
 			size_t size = ftell(file);
@@ -96,7 +96,7 @@ std::vector<std::string> SplitPath(std::string const &path)
 	{
 		pathElements.push_back(path.substr(begin));
 	}
-	return std::move(pathElements);
+	return pathElements;
 }
 
 std::string MakePath(std::vector<std::string> const& parts)

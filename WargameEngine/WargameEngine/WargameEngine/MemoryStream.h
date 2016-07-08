@@ -5,7 +5,7 @@
 class CReadMemoryStream : public IReadMemoryStream
 {
 public:
-	CReadMemoryStream(const char* data, size_t size);
+	CReadMemoryStream(const char* data);
 
 	virtual bool ReadBool() override;
 	virtual unsigned char ReadByte() override;
@@ -17,7 +17,6 @@ public:
 	virtual void* ReadPointer() override;
 private:
 	const char* m_data;
-	size_t m_size;
 	size_t m_position;
 };
 

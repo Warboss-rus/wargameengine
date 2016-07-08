@@ -16,7 +16,7 @@ void CUICheckBox::Draw() const
 	m_renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = move(m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.RenderToTexture([this]() {
 			m_renderer.SetTexture(m_theme->texture, true);
 			auto& theme = m_theme->checkbox;
 			float * texCoords = m_state ? theme.checkedTexCoord : theme.texCoord;
@@ -25,7 +25,7 @@ void CUICheckBox::Draw() const
 			{ CVector2f(0.0f, 0.0f), {0.0f, size}, {size, size}, {size, 0.0f} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
 			PrintText(m_renderer, m_textWriter, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
-		}, GetWidth(), GetHeight()));
+		}, GetWidth(), GetHeight());
 	}
 	m_cache->Bind();
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

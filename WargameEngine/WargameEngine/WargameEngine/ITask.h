@@ -2,7 +2,6 @@
 #include <thread>
 
 class ThreadPool;
-struct ThreadPool::Impl;
 
 class ITask
 {
@@ -27,18 +26,4 @@ private:
 
 	friend struct ThreadPool::Impl;
 	friend void WaitForTask(ITask & task);
-};
-
-template <class T>
-class IAsyncTask : public ITask
-{
-public:
-	
-	typedef std::function<T()> AsyncHandler;
-	typedef std::function<void(T)> CallbackHandler;
-	typedef std::function<void(std::exception const&)> OnFailHandler;
-
-	virtual void AddOnCompleteHandler(CallbackHandler const& handler) = 0;
-	virtual void AddOnFailHandler(OnFailHandler const& handler) = 0;
-	virtual void Cancel() = 0;
 };

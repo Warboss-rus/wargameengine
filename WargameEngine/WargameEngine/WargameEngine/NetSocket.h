@@ -17,6 +17,6 @@ private:
 	bool InitSocket();
 	bool ChangeAddress(const char* ip, unsigned short port = 0);
 	bool ChangeAddress(unsigned short port = 0);
-    unsigned int m_socket;
+    int m_socket;
 	void * m_sockAddr;
 };

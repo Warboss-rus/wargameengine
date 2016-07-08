@@ -1,4 +1,5 @@
 #pragma once
+#include <float.h>
 
 template<class T>
 class Matrix4T
@@ -153,7 +154,7 @@ public:
 
 		det = m_items[0] * inv[0] + m_items[1] * inv[4] + m_items[2] * inv[8] + m_items[3] * inv[12];
 
-		if (abs(det) < FLT_EPSILON)
+		if (fabs(det) < FLT_EPSILON)
 			return Matrix4T();
 
 		det = 1.0f / det;

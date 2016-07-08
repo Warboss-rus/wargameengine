@@ -1,0 +1,394 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{846e7101-abaa-4b20-b659-91be261a3bc9}</ProjectGuid>
+    <Keyword>Android</Keyword>
+    <RootNamespace>WargameEngineMobile</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <ApplicationType>Android</ApplicationType>
+    <ApplicationTypeRevision>2.0</ApplicationTypeRevision>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+    <UseOfStl>gnustl_static</UseOfStl>
+    <AndroidAPILevel>android-21</AndroidAPILevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Clang_3_8</PlatformToolset>
+    <UseOfStl>gnustl_static</UseOfStl>
+    <AndroidAPILevel>android-21</AndroidAPILevel>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <AdditionalOptions>-lm %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <AdditionalOptions>-lm %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\WargameEngine\AsyncFileProvider.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandChangeGlobalProperty.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandChangeProperty.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandCompound.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandCreateObject.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandDeleteObject.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandGoTo.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandHandler.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandMoveObject.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandPlayAnimation.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\CommandRotateObject.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\GameController.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\ICommand.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\INetSocket.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\IScriptHandler.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\IStateManager.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\Network.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptFunctionsProtocol.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptObjectProtocol.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptRegisterFunctions.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\ScriptUIProtocol.h" />
+    <ClInclude Include="..\..\WargameEngine\IMemoryStream.h" />
+    <ClInclude Include="..\..\WargameEngine\ITask.h" />
+    <ClInclude Include="..\..\WargameEngine\LogWriter.h" />
+    <ClInclude Include="..\..\WargameEngine\MathLibLite.h" />
+    <ClInclude Include="..\..\WargameEngine\MemoryStream.h" />
+    <ClInclude Include="..\..\WargameEngine\model\Animation.h" />
+    <ClInclude Include="..\..\WargameEngine\model\Bounding.h" />
+    <ClInclude Include="..\..\WargameEngine\model\GameModel.h" />
+    <ClInclude Include="..\..\WargameEngine\model\IBoundingBoxManager.h" />
+    <ClInclude Include="..\..\WargameEngine\model\IGameModel.h" />
+    <ClInclude Include="..\..\WargameEngine\model\Landscape.h" />
+    <ClInclude Include="..\..\WargameEngine\model\MovementLimiter.h" />
+    <ClInclude Include="..\..\WargameEngine\model\Object.h" />
+    <ClInclude Include="..\..\WargameEngine\model\ObjectGroup.h" />
+    <ClInclude Include="..\..\WargameEngine\model\ObjectInterface.h" />
+    <ClInclude Include="..\..\WargameEngine\model\ObjectStatic.h" />
+    <ClInclude Include="..\..\WargameEngine\model\Projectile.h" />
+    <ClInclude Include="..\..\WargameEngine\model\TeamColor.h" />
+    <ClInclude Include="..\..\WargameEngine\Module.h" />
+    <ClInclude Include="..\..\WargameEngine\NetSocket.h" />
+    <ClInclude Include="..\..\WargameEngine\OSSpecific.h" />
+    <ClInclude Include="..\..\WargameEngine\Plugin.h" />
+    <ClInclude Include="..\..\WargameEngine\PluginManager.h" />
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml.hpp" />
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="..\..\WargameEngine\Ruler.h" />
+    <ClInclude Include="..\..\WargameEngine\Signal.h" />
+    <ClInclude Include="..\..\WargameEngine\stb_image.h" />
+    <ClInclude Include="..\..\WargameEngine\Task.h" />
+    <ClInclude Include="..\..\WargameEngine\ThreadPool.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\IUI.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIButton.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UICheckBox.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIComboBox.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIEdit.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIElement.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIList.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIPanel.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIRadioGroup.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIScrollBar.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIStaticText.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIText.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UITheme.h" />
+    <ClInclude Include="..\..\WargameEngine\UI\UIWindow.h" />
+    <ClInclude Include="..\..\WargameEngine\view\3dModel.h" />
+    <ClInclude Include="..\..\WargameEngine\view\BuiltInImageReaders.h" />
+    <ClInclude Include="..\..\WargameEngine\view\CameraFirstPerson.h" />
+    <ClInclude Include="..\..\WargameEngine\view\CameraStrategy.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ColladaModelFactory.h" />
+    <ClInclude Include="..\..\WargameEngine\view\GameView.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ICamera.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IGameWindow.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IImageReader.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IInput.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IModelReader.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IParticleEffect.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IRenderer.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IShaderManager.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ISoundPlayer.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ITextureHelper.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ITextWriter.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IViewHelper.h" />
+    <ClInclude Include="..\..\WargameEngine\view\KeyDefines.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Material.h" />
+    <ClInclude Include="..\..\WargameEngine\view\MaterialManager.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Matrix4.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ModelManager.h" />
+    <ClInclude Include="..\..\WargameEngine\view\OBJModelFactory.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Particle.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ParticleEffect.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ParticleModel.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ParticleSystem.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ParticleTracer.h" />
+    <ClInclude Include="..\..\WargameEngine\view\SkyBox.h" />
+    <ClInclude Include="..\..\WargameEngine\view\TextureManager.h" />
+    <ClInclude Include="..\..\WargameEngine\view\TranslationManager.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Vector2.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Vector3.h" />
+    <ClInclude Include="..\..\WargameEngine\view\WBMModelFactory.h" />
+    <ClInclude Include="android_native_app_glue.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\WargameEngine\AsyncFileProvider.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandChangeGlobalProperty.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandChangeProperty.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandCompound.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandCreateObject.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandDeleteObject.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandGoTo.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandHandler.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandMoveObject.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandPlayAnimation.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\CommandRotateObject.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\GameController.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\Network.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterFunctions.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterObject.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterUI.cpp" />
+    <ClCompile Include="..\..\WargameEngine\LogWriter.cpp" />
+    <ClCompile Include="..\..\WargameEngine\MathLibLite.cpp" />
+    <ClCompile Include="..\..\WargameEngine\MemoryStream.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\Bounding.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\GameModel.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\Landscape.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\MovementLimiter.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\Object.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\ObjectGroup.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\Projectile.cpp" />
+    <ClCompile Include="..\..\WargameEngine\Module.cpp" />
+    <ClCompile Include="..\..\WargameEngine\NetSocket.cpp" />
+    <ClCompile Include="..\..\WargameEngine\OSSpecific.cpp" />
+    <ClCompile Include="..\..\WargameEngine\Plugin.cpp" />
+    <ClCompile Include="..\..\WargameEngine\PluginManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\Ruler.cpp" />
+    <ClCompile Include="..\..\WargameEngine\ThreadPool.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIButton.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UICheckBox.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIComboBox.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIEdit.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIElement.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIList.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIPanel.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIRadioGroup.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIScrollBar.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIStaticText.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIText.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UITheme.cpp" />
+    <ClCompile Include="..\..\WargameEngine\UI\UIWindow.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\3dModel.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\BuiltInImageReaders.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\CameraFirstPerson.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\CameraStrategy.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ColladaModelFactory.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\GameView.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\MaterialManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ModelManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\OBJModelFactory.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\Particle.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ParticleEffect.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ParticleModel.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ParticleSystem.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ParticleTracer.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\SkyBox.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\TextureManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\TranslationManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp" />
+    <ClCompile Include="android_native_app_glue.c" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

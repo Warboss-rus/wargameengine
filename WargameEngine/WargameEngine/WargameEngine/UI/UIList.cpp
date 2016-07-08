@@ -15,7 +15,7 @@ void CUIList::Draw() const
 	m_renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = move(m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.RenderToTexture([this]() {
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
@@ -39,7 +39,7 @@ void CUIList::Draw() const
 				PrintText(m_renderer, m_textWriter, borderSize, borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize), GetWidth(), theme.text.fontSize, m_items[i], theme.text);
 			}
 			m_scrollbar.Draw();
-		}, GetWidth(), GetHeight()));
+		}, GetWidth(), GetHeight());
 	}
 	m_cache->Bind();
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

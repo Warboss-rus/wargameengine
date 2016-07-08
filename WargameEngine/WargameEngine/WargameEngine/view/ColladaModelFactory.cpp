@@ -760,13 +760,13 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	auto result = std::make_unique<C3DModel>(dummyModel);
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
-	return std::move(result);
+	return result;
 }
 
 bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::string const& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
 	std::string extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 	return extension == "dae";
 }

@@ -3,8 +3,9 @@
 #include <mutex>
 #include <future>
 #include <deque>
+#include <vector>
 #include "ITask.h"
-#include <sys/timeb.h>
+#include <algorithm>
 
 struct ThreadPool::Impl
 {
@@ -154,9 +155,8 @@ public:
 
 	long long GetTime() const
 	{
-		struct timeb time;
-		ftime(&time);
-		return 1000ll * time.time + time.millitm;
+		using namespace std::chrono;
+		return time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
 	}
 
 	size_t AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat, bool executeSkipped)
@@ -189,7 +189,7 @@ public:
 			case ITask::TaskState::FAILED:
 				return;
 			default:
-				throw std::exception("Invalid task state");
+				throw std::runtime_error("Invalid task state");
 			}
 		}
 	}

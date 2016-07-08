@@ -3,6 +3,19 @@
 #include "../stb_image.h"
 #include <algorithm>
 #include <string>
+#ifdef TO_STRING_HACK
+#include <sstream>
+namespace std
+{
+	template<class T>
+	std::string to_string(T _Val)
+	{
+		std::stringstream stream;
+		stream << _Val;
+		return stream.str();
+	}
+}
+#endif
 
 unsigned char* Convert24To32Bit(unsigned char * data, unsigned int width, unsigned int height, std::vector<unsigned char> & result)
 {
@@ -43,7 +56,6 @@ inline size_t size_dxtc(unsigned int width, unsigned int height, int flags)
 	return ((width + 3) / 4)*((height + 3) / 4)* ((flags & TEXTURE_COMPRESSION_MASK) == TEXTURE_COMPRESSION_DXT1 ? 8 : 16);
 }
 
-#pragma region NV_DDS_H compressed image flipping code
 struct DXTColBlock
 {
 	unsigned short col0;
@@ -186,7 +198,6 @@ void flip_blocks_dxtc5(DXTColBlock *line, int numBlocks)
 		curblock++;
 	}
 }
-#pragma endregion NV_DDS_H compressed image flipping code
 
 void FlipImage(unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, bool compressed, int flags)
 {
@@ -326,7 +337,7 @@ CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::st
 	CImage result;
 	if (data[2] == 10) //Compressed
 	{
-		result =  CImage(std::move(UncompressTGA(data, width, height, bpp)), width, height, bpp, flags);
+		result =  CImage(UncompressTGA(data, width, height, bpp), width, height, bpp, flags);
 	}
 	else
 	{
@@ -342,7 +353,7 @@ CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::st
 		result.SetBpp(32);
 		result.SetFlags(result.GetFlags() | TEXTURE_HAS_ALPHA);
 	}
-	return std::move(result);
+	return result;
 }
 
 bool CDdsImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::string const& /*filePath*/) const
@@ -394,7 +405,6 @@ CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::st
 	const unsigned int FOURCC_DXT5 = 0x35545844; //(MAKEFOURCC('D','X','T','5'))
 	const unsigned int DDS_RGB = 0x00000040;
 	const unsigned int DDS_RGBA = 0x00000041;
-	const unsigned int DDS_DEPTH = 0x00800000;
 	const unsigned int DDS_CUBEMAP = 0x00000200;
 	const unsigned int DDS_VOLUME = 0x00200000;
 	if (ddsh.dwCaps2 & DDS_CUBEMAP || ddsh.dwCaps2 & DDS_VOLUME)
@@ -470,7 +480,7 @@ CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::st
 		result.SetBpp(32);
 		result.SetFlags(result.GetFlags() | TEXTURE_HAS_ALPHA);
 	}
-	return std::move(result);
+	return result;
 }
 
 bool CStbImageReader::ImageIsSupported(unsigned char * /*data*/, size_t /*size*/, std::string const& /*filePath*/) const
