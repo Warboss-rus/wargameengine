@@ -1,4 +1,7 @@
 #include "GameWindowGLFW.h"
+#ifdef VULKAN_API
+#define GLFW_INCLUDE_VULKAN
+#endif
 #include <GLFW/glfw3.h>
 #include "InputGLFW.h"
 #include "OpenGLRenderer.h"
@@ -55,7 +58,12 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 		glfwDestroyWindow(m_window);
 	}
 	m_window = glfwCreateWindow(600, 600, "WargameEngine", monitor, NULL);
+#ifdef VULKAN_API
+	VkSurfaceKHR surface;
+	VkResult err = glfwCreateWindowSurface(instance, window, NULL, &surface);
+#else
 	glfwMakeContextCurrent(m_window);
+#endif
 
 	glfwSetWindowSizeCallback(m_window, &OnReshape);
 	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
@@ -73,6 +81,9 @@ CGameWindowGLFW::CGameWindowGLFW()
 
 	glfwInit();
 	glfwWindowHint(GLFW_SAMPLES, 16);
+#ifdef VULKAN_API
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
 
 	CreateNewWindow();
 
@@ -81,6 +92,7 @@ CGameWindowGLFW::CGameWindowGLFW()
 
 CGameWindowGLFW::~CGameWindowGLFW()
 {
+	glfwTerminate();
 }
 
 void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)

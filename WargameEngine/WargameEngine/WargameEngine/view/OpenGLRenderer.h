@@ -5,7 +5,7 @@
 class COpenGLRenderer : public IRenderer, public IViewHelper
 {
 public:
-	COpenGLRenderer();
+	COpenGLRenderer(bool ignoreClear = false);
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
@@ -76,7 +76,8 @@ public:
 	virtual std::string GetName() const override;
 
 	void EnableMultisampling(bool enable);
-	void OnResize(int width, int height);
+	void OnResize(int width, int height, int left = 0);
 private:
 	CTextureManager* m_textureManager;
+	bool m_ignoreClear;
 };

@@ -155,9 +155,23 @@ function Music()
 	}, 1.0, true, true)
 end
 
+directionX = 0
+directionY = 0
 function GamepadButtons(gamepadIndex, buttonIndex, state)
-	if state then
-		MessageBox("Button #" .. buttonIndex .. " pressed on gamepad #" .. gamepadIndex)
+	if gamepadIndex == 1 and (buttonIndex >= 11 and buttonIndex <= 14) then
+		local selected = Object:GetSelected()
+		if selected then
+			if buttonIndex == 11 then
+				if state then directionY = 1 else directionY = 0 end
+			elseif buttonIndex == 12 then
+				if state then directionY = -1 else directionY = 0 end
+			elseif buttonIndex == 13 then
+				if state then directionX = 1 else directionX = 0 end
+			elseif buttonIndex == 14 then
+				if state then directionX = -1 else directionX = 0 end
+			end
+			selected:GoTo(selected:GetX() + directionX * 10, selected:GetY() + directionY * 10, 2.0, "AnimationClip", 1.0)
+		end
 	end
 end
 
