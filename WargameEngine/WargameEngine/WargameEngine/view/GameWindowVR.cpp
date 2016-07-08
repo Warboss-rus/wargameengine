@@ -54,19 +54,20 @@ void CGameWindowVR::LaunchMainLoop()
 {
 	unsigned int textures[2];
 	glGenTextures(2, textures);
-	unsigned int depthTextures[2];
-	glGenTextures(2, depthTextures);
 	unsigned int buffers[2];
 	glGenFramebuffers(2, buffers);
+	unsigned int depthrenderbuffers[2];
+	glGenRenderbuffers(2, depthrenderbuffers);
 	for (int i = 0; i < 2; ++i)
 	{
 		glBindTexture(GL_TEXTURE_2D, textures[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_viewPortSize[0], m_viewPortSize[1], 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		glBindTexture(GL_TEXTURE_2D, depthTextures[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, m_viewPortSize[0], m_viewPortSize[1], 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glBindFramebuffer(GL_FRAMEBUFFER, buffers[i]);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_viewPortSize[0], m_viewPortSize[1]);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffers[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[i], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTextures[i], 0);
 		GLenum l_GLDrawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 		glDrawBuffers(1, l_GLDrawBuffers);
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -98,18 +99,20 @@ void CGameWindowVR::LaunchMainLoop()
 				}
 				glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 			}
-			/*glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GL_NONE);
 			int width, height;
 			glfwGetFramebufferSize(m_window, &width, &height);
+			glClear(GL_COLOR_BUFFER_BIT);
+			m_renderer->OnResize(m_viewPortSize[0], m_viewPortSize[1]);
+			m_renderer->SetUpViewport2D();
 			width /= 2;
 			glEnable(GL_TEXTURE_2D);
-			for (int i = 1; i < 2; ++i)
+			for (int i = 0; i < 2; ++i)
 			{
-				glBindFramebuffer(GL_READ_FRAMEBUFFER, buffers[i]);
-				glReadBuffer(GL_COLOR_ATTACHMENT0);
-				//glBlitFramebuffer(0, 0, m_viewPortSize[0], m_viewPortSize[1], width * i, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_LINEAR);
+				glBindTexture(GL_TEXTURE_2D, textures[i]);
+				m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i{width * i, 0}, {width * i, height}, {width * (i+1), 0}, {width*(i+1), height} }, { CVector2f{ 0.0f, 1.0f }, {0.0f, 0.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} });
 			}
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, GL_NONE);*/
+			m_renderer->RestoreViewport();
+		
 			if (compositor)
 			{
 				for (int i = 0; i < 2; ++i)
