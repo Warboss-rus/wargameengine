@@ -5,6 +5,7 @@
 #include "OpenGLRenderer.h"
 #include "../LogWriter.h"
 #include <openvr.h>
+#include "../Utils.h"
 
 static CGameWindowVR* g_instance = nullptr;
 bool CGameWindowVR::m_visible = true;
@@ -211,9 +212,9 @@ void CGameWindowVR::ResizeWindow(int width, int height)
 	glfwSetWindowSize(m_window, width, height);
 }
 
-void CGameWindowVR::SetTitle(std::string const& title)
+void CGameWindowVR::SetTitle(std::wstring const& title)
 {
-	glfwSetWindowTitle(m_window, title.c_str());
+	glfwSetWindowTitle(m_window, WStringToUtf8(title).c_str());
 }
 
 void CGameWindowVR::ToggleFullscreen()

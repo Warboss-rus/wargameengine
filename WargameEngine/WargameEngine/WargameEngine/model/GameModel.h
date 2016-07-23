@@ -25,25 +25,25 @@ public:
 	std::shared_ptr<const IObject> GetSelectedObject() const;
 	std::shared_ptr<IObject> GetSelectedObject();
 	static bool IsGroup(IObject* object);
-	virtual void SetProperty(std::string const& key, std::string const& value) override;
-	virtual std::string GetProperty(std::string const& key) const override;
-	std::map<std::string, std::string> const& GetAllProperties() const;
+	virtual void SetProperty(std::wstring const& key, std::wstring const& value) override;
+	virtual std::wstring GetProperty(std::wstring const& key) const override;
+	std::map<std::wstring, std::wstring> const& GetAllProperties() const;
 	void AddProjectile(CProjectile const& projectile);
 	size_t GetProjectileCount() const;
 	CProjectile const& GetProjectile(size_t index) const;
 	void Update();
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
-	void ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
-	std::shared_ptr<IBounding> GetBoundingBox(std::string const& path) const;
-	virtual void AddBoundingBox(std::string const& path, std::shared_ptr<IBounding> bbox) override;
+	void ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	std::shared_ptr<IBounding> GetBoundingBox(std::wstring const& path) const;
+	virtual void AddBoundingBox(std::wstring const& path, std::shared_ptr<IBounding> bbox) override;
 private:
 	CGameModel(CGameModel const&) = delete;
 
 	std::vector<std::shared_ptr<IObject>> m_objects;
 	std::vector<CProjectile> m_projectiles;
 	std::shared_ptr<IObject> m_selectedObject;
-	std::map<std::string, std::string> m_properties;
+	std::map<std::wstring, std::wstring> m_properties;
 	CLandscape m_landscape;
-	std::map<std::string, std::shared_ptr<IBounding>> m_boundings;
+	std::map<std::wstring, std::shared_ptr<IBounding>> m_boundings;
 };

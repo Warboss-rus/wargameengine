@@ -6,9 +6,9 @@ CObjectGroup::CObjectGroup(IGameModel & model) :m_current(0), m_model(model)
 
 }
 
-std::string CObjectGroup::GetPathToModel() const
+std::wstring CObjectGroup::GetPathToModel() const
 {
-	if(m_children.empty()) return "";
+	if(m_children.empty()) return L"";
 	return m_children[m_current]->GetPathToModel();
 }
 
@@ -179,20 +179,20 @@ std::shared_ptr<IObject> CObjectGroup::GetCurrent() const
 	return m_children[m_current];
 }
 
-void CObjectGroup::SetProperty(std::string const& key, std::string const& value)
+void CObjectGroup::SetProperty(std::wstring const& key, std::wstring const& value)
 { 
 	for(unsigned int i =0; i < m_children.size(); ++i)
 	{
 		m_children[i]->SetProperty(key, value);
 	}
 }
-std::string const CObjectGroup::GetProperty(std::string const& key) const 
+std::wstring const CObjectGroup::GetProperty(std::wstring const& key) const 
 {
 	if(m_current < m_children.size())
 	{
 		return m_children[m_current]->GetProperty(key);
 	}
-	return "";
+	return L"";
 }
 
 bool CObjectGroup::IsSelectable() const
@@ -216,7 +216,7 @@ void CObjectGroup::SetMovementLimiter(IMoveLimiter * limiter)
 	}
 }
 
-std::map<std::string, std::string> const& CObjectGroup::GetAllProperties() const
+std::map<std::wstring, std::wstring> const& CObjectGroup::GetAllProperties() const
 {
 	return m_children[0]->GetAllProperties();
 }
@@ -247,7 +247,7 @@ float CObjectGroup::GetAnimationTime() const
 	return m_children[m_current]->GetAnimationTime();
 }
 
-void CObjectGroup::AddSecondaryModel(std::string const& model)
+void CObjectGroup::AddSecondaryModel(std::wstring const& model)
 {
 	for (size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -255,7 +255,7 @@ void CObjectGroup::AddSecondaryModel(std::string const& model)
 	}
 }
 
-void CObjectGroup::RemoveSecondaryModel(std::string const& model)
+void CObjectGroup::RemoveSecondaryModel(std::wstring const& model)
 {
 	for (size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -269,9 +269,9 @@ size_t CObjectGroup::GetSecondaryModelsCount() const
 	return m_children[m_current]->GetSecondaryModelsCount();
 }
 
-std::string CObjectGroup::GetSecondaryModel(size_t index) const
+std::wstring CObjectGroup::GetSecondaryModel(size_t index) const
 {
-	if (m_children.empty()) return "";
+	if (m_children.empty()) return L"";
 	return m_children[m_current]->GetSecondaryModel(index);
 }
 
@@ -305,7 +305,7 @@ void CObjectGroup::Update()
 	}
 }
 
-void CObjectGroup::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b)
+void CObjectGroup::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
 	for (size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -313,7 +313,7 @@ void CObjectGroup::ApplyTeamColor(std::string const& suffix, unsigned char r, un
 	}
 }
 
-void CObjectGroup::ReplaceTexture(std::string const& oldTexture, std::string const& newTexture)
+void CObjectGroup::ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture)
 {
 	for (size_t i = 0; i < m_children.size(); ++i)
 	{
@@ -331,11 +331,11 @@ std::vector<sTeamColor> const& CObjectGroup::GetTeamColor() const
 	return m_children[m_current]->GetTeamColor();
 }
 
-std::map<std::string, std::string> const& CObjectGroup::GetReplaceTextures() const
+std::map<std::wstring, std::wstring> const& CObjectGroup::GetReplaceTextures() const
 { 
 	if (m_children.empty())
 	{
-		static std::map<std::string, std::string> dummy;
+		static std::map<std::wstring, std::wstring> dummy;
 		return dummy;
 	}
 	return m_children[m_current]->GetReplaceTextures();

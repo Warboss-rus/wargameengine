@@ -7,7 +7,7 @@ class IParticleEffect
 public:
 	virtual ~IParticleEffect() {}
 
-	virtual std::string const& GetModel() const = 0;
+	virtual std::wstring const& GetModel() const = 0;
 	virtual CVector3d const& GetCoords() = 0;
 	virtual double GetRotation() const = 0;
 	virtual double GetScale() const = 0;

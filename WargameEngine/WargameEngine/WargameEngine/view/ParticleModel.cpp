@@ -6,6 +6,7 @@
 #include <sstream>
 #include "../rapidxml/rapidxml.hpp"
 #include "../AsyncFileProvider.h"
+#include "../Utils.h"
 
 using namespace std;
 using namespace rapidxml;
@@ -40,12 +41,13 @@ float StrToFloat(xml_attribute<>* strAttr, float defaultValue)
 	}
 }
 
-CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
+CParticleModel::CParticleModel(wstring const& file, IRenderer & renderer)
 	:m_renderer(renderer)
 {
-	auto slashPos = file.find_last_of("\\/");
-	string parentPath = slashPos == file.npos ? file : file.substr(0, slashPos);
-	ifstream istream(file);
+	auto slashPos = file.find_last_of(L"\\/");
+	wstring parentPath = slashPos == file.npos ? file : file.substr(0, slashPos);
+	ifstream istream;
+	OpenFile(istream, file);
 	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
 	std::unique_ptr<xml_document<>> doc = std::make_unique<xml_document<>>();
 	doc->parse<parse_trim_whitespace>(&content[0]);
@@ -59,10 +61,10 @@ CParticleModel::CParticleModel(string const& file, IRenderer & renderer)
 	while (material)
 	{
 		materialIds[material->first_attribute("id")->value()] = static_cast<unsigned>(m_textures.size());
-		m_textures.push_back(material->first_attribute("texture")->value());
+		m_textures.push_back(Utf8ToWstring(material->first_attribute("texture")->value()));
 		std::unique_ptr<IShaderManager> shaderman = m_renderer.CreateShaderManager();
-		std::string vertexShader = material->first_attribute("vertex_shader") ? material->first_attribute("vertex_shader")->value() : "";
-		std::string fragmentShader = material->first_attribute("fragment_shader") ? material->first_attribute("fragment_shader")->value() : "";
+		std::wstring vertexShader = material->first_attribute("vertex_shader") ? Utf8ToWstring(material->first_attribute("vertex_shader")->value()) : L"";
+		std::wstring fragmentShader = material->first_attribute("fragment_shader") ? Utf8ToWstring(material->first_attribute("fragment_shader")->value()) : L"";
 		if (!vertexShader.empty() || !fragmentShader.empty())
 		{
 			shaderman->NewProgram(AppendPath(parentPath, vertexShader), AppendPath(parentPath, fragmentShader));
@@ -204,7 +206,7 @@ void CParticleModel::Draw(float time) const
 				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, 0, (float*)nullptr);
 			}
 			m_shaders[particle.GetMaterial()]->UnBindProgram();
-			m_renderer.SetTexture("");
+			m_renderer.SetTexture(L"");
 			m_renderer.PopMatrix();
 		}
 	}

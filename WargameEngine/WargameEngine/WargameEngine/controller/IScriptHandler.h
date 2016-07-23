@@ -16,6 +16,7 @@ public:
 
 	virtual bool GetBool(int index) const = 0;
 	virtual std::string GetStr(int index) const = 0;
+	virtual std::wstring GetWStr(int index) const = 0;
 	virtual int GetInt(int index) const = 0;
 	virtual long GetLong(int index) const = 0;
 	virtual double GetDbl(int index) const = 0;
@@ -23,7 +24,7 @@ public:
 	virtual void* GetClassInstance(int index) const = 0;
 	virtual std::vector<int> GetIntArray(int index) const = 0;
 	virtual std::vector<float> GetFloatArray(int index) const = 0;
-	virtual std::vector<std::string> GetStrArray(int index) const = 0;
+	virtual std::vector<std::wstring> GetStrArray(int index) const = 0;
 
 	virtual bool IsBool(int index) const = 0;
 	virtual bool IsStr(int index) const = 0;
@@ -61,14 +62,14 @@ struct FunctionArgument
 	FunctionArgument(std::wstring value)
 		: type(Type::WSTRING), data(std::make_shared<std::wstring>(value))
 	{}
-	FunctionArgument(void* ptr, std::string const& className)
+	FunctionArgument(void* ptr, std::wstring const& className)
 		:type(Type::CLASS_INSTANCE), data(std::make_shared<sClassInstance>(ptr, className))
 	{}
 	FunctionArgument(std::vector<FunctionArgument> const& arr)
 		:type(Type::ARRAY), data(std::make_shared<std::vector<FunctionArgument>>(arr))
 	{}
-	FunctionArgument(std::map<std::string, FunctionArgument> const& map)
-		:type(Type::MAP), data(std::make_shared<std::map<std::string, FunctionArgument>>(map))
+	FunctionArgument(std::map<std::wstring, FunctionArgument> const& map)
+		:type(Type::MAP), data(std::make_shared<std::map<std::wstring, FunctionArgument>>(map))
 	{}
 
 	enum class Type
@@ -86,11 +87,11 @@ struct FunctionArgument
 	} type;
 	struct sClassInstance
 	{
-		sClassInstance(void* ptr, std::string const& className)
+		sClassInstance(void* ptr, std::wstring const& className)
 			:ptr(ptr), className(className)
 		{}
 		void* ptr;
-		std::string className;
+		std::wstring className;
 	};
 	std::shared_ptr<void> data;
 };
@@ -108,15 +109,15 @@ class IScriptHandler
 public:
 	virtual ~IScriptHandler() {}
 
-	virtual void RunScript(std::string const& path) = 0;
-	virtual void CallFunction(std::string const& funcName, FunctionArguments const& arguments = FunctionArguments()) = 0;
-	virtual void RegisterConstant(std::string const& name, std::string const& value) = 0;
+	virtual void RunScript(std::wstring const& path) = 0;
+	virtual void CallFunction(std::wstring const& funcName, FunctionArguments const& arguments = FunctionArguments()) = 0;
+	virtual void RegisterConstant(std::wstring const& name, FunctionArgument const& value) = 0;
 	typedef std::function<FunctionArgument(IArguments const& args)> FunctionHandler;
-	virtual void RegisterFunction(std::string const& name, FunctionHandler const& handler) = 0;
+	virtual void RegisterFunction(std::wstring const& name, FunctionHandler const& handler) = 0;
 	typedef std::function<FunctionArgument(void* instance, IArguments const& args)> MethodHandler;
-	virtual void RegisterMethod(std::string const& className, std::string const& methodName, MethodHandler const& handler) = 0;
+	virtual void RegisterMethod(std::wstring const& className, std::wstring const& methodName, MethodHandler const& handler) = 0;
 	typedef std::function<void(void* instance, IArguments const& args)> SetterHandler;
 	typedef std::function<FunctionArgument(void* instance)> GetterHandler;
-	virtual void RegisterProperty(std::string const& className, std::string const& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) = 0;
-	virtual void RegisterProperty(std::string const& className, std::string const& propertyName, GetterHandler const& getterHandler) = 0;
+	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) = 0;
+	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, GetterHandler const& getterHandler) = 0;
 };

@@ -12,7 +12,7 @@ public:
 
 	virtual ~IShaderManager() {}
 
-	virtual void NewProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") = 0;
+	virtual void NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") = 0;
 	virtual void BindProgram() const = 0;
 	virtual void UnBindProgram() const = 0;
 

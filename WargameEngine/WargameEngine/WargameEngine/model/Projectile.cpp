@@ -1,23 +1,15 @@
 #include "Projectile.h"
-#include <chrono>
-namespace
-{
-	long long GetCurrentTime()
-	{
-		using namespace std::chrono;
-		return time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
-	}
-}
+#include "..\Utils.h"
 
-CProjectile::CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::string const& model, std::string const& particleFile, std::function<void()> const& onHit, std::function<void()> const& onCollision)
+CProjectile::CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::wstring const& model, std::wstring const& particleFile, std::function<void()> const& onHit, std::function<void()> const& onCollision)
 	:CStaticObject(model, origin.x, origin.y, 0.0, model.empty()), m_target(target), m_speed(speed), m_particle(particleFile), m_onHit(onHit), m_onCollision(onCollision)
 {
-	m_lastUpdateTime = GetCurrentTime();
+	m_lastUpdateTime = GetCurrentTimeLL();
 }
 
 bool CProjectile::Update()
 {
-	long long current = GetCurrentTime();
+	long long current = GetCurrentTimeLL();
 	CVector3d dir = m_target - m_coords;
 	dir.Normalize();
 	dir = dir * static_cast<double>(current - m_lastUpdateTime) / 1000.0f * m_speed;
@@ -33,7 +25,7 @@ bool CProjectile::Update()
 	return false;//Particle is not yet finished
 }
 
-const std::string  CProjectile::GetParticle() const
+const std::wstring CProjectile::GetParticle() const
 { 
 	return m_particle; 
 

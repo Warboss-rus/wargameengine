@@ -13,7 +13,7 @@ class CShaderManagerDirectX : public IShaderManager
 public:
 	CShaderManagerDirectX(ID3D11Device *dev, CDirectXRenderer * render = nullptr);
 
-	virtual void NewProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
+	virtual void NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
 	virtual void BindProgram() const override;
 	virtual void UnBindProgram() const override;
 

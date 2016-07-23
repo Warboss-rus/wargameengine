@@ -43,7 +43,7 @@ void CUIComboBox::Draw() const
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(firstX, 0), { firstX, GetHeight() }, {GetWidth(), GetHeight()}, {GetWidth(), 0} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
-			m_renderer.SetTexture("");
+			m_renderer.SetTexture(L"");
 
 			if (m_expanded)
 			{
@@ -70,7 +70,7 @@ void CUIComboBox::Draw() const
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, realHeight },{ GetWidth(), realHeight } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	m_renderer.SetTexture("");
+	m_renderer.SetTexture(L"");
 
 	CUIElement::Draw();
 	m_renderer.PopMatrix();

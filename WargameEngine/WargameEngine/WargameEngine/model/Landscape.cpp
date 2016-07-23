@@ -1,7 +1,7 @@
 #include "Landscape.h"
 
 CLandscape::CLandscape()
-	:m_width(10.0), m_depth(10.0), m_texture(""), m_pointsPerWidth(2), m_pointsPerDepth(2), m_stretchTexture(false), m_horizontalTextureScale(2.0), m_verticalTextureScale(2.0)
+	:m_width(10.0), m_depth(10.0), m_pointsPerWidth(2), m_pointsPerDepth(2), m_stretchTexture(false), m_horizontalTextureScale(2.0), m_verticalTextureScale(2.0)
 {
 	m_heights.resize(4);
 	for (size_t i = 0; i < 4; ++i)
@@ -12,7 +12,7 @@ CLandscape::CLandscape()
 	m_deltaY = 5.0;
 }
 
-void CLandscape::Reset(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+void CLandscape::Reset(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
 	m_width = width;
 	m_depth = depth;
@@ -111,7 +111,7 @@ double CLandscape::GetVerticalTextureScale() const
 	}
 }
 
-std::string const& CLandscape::GetTexture() const
+std::wstring const& CLandscape::GetTexture() const
 {
 	return m_texture;
 }

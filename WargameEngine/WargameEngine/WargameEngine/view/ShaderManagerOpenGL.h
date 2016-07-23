@@ -6,7 +6,7 @@ class CShaderManagerOpenGL : public IShaderManager
 {
 public:
 	CShaderManagerOpenGL();
-	void NewProgram(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
+	void NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
 	void BindProgram() const override;
 	void UnBindProgram() const override;
 

@@ -1,5 +1,6 @@
 #include "SoundPlayerFMod.h"
 #include <stdlib.h>
+#include "Utils.h"
 
 void CSoundPlayerFMod::Init()
 {
@@ -10,12 +11,12 @@ void CSoundPlayerFMod::Init()
 	m_system->init(512, FMOD_INIT_NORMAL, NULL);
 }
 
-void CSoundPlayerFMod::Play(std::string const& file, float volume /*= 1.0f*/)
+void CSoundPlayerFMod::Play(std::wstring const& file, float volume /*= 1.0f*/)
 {
 	if (m_sounds.find(file) == m_sounds.end())
 	{
 		FMOD::Sound* sound;
-		m_system->createSound(file.c_str(), FMOD_2D | FMOD_CREATESAMPLE, NULL, &sound);
+		m_system->createSound(WStringToUtf8(file).c_str(), FMOD_2D | FMOD_CREATESAMPLE, NULL, &sound);
 		m_sounds[file] = sound;
 	}
 	FMOD::Channel* channel;
@@ -28,12 +29,12 @@ FMOD_VECTOR Vector3dToFMODVector(CVector3d vec)
 	return{ static_cast<float>(vec.x), static_cast<float>(vec.y), static_cast<float>(vec.z) };
 }
 
-void CSoundPlayerFMod::PlaySoundPosition(std::string const& file, CVector3d const& position, float volume /*= 1.0f*/)
+void CSoundPlayerFMod::PlaySoundPosition(std::wstring const& file, CVector3d const& position, float volume /*= 1.0f*/)
 {
 	if (m_sounds3d.find(file) == m_sounds3d.end())
 	{
 		FMOD::Sound* sound;
-		m_system->createSound(file.c_str(), FMOD_3D | FMOD_CREATESAMPLE, NULL, &sound);
+		m_system->createSound(WStringToUtf8(file).c_str(), FMOD_3D | FMOD_CREATESAMPLE, NULL, &sound);
 		m_sounds3d[file] = sound;
 	}
 	FMOD::Channel* channel;
@@ -57,18 +58,18 @@ std::vector<FMOD::Sound*> Shuffle(std::vector<FMOD::Sound*> list)
 	return result;
 }
 
-void CSoundPlayerFMod::PlaySoundPlaylist(std::string const& name, std::vector<std::string> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
+void CSoundPlayerFMod::PlaySoundPlaylist(std::wstring const& name, std::vector<std::wstring> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
 {
 	StopPlaylist(name);
 	sPlaylist playlist;
-	m_system->createChannelGroup(name.c_str(), &playlist.group);
+	m_system->createChannelGroup(WStringToUtf8(name).c_str(), &playlist.group);
 	playlist.group->setVolume(volume);
 	playlist.repeat = repeat;
 	playlist.shuffle = shuffle;
 	for (auto file : files)
 	{
 		FMOD::Sound* sound;
-		m_system->createStream(file.c_str(), FMOD_2D, NULL, &sound);
+		m_system->createStream(WStringToUtf8(file).c_str(), FMOD_2D, NULL, &sound);
 		playlist.sounds.push_back(sound);
 	}
 	PlayList(playlist);
@@ -114,7 +115,7 @@ void CSoundPlayerFMod::PlayList(sPlaylist & playlist)
 void CSoundPlayerFMod::Update()
 {
 	m_system->update();
-	std::vector<std::string> playlistsToDelete;
+	std::vector<std::wstring> playlistsToDelete;
 	for (auto& list: m_playlists)//check if playlists are over
 	{
 		bool playing = false;
@@ -155,7 +156,7 @@ CSoundPlayerFMod::~CSoundPlayerFMod()
 	m_system->release();
 }
 
-void CSoundPlayerFMod::PausePlaylist(std::string const& name, bool pause)
+void CSoundPlayerFMod::PausePlaylist(std::wstring const& name, bool pause)
 {
 	if (m_playlists.find(name) != m_playlists.end())
 	{
@@ -163,7 +164,7 @@ void CSoundPlayerFMod::PausePlaylist(std::string const& name, bool pause)
 	}
 }
 
-void CSoundPlayerFMod::StopPlaylist(std::string const& name)
+void CSoundPlayerFMod::StopPlaylist(std::wstring const& name)
 {
 	auto it = m_playlists.find(name);
 	if (it != m_playlists.end())

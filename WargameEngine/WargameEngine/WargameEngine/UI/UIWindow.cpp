@@ -32,7 +32,7 @@ void CUIWindow::Draw() const
 			m_renderer.RenderArrays(RenderMode::RECTANGLES,
 			{ CVector2i(right, 0),{ right, buttonSize },{ GetWidth(), buttonSize },{ GetWidth(), 0 } }, 
 			{ CVector2f(texCoord[0], texCoord[1]), { texCoord[0], texCoord[3] }, { texCoord[2], texCoord[3] }, { texCoord[2], texCoord[1] } });
-			m_renderer.SetTexture("");
+			m_renderer.SetTexture(L"");
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(0, headerHeight),{ GetWidth(), headerHeight },{ 0, GetHeight() },{ GetWidth(), GetHeight() }, }, {});

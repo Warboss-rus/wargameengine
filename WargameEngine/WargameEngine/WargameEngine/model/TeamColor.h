@@ -3,7 +3,7 @@
 
 struct sTeamColor
 {
-	std::string suffix;
+	std::wstring suffix;
 	unsigned char color[3];
 };
 

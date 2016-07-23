@@ -4,162 +4,162 @@
 
 //void CreateTable(float width, float height, string texture)
 //Creates a new landscape with given size and texture
-#define CREATE_TABLE "CreateTable"
+#define CREATE_TABLE L"CreateTable"
 
 //string GetGlobalProperty(string key)
 //Returns a global property value by given key. If no such property is present returns an empty string.
-#define GET_GLOBAL_PROPERTY "GetGlobalProperty"
+#define GET_GLOBAL_PROPERTY L"GetGlobalProperty"
 
 //void SetGlobalProperty(string key, string value)
 //Sets a global property value.
-#define SET_GLOBAL_PROPERTY "SetGlobalProperty"
+#define SET_GLOBAL_PROPERTY L"SetGlobalProperty"
 
 //void NewDeval (string decal, double x, double y, double rotation, double width, double height)
 //Creates a new decal with given texture, place and size. Decals do not have bounding boxes, but they are part of game model, so they are synchronized across network.
-#define NEW_DECAL "NewDecal"
+#define NEW_DECAL L"NewDecal"
 
 //void NewStaticObject(string model, double x, double y, double rotation)
 //Creates a new static object with given model and positions. Static objects have bounding boxes, but they cannot be selected, moved or deleted. They are part of game model.
-#define NEW_STATIC_OBJECT "NewStaticObject"
+#define NEW_STATIC_OBJECT L"NewStaticObject"
 
 /*VIEW*/
 
 //void CreateSkybox(double size, string textureFolder)
 //Create a sky box with a given size and textures
-#define CREATE_SKYBOX "CreateSkybox"
+#define CREATE_SKYBOX L"CreateSkybox"
 
 //void CameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
 //Creates a third person camera typically seen in strategy games. It can be zoomed with a mouse wheel and moved around via arrow keys. Holding Alt + moving the mouse
 //will allow you to turn the camera around. The function arguments determine the translation limits for the camera.
-#define CAMERA_STRATEGY "CameraStrategy"
+#define CAMERA_STRATEGY L"CameraStrategy"
 
 //void CameraFirstPerson()
 //Creates a first person camera. It can be moved around with arrow keys and zoomed in and out with mouse wheel. Mouse movement is rotating the camera
 //Note that the mouse is locked so you won't be able to click buttons, select objects, etc.
-#define CAMERA_FIRST_PERSON "CameraFirstPerson"
+#define CAMERA_FIRST_PERSON L"CameraFirstPerson"
 
-#define ENABLE_RULER "Ruler"
+#define ENABLE_RULER L"Ruler"
 
-#define RESIZE_WINDOW "ResizeWindow"
+#define RESIZE_WINDOW L"ResizeWindow"
 
-#define ENABLE_LIGHT_SOURCE "EnableLight"
+#define ENABLE_LIGHT_SOURCE L"EnableLight"
 
-#define DISABLE_LIGHT_SOURCE "DisableLight"
+#define DISABLE_LIGHT_SOURCE L"DisableLight"
 
-#define SET_LIGHT_SOURCE_POSITION "SetLightPosition"
+#define SET_LIGHT_SOURCE_POSITION L"SetLightPosition"
 
-#define SET_LIGHT_SOURCE_AMBIENT "SetLightAmbient"
+#define SET_LIGHT_SOURCE_AMBIENT L"SetLightAmbient"
 
-#define SET_LIGHT_SOURCE_DIFFUSE "SetLightDiffuse"
+#define SET_LIGHT_SOURCE_DIFFUSE L"SetLightDiffuse"
 
-#define SET_LIGHT_SOURCE_SPECULAR "SetLightSpecular"
+#define SET_LIGHT_SOURCE_SPECULAR L"SetLightSpecular"
 
-#define ENABLE_VERTEX_LIGHTING "EnableVertexLighting"
+#define ENABLE_VERTEX_LIGHTING L"EnableVertexLighting"
 
-#define DISABLE_VERTEX_LIGHTING "DisableVertexLighting"
+#define DISABLE_VERTEX_LIGHTING L"DisableVertexLighting"
 
-#define ENABLE_SHADOW_MAP "EnableShadowMap"
+#define ENABLE_SHADOW_MAP L"EnableShadowMap"
 
-#define DISABLE_SHADOW_MAP "DisableShadowMap"
+#define DISABLE_SHADOW_MAP L"DisableShadowMap"
 
-#define ENABLE_MSAA "EnableMSAA"
+#define ENABLE_MSAA L"EnableMSAA"
 
-#define DISABLE_MSAA "DisableMSAA"
+#define DISABLE_MSAA L"DisableMSAA"
 
-#define SET_ANISOTROPY_LEVEL "SetAnisotropy"
+#define SET_ANISOTROPY_LEVEL L"SetAnisotropy"
 
-#define GET_MAX_ANISOTROPY "GetMaxAnisotropy"
+#define GET_MAX_ANISOTROPY L"GetMaxAnisotropy"
 
-#define ENABLE_GPU_SKINNING "EnableGPUSkinning"
+#define ENABLE_GPU_SKINNING L"EnableGPUSkinning"
 
-#define DISABLE_GPU_SKINNING "DisableGPUSkinning"
+#define DISABLE_GPU_SKINNING L"DisableGPUSkinning"
 
-#define CLEAR_RESOURCES "ClearResources"
+#define CLEAR_RESOURCES L"ClearResources"
 
-#define SET_WINDOW_TITLE "SetWindowTitle"
+#define SET_WINDOW_TITLE L"SetWindowTitle"
 
-#define PRELOAD "Preload"
+#define PRELOAD L"Preload"
 
-#define PRELOAD_MODEL "PreloadModel"
+#define PRELOAD_MODEL L"PreloadModel"
 
-#define SET_SHADERS "SetShaders"
+#define SET_SHADERS L"SetShaders"
 
-#define UNIFORM_1I "Uniform1i"
+#define UNIFORM_1I L"Uniform1i"
 
-#define UNIFORM_1F "Uniform1f"
+#define UNIFORM_1F L"Uniform1f"
 
-#define UNIFORM_1FV "Uniform1fv"
+#define UNIFORM_1FV L"Uniform1fv"
 
-#define UNIFORM_2FV "Uniform2fv"
+#define UNIFORM_2FV L"Uniform2fv"
 
-#define UNIFORM_3FV "Uniform3fv"
+#define UNIFORM_3FV L"Uniform3fv"
 
-#define UNIFORM_4FV "Uniform4fv"
+#define UNIFORM_4FV L"Uniform4fv"
 
-#define UNIFORM_MATRIX4V "UniformMatrix4fv"
+#define UNIFORM_MATRIX4V L"UniformMatrix4fv"
 
-#define NEW_PARTICLE_EFFECT "NewParticleEffect"
+#define NEW_PARTICLE_EFFECT L"NewParticleEffect"
 
-#define NEW_PARTICLE_TRACER "NewParticleTracer"
+#define NEW_PARTICLE_TRACER L"NewParticleTracer"
 
-#define PLAY_SOUND "PlaySound"
+#define PLAY_SOUND L"PlaySound"
 
-#define PLAY_SOUND_POSITION "PlaySoundPosition"
+#define PLAY_SOUND_POSITION L"PlaySoundPosition"
 
-#define PLAY_SOUND_PLAYLIST "PlaySoundPlaylist"
+#define PLAY_SOUND_PLAYLIST L"PlaySoundPlaylist"
 
-#define GET_RENDERER_NAME "GetRendererName"
+#define GET_RENDERER_NAME L"GetRendererName"
 
 /*CONTROLLER*/
 
-#define LOAD_MODULE "LoadModule"
+#define LOAD_MODULE L"LoadModule"
 
-#define GET_FILES_LIST "GetFilesList"
+#define GET_FILES_LIST L"GetFilesList"
 
-#define PRINT "print"
+#define PRINT L"print"
 
-#define RUN_SCRIPT "RunScript"
+#define RUN_SCRIPT L"RunScript"
 
-#define SET_SELECTION_CALLBACK "SetSelectionCallback"
+#define SET_SELECTION_CALLBACK L"SetSelectionCallback"
 
-#define SET_UPDATE_CALLBACK "SetUpdateCallback"
+#define SET_UPDATE_CALLBACK L"SetUpdateCallback"
 
-#define SET_ON_STATE_RECEIVED_CALLBACK "SetOnStateRecievedCallback"
+#define SET_ON_STATE_RECEIVED_CALLBACK L"SetOnStateRecievedCallback"
 
-#define SET_ON_STRING_RECEIVED_CALLBACK "SetOnStringRecievedCallback"
+#define SET_ON_STRING_RECEIVED_CALLBACK L"SetOnStringRecievedCallback"
 
-#define SET_TIMED_CALLBACK "SetTimedCallback"
+#define SET_TIMED_CALLBACK L"SetTimedCallback"
 
-#define DELETE_TIMED_CALLBACK "DeleteTimedCallback"
+#define DELETE_TIMED_CALLBACK L"DeleteTimedCallback"
 
-#define SET_LMB_CALLBACK "SetLMBCallback"
+#define SET_LMB_CALLBACK L"SetLMBCallback"
 
-#define SET_RMB_CALLBACK "SetRMBCallback"
+#define SET_RMB_CALLBACK L"SetRMBCallback"
 
-#define BIND_KEY "BindKey"
+#define BIND_KEY L"BindKey"
 
-#define UNDO "Undo"
+#define UNDO L"Undo"
 
-#define REDO "Redo"
+#define REDO L"Redo"
 
-#define LINE_OF_SIGHT "LoS"
+#define LINE_OF_SIGHT L"LoS"
 
-#define BEGIN_ACTION_COMPOUND "BeginActionCompound"
+#define BEGIN_ACTION_COMPOUND L"BeginActionCompound"
 
-#define END_ACTION_COMPOUND "EndActionCompound"
+#define END_ACTION_COMPOUND L"EndActionCompound"
 
-#define NET_HOST "NetHost"
+#define NET_HOST L"NetHost"
 
-#define NET_CLIENT "NetClient"
+#define NET_CLIENT L"NetClient"
 
-#define NET_SEND_MESSAGE "NetSendMessage"
+#define NET_SEND_MESSAGE L"NetSendMessage"
 
-#define SAVE_GAME "SaveGame"
+#define SAVE_GAME L"SaveGame"
 
-#define LOAD_GAME "LoadGame"
+#define LOAD_GAME L"LoadGame"
 
-#define GET_ABSOLUTE_PATH "GetAbsolutePath"
+#define GET_ABSOLUTE_PATH L"GetAbsolutePath"
 
-#define SET_GAMEPAD_BUTTONS_CALLBACK "SetGamepadButtonsCallback"
+#define SET_GAMEPAD_BUTTONS_CALLBACK L"SetGamepadButtonsCallback"
 
-#define SET_GAMEPAD_AXIS_CALLBACK "SetGamepadAxisCallback"
+#define SET_GAMEPAD_AXIS_CALLBACK L"SetGamepadAxisCallback"

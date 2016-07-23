@@ -33,7 +33,7 @@ struct sGameViewContext
 	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
 	sModule module;
-	std::string workingDir;
+	std::wstring workingDir;
 	std::vector<std::unique_ptr<IImageReader>> imageReaders;
 	std::vector<std::unique_ptr<IModelReader>> modelReaders;
 };
@@ -43,7 +43,7 @@ class CGameView
 public:
 	CGameView(sGameViewContext * context);
 	~CGameView();
-	void CreateSkybox(double size, std::string const& textureFolder);
+	void CreateSkybox(double size, std::wstring const& textureFolder);
 	IUIElement * GetUI() const;
 	void SetCamera(ICamera * camera);
 	CModelManager& GetModelManager();
@@ -65,9 +65,9 @@ public:
 	float GetMaxAnisotropy() const;
 	void SetAnisotropyLevel(float level);
 	void ClearResources();
-	void SetWindowTitle(std::string const& title);
-	void Preload(std::string const& image);
-	void LoadModule(std::string const& module);
+	void SetWindowTitle(std::wstring const& title);
+	void Preload(std::wstring const& image);
+	void LoadModule(std::wstring const& module);
 	void EnableLight(size_t index, bool enable = true);
 	void SetLightColor(size_t index, LightningType type, float * values);
 	
@@ -87,7 +87,7 @@ private:
 
 	void InitInput();
 	void ResetController();
-	void DrawText3D(CVector3d const& pos, std::string const& text);
+	void DrawText3D(CVector3d const& pos, std::wstring const& text);
 	void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;

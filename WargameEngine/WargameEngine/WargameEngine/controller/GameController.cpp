@@ -8,13 +8,14 @@
 #include "../LogWriter.h"
 #include "../view/GameView.h"
 #include "../MemoryStream.h"
+#include "../Utils.h"
 
 CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler)
 	:m_model(model), m_scriptHandler(std::move(scriptHandler))
 {
 }
 
-void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::string const& scriptPath)
+void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath)
 {
 	m_commandHandler = std::make_unique<CCommandHandler>();
 	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model, socketFactory);
@@ -75,7 +76,7 @@ bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end
 {
 	auto selected = m_model.GetSelectedObject();
 	auto pos = RayToPoint(begin, end);
-	if (m_lmbCallback && m_lmbCallback(GetNearestObject(begin, end), "Object", pos.x, pos.y, pos.z))
+	if (m_lmbCallback && m_lmbCallback(GetNearestObject(begin, end), L"Object", pos.x, pos.y, pos.z))
 	{
 		m_selectedObjectBeginCoords.reset();
 		m_selectionRectangleBegin.reset();
@@ -119,7 +120,7 @@ bool CGameController::OnRightMouseUp(CVector3d const& begin, CVector3d const& en
 	auto object = m_model.GetSelectedObject();
 	double rot = object ? object->GetRotation() : 0.0;
 	auto point = RayToPoint(begin, end);
-	if (m_rmbCallback && m_rmbCallback(GetNearestObject(begin, end), "Object", point.x, point.y, point.z))
+	if (m_rmbCallback && m_rmbCallback(GetNearestObject(begin, end), L"Object", point.x, point.y, point.z))
 	{
 		m_rotationPosBegin.reset();
 		return true;
@@ -374,13 +375,13 @@ void CGameController::SetSelectionCallback(std::function<void()> const& onSelect
 	m_selectionCallback = onSelect;
 }
 
-void CGameController::PackProperties(std::map<std::string, std::string> const&properties, IWriteMemoryStream & stream)
+void CGameController::PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream)
 {
 	stream.WriteSizeT(properties.size());
 	for (auto i = properties.begin(); i != properties.end(); ++i)
 	{
-		stream.WriteString(i->first);
-		stream.WriteString(i->second);
+		stream.WriteWString(i->first);
+		stream.WriteWString(i->second);
 	}
 }
 
@@ -395,7 +396,7 @@ void CGameController::SerializeState(IWriteMemoryStream & stream, bool hasAdress
 		stream.WriteDouble(object->GetY());
 		stream.WriteDouble(object->GetZ());
 		stream.WriteDouble(object->GetRotation());
-		stream.WriteString(object->GetPathToModel());
+		stream.WriteWString(object->GetPathToModel());
 		if (hasAdresses)
 		{
 			stream.WritePointer(object);
@@ -415,7 +416,7 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 		double y = stream.ReadDouble();
 		double z = stream.ReadDouble();
 		double rotation = stream.ReadDouble();
-		std::string path = stream.ReadString();
+		std::wstring path = stream.ReadWString();
 		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, x, y, z, rotation));
 		m_model.AddObject(object);
 		if (hasAdresses)
@@ -425,43 +426,30 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 		size_t propertiesCount = stream.ReadSizeT();
 		for (size_t j = 0; j < propertiesCount; ++j)
 		{
-			std::string first = stream.ReadString();
-			std::string second = stream.ReadString();
+			std::wstring first = stream.ReadWString();
+			std::wstring second = stream.ReadWString();
 			object->SetProperty(first, second);
 		}
 	}
 	size_t globalPropertiesCount = stream.ReadSizeT();
 	for (size_t i = 0; i < globalPropertiesCount; ++i)
 	{
-		std::string first = stream.ReadString();
-		std::string second = stream.ReadString();
+		std::wstring first = stream.ReadWString();
+		std::wstring second = stream.ReadWString();
 		m_model.SetProperty(first, second);
 	}
 }
 
-void CGameController::Save(std::string const& filename)
+void CGameController::Save(std::wstring const& filename)
 {
-	FILE* file = fopen(filename.c_str(), "wb");
 	CWriteMemoryStream stream;
 	SerializeState(stream);
-	fwrite(stream.GetData(), 1, stream.GetSize(), file);
-	fclose(file);
+	WriteFile(filename, stream.GetData(), stream.GetSize());
 }
 
-void CGameController::Load(std::string const& filename)
+void CGameController::Load(std::wstring const& filename)
 {
-	FILE* file = fopen(filename.c_str(), "rb");
-	if (!file)
-	{
-		LogWriter::WriteLine("LoadState. Cannot find file " + filename);
-		return;
-	}
-	fseek(file, 0L, SEEK_END);
-	unsigned int size = ftell(file);
-	fseek(file, 0L, SEEK_SET);
-	std::vector<char> data(size);
-	fread(data.data(), 1, size, file);
-	fclose(file);
+	std::vector<char> data = ReadFile(filename);
 	CReadMemoryStream stream(data.data());
 	LoadState(stream);
 	m_network->CallStateRecievedCallback();
@@ -559,7 +547,7 @@ void CGameController::RotateObject(std::shared_ptr<IObject> obj, double deltaRot
 	m_commandHandler->AddNewRotateObject(obj, deltaRot);
 }
 
-std::shared_ptr<IObject> CGameController::CreateObject(std::string const& model, double x, double y, double rotation)
+std::shared_ptr<IObject> CGameController::CreateObject(std::wstring const& model, double x, double y, double rotation)
 {
 	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, 0.0, rotation);
 	m_commandHandler->AddNewCreateObject(object, m_model);
@@ -572,7 +560,7 @@ void CGameController::DeleteObject(std::shared_ptr<IObject> obj)
 	m_commandHandler->AddNewDeleteObject(obj, m_model);
 }
 
-void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::string const& key, std::string const& value)
+void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::wstring const& key, std::wstring const& value)
 {
 	m_commandHandler->AddNewChangeProperty(obj, key, value);
 }

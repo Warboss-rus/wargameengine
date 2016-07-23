@@ -103,9 +103,9 @@ public:
 		::SetWindowPos(m_hWnd, NULL, 0, 0, wr.right - wr.left, wr.bottom - wr.top, SWP_NOZORDER | SWP_NOMOVE);
 	}
 
-	void SetTitle(std::string const& title)
+	void SetTitle(std::wstring const& title)
 	{
-		SetWindowText(m_hWnd, title.c_str());
+		SetWindowTextW(m_hWnd, title.c_str());
 	}
 
 	void ToggleFullscreen()
@@ -232,7 +232,7 @@ void CGameWindowDirectX::ResizeWindow(int width, int height)
 	m_pImpl->ResizeWindow(width, height);
 }
 
-void CGameWindowDirectX::SetTitle(std::string const& title)
+void CGameWindowDirectX::SetTitle(std::wstring const& title)
 {
 	m_pImpl->SetTitle(title);
 }

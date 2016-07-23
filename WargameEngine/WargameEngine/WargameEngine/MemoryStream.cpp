@@ -1,4 +1,5 @@
 #include "MemoryStream.h"
+#include "Utils.h"
 
 CReadMemoryStream::CReadMemoryStream(const char* data) :m_data(data), m_position(0)
 {
@@ -52,6 +53,14 @@ std::string CReadMemoryStream::ReadString()
 	std::string result(&m_data[m_position], size);
 	m_position += size;
 	return result;
+}
+
+std::wstring CReadMemoryStream::ReadWString()
+{
+	size_t size = ReadSizeT();
+	std::string result(&m_data[m_position], size);
+	m_position += size;
+	return Utf8ToWstring(result);
 }
 
 void* CReadMemoryStream::ReadPointer()
@@ -108,6 +117,11 @@ void CWriteMemoryStream::WriteString(std::string const& value)
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + value.size());
 	memcpy(&m_data[oldSize], value.c_str(), value.size());
+}
+
+void CWriteMemoryStream::WriteWString(std::wstring const& value)
+{
+	WriteString(WStringToUtf8(value));
 }
 
 void CWriteMemoryStream::WritePointer(void* value)

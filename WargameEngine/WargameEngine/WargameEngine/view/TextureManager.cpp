@@ -2,6 +2,7 @@
 #include "../LogWriter.h"
 #include "../AsyncFileProvider.h"
 #include "IImageReader.h"
+#include "../Utils.h"
 
 void CTextureManager::UseTexture(CImage const& img, ICachedTexture& texture, int additionalFlags)
 {
@@ -19,9 +20,9 @@ void CTextureManager::UseTexture(CImage const& img, ICachedTexture& texture, int
 	}
 	m_helper.SetTextureAnisotropy(m_anisotropyLevel);
 }
-void ApplyTeamcolor(CImage & image, std::string const& maskFile, unsigned char * color, std::string const& fileName);
+void ApplyTeamcolor(CImage & image, std::wstring const& maskFile, unsigned char * color, std::wstring const& fileName);
 
-std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::string const& path, std::vector<sTeamColor> const& teamcolor, bool now, int flags)
+std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::wstring const& path, std::vector<sTeamColor> const& teamcolor, bool now, int flags)
 {
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
 	ICachedTexture& texRef = *tex;	
@@ -69,14 +70,14 @@ CTextureManager::~CTextureManager()
 {
 }
 
-void CTextureManager::SetTexture(std::string const& path, const std::vector<sTeamColor> * teamcolor, int flags)
+void CTextureManager::SetTexture(std::wstring const& path, const std::vector<sTeamColor> * teamcolor, int flags)
 {
 	if(path.empty()) 
 	{
 		m_helper.UnbindTexture();
 		return;	
 	}
-	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
+	auto pair = std::pair<std::wstring, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
 	if(m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
@@ -95,9 +96,9 @@ void CTextureManager::SetAnisotropyLevel(float level)
 	m_anisotropyLevel = level;
 }
 
-void CTextureManager::LoadTextureNow(std::string const& path, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags)
+void CTextureManager::LoadTextureNow(std::wstring const& path, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags)
 {
-	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
+	auto pair = std::pair<std::wstring, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, true, flags);
@@ -114,7 +115,7 @@ void CTextureManager::RegisterImageReader(std::unique_ptr<IImageReader> && reade
 	m_imageReaders.push_back(std::move(reader));
 }
 
-void CTextureManager::SetTexture(std::string const& path, TextureSlot slot, int flags)
+void CTextureManager::SetTexture(std::wstring const& path, TextureSlot slot, int flags)
 {
 	m_helper.ActivateTextureSlot(slot);
 	if (path.empty())
@@ -123,7 +124,7 @@ void CTextureManager::SetTexture(std::string const& path, TextureSlot slot, int 
 		m_helper.ActivateTextureSlot(TextureSlot::eDiffuse);
 		return;
 	}
-	auto pair = std::pair<std::string, std::vector<sTeamColor>>(path, std::vector<sTeamColor>());
+	auto pair = std::pair<std::wstring, std::vector<sTeamColor>>(path, std::vector<sTeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
@@ -132,22 +133,15 @@ void CTextureManager::SetTexture(std::string const& path, TextureSlot slot, int 
 	m_helper.ActivateTextureSlot(TextureSlot::eDiffuse);
 }
 
-void ApplyTeamcolor(CImage & image, std::string const& maskFile, unsigned char * color, std::string const& fileName)
+void ApplyTeamcolor(CImage & image, std::wstring const& maskFile, unsigned char * color, std::wstring const& fileName)
 {
-	std::string path = fileName.substr(0, fileName.find_last_of('.')) + maskFile + ".bmp";
-	FILE * fmask = fopen(path.c_str(), "rb");
-	if (!fmask)
+	std::wstring path = fileName.substr(0, fileName.find_last_of('.')) + maskFile + L".bmp";
+	std::vector<char> maskData = ReadFile(maskFile);
+	if (maskData.empty())
 	{
-		LogWriter::WriteLine("Texture manager: Cannot open mask file " + path);
+		LogWriter::WriteLine(L"Texture manager: Cannot open mask file " + path);
 		return;
 	}
-	fseek(fmask, 0L, SEEK_END);
-	unsigned int maskSize = ftell(fmask);
-	fseek(fmask, 0L, SEEK_SET);
-	std::vector<unsigned char> maskData;
-	maskData.resize(maskSize);
-	fread(maskData.data(), 1, maskSize, fmask);
-	fclose(fmask);
 	int maskHeight = *(int*)&(maskData[0x12]);
 	int maskWidth = *(int*)&(maskData[0x16]);
 	short maskbpp = *(short*)&(maskData[0x1C]);
@@ -157,7 +151,7 @@ void ApplyTeamcolor(CImage & image, std::string const& maskFile, unsigned char *
 	}
 	if (maskbpp != 8)
 	{
-		LogWriter::WriteLine("Texture manager: Mask file is not greyscale " + maskFile);
+		LogWriter::WriteLine(L"Texture manager: Mask file is not greyscale " + maskFile);
 		return;
 	}
 	for (unsigned int x = 0; x < image.GetWidth(); ++x)

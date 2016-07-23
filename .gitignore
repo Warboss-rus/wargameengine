@@ -21,3 +21,4 @@ Thumbs.db
 *.opendb
 /WargameEngine/WargameEngine/WargameEngine/Debug_VR
 /WargameEngine/WargameEngine/WargameEngine/Release_VR
+*.ipch

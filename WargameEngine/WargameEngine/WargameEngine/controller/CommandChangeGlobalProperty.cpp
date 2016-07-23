@@ -2,7 +2,7 @@
 #include "../model/GameModel.h"
 #include "../IMemoryStream.h"
 
-CommandChangeGlobalProperty::CommandChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel& model)
+CommandChangeGlobalProperty::CommandChangeGlobalProperty(std::wstring const& key, std::wstring const& value, IGameModel& model)
 	:m_key(key), m_oldValue(model.GetProperty(key)), m_newValue(value), m_model(model)
 {
 
@@ -11,9 +11,9 @@ CommandChangeGlobalProperty::CommandChangeGlobalProperty(std::string const& key,
 CommandChangeGlobalProperty::CommandChangeGlobalProperty(IReadMemoryStream & stream, IGameModel& model)
 	: m_model(model)
 {
-	m_key = stream.ReadString();
-	m_newValue = stream.ReadString();
-	m_oldValue = stream.ReadString();
+	m_key = stream.ReadWString();
+	m_newValue = stream.ReadWString();
+	m_oldValue = stream.ReadWString();
 }
 
 void CommandChangeGlobalProperty::Execute()
@@ -29,7 +29,7 @@ void CommandChangeGlobalProperty::Rollback()
 void CommandChangeGlobalProperty::Serialize(IWriteMemoryStream & stream) const
 {
 	stream.WriteByte(5);//This is a CommandChangeGlobalProperty action
-	stream.WriteString(m_key);
-	stream.WriteString(m_newValue);
-	stream.WriteString(m_oldValue);
+	stream.WriteWString(m_key);
+	stream.WriteWString(m_newValue);
+	stream.WriteWString(m_oldValue);
 }

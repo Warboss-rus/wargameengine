@@ -14,7 +14,7 @@ public:
 	virtual void DoOnResize(std::function<void(int, int)> const& handler) = 0;
 	virtual void DoOnShutdown(std::function<void()> const& handler) = 0;
 	virtual void ResizeWindow(int width, int height) = 0;
-	virtual void SetTitle(std::string const& title) = 0;
+	virtual void SetTitle(std::wstring const& title) = 0;
 	virtual void ToggleFullscreen() = 0;
 	virtual IInput& ResetInput() = 0;
 	virtual IRenderer& GetRenderer() = 0;

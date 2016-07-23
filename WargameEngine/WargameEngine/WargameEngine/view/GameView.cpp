@@ -14,6 +14,7 @@
 #include "../UI/UITheme.h"
 #include "IImageReader.h"
 #include "IModelReader.h"
+#include "../Utils.h"
 
 using namespace std;
 using namespace placeholders;
@@ -311,9 +312,7 @@ void CGameView::DrawRuler()
 		m_renderer->SetColor(255.0f, 255.0f, 0.0f);
 		m_renderer->RenderArrays(RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
 		m_renderer->SetColor(255.0f, 255.0f, 255.0f);
-		char str[10];
-		sprintf(str, "%0.2f", m_ruler.GetDistance());
-		DrawText3D(m_ruler.GetEnd(), str);
+		DrawText3D(m_ruler.GetEnd(), ToWstring(m_ruler.GetDistance(), 2));
 	}
 }
 void CGameView::DrawTable(bool shadowOnly)
@@ -341,8 +340,8 @@ void CGameView::DrawTable(bool shadowOnly)
 			}
 			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, vertex, {}, texCoord);
 		}
-		m_renderer->SetTexture("");
-		if (!shadowOnly)//Down't draw decals because they don't cast shadows
+		m_renderer->SetTexture(L"");
+		if (!shadowOnly)//Don't draw decals because they don't cast shadows
 		{
 			for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 			{
@@ -360,7 +359,7 @@ void CGameView::DrawTable(bool shadowOnly)
 				m_renderer->PopMatrix();
 			}
 		}
-		m_renderer->SetTexture("");
+		m_renderer->SetTexture(L"");
 	});
 	if (shadowOnly)
 	{
@@ -490,7 +489,7 @@ void CGameView::DrawShadowMap()
 	m_viewHelper->EnableDepthTest(false);
 }
 
-void CGameView::CreateSkybox(double size, string const& textureFolder)
+void CGameView::CreateSkybox(double size, wstring const& textureFolder)
 {
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
 }
@@ -638,9 +637,9 @@ void CGameView::ClearResources()
 	m_tableListShadow.reset();
 }
 
-void CGameView::SetWindowTitle(string const& title)
+void CGameView::SetWindowTitle(wstring const& title)
 {
-	m_window->SetTitle(title + " - Wargame Engine");
+	m_window->SetTitle(title + L" - Wargame Engine");
 }
 
 IShaderManager& CGameView::GetShaderManager()
@@ -658,7 +657,7 @@ ThreadPool& CGameView::GetThreadPool()
 	return m_threadPool;
 }
 
-void CGameView::Preload(string const& image)
+void CGameView::Preload(wstring const& image)
 {
 	if (!image.empty())
 	{
@@ -680,10 +679,10 @@ void CGameView::Preload(string const& image)
 		shared_ptr<const IObject> object = m_gameModel->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
 	}
-	m_renderer->SetTexture("");
+	m_renderer->SetTexture(L"");
 }
 
-void CGameView::LoadModule(string const& module)
+void CGameView::LoadModule(wstring const& module)
 {
 	m_threadPool.CancelAll();
 	m_module.Load(module);
@@ -700,7 +699,7 @@ void CGameView::LoadModule(string const& module)
 	});
 }
 
-void CGameView::DrawText3D(CVector3d const& pos, string const& text)
+void CGameView::DrawText3D(CVector3d const& pos, wstring const& text)
 {
 	m_viewHelper->SetUpViewport2D();
 	m_renderer->PushMatrix();

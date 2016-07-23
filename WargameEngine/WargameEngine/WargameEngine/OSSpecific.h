@@ -1,4 +1,4 @@
 #include<string>
 #include<vector>
 
-std::vector<std::string> GetFiles(std::string const& path, std::string const& mask, bool recursive);
+std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const& mask, bool recursive);

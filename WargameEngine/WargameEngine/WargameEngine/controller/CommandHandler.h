@@ -19,8 +19,8 @@ public:
 	void AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model);
 	void AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY);
 	void AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation);
-	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value);
-	void AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model);
+	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::wstring const& key, std::wstring const& value);
+	void AddNewChangeGlobalProperty(std::wstring const& key, std::wstring const& value, IGameModel & model);
 	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
 	void AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed);
 	void Undo();

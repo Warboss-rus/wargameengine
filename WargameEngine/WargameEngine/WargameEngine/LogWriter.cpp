@@ -1,6 +1,7 @@
 #include "LogWriter.h"
 #include <time.h>
 #include <fstream>
+#include "Utils.h"
 
 std::string LogWriter::filename;
 
@@ -19,4 +20,9 @@ void LogWriter::WriteLine(std::string const& line)
 	struct tm * now = localtime( & t );
 	oFile << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec << "\t" << line.c_str() << "\n";
 	oFile.close();
+}
+
+void LogWriter::WriteLine(std::wstring const& line)
+{
+	WriteLine(WStringToUtf8(line));
 }

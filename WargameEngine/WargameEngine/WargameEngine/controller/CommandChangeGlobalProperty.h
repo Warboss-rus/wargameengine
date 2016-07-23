@@ -8,14 +8,14 @@ class IGameModel;
 class CommandChangeGlobalProperty : public ICommand
 {
 public:
-	CommandChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel& model);
+	CommandChangeGlobalProperty(std::wstring const& key, std::wstring const& value, IGameModel& model);
 	CommandChangeGlobalProperty(IReadMemoryStream & stream, IGameModel& model);
 	void Execute();
 	void Rollback();
 	void Serialize(IWriteMemoryStream & stream) const;
 private:
-	std::string m_key;
-	std::string m_oldValue;
-	std::string m_newValue;
+	std::wstring m_key;
+	std::wstring m_oldValue;
+	std::wstring m_newValue;
 	IGameModel& m_model;
 };

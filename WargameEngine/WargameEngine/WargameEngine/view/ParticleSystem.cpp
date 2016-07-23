@@ -30,7 +30,7 @@ void CParticleSystem::DrawParticles()
 	}
 }
 
-void CParticleSystem::AddEffect(string const& file, double x, double y, double z, double rotation, double scale, float lifetime)
+void CParticleSystem::AddEffect(wstring const& file, double x, double y, double z, double rotation, double scale, float lifetime)
 {
 	if (m_models.find(file) == m_models.end())
 	{
@@ -43,7 +43,7 @@ void CParticleSystem::AddEffect(string const& file, double x, double y, double z
 	m_effects.push_back(make_unique<CParticleEffect>(file, x, y, z, rotation, scale, lifetime));
 }
 
-void CParticleSystem::AddTracer(string const& file, CVector3d const& start, CVector3d const& end, double rotation, double scale, double speed)
+void CParticleSystem::AddTracer(wstring const& file, CVector3d const& start, CVector3d const& end, double rotation, double scale, double speed)
 {
 	if (m_models.find(file) == m_models.end())
 	{
@@ -52,7 +52,7 @@ void CParticleSystem::AddTracer(string const& file, CVector3d const& start, CVec
 	m_effects.push_back(make_unique<CParticleTracer>(file, start, end, rotation, scale, speed));
 }
 
-void CParticleSystem::DrawEffect(string const& effectFile, float time)
+void CParticleSystem::DrawEffect(wstring const& effectFile, float time)
 {
 	m_models.at(effectFile).Draw(time);
 }

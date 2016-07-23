@@ -18,7 +18,7 @@ public:
 	virtual void DoOnResize(std::function<void(int, int)> const& handler) override;
 	virtual void DoOnShutdown(std::function<void()> const& handler) override;
 	virtual void ResizeWindow(int width, int height) override;
-	virtual void SetTitle(std::string const& title) override;
+	virtual void SetTitle(std::wstring const& title) override;
 	virtual void ToggleFullscreen() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
 	virtual IInput& ResetInput() override;

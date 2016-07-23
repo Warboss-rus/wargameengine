@@ -66,9 +66,9 @@ public:
 	virtual void ResetViewMatrix() = 0;
 	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) = 0;
 
-	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) = 0;
-	virtual void SetTexture(std::string const& texture, TextureSlot slot, int flags = 0) = 0;
-	virtual void SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) = 0;
+	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) = 0;
+	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) = 0;
+	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) = 0;
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void()> const& func, unsigned int width, unsigned int height) = 0;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) = 0;
 

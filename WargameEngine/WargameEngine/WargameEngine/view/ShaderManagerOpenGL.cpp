@@ -26,7 +26,7 @@ void CShaderManagerOpenGL::UnBindProgram() const
 	glUseProgram(0);
 }
 
-GLuint CompileShader(std::string const& path, GLuint program, GLenum type)
+GLuint CompileShader(std::wstring const& path, GLuint program, GLenum type)
 {
 	std::string shaderText;
 	std::string line;
@@ -53,7 +53,7 @@ GLuint CompileShader(std::string const& path, GLuint program, GLenum type)
 	return shader;
 }
 
-void CShaderManagerOpenGL::NewProgram(std::string const& vertex, std::string const& fragment, std::string const& geometry)
+void CShaderManagerOpenGL::NewProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry)
 {
 	if (!GLEW_ARB_shader_objects)
 	{

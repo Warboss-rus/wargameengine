@@ -1,30 +1,32 @@
 #include "Module.h"
 #include <fstream>
 #include <stdlib.h>
+#include "Utils.h"
 
-std::string RemoveSpaces(std::string const& str)
+std::wstring RemoveSpaces(std::wstring const& str)
 {
 	size_t begin = str.find_first_not_of(' ');
 	size_t end = str.find_last_not_of(' ');
-	if (begin == str.npos || end == str.npos) return "";
+	if (begin == str.npos || end == str.npos) return L"";
 	return str.substr(begin, end - begin + 1);
 }
 
-std::string AddSlash(std::string const& str)
+std::wstring AddSlash(std::wstring const& str)
 {
 	if (!str.empty() && str.back() != '/' && str.back() != '\\')
 	{
-		return str + '/';
+		return str + L'/';
 	}
 	return str;
 }
 
-void sModule::Load(std::string const& filename)
+void sModule::Load(std::wstring const& filename)
 {
-	std::ifstream iFile(filename);
-	std::string line;
-	std::string key;
-	std::string value;
+	std::wifstream iFile;
+	OpenFile(iFile, filename);
+	std::wstring line;
+	std::wstring key;
+	std::wstring value;
 	while (std::getline(iFile, line))
 	{
 		size_t equal = line.find('=');
@@ -33,16 +35,16 @@ void sModule::Load(std::string const& filename)
 		if (equal == line.npos || (comment != line.npos && comment < equal)) continue;
 		key = RemoveSpaces(line.substr(0, equal));
 		value = RemoveSpaces(line.substr(equal + 1, end - equal));
-		if (key == "Name") name = value;
-		else if (key == "Version") version = atoi(value.c_str());
-		else if (key == "Author") author = value;
-		else if (key == "Site") site = value;
-		else if (key == "Playable") playable = atoi(value.c_str()) != 0;
-		else if (key == "Folder") folder = AddSlash(value);
-		else if (key == "Script") script = value;
-		else if (key == "Models") models = AddSlash(value);
-		else if (key == "Textures") textures = AddSlash(value);
-		else if (key == "Shaders") shaders = AddSlash(value);
+		if (key == L"Name") name = value;
+		else if (key == L"Version") version = std::stoi(value.c_str());
+		else if (key == L"Author") author = value;
+		else if (key == L"Site") site = value;
+		else if (key == L"Playable") playable = std::stoi(value.c_str()) != 0;
+		else if (key == L"Folder") folder = AddSlash(value);
+		else if (key == L"Script") script = value;
+		else if (key == L"Models") models = AddSlash(value);
+		else if (key == L"Textures") textures = AddSlash(value);
+		else if (key == L"Shaders") shaders = AddSlash(value);
 	}
 
 	iFile.close();

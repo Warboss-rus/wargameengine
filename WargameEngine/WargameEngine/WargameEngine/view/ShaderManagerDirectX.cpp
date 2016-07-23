@@ -6,6 +6,7 @@
 #include "DirectXRenderer.h"
 #include <DirectXMath.h>
 #include "..\AsyncFileProvider.h"
+#include "..\Utils.h"
 
 static const std::string defaultShader = "\
 struct sLightSource\
@@ -52,31 +53,23 @@ float4 PShader( PixelInputType input) : SV_TARGET\
 	return tex + Color;\
 }";
 
-namespace
-{
-std::wstring Str2Wstr(std::string const& str)
-{
-	return std::wstring(str.begin(), str.end());
-}
-}
-
 CShaderManagerDirectX::CShaderManagerDirectX(ID3D11Device *dev, CDirectXRenderer * render)
 	:m_dev(dev), m_render(render)
 {
 	NewProgram();
 }
 
-void CompileShader(std::string const& path, char * entryPoint, char * target, std::string const& defaultContent, ID3D10Blob ** blob)
+void CompileShader(std::wstring const& path, char * entryPoint, char * target, std::string const& defaultContent, ID3D10Blob ** blob)
 {
 	CComPtr<ID3DBlob> errorBlob;
 	if (path.empty())
 		D3DCompile(defaultContent.c_str(), defaultContent.size() + 1, "", NULL, NULL, entryPoint, target, 0, 0, blob, &errorBlob);
 	else
 		
-		D3DCompileFromFile(Str2Wstr(path).c_str(), NULL, NULL, entryPoint, target, 0, 0, blob, &errorBlob);
+		D3DCompileFromFile(path.c_str(), NULL, NULL, entryPoint, target, 0, 0, blob, &errorBlob);
 	if (errorBlob)
 	{
-		LogWriter::WriteLine("Error compiling shader " + path + ": " + (char*)errorBlob->GetBufferPointer());
+		LogWriter::WriteLine(L"Error compiling shader " + path + L": " + Utf8ToWstring((char*)errorBlob->GetBufferPointer()));
 	}
 }
 
@@ -113,7 +106,7 @@ void CShaderManagerDirectX::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int
 	m_dev->CreateBuffer(&bd, NULL, bufferPtr);       // create the buffer
 }
 
-void CShaderManagerDirectX::NewProgram(std::string const& vertex /*= ""*/, std::string const& fragment /*= ""*/, std::string const& geometry /*= ""*/)
+void CShaderManagerDirectX::NewProgram(std::wstring const& vertex /*= ""*/, std::wstring const& fragment /*= ""*/, std::wstring const& geometry /*= ""*/)
 {
 	if (!vertex.empty()) m_VS = nullptr;
 	CComPtr<ID3D10Blob> PS, GS;

@@ -6,9 +6,9 @@
 class CTranslationManager
 {
 public:
-	void LoadFile(std::string const& path);
-	std::wstring GetTranslation(std::string const& key, std::vector<std::string> const& insertValues = std::vector<std::string>());
+	void LoadFile(std::wstring const& path);
+	std::wstring GetTranslation(std::wstring const& key, std::vector<std::wstring> const& insertValues = std::vector<std::wstring>());
 	void Reset();
 private:
-	std::map<std::string, std::wstring> m_dictionary;
+	std::map<std::wstring, std::wstring> m_dictionary;
 };

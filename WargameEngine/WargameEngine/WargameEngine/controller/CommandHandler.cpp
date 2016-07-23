@@ -67,14 +67,14 @@ void CCommandHandler::AddNewRotateObject(std::shared_ptr<IObject> object, double
 	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewChangeProperty(std::shared_ptr<IObject> object, std::string const& key, std::string const& value)
+void CCommandHandler::AddNewChangeProperty(std::shared_ptr<IObject> object, std::wstring const& key, std::wstring const& value)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandChangeProperty>(object, key, value);
 	action->Execute();
 	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewChangeGlobalProperty(std::string const& key, std::string const& value, IGameModel & model)
+void CCommandHandler::AddNewChangeGlobalProperty(std::wstring const& key, std::wstring const& value, IGameModel & model)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CommandChangeGlobalProperty>(key, value, model);
 	action->Execute();

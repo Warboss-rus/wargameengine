@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include "InputGLFW.h"
 #include "OpenGLRenderer.h"
+#include "../Utils.h"
 
 static CGameWindowGLFW* g_instance = nullptr;
 bool CGameWindowGLFW::m_visible = true;
@@ -118,9 +119,9 @@ void CGameWindowGLFW::ResizeWindow(int width, int height)
 	glfwSetWindowSize(m_window, width, height);
 }
 
-void CGameWindowGLFW::SetTitle(std::string const& title)
+void CGameWindowGLFW::SetTitle(std::wstring const& title)
 {
-	glfwSetWindowTitle(m_window, title.c_str());
+	glfwSetWindowTitle(m_window, WStringToUtf8(title).c_str());
 }
 
 void CGameWindowGLFW::ToggleFullscreen()

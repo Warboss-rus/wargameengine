@@ -24,6 +24,7 @@
 #include "view\TextWriter.h"
 #include "ScriptHandlerLua.h"
 #include "NetSocket.h"
+#include "Utils.h"
 #ifdef _WINDOWS
 #include <windows.h>
 
@@ -47,14 +48,14 @@ int main(int argc, char* argv[])
 				LogWriter::WriteLine("Module filename expected");
 				return 1;
 			}
-			context.module.Load(argv[i]);
+			context.module.Load(Utf8ToWstring(argv[i]));
 		}
 	}
 	if (context.module.name.empty())
 	{
-		context.module.script = "main.lua";
-		context.module.textures = "texture\\";
-		context.module.models = "models\\";
+		context.module.script = L"main.lua";
+		context.module.textures = L"texture\\";
+		context.module.models = L"models\\";
 	}
 	context.window = std::make_unique<WINDOW_CLASS>();
 	context.soundPlayer = std::make_unique<CSoundPlayerFMod>();

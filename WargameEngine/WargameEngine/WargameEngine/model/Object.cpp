@@ -4,24 +4,15 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <float.h>
-#include <chrono>
+#include "..\Utils.h"
 
-namespace
-{
-long long GetCurrentTime()
-{
-	using namespace std::chrono;
-	return time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
-}
-}
-
-CObject::CObject(std::string const& model, double x, double y, double z, double rotation, bool hasShadow)
+CObject::CObject(std::wstring const& model, double x, double y, double z, double rotation, bool hasShadow)
 	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
 {
-	m_lastUpdateTime = GetCurrentTime();
+	m_lastUpdateTime = GetCurrentTimeLL();
 }
 
-std::string CObject::GetPathToModel() const
+std::wstring CObject::GetPathToModel() const
 {
 	return m_model;
 }
@@ -95,12 +86,12 @@ void CObject::HideMesh(std::string const& meshName)
 	m_hiddenMeshes.insert(meshName); 
 }
 
-void CObject::SetProperty(std::string const& key, std::string const& value) 
+void CObject::SetProperty(std::wstring const& key, std::wstring const& value) 
 { 
 	m_properties[key] = value; 
 }
 
-std::string const CObject::GetProperty(std::string const& key) const 
+std::wstring const CObject::GetProperty(std::wstring const& key) const 
 {
 	if(m_properties.find(key) != m_properties.end())
 	{
@@ -108,7 +99,7 @@ std::string const CObject::GetProperty(std::string const& key) const
 	}
 	else
 	{
-		return "";	
+		return L"";	
 	}
 }
 
@@ -127,7 +118,7 @@ void CObject::SetMovementLimiter(IMoveLimiter * limiter)
 	m_movelimiter.reset(limiter);
 }
 
-std::map<std::string, std::string> const& CObject::GetAllProperties() const
+std::map<std::wstring, std::wstring> const& CObject::GetAllProperties() const
 {
 	return m_properties;
 }
@@ -142,7 +133,7 @@ void CObject::PlayAnimation(std::string const& animation, eAnimationLoopMode loo
 	m_animation = animation;
 	m_animationLoop = loop;
 	m_animationSpeed = speed;
-	m_animationBegin =GetCurrentTime();
+	m_animationBegin =GetCurrentTimeLL();
 }
 
 std::string CObject::GetAnimation() const
@@ -153,16 +144,16 @@ std::string CObject::GetAnimation() const
 float CObject::GetAnimationTime() const
 {
 	if (m_animationBegin == 0L) return 0.0f;
-	long long delta = GetCurrentTime() - m_animationBegin;
+	long long delta = GetCurrentTimeLL() - m_animationBegin;
 	return static_cast<float>((double)delta / 1000.0);
 }
 
-void CObject::AddSecondaryModel(std::string const& model)
+void CObject::AddSecondaryModel(std::wstring const& model)
 {
 	m_secondaryModels.push_back(model);
 }
 
-void CObject::RemoveSecondaryModel(std::string const& model)
+void CObject::RemoveSecondaryModel(std::wstring const& model)
 {
 	for (auto i = m_secondaryModels.begin(); i != m_secondaryModels.end(); ++i)
 	{
@@ -178,7 +169,7 @@ size_t CObject::GetSecondaryModelsCount() const
 	return m_secondaryModels.size();
 }
 
-std::string CObject::GetSecondaryModel(size_t index) const
+std::wstring CObject::GetSecondaryModel(size_t index) const
 {
 	return m_secondaryModels[index];
 }
@@ -202,7 +193,7 @@ void CObject::GoTo(CVector3d const& coords, double speed, std::string const& ani
 
 void CObject::Update()
 {
-	long long current = GetCurrentTime();
+	long long current = GetCurrentTimeLL();
 	if (fabs(m_goSpeed) < DBL_EPSILON)
 	{
 		m_lastUpdateTime = current;
@@ -227,7 +218,7 @@ std::vector<sTeamColor> const& CObject::GetTeamColor() const
 	return m_teamColor;
 }
 
-void CObject::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigned char g, unsigned char b)
+void CObject::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
 	sTeamColor tc;
 	tc.suffix = suffix;
@@ -242,7 +233,7 @@ void CObject::ApplyTeamColor(std::string const& suffix, unsigned char r, unsigne
 	m_teamColor.push_back(tc);
 }
 
-void CObject::ReplaceTexture(std::string const& oldTexture, std::string const& newTexture)
+void CObject::ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture)
 {
 	if (newTexture.empty())
 	{
@@ -254,7 +245,7 @@ void CObject::ReplaceTexture(std::string const& oldTexture, std::string const& n
 	}
 }
 
-std::map<std::string, std::string> const& CObject::GetReplaceTextures() const
+std::map<std::wstring, std::wstring> const& CObject::GetReplaceTextures() const
 {
 	return m_replaceTextures;
 }

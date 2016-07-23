@@ -1,42 +1,29 @@
 #include "TranslationManager.h"
 #include <fstream>
-#ifdef TO_STRING_HACK
-#include <sstream>
-namespace std
-{
-	template<class T>
-	std::wstring to_wstring(T _Val)
-	{
-		std::wstringstream stream;
-		stream << _Val;
-		return stream.str();
-	}
-}
-#endif
+#include "..\Utils.h"
 
-void CTranslationManager::LoadFile(std::string const& path)
+void CTranslationManager::LoadFile(std::wstring const& path)
 {
-	std::wifstream iFile(path, std::ios::binary);
+	std::wifstream iFile;
+	OpenFile(iFile, path, std::ios::binary | std::ios::in);
 	while(iFile.good())
 	{
 		std::wstring str;
 		std::getline(iFile, str);
 		auto tab = str.find(L"\t");
 		std::wstring wkey = str.substr(0, tab);
-		std::string key(wkey.begin(), wkey.end());
+		std::wstring key(wkey.begin(), wkey.end());
 		m_dictionary[key] = str.substr(tab + 1);
 	}
 	iFile.close();
 }
 
-std::wstring CTranslationManager::GetTranslation(std::string const& key, std::vector<std::string> const& insertValues)
+std::wstring CTranslationManager::GetTranslation(std::wstring const& key, std::vector<std::wstring> const& insertValues)
 {
 	auto it = m_dictionary.find(key);
 	if (it == m_dictionary.end())
 	{
-		std::wstring result;
-		result.assign(key.begin(), key.end());
-		return result;
+		return key;
 	}
 	else
 	{

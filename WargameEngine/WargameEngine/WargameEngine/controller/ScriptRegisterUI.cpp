@@ -4,19 +4,7 @@
 #include "../UI/IUI.h"
 #include "../view/TranslationManager.h"
 #include "../UI/UITheme.h"
-#ifdef TO_STRING_HACK
-#include <sstream>
-namespace std
-{
-	template<class T>
-	std::string to_string(T _Val)
-	{
-		std::stringstream stream;
-		stream << _Val;
-		return stream.str();
-	}
-}
-#endif
+#include "../Utils.h"
 
 void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManager & transMan)
 {
@@ -29,14 +17,14 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int y = args.GetInt(3);
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
-		std::string text = args.GetStr(6);
-		std::string callback = args.GetStr(7);
+		std::wstring text = args.GetWStr(6);
+		std::wstring callback = args.GetWStr(7);
 		auto onClick = [callback, &handler]()
 		{ 
 			handler.CallFunction(callback);
 		};
 		IUIElement * button = c->AddNewButton(name, x, y, height, width, transMan.GetTranslation(text), onClick);
-		return FunctionArgument(button, "UI");
+		return FunctionArgument(button, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_STATIC_TEXT, [&, uiRoot](void* instance, IArguments const& args) {
@@ -48,9 +36,9 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int y = args.GetInt(3);
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
-		std::string caption = args.GetStr(6);
+		std::wstring caption = args.GetWStr(6);
 		IUIElement * text = c->AddNewStaticText(name, x, y, height, width, transMan.GetTranslation(caption));
-		return FunctionArgument(text, "UI");
+		return FunctionArgument(text, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_PANEL, [&, uiRoot](void* instance, IArguments const& args) {
@@ -63,7 +51,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement * panel = c->AddNewPanel(name, x, y, height, width);
-		return FunctionArgument(panel, "UI");
+		return FunctionArgument(panel, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_CHECKBOX, [&, uiRoot](void* instance, IArguments const& args) {
@@ -75,10 +63,10 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int y = args.GetInt(3);
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
-		std::string caption = args.GetStr(6);
+		std::wstring caption = args.GetWStr(6);
 		bool state = args.GetBool(7);
 		IUIElement * checkbox = c->AddNewCheckBox(name, x, y, height, width, transMan.GetTranslation(caption), state);
-		return FunctionArgument(checkbox, "UI");
+		return FunctionArgument(checkbox, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_COMBOBOX, [&, uiRoot](void* instance, IArguments const& args) {
@@ -91,7 +79,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement * listbox = c->AddNewComboBox(name, x, y, height, width);
-		return FunctionArgument(listbox, "UI");
+		return FunctionArgument(listbox, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_EDIT, [&, uiRoot](void* instance, IArguments const& args) {
@@ -103,9 +91,9 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int y = args.GetInt(3);
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
-		std::string caption = args.GetStr(6);
+		std::wstring caption = args.GetWStr(6);
 		IUIElement * edit = c->AddNewEdit(name, x, y, height, width, transMan.GetTranslation(caption));
-		return FunctionArgument(edit, "UI");
+		return FunctionArgument(edit, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_LIST, [&, uiRoot](void* instance, IArguments const& args) {
@@ -118,7 +106,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement * listbox = c->AddNewList(name, x, y, height, width);
-		return FunctionArgument(listbox, "UI");
+		return FunctionArgument(listbox, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_RADIOGROUP, [&, uiRoot](void* instance, IArguments const& args) {
@@ -131,7 +119,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement * listbox = c->AddNewRadioGroup(name, x, y, height, width);
-		return FunctionArgument(listbox, "UI");
+		return FunctionArgument(listbox, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_WINDOW, [&, uiRoot](void* instance, IArguments const& args) {
@@ -141,10 +129,10 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		std::string name = args.GetStr(1);
 		int height = args.GetInt(2);
 		int width = args.GetInt(3);
-		std::string header = args.GetStr(4);
+		std::wstring header = args.GetWStr(4);
 		bool modal = args.GetBool(5); modal;
 		IUIElement * panel = c->AddNewWindow(name, height, width, transMan.GetTranslation(header));
-		return FunctionArgument(panel, "UI");
+		return FunctionArgument(panel, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, GET_CHILD, [&, uiRoot](void* instance, IArguments const& args) {
@@ -152,7 +140,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 			throw std::runtime_error("1 argument expected (childname)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		std::string name = args.GetStr(1);
-		return FunctionArgument(c->GetChildByName(name), "UI");
+		return FunctionArgument(c->GetChildByName(name), L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, SET_VISIBLE, [&, uiRoot](void* instance, IArguments const& args) {
@@ -174,7 +162,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (text)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		c->SetText(transMan.GetTranslation(args.GetStr(1)));
+		c->SetText(transMan.GetTranslation(args.GetWStr(1)));
 		return nullptr;
 	});
 
@@ -196,7 +184,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (item)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		c->AddItem(transMan.GetTranslation(args.GetStr(1)));
+		c->AddItem(transMan.GetTranslation(args.GetWStr(1)));
 		return nullptr;
 	});
 
@@ -270,7 +258,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if(args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		std::string func = args.GetStr(1);
+		std::wstring func = args.GetWStr(1);
 		std::function<void()> function;
 		if(!func.empty())
 		{
@@ -287,7 +275,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		std::string func = args.GetStr(1);
+		std::wstring func = args.GetWStr(1);
 		std::function<void()> function;
 		if (!func.empty())
 		{
@@ -312,7 +300,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 	handler.RegisterMethod(CLASS_UI, GET, [&, uiRoot](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
-		return FunctionArgument(uiRoot, "UI");
+		return FunctionArgument(uiRoot, L"UI");
 	});
 
 	handler.RegisterMethod(CLASS_UI, CLEAR_CHILDREN, [&, uiRoot](void* instance, IArguments const& args) {
@@ -336,7 +324,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (theme file)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		std::string file = args.GetStr(1);
+		std::wstring file = args.GetWStr(1);
 		std::shared_ptr<CUITheme> theme = std::make_shared<CUITheme>();
 		theme->Load(file);
 		c->SetTheme(theme);
@@ -355,7 +343,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 	handler.RegisterProperty(CLASS_UI, PROPERTY_TEXT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected (text)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		c->SetText(transMan.GetTranslation(args.GetStr(1)));
+		c->SetText(transMan.GetTranslation(args.GetWStr(1)));
 	}, [&, uiRoot](void* instance) {
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		return c->GetText();
@@ -384,10 +372,10 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 	handler.RegisterFunction(MESSAGE_BOX, [&, uiRoot](IArguments const& args) {
 		if (args.GetCount() < 1 || args.GetCount() > 2)
 			throw std::runtime_error("1 or 2 argument expected (text, caption)");
-		std::string text = args.GetStr(1);
-		std::string caption = "";
+		std::wstring text = args.GetWStr(1);
+		std::wstring caption;
 		if (args.GetCount() == 2)
-			caption = args.GetStr(2);
+			caption = args.GetWStr(2);
 		const std::string windowName = "MessageBox";
 		const int width = 200;
 		const int border = 10;

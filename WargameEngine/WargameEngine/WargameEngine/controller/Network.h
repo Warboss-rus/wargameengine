@@ -16,7 +16,7 @@ typedef std::function<std::unique_ptr<INetSocket>()> SocketFactory;
 class CNetwork
 {
 	typedef std::function<void()> OnStateRecievedHandler;
-	typedef std::function<void(std::string const&)> OnStringReceivedHandler;
+	typedef std::function<void(std::wstring const&)> OnStringReceivedHandler;
 public:
 	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory);
 	void Host(unsigned short port = 0);
@@ -25,7 +25,7 @@ public:
 	bool IsHost() const;
 	void Stop();
 	void SendState();
-	void SendMessage(std::string const& message);
+	void SendMessage(std::wstring const& message);
 	void SendAction(ICommand const& command);
 	bool IsConnected();
 	void AddAddressLocal(std::shared_ptr<IObject> obj);

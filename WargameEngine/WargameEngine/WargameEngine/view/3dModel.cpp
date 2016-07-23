@@ -39,14 +39,14 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_lists.clear();
 }
 
-void SetMaterial(IRenderer & renderer, const sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures = nullptr)
+void SetMaterial(IRenderer & renderer, const sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr)
 {
 	if(!material)
 	{
 		return;
 	}
 	renderer.SetMaterial(material->ambient, material->diffuse, material->specular, material->shininess);
-	std::string texture = material->texture;
+	std::wstring texture = material->texture;
 	if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
 	{
 		texture = replaceTextures->at(texture);
@@ -57,7 +57,7 @@ void SetMaterial(IRenderer & renderer, const sMaterial * material, const std::ve
 }
 
 void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, 
-	bool useGPUskinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
+	bool useGPUskinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
 {
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
@@ -289,7 +289,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 
 //returns if animations is ended
 bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, 
-	bool gpuSkinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor, const std::map<std::string, std::string> * replaceTextures)
+	bool gpuSkinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
 {
 	bool result;
 	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);

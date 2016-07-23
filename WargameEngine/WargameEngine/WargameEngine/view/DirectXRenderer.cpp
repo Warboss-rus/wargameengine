@@ -613,17 +613,17 @@ void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direct
 	UpdateMatrices();
 }
 
-void CDirectXRenderer::SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
+void CDirectXRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, teamcolor, flags);
 }
 
-void CDirectXRenderer::SetTexture(std::string const& texture, TextureSlot slot, int flags /*= 0*/)
+void CDirectXRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, slot, flags);
 }
 
-void CDirectXRenderer::SetTexture(std::string const& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
+void CDirectXRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
 {
 	if (forceLoadNow)
 	{

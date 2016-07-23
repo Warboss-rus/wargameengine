@@ -84,19 +84,19 @@ void CGameModel::Clear()
 	m_properties.clear();
 }
 
-std::string CGameModel::GetProperty(std::string const& key) const
+std::wstring CGameModel::GetProperty(std::wstring const& key) const
 {
 	if (m_properties.find(key) != m_properties.end())
 		return m_properties.find(key)->second;
-	return "";
+	return L"";
 }
 
-void CGameModel::SetProperty(std::string const& key, std::string const& value)
+void CGameModel::SetProperty(std::wstring const& key, std::wstring const& value)
 { 
 	m_properties[key] = value; 
 }
 
-std::map<std::string, std::string> const&  CGameModel::GetAllProperties() const
+std::map<std::wstring, std::wstring> const&  CGameModel::GetAllProperties() const
 { 
 	return m_properties; 
 }
@@ -117,17 +117,17 @@ CProjectile const& CGameModel::GetProjectile(size_t index) const
 	return m_projectiles[index];
 }
 
-void CGameModel::ResetLandscape(double width, double depth, std::string const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+void CGameModel::ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
 
-std::shared_ptr<IBounding> CGameModel::GetBoundingBox(std::string const& path) const
+std::shared_ptr<IBounding> CGameModel::GetBoundingBox(std::wstring const& path) const
 {
 	return m_boundings.at(path);
 }
 
-void CGameModel::AddBoundingBox(std::string const& path, std::shared_ptr<IBounding> bbox)
+void CGameModel::AddBoundingBox(std::wstring const& path, std::shared_ptr<IBounding> bbox)
 {
 	m_boundings[path] = bbox;
 }

@@ -7,6 +7,7 @@
 #include "../model/Bounding.h"
 #include "../model/IBoundingBoxManager.h"
 #include "../AsyncFileProvider.h"
+#include "../Utils.h"
 
 CModelManager::CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager, CAsyncFileProvider & asyncFileProvider)
 	:m_renderer(&renderer), m_bbManager(&bbmanager), m_asyncFileProvider(&asyncFileProvider), m_gpuSkinning(false)
@@ -17,9 +18,10 @@ CModelManager::~CModelManager()
 {
 }
 
-std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double & scale, double * rotation)
+std::unique_ptr<IBounding> LoadBoundingFromFile(std::wstring const& path, double & scale, double * rotation)
 {
-	std::ifstream iFile(path);
+	std::ifstream iFile;
+	OpenFile(iFile, path);
 	std::unique_ptr<IBounding> bounding(new CBoundingCompound());
 	std::string line;
 	if (!iFile.good()) return NULL;
@@ -56,11 +58,11 @@ std::unique_ptr<IBounding> LoadBoundingFromFile(std::string const& path, double 
 	return bounding;
 }
 
-void CModelManager::LoadIfNotExist(std::string const& path)
+void CModelManager::LoadIfNotExist(std::wstring const& path)
 {
 	if(m_models.find(path) == m_models.end())
 	{
-		std::string boundingPath = path.substr(0, path.find_last_of('.')) + ".txt";
+		std::wstring boundingPath = path.substr(0, path.find_last_of('.')) + L".txt";
 		double scale = 1.0;
 		double rotation[3] = { 0.0, 0.0, 0.0 };
 		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(m_asyncFileProvider->GetModelAbsolutePath(boundingPath), scale, rotation);
@@ -80,7 +82,7 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 					return;
 				}
 			}
-			throw std::runtime_error("Cannot load model " + path + ". None of installed readers cannot load it");
+			throw std::runtime_error("Cannot load model " + WStringToUtf8(path) + ". None of installed readers cannot load it");
 		}, [=]() {
 			 m_models[path]->PreloadTextures(*m_renderer);
 		}, [](std::exception const& e) {
@@ -89,14 +91,14 @@ void CModelManager::LoadIfNotExist(std::string const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly, IShaderManager * shaderManager)
+void CModelManager::DrawModel(std::wstring const& path, std::shared_ptr<IObject> object, bool vertexOnly, IShaderManager * shaderManager)
 {
 	LoadIfNotExist(path);
 	std::unique_lock<std::mutex> lk(m_mutex);
 	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning, shaderManager);
 }
 
-std::vector<std::string> CModelManager::GetAnimations(std::string const& path)
+std::vector<std::string> CModelManager::GetAnimations(std::wstring const& path)
 {
 	return m_models[path]->GetAnimations();
 }

@@ -17,7 +17,7 @@ CCommandCreateObject::CCommandCreateObject(IReadMemoryStream & stream, IGameMode
 	double y = stream.ReadDouble();
 	double z = stream.ReadDouble();
 	double rotation = stream.ReadDouble();
-	std::string path = stream.ReadString();
+	std::wstring path = stream.ReadWString();
 	bool shadow = stream.ReadBool();
 	m_pObject = std::make_shared<CObject>(path, x, y, z, rotation, shadow);
 }
@@ -40,6 +40,6 @@ void CCommandCreateObject::Serialize(IWriteMemoryStream & stream) const
 	stream.WriteDouble(m_pObject->GetY());
 	stream.WriteDouble(m_pObject->GetZ());
 	stream.WriteDouble(m_pObject->GetRotation());
-	stream.WriteString(m_pObject->GetPathToModel());
+	stream.WriteWString(m_pObject->GetPathToModel());
 	stream.WriteBool(m_pObject->CastsShadow());
 }

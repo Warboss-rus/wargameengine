@@ -6,7 +6,7 @@ typedef void* (*PluginGetClassFunction)();
 class CPlugin
 {
 public:
-	CPlugin(std::string const& str);
+	CPlugin(std::wstring const& str);
 	~CPlugin();
 	void * GetFunction(std::string const& name);
 private:

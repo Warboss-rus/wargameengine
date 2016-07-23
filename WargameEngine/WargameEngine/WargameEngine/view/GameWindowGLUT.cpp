@@ -3,6 +3,7 @@
 #include "InputGLUT.h"
 #include "OpenGLRenderer.h"
 #include <stdexcept>
+#include "../Utils.h"
 
 static CGameWindowGLUT* g_instance = nullptr;
 bool CGameWindowGLUT::m_visible = true;
@@ -118,9 +119,9 @@ void CGameWindowGLUT::ResizeWindow(int width, int height)
 	glutReshapeWindow(width, height);
 }
 
-void CGameWindowGLUT::SetTitle(std::string const& title)
+void CGameWindowGLUT::SetTitle(std::wstring const& title)
 {
-	glutSetWindowTitle(title.c_str());
+	glutSetWindowTitle(WStringToUtf8(title).c_str());
 }
 
 void CGameWindowGLUT::ToggleFullscreen()

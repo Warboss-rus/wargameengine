@@ -16,10 +16,10 @@ class CGameView;
 class CGameController : public IStateManager
 {
 public:
-	typedef std::function<bool(std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z)> MouseButtonCallback;
+	typedef std::function<bool(std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
 
 	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler);
-	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::string const& scriptPath);
+	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
 	void Update();
 
 	virtual void SerializeState(IWriteMemoryStream & stream, bool hasAdresses = false) const override;
@@ -40,13 +40,13 @@ public:
 	void SetRMBCallback(MouseButtonCallback const& callback);
 	void SetGamepadButtonCallback(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler);
 	void SetGamepadAxisCallback(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler);
-	void Save(std::string const& filename);
-	void Load(std::string const& filename);
+	void Save(std::wstring const& filename);
+	void Load(std::wstring const& filename);
 	void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);
 	bool OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt);
-	std::shared_ptr<IObject> CreateObject(std::string const& model, double x, double y, double rotation);
+	std::shared_ptr<IObject> CreateObject(std::wstring const& model, double x, double y, double rotation);
 	void DeleteObject(std::shared_ptr<IObject> obj);
-	void SetObjectProperty(std::shared_ptr<IObject> obj, std::string const& key, std::string const& value);
+	void SetObjectProperty(std::shared_ptr<IObject> obj, std::wstring const& key, std::wstring const& value);
 	void PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
 	void ObjectGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed);
 	CCommandHandler & GetCommandHandler();
@@ -71,7 +71,7 @@ private:
 	bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target);
 	size_t BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject);
 	CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0);
-	static void PackProperties(std::map<std::string, std::string> const&properties, IWriteMemoryStream & stream);
+	static void PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream);
 
 	CGameModel& m_model;
 	CVector3d m_selectedObjectCapturePoint;

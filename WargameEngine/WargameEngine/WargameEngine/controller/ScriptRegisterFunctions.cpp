@@ -16,7 +16,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 			throw std::runtime_error("3 argument expected (width, height, texture)");
 		float width = args.GetFloat(1);
 		float height = args.GetFloat(2);
-		std::string texture = args.GetStr(3);
+		std::wstring texture = args.GetWStr(3);
 		model.ResetLandscape(width, height, texture, 2, 2);
 		return nullptr;
 	});
@@ -24,15 +24,15 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(GET_GLOBAL_PROPERTY, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (key)");
-		std::string key = args.GetStr(1);
+		std::wstring key = args.GetWStr(1);
 		return model.GetProperty(key);
 	});
 
 	handler.RegisterFunction(SET_GLOBAL_PROPERTY, [&](IArguments const& args) {
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 arguments expected (key, value)");
-		std::string key = args.GetStr(1);
-		std::string value = args.GetStr(2);
+		std::wstring key = args.GetWStr(1);
+		std::wstring value = args.GetWStr(2);
 		model.SetProperty(key, value);
 		return nullptr;
 	});
@@ -41,7 +41,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 		if (args.GetCount() != 6)
 			throw std::runtime_error("6 argument expected (decal, x, y, rotation, width, height)");
 		sDecal decal;
-		decal.texture = args.GetStr(1);
+		decal.texture = args.GetWStr(1);
 		decal.x = args.GetDbl(2);
 		decal.y = args.GetDbl(3);
 		decal.rotation = args.GetDbl(4);
@@ -54,7 +54,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(NEW_STATIC_OBJECT, [&](IArguments const& args) {
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (model, x, y, rotation)");
-		std::string objectModel = args.GetStr(1);
+		std::wstring objectModel = args.GetWStr(1);
 		double x = args.GetDbl(2);
 		double y = args.GetDbl(3);
 		double rotation = args.GetDbl(4);
@@ -69,7 +69,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 argument expected (size, texture folder)");
 		double size = args.GetDbl(1);
-		std::string texture = args.GetStr(2);
+		std::wstring texture = args.GetWStr(2);
 		view.CreateSkybox(size, texture);
 		return nullptr;
 	});
@@ -263,7 +263,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(SET_WINDOW_TITLE, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 arguments expected (title)");
-		std::string title = args.GetStr(1);
+		std::wstring title = args.GetWStr(1);
 		view.SetWindowTitle(title);
 		return nullptr;
 	});
@@ -271,7 +271,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(PRELOAD, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (image path)");
-		std::string image = args.GetStr(1);
+		std::wstring image = args.GetWStr(1);
 		view.Preload(image);
 		return nullptr;
 	});
@@ -279,7 +279,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(PRELOAD_MODEL, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (model name)");
-		std::string model = args.GetStr(1);
+		std::wstring model = args.GetWStr(1);
 		view.GetModelManager().LoadIfNotExist(model);
 		return nullptr;
 	});
@@ -287,7 +287,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(LOAD_MODULE, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (module file)");
-		std::string module = args.GetStr(1);
+		std::wstring module = args.GetWStr(1);
 		view.LoadModule(module);
 		return nullptr;
 	});
@@ -295,10 +295,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(SET_SHADERS, [&](IArguments const& args) {
 		int n = args.GetCount();
 		auto pathSource = view.GetAsyncFileProvider();
-		std::string vertex, fragment, geometry;
-		if (n > 0) vertex = pathSource.GetShaderAbsolutePath(args.GetStr(1));
-		if (n > 1) fragment = pathSource.GetShaderAbsolutePath(args.GetStr(2));
-		if (n > 2) geometry = pathSource.GetShaderAbsolutePath(args.GetStr(3));
+		std::wstring vertex, fragment, geometry;
+		if (n > 0) vertex = pathSource.GetShaderAbsolutePath(args.GetWStr(1));
+		if (n > 1) fragment = pathSource.GetShaderAbsolutePath(args.GetWStr(2));
+		if (n > 2) geometry = pathSource.GetShaderAbsolutePath(args.GetWStr(3));
 		if (n > 3) throw std::runtime_error("up to 3 argument expected (vertex shader, fragment shader, geometry shader)");
 		view.GetShaderManager().NewProgram(vertex, fragment, geometry);
 		return nullptr;
@@ -380,7 +380,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(NEW_PARTICLE_EFFECT, [&](IArguments const& args) {
 		if (args.GetCount() != 7)
 			throw std::runtime_error("7 arguments expected (effect file, x, y, z coordinates, rotation, scale, lifetime)");
-		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
+		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
 		double x = args.GetDbl(2);
 		double y = args.GetDbl(3);
 		double z = args.GetDbl(4);
@@ -394,7 +394,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(NEW_PARTICLE_TRACER, [&](IArguments const& args) {
 		if (args.GetCount() != 10)
 			throw std::runtime_error("10 arguments expected (effect file, begin coordinates, end coordinates, rotation, scale, speed)");
-		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
+		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
 		CVector3d begin, end;
 		begin.x = args.GetDbl(2);
 		begin.y = args.GetDbl(3);
@@ -412,7 +412,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(PLAY_SOUND, [&](IArguments const& args) {
 		if (args.GetCount() < 1 || args.GetCount() > 2)
 			throw std::runtime_error("1 or 2 arguments expected (file, volume)");
-		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
+		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
 		float volume = args.GetFloat(2);
 		view.GetSoundPlayer().Play(file, volume);
 		return nullptr;
@@ -421,7 +421,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(PLAY_SOUND_POSITION, [&](IArguments const& args) {
 		if (args.GetCount() < 4 || args.GetCount() > 5)
 			throw std::runtime_error("4 or 5 arguments expected (file, x, y, z, volume)");
-		std::string file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetStr(1));
+		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
 		double x = args.GetDbl(2);
 		double y = args.GetDbl(3);
 		double z = args.GetDbl(4);
@@ -434,8 +434,8 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		int n = args.GetCount();
 		if (n < 2 || n > 5)
 			throw std::runtime_error("2 to 5 arguments expected (name, list or tracks, volume, shuffle, repeat)");
-		std::string name = args.GetStr(1);
-		std::vector<std::string> files = args.GetStrArray(2);
+		std::wstring name = args.GetWStr(1);
+		std::vector<std::wstring> files = args.GetStrArray(2);
 		for (auto& file : files)
 		{
 			file = view.GetAsyncFileProvider().GetAbsolutePath(file);
@@ -459,7 +459,7 @@ auto GetCallbackFunction (IScriptHandler & handler, IArguments const& args, int 
 	std::function<void()> function;
 	if (args.IsStr(index))
 	{
-		std::string func = args.GetStr(1);
+		std::wstring func = args.GetWStr(1);
 		if (!func.empty())
 		{
 			function = [func, &handler]()
@@ -485,10 +485,10 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (path, mask, recursive)");
-		std::string path = fileProvider.GetAbsolutePath(args.GetStr(1));
-		std::string mask = args.GetStr(2);
+		std::wstring path = fileProvider.GetAbsolutePath(args.GetWStr(1));
+		std::wstring mask = args.GetWStr(2);
 		bool recursive = args.GetBool(3);
-		std::vector<std::string> files = GetFiles(path, mask, recursive);
+		std::vector<std::wstring> files = GetFiles(path, mask, recursive);
 		return TransformVector(files);
 	});
 
@@ -496,15 +496,15 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (string)");
-		std::string text = args.GetStr(1);
-		LogWriter::WriteLine("LUA: " + text);
+		std::wstring text = args.GetWStr(1);
+		LogWriter::WriteLine(L"LUA: " + text);
 		return nullptr;
 	});
 
 	handler.RegisterFunction(RUN_SCRIPT, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (filename)");
-		std::string filename = fileProvider.GetAbsolutePath(args.GetStr(1));
+		std::wstring filename = fileProvider.GetAbsolutePath(args.GetWStr(1));
 		handler.RunScript(filename);
 		return nullptr;
 	});
@@ -540,11 +540,11 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
-		std::string func = args.GetStr(1);
-		std::function<void(std::string const&)> function;
+		std::wstring func = args.GetWStr(1);
+		std::function<void(std::wstring const&)> function;
 		if (!func.empty())
 		{
-			function = [func, &handler](const std::string param)
+			function = [func, &handler](const std::wstring param)
 			{
 				handler.CallFunction(func, { param });
 			};
@@ -557,7 +557,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 argument expected (funcName, time, repeat)");
-		std::string func = args.GetStr(1);
+		std::wstring func = args.GetWStr(1);
 		unsigned int time = args.GetLong(2);
 		bool repeat = args.GetBool(3);
 		size_t index = threadPool.AddTimedCallback([=, &handler]() {handler.CallFunction(func);}, time, repeat);
@@ -568,10 +568,10 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 argument expected (function name, disable default behavior)");
-		std::string func = args.GetStr(1);
+		std::wstring func = args.GetWStr(1);
 		bool disable = args.GetBool(2);
-		auto callback = [=, &handler](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z) {
-			FunctionArgument instance(obj.get(), "Object");
+		auto callback = [=, &handler](std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z) {
+			FunctionArgument instance(obj.get(), L"Object");
 			handler.CallFunction(func, { instance, type, x, y, z });
 			return disable;
 		};
@@ -583,9 +583,9 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 argument expected (function name, disable default behavior)");
-		std::string func = args.GetStr(1);
+		std::wstring func = args.GetWStr(1);
 		bool disable = args.GetBool(2);
-		auto callback = [=, &handler](std::shared_ptr<IObject> obj, std::string const& type, double x, double y, double z) {
+		auto callback = [=, &handler](std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z) {
 			FunctionArgument instance(obj.get(), type);
 			handler.CallFunction(func, { instance, x, y, z });
 			return disable;
@@ -671,7 +671,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 arguments expected (message)");
-		std::string message = args.GetStr(1);
+		std::wstring message = args.GetWStr(1);
 		controller.GetNetwork().SendMessage(message);
 		return nullptr;
 	});
@@ -680,7 +680,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 arguments expected (filename)");
-		std::string path = args.GetStr(1);
+		std::wstring path = args.GetWStr(1);
 		controller.Save(path);
 		return nullptr;
 	});
@@ -689,7 +689,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 arguments expected (filename)");
-		std::string path = args.GetStr(1);
+		std::wstring path = args.GetWStr(1);
 		controller.Load(path);
 		return nullptr;
 	});
@@ -698,14 +698,14 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 arguments expected (relative path)");
-		std::string path = args.GetStr(1);
+		std::wstring path = args.GetWStr(1);
 		return fileProvider.GetAbsolutePath(path);
 	});
 
 	handler.RegisterFunction(SET_GAMEPAD_BUTTONS_CALLBACK, [&](IArguments const& args) {
 		if (args.GetCount() < 1)
 			throw std::runtime_error("at least 1 arguments expected (function name, gamepadIndex, buttonIndex)");
-		std::string functionName = args.GetStr(1);
+		std::wstring functionName = args.GetWStr(1);
 		int filterGamepadIndex = -1;
 		int filterButtonIndex = -1;
 		if (args.GetCount() > 1)
@@ -724,7 +724,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	handler.RegisterFunction(SET_GAMEPAD_AXIS_CALLBACK, [&](IArguments const& args) {
 		if (args.GetCount() < 1)
 			throw std::runtime_error("at least 1 arguments expected (function name, gamepadIndex, axisIndex)");
-		std::string functionName = args.GetStr(1);
+		std::wstring functionName = args.GetWStr(1);
 		int filterGamepadIndex = -1;
 		int filterAxisIndex = -1;
 		if (args.GetCount() > 1)

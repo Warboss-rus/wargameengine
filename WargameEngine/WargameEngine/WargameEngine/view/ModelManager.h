@@ -17,14 +17,14 @@ class CModelManager
 public:
 	CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager, CAsyncFileProvider & asyncFileProvider);
 	~CModelManager();
-	void DrawModel(std::string const& path, std::shared_ptr<IObject> object, bool vertexOnly = false, IShaderManager * shaderManager = nullptr);
-	void LoadIfNotExist(std::string const& path);
-	std::vector<std::string> GetAnimations(std::string const& path);
+	void DrawModel(std::wstring const& path, std::shared_ptr<IObject> object, bool vertexOnly = false, IShaderManager * shaderManager = nullptr);
+	void LoadIfNotExist(std::wstring const& path);
+	std::vector<std::string> GetAnimations(std::wstring const& path);
 	void EnableGPUSkinning(bool enable);
 	void RegisterModelReader(std::unique_ptr<IModelReader> && reader);
 	void Reset(IBoundingBoxManager & bbmanager);
 private:
-	std::map<std::string, std::shared_ptr<C3DModel>> m_models;
+	std::map<std::wstring, std::shared_ptr<C3DModel>> m_models;
 	std::vector<std::unique_ptr<IModelReader>> m_modelReaders;
 	IRenderer * m_renderer;
 	IBoundingBoxManager * m_bbManager;

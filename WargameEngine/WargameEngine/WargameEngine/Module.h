@@ -3,16 +3,16 @@
 
 struct sModule
 {
-	std::string name;
+	std::wstring name;
 	int version;
-	std::string author;
-	std::string site;
+	std::wstring author;
+	std::wstring site;
 	int minVersion;
 	bool playable;
-	std::string folder;
-	std::string script;
-	std::string models;
-	std::string textures;
-	std::string shaders;
-	void Load(std::string const& filename);
+	std::wstring folder;
+	std::wstring script;
+	std::wstring models;
+	std::wstring textures;
+	std::wstring shaders;
+	void Load(std::wstring const& filename);
 };

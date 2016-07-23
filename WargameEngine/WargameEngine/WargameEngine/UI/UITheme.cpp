@@ -3,6 +3,7 @@
 #include "../LogWriter.h"
 #include "../rapidxml/rapidxml.hpp"
 #include <fstream>
+#include "../Utils.h"
 
 using namespace std;
 using namespace rapidxml;
@@ -11,7 +12,7 @@ CUITheme CUITheme::defaultTheme;
 
 CUITheme::CUITheme()
 {
-	texture = "g2Default.png";
+	texture = L"g2Default.png";
 	for(unsigned int i = 0; i < 3; ++i)
 	{
 		defaultColor[i] = 0.75f;
@@ -142,19 +143,18 @@ void ParseTextTheme(xml_node<>* theme, CUITheme::sText & text)
 	}
 }
 
-void CUITheme::Load(std::string const& filename)
+void CUITheme::Load(std::wstring const& filename)
 {
-	ifstream istream(filename);
-	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
+	auto content = ReadFile(filename);
 	std::unique_ptr<xml_document<>> doc = std::make_unique<xml_document<>>();
-	doc->parse<0>((char*)content.c_str());
+	doc->parse<0>(content.data());
 	xml_node<>* theme = doc->first_node();
 	if (!theme)
 	{
-		LogWriter::WriteLine(filename + " is not a valid theme file");
+		LogWriter::WriteLine(filename + L" is not a valid theme file");
 		return;
 	}
-	if (theme->first_attribute("texture")) texture = theme->first_attribute("texture")->value();
+	if (theme->first_attribute("texture")) texture = Utf8ToWstring(theme->first_attribute("texture")->value());
 	if (theme->first_attribute("defaultColor")) GetValues(defaultColor, theme->first_attribute("defaultColor")->value(), 3);
 	if (theme->first_attribute("textfieldColor")) GetValues(defaultColor, theme->first_attribute("textfieldColor")->value(), 3);
 	//text block

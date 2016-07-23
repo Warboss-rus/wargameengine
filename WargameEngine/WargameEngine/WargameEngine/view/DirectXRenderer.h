@@ -43,9 +43,9 @@ public:
 	virtual void ResetViewMatrix() override;
 	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) override;
 
-	virtual void SetTexture(std::string const& texture, bool forceLoadNow = false, int flags = 0) override;
-	virtual void SetTexture(std::string const& texture, TextureSlot slot, int flags = 0) override;
-	virtual void SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
+	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
+	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
 
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;

@@ -15,19 +15,19 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 	handler.RegisterMethod(CLASS_OBJECT, NEW_OBJECT, [&](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (model, x, y, rotation)");
-		std::string model =  args.GetStr(1);
+		std::wstring model =  args.GetWStr(1);
 		double x = args.GetDbl(2);
 		double y = args.GetDbl(3);
 		double rotation = args.GetDbl(4);
 		std::shared_ptr<IObject> object = controller.CreateObject(model, x, y, rotation);
-		return FunctionArgument(object.get(), "Object");
+		return FunctionArgument(object.get(), L"Object");
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_SELECTED_OBJECT, [&](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no argument expected");
 		IObject * object = model.GetSelectedObject().get();
-		return FunctionArgument(object, "Object");
+		return FunctionArgument(object, L"Object");
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_COUNT, [&](void* /*instance*/, IArguments const& args) {
@@ -41,7 +41,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			throw std::runtime_error("1 argument expected(index)");
 		size_t index = args.GetLong(1);
 		if (index > model.GetObjectCount()) return FunctionArgument();
-		return FunctionArgument(model.Get3DObject(index - 1).get(), "Object");
+		return FunctionArgument(model.Get3DObject(index - 1).get(), L"Object");
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, DELETE_OBJECT, [&](void* instance, IArguments const& args) {
@@ -155,7 +155,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		std::string key = args.GetStr(1);
+		std::wstring key = args.GetWStr(1);
 		return object->GetProperty(key);
 	});
 
@@ -166,8 +166,8 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		std::string key = args.GetStr(1);
-		std::string value = args.GetStr(2);
+		std::wstring key = args.GetWStr(1);
+		std::wstring value = args.GetWStr(2);
 		std::shared_ptr<IObject> obj = model.Get3DObject(object);
 		controller.SetObjectProperty(obj, key, value);
 		return nullptr;
@@ -233,7 +233,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		{
 			if (args.GetCount() != 3)
 				throw std::runtime_error("3 arguments expected(moveLimiterType, functionName)");
-			std::string functionName = args.GetStr(1);
+			std::wstring functionName = args.GetWStr(1);
 			auto function = [&, functionName](CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) {
 				auto vector3DConvert = [](CVector3d const& vec) {
 					return std::vector<FunctionArgument>{vec.x, vec.y, vec.z};
@@ -301,8 +301,8 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (object && CGameModel::IsGroup(object))
 		{
 			CObjectGroup * group = (CObjectGroup *)object;
-			if (index > group->GetCount()) FunctionArgument(NULL, "Object");
-			FunctionArgument(group->GetChild(index - 1).get(), "Object");
+			if (index > group->GetCount()) FunctionArgument(NULL, L"Object");
+			FunctionArgument(group->GetChild(index - 1).get(), L"Object");
 		}
 		return nullptr;
 	});
@@ -351,7 +351,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		object->AddSecondaryModel(args.GetStr(1));
+		object->AddSecondaryModel(args.GetWStr(1));
 		return nullptr;
 	});
 
@@ -362,7 +362,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		object->RemoveSecondaryModel(args.GetStr(1));
+		object->RemoveSecondaryModel(args.GetWStr(1));
 		return nullptr;
 	});
 
@@ -390,7 +390,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		std::string suffix = args.GetStr(1);
+		std::wstring suffix = args.GetWStr(1);
 		unsigned char r = static_cast<unsigned char>(args.GetInt(2));
 		unsigned char g = static_cast<unsigned char>(args.GetInt(3));
 		unsigned char b = static_cast<unsigned char>(args.GetInt(4));
@@ -405,8 +405,8 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		std::string oldt = args.GetStr(1);
-		std::string newt = args.GetStr(2);
+		std::wstring oldt = args.GetWStr(1);
+		std::wstring newt = args.GetWStr(2);
 		object->ReplaceTexture(oldt, newt);
 		return nullptr;
 	});

@@ -13,6 +13,7 @@ public:
 	virtual float ReadFloat() = 0;
 	virtual double ReadDouble() = 0;
 	virtual std::string ReadString() = 0;
+	virtual std::wstring ReadWString() = 0;
 	virtual void* ReadPointer() = 0;
 };
 
@@ -28,5 +29,6 @@ public:
 	virtual void WriteFloat(float value) = 0;
 	virtual void WriteDouble(double value) = 0;
 	virtual void WriteString(std::string const& value) = 0;
+	virtual void WriteWString(std::wstring const& value) = 0;
 	virtual void WritePointer(void* value) = 0;
 };

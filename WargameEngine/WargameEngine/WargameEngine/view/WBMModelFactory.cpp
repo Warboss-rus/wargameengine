@@ -5,8 +5,9 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
+#include "..\Utils.h"
 
-std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::string const& /*filePath*/)
+std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::wstring const& /*filePath*/)
 {
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
@@ -73,8 +74,10 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 		memcpy(&materials[key].shininess, &((char*)data)[position + 4 + sizeof(float) * 9], sizeof(float));
 		position += sizeof(float) * 10;
 		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
-		materials[key].texture.resize(size);
-		memcpy(&materials[key].texture[0], &((char*)data)[position + 4], size);
+		std::string texture;
+		texture.resize(size);
+		memcpy(&texture[0], &((char*)data)[position + 4], size);
+		materials[key].texture = Utf8ToWstring(texture);
 		position += size + 4;
 	}
 	materialManager =  CMaterialManager(materials);
@@ -84,10 +87,10 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 	return result;
 }
 
-bool CWBMModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::string const& filePath) const
+bool CWBMModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
-	std::string extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
-	return extension == "wbm";
+	return extension == L"wbm";
 }

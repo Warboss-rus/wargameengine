@@ -46,6 +46,6 @@ class IImageReader
 public:
 	virtual ~IImageReader() {}
 
-	virtual bool ImageIsSupported(unsigned char * data, size_t size, std::string const& filePath) const = 0;
-	virtual CImage ReadImage(unsigned char * data, size_t size, std::string const& filePath, bool flipBmp = false, bool force32bit = false) = 0;
+	virtual bool ImageIsSupported(unsigned char * data, size_t size, std::wstring const& filePath) const = 0;
+	virtual CImage ReadImage(unsigned char * data, size_t size, std::wstring const& filePath, bool flipBmp = false, bool force32bit = false) = 0;
 };

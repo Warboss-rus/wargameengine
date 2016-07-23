@@ -16,7 +16,7 @@ struct sMaterial
 	float diffuse[3];
 	float specular[3];
 	float shininess;
-	std::string texture;
-	std::string specularMap;
-	std::string bumpMap;
+	std::wstring texture;
+	std::wstring specularMap;
+	std::wstring bumpMap;
 };

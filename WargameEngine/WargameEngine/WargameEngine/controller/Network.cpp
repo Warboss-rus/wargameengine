@@ -86,12 +86,12 @@ void CNetwork::Update()
 		unsigned char type = stream.ReadByte();
 		if (type == 0) //string
 		{
-			auto message = stream.ReadString();
+			auto message = stream.ReadWString();
 			if (m_stringRecievedCallback)
 			{
 				m_stringRecievedCallback(message);
 			}
-			LogWriter::WriteLine("String received:" + message);
+			LogWriter::WriteLine(L"String received:" + message);
 		}
 		else if (type == 1) //state
 		{
@@ -177,7 +177,7 @@ void CNetwork::SendState()
 	m_socket->SendData(stream.GetData(), stream.GetSize());
 }
 
-void CNetwork::SendMessage(std::string const& message)
+void CNetwork::SendMessage(std::wstring const& message)
 {
 	if (!m_socket)
 	{
@@ -186,7 +186,7 @@ void CNetwork::SendMessage(std::string const& message)
 	}
 	CWriteMemoryStream data;
 	data.WriteByte(0);//0 for text message
-	data.WriteString(message);
+	data.WriteWString(message);
 	m_socket->SendData(data.GetData(), data.GetSize());
 }
 

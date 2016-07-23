@@ -1,21 +1,12 @@
 #include "BuiltInImageReaders.h"
+#pragma warning (push)
+#pragma warning (disable: 4244)
 #define STB_IMAGE_IMPLEMENTATION
 #include "../stb_image.h"
+#pragma warning (pop)
 #include <algorithm>
 #include <string>
-#ifdef TO_STRING_HACK
-#include <sstream>
-namespace std
-{
-	template<class T>
-	std::string to_string(T _Val)
-	{
-		std::stringstream stream;
-		stream << _Val;
-		return stream.str();
-	}
-}
-#endif
+#include "../Utils.h"
 
 unsigned char* Convert24To32Bit(unsigned char * data, unsigned int width, unsigned int height, std::vector<unsigned char> & result)
 {
@@ -290,12 +281,12 @@ std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int widt
 	return uncompressedData;
 }
 
-bool CBmpImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::string const& /*filePath*/) const
+bool CBmpImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/) const
 {
 	return strncmp((char*)data, "BM", 2) == 0;
 }
 
-CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::string const& /*filePath*/, bool flipBmp, bool force32bit)
+CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
 {
 	unsigned int headerSize = *(int*)&(data[0x0A]);     // Position in the file where the actual data begins
 	unsigned int width = *(int*)&(data[0x12]);
@@ -320,14 +311,14 @@ CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::st
 	return CImage(data, width, height, bpp, flags);
 }
 
-bool CTgaImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::string const& filePath) const
+bool CTgaImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& filePath) const
 {
-	std::string extension = filePath.substr(filePath.find_last_of('.') + 1);
+	std::wstring extension = filePath.substr(filePath.find_last_of('.') + 1);
 	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
-	return extension == "tga" && (data[2] == 2 || data[2] == 10);//non-rgb texture
+	return extension == L"tga" && (data[2] == 2 || data[2] == 10);//non-rgb texture
 }
 
-CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::string const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
+CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
 {
 	unsigned int width = data[13] * 256 + data[12];
 	unsigned int height = data[15] * 256 + data[14];
@@ -356,12 +347,12 @@ CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::st
 	return result;
 }
 
-bool CDdsImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::string const& /*filePath*/) const
+bool CDdsImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/) const
 {
 	return strncmp((char*)data, "DDS ", 4) == 0;
 }
 
-CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::string const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
+CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
 {
 	struct DDS_PIXELFORMAT
 	{
@@ -483,12 +474,12 @@ CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::st
 	return result;
 }
 
-bool CStbImageReader::ImageIsSupported(unsigned char * /*data*/, size_t /*size*/, std::string const& /*filePath*/) const
+bool CStbImageReader::ImageIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& /*filePath*/) const
 {
 	return true;
 }
 
-CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, std::string const& /*filePath*/, bool flipBmp /*= false*/, bool /*force32bit*/)
+CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, std::wstring const& /*filePath*/, bool flipBmp, bool /*force32bit*/)
 {
 	int width, height, bpp;
 	unsigned char * newData = stbi_load_from_memory(data, static_cast<int>(size), &width, &height, &bpp, 4);

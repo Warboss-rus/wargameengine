@@ -14,6 +14,7 @@ public:
 	virtual float ReadFloat() override;
 	virtual double ReadDouble() override;
 	virtual std::string ReadString() override;
+	virtual std::wstring ReadWString() override;
 	virtual void* ReadPointer() override;
 private:
 	const char* m_data;
@@ -30,6 +31,7 @@ public:
 	virtual void WriteFloat(float value) override;
 	virtual void WriteDouble(double value) override;
 	virtual void WriteString(std::string const& value) override;
+	virtual void WriteWString(std::wstring const& value) override;
 	virtual void WritePointer(void* value) override;
 
 	const char * GetData() const;

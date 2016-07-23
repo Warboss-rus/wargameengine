@@ -60,7 +60,7 @@ private:
 };
 
 
-void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow, int flags)
+void COpenGLRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
 {
 	if (forceLoadNow)
 	{
@@ -69,12 +69,12 @@ void COpenGLRenderer::SetTexture(std::string const& texture, bool forceLoadNow, 
 	m_textureManager->SetTexture(texture, nullptr, flags);
 }
 
-void COpenGLRenderer::SetTexture(std::string const& texture, TextureSlot slot, int flags /*= 0*/)
+void COpenGLRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, slot, flags);
 }
 
-void COpenGLRenderer::SetTexture(std::string const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
+void COpenGLRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, teamcolor, flags);
 }
@@ -241,7 +241,7 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	SetTexture("");
+	SetTexture(L"");
 	//set up buffer
 	GLuint framebuffer = 0;
 	glGenFramebuffers(1, &framebuffer);

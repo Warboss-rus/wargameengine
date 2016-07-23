@@ -5,6 +5,7 @@
 #include <dlfcn.h>
 #endif
 #include "LogWriter.h"
+#include "Utils.h"
 
 std::string GetErrorString()
 {
@@ -15,16 +16,16 @@ std::string GetErrorString()
 #endif
 }
 
-CPlugin::CPlugin(std::string const& str)
+CPlugin::CPlugin(std::wstring const& str)
 {
 #ifdef WIN32
-	m_handle = LoadLibraryA(str.c_str());
+	m_handle = LoadLibraryW(str.c_str());
 #else
-	m_handle = dlopen(str.c_str(), RTLD_NOW);
+	m_handle = dlopen(WStringToUtf8(str).c_str(), RTLD_NOW);
 #endif
 	if (!m_handle)
 	{
-		LogWriter::WriteLine("Error loading plugin '" + str + "'. " + GetErrorString());
+		LogWriter::WriteLine("Error loading plugin '" + WStringToUtf8(str) + "'. " + GetErrorString());
 	}
 }
 

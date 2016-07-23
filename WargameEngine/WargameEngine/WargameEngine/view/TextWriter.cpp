@@ -52,7 +52,7 @@ sGlyph CTextWriter::CreateSymbol(sSymbol const& s)
 	symbol.width = face->glyph->bitmap.width;
 	symbol.rows = face->glyph->bitmap.rows;
 	symbol.advancex = face->glyph->advance.x >> 6;
-	return std::move(symbol);
+	return symbol;
 }
 
 const sGlyph& CTextWriter::GetSymbol(FT_Face font, unsigned int size, char symbol)

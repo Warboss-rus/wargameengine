@@ -47,7 +47,7 @@ struct sModelCallListKey
 	std::set<std::string> hiddenMeshes;
 	bool vertexOnly;
 	std::vector<sTeamColor> teamcolor;
-	std::map<std::string, std::string> replaceTextures;
+	std::map<std::wstring, std::wstring> replaceTextures;
 };
 
 bool operator< (sModelCallListKey const& one, sModelCallListKey const& two);
@@ -65,9 +65,9 @@ public:
 	void PreloadTextures(IRenderer & renderer) const;
 	std::vector<std::string> GetAnimations() const;
 private:
-	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false, IShaderManager * shaderManager = nullptr, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
+	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false, IShaderManager * shaderManager = nullptr, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
 	void CalculateGPUWeights();
-	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, bool gpuSkinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::string, std::string> * replaceTextures = nullptr);
+	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, bool gpuSkinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
