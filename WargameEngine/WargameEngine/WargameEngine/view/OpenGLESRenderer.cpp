@@ -167,7 +167,14 @@ void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> con
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
+	std::vector<GLshort> shortVertex;
+	shortVertex.reserve(vertices.size() * 2);
+	for (auto& v : vertices)
+	{
+		shortVertex.push_back(v.x);
+		shortVertex.push_back(v.y);
+	}
+	Bind(shortVertex.data(), NULL, texCoords.data(), GL_SHORT, GL_SHORT, GL_FLOAT, 2);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 	Unbind();
 }
@@ -259,7 +266,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	SetTexture(L"");
+	UnbindTexture();
 	//set up buffer
 	GLuint framebuffer = 0;
 	glGenFramebuffers(1, &framebuffer);
@@ -608,15 +615,8 @@ void COpenGLESRenderer::UploadTexture(ICachedTexture & texture, unsigned char * 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGRA_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
-// 	if (flags & TEXTURE_BUILD_MIPMAPS)
-// 	{
-// 		gluBuild2DMipmaps(GL_TEXTURE_2D, bpp / 8, width, height, format, GL_UNSIGNED_BYTE, data);
-// 	}
-// 	else
-// 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, bpp / 8, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-//	}
+	GLenum format = (flags & TEXTURE_BGRA) ? GL_BGRA_EXT : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, bpp / 8, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
 		auto& mipmap = mipmaps[i];

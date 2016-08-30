@@ -20,6 +20,7 @@ FT_Face CTextWriter::GetFace(std::string const& name)
 	if(m_faces.find(name) == m_faces.end())
 	{
 		if(FT_New_Face(m_ft, name.c_str(), 0, &m_faces[name]) 
+			&& FT_New_Face(m_ft, (m_customFontLocation + name).c_str(), 0, &m_faces[name])
 #ifdef _WIN32
 			 && FT_New_Face(m_ft, (std::string(getenv("windir")) + "\\fonts\\" + name).c_str(), 0, &m_faces[name]))
 #elif __unix
@@ -237,4 +238,9 @@ int CTextWriter::GetStringWidth(std::string const& font, unsigned int size, std:
 		width += GetSymbol(face, size, text[i]).advancex;
 	}
 	return width;
+}
+
+void CTextWriter::AddFontLocation(std::string const& fontLocation)
+{
+	m_customFontLocation = fontLocation;
 }

@@ -306,6 +306,19 @@
       <Filter>Source Files\rapidxml</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\NetSocket.h" />
+    <ClInclude Include="..\..\WargameEngine\ScriptHandlerLua.h" />
+    <ClInclude Include="..\..\WargameEngine\view\OpenGLESRenderer.h" />
+    <ClInclude Include="..\..\WargameEngine\view\TextWriter.h" />
+    <ClInclude Include="..\..\WargameEngine\view\gluLite.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.h" />
+    <ClInclude Include="..\..\WargameEngine\SoundPlayerOpenSLES.h" />
+    <ClInclude Include="..\..\WargameEngine\Utils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\GameWindowAndroid.h" />
+    <ClInclude Include="..\..\WargameEngine\view\InputAndroid.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />
@@ -500,6 +513,19 @@
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\NetSocket.cpp" />
+    <ClCompile Include="..\..\WargameEngine\ScriptHandlerLua.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\OpenGLESRenderer.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\TextWriter.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\gluLite.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.cpp" />
+    <ClCompile Include="..\..\WargameEngine\SoundPlayerOpenSLES.cpp" />
+    <ClCompile Include="..\..\WargameEngine\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\GameWindowAndroid.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\InputAndroid.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

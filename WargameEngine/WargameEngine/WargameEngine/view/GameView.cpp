@@ -74,7 +74,7 @@ void CGameView::Init()
 	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(m_module.script));
 	m_soundPlayer->Init();
 
-	m_window->DoOnDrawScene([this] {
+	m_window->DoOnDrawScene([this](IGameWindow::RenderEye /*eye*/) {
 		DrawShadowMap();
 		m_viewHelper->ClearBuffers(true, true);
 		Update();

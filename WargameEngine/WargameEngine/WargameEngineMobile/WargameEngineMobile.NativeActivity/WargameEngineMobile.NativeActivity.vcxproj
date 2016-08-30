@@ -58,11 +58,13 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
+    <AndroidAPILevel>android-21</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
+    <AndroidAPILevel>android-21</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -116,32 +118,56 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <IncludePath>..\..\..\freetype-2.6\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -155,8 +181,7 @@
       <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
-      <AdditionalOptions>-lm %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -171,48 +196,63 @@
       <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
-      <AdditionalOptions>-lm %(AdditionalOptions)</AdditionalOptions>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -265,7 +305,9 @@
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp" />
     <ClInclude Include="..\..\WargameEngine\Ruler.h" />
+    <ClInclude Include="..\..\WargameEngine\ScriptHandlerLua.h" />
     <ClInclude Include="..\..\WargameEngine\Signal.h" />
+    <ClInclude Include="..\..\WargameEngine\SoundPlayerOpenSLES.h" />
     <ClInclude Include="..\..\WargameEngine\stb_image.h" />
     <ClInclude Include="..\..\WargameEngine\Task.h" />
     <ClInclude Include="..\..\WargameEngine\ThreadPool.h" />
@@ -283,17 +325,21 @@
     <ClInclude Include="..\..\WargameEngine\UI\UIText.h" />
     <ClInclude Include="..\..\WargameEngine\UI\UITheme.h" />
     <ClInclude Include="..\..\WargameEngine\UI\UIWindow.h" />
+    <ClInclude Include="..\..\WargameEngine\Utils.h" />
     <ClInclude Include="..\..\WargameEngine\view\3dModel.h" />
     <ClInclude Include="..\..\WargameEngine\view\BuiltInImageReaders.h" />
     <ClInclude Include="..\..\WargameEngine\view\CameraFirstPerson.h" />
     <ClInclude Include="..\..\WargameEngine\view\CameraStrategy.h" />
     <ClInclude Include="..\..\WargameEngine\view\ColladaModelFactory.h" />
     <ClInclude Include="..\..\WargameEngine\view\GameView.h" />
+    <ClInclude Include="..\..\WargameEngine\view\GameWindowAndroid.h" />
+    <ClInclude Include="..\..\WargameEngine\view\gluLite.h" />
     <ClInclude Include="..\..\WargameEngine\view\ICamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\IGameWindow.h" />
     <ClInclude Include="..\..\WargameEngine\view\IImageReader.h" />
     <ClInclude Include="..\..\WargameEngine\view\IInput.h" />
     <ClInclude Include="..\..\WargameEngine\view\IModelReader.h" />
+    <ClInclude Include="..\..\WargameEngine\view\InputAndroid.h" />
     <ClInclude Include="..\..\WargameEngine\view\IParticleEffect.h" />
     <ClInclude Include="..\..\WargameEngine\view\IRenderer.h" />
     <ClInclude Include="..\..\WargameEngine\view\IShaderManager.h" />
@@ -307,13 +353,16 @@
     <ClInclude Include="..\..\WargameEngine\view\Matrix4.h" />
     <ClInclude Include="..\..\WargameEngine\view\ModelManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\OBJModelFactory.h" />
+    <ClInclude Include="..\..\WargameEngine\view\OpenGLESRenderer.h" />
     <ClInclude Include="..\..\WargameEngine\view\Particle.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleEffect.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleModel.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleSystem.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleTracer.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.h" />
     <ClInclude Include="..\..\WargameEngine\view\SkyBox.h" />
     <ClInclude Include="..\..\WargameEngine\view\TextureManager.h" />
+    <ClInclude Include="..\..\WargameEngine\view\TextWriter.h" />
     <ClInclude Include="..\..\WargameEngine\view\TranslationManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\Vector2.h" />
     <ClInclude Include="..\..\WargameEngine\view\Vector3.h" />
@@ -353,6 +402,8 @@
     <ClCompile Include="..\..\WargameEngine\Plugin.cpp" />
     <ClCompile Include="..\..\WargameEngine\PluginManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\Ruler.cpp" />
+    <ClCompile Include="..\..\WargameEngine\ScriptHandlerLua.cpp" />
+    <ClCompile Include="..\..\WargameEngine\SoundPlayerOpenSLES.cpp" />
     <ClCompile Include="..\..\WargameEngine\ThreadPool.cpp" />
     <ClCompile Include="..\..\WargameEngine\UI\UIButton.cpp" />
     <ClCompile Include="..\..\WargameEngine\UI\UICheckBox.cpp" />
@@ -367,26 +418,41 @@
     <ClCompile Include="..\..\WargameEngine\UI\UIText.cpp" />
     <ClCompile Include="..\..\WargameEngine\UI\UITheme.cpp" />
     <ClCompile Include="..\..\WargameEngine\UI\UIWindow.cpp" />
+    <ClCompile Include="..\..\WargameEngine\Utils.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\3dModel.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\BuiltInImageReaders.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\CameraFirstPerson.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\CameraStrategy.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ColladaModelFactory.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\GameView.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\GameWindowAndroid.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\gluLite.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\InputAndroid.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\MaterialManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ModelManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\OBJModelFactory.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\OpenGLESRenderer.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\Particle.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleEffect.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleModel.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleSystem.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleTracer.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\SkyBox.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\TextureManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\TextWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\TranslationManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp" />
     <ClCompile Include="android_native_app_glue.c" />
     <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\freetypeMobile\freetypeMobile.vcxproj">
+      <Project>{2202ff27-8134-4828-838b-35ac8d65c03a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\LuaMobile\LuaMobile.vcxproj">
+      <Project>{0a0ab951-a98a-469c-a800-b132e0610a89}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

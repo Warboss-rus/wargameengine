@@ -6,6 +6,7 @@
 #include "InputGLFW.h"
 #include "OpenGLRenderer.h"
 #include "../Utils.h"
+#include "../LogWriter.h"
 
 static CGameWindowGLFW* g_instance = nullptr;
 bool CGameWindowGLFW::m_visible = true;
@@ -41,15 +42,24 @@ void CGameWindowGLFW::LaunchMainLoop()
 		if (m_visible)
 		{
 			g_instance->m_input->UpdateControllers();
+			if (g_instance->m_onUpdate)
+			{
+				g_instance->m_onUpdate();
+			}
 			if (g_instance->m_onDraw)
 			{
-				g_instance->m_onDraw();
+				g_instance->m_onDraw(RenderEye::NONE);
 			}
 			glfwSwapBuffers(g_instance->m_window);
 		}
 		glfwPollEvents();
 	}
 	glfwTerminate();
+}
+
+void CGameWindowGLFW::DoOnUpdate(std::function<void()> const& handler)
+{
+	m_onUpdate = handler;
 }
 
 void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
@@ -96,7 +106,7 @@ CGameWindowGLFW::~CGameWindowGLFW()
 	glfwTerminate();
 }
 
-void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
+void CGameWindowGLFW::DoOnDrawScene(std::function<void(RenderEye)> const& handler)
 {
 	m_onDraw = handler;
 }
@@ -133,6 +143,11 @@ void CGameWindowGLFW::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 {
 	m_renderer->EnableMultisampling(enable);
 	glfwWindowHint(GLFW_SAMPLES, level);
+}
+
+void CGameWindowGLFW::EnableVRMode(bool)
+{
+	LogWriter::WriteLine("GameWindowGLFW does not support VR mode, use GameWindowVR instead");
 }
 
 IInput& CGameWindowGLFW::ResetInput()

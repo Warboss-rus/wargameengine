@@ -85,47 +85,58 @@ void CGameWindowVR::LaunchMainLoop()
 		if (m_visible || compositor)
 		{
 			m_renderer->OnResize(m_viewPortSize[0], m_viewPortSize[1]);
-			if (compositor)
+			if (m_vrMode && compositor)
 			{
 				compositor->WaitGetPoses(m_rTrackedDevicePose, k_unMaxTrackedDeviceCount, m_rTrackedGamePose, k_unMaxTrackedDeviceCount);
 			}
 			g_instance->m_input->UpdateControllers();
-			if (g_instance->m_onDraw)
+			if (g_instance->m_onUpdate)
 			{
-				for (size_t i = 0; i < 2; ++i)
+				g_instance->m_onUpdate();
+			}
+			if (m_vrMode)
+			{
+				if (g_instance->m_onDraw)
 				{
-					glBindFramebuffer(GL_FRAMEBUFFER, buffers[i]);
-					//modify camera
-					g_instance->m_onDraw();
+					for (size_t i = 0; i < 2; ++i)
+					{
+						glBindFramebuffer(GL_FRAMEBUFFER, buffers[i]);
+						//modify camera
+						g_instance->m_onDraw(static_cast<RenderEye>(i + 1));
+					}
+					glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 				}
-				glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
-			}
-			int width, height;
-			glfwGetFramebufferSize(m_window, &width, &height);
-			glClear(GL_COLOR_BUFFER_BIT);
-			m_renderer->OnResize(m_viewPortSize[0], m_viewPortSize[1]);
-			m_renderer->SetUpViewport2D();
-			width /= 2;
-			glEnable(GL_TEXTURE_2D);
-			for (int i = 0; i < 2; ++i)
-			{
-				glBindTexture(GL_TEXTURE_2D, textures[i]);
-				m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i{width * i, 0}, {width * i, height}, {width * (i+1), 0}, {width*(i+1), height} }, { CVector2f{ 0.0f, 1.0f }, {0.0f, 0.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} });
-			}
-			m_renderer->RestoreViewport();
-		
-			if (compositor)
-			{
+				int width, height;
+				glfwGetFramebufferSize(m_window, &width, &height);
+				glClear(GL_COLOR_BUFFER_BIT);
+				m_renderer->OnResize(m_viewPortSize[0], m_viewPortSize[1]);
+				m_renderer->SetUpViewport2D();
+				width /= 2;
+				glEnable(GL_TEXTURE_2D);
 				for (int i = 0; i < 2; ++i)
 				{
-					const vr::Texture_t tex = { reinterpret_cast<void*>(textures[i]), API_OpenGL, ColorSpace_Gamma };
-					EVRCompositorError err = compositor->Submit(vr::EVREye(i), &tex);
-					if (err)
-					{
-						return;
-					}
+					glBindTexture(GL_TEXTURE_2D, textures[i]);
+					m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i{width * i, 0}, {width * i, height}, {width * (i + 1), 0}, {width*(i + 1), height} }, { CVector2f{ 0.0f, 1.0f }, {0.0f, 0.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} });
 				}
-				compositor->PostPresentHandoff();
+				m_renderer->RestoreViewport();
+
+				if (compositor)
+				{
+					for (int i = 0; i < 2; ++i)
+					{
+						const vr::Texture_t tex = { reinterpret_cast<void*>(textures[i]), API_OpenGL, ColorSpace_Gamma };
+						EVRCompositorError err = compositor->Submit(vr::EVREye(i), &tex);
+						if (err)
+						{
+							return;
+						}
+					}
+					compositor->PostPresentHandoff();
+				}
+			}
+			else
+			{
+				g_instance->m_onDraw(RenderEye::NONE);
 			}
 			glfwSwapBuffers(g_instance->m_window);
 		}
@@ -189,9 +200,14 @@ CGameWindowVR::~CGameWindowVR()
 	VR_Shutdown();
 }
 
-void CGameWindowVR::DoOnDrawScene(std::function<void()> const& handler)
+void CGameWindowVR::DoOnDrawScene(std::function<void(RenderEye)> const& handler)
 {
 	m_onDraw = handler;
+}
+
+void CGameWindowVR::DoOnUpdate(std::function<void()> const& handler)
+{
+	m_onUpdate = handler;
 }
 
 void CGameWindowVR::DoOnResize(std::function<void(int, int)> const& handler)
@@ -226,6 +242,11 @@ void CGameWindowVR::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 {
 	m_renderer->EnableMultisampling(enable);
 	glfwWindowHint(GLFW_SAMPLES, level);
+}
+
+void CGameWindowVR::EnableVRMode(bool enable)
+{
+	m_vrMode = enable;
 }
 
 IInput& CGameWindowVR::ResetInput()

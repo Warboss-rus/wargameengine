@@ -4,6 +4,7 @@
 #include "OpenGLRenderer.h"
 #include <stdexcept>
 #include "../Utils.h"
+#include "../LogWriter.h"
 
 static CGameWindowGLUT* g_instance = nullptr;
 bool CGameWindowGLUT::m_visible = true;
@@ -21,9 +22,13 @@ void CGameWindowGLUT::OnChangeState(int state)
 
 void CGameWindowGLUT::OnDrawScene()
 {
+	if (g_instance->m_onUpdate)
+	{
+		g_instance->m_onUpdate();
+	}
 	if (g_instance->m_onDraw)
 	{
-		g_instance->m_onDraw();
+		g_instance->m_onDraw(RenderEye::NONE);
 	}
 	glutSwapBuffers();
 }
@@ -99,7 +104,13 @@ void CGameWindowGLUT::LaunchMainLoop()
 	glutMainLoop();
 }
 
-void CGameWindowGLUT::DoOnDrawScene(std::function<void()> const& handler)
+void CGameWindowGLUT::DoOnUpdate(std::function<void()> const& handler)
+{
+	m_onUpdate = handler;
+}
+
+
+void CGameWindowGLUT::DoOnDrawScene(std::function<void(RenderEye)> const& handler)
 {
 	m_onDraw = handler;
 }
@@ -132,5 +143,10 @@ void CGameWindowGLUT::ToggleFullscreen()
 void CGameWindowGLUT::EnableMultisampling(bool enable, int /*level*/)
 {
 	m_renderer->EnableMultisampling(enable);
+}
+
+void CGameWindowGLUT::EnableVRMode(bool /*show*/)
+{
+	LogWriter::WriteLine("GameWindowGLUT does not support VR mode, use GameWindowVR instead");
 }
 

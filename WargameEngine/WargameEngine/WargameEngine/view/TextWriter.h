@@ -37,6 +37,8 @@ public:
 	virtual int GetStringWidth(std::string const& font, unsigned int size, std::string const& text) override;
 	virtual int GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text) override;
 	virtual int GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text) override;
+
+	void AddFontLocation(std::string const& fontLocation);
 private:
 	FT_Face GetFace(std::string const& name);
 	const sGlyph& GetSymbol(FT_Face font, unsigned int size, char symbol);
@@ -47,4 +49,5 @@ private:
 	IRenderer & m_renderer;
 	std::map<std::string, FT_Face> m_faces;
 	std::map<sSymbol, sGlyph> m_symbols;
+	std::string m_customFontLocation;
 };

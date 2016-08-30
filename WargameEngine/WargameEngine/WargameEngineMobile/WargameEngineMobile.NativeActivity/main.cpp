@@ -33,9 +33,7 @@
 * Our saved state data.
 */
 struct saved_state {
-	float angle;
-	int32_t x;
-	int32_t y;
+	
 };
 
 /**
@@ -44,13 +42,7 @@ struct saved_state {
 struct engine {
 	struct android_app* app;
 
-	ASensorManager* sensorManager;
-	const ASensor* accelerometerSensor;
-	ASensorEventQueue* sensorEventQueue;
-
 	struct saved_state state;
-	sGameViewContext viewContext;
-	std::unique_ptr<CGameView> view;
 	CGameWindowAndroid * window;
 };
 
@@ -59,11 +51,7 @@ struct engine {
 */
 static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) {
 	struct engine* engine = (struct engine*)app->userData;
-	if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
-		engine->state.x = AMotionEvent_getX(event, 0);
-		engine->state.y = AMotionEvent_getY(event, 0);
-		return 1;
-	}
+	engine->window->HandleInput(event);
 	return 0;
 }
 
@@ -83,7 +71,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 		// The window is being shown, get it ready.
 		if (engine->app->window != NULL) {
 			engine->window->Init(engine->app->window);
-			engine->window->DrawFrame();;
+			engine->window->DrawFrame();
 		}
 		break;
 	case APP_CMD_TERM_WINDOW:
@@ -91,25 +79,11 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 		engine->window->Shutdown();
 		break;
 	case APP_CMD_GAINED_FOCUS:
-		// When our app gains focus, we start monitoring the accelerometer.
-		if (engine->accelerometerSensor != NULL) {
-			ASensorEventQueue_enableSensor(engine->sensorEventQueue,
-				engine->accelerometerSensor);
-			// We'd like to get 60 events per second (in us).
-			ASensorEventQueue_setEventRate(engine->sensorEventQueue,
-				engine->accelerometerSensor, (1000L / 60) * 1000);
-		}
+		engine->window->SetActive(true);
 		break;
 	case APP_CMD_LOST_FOCUS:
-		// When our app loses focus, we stop monitoring the accelerometer.
-		// This is to avoid consuming battery while not being used.
-		if (engine->accelerometerSensor != NULL) {
-			ASensorEventQueue_disableSensor(engine->sensorEventQueue,
-				engine->accelerometerSensor);
-		}
 		// Also stop animating.
 		engine->window->SetActive(false);
-		engine->window->DrawFrame();
 		break;
 	}
 }
@@ -121,42 +95,39 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 */
 void android_main(struct android_app* state) {
 	struct engine engine;
+	memset(&engine, 0, sizeof(engine));
 	
-	if (engine.viewContext.module.name.empty())
+	sGameViewContext context;
+	if (context.module.name.empty())
 	{
-		engine.viewContext.module.script = L"main.lua";
-		engine.viewContext.module.textures = L"texture\\";
-		engine.viewContext.module.models = L"models\\";
+		context.module.script = L"main.lua";
+		context.module.textures = L"texture\\";
+		context.module.models = L"models\\";
 	}
-	engine.viewContext.window = std::make_unique<CGameWindowAndroid>(state);
-	engine.window = reinterpret_cast<CGameWindowAndroid*>(engine.viewContext.window.get());
-	engine.viewContext.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
-	engine.viewContext.textWriter = std::make_unique<CTextWriter>(engine.viewContext.window->GetRenderer());
-	engine.viewContext.scriptHandlerFactory = []() {
+	context.window = std::make_unique<CGameWindowAndroid>(state);
+	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
+	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");
+	context.scriptHandlerFactory = []() {
 		return std::make_unique<CScriptHandlerLua>();
 	};
-	engine.viewContext.socketFactory = []() {
+	context.socketFactory = []() {
 		return std::make_unique<CNetSocket>();
 	};
-	engine.viewContext.imageReaders.push_back(std::make_unique<CBmpImageReader>());
-	engine.viewContext.imageReaders.push_back(std::make_unique<CTgaImageReader>());
-	engine.viewContext.imageReaders.push_back(std::make_unique<CDdsImageReader>());
-	engine.viewContext.imageReaders.push_back(std::make_unique<CStbImageReader>());
-	engine.viewContext.modelReaders.push_back(std::make_unique<CObjModelFactory>());
-	engine.viewContext.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
-	engine.viewContext.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
+	context.imageReaders.push_back(std::make_unique<CBmpImageReader>());
+	context.imageReaders.push_back(std::make_unique<CTgaImageReader>());
+	context.imageReaders.push_back(std::make_unique<CDdsImageReader>());
+	context.imageReaders.push_back(std::make_unique<CStbImageReader>());
+	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
+	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
+	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
+	context.workingDir = L"/sdcard/WargameEngine/";
 
-	memset(&engine, 0, sizeof(engine));
 	state->userData = &engine;
 	state->onAppCmd = engine_handle_cmd;
 	state->onInputEvent = engine_handle_input;
+	engine.window = reinterpret_cast<CGameWindowAndroid*>(context.window.get());
 	engine.app = state;
-
-	engine.sensorManager = ASensorManager_getInstance();
-	engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
-		ASENSOR_TYPE_ACCELEROMETER);
-	engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
-		state->looper, LOOPER_ID_USER, NULL, NULL);
 
 	if (state->savedState != NULL) {
 		// We are starting with a previous saved state; restore from it.
@@ -164,6 +135,5 @@ void android_main(struct android_app* state) {
 	}
 
 	// loop waiting for stuff to do.
-
-	engine.view = std::make_unique<CGameView>(&engine.viewContext);
+	CGameView view(&context);
 }

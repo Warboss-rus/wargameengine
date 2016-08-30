@@ -9,12 +9,14 @@ public:
 	virtual ~CGameWindowDirectX();
 
 	virtual void LaunchMainLoop() override;
-	virtual void DoOnDrawScene(std::function<void() > const& handler) override;
+	virtual void DoOnUpdate(std::function<void() > const& handler) override;
+	virtual void DoOnDrawScene(std::function<void(RenderEye) > const& handler) override;
 	virtual void DoOnResize(std::function<void(int, int) > const& handler) override;
 	virtual void DoOnShutdown(std::function<void() > const& handler) override;
 	virtual void ResizeWindow(int width, int height) override;
 	virtual void SetTitle(std::wstring const& title) override;
 	virtual void ToggleFullscreen() override;
+	virtual void EnableVRMode(bool show) override;
 	virtual IInput& ResetInput() override;
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;
