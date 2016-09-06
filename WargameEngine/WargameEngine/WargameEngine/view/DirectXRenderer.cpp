@@ -537,6 +537,7 @@ void CDirectXRenderer::PopMatrix()
 
 void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 {
+	if (dx == 0 && dy == 0 && dz == 0) return;
 	auto matrix = m_viewMatrices.back();
 	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
 	m_viewMatrices.pop_back();
@@ -546,6 +547,7 @@ void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 
 void CDirectXRenderer::Translate(const double dx, const double dy, const double dz)
 {
+	if (abs(dx) < DBL_EPSILON && abs(dy) < DBL_EPSILON && abs(dz) < DBL_EPSILON) return;
 	auto matrix = m_viewMatrices.back();
 	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
 	m_viewMatrices.pop_back();
@@ -555,6 +557,7 @@ void CDirectXRenderer::Translate(const double dx, const double dy, const double 
 
 void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
+	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
 	auto matrix = m_viewMatrices.back();
 	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
 	m_viewMatrices.pop_back();
@@ -564,6 +567,7 @@ void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 
 void CDirectXRenderer::Rotate(const double angle, const double x, const double y, const double z)
 {
+	if (fabs(angle) < DBL_EPSILON) return;
 	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f);
 	auto matrix = m_viewMatrices.back();
 	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), matrix);
@@ -574,6 +578,7 @@ void CDirectXRenderer::Rotate(const double angle, const double x, const double y
 
 void CDirectXRenderer::Scale(const double scale)
 {
+	if (fabs(scale - 1.0) < DBL_EPSILON) return;
 	auto matrix = m_viewMatrices.back();
 	float fscale = static_cast<float>(scale);
 	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), matrix);
@@ -868,10 +873,9 @@ void CDirectXRenderer::EnableBlending(bool enable)
 	m_devcon->OMSetBlendState(m_blendStates[index], NULL, 0xffffffff);
 }
 
-void CDirectXRenderer::SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
+void CDirectXRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
 {
 	m_projectionMatrices.push_back(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane)));
-	LookAt(position, target, { 0.0, 0.0, 1.0 });
 	UpdateMatrices();
 }
 

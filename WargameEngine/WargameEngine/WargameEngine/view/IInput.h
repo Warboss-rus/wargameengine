@@ -19,7 +19,7 @@ public:
 	virtual void DoOnMouseWheelDown(std::function<bool()> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void DoOnKeyDown(std::function<bool(int key, int modifiers)> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void DoOnKeyUp(std::function<bool(int key, int modifiers)> const& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual void DoOnCharacter(std::function<bool(unsigned int character)> const& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual void DoOnCharacter(std::function<bool(wchar_t character)> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void DoOnMouseMove(std::function<bool(int, int)> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority = 0, std::string const& tag = "") = 0;

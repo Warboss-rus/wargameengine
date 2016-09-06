@@ -31,6 +31,7 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 	RegisterControllerFunctions(*m_scriptHandler, *this, view.GetAsyncFileProvider(), view.GetThreadPool());
 	RegisterUI(*m_scriptHandler, view.GetUI(), view.GetTranslationManager());
 	RegisterObject(*m_scriptHandler, *this, m_model, view.GetModelManager());
+	RegisterViewport(*m_scriptHandler, view);
 	m_scriptHandler->RunScript(scriptPath);
 }
 

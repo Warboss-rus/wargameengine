@@ -72,21 +72,15 @@ public:
 			m_input->UpdateControllers();
 
 			//Render next frame
-			m_onUpdate();
-			m_onDraw(RenderEye::NONE);
+			m_onDraw();
 
 			m_renderer->Present();
 
 			std::this_thread::yield();
 		}
 	}
-
-	void DoOnUpdate(std::function<void() > const& handler)
-	{
-		m_onUpdate = handler;
-	}
 	
-	void DoOnDrawScene(std::function<void(RenderEye) > const& handler)
+	void DoOnDrawScene(std::function<void() > const& handler)
 	{
 		m_onDraw = handler;
 	}
@@ -195,8 +189,7 @@ private:
 
 	std::unique_ptr<CInputDirectX> m_input;
 	std::unique_ptr<CDirectXRenderer> m_renderer;
-	std::function<void()> m_onUpdate;
-	std::function<void(RenderEye)> m_onDraw;
+	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;
 	std::function<void()> m_onShutdown;
 
@@ -219,12 +212,7 @@ void CGameWindowDirectX::LaunchMainLoop()
 	m_pImpl->LaunchMainLoop();
 }
 
-void CGameWindowDirectX::DoOnUpdate(std::function<void() > const& handler)
-{
-	m_pImpl->DoOnUpdate(handler);
-}
-
-void CGameWindowDirectX::DoOnDrawScene(std::function<void(RenderEye) > const& handler)
+void CGameWindowDirectX::DoOnDrawScene(std::function<void() > const& handler)
 {
 	m_pImpl->DoOnDrawScene(handler);
 }

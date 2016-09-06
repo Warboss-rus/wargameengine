@@ -22,13 +22,9 @@ void CGameWindowGLUT::OnChangeState(int state)
 
 void CGameWindowGLUT::OnDrawScene()
 {
-	if (g_instance->m_onUpdate)
-	{
-		g_instance->m_onUpdate();
-	}
 	if (g_instance->m_onDraw)
 	{
-		g_instance->m_onDraw(RenderEye::NONE);
+		g_instance->m_onDraw();
 	}
 	glutSwapBuffers();
 }
@@ -85,9 +81,9 @@ CGameWindowGLUT::CGameWindowGLUT()
 	glutSpecialFunc(&CInputGLUT::OnSpecialKeyPress);
 	glutSpecialUpFunc(&CInputGLUT::OnSpecialKeyRelease);
 	glutMouseFunc(&CInputGLUT::OnMouse);
-	glutMotionFunc(&CInputGLUT::OnMouseMove);
+	glutMotionFunc(&CInputGLUT::MouseMoveCallback);
 	glutPassiveMotionFunc(&CInputGLUT::OnPassiveMouseMove);
-	glutMotionFunc(&CInputGLUT::OnMouseMove);
+	glutMotionFunc(&CInputGLUT::MouseMoveCallback);
 	glutCloseFunc(&CGameWindowGLUT::OnShutdown);
 	glutWindowStatusFunc(OnChangeState);
 	glutJoystickFunc(&CInputGLUT::OnJoystick, 10);
@@ -104,13 +100,7 @@ void CGameWindowGLUT::LaunchMainLoop()
 	glutMainLoop();
 }
 
-void CGameWindowGLUT::DoOnUpdate(std::function<void()> const& handler)
-{
-	m_onUpdate = handler;
-}
-
-
-void CGameWindowGLUT::DoOnDrawScene(std::function<void(RenderEye)> const& handler)
+void CGameWindowGLUT::DoOnDrawScene(std::function<void()> const& handler)
 {
 	m_onDraw = handler;
 }

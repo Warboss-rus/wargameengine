@@ -137,7 +137,7 @@ bool CUIElement::LeftMouseButtonUp(int x, int y)
 	return false;
 }
 
-bool CUIElement::OnCharacterInput(unsigned int key)
+bool CUIElement::OnCharacterInput(wchar_t key)
 {
 	if(!m_visible) return false;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)

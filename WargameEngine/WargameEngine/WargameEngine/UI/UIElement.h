@@ -18,7 +18,7 @@ public:
 	virtual void ClearChildren() override;
 	virtual bool LeftMouseButtonDown(int x, int y) override;
 	virtual bool LeftMouseButtonUp(int x, int y) override;
-	virtual bool OnCharacterInput(unsigned int key) override;
+	virtual bool OnCharacterInput(wchar_t key) override;
 	virtual bool OnKeyPress(int key, int modifiers) override;
 	virtual void OnMouseMove(int x, int y) override;
 	virtual int GetX() const override;

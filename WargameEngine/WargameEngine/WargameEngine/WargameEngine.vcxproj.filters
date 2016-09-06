@@ -230,6 +230,21 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="view\Viewport.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\OffscreenViewport.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\InputBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\ScriptRegisterViewport.cpp">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="view\FixedCamera.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -537,6 +552,24 @@
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Viewport.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IViewport.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\OffscreenViewport.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\InputBase.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\ScriptViewportProtocol.h">
+      <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClInclude>
+    <ClInclude Include="view\FixedCamera.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

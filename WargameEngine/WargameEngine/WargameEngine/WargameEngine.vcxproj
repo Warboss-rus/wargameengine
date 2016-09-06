@@ -240,6 +240,7 @@
     <ClCompile Include="controller\ScriptRegisterFunctions.cpp" />
     <ClCompile Include="controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="controller\ScriptRegisterUI.cpp" />
+    <ClCompile Include="view\FixedCamera.cpp" />
     <ClCompile Include="MathLibLite.cpp" />
     <ClCompile Include="MemoryStream.cpp" />
     <ClCompile Include="model\Bounding.cpp" />
@@ -264,6 +265,9 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="Ruler.cpp" />
+    <ClCompile Include="controller\ScriptRegisterViewport.cpp" />
+    <ClCompile Include="view\InputBase.cpp" />
+    <ClCompile Include="view\OffscreenViewport.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
@@ -296,6 +300,7 @@
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
     <ClCompile Include="view\TranslationManager.cpp" />
+    <ClCompile Include="view\Viewport.cpp" />
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -310,6 +315,7 @@
     <ClInclude Include="controller\ScriptObjectProtocol.h" />
     <ClInclude Include="controller\ScriptRegisterFunctions.h" />
     <ClInclude Include="controller\ScriptUIProtocol.h" />
+    <ClInclude Include="view\FixedCamera.h" />
     <ClInclude Include="IMemoryStream.h" />
     <ClInclude Include="ITask.h" />
     <ClInclude Include="MathLibLite.h" />
@@ -339,9 +345,12 @@
     <ClInclude Include="rapidxml\rapidxml_iterators.hpp" />
     <ClInclude Include="rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="controller\ScriptViewportProtocol.h" />
     <ClInclude Include="Signal.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
+    <ClInclude Include="view\InputBase.h" />
+    <ClInclude Include="view\OffscreenViewport.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
@@ -363,6 +372,7 @@
     <ClInclude Include="view\ITextureHelper.h" />
     <ClInclude Include="view\ITextWriter.h" />
     <ClInclude Include="view\IViewHelper.h" />
+    <ClInclude Include="view\IViewport.h" />
     <ClInclude Include="view\KeyDefines.h" />
     <ClInclude Include="view\Matrix4.h" />
     <ClInclude Include="view\Particle.h" />
@@ -400,6 +410,7 @@
     <ClInclude Include="view\OBJModelFactory.h" />
     <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\TextureManager.h" />
+    <ClInclude Include="view\Viewport.h" />
     <ClInclude Include="view\WBMModelFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

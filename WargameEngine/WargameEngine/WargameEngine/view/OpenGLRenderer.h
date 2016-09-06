@@ -2,10 +2,10 @@
 #include "IRenderer.h"
 #include "IViewHelper.h"
 
-class COpenGLRenderer : public IRenderer, public IViewHelper
+class COpenGLRenderer : public IViewHelper
 {
 public:
-	COpenGLRenderer(bool ignoreClear = false);
+	COpenGLRenderer();
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
@@ -58,7 +58,7 @@ public:
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;
-	virtual void SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
 	virtual void RestoreViewport() override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
@@ -79,5 +79,4 @@ public:
 	void OnResize(int width, int height, int left = 0);
 private:
 	CTextureManager* m_textureManager;
-	bool m_ignoreClear;
 };

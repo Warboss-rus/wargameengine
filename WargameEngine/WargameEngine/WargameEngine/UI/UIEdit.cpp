@@ -55,7 +55,7 @@ void CUIEdit::Draw() const
 	m_renderer.PopMatrix();
 }
 
-bool CUIEdit::OnCharacterInput(unsigned int key)
+bool CUIEdit::OnCharacterInput(wchar_t key)
 {
 	if (!m_visible) return false;
 	if (CUIElement::OnCharacterInput(key))
@@ -65,11 +65,7 @@ bool CUIEdit::OnCharacterInput(unsigned int key)
 	{
 		return false;
 	}
-	wchar_t str[2];
-	char ckey = static_cast<char>(key);
-	mbstowcs(str, &ckey, 1);
-	str[1] = L'\0';
-	m_text.insert(m_pos, str);
+	m_text.insert(m_pos, 1, key);
 	m_pos++;
 	m_beginSelection++;
 	return true;

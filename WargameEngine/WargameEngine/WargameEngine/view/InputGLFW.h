@@ -1,49 +1,37 @@
 #pragma once
-#include "IInput.h"
+#include "InputBase.h"
 #include <memory>
 #include <vector>
 #include <GLFW\glfw3.h>
 
 class IObject;
 
-class CInputGLFW : public IInput
+class CInputGLFW : public CInputBase
 {
 public:
 	CInputGLFW(GLFWwindow * window);
-	virtual void DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnMouseWheelUp(std::function<bool() > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnMouseWheelDown(std::function<bool() > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority = 0, std::string const& tag = "") override;
+
 	virtual void EnableCursor(bool enable = true) override;
-	virtual int GetModifiers() const override;
 	virtual int GetMouseX() const override;
 	virtual int GetMouseY() const override;
-	virtual void DeleteAllSignalsByTag(std::string const& tag) override;
-	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
+	virtual VirtualKey CInputGLFW::KeycodeToVirtualKey(int key) const override;
+	virtual int CInputGLFW::GetModifiers() const override;
 
 	static void OnMouse(GLFWwindow* window, int button, int action, int mods);
 	static void OnScroll(GLFWwindow* window, double xoffset, double yoffset);
 	static void OnKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
-	static void OnCharacter(GLFWwindow* window, unsigned int key);
-	static void OnMouseMove(GLFWwindow* window, double xpos, double ypos);
+	static void CharacterCallback(GLFWwindow* window, unsigned int key);
+	static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
 	void UpdateControllers();
 private:
 	GLFWwindow * m_window;
-	struct sSignals;
-	static std::unique_ptr<sSignals> m_signals;
-	static bool m_cursorEnabled;
+	static CInputGLFW * m_instance;
+	bool m_cursorEnabled = true;
 	struct sControllerState
 	{
 		std::vector<unsigned char> buttons;
 		std::vector<float> axes;
 	};
 	std::vector<sControllerState> m_gamepadStates;
+	int m_modifiers = 0;
 };

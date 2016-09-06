@@ -42,24 +42,15 @@ void CGameWindowGLFW::LaunchMainLoop()
 		if (m_visible)
 		{
 			g_instance->m_input->UpdateControllers();
-			if (g_instance->m_onUpdate)
-			{
-				g_instance->m_onUpdate();
-			}
 			if (g_instance->m_onDraw)
 			{
-				g_instance->m_onDraw(RenderEye::NONE);
+				g_instance->m_onDraw();
 			}
 			glfwSwapBuffers(g_instance->m_window);
 		}
 		glfwPollEvents();
 	}
 	glfwTerminate();
-}
-
-void CGameWindowGLFW::DoOnUpdate(std::function<void()> const& handler)
-{
-	m_onUpdate = handler;
 }
 
 void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
@@ -78,9 +69,9 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 
 	glfwSetWindowSizeCallback(m_window, &OnReshape);
 	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
-	glfwSetCharCallback(m_window, &CInputGLFW::OnCharacter);
+	glfwSetCharCallback(m_window, &CInputGLFW::CharacterCallback);
 	glfwSetMouseButtonCallback(m_window, &CInputGLFW::OnMouse);
-	glfwSetCursorPosCallback(m_window, &CInputGLFW::OnMouseMove);
+	glfwSetCursorPosCallback(m_window, &CInputGLFW::MouseMoveCallback);
 	glfwSetScrollCallback(m_window, &CInputGLFW::OnScroll);
 	glfwSetWindowCloseCallback(m_window, &CGameWindowGLFW::OnShutdown);
 	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
@@ -106,7 +97,7 @@ CGameWindowGLFW::~CGameWindowGLFW()
 	glfwTerminate();
 }
 
-void CGameWindowGLFW::DoOnDrawScene(std::function<void(RenderEye)> const& handler)
+void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
 {
 	m_onDraw = handler;
 }

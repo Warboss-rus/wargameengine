@@ -16,7 +16,7 @@ struct sLightSource
 	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };;
 };
 
-class CDirectXRenderer : public IRenderer, public IViewHelper
+class CDirectXRenderer : public IViewHelper
 {
 public:
 	CDirectXRenderer(HWND hWnd = NULL);
@@ -67,7 +67,7 @@ public:
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;
-	virtual void SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
 	virtual void RestoreViewport() override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;

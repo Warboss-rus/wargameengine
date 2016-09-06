@@ -5,7 +5,7 @@ local playerBuilding = nil
 local enemyBuilding = nil
 
 function Init()
-	CameraStrategy(30, 12, 5, 0.3)
+	Viewport:CameraStrategy(30, 12, 5, 0.3)
 	EnableLight(1)
 	SetLightPosition(1, 0, 0, 50)
 	SetLightDiffuse(1, 1, 1, 1, 1)

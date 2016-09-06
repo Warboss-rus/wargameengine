@@ -1,10 +1,6 @@
 #include "OpenGLESRenderer.h"
-#include <EGL/egl.h>
-#include <GLES/gl.h>
-#include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
 #include "gluLite.h"
 #include "../LogWriter.h"
 #include "TextureManager.h"
@@ -52,11 +48,11 @@ private:
 	const float * m_texCoords;
 };
 
-class COpenGLFrameBuffer : public IFrameBuffer
+class COpenGLESFrameBuffer : public IFrameBuffer
 {
 public:
-	COpenGLFrameBuffer();
-	~COpenGLFrameBuffer();
+	COpenGLESFrameBuffer();
+	~COpenGLESFrameBuffer();
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
 	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override;
@@ -93,7 +89,7 @@ static const map<RenderMode, GLenum> renderModeMap = {
 };
 
 COpenGLESRenderer::COpenGLESRenderer()
-	:m_textureManager(nullptr)
+	:m_textureManager(nullptr), m_version(3)
 {
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
@@ -101,6 +97,9 @@ COpenGLESRenderer::COpenGLESRenderer()
 	glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+	glShadeModel(GL_SMOOTH);
+	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void Bind(const void* vertices, const void* normals, const void* texCoords, GLenum vertexType, GLenum normalType, GLenum texCoordType, int vertexAxesCount)
@@ -316,7 +315,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * da
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	if (type == CachedTextureType::DEPTH)
+	if (type == CachedTextureType::DEPTH && m_version >= 3)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
@@ -336,7 +335,7 @@ std::unique_ptr<IVertexBuffer> COpenGLESRenderer::CreateVertexBuffer(const float
 
 std::unique_ptr<IFrameBuffer> COpenGLESRenderer::CreateFramebuffer() const
 {
-	return std::make_unique<COpenGLFrameBuffer>();
+	return std::make_unique<COpenGLESFrameBuffer>();
 }
 
 std::unique_ptr<IShaderManager> COpenGLESRenderer::CreateShaderManager() const
@@ -541,19 +540,14 @@ void COpenGLESRenderer::EnableBlending(bool enable)
 		glDisable(GL_BLEND);
 }
 
-void COpenGLESRenderer::SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
+void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
 {
 	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
 	glLoadIdentity();
 	double aspect = (double)viewportWidth / (double)viewportHeight;
 	gluPerspective(viewingAngle, aspect, nearPane, farPane);
 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	LookAt(position, target, { 0.0, 1.0, 0.0 });
-	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(0, 0, viewportWidth, viewportHeight);
+	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
 void COpenGLESRenderer::RestoreViewport()
@@ -622,8 +616,11 @@ void COpenGLESRenderer::UploadTexture(ICachedTexture & texture, unsigned char * 
 		auto& mipmap = mipmaps[i];
 		glTexImage2D(GL_TEXTURE_2D, i + 1, bpp / 8, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
 	}
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+	if (m_version >= 3)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+	}
 }
 
 void COpenGLESRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
@@ -649,8 +646,11 @@ void COpenGLESRenderer::UploadCompressedTexture(ICachedTexture & texture, unsign
 		auto& mipmap = mipmaps[i];
 		glCompressedTexImage2D(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, mipmap.size, mipmap.data);
 	}
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+	if (m_version >= 3)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+	}
 }
 
 bool COpenGLESRenderer::Force32Bits() const
@@ -687,6 +687,11 @@ void COpenGLESRenderer::OnResize(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 }
 
+void COpenGLESRenderer::SetVersion(int version)
+{
+	m_version = version;
+}
+
 void COpenGLESRenderer::SetUpViewport2D()
 {
 	glEnable(GL_BLEND);
@@ -702,29 +707,29 @@ void COpenGLESRenderer::SetUpViewport2D()
 	glLoadIdentity();
 }
 
-COpenGLFrameBuffer::COpenGLFrameBuffer()
+COpenGLESFrameBuffer::COpenGLESFrameBuffer()
 {
 	glGenFramebuffers(1, &m_id);
 	Bind();
 }
 
-COpenGLFrameBuffer::~COpenGLFrameBuffer()
+COpenGLESFrameBuffer::~COpenGLESFrameBuffer()
 {
 	UnBind();
 	glDeleteBuffers(1, &m_id);
 }
 
-void COpenGLFrameBuffer::Bind() const
+void COpenGLESFrameBuffer::Bind() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 }
 
-void COpenGLFrameBuffer::UnBind() const
+void COpenGLESFrameBuffer::UnBind() const
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureType type)
+void COpenGLESFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureType type)
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },

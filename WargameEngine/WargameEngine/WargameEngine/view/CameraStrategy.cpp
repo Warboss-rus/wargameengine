@@ -91,6 +91,7 @@ void CCameraStrategy::Rotate(double rotZ, double rotX)
 void CCameraStrategy::SetInput(IInput & input)
 {
 	m_input = &input;
+	input.DeleteAllSignalsByTag(g_cameraTag);
 	input.DoOnMouseWheelUp([this]() {
 		m_scale *= SCALE;
 		if (m_scale > m_maxScale) m_scale = m_maxScale;

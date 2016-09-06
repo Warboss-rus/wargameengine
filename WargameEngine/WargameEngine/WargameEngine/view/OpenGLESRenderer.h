@@ -2,7 +2,7 @@
 #include "IRenderer.h"
 #include "IViewHelper.h"
 
-class COpenGLESRenderer : public IRenderer, public IViewHelper
+class COpenGLESRenderer : public IViewHelper
 {
 public:
 	COpenGLESRenderer();
@@ -58,7 +58,7 @@ public:
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;
-	virtual void SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
 	virtual void RestoreViewport() override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
@@ -77,6 +77,8 @@ public:
 
 	void EnableMultisampling(bool enable);
 	void OnResize(int width, int height);
+	void SetVersion(int version);
 private:
 	CTextureManager* m_textureManager;
+	int m_version;
 };

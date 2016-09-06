@@ -15,13 +15,19 @@
 #include "IImageReader.h"
 #include "IModelReader.h"
 #include "../Utils.h"
+#include "Viewport.h"
+#include "OffscreenViewport.h"
+#include "CameraFirstPerson.h"
+#include "FixedCamera.h"
 
 using namespace std;
 using namespace placeholders;
 
+static const string g_controllerTag = "controller";
+
 CGameView::~CGameView()
 {
-	DisableShadowMap();
+	m_viewports.clear();
 }
 
 CGameView::CGameView(sGameViewContext * context)
@@ -32,7 +38,6 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_shaderManager(m_renderer->CreateShaderManager())
 	, m_soundPlayer(move(context->soundPlayer))
 	, m_textWriter(move(context->textWriter))
-	, m_module(context->module)
 	, m_asyncFileProvider(m_threadPool, context->workingDir)
 	, m_modelManager(*m_renderer, *m_gameModel, m_asyncFileProvider)
 	, m_textureManager(m_window->GetViewHelper(), m_asyncFileProvider)
@@ -41,7 +46,6 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_socketFactory(context->socketFactory)
 {
 	m_viewHelper->SetTextureManager(m_textureManager);
-	m_asyncFileProvider.SetModule(context->module);
 	for (auto& reader : context->imageReaders)
 	{
 		m_textureManager.RegisterImageReader(std::move(reader));
@@ -50,42 +54,52 @@ CGameView::CGameView(sGameViewContext * context)
 	{
 		m_modelManager.RegisterModelReader(std::move(reader));
 	}
+	setlocale(LC_ALL, "");
+	setlocale(LC_NUMERIC, "english");
+
 	m_ui = make_unique<CUIElement>(*m_renderer, *m_textWriter);
 	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
-	Init();
-}
 
-void CGameView::Init()
-{
-	setlocale(LC_ALL, ""); 
-	setlocale(LC_NUMERIC, "english");
-	
-	m_vertexLightning = false;
-	m_shadowMap = false;
-	m_camera = make_unique<CCameraStrategy>(100.0, 100.0, 2.8, 0.5);
-	m_tableList = 0;
-	m_tableListShadow = 0;
+	Init(context->module);
 
-	InitLandscape();
-
-	InitInput();
-
-	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
-	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(m_module.script));
-	m_soundPlayer->Init();
-
-	m_window->DoOnDrawScene([this](IGameWindow::RenderEye /*eye*/) {
-		DrawShadowMap();
+	m_window->DoOnDrawScene([this]() {
 		m_viewHelper->ClearBuffers(true, true);
 		Update();
 	});
-	m_window->DoOnResize([this](int width, int height) {m_ui->Resize(height, width);});
+	m_window->DoOnResize([this](int width, int height) {
+		m_ui->Resize(height, width);
+		for (auto& viewport : m_viewports)
+		{
+			viewport->Resize(width, height);
+		}
+	});
 	m_window->DoOnShutdown([this] {
 		m_threadPool.CancelAll();
 		DisableShadowMap();
 	});
 
 	m_window->LaunchMainLoop();
+}
+
+void CGameView::Init(sModule const& module)
+{
+	m_ui->ClearChildren();
+	m_vertexLightning = false;
+	m_shadowMapViewport = nullptr;
+	m_viewports.clear();
+	m_viewports.push_back(std::make_unique<CViewport>(0, 0, 600, 600, 60.0f, *m_viewHelper, true));
+	m_viewports.front()->SetCamera(make_unique<CCameraStrategy>(100.0, 100.0, 2.8, 0.5));
+	m_gameController.reset();
+
+	m_asyncFileProvider.SetModule(module);
+		
+	m_gameModel = make_unique<CGameModel>();
+	ClearResources();
+	InitLandscape();
+	InitInput();
+	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
+	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(module.script));
+	m_soundPlayer->Init();
 }
 
 void CGameView::InitLandscape()
@@ -105,12 +119,10 @@ void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, double & wor
 	worldY = a * (end.y - start.y) + start.y;
 }
 
-static const string g_controllerTag = "controller";
-
 void CGameView::InitInput()
 {
 	m_input = &m_window->ResetInput();
-	m_camera->SetInput(*m_input);
+	m_viewports.front()->GetCamera().SetInput(*m_input);
 	//UI
 	m_input->DoOnLMBDown([this](int x, int y) {
 		return m_ui->LeftMouseButtonDown(x, y);
@@ -118,7 +130,7 @@ void CGameView::InitInput()
 	m_input->DoOnLMBUp([this](int x, int y) {
 		return m_ui->LeftMouseButtonUp(x, y);
 	}, 0);
-	m_input->DoOnCharacter([this](unsigned int key) {
+	m_input->DoOnCharacter([this](wchar_t key) {
 		return m_ui->OnCharacterInput(key);
 	}, 0);
 	m_input->DoOnKeyDown([this](int key, int modifiers) {
@@ -290,19 +302,31 @@ void CGameView::DrawBoundingBox()
 void CGameView::Update()
 {
 	m_threadPool.Update();
-	CVector3d position = m_camera->GetPosition();
-	CVector3d direction = m_camera->GetDirection();
-	CVector3d up = m_camera->GetUpVector();
-	m_soundPlayer->SetListenerPosition(position, direction);
-	m_soundPlayer->Update();
-	if (m_skybox) m_skybox->Draw(-direction[0], -direction[1], -direction[2], m_camera->GetScale());
-	m_renderer->ResetViewMatrix();
-	m_renderer->LookAt(position, direction, up);
 	m_gameController->Update();
-	DrawObjects();
-	DrawBoundingBox();
-	DrawRuler();
-	DrawUI();
+	auto& defaultCamera = m_viewports.front()->GetCamera();
+	m_soundPlayer->SetListenerPosition(defaultCamera.GetPosition(), defaultCamera.GetDirection());
+	m_soundPlayer->Update();
+	for (auto& viewport : m_viewports)
+	{
+		viewport->Draw([this, &viewport](bool depthOnly, bool drawUI) {
+			auto& camera = viewport->GetCamera();
+			CVector3d direction = camera.GetDirection();
+			if (m_skybox && !depthOnly)
+			{
+				m_skybox->Draw(-direction[0], -direction[1], -direction[2], camera.GetScale());
+			}
+			DrawObjects(depthOnly);
+			if (!depthOnly)
+			{
+				DrawBoundingBox();
+				DrawRuler();
+			}
+			if (!depthOnly && drawUI)
+			{
+				DrawUI();
+			}
+		});
+	}
 }
 
 void CGameView::DrawRuler()
@@ -371,19 +395,23 @@ void CGameView::DrawTable(bool shadowOnly)
 	}
 }
 
-void CGameView::DrawObjects(void)
+void CGameView::DrawObjects(bool shadowOnly)
 {
 	m_viewHelper->EnableDepthTest(true);
-	m_viewHelper->EnableBlending(true);
-	m_shaderManager->BindProgram();
-	if (m_vertexLightning)
+	m_viewHelper->EnableBlending(!shadowOnly);
+	if (!shadowOnly)
 	{
-		m_viewHelper->EnableVertexLightning(true);
+		m_shaderManager->BindProgram();
+		if (m_vertexLightning)
+		{
+			m_viewHelper->EnableVertexLightning(true);
+		}
+		if (m_shadowMapViewport) SetUpShadowMapDraw();
 	}
-	if (m_shadowMap) SetUpShadowMapDraw();
-	if (!m_tableList) DrawTable(false);
-	m_tableList->Draw();
-	DrawStaticObjects(false);
+	auto& list = shadowOnly ? m_tableListShadow : m_tableList;
+	if (!list) DrawTable(shadowOnly);
+	list->Draw();
+	DrawStaticObjects(shadowOnly);
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
@@ -401,19 +429,22 @@ void CGameView::DrawObjects(void)
 	}
 	m_shaderManager->UnBindProgram();
 	m_viewHelper->EnableVertexLightning(false);
-	for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
+	if (!shadowOnly)
 	{
-		CProjectile const& projectile = m_gameModel->GetProjectile(i);
-		m_renderer->PushMatrix();
-		m_renderer->Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
-		m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
-		if (!projectile.GetPathToModel().empty())
-			m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_shaderManager.get());
-		if (!projectile.GetParticle().empty())
-			m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
-		m_renderer->PopMatrix();
+		for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
+		{
+			CProjectile const& projectile = m_gameModel->GetProjectile(i);
+			m_renderer->PushMatrix();
+			m_renderer->Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
+			m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
+			if (!projectile.GetPathToModel().empty())
+				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_shaderManager.get());
+			if (!projectile.GetParticle().empty())
+				m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
+			m_renderer->PopMatrix();
+		}
+		m_particles.DrawParticles();
 	}
-	m_particles.DrawParticles();
 	m_viewHelper->EnableDepthTest(false);
 }
 
@@ -444,14 +475,14 @@ void CGameView::SetUpShadowMapDraw()
 	Matrix4F lightMatrix;
 	lightMatrix.Scale(0.5f);
 	lightMatrix.Translate(0.5, 0.5, 0.5);
-	lightMatrix *= m_lightProjectionMatrix;
-	lightMatrix *= m_lightModelViewMatrix;
+	lightMatrix *= m_shadowMapViewport->GetProjectionMatrix();
+	lightMatrix *= m_shadowMapViewport->GetViewMatrix();
 	lightMatrix *= cameraInverseModelViewMatrix;
 
 	m_shaderManager->SetUniformMatrix4("lightMatrix", 1, lightMatrix);
 }
 
-void CGameView::DrawShadowMap()
+/*void CGameView::DrawShadowMap()
 {
 	if (!m_shadowMap) return;
 	m_viewHelper->EnableDepthTest(true);
@@ -487,26 +518,11 @@ void CGameView::DrawShadowMap()
 	m_shadowMapFBO->UnBind();
 	m_viewHelper->RestoreViewport();
 	m_viewHelper->EnableDepthTest(false);
-}
+}*/
 
 void CGameView::CreateSkybox(double size, wstring const& textureFolder)
 {
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
-}
-
-void CGameView::ResetController()
-{
-	m_input->DeleteAllSignalsByTag(g_controllerTag);
-	m_gameController.reset();
-	m_gameModel = make_unique<CGameModel>();
-	InitLandscape();
-	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
-}
-
-void CGameView::SetCamera(ICamera * camera)
-{
-	m_camera.reset(camera);
-	m_camera->SetInput(*m_input);
 }
 
 CModelManager& CGameView::GetModelManager()
@@ -556,63 +572,38 @@ void CGameView::EnableVertexLightning(bool enable)
 
 void CGameView::EnableShadowMap(int size, float angle)
 {
-	if (m_shadowMap) return;
-	
-	m_viewHelper->ActivateTextureSlot(TextureSlot::eShadowMap);
-	m_shadowMapTexture = m_renderer->CreateTexture(NULL, size, size, CachedTextureType::DEPTH);
-	try
-	{
-		m_shadowMapFBO = m_viewHelper->CreateFramebuffer();
-	}
-	catch (std::runtime_error const& e)
-	{
-		LogWriter::WriteLine(string(e.what()) + ", shadow maps cannot be enabled");
-		m_shadowMapTexture.reset();
-		return;
-	}
-	m_shadowMapFBO->Bind();
-	try
-	{
-		m_shadowMapFBO->AssignTexture(*m_shadowMapTexture, CachedTextureType::DEPTH);
-	}
-	catch (std::runtime_error const& e)
-	{
-		LogWriter::WriteLine(string("Cannot enable shadowmaps. ") + e.what());
-		m_shadowMapFBO.reset();
-		m_shadowMapTexture.reset();
-		return;
-	}
-	m_shadowMapFBO->UnBind();
-	m_viewHelper->ActivateTextureSlot(TextureSlot::eDiffuse);
-	m_shadowMap = true;
-	m_shadowMapSize = size;
-	m_shadowAngle = angle;
+	if (m_shadowMapViewport) return;
+	m_viewports.push_back(std::make_unique<COffscreenViewport>(CachedTextureType::DEPTH, size, size, angle, *m_viewHelper, static_cast<int>(TextureSlot::eShadowMap)));
+	m_viewports.back()->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 0.0, 1.0 })));
+	m_viewports.back()->SetPolygonOffset(true, 2.0f, 500.0f);
+	m_viewports.back()->SetClippingPlanes(3.0, 300.0);
 }
 
 void CGameView::DisableShadowMap()
 {
-	if (!m_shadowMap) return;
-	m_shadowMapTexture.reset();
-	m_shadowMapFBO.reset();
-	m_shadowMap = false;
+	for (auto it = m_viewports.begin(); it != m_viewports.end(); ++it)
+	{
+		if (it->get() == m_shadowMapViewport)
+		{
+			m_viewports.erase(it);
+		}
+	}
+	m_shadowMapViewport = nullptr;
 }
 
 void CGameView::SetLightPosition(int index, float* pos)
 {
 	m_viewHelper->SetLightPosition(index, pos);
-	if (index == 0) m_lightPosition = {pos[0], pos[1], pos[2]};
+	if (index == 0)
+	{
+		m_lightPosition = { pos[0], pos[1], pos[2] };
+		if(m_shadowMapViewport) m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 0.0, 1.0 })));
+	}
 }
 
 void CGameView::EnableMSAA(bool enable, int level)
 {
-	try
-	{
-		m_window->EnableMultisampling(enable, level);
-	}
-	catch (std::runtime_error const& e)
-	{
-		LogWriter::WriteLine(e.what());
-	}
+	m_window->EnableMultisampling(enable, level);
 }
 
 float CGameView::GetMaxAnisotropy() const
@@ -657,6 +648,44 @@ ThreadPool& CGameView::GetThreadPool()
 	return m_threadPool;
 }
 
+IViewHelper& CGameView::GetViewHelper()
+{
+	return *m_viewHelper;
+}
+
+IInput& CGameView::GetInput()
+{
+	return *m_input;
+}
+
+size_t CGameView::GetViewportCount() const
+{
+	return m_viewports.size();
+}
+
+IViewport& CGameView::GetViewport(size_t index /*= 0*/)
+{
+	return *m_viewports.at(index);
+}
+
+IViewport& CGameView::AddViewport(std::unique_ptr<IViewport> && viewport)
+{
+	m_viewports.push_back(std::move(viewport));
+	return *m_viewports.back();
+}
+
+void CGameView::RemoveViewport(IViewport * viewportPtr)
+{
+	for (auto it = m_viewports.begin(); it != m_viewports.end(); ++it)
+	{
+		if (it->get() == viewportPtr)
+		{
+			m_viewports.erase(it);
+			return;
+		}
+	}
+}
+
 void CGameView::Preload(wstring const& image)
 {
 	if (!image.empty())
@@ -682,20 +711,13 @@ void CGameView::Preload(wstring const& image)
 	m_renderer->SetTexture(L"");
 }
 
-void CGameView::LoadModule(wstring const& module)
+void CGameView::LoadModule(wstring const& modulePath)
 {
 	m_threadPool.CancelAll();
-	m_module.Load(module);
-	m_asyncFileProvider.SetModule(m_module);
-	m_vertexLightning = false;
-	m_shadowMap = false;
-	m_lightPosition = CVector3d();
-	m_threadPool.QueueCallback([this]() {
-		ResetController();
-		ClearResources();
-		m_ui->ClearChildren();
-		m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(m_module.script));
-		InitInput();
+	m_threadPool.QueueCallback([this, modulePath]() {
+		sModule module;
+		module.Load(modulePath);
+		Init(module);
 	});
 }
 

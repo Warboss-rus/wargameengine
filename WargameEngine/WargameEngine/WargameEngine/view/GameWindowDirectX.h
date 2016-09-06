@@ -9,8 +9,7 @@ public:
 	virtual ~CGameWindowDirectX();
 
 	virtual void LaunchMainLoop() override;
-	virtual void DoOnUpdate(std::function<void() > const& handler) override;
-	virtual void DoOnDrawScene(std::function<void(RenderEye) > const& handler) override;
+	virtual void DoOnDrawScene(std::function<void() > const& handler) override;
 	virtual void DoOnResize(std::function<void(int, int) > const& handler) override;
 	virtual void DoOnShutdown(std::function<void() > const& handler) override;
 	virtual void ResizeWindow(int width, int height) override;

@@ -9,66 +9,6 @@ CInputDirectX::CInputDirectX(HWND hWnd)
 {
 }
 
-void CInputDirectX::DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onLMBDown.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onLMBUp.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onRMBDown.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onRMBUp.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnMouseWheelUp(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onWheelUp.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnMouseWheelDown(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onWheelDown.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onKeyDown.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onKeyUp.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onCharacter.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onMouseMove.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority/* = 0*/, std::string const& tag/* = ""*/)
-{
-	m_onGamepadButton.Connect(handler, priority, tag);
-}
-
-void CInputDirectX::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onGamepadAxis.Connect(handler, priority, tag);
-}
-
 void CInputDirectX::EnableCursor(bool enable /*= true*/)
 {
 	if (!enable)
@@ -112,20 +52,6 @@ int CInputDirectX::GetMouseY() const
 	return point.y;
 }
 
-void CInputDirectX::DeleteAllSignalsByTag(std::string const& tag)
-{
-	m_onLMBDown.RemoveByTag(tag);
-	m_onLMBUp.RemoveByTag(tag);
-	m_onRMBDown.RemoveByTag(tag);
-	m_onRMBUp.RemoveByTag(tag);
-	m_onWheelUp.RemoveByTag(tag);
-	m_onWheelDown.RemoveByTag(tag);
-	m_onKeyDown.RemoveByTag(tag);
-	m_onKeyUp.RemoveByTag(tag);
-	m_onCharacter.RemoveByTag(tag);
-	m_onMouseMove.RemoveByTag(tag);
-}
-
 VirtualKey CInputDirectX::KeycodeToVirtualKey(int key) const
 {
 	static const std::map<int, VirtualKey> virtualKeys = {
@@ -148,29 +74,29 @@ bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_LBUTTONDOWN:
 	{
-		m_onLMBDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		OnLMBDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 	}break;
 	case WM_LBUTTONUP:
 	{
-		m_onLMBUp(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		OnLMBUp(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 	}break;
 	case WM_RBUTTONDOWN:
 	{
-		m_onRMBDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		OnRMBDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 	}break;
 	case WM_RBUTTONUP:
 	{
-		m_onRMBUp(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		OnRMBUp(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 	}break;
 	case WM_MOUSEWHEEL:
 	{
 		if ((HIWORD(wParam) & 0xf000) == 0)
 		{
-			m_onWheelUp();
+			OnMouseWheelUp();
 		}
 		else
 		{
-			m_onWheelDown();
+			OnMouseWheelDown();
 		}
 	}break;
 	case WM_MOUSEMOVE:
@@ -182,7 +108,7 @@ bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 			return true;
 		}
 		justWarped = false;
-		m_onMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		OnMouseMove(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		if (!m_cursorEnabled)
 		{
 			RECT screenSize;
@@ -195,15 +121,15 @@ bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 	}break;
 	case WM_KEYDOWN:
 	{
-		m_onKeyDown(wParam, GetModifiers());
+		OnKeyDown(wParam, GetModifiers());
 	}break;
 	case WM_KEYUP:
 	{
-		m_onKeyUp(wParam, GetModifiers());
+		OnKeyUp(wParam, GetModifiers());
 	}break;
 	case WM_CHAR:
 	{
-		m_onCharacter(wParam);
+		OnCharacter(static_cast<wchar_t>(wParam));
 	}break;
 	case WM_SETCURSOR:
 	{
@@ -245,32 +171,32 @@ void CInputDirectX::UpdateControllers()
 			{
 				if ((state.Gamepad.wButtons & j) != (oldState.wButtons & j))
 				{
-					m_onGamepadButton(i, k, !!(state.Gamepad.wButtons & j));
+					OnGamepadButton(i, k, !!(state.Gamepad.wButtons & j));
 				}
 			}
 			if ((abs(state.Gamepad.sThumbLX - oldState.sThumbLX) > 0) || (abs(state.Gamepad.sThumbLY - oldState.sThumbLY) > 0))
 			{
-				m_onGamepadAxis(i, 0, state.Gamepad.sThumbLX / SHORT_MAX, state.Gamepad.sThumbLY / SHORT_MAX);
+				OnGamepadAxis(i, 0, state.Gamepad.sThumbLX / SHORT_MAX, state.Gamepad.sThumbLY / SHORT_MAX);
 			}
 			if ((abs(state.Gamepad.sThumbRX - oldState.sThumbRX) > 0) || (abs(state.Gamepad.sThumbRY - oldState.sThumbRY) > 0))
 			{
-				m_onGamepadAxis(i, 1, state.Gamepad.sThumbLX / SHORT_MAX, state.Gamepad.sThumbLY / SHORT_MAX);
+				OnGamepadAxis(i, 1, state.Gamepad.sThumbLX / SHORT_MAX, state.Gamepad.sThumbLY / SHORT_MAX);
 			}
 			if (state.Gamepad.bLeftTrigger != oldState.bLeftTrigger)//left trigger
 			{
 				if ((state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) != (oldState.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD))
 				{
-					m_onGamepadButton(i, 16, state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+					OnGamepadButton(i, 16, state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
 				}
-				m_onGamepadAxis(i, 2, static_cast<double>(state.Gamepad.bLeftTrigger - state.Gamepad.bRightTrigger) / BYTE_MAX, 0.0);
+				OnGamepadAxis(i, 2, static_cast<double>(state.Gamepad.bLeftTrigger - state.Gamepad.bRightTrigger) / BYTE_MAX, 0.0);
 			}
 			if (state.Gamepad.bRightTrigger != oldState.bRightTrigger)//right trigger
 			{
 				if ((state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD) != (oldState.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD))
 				{
-					m_onGamepadButton(i, 17, state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+					OnGamepadButton(i, 17, state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
 				}
-				m_onGamepadAxis(i, 2, static_cast<double>(state.Gamepad.bLeftTrigger - state.Gamepad.bRightTrigger) / BYTE_MAX, 0.0);
+				OnGamepadAxis(i, 2, static_cast<double>(state.Gamepad.bLeftTrigger - state.Gamepad.bRightTrigger) / BYTE_MAX, 0.0);
 			}
 			m_gamepadStates[i] = state;
 		}

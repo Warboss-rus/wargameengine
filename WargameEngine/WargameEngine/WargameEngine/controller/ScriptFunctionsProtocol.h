@@ -28,16 +28,6 @@
 //Create a sky box with a given size and textures
 #define CREATE_SKYBOX L"CreateSkybox"
 
-//void CameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
-//Creates a third person camera typically seen in strategy games. It can be zoomed with a mouse wheel and moved around via arrow keys. Holding Alt + moving the mouse
-//will allow you to turn the camera around. The function arguments determine the translation limits for the camera.
-#define CAMERA_STRATEGY L"CameraStrategy"
-
-//void CameraFirstPerson()
-//Creates a first person camera. It can be moved around with arrow keys and zoomed in and out with mouse wheel. Mouse movement is rotating the camera
-//Note that the mouse is locked so you won't be able to click buttons, select objects, etc.
-#define CAMERA_FIRST_PERSON L"CameraFirstPerson"
-
 #define ENABLE_RULER L"Ruler"
 
 #define RESIZE_WINDOW L"ResizeWindow"

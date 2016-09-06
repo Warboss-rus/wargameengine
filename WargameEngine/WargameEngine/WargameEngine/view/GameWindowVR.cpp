@@ -90,10 +90,6 @@ void CGameWindowVR::LaunchMainLoop()
 				compositor->WaitGetPoses(m_rTrackedDevicePose, k_unMaxTrackedDeviceCount, m_rTrackedGamePose, k_unMaxTrackedDeviceCount);
 			}
 			g_instance->m_input->UpdateControllers();
-			if (g_instance->m_onUpdate)
-			{
-				g_instance->m_onUpdate();
-			}
 			if (m_vrMode)
 			{
 				if (g_instance->m_onDraw)
@@ -102,7 +98,7 @@ void CGameWindowVR::LaunchMainLoop()
 					{
 						glBindFramebuffer(GL_FRAMEBUFFER, buffers[i]);
 						//modify camera
-						g_instance->m_onDraw(static_cast<RenderEye>(i + 1));
+						g_instance->m_onDraw(/*static_cast<RenderEye>(i + 1)*/);
 					}
 					glBindFramebuffer(GL_FRAMEBUFFER, GL_NONE);
 				}
@@ -136,7 +132,7 @@ void CGameWindowVR::LaunchMainLoop()
 			}
 			else
 			{
-				g_instance->m_onDraw(RenderEye::NONE);
+				g_instance->m_onDraw();
 			}
 			glfwSwapBuffers(g_instance->m_window);
 		}
@@ -157,9 +153,9 @@ void CGameWindowVR::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 
 	glfwSetWindowSizeCallback(m_window, &OnReshape);
 	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
-	glfwSetCharCallback(m_window, &CInputGLFW::OnCharacter);
+	glfwSetCharCallback(m_window, &CInputGLFW::CharacterCallback);
 	glfwSetMouseButtonCallback(m_window, &CInputGLFW::OnMouse);
-	glfwSetCursorPosCallback(m_window, &CInputGLFW::OnMouseMove);
+	glfwSetCursorPosCallback(m_window, &CInputGLFW::MouseMoveCallback);
 	glfwSetScrollCallback(m_window, &CInputGLFW::OnScroll);
 	glfwSetWindowCloseCallback(m_window, &CGameWindowVR::OnShutdown);
 	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
@@ -200,14 +196,9 @@ CGameWindowVR::~CGameWindowVR()
 	VR_Shutdown();
 }
 
-void CGameWindowVR::DoOnDrawScene(std::function<void(RenderEye)> const& handler)
+void CGameWindowVR::DoOnDrawScene(std::function<void()> const& handler)
 {
 	m_onDraw = handler;
-}
-
-void CGameWindowVR::DoOnUpdate(std::function<void()> const& handler)
-{
-	m_onUpdate = handler;
 }
 
 void CGameWindowVR::DoOnResize(std::function<void(int, int)> const& handler)

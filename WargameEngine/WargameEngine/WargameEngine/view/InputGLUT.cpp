@@ -5,32 +5,12 @@
 #else
 #include <GL/glut.h>
 #endif
-#include "../Signal.h"
 
-struct CInputGLUT::sSignals
-{
-	CSignal<int, int> m_onLMBDown;
-	CSignal<int, int> m_onLMBUp;
-	CSignal<int, int> m_onRMBDown;
-	CSignal<int, int> m_onRMBUp;
-	CSignal<> m_onWheelUp;
-	CSignal<> m_onWheelDown;
-	CSignal<int, int> m_onKeyDown;
-	CSignal<int, int> m_onKeyUp;
-	CSignal<unsigned int> m_onCharacter;
-	CSignal<int, int> m_onMouseMove;
-	CSignal<int, int, bool> m_onGamepadButton;
-	CSignal<int, int, double, double> m_onGamepadAxis;
-};
-
-std::unique_ptr<CInputGLUT::sSignals> CInputGLUT::m_signals = std::make_unique<CInputGLUT::sSignals>();
-bool CInputGLUT::m_cursorEnabled = true;
+CInputGLUT* CInputGLUT::m_instance = nullptr;
 static const int SCROLL_UP = 3;
 static const int SCROLL_DOWN = 4;
 static int g_prevX;
 static int g_prevY;
-unsigned int CInputGLUT::m_joystickButtons = 0;
-int CInputGLUT::m_joystickAxes[3] = {0, 0, 0};
 
 static const std::map<int, IInput::Modifiers> modifiersMap = {
 	{ GLUT_ACTIVE_ALT, IInput::MODIFIER_ALT },
@@ -59,30 +39,30 @@ void CInputGLUT::OnMouse(int button, int state, int x, int y)
 	case GLUT_LEFT_BUTTON: 
 		if (state == GLUT_DOWN)
 		{
-			m_signals->m_onLMBDown(x, y);
+			m_instance->OnLMBDown(x, y);
 		}
 		else
 		{
-			m_signals->m_onLMBUp(x, y);
+			m_instance->OnLMBUp(x, y);
 		}break;
 	case GLUT_RIGHT_BUTTON:
 		if (state == GLUT_DOWN)
 		{
-			m_signals->m_onRMBDown(x, y);
+			m_instance->OnRMBDown(x, y);
 		}
 		else
 		{
-			m_signals->m_onRMBUp(x, y);
+			m_instance->OnRMBUp(x, y);
 		}break;
 	case SCROLL_UP:
 		if (state == GLUT_UP)
 		{
-			m_signals->m_onWheelUp();
+			m_instance->OnMouseWheelUp();
 		}break;
 	case SCROLL_DOWN:
 		if (state == GLUT_UP)
 		{
-			m_signals->m_onWheelDown();
+			m_instance->OnMouseWheelDown();
 		}break;
 	}
 }
@@ -94,81 +74,23 @@ bool HasModifier(int modifier)
 
 void CInputGLUT::OnKeyboard(unsigned char key, int /*x*/, int /*y*/)
 {
-	m_signals->m_onKeyDown(key, ::GetModifiers());
+	m_instance->OnKeyDown(key, ::GetModifiers());
 }
 
 void CInputGLUT::OnKeyboardUp(unsigned char key, int , int)
 {
-	m_signals->m_onKeyUp(key, ::GetModifiers());
+	m_instance->OnKeyUp(key, ::GetModifiers());
 	if (key >= 32 && key != 127)
 	{
-		m_signals->m_onCharacter(key);
+		wchar_t str;
+		mbstowcs(&str, reinterpret_cast<const char*>(&key), 1);
+		m_instance->OnCharacter(str);
 	}
 }
 
 CInputGLUT::CInputGLUT()
 {
-	m_signals = std::make_unique<CInputGLUT::sSignals>();
-}
-
-void CInputGLUT::DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onLMBDown.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onLMBUp.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onRMBDown.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onRMBUp.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnMouseWheelUp(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onWheelUp.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnMouseWheelDown(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onWheelDown.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onKeyDown.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onKeyUp.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onCharacter.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onMouseMove.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_signals->m_onGamepadButton.Connect(handler, priority, tag);
-}
-
-void CInputGLUT::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_signals->m_onGamepadAxis.Connect(handler, priority, tag);
+	m_instance = this;
 }
 
 static int screenCenterX = 320;
@@ -199,20 +121,20 @@ void CInputGLUT::EnableCursor(bool enable /*= true*/)
 
 void CInputGLUT::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
 {
-	m_signals->m_onKeyDown(key, ::GetModifiers());
+	m_instance->OnKeyDown(key, ::GetModifiers());
 }
 
 void CInputGLUT::OnSpecialKeyRelease(int key, int, int)
 {
-	m_signals->m_onKeyUp(key, ::GetModifiers());
+	m_instance->OnKeyUp(key, ::GetModifiers());
 }
 
 void CInputGLUT::OnPassiveMouseMove(int x, int y)
 {
-	OnMouseMove(x, y);
+	MouseMoveCallback(x, y);
 }
 
-void CInputGLUT::OnMouseMove(int x, int y)
+void CInputGLUT::MouseMoveCallback(int x, int y)
 {
 	static bool just_warped = false;
 	if (just_warped)
@@ -220,8 +142,8 @@ void CInputGLUT::OnMouseMove(int x, int y)
 		just_warped = false;
 		return;
 	}
-	m_signals->m_onMouseMove(x, y);
-	if (!m_cursorEnabled)
+	m_instance->OnMouseMove(x, y);
+	if (!m_instance->m_cursorEnabled)
 	{
 		if (g_prevX == 0 && g_prevY)
 		{
@@ -242,23 +164,23 @@ void CInputGLUT::OnJoystick(unsigned int buttonMask, int x, int y, int z)
 {
 	for (unsigned int i = 0, k = 1; i < 32; ++i, k *= 2)
 	{
-		if ((buttonMask & k) != (m_joystickButtons & k))
+		if ((buttonMask & k) != (m_instance->m_joystickButtons & k))
 		{
-			m_signals->m_onGamepadButton(0, i, !!(buttonMask & k));
+			m_instance->OnGamepadButton(0, i, !!(buttonMask & k));
 		}
 	}
-	m_joystickButtons = buttonMask;
-	if (x != m_joystickAxes[0] || y != m_joystickAxes[1])
+	m_instance->m_joystickButtons = buttonMask;
+	if (x != m_instance->m_joystickAxes[0] || y != m_instance->m_joystickAxes[1])
 	{
-		m_signals->m_onGamepadAxis(0, 0, x / 1000, y / 1000);
+		m_instance->OnGamepadAxis(0, 0, x / 1000, y / 1000);
 	}
-	if (z != m_joystickAxes[2])
+	if (z != m_instance->m_joystickAxes[2])
 	{
-		m_signals->m_onGamepadAxis(0, 1, z / 1000, 0);
+		m_instance->OnGamepadAxis(0, 1, z / 1000, 0);
 	}
-	m_joystickAxes[0] = x;
-	m_joystickAxes[1] = y;
-	m_joystickAxes[2] = z;
+	m_instance->m_joystickAxes[0] = x;
+	m_instance->m_joystickAxes[1] = y;
+	m_instance->m_joystickAxes[2] = z;
 }
 
 int CInputGLUT::GetMouseX() const
@@ -269,20 +191,6 @@ int CInputGLUT::GetMouseX() const
 int CInputGLUT::GetMouseY() const
 {
 	return g_lastMouseY;
-}
-
-void CInputGLUT::DeleteAllSignalsByTag(std::string const& tag)
-{
-	m_signals->m_onLMBDown.RemoveByTag(tag);
-	m_signals->m_onLMBUp.RemoveByTag(tag);
-	m_signals->m_onRMBDown.RemoveByTag(tag);
-	m_signals->m_onRMBUp.RemoveByTag(tag);
-	m_signals->m_onWheelUp.RemoveByTag(tag);
-	m_signals->m_onWheelDown.RemoveByTag(tag);
-	m_signals->m_onKeyDown.RemoveByTag(tag);
-	m_signals->m_onKeyUp.RemoveByTag(tag);
-	m_signals->m_onCharacter.RemoveByTag(tag);
-	m_signals->m_onMouseMove.RemoveByTag(tag);
 }
 
 VirtualKey CInputGLUT::KeycodeToVirtualKey(int key) const

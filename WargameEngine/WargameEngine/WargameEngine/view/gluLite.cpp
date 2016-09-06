@@ -89,7 +89,6 @@ void glPushAttrib(GLbitfield)
 {
 	g_viewportStack.emplace_back();
 	glGetIntegerv(GL_VIEWPORT, &g_viewportStack.back().a);
-	
 }
 
 void glPopAttrib()

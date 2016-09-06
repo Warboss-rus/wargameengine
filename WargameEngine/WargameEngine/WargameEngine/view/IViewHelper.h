@@ -20,7 +20,7 @@ enum class LightningType
 
 class CTextureManager;
 
-class IViewHelper : public ITextureHelper
+class IViewHelper : public ITextureHelper, public IRenderer
 {
 public:
 	virtual void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const = 0;
@@ -34,7 +34,7 @@ public:
 	virtual void GetProjectionMatrix(float * matrix) const = 0;
 	virtual void EnableDepthTest(bool enable) = 0;
 	virtual void EnableBlending(bool enable) = 0;
-	virtual void SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) = 0;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) = 0;
 	virtual void RestoreViewport() = 0;
 	virtual void SetUpViewport2D() = 0;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) = 0;

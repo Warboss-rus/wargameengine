@@ -1,6 +1,5 @@
 #include <memory>
 #include <functional>
-#include "ICamera.h"
 #include "IRenderer.h"
 #include "ISoundPlayer.h"
 #include "IInput.h"
@@ -19,6 +18,7 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "TextureManager.h"
+#include "IViewport.h"
 
 class IScriptHandler;
 class INetSocket;
@@ -43,9 +43,9 @@ class CGameView
 public:
 	CGameView(sGameViewContext * context);
 	~CGameView();
+	void Init(sModule const& module);
 	void CreateSkybox(double size, std::wstring const& textureFolder);
 	IUIElement * GetUI() const;
-	void SetCamera(ICamera * camera);
 	CModelManager& GetModelManager();
 	CParticleSystem& GetParticleSystem();
 	ISoundPlayer& GetSoundPlayer();
@@ -55,6 +55,14 @@ public:
 	IShaderManager & GetShaderManager();
 	CAsyncFileProvider& GetAsyncFileProvider();
 	ThreadPool& GetThreadPool();
+	IViewHelper& GetViewHelper();
+	IInput& GetInput();
+
+	size_t GetViewportCount() const;
+	IViewport& GetViewport(size_t index = 0);
+	IViewport& AddViewport(std::unique_ptr<IViewport> && viewport);
+	void RemoveViewport(IViewport * viewport);
+
 	void ResizeWindow(int height, int width);
 	void EnableVertexLightning(bool enable);
 	void EnableGPUSkinning(bool enable);
@@ -76,17 +84,14 @@ private:
 	void DrawUI();
 	void Update();
 	void DrawRuler();
-	void DrawObjects(void);
+	void DrawObjects(bool shadowOnly);
 	void DrawStaticObjects(bool shadowOnly);
 	void DrawBoundingBox();
-	void DrawShadowMap();
 	void SetUpShadowMapDraw();
-	void Init();
 
 	void InitLandscape();
 
 	void InitInput();
-	void ResetController();
 	void DrawText3D(CVector3d const& pos, std::wstring const& text);
 	void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
 	CGameView(CGameView const&) = delete;
@@ -100,11 +105,10 @@ private:
 	std::unique_ptr<CGameController> m_gameController;
 	std::unique_ptr<IShaderManager> m_shaderManager;
 	std::unique_ptr<ISoundPlayer> m_soundPlayer;
-	std::unique_ptr<ICamera> m_camera;
+	std::vector<std::unique_ptr<IViewport>> m_viewports;
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
 	std::unique_ptr<ITextWriter> m_textWriter;
-	sModule m_module;
 	ThreadPool m_threadPool;
 	CAsyncFileProvider m_asyncFileProvider;
 	CModelManager m_modelManager;
@@ -114,17 +118,9 @@ private:
 	CTranslationManager m_translationManager;
 	std::function<std::unique_ptr<IScriptHandler>()> m_scriptHandlerFactory;
 	std::function<std::unique_ptr<INetSocket>()> m_socketFactory;
-
-	bool m_vertexLightning;
-	bool m_shadowMap;
-	std::unique_ptr<ICachedTexture> m_shadowMapTexture;
-	std::unique_ptr<IFrameBuffer> m_shadowMapFBO;
-	int m_shadowMapSize;
-	float m_lightProjectionMatrix[16];
-	float m_lightModelViewMatrix[16];
-	CVector3d m_lightPosition;
-	float m_shadowAngle;
-
 	std::unique_ptr<IDrawingList> m_tableList;
 	std::unique_ptr<IDrawingList> m_tableListShadow;
+	bool m_vertexLightning;
+	IViewport * m_shadowMapViewport;
+	CVector3d m_lightPosition;
 };

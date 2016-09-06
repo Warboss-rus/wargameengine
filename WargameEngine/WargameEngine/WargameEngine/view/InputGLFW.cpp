@@ -2,25 +2,7 @@
 #include <map>
 #include "../Signal.h"
 
-struct CInputGLFW::sSignals
-{
-	CSignal<int, int> m_onLMBDown;
-	CSignal<int, int> m_onLMBUp;
-	CSignal<int, int> m_onRMBDown;
-	CSignal<int, int> m_onRMBUp;
-	CSignal<> m_onWheelUp;
-	CSignal<> m_onWheelDown;
-	CSignal<int, int> m_onKeyDown;
-	CSignal<int, int> m_onKeyUp;
-	CSignal<unsigned int> m_onCharacter;
-	CSignal<int, int> m_onMouseMove;
-	CSignal<int, int, bool> m_onGamepadButton;
-	CSignal<int, int, double, double> m_onGamepadAxis;
-	int m_modifiers;
-};
-
-std::unique_ptr<CInputGLFW::sSignals> CInputGLFW::m_signals = std::make_unique<CInputGLFW::sSignals>();
-bool CInputGLFW::m_cursorEnabled = true;
+CInputGLFW* CInputGLFW::m_instance = nullptr;
 static const int SCROLL_UP = 3;
 static const int SCROLL_DOWN = 4;
 static int g_prevX;
@@ -43,20 +25,20 @@ void CInputGLFW::OnMouse(GLFWwindow* window, int button, int action, int /*mods*
 	case GLFW_MOUSE_BUTTON_LEFT:
 		if (action == GLFW_PRESS)
 		{
-			m_signals->m_onLMBDown(ix, iy);
+			m_instance->OnLMBDown(ix, iy);
 		}
 		else
 		{
-			m_signals->m_onLMBUp(ix, iy);
+			m_instance->OnLMBUp(ix, iy);
 		}break;
 	case GLFW_MOUSE_BUTTON_RIGHT:
 		if (action == GLFW_PRESS)
 		{
-			m_signals->m_onRMBDown(ix, iy);
+			m_instance->OnRMBDown(ix, iy);
 		}
 		else
 		{
-			m_signals->m_onRMBUp(ix, iy);
+			m_instance->OnRMBUp(ix, iy);
 		}break;
 	}
 }
@@ -66,11 +48,11 @@ void CInputGLFW::OnScroll(GLFWwindow* /*window*/, double /*xoffset*/, double yof
 	static const double offsetthreshold = 0.1;
 	if (yoffset < -offsetthreshold)
 	{
-		m_signals->m_onWheelDown();
+		m_instance->OnMouseWheelDown();
 	}
 	if (yoffset > offsetthreshold)
 	{
-		m_signals->m_onWheelUp();
+		m_instance->OnMouseWheelUp();
 	}
 }
 
@@ -78,84 +60,24 @@ void CInputGLFW::OnKeyboard(GLFWwindow* /*window*/, int key, int /*scancode*/, i
 {
 	if (action == GLFW_RELEASE)
 	{
-		m_signals->m_onKeyUp(key, mods);
+		m_instance->OnKeyUp(key, mods);
 	}
 	else
 	{
-		m_signals->m_onKeyDown(key, mods);
+		m_instance->OnKeyDown(key, mods);
 	}
-	m_signals->m_modifiers = mods;
+	m_instance->m_modifiers = mods;
 }
 
-void CInputGLFW::OnCharacter(GLFWwindow* /*window*/, unsigned int key)
+void CInputGLFW::CharacterCallback(GLFWwindow* /*window*/, unsigned int key)
 {
-	m_signals->m_onCharacter(key);
+	m_instance->OnCharacter(static_cast<wchar_t>(key));
 }
 
 CInputGLFW::CInputGLFW(GLFWwindow * window)
 	: m_window(window)
 {
-	m_signals = std::make_unique<CInputGLFW::sSignals>();
-}
-
-void CInputGLFW::DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onLMBDown.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onLMBUp.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onRMBDown.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onRMBUp.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnMouseWheelUp(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onWheelUp.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnMouseWheelDown(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onWheelDown.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onKeyDown.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onKeyUp.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnCharacter(std::function<bool(unsigned int character) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onCharacter.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
-{
-	m_signals->m_onMouseMove.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_signals->m_onGamepadButton.Connect(handler, priority, tag);
-}
-
-void CInputGLFW::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_signals->m_onGamepadAxis.Connect(handler, priority, tag);
+	m_instance = this;
 }
 
 static int screenCenterX = 320;
@@ -179,16 +101,16 @@ void CInputGLFW::EnableCursor(bool enable /*= true*/)
 		glfwGetWindowSize(m_window, &width, &height);
 		screenCenterX = width / 2;
 		screenCenterY = height / 2;
-		glfwSetCursorPos(m_window, screenCenterX, screenCenterY);
 		g_lastMouseX = screenCenterX;
 		g_lastMouseY = screenCenterY;
+		glfwSetCursorPos(m_window, screenCenterX, screenCenterY);
 	}
 }
 
-void CInputGLFW::OnMouseMove(GLFWwindow* window, double xpos, double ypos)
+void CInputGLFW::MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 {
-	m_signals->m_onMouseMove(static_cast<int>(xpos), static_cast<int>(ypos));
-	if (!m_cursorEnabled)
+	m_instance->OnMouseMove(static_cast<int>(xpos), static_cast<int>(ypos));
+	if (!m_instance->m_cursorEnabled)
 	{
 		if (g_prevX == 0 && g_prevY)
 		{
@@ -228,7 +150,7 @@ void CInputGLFW::UpdateControllers()
 				
 				if (buttons[j] != oldState.buttons[j])
 				{
-					m_signals->m_onGamepadButton(i, j, buttons[j] == GL_TRUE);
+					m_instance->OnGamepadButton(i, j, buttons[j] == GL_TRUE);
 				}
 			}
 			const float* axes = glfwGetJoystickAxes(i, &count);
@@ -241,7 +163,7 @@ void CInputGLFW::UpdateControllers()
 			{
 				if (axes[j] != oldState.axes[j] || (count > j + 1 && axes[j + 1] != oldState.axes[j + 1]))
 				{
-					m_signals->m_onGamepadAxis(i, j / 2, axes[j], axes[j+1]);
+					m_instance->OnGamepadAxis(i, j / 2, axes[j], axes[j+1]);
 				}
 			}
 			m_gamepadStates[i] = state;
@@ -257,20 +179,6 @@ int CInputGLFW::GetMouseX() const
 int CInputGLFW::GetMouseY() const
 {
 	return g_lastMouseY;
-}
-
-void CInputGLFW::DeleteAllSignalsByTag(std::string const& tag)
-{
-	m_signals->m_onLMBDown.RemoveByTag(tag);
-	m_signals->m_onLMBUp.RemoveByTag(tag);
-	m_signals->m_onRMBDown.RemoveByTag(tag);
-	m_signals->m_onRMBUp.RemoveByTag(tag);
-	m_signals->m_onWheelUp.RemoveByTag(tag);
-	m_signals->m_onWheelDown.RemoveByTag(tag);
-	m_signals->m_onKeyDown.RemoveByTag(tag);
-	m_signals->m_onKeyUp.RemoveByTag(tag);
-	m_signals->m_onCharacter.RemoveByTag(tag);
-	m_signals->m_onMouseMove.RemoveByTag(tag);
 }
 
 VirtualKey CInputGLFW::KeycodeToVirtualKey(int key) const
@@ -292,8 +200,8 @@ VirtualKey CInputGLFW::KeycodeToVirtualKey(int key) const
 int CInputGLFW::GetModifiers() const
 {
 	int result = 0;
-	if (m_signals->m_modifiers & GLFW_MOD_ALT) result |= MODIFIER_ALT;
-	if (m_signals->m_modifiers & GLFW_MOD_SHIFT) result |= MODIFIER_SHIFT;
-	if (m_signals->m_modifiers & GLFW_MOD_CONTROL) result |= MODIFIER_CTRL;
+	if (m_instance->m_modifiers & GLFW_MOD_ALT) result |= MODIFIER_ALT;
+	if (m_instance->m_modifiers & GLFW_MOD_SHIFT) result |= MODIFIER_SHIFT;
+	if (m_instance->m_modifiers & GLFW_MOD_CONTROL) result |= MODIFIER_CTRL;
 	return result;
 }

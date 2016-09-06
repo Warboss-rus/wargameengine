@@ -5,8 +5,6 @@
 #include "../LogWriter.h"
 #include "../OSSpecific.h"
 #include "../ThreadPool.h"
-#include "../view/CameraStrategy.h"
-#include "../view/CameraFirstPerson.h"
 #include "../view/GameView.h"
 
 void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
@@ -71,24 +69,6 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		double size = args.GetDbl(1);
 		std::wstring texture = args.GetWStr(2);
 		view.CreateSkybox(size, texture);
-		return nullptr;
-	});
-
-	handler.RegisterFunction(CAMERA_STRATEGY, [&](IArguments const& args) {
-		if (args.GetCount() != 4)
-			throw std::runtime_error("4 argument expected (max trans x, max trans y, max scale, min scale)");
-		double maxTransX = args.GetDbl(1);
-		double maxTransY = args.GetDbl(2);
-		double maxScale = args.GetDbl(3);
-		double minScale = args.GetDbl(4);
-		view.SetCamera(new CCameraStrategy(maxTransX, maxTransY, maxScale, minScale));
-		return nullptr;
-	});
-
-	handler.RegisterFunction(CAMERA_FIRST_PERSON, [&](IArguments const& args) {
-		if (args.GetCount() != 0)
-			throw std::runtime_error("no arguments expected ()");
-		view.SetCamera(new CCameraFirstPerson());
 		return nullptr;
 	});
 

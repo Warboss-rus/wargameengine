@@ -1,8 +1,7 @@
 #include "GameWindowAndroid.h"
-#include <GLES/gl.h>
+#include <EGL/egl.h>
 #include "android\looper.h"
-#include "../../WargameEngineMobile/WargameEngineMobile.NativeActivity/android_native_app_glue.h"
-#include "../LogWriter.h"
+#include "..\..\WargameEngineMobile\WargameEngineMobile.NativeActivity\android_native_app_glue.h"
 
 CGameWindowAndroid::CGameWindowAndroid(android_app* app)
 	: m_app(app)
@@ -73,11 +72,6 @@ void CGameWindowAndroid::Init(ANativeWindow * window)
 		m_onResize(width, height);
 	}
 
-	// Initialize GL state.
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-	glShadeModel(GL_SMOOTH);
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-
 	m_active = true;
 }
 
@@ -85,13 +79,9 @@ void CGameWindowAndroid::DrawFrame()
 {
 	if (m_active) 
 	{
-		if (m_onUpdate)
-		{
-			m_onUpdate();
-		}
 		if (m_onDraw)
 		{
-			m_onDraw(RenderEye::NONE);
+			m_onDraw();
 		}
 
 		// Drawing is throttled to the screen update rate, so there
@@ -162,12 +152,7 @@ void CGameWindowAndroid::HandleInput(AInputEvent* event)
 	m_input.HandleInput(event);
 }
 
-void CGameWindowAndroid::DoOnUpdate(std::function<void() > const& handler)
-{
-	m_onUpdate = handler;
-}
-
-void CGameWindowAndroid::DoOnDrawScene(std::function<void(RenderEye) > const& handler)
+void CGameWindowAndroid::DoOnDrawScene(std::function<void() > const& handler)
 {
 	m_onDraw = handler;
 }
@@ -199,7 +184,7 @@ void CGameWindowAndroid::ToggleFullscreen()
 
 void CGameWindowAndroid::EnableVRMode(bool /*show*/)
 {
-	LogWriter::WriteLine("GameWindowAndroid does not support VR mode, use GameWindowVR instead");
+	throw std::runtime_error("GameWindowAndroid does not support VR mode, use GameWindowVR instead");
 }
 
 IInput& CGameWindowAndroid::ResetInput()

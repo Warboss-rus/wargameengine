@@ -1,4 +1,6 @@
-#include "pch.h"
+#include <unistd.h>
+#include <android/log.h>
+#include "android_native_app_glue.h"
 #include "..\..\WargameEngine\view\GameView.h"
 #include "..\..\WargameEngine\SoundPlayerOpenSLES.h"
 #include "..\..\WargameEngine\view\TextWriter.h"
@@ -26,8 +28,8 @@
 *
 */
 
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "WargameEngineMobile.NativeActivity", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "WargameEngineMobile.NativeActivity", __VA_ARGS__))
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "WargameEngineMobile", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "WargameEngineMobile", __VA_ARGS__))
 
 /**
 * Our saved state data.

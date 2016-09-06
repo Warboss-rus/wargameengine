@@ -113,8 +113,8 @@ void Unbind()
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-COpenGLRenderer::COpenGLRenderer(bool ignoreClear)
-	:m_textureManager(nullptr), m_ignoreClear(ignoreClear)
+COpenGLRenderer::COpenGLRenderer()
+	:m_textureManager(nullptr)
 {
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
@@ -526,7 +526,7 @@ void COpenGLRenderer::EnableBlending(bool enable)
 		glDisable(GL_BLEND);
 }
 
-void COpenGLRenderer::SetUpViewport(CVector3d const& position, CVector3d const& target, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
+void COpenGLRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
 {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -536,9 +536,8 @@ void COpenGLRenderer::SetUpViewport(CVector3d const& position, CVector3d const& 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	LookAt(position, target, { 0.0, 1.0, 0.0 });
 	glPushAttrib(GL_VIEWPORT_BIT);
-	glViewport(0, 0, viewportWidth, viewportHeight);
+	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
 void COpenGLRenderer::RestoreViewport()
@@ -566,13 +565,10 @@ void COpenGLRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, 
 
 void COpenGLRenderer::ClearBuffers(bool color, bool depth)
 {
-	if (!m_ignoreClear)
-	{
-		GLbitfield mask = 0;
-		if (color) mask |= GL_COLOR_BUFFER_BIT;
-		if (depth) mask |= GL_DEPTH_BUFFER_BIT;
-		glClear(mask);
-	}
+	GLbitfield mask = 0;
+	if (color) mask |= GL_COLOR_BUFFER_BIT;
+	if (depth) mask |= GL_DEPTH_BUFFER_BIT;
+	glClear(mask);
 }
 
 void COpenGLRenderer::ActivateTextureSlot(TextureSlot slot)

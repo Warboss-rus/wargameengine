@@ -9,16 +9,8 @@ class IGameWindow
 public:
 	virtual ~IGameWindow() {}
 
-	enum class RenderEye
-	{
-		NONE,
-		LEFT,
-		RIGHT,
-	};
-
 	virtual void LaunchMainLoop() = 0;
-	virtual void DoOnUpdate(std::function<void()> const& handler) = 0;
-	virtual void DoOnDrawScene(std::function<void(RenderEye)> const& handler) = 0;
+	virtual void DoOnDrawScene(std::function<void()> const& handler) = 0;
 	virtual void DoOnResize(std::function<void(int, int)> const& handler) = 0;
 	virtual void DoOnShutdown(std::function<void()> const& handler) = 0;
 	virtual void ResizeWindow(int width, int height) = 0;
