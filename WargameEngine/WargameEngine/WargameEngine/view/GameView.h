@@ -94,6 +94,7 @@ private:
 	void InitInput();
 	void DrawText3D(CVector3d const& pos, std::wstring const& text);
 	void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
+	void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;
 
@@ -122,5 +123,6 @@ private:
 	std::unique_ptr<IDrawingList> m_tableListShadow;
 	bool m_vertexLightning;
 	IViewport * m_shadowMapViewport;
+	IViewport * m_currentViewport;
 	CVector3d m_lightPosition;
 };

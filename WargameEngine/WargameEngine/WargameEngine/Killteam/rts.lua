@@ -14,7 +14,9 @@ function Init()
 	EnableShadowMap(4096, 65)
 	SetAnisotropy(GetMaxAnisotropy())
 	EnableMSAA()
-	SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
+	if(GetRendererName() ~= "DirectX11") then
+		SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
+	end
 	CreateSkybox(80, "skybox_sand")
 	CreateTable(60, 30, "sand.dds")
 	SetSelectionCallback("OnSelection")

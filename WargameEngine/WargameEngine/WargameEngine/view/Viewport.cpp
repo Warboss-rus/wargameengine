@@ -36,6 +36,8 @@ void CViewport::Draw(DrawFunc const& draw)
 	m_renderer.SetUpViewport(m_x, m_y, m_width, m_height, m_fieldOfView, m_nearPane, m_farPane);
 	m_renderer.ResetViewMatrix();
 	m_renderer.LookAt(m_camera->GetPosition(), m_camera->GetDirection(), m_camera->GetUpVector());
+	m_renderer.GetViewMatrix(m_viewMatrix);
+	m_renderer.GetProjectionMatrix(m_projectionMatrix);
 	draw(false, true);
 }
 
@@ -46,22 +48,12 @@ ICachedTexture const& CViewport::GetTexture() const
 
 Matrix4F CViewport::GetProjectionMatrix() const
 {
-	Matrix4F result;
-	m_renderer.SetUpViewport(m_x, m_y, m_width, m_height, m_fieldOfView, m_nearPane, m_farPane);
-	m_renderer.GetProjectionMatrix(result);
-	m_renderer.RestoreViewport();
-	return result;
+	return m_projectionMatrix;
 }
 
 Matrix4F CViewport::GetViewMatrix() const
 {
-	Matrix4F result;
-	m_renderer.PushMatrix();
-	m_renderer.ResetViewMatrix();
-	m_renderer.LookAt(m_camera->GetPosition(), m_camera->GetDirection(), m_camera->GetUpVector());
-	m_renderer.GetViewMatrix(result);
-	m_renderer.PopMatrix();
-	return result;
+	return m_viewMatrix;
 }
 
 void CViewport::Resize(int width, int height)
@@ -83,4 +75,9 @@ void CViewport::SetClippingPlanes(double near /*= 1.0*/, double far /*= 1000.0*/
 {
 	m_nearPane = near;
 	m_farPane = far;
+}
+
+bool CViewport::PointIsInViewport(int x, int y) const
+{
+	return x >= m_x && x <= m_x + m_width && y >= m_y && y <= m_y + m_height;
 }

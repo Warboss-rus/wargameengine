@@ -4,6 +4,8 @@
 #include "../LogWriter.h"
 #include "TextureManager.h"
 #include "ShaderManagerOpenGL.h"
+#include "Matrix4.h"
+#include "IViewport.h"
 
 using namespace std;
 
@@ -422,36 +424,42 @@ void COpenGLVertexBuffer::UnBind() const
 	glDisableClientState(GL_VERTEX_ARRAY);
 }
 
-void COpenGLRenderer::WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const
+std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)
 {
-	//Get model, projection and viewport matrices
-	double matModelView[16], matProjection[16];
-	int viewport[4];
-	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
-	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	//Set OpenGL Windows coordinates
-	double winX = (double)x;
-	double winY = viewport[3] - (double)y;
-
-	//Cast a ray from eye to mouse cursor;
-	gluUnProject(winX, winY, 0.0, matModelView, matProjection,
-		viewport, &start.x, &start.y, &start.z);
-	gluUnProject(winX, winY, 1.0, matModelView, matProjection,
-		viewport, &end.x, &end.y, &end.z);
+	std::vector<double> result(16);
+	for (size_t i = 0; i < 16; ++i)
+	{
+		result[i] = static_cast<float>(matrix[i]);
+	}
+	return result;
 }
 
-void COpenGLRenderer::WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const
+void COpenGLRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const
 {
-	double matModelView[16], matProjection[16];
-	int viewport[4];
-	glGetDoublev(GL_MODELVIEW_MATRIX, matModelView);
-	glGetDoublev(GL_PROJECTION_MATRIX, matProjection);
-	glGetIntegerv(GL_VIEWPORT, viewport);
+	//Get model, projection and viewport matrices
+	auto matModelView = Matrix2DoubleArray(viewport.GetViewMatrix());
+	auto matProjection = Matrix2DoubleArray(viewport.GetProjectionMatrix());
+	int viewportData[4] = {viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight()};
+	//Set OpenGL Windows coordinates
+	double winX = (double)x;
+	double winY = viewportData[3] - (double)y;
+
+	//Cast a ray from eye to mouse cursor;
+	gluUnProject(winX, winY, 0.0, matModelView.data(), matProjection.data(),
+		viewportData, &start.x, &start.y, &start.z);
+	gluUnProject(winX, winY, 1.0, matModelView.data(), matProjection.data(),
+		viewportData, &end.x, &end.y, &end.z);
+}
+
+void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const
+{
+	auto matModelView = Matrix2DoubleArray(viewport.GetViewMatrix());
+	auto matProjection = Matrix2DoubleArray(viewport.GetProjectionMatrix());
+	int viewportData[4] = { viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight() };
 	CVector3d windowPos;
-	gluProject(worldCoords.x, worldCoords.y, worldCoords.z, matModelView, matProjection, viewport, &windowPos.x, &windowPos.y, &windowPos.z);
+	gluProject(worldCoords.x, worldCoords.y, worldCoords.z, matModelView.data(), matProjection.data(), viewportData, &windowPos.x, &windowPos.y, &windowPos.z);
 	x = static_cast<int>(windowPos.x);
-	y = static_cast<int>(viewport[3] - windowPos.y);
+	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
 
 void COpenGLRenderer::EnableLight(size_t index, bool enable)
@@ -529,24 +537,11 @@ void COpenGLRenderer::EnableBlending(bool enable)
 void COpenGLRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
 {
 	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
 	glLoadIdentity();
 	GLdouble aspect = (GLdouble)viewportWidth / (GLdouble)viewportHeight;
 	gluPerspective(viewingAngle, aspect, nearPane, farPane);
 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	glPushAttrib(GL_VIEWPORT_BIT);
 	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
-}
-
-void COpenGLRenderer::RestoreViewport()
-{
-	glPopAttrib();
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
 }
 
 void COpenGLRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
@@ -682,29 +677,26 @@ void COpenGLRenderer::EnableMultisampling(bool enable)
 	}
 }
 
-void COpenGLRenderer::OnResize(int width, int height, int left)
+void COpenGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 {
-	glViewport(left, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	GLdouble aspect = (GLdouble)width / (GLdouble)height;
-	gluPerspective(60, aspect, 0.5, 1000.0);
-	glMatrixMode(GL_MODELVIEW);
-}
-
-void COpenGLRenderer::SetUpViewport2D()
-{
-	glEnable(GL_BLEND);
-	glPushMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glPushAttrib(GL_VIEWPORT_BIT);
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
+	glEnable(GL_BLEND);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
 	glOrtho(viewport[0], viewport[2], viewport[3], viewport[1], -1, 1);
 	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
 	glLoadIdentity();
+
+	drawHandler();
+
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 COpenGLFrameBuffer::COpenGLFrameBuffer()

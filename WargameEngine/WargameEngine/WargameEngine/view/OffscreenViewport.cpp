@@ -84,3 +84,8 @@ void COffscreenViewport::SetClippingPlanes(double near /*= 1.0*/, double far /*=
 	m_nearPane = near;
 	m_farPane = far;
 }
+
+bool COffscreenViewport::PointIsInViewport(int, int) const
+{
+	return false;//offscreen viewport is not shown on a window
+}

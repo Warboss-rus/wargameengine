@@ -170,6 +170,11 @@ std::wstring CAsyncFileProvider::GetModelAbsolutePath(std::wstring const& path) 
 	return AppendPath(m_modelDir, path);
 }
 
+std::wstring CAsyncFileProvider::GetTextureAbsolutePath(std::wstring const& path) const
+{
+	return AppendPath(m_textureDir, path);
+}
+
 std::wstring CAsyncFileProvider::GetScriptAbsolutePath(std::wstring const& path) const
 {
 	return AppendPath(m_scriptDir, path);

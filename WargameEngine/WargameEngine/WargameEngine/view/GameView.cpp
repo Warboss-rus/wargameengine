@@ -113,10 +113,22 @@ void CGameView::InitLandscape()
 void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ)
 {
 	CVector3d start, end;
-	m_viewHelper->WindowCoordsToWorldVector(windowX, windowY, start, end);
+	WindowCoordsToWorldVector(windowX, windowY, start, end);
 	double a = (worldZ - start.z) / (end.z - start.z);
 	worldX = a * (end.x - start.x) + start.x;
 	worldY = a * (end.y - start.y) + start.y;
+}
+
+void CGameView::WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end)
+{
+	for (auto& viewport : m_viewports)
+	{
+		if (viewport->PointIsInViewport(x, y))
+		{
+			m_viewHelper->WindowCoordsToWorldVector(*viewport, x, y, start, end);
+			return;
+		}
+	}
 }
 
 void CGameView::InitInput()
@@ -183,7 +195,7 @@ void CGameView::InitInput()
 	//Game Controller
 	m_input->DoOnLMBDown([this](int x, int y) {
 		CVector3d begin, end;
-		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
+		WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnLeftMouseDown(begin, end, m_input->GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
@@ -194,7 +206,7 @@ void CGameView::InitInput()
 	}, 5, g_controllerTag);
 	m_input->DoOnLMBUp([this](int x, int y) {
 		CVector3d begin, end;
-		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
+		WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnLeftMouseUp(begin, end, m_input->GetModifiers());
 		if (result && !m_ruler.IsEnabled())
 		{
@@ -205,7 +217,7 @@ void CGameView::InitInput()
 	}, 5, g_controllerTag);
 	m_input->DoOnMouseMove([this](int x, int y) {
 		CVector3d begin, end;
-		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
+		WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnMouseMove(begin, end, m_input->GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
 		if (result && object)
@@ -216,12 +228,12 @@ void CGameView::InitInput()
 	}, 5, g_controllerTag);
 	m_input->DoOnRMBDown([this](int x, int y) {
 		CVector3d begin, end;
-		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
+		WindowCoordsToWorldVector(x, y, begin, end);
 		return m_gameController->OnRightMouseDown(begin, end, m_input->GetModifiers());
 	}, 5, g_controllerTag);
 	m_input->DoOnRMBUp([this](int x, int y) {
 		CVector3d begin, end;
-		m_viewHelper->WindowCoordsToWorldVector(x, y, begin, end);
+		WindowCoordsToWorldVector(x, y, begin, end);
 		return m_gameController->OnRightMouseUp(begin, end, m_input->GetModifiers());
 	}, 5, g_controllerTag);
 	m_input->DoOnGamepadButtonStateChange([this](int gamepadIndex, int buttonIndex, bool newState){
@@ -234,12 +246,9 @@ void CGameView::InitInput()
 
 void CGameView::DrawUI()
 {
-	m_viewHelper->SetUpViewport2D();
-	m_renderer->PushMatrix();
-	m_renderer->ResetViewMatrix();
-	m_ui->Draw();
-	m_renderer->PopMatrix();
-	m_viewHelper->RestoreViewport();
+	m_viewHelper->DrawIn2D([this] {
+		m_ui->Draw();
+	});
 }
 
 void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation, IRenderer & renderer)
@@ -308,6 +317,7 @@ void CGameView::Update()
 	m_soundPlayer->Update();
 	for (auto& viewport : m_viewports)
 	{
+		m_currentViewport = viewport.get();
 		viewport->Draw([this, &viewport](bool depthOnly, bool drawUI) {
 			auto& camera = viewport->GetCamera();
 			CVector3d direction = camera.GetDirection();
@@ -691,16 +701,13 @@ void CGameView::Preload(wstring const& image)
 	if (!image.empty())
 	{
 		m_viewHelper->ClearBuffers(true, true);
-		m_viewHelper->SetUpViewport2D();
-		m_renderer->PushMatrix();
-		m_renderer->ResetViewMatrix();
-		m_renderer->SetTexture(image);
-		float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
-		float height = 480.0f;//glutGet(GLUT_WINDOW_HEIGHT);
-		m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
-		//glutSwapBuffers();
-		m_renderer->PopMatrix();
-		m_viewHelper->RestoreViewport();
+		m_viewHelper->DrawIn2D([this, &image] {
+			m_renderer->SetTexture(image);
+			float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
+			float height = 480.0f;//glutGet(GLUT_WINDOW_HEIGHT);
+			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
+			//glutSwapBuffers();
+		});
 	}
 	size_t countObjects = m_gameModel->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
@@ -723,14 +730,11 @@ void CGameView::LoadModule(wstring const& modulePath)
 
 void CGameView::DrawText3D(CVector3d const& pos, wstring const& text)
 {
-	m_viewHelper->SetUpViewport2D();
-	m_renderer->PushMatrix();
-	m_renderer->ResetViewMatrix();
-	int x, y;
-	m_viewHelper->WorldCoordsToWindowCoords(pos, x, y);
-	m_textWriter->PrintText(x, y, "times.ttf", 24, text);
-	m_renderer->PopMatrix();
-	m_viewHelper->RestoreViewport();
+	m_viewHelper->DrawIn2D([&] {
+		int x, y;
+		m_viewHelper->WorldCoordsToWindowCoords(*m_currentViewport, pos, x, y);
+		m_textWriter->PrintText(x, y, "times.ttf", 24, text);
+	});
 }
 
 void CGameView::EnableLight(size_t index, bool enable)

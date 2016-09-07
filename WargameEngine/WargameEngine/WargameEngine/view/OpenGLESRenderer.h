@@ -48,8 +48,8 @@ public:
 
 	virtual void SetTextureManager(CTextureManager & textureManager) override;
 
-	virtual void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const override;
-	virtual void WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const override;
+	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const override;
+	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const override;
 	virtual void EnableLight(size_t index, bool enable) override;
 	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
 	virtual void SetLightPosition(size_t index, float* pos) override;
@@ -59,10 +59,9 @@ public:
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;
 	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
-	virtual void RestoreViewport() override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
-	virtual void SetUpViewport2D() override;
+	virtual void DrawIn2D(std::function<void()> const& drawHandler) override;
 
 	virtual void ActivateTextureSlot(TextureSlot slot) override;
 	virtual void UnbindTexture() override;
@@ -76,7 +75,6 @@ public:
 	virtual std::string GetName() const override;
 
 	void EnableMultisampling(bool enable);
-	void OnResize(int width, int height);
 	void SetVersion(int version);
 private:
 	CTextureManager* m_textureManager;

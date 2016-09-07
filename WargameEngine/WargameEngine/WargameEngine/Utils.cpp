@@ -60,6 +60,7 @@ std::vector<char> ReadFile(std::wstring const& path)
 	std::vector<char> result;
 	std::ifstream file;
 	OpenFile(file, path, std::ios::binary | std::ios::in);
+	if (!file) return result;
 	file.seekg(0, std::ios::end);
 	std::streamsize size = file.tellg();
 	result.resize(static_cast<size_t>(size));

@@ -42,7 +42,7 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::wstring const&
 					{
 						for (auto& color: teamcolor)
 						{
-							ApplyTeamcolor(*img, color.suffix, const_cast<unsigned char*>(color.color), path);
+							ApplyTeamcolor(*img, color.suffix, const_cast<unsigned char*>(color.color), m_asyncFileProvider.GetTextureAbsolutePath(path));
 						}
 					}
 					return;
@@ -136,7 +136,7 @@ void CTextureManager::SetTexture(std::wstring const& path, TextureSlot slot, int
 void ApplyTeamcolor(CImage & image, std::wstring const& maskFile, unsigned char * color, std::wstring const& fileName)
 {
 	std::wstring path = fileName.substr(0, fileName.find_last_of('.')) + maskFile + L".bmp";
-	std::vector<char> maskData = ReadFile(maskFile);
+	std::vector<char> maskData = ReadFile(path);
 	if (maskData.empty())
 	{
 		LogWriter::WriteLine(L"Texture manager: Cannot open mask file " + path);

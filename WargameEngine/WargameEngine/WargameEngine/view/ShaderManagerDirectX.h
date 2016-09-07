@@ -4,6 +4,7 @@
 #include <atlcomcli.h>
 #include <d3d11shader.h>
 #include <vector>
+#include <map>
 
 class CDirectXRenderer;
 struct sLightSource;
@@ -58,4 +59,6 @@ private:
 	CComPtr<ID3D10Blob> m_VS;
 	CComPtr<ID3D11ShaderReflection> m_reflection;
 	mutable std::vector<unsigned char> m_constantBufferData;
+	mutable std::map<eVertexAttribute, CComPtr<ID3D11Buffer>> m_vertexAttributeBuffers;
+	mutable std::map<eVertexAttribute, size_t> m_vertexAttributeBufferSizes;
 };

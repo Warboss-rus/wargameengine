@@ -25,6 +25,13 @@ public:
 	virtual void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 
 	virtual void SetClippingPlanes(double near = 1.0, double far = 1000.0) override;
+
+	virtual bool PointIsInViewport(int x, int y) const override;
+
+	virtual int GetX() const override { return m_x; }
+	virtual int GetY() const override { return m_y; }
+	virtual int GetWidth() const override { return m_width; }
+	virtual int GetHeight() const override { return m_height; }
 private:
 	std::unique_ptr<ICamera> m_camera;
 	int m_x;
@@ -33,6 +40,8 @@ private:
 	int m_height;
 	float m_fieldOfView;
 	IViewHelper & m_renderer;
+	Matrix4F m_projectionMatrix;
+	Matrix4F m_viewMatrix;
 	bool m_resize;
 	float m_polygonOffsetFactor = 0.0f;
 	float m_polygonOffsetUnits = 0.0f;

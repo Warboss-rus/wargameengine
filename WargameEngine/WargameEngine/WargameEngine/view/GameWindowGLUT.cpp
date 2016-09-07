@@ -31,7 +31,6 @@ void CGameWindowGLUT::OnDrawScene()
 
 void CGameWindowGLUT::OnReshape(int width, int height)
 {
-	g_instance->m_renderer->OnResize(width, height);
 	if (g_instance->m_onResize)
 	{
 		g_instance->m_onResize(width, height);

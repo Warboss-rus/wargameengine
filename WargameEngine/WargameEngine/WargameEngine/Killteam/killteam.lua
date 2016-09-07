@@ -13,7 +13,9 @@ function Init()
 	SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
 	SetLightSpecular(1, 1, 1, 1, 1)
 	EnableShadowMap(4096, 65)
-	SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
+	if(GetRendererName() ~= "DirectX11") then
+		SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
+	end
 	SetSelectionCallback("OnSelection")
 	UI:NewButton("ButtonEndPhase", 10, 10, 30, 90, "End phase", "EndPhase")
 	UI:NewButton("ButtonRuler", 110, 10, 30, 80, "Ruler", "SetRuler")

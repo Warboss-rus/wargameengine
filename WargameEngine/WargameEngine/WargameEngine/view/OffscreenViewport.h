@@ -27,6 +27,13 @@ public:
 
 	virtual void SetClippingPlanes(double near = 1.0, double far = 1000.0) override;
 
+	virtual bool PointIsInViewport(int x, int y) const override;
+
+	virtual int GetX() const override { return 0; }
+	virtual int GetY() const override { return 0; }
+	virtual int GetWidth() const override { return m_width; }
+	virtual int GetHeight() const override { return m_height; }
+
 private:
 	bool m_depthOnly;
 	int m_width;

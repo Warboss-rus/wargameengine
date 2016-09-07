@@ -19,12 +19,13 @@ enum class LightningType
 };
 
 class CTextureManager;
+class IViewport;
 
 class IViewHelper : public ITextureHelper, public IRenderer
 {
 public:
-	virtual void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end) const = 0;
-	virtual void WorldCoordsToWindowCoords(CVector3d const& worldCoords, int& x, int& y) const = 0;
+	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const = 0;
+	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const = 0;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const = 0;
 	virtual void EnableLight(size_t index, bool enable) = 0;
 	virtual void SetLightColor(size_t index, LightningType type, float * values) = 0;
@@ -35,8 +36,7 @@ public:
 	virtual void EnableDepthTest(bool enable) = 0;
 	virtual void EnableBlending(bool enable) = 0;
 	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) = 0;
-	virtual void RestoreViewport() = 0;
-	virtual void SetUpViewport2D() = 0;
+	virtual void DrawIn2D(std::function<void()> const& drawHandler) = 0;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) = 0;
 	virtual void ClearBuffers(bool color = true, bool depth = true) = 0;
 	virtual void SetTextureManager(CTextureManager & textureManager) = 0;

@@ -237,33 +237,48 @@ void CShaderManagerDirectX::SetUniformMatrix4(std::string const& uniform, size_t
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const
 {
-	CComPtr<ID3D11Buffer> buffer;
+	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attributeIndex) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attributeIndex] : nullptr;
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	CreateBuffer(&buffer, totalSize * sizeof(float));
+	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attributeIndex))
+	{
+		CreateBuffer(&buffer, totalSize * sizeof(float));
+		m_vertexAttributeBufferSizes[attributeIndex] = totalSize;
+		m_vertexAttributeBuffers[attributeIndex] = buffer;
+	}
 	CopyBufferData(buffer, values, totalSize * sizeof(float));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const
 {
-	CComPtr<ID3D11Buffer> buffer;
+	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attributeIndex) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attributeIndex] : nullptr;
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	CreateBuffer(&buffer, totalSize * sizeof(int));
+	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attributeIndex))
+	{
+		CreateBuffer(&buffer, totalSize * sizeof(float));
+		m_vertexAttributeBufferSizes[attributeIndex] = totalSize;
+		m_vertexAttributeBuffers[attributeIndex] = buffer;
+	}
 	CopyBufferData(buffer, values, totalSize * sizeof(int));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, unsigned int* values) const
 {
-	CComPtr<ID3D11Buffer> buffer;
+	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attributeIndex) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attributeIndex] : nullptr;
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	CreateBuffer(&buffer, totalSize * sizeof(unsigned int));
+	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attributeIndex))
+	{
+		CreateBuffer(&buffer, totalSize * sizeof(float));
+		m_vertexAttributeBufferSizes[attributeIndex] = totalSize;
+		m_vertexAttributeBuffers[attributeIndex] = buffer;
+	}
 	CopyBufferData(buffer, values, totalSize * sizeof(unsigned int));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
@@ -354,7 +369,11 @@ void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const voi
 {
 	if (begin + size > m_constantBufferData.size()) return;
 	CComPtr<ID3D11Buffer> constantBuffer;
-	CreateConstantBuffer(m_constantBufferData.size(), &constantBuffer);
+	m_render->GetContext()->VSGetConstantBuffers(0, 1, &constantBuffer);
+	if (!constantBuffer)
+	{
+		CreateConstantBuffer(m_constantBufferData.size(), &constantBuffer);
+	}
 	memcpy(m_constantBufferData.data() + begin, data, size);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	m_render->GetContext()->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);

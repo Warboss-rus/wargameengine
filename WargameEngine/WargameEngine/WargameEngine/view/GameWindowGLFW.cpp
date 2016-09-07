@@ -18,7 +18,6 @@ void CGameWindowGLFW::OnChangeState(GLFWwindow * /*window*/, int state)
 
 void CGameWindowGLFW::OnReshape(GLFWwindow * /*window*/, int width, int height)
 {
-	g_instance->m_renderer->OnResize(width, height);
 	if (g_instance->m_onResize)
 	{
 		g_instance->m_onResize(width, height);

@@ -16,6 +16,7 @@ public:
 	void GetTextureAsync(std::wstring const& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler(), bool now = false);
 	void GetModelAsync(std::wstring const& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler());
 	std::wstring GetModelAbsolutePath(std::wstring const& path) const;
+	std::wstring GetTextureAbsolutePath(std::wstring const& path) const;
 	std::wstring GetScriptAbsolutePath(std::wstring const& path) const;
 	std::wstring GetShaderAbsolutePath(std::wstring const& path) const;
 	std::wstring GetAbsolutePath(std::wstring const& path) const;
