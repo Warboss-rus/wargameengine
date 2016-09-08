@@ -139,6 +139,8 @@ void CShaderManagerDirectX::NewProgram(std::wstring const& vertex /*= ""*/, std:
 		unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
 		m_constantBufferData.resize(size);
 		memset(m_constantBufferData.data(), 0, m_constantBufferData.size());
+		m_constantBuffer = nullptr;
+		CreateConstantBuffer(m_constantBufferData.size(), &m_constantBuffer);
 	}
 }
 
@@ -241,12 +243,7 @@ void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, 
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attributeIndex))
-	{
-		CreateBuffer(&buffer, totalSize * sizeof(float));
-		m_vertexAttributeBufferSizes[attributeIndex] = totalSize;
-		m_vertexAttributeBuffers[attributeIndex] = buffer;
-	}
+	MakeSureBufferCanFitData(buffer, totalSize, attributeIndex);
 	CopyBufferData(buffer, values, totalSize * sizeof(float));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
@@ -257,12 +254,7 @@ void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, 
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attributeIndex))
-	{
-		CreateBuffer(&buffer, totalSize * sizeof(float));
-		m_vertexAttributeBufferSizes[attributeIndex] = totalSize;
-		m_vertexAttributeBuffers[attributeIndex] = buffer;
-	}
+	MakeSureBufferCanFitData(buffer, totalSize, attributeIndex);
 	CopyBufferData(buffer, values, totalSize * sizeof(int));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
@@ -273,14 +265,19 @@ void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, 
 	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
+	MakeSureBufferCanFitData(buffer, totalSize, attributeIndex);
+	CopyBufferData(buffer, values, totalSize * sizeof(unsigned int));
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
+}
+
+void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, eVertexAttribute attributeIndex) const
+{
 	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attributeIndex))
 	{
 		CreateBuffer(&buffer, totalSize * sizeof(float));
 		m_vertexAttributeBufferSizes[attributeIndex] = totalSize;
 		m_vertexAttributeBuffers[attributeIndex] = buffer;
 	}
-	CopyBufferData(buffer, values, totalSize * sizeof(unsigned int));
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* /*defaultValue*/) const
@@ -368,19 +365,13 @@ void CShaderManagerDirectX::SetLight(size_t index, sLightSource & lightSource)
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const
 {
 	if (begin + size > m_constantBufferData.size()) return;
-	CComPtr<ID3D11Buffer> constantBuffer;
-	m_render->GetContext()->VSGetConstantBuffers(0, 1, &constantBuffer);
-	if (!constantBuffer)
-	{
-		CreateConstantBuffer(m_constantBufferData.size(), &constantBuffer);
-	}
 	memcpy(m_constantBufferData.data() + begin, data, size);
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	m_render->GetContext()->Map(constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	m_render->GetContext()->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, m_constantBufferData.data(), m_constantBufferData.size());
-	m_render->GetContext()->Unmap(constantBuffer, 0);
-	m_render->GetContext()->VSSetConstantBuffers(0, 1, &constantBuffer.p);
-	m_render->GetContext()->PSSetConstantBuffers(0, 1, &constantBuffer.p);
+	m_render->GetContext()->Unmap(m_constantBuffer, 0);
+	m_render->GetContext()->VSSetConstantBuffers(0, 1, &m_constantBuffer.p);
+	m_render->GetContext()->PSSetConstantBuffers(0, 1, &m_constantBuffer.p);
 }
 
 void CShaderManagerDirectX::CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const

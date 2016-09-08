@@ -617,7 +617,7 @@ void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direct
 {
 	XMVECTOR pos = Vec3ToXMVector(position);
 	XMVECTOR dir = Vec3ToXMVector(direction);
-	XMVECTOR upVec = DirectX::XMVectorSet(static_cast<float>(up.x), static_cast<float>(up.y), -static_cast<float>(up.z), 1.0f);
+	XMVECTOR upVec = Vec3ToXMVector(up);
 	m_viewMatrices.back() = DirectX::XMMatrixLookAtLH(pos, dir, upVec);
 	UpdateMatrices();
 }
@@ -881,7 +881,7 @@ void CDirectXRenderer::EnableBlending(bool enable)
 
 void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
 {
-	m_projectionMatrices.back() = DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane));
+	m_projectionMatrices.back() = DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane));
 	UpdateMatrices();
 }
 

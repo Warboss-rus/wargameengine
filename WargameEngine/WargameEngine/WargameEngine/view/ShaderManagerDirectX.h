@@ -50,6 +50,7 @@ private:
 	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size) const;
 	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
+	void MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, eVertexAttribute attributeIndex) const;
 
 	CComPtr<ID3D11Device> m_dev;
 	CDirectXRenderer * m_render;
@@ -61,4 +62,5 @@ private:
 	mutable std::vector<unsigned char> m_constantBufferData;
 	mutable std::map<eVertexAttribute, CComPtr<ID3D11Buffer>> m_vertexAttributeBuffers;
 	mutable std::map<eVertexAttribute, size_t> m_vertexAttributeBufferSizes;
+	CComPtr<ID3D11Buffer> m_constantBuffer;
 };
