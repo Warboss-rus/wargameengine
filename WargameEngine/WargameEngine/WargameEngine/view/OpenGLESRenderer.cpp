@@ -1,15 +1,19 @@
 #include "OpenGLESRenderer.h"
-#include <GLES2/gl2ext.h>
-#include <GLES3/gl3.h>
-#include "gluLite.h"
 #include "../LogWriter.h"
 #include "TextureManager.h"
 #include "ShaderManagerOpenGLES.h"
 #include "../Utils.h"
 #include "Matrix4.h"
 #include "IViewport.h"
+#include "gluLite.h"
+#include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
 
 using namespace std;
+
+static const int positionIndex = 0;
+static const int normalIndex = 2;
+static const int texCoordIndex = 1;
 
 class COpenGlCachedTexture : public ICachedTexture
 {
@@ -95,39 +99,36 @@ COpenGLESRenderer::COpenGLESRenderer()
 {
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-	glShadeModel(GL_SMOOTH);
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	m_viewMatrices.push_back(Matrix4F());
+	m_projectionMatrices.push_back(Matrix4F());
 }
 
 void Bind(const void* vertices, const void* normals, const void* texCoords, GLenum vertexType, GLenum normalType, GLenum texCoordType, int vertexAxesCount)
 {
 	if (vertices)
 	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(vertexAxesCount, vertexType, 0, vertices);
+		glEnableVertexAttribArray(positionIndex);
+		glVertexAttribPointer(positionIndex, vertexAxesCount, vertexType, GL_FALSE, 0, vertices);
 	}
 	if (normals)
 	{
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(normalType, 0, normals);
+		glEnableVertexAttribArray(normalIndex);
+		glVertexAttribPointer(normalIndex, 3, normalType, GL_FALSE, 0, normals);
 	}
 	if (texCoords)
 	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, texCoordType, 0, texCoords);
+		glEnableVertexAttribArray(texCoordIndex);
+		glVertexAttribPointer(texCoordIndex, 2, texCoordType, GL_FALSE, 0, texCoords);
 	}
 }
 
 void Unbind()
 {
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableVertexAttribArray(positionIndex);
+	glDisableVertexAttribArray(normalIndex);
+	glDisableVertexAttribArray(texCoordIndex);
 }
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
@@ -168,72 +169,74 @@ void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> con
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	std::vector<GLshort> shortVertex;
-	shortVertex.reserve(vertices.size() * 2);
-	for (auto& v : vertices)
-	{
-		shortVertex.push_back(v.x);
-		shortVertex.push_back(v.y);
-	}
-	Bind(shortVertex.data(), NULL, texCoords.data(), GL_SHORT, GL_SHORT, GL_FLOAT, 2);
+	Bind(vertices.data(), NULL, texCoords.data(), GL_FIXED, GL_FIXED, GL_FLOAT, 2);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 	Unbind();
 }
 
 void COpenGLESRenderer::PushMatrix()
 {
-	glPushMatrix();
+	m_viewMatrices.push_back(m_viewMatrices.back());
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::PopMatrix()
 {
-	glPopMatrix();
+	m_viewMatrices.pop_back();
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Translate(const int dx, const int dy, const int dz)
 {
-	glTranslatef(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_viewMatrices.back().Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Translate(const double dx, const double dy, const double dz)
 {
-	glTranslatef(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_viewMatrices.back().Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	glTranslatef(dx, dy, dz);
+	m_viewMatrices.back().Translate(dx, dy, dz);
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Scale(double scale)
 {
-	float fscale = static_cast<float>(scale);
-	glScalef(fscale, fscale, fscale);
+	m_viewMatrices.back().Scale(static_cast<float>(scale));
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Rotate(double angle, double x, double y, double z)
 {
-	glRotatef(static_cast<float>(angle), static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+	//m_viewMatrices.back().Rotate(static_cast<float>(angle), static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::GetViewMatrix(float * matrix) const
 {
-	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+	memcpy(matrix, m_viewMatrices.back(), sizeof(Matrix4F));
 }
 
 void COpenGLESRenderer::ResetViewMatrix()
 {
-	glLoadIdentity();
+	m_viewMatrices.back() = Matrix4F();
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up)
 {
-	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
+	m_viewMatrices.back() = Matrix4F();
+	//gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
+	UpdateUniforms();
 }
 
 void COpenGLESRenderer::SetColor(const float r, const float g, const float b)
 {
-	glColor4f(r, g, b, 1.0f);
+	m_color = { r, g, b, 1.0f };
 }
 
 float ToFloat(int color)
@@ -243,17 +246,36 @@ float ToFloat(int color)
 
 void COpenGLESRenderer::SetColor(const int r, const int g, const int b)
 {
-	glColor4f(ToFloat(r), ToFloat(g), ToFloat(b), 1.0f);
+	m_color = { ToFloat(r), ToFloat(g), ToFloat(b), 1.0f };
 }
 
 void COpenGLESRenderer::SetColor(const float * color)
 {
-	glColor4f(color[0], color[1], color[2], 1.0f);
+	m_color = { color[0], color[1], color[2], 1.0f };
 }
 
 void COpenGLESRenderer::SetColor(const int * color)
 {
-	glColor4f(ToFloat(color[0]), ToFloat(color[1]), ToFloat(color[2]), 1.0f);
+	m_color = { ToFloat(color[0]), ToFloat(color[1]), ToFloat(color[2]), 1.0f };
+}
+
+Matrix4F MakeOrhto(float left, float right, float bottom, float top, float near, float far)
+{
+	float a = 2.0f / (right - left);
+	float b = 2.0f / (top - bottom);
+	float c = -2.0f / (far - near);
+
+	float tx = -(right + left) / (right - left);
+	float ty = -(top + bottom) / (top - bottom);
+	float tz = -(far + near) / (far - near);
+
+	float ortho[16] = {
+		a, 0, 0, 0,
+		0, b, 0, 0,
+		0, 0, c, 0,
+		tx, ty, tz, 1
+	};
+	return ortho;
 }
 
 std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
@@ -281,22 +303,15 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	GLint oldViewport[4];
 	glGetIntegerv(GL_VIEWPORT, oldViewport);
 	glViewport(0, 0, width, height);
-	glPushMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glScalef(1.0f, -1.0f, 1.0f);
-	glOrthof(0, width, height, 0, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	m_projectionMatrices.push_back(MakeOrhto(0, width, 0, height, -1, 1));
+	m_viewMatrices.push_back(Matrix4F());
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	func();
 
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+	m_projectionMatrices.pop_back();
+	m_viewMatrices.pop_back();
+	UpdateUniforms();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -343,7 +358,9 @@ std::unique_ptr<IFrameBuffer> COpenGLESRenderer::CreateFramebuffer() const
 
 std::unique_ptr<IShaderManager> COpenGLESRenderer::CreateShaderManager() const
 {
-	return std::make_unique<CShaderManagerOpenGLES>();
+	auto shaderManager = std::make_unique<CShaderManagerOpenGLES>(this);
+	m_shaderManager = shaderManager.get();
+	return std::move(shaderManager);
 }
 
 void COpenGLESRenderer::SetTextureManager(CTextureManager & textureManager)
@@ -353,10 +370,10 @@ void COpenGLESRenderer::SetTextureManager(CTextureManager & textureManager)
 
 void COpenGLESRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
+	/*glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+	glMaterialf(GL_FRONT, GL_SHININESS, shininess);*/
 }
 
 COpenGlCachedTexture::COpenGlCachedTexture()
@@ -408,18 +425,18 @@ void COpenGLVertexBuffer::Bind() const
 {
 	if (m_vertex)
 	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, m_vertex);
+		glEnableVertexAttribArray(positionIndex);
+		glVertexAttribPointer(positionIndex, 3, GL_FLOAT, GL_FALSE, 0, m_vertex);
 	}
 	if (m_normals)
 	{
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_FLOAT, 0, m_normals);
+		glEnableVertexAttribArray(normalIndex);
+		glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, m_normals);
 	}
 	if (m_texCoords)
 	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, GL_FLOAT, 0, m_texCoords);
+		glEnableVertexAttribArray(texCoordIndex);
+		glVertexAttribPointer(texCoordIndex, 2, GL_FLOAT, GL_FALSE, 0, m_texCoords);
 	}
 }
 
@@ -435,9 +452,9 @@ void COpenGLVertexBuffer::DrawAll(size_t count)
 
 void COpenGLVertexBuffer::UnBind() const
 {
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableVertexAttribArray(texCoordIndex);
+	glDisableVertexAttribArray(normalIndex);
+	glDisableVertexAttribArray(positionIndex);
 }
 
 void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const
@@ -465,42 +482,42 @@ void COpenGLESRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3
 
 void COpenGLESRenderer::EnableLight(size_t index, bool enable)
 {
-	if (enable)
+	/*if (enable)
 	{
 		glEnable(GL_LIGHT0 + index);
 	}
 	else
 	{
 		glDisable(GL_LIGHT0 + index);
-	}
+	}*/
 }
 
-static const map<LightningType, GLenum> lightningTypesMap = {
+/*static const map<LightningType, GLenum> lightningTypesMap = {
 	{ LightningType::DIFFUSE, GL_DIFFUSE },
 	{ LightningType::AMBIENT, GL_AMBIENT },
 	{ LightningType::SPECULAR, GL_SPECULAR }
-};
+};*/
 
 void COpenGLESRenderer::SetLightColor(size_t index, LightningType type, float * values)
 {
-	glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
+	//glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
 }
 
 void COpenGLESRenderer::SetLightPosition(size_t index, float* pos)
 {
-	glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
+	//glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
 }
 
 float COpenGLESRenderer::GetMaximumAnisotropyLevel() const
 {
-	float aniso = 1.0f;
+	float aniso = 16.0f;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
 	return aniso;
 }
 
 void COpenGLESRenderer::EnableVertexLightning(bool enable)
 {
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, enable ? GL_MODULATE : GL_REPLACE);
+	/*glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, enable ? GL_MODULATE : GL_REPLACE);
 	if (enable)
 	{
 		glEnable(GL_LIGHTING);
@@ -510,12 +527,12 @@ void COpenGLESRenderer::EnableVertexLightning(bool enable)
 	{
 		glDisable(GL_LIGHTING);
 		glDisable(GL_NORMALIZE);
-	}
+	}*/
 }
 
 void COpenGLESRenderer::GetProjectionMatrix(float * matrix) const
 {
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	memcpy(matrix, m_projectionMatrices.back(), sizeof(Matrix4F));
 }
 
 void COpenGLESRenderer::EnableDepthTest(bool enable)
@@ -536,11 +553,8 @@ void COpenGLESRenderer::EnableBlending(bool enable)
 
 void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
 {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
 	double aspect = (double)viewportWidth / (double)viewportHeight;
 	gluPerspective(viewingAngle, aspect, nearPane, farPane);
-	glMatrixMode(GL_MODELVIEW);
 	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
@@ -653,18 +667,31 @@ std::string COpenGLESRenderer::GetName() const
 	return "OpenGLES";
 }
 
-void COpenGLESRenderer::EnableMultisampling(bool enable)
-{
-	if (enable)
-		glEnable(GL_MULTISAMPLE);
-	else
-		glDisable(GL_MULTISAMPLE);
-	
-}
-
 void COpenGLESRenderer::SetVersion(int version)
 {
 	m_version = version;
+}
+
+void COpenGLESRenderer::Init()
+{
+	glDepthFunc(GL_LESS);
+	glEnable(GL_TEXTURE_2D);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void COpenGLESRenderer::BindShaderManager(const CShaderManagerOpenGLES * shaderManager) const
+{
+	m_shaderManager = shaderManager;
+	UpdateUniforms();
+}
+
+void COpenGLESRenderer::UpdateUniforms() const
+{
+	Matrix4F m = m_projectionMatrices.back();
+	m *= m_viewMatrices.back();
+	m_shaderManager->SetUniformMatrix4("mvp_matrix", 1, m);
+	m_shaderManager->SetUniformValue4("color", 1, m_color.data());
 }
 
 void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)
@@ -672,21 +699,15 @@ void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glEnable(GL_BLEND);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrthof(viewport[0], viewport[2], viewport[3], viewport[1], 1.0f, -1.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	m_projectionMatrices.push_back(MakeOrhto(viewport[0], viewport[2], viewport[3], viewport[1], 1.0f, -1.0f));
+	m_viewMatrices.push_back(Matrix4F());
+	UpdateUniforms();
 
 	drawHandler();
 
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	m_viewMatrices.pop_back();
+	m_projectionMatrices.pop_back();
+	UpdateUniforms();
 }
 
 COpenGLESFrameBuffer::COpenGLESFrameBuffer()
@@ -718,11 +739,11 @@ void COpenGLESFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTexture
 		{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
 		{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
 	};
-	if (type == CachedTextureType::DEPTH)
+	/*if (type == CachedTextureType::DEPTH)
 	{
-		//glDrawBuffer(GL_NONE);
+		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
-	}
+	}*/
 	glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGlCachedTexture&)texture, 0);
 	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)

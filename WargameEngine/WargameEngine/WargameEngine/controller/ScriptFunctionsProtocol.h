@@ -100,6 +100,8 @@
 
 #define GET_RENDERER_NAME L"GetRendererName"
 
+#define ENABLE_VR L"EnableVR"
+
 /*CONTROLLER*/
 
 #define LOAD_MODULE L"LoadModule"

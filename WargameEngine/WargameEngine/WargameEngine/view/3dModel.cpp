@@ -85,7 +85,7 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 			{
 				end = m_meshes[i].polygonIndex;
 				buffer->DrawIndexes(&m_indexes[begin], end - begin);
-				SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
+				if (!vertexOnly) SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
 				begin = (i + 1 == m_meshes.size()) ? m_count : m_meshes[i + 1].polygonIndex;
 				continue;
 			}
@@ -368,7 +368,7 @@ void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool 
 		if (m_lists.find(key) == m_lists.end())
 		{
 			m_lists[key] = renderer.CreateDrawingList([&] {
-				DrawModel(renderer, &key.hiddenMeshes, false, m_vertices, m_normals, false, shaderManager, &key.teamcolor, &key.replaceTextures);
+				DrawModel(renderer, &key.hiddenMeshes, vertexOnly, m_vertices, m_normals, false, shaderManager, &key.teamcolor, &key.replaceTextures);
 			});
 		}
 		m_lists.at(key)->Draw();

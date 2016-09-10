@@ -1,7 +1,6 @@
 #pragma once
-#include <GLES/gl.h>
 
-void gluLookAt(GLfloat eyex, GLfloat eyey, GLfloat eyez, GLfloat centerx, GLfloat centery, GLfloat centerz, GLfloat upx, GLfloat upy, GLfloat upz);
+void gluLookAt(float eyex, float eyey, float eyez, float centerx, float centery, float centerz, float upx, float upy, float upz);
 
 void gluProject(double objx, double objy, double objz, const float modelMatrix[16], const float projMatrix[16], const int viewport[4], double *winx, double *winy, double *winz);
 

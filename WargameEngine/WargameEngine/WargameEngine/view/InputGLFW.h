@@ -23,6 +23,7 @@ public:
 	static void CharacterCallback(GLFWwindow* window, unsigned int key);
 	static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
 	void UpdateControllers();
+	void SetHeadRotation(int deviceIndex, double x, double y, double z);
 private:
 	GLFWwindow * m_window;
 	static CInputGLFW * m_instance;

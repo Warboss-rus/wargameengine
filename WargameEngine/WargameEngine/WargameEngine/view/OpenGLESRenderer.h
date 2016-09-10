@@ -1,6 +1,10 @@
 #pragma once
 #include "IRenderer.h"
 #include "IViewHelper.h"
+#include "Matrix4.h"
+#include <vector>
+
+class CShaderManagerOpenGLES;
 
 class COpenGLESRenderer : public IViewHelper
 {
@@ -74,9 +78,15 @@ public:
 
 	virtual std::string GetName() const override;
 
-	void EnableMultisampling(bool enable);
 	void SetVersion(int version);
+	void Init();
+	void BindShaderManager(const CShaderManagerOpenGLES * shaderManager) const;
 private:
+	void UpdateUniforms() const;
 	CTextureManager* m_textureManager;
+	mutable const CShaderManagerOpenGLES * m_shaderManager;
 	int m_version;
+	std::vector<Matrix4F> m_viewMatrices;
+	std::vector<Matrix4F> m_projectionMatrices;
+	std::vector<float> m_color;
 };

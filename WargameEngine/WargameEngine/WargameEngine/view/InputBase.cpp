@@ -60,6 +60,11 @@ void CInputBase::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int 
 	m_onGamepadAxis.Connect(handler, priority, tag);
 }
 
+void CInputBase::DoOnHeadRotationChange(std::function<bool(double x, double y, double z)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+{
+	m_onHeadRotation.Connect(handler, priority, tag);
+}
+
 void CInputBase::DeleteAllSignalsByTag(std::string const& tag)
 {
 	m_onLMBDown.RemoveByTag(tag);
@@ -134,4 +139,9 @@ void CInputBase::OnGamepadButton(int gamepadIndex, int buttonIndex, bool newStat
 void CInputBase::OnGamepadAxis(int gamepadIndex, int axisIndex, double horizontal, double vertical)
 {
 	m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
+}
+
+void CInputBase::OnHeadRotation(double x, double y, double z)
+{
+	m_onHeadRotation(x, y, z);
 }

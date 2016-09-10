@@ -355,6 +355,7 @@
     <ClInclude Include="..\..\WargameEngine\view\Material.h" />
     <ClInclude Include="..\..\WargameEngine\view\MaterialManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\Matrix4.h" />
+    <ClInclude Include="..\..\WargameEngine\view\MirrorCamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\ModelManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\OBJModelFactory.h" />
     <ClInclude Include="..\..\WargameEngine\view\OffscreenViewport.h" />
@@ -438,6 +439,7 @@
     <ClCompile Include="..\..\WargameEngine\view\InputAndroid.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\InputBase.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\MaterialManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\MirrorCamera.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ModelManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\OBJModelFactory.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\OffscreenViewport.cpp" />

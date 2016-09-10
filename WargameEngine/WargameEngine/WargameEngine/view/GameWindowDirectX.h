@@ -15,7 +15,7 @@ public:
 	virtual void ResizeWindow(int width, int height) override;
 	virtual void SetTitle(std::wstring const& title) override;
 	virtual void ToggleFullscreen() override;
-	virtual void EnableVRMode(bool show) override;
+	virtual bool EnableVRMode(bool show, VRViewportFactory const&) override;
 	virtual IInput& ResetInput() override;
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;

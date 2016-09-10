@@ -1,13 +1,18 @@
 #include "OffscreenViewport.h"
 
 COffscreenViewport::COffscreenViewport(CachedTextureType type, int width, int height, float fieldOfView, IViewHelper & viewHelper, int textureIndex)
-	: m_depthOnly(type == CachedTextureType::DEPTH), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_viewHelper(viewHelper), m_textureIndex(textureIndex)
+	: m_depthOnly(type == CachedTextureType::DEPTH), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_viewHelper(viewHelper)
 {
+	if (textureIndex != -1)
+	{
+		m_viewHelper.ActivateTextureSlot(static_cast<TextureSlot>(textureIndex));
+	}
 	m_texture = m_viewHelper.CreateTexture(NULL, width, height, type);
 	m_FBO = m_viewHelper.CreateFramebuffer();
 	m_FBO->Bind();
 	m_FBO->AssignTexture(*m_texture, type);
 	m_FBO->UnBind();
+	m_viewHelper.ActivateTextureSlot(TextureSlot::eDiffuse);
 }
 
 ICamera& COffscreenViewport::GetCamera()
@@ -27,13 +32,12 @@ void COffscreenViewport::SetCamera(std::unique_ptr<ICamera> && camera)
 
 void COffscreenViewport::Draw(DrawFunc const& draw)
 {
+	m_FBO->Bind();
+	m_viewHelper.ClearBuffers(!m_depthOnly, true);
 	if (fabs(m_polygonOffsetFactor) > FLT_EPSILON && fabs(m_polygonOffsetUnits) > FLT_EPSILON)
 	{
 		m_viewHelper.EnablePolygonOffset(true, m_polygonOffsetFactor, m_polygonOffsetUnits);
 	}
-	m_FBO->Bind();
-
-	m_viewHelper.ClearBuffers(!m_depthOnly, m_depthOnly);
 	m_viewHelper.SetUpViewport(0, 0, m_width, m_height, m_fieldOfView, m_nearPane, m_farPane);
 	m_viewHelper.ResetViewMatrix();
 	m_viewHelper.LookAt(m_camera->GetPosition(), m_camera->GetDirection(), m_camera->GetUpVector());
@@ -42,15 +46,8 @@ void COffscreenViewport::Draw(DrawFunc const& draw)
 	m_viewHelper.GetProjectionMatrix(m_projectionMatrix);
 
 	draw(m_depthOnly, false);
-	m_FBO->UnBind();
-
-	if (m_textureIndex != -1)
-	{
-		m_viewHelper.ActivateTextureSlot(static_cast<TextureSlot>(m_textureIndex));
-		m_texture->Bind();
-		m_viewHelper.ActivateTextureSlot(TextureSlot::eDiffuse);
-	}
 	m_viewHelper.EnablePolygonOffset(false);
+	m_FBO->UnBind();
 }
 
 ICachedTexture const& COffscreenViewport::GetTexture() const

@@ -17,7 +17,7 @@ public:
 	virtual void SetTitle(std::wstring const& title) override;
 	virtual void ToggleFullscreen() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
-	virtual void EnableVRMode(bool show) override;
+	virtual bool EnableVRMode(bool show, VRViewportFactory const&) override;
 	virtual IInput& ResetInput() override;
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;

@@ -1,47 +1,69 @@
 #include "ShaderManagerOpenGLES.h"
 #include <map>
-#include <EGL/egl.h>
-#include <GLES/gl.h>
 #include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 #include <GLES3/gl3.h>
-#include <GLES3/gl3ext.h>
 #include <fstream>
 #include "../LogWriter.h"
 #include "../Module.h"
 #include "../Utils.h"
+#include "OpenGLESRenderer.h"
+
+static const std::string defaultVertexShader = "\
+attribute vec4 Position;\n\
+attribute vec3 Normal;\n\
+attribute vec2 TexCoord;\n\
+uniform mat4 mvp_matrix;\n\
+uniform vec3 color;\n\
+varying vec2 v_texcoord;\n\
+void main()\n\
+{\n\
+	gl_Position = mvp_matrix * Position;\n\
+	v_texcoord = TexCoord;\n\
+}";
+static const std::string defaultFragmentShader = "\
+precision mediump float;\
+uniform mat4 mvp_matrix;\n\
+uniform vec4 color;\n\
+uniform sampler2D texture;\n\
+varying vec2 v_texcoord;\n\
+void main()\n\
+{\n\
+	gl_FragColor = texture2D(texture, v_texcoord);\n\
+}";
 
 static const std::map<IShaderManager::eVertexAttribute, unsigned int> attributeLocationMap = {
 	{ IShaderManager::eVertexAttribute::WEIGHT, 9 },
 	{ IShaderManager::eVertexAttribute::WEIGHT_INDEX, 10 }
 };
 
-CShaderManagerOpenGLES::CShaderManagerOpenGLES() :m_program(0)
+CShaderManagerOpenGLES::CShaderManagerOpenGLES(const COpenGLESRenderer * renderer) :m_program(0), m_defaultProgram(0), m_renderer(renderer)
 {
 }
 
 void CShaderManagerOpenGLES::BindProgram() const
 {
-	if(m_program != 0)
-		glUseProgram(m_program);
+	if (m_customProgram != 0)
+	{
+		m_program = m_customProgram;
+	}
+	glUseProgram(m_program);
+	m_renderer->BindShaderManager(this);
 }
 
 void CShaderManagerOpenGLES::UnBindProgram() const
 {
-	glUseProgram(0);
+	if (!m_defaultProgram)
+	{
+		auto nonConstThis = const_cast<CShaderManagerOpenGLES*>(this);
+		nonConstThis->NewProgram();
+		nonConstThis->m_defaultProgram = m_program;
+	}
+	glUseProgram(m_program);
+	m_renderer->BindShaderManager(this);
 }
 
-GLuint CompileShader(std::wstring const& path, GLuint program, GLenum type)
+GLuint CompileShader(std::string const& shaderText, GLuint program, GLenum type)
 {
-	std::string shaderText;
-	std::string line;
-	std::ifstream iFile;
-	OpenFile(iFile, path);
-	while(std::getline(iFile, line))
-	{
-		shaderText += line + '\n';
-	}
-	iFile.close();
 	GLuint shader = glCreateShader(type);
 	glAttachShader(program, shader);
 	GLchar const * text = shaderText.c_str();
@@ -59,18 +81,26 @@ GLuint CompileShader(std::wstring const& path, GLuint program, GLenum type)
 	return shader;
 }
 
+GLuint ComplieShaderFromFile(std::wstring const& path, GLuint program, GLenum type)
+{
+	std::string shaderText;
+	std::string line;
+	std::ifstream iFile;
+	OpenFile(iFile, path);
+	while (std::getline(iFile, line))
+	{
+		shaderText += line + '\n';
+	}
+	iFile.close();
+	return CompileShader(shaderText, program, type);
+}
+
 void CShaderManagerOpenGLES::NewProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry)
 {
 	m_program = glCreateProgram();
 	GLuint vertexShader(0), framgentShader(0);
-	if(!vertex.empty())
-	{
-		vertexShader = CompileShader(vertex, m_program, GL_VERTEX_SHADER);
-	}
-	if(!fragment.empty())
-	{
-		framgentShader = CompileShader(fragment, m_program, GL_FRAGMENT_SHADER);
-	}
+	vertexShader = vertex.empty() ? CompileShader(defaultVertexShader, m_program, GL_VERTEX_SHADER) : ComplieShaderFromFile(vertex, m_program, GL_VERTEX_SHADER);
+	framgentShader = fragment.empty() ? CompileShader(defaultFragmentShader, m_program, GL_FRAGMENT_SHADER) : ComplieShaderFromFile(fragment, m_program, GL_FRAGMENT_SHADER);
 	if(!geometry.empty())
 	{
 		LogWriter::WriteLine("Geomerty shaders are not supported in openGL ES");
@@ -95,6 +125,10 @@ void CShaderManagerOpenGLES::NewProgram(std::wstring const& vertex, std::wstring
 	glDeleteShader(framgentShader);
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	glVertexAttrib4fv(attributeLocationMap.at(eVertexAttribute::WEIGHT), def);
+
+	m_positionLocation = glGetAttribLocation(m_program, "Position");
+	m_normalsLocation = glGetAttribLocation(m_program, "Normal");
+	m_texCoordLocation = glGetAttribLocation(m_program, "TexCoord");
 }
 
 void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int count, const float* value) const

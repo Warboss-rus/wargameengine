@@ -171,6 +171,11 @@ void CInputGLFW::UpdateControllers()
 	}
 }
 
+void CInputGLFW::SetHeadRotation(int deviceIndex, double x, double y, double z)
+{
+	CInputBase::OnHeadRotation(x, y, z);
+}
+
 int CInputGLFW::GetMouseX() const
 {
 	return g_lastMouseX;

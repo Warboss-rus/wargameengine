@@ -1,14 +1,15 @@
 #include "gluLite.h"
 #include <math.h>
 #include <vector>
+#include "GLES\gl.h"
 
-void gluLookAt(GLfloat eyex, GLfloat eyey, GLfloat eyez,
-	GLfloat centerx, GLfloat centery, GLfloat centerz,
-	GLfloat upx, GLfloat upy, GLfloat upz)
+void gluLookAt(float eyex, float eyey, float eyez,
+	float centerx, float centery, float centerz,
+	float upx, float upy, float upz)
 {
-	GLfloat m[16];
-	GLfloat x[3], y[3], z[3];
-	GLfloat mag;
+	float m[16];
+	float x[3], y[3], z[3];
+	float mag;
 
 	/* Make rotation matrix */
 

@@ -78,7 +78,7 @@ public:
 	void LoadModule(std::wstring const& module);
 	void EnableLight(size_t index, bool enable = true);
 	void SetLightColor(size_t index, LightningType type, float * values);
-	
+	bool EnableVRMode(bool enable, bool mirrorToScreen = true);
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();

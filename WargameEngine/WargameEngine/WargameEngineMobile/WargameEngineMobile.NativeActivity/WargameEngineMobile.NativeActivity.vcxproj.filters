@@ -89,12 +89,6 @@
     <ClInclude Include="..\..\WargameEngine\MathLibLite.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\CameraFirstPerson.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\CameraStrategy.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -337,6 +331,15 @@
     <ClInclude Include="..\..\WargameEngine\view\FixedCamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\CameraFirstPerson.h">
+      <Filter>Source Files\view\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\CameraStrategy.h">
+      <Filter>Source Files\view\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\MirrorCamera.h">
+      <Filter>Source Files\view\Cameras</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />
@@ -411,12 +414,6 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\view\3dModel.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\CameraFirstPerson.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\CameraStrategy.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\view\GameView.cpp">
@@ -556,8 +553,17 @@
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterViewport.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\CameraFirstPerson.cpp">
+      <Filter>Source Files\view\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\CameraStrategy.cpp">
+      <Filter>Source Files\view\Cameras</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\WargameEngine\view\FixedCamera.cpp">
-      <Filter>Source Files\view</Filter>
+      <Filter>Source Files\view\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\MirrorCamera.cpp">
+      <Filter>Source Files\view\Cameras</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -590,6 +596,9 @@
     </Filter>
     <Filter Include="Source Files\rapidxml">
       <UniqueIdentifier>{22c80e6d-406d-4642-a213-be9f53fd7846}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\view\Cameras">
+      <UniqueIdentifier>{f819a478-db47-44c5-9c8d-266b0c3e74ce}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

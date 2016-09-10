@@ -44,7 +44,7 @@ std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const&
 #include <unistd.h>
 #include <cstring>
 #include <dirent.h>
-#include <algorithm>"
+#include <algorithm>
 
 std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const& mask, bool recursive)
 {

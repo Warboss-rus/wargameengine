@@ -175,6 +175,10 @@ function GamepadButtons(gamepadIndex, buttonIndex, state)
 	end
 end
 
+function VR()
+	EnableVR(true, true)
+end
+
 SetLightPosition(1, 0, 0, 30)
 --EnableShadowMap(1024, 53)
 EnableMSAA()
@@ -219,6 +223,7 @@ UI:NewButton("ButtonMusic", 110, 100, 30, 80, "PlayMusic", "Music")
 UI:NewButton("ButtonTC1", 210, 100, 30, 80, "TeamColor1", "TC1")
 UI:NewButton("ButtonTC2", 310, 100, 30, 80, "TeamColor2", "TC2")
 UI:NewButton("ButtonTC3", 410, 100, 30, 80, "TeamColor3", "TC3")
+UI:NewButton("ButtonVR", 510, 100, 30, 80, "VR mode", "VR")
 BindKey(127, false, false, false, "DeleteSelectedObject")--Bind Delete key
 
 SetSelectionCallback("OnSelection")

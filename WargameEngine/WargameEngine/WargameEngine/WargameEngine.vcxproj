@@ -267,6 +267,7 @@
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="controller\ScriptRegisterViewport.cpp" />
     <ClCompile Include="view\InputBase.cpp" />
+    <ClCompile Include="view\MirrorCamera.cpp" />
     <ClCompile Include="view\OffscreenViewport.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
@@ -350,6 +351,7 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="view\InputBase.h" />
+    <ClInclude Include="view\MirrorCamera.h" />
     <ClInclude Include="view\OffscreenViewport.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />

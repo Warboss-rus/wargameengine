@@ -135,7 +135,7 @@ void android_main(struct android_app* state) {
 		// We are starting with a previous saved state; restore from it.
 		engine.state = *(struct saved_state*)state->savedState;
 	}
-
+	//context.window->LaunchMainLoop();
 	// loop waiting for stuff to do.
 	CGameView view(&context);
 }

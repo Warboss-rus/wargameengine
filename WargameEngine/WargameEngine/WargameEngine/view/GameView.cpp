@@ -1,6 +1,5 @@
 #include "GameView.h"
 #include <string>
-#include <cstring>
 #include "Matrix4.h"
 #include "../controller/GameController.h"
 #include "../model/ObjectGroup.h"
@@ -8,7 +7,6 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "../Ruler.h"
-#include "../OSSpecific.h"
 #include "CameraStrategy.h"
 #include "../UI/UIElement.h"
 #include "../UI/UITheme.h"
@@ -19,6 +17,7 @@
 #include "OffscreenViewport.h"
 #include "CameraFirstPerson.h"
 #include "FixedCamera.h"
+#include "MirrorCamera.h"
 
 using namespace std;
 using namespace placeholders;
@@ -75,7 +74,6 @@ CGameView::CGameView(sGameViewContext * context)
 	});
 	m_window->DoOnShutdown([this] {
 		m_threadPool.CancelAll();
-		DisableShadowMap();
 	});
 
 	m_window->LaunchMainLoop();
@@ -319,10 +317,10 @@ void CGameView::Update()
 	{
 		m_currentViewport = viewport.get();
 		viewport->Draw([this, &viewport](bool depthOnly, bool drawUI) {
-			auto& camera = viewport->GetCamera();
-			CVector3d direction = camera.GetDirection();
 			if (m_skybox && !depthOnly)
 			{
+				auto& camera = viewport->GetCamera();
+				CVector3d direction = camera.GetDirection();
 				m_skybox->Draw(-direction[0], -direction[1], -direction[2], camera.GetScale());
 			}
 			DrawObjects(depthOnly);
@@ -331,12 +329,13 @@ void CGameView::Update()
 				DrawBoundingBox();
 				DrawRuler();
 			}
-			if (!depthOnly && drawUI)
+			if (drawUI)
 			{
 				DrawUI();
 			}
 		});
 	}
+	m_currentViewport = nullptr;
 }
 
 void CGameView::DrawRuler()
@@ -351,7 +350,8 @@ void CGameView::DrawRuler()
 }
 void CGameView::DrawTable(bool shadowOnly)
 {	
-	auto list = m_renderer->CreateDrawingList([this, shadowOnly] {
+	auto& tableList = shadowOnly ? m_tableListShadow : m_tableList;
+	tableList = m_renderer->CreateDrawingList([this, shadowOnly] {
 		CLandscape const& landscape = m_gameModel->GetLandscape();
 		double x1 = -landscape.GetWidth() / 2.0;
 		double x2 = landscape.GetWidth() / 2.0;
@@ -395,14 +395,6 @@ void CGameView::DrawTable(bool shadowOnly)
 		}
 		m_renderer->SetTexture(L"");
 	});
-	if (shadowOnly)
-	{
-		m_tableListShadow = move(list);
-	}
-	else
-	{
-		m_tableList = move(list);
-	}
 }
 
 void CGameView::DrawObjects(bool shadowOnly)
@@ -423,17 +415,18 @@ void CGameView::DrawObjects(bool shadowOnly)
 	list->Draw();
 	DrawStaticObjects(shadowOnly);
 	size_t countObjects = m_gameModel->GetObjectCount();
+	auto shaderManager = shadowOnly ? nullptr : m_shaderManager.get();
 	for (size_t i = 0; i < countObjects; i++)
 	{
 		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		m_renderer->PushMatrix();
 		m_renderer->Translate(object->GetX(), object->GetY(), 0.0);
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, false, m_shaderManager.get());
+		m_modelManager.DrawModel(object->GetPathToModel(), object, shadowOnly, shaderManager);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, false, m_shaderManager.get());
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, shadowOnly, shaderManager);
 		}
 		m_renderer->PopMatrix();
 	}
@@ -584,9 +577,10 @@ void CGameView::EnableShadowMap(int size, float angle)
 {
 	if (m_shadowMapViewport) return;
 	m_viewports.push_back(std::make_unique<COffscreenViewport>(CachedTextureType::DEPTH, size, size, angle, *m_viewHelper, static_cast<int>(TextureSlot::eShadowMap)));
-	m_viewports.back()->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 0.0, 1.0 })));
-	m_viewports.back()->SetPolygonOffset(true, 2.0f, 500.0f);
-	m_viewports.back()->SetClippingPlanes(3.0, 300.0);
+	m_shadowMapViewport = m_viewports.back().get();
+	m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 0.0, 1.0 })));
+	m_shadowMapViewport->SetPolygonOffset(true, 2.0f, 500.0f);
+	m_shadowMapViewport->SetClippingPlanes(3.0, 300.0);
 }
 
 void CGameView::DisableShadowMap()
@@ -596,6 +590,7 @@ void CGameView::DisableShadowMap()
 		if (it->get() == m_shadowMapViewport)
 		{
 			m_viewports.erase(it);
+			break;
 		}
 	}
 	m_shadowMapViewport = nullptr;
@@ -745,6 +740,38 @@ void CGameView::EnableLight(size_t index, bool enable)
 void CGameView::SetLightColor(size_t index, LightningType type, float * values)
 {
 	m_viewHelper->SetLightColor(index, type, values);
+}
+
+bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)
+{
+	ICamera * camera;
+	auto viewportFactory = [this, &camera](unsigned int width, unsigned int height) {
+		auto& first = AddViewport(std::make_unique<COffscreenViewport>(CachedTextureType::RGBA, width, height, 65.0f, *m_viewHelper));
+		auto& second = AddViewport(std::make_unique<COffscreenViewport>(CachedTextureType::RGBA, width, height, 65.0f, *m_viewHelper));
+		auto cameraPtr = std::make_unique<CCameraFirstPerson>();
+		camera = cameraPtr.get();
+		cameraPtr->AttachVR(*m_input);
+		first.SetCamera(std::move(cameraPtr));
+		second.SetCamera(std::make_unique<CCameraMirror>(camera, CVector3d{0, 0, 0}));
+		return std::pair<IViewport&, IViewport&>(first, second);
+	};
+	bool result = m_window->EnableVRMode(enable, viewportFactory);
+	if (enable && result)
+	{
+		if (mirrorToScreen)
+		{
+			m_viewports.front()->SetCamera(std::make_unique<CCameraMirror>(camera));
+		}
+		else
+		{
+			m_viewports.erase(m_viewports.begin());//remove first viewport
+		}
+	}
+	else
+	{
+		//restore viewports
+	}
+	return result;
 }
 
 void CGameView::EnableGPUSkinning(bool enable)

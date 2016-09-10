@@ -17,7 +17,6 @@ void CGameWindowAndroid::Init(ANativeWindow * window)
 	const EGLint attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE,
 		EGL_BLUE_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
 		EGL_RED_SIZE, 8,
@@ -63,6 +62,8 @@ void CGameWindowAndroid::Init(ANativeWindow * window)
 		throw std::runtime_error("Unable to eglMakeCurrent");
 	}
 
+	m_renderer.Init();
+
 	int width, height;
 	eglQuerySurface(m_display, m_surface, EGL_WIDTH, &width);
 	eglQuerySurface(m_display, m_surface, EGL_HEIGHT, &height);
@@ -83,7 +84,6 @@ void CGameWindowAndroid::DrawFrame()
 		{
 			m_onDraw();
 		}
-
 		// Drawing is throttled to the screen update rate, so there
 		// is no need to do timing here.
 		eglSwapBuffers(m_display, m_surface);
@@ -182,7 +182,7 @@ void CGameWindowAndroid::ToggleFullscreen()
 	//there is no windowed mode on android
 }
 
-void CGameWindowAndroid::EnableVRMode(bool /*show*/)
+bool CGameWindowAndroid::EnableVRMode(bool /*show*/, VRViewportFactory const&)
 {
 	throw std::runtime_error("GameWindowAndroid does not support VR mode, use GameWindowVR instead");
 }
@@ -205,5 +205,5 @@ IViewHelper& CGameWindowAndroid::GetViewHelper()
 
 void CGameWindowAndroid::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 {
-	m_renderer.EnableMultisampling(enable);
+	
 }

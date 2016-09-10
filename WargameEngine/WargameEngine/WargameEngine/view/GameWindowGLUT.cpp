@@ -134,8 +134,8 @@ void CGameWindowGLUT::EnableMultisampling(bool enable, int /*level*/)
 	m_renderer->EnableMultisampling(enable);
 }
 
-void CGameWindowGLUT::EnableVRMode(bool /*show*/)
+bool CGameWindowGLUT::EnableVRMode(bool /*show*/, VRViewportFactory const&)
 {
-	LogWriter::WriteLine("GameWindowGLUT does not support VR mode, use GameWindowVR instead");
+	throw std::runtime_error("GameWindowGLUT does not support VR mode, use GameWindowVR instead");
 }
 

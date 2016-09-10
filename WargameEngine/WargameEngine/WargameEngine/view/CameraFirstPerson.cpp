@@ -122,6 +122,16 @@ void CCameraFirstPerson::SetInput(IInput & input)
 	}, 1, g_cameraTag);
 }
 
+void CCameraFirstPerson::AttachVR(IInput & input)
+{
+	input.DoOnHeadRotationChange([this] (double x, double y, double z){
+		m_rotX = x;
+		m_rotY = y;
+		m_rotZ = z;
+		return true;
+	});
+}
+
 void CCameraFirstPerson::Translate(double transX, double transY)
 {
 	double transY1 = transY * cos(m_rotX * M_PI / 180.0);

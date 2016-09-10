@@ -78,3 +78,17 @@ public:
 private:
 	CTextureManager* m_textureManager;
 };
+
+class COpenGlCachedTexture : public ICachedTexture
+{
+public:
+	COpenGlCachedTexture();
+	~COpenGlCachedTexture();
+
+	virtual void Bind() const override;
+	virtual void UnBind() const override;
+
+	operator unsigned int() const;
+private:
+	unsigned int m_id;
+};

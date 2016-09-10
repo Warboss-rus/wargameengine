@@ -40,7 +40,6 @@ private:
 	int m_height;
 	float m_fieldOfView;
 	IViewHelper & m_viewHelper;
-	int m_textureIndex;
 	std::unique_ptr<ICamera> m_camera;
 	std::unique_ptr<ICachedTexture> m_texture;
 	std::unique_ptr<IFrameBuffer> m_FBO;

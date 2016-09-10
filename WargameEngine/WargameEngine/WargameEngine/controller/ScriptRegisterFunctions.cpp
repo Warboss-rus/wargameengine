@@ -432,6 +432,13 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 			throw std::runtime_error("no argument expected");
 		return view.GetRenderer().GetName();
 	});
+
+	handler.RegisterFunction(ENABLE_VR, [&](IArguments const& args) {
+		if (args.GetCount() != 1 && args.GetCount() != 2)
+			throw std::runtime_error("1 or 2 arguments expected(enable, mirror to screen");
+		bool mirrorToScreen = args.GetCount() == 2 ? args.GetBool(2) : true;
+		return view.EnableVRMode(args.GetBool(1), mirrorToScreen);
+	});
 }
 
 auto GetCallbackFunction (IScriptHandler & handler, IArguments const& args, int index = 1)

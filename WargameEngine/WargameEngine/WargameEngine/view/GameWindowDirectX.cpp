@@ -242,9 +242,9 @@ void CGameWindowDirectX::ToggleFullscreen()
 	m_pImpl->ToggleFullscreen();
 }
 
-void CGameWindowDirectX::EnableVRMode(bool /*show*/)
+bool CGameWindowDirectX::EnableVRMode(bool /*show*/, VRViewportFactory const&)
 {
-	LogWriter::WriteLine("GameWindowDirectX does not support VR mode, use GameWindowVR instead");
+	throw std::runtime_error("GameWindowDirectX does not support VR mode, use GameWindowVR instead");
 }
 
 IInput& CGameWindowDirectX::ResetInput()

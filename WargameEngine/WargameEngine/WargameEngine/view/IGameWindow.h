@@ -16,7 +16,8 @@ public:
 	virtual void ResizeWindow(int width, int height) = 0;
 	virtual void SetTitle(std::wstring const& title) = 0;
 	virtual void ToggleFullscreen() = 0;
-	virtual void EnableVRMode(bool show) = 0;
+	typedef std::function<std::pair<IViewport&, IViewport&>(unsigned width, unsigned height)> VRViewportFactory;
+	virtual bool EnableVRMode(bool show, VRViewportFactory const& viewportFactory = VRViewportFactory()) = 0;
 	virtual IInput& ResetInput() = 0;
 	virtual IRenderer& GetRenderer() = 0;
 	virtual IViewHelper& GetViewHelper() = 0;

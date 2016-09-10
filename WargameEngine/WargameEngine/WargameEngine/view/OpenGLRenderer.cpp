@@ -9,20 +9,6 @@
 
 using namespace std;
 
-class COpenGlCachedTexture : public ICachedTexture
-{
-public:
-	COpenGlCachedTexture();
-	~COpenGlCachedTexture();
-
-	virtual void Bind() const override;
-	virtual void UnBind() const override;
-
-	operator unsigned int();
-private:
-	unsigned int m_id;
-};
-
 class COpenGLDrawingList : public IDrawingList
 {
 public:
@@ -358,7 +344,7 @@ void COpenGlCachedTexture::UnBind() const
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-COpenGlCachedTexture::operator unsigned int()
+COpenGlCachedTexture::operator unsigned int() const
 {
 	return m_id;
 }
@@ -692,7 +678,6 @@ void COpenGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 
 	drawHandler();
 
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();

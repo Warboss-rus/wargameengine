@@ -33,10 +33,9 @@ namespace std
 		return stream.str();
 	}
 
-	inline int stoi(const wstring& _Str, size_t *_Idx = 0, int _Base = 10)
+	inline int stoi(const wstring& _Str, size_t */*_Idx*/ = 0, int _Base = 10)
 	{
 		wchar_t *_Eptr;
-		_Idx;
 		return wcstol(_Str.c_str(), &_Eptr, _Base);
 	}
 }

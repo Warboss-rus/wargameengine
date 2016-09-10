@@ -11,6 +11,7 @@ public:
 	virtual CVector3d GetUpVector() const override;
 	virtual const double GetScale() const override;
 	virtual void SetInput(IInput & input) override;
+	void AttachVR(IInput & input);
 private:
 	void Reset();
 	void Translate(double transX, double transY);
@@ -19,6 +20,7 @@ private:
 	double m_transY;
 	double m_transZ;
 	double m_rotX;
+	double m_rotY;
 	double m_rotZ;
 	IInput* m_input;
 };
