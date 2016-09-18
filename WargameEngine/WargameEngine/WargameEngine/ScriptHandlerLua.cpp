@@ -194,7 +194,7 @@ int CScriptHandlerLua::PushReturnValue(lua_State *L, FunctionArgument const& arg
 	case FunctionArgument::Type::WSTRING:
 	{
 		auto wstr = static_cast<std::wstring*>(arg.data.get());
-		lua_pushstring(L, std::string(wstr->begin(), wstr->end()).c_str());
+		lua_pushstring(L, WStringToUtf8(*wstr).c_str());
 	}break;
 	case FunctionArgument::Type::CLASS_INSTANCE:
 	{

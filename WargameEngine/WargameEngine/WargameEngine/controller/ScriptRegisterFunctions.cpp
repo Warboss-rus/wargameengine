@@ -390,30 +390,32 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	});
 
 	handler.RegisterFunction(PLAY_SOUND, [&](IArguments const& args) {
-		if (args.GetCount() < 1 || args.GetCount() > 2)
-			throw std::runtime_error("1 or 2 arguments expected (file, volume)");
-		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
-		float volume = args.GetFloat(2);
-		view.GetSoundPlayer().Play(file, volume);
+		if (args.GetCount() < 2 || args.GetCount() > 3)
+			throw std::runtime_error("2 or 3 arguments expected (channel, file, volume)");
+		std::wstring channel = args.GetWStr(1);
+		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(2));
+		float volume = args.GetCount() > 2 ? args.GetFloat(3) : 1.0f;
+		view.GetSoundPlayer().Play(channel, file, volume);
 		return nullptr;
 	});
 
 	handler.RegisterFunction(PLAY_SOUND_POSITION, [&](IArguments const& args) {
-		if (args.GetCount() < 4 || args.GetCount() > 5)
-			throw std::runtime_error("4 or 5 arguments expected (file, x, y, z, volume)");
-		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
-		double x = args.GetDbl(2);
-		double y = args.GetDbl(3);
-		double z = args.GetDbl(4);
-		float volume = args.GetFloat(5);
-		view.GetSoundPlayer().PlaySoundPosition(file, CVector3d(x, y, z), volume);
+		if (args.GetCount() < 5 || args.GetCount() > 6)
+			throw std::runtime_error("5 or 6 arguments expected (channel, file, x, y, z, volume)");
+		std::wstring channel = args.GetWStr(1);
+		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(2));
+		double x = args.GetDbl(3);
+		double y = args.GetDbl(4);
+		double z = args.GetDbl(5);
+		float volume = args.GetFloat(6);
+		view.GetSoundPlayer().PlaySoundPosition(channel, file, CVector3d(x, y, z), volume);
 		return nullptr;
 	});
 
 	handler.RegisterFunction(PLAY_SOUND_PLAYLIST, [&](IArguments const& args) {
 		int n = args.GetCount();
 		if (n < 2 || n > 5)
-			throw std::runtime_error("2 to 5 arguments expected (name, list or tracks, volume, shuffle, repeat)");
+			throw std::runtime_error("2 to 5 arguments expected (name, list of tracks, volume, shuffle, repeat)");
 		std::wstring name = args.GetWStr(1);
 		std::vector<std::wstring> files = args.GetStrArray(2);
 		for (auto& file : files)
@@ -573,7 +575,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		std::wstring func = args.GetWStr(1);
 		bool disable = args.GetBool(2);
 		auto callback = [=, &handler](std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z) {
-			FunctionArgument instance(obj.get(), type);
+			FunctionArgument instance(nullptr/*obj.get()*/, type);
 			handler.CallFunction(func, { instance, x, y, z });
 			return disable;
 		};

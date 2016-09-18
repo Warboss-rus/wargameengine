@@ -1,11 +1,20 @@
 units = {
-	["Rhino"] = {
+	{
+		Name="Rhino",
 		Model="rhino.wbm",
 		Type="Building",
 		MaxHealth=1000,
 		Cost=0,
+		speech={
+			selection={
+				"sound/speech/rhino/selection/404540.wav",
+				"sound/speech/rhino/selection/404541.wav",
+				"sound/speech/rhino/selection/404542.wav",
+			},
+		},
 	},
-	["Tactical Marine"] = {
+	{
+		Name="Tactical Marine",
 		Model="Angel_of_Death.wbm",
 		Type="Infantry",
 		MaxHealth=100,
@@ -13,6 +22,54 @@ units = {
 		DefaultStance="Attack",
 		MinDamage=3,
 		MaxDamage=7,
-		Range=25
-	}
+		Range=25,
+		speech={
+			unit_complete={
+				"sound/speech/tactical/unit_complete/405720.wav"
+			},
+			attack={
+				"sound/speech/shared/attack/405831.wav",
+				"sound/speech/shared/attack/405832.wav",
+				"sound/speech/shared/attack/405833.wav",
+				"sound/speech/shared/attack/405834.wav",
+				"sound/speech/shared/attack/405835.wav",
+				"sound/speech/shared/attack/405836.wav",
+				"sound/speech/shared/attack/405837.wav",
+				"sound/speech/shared/attack/405838.wav",
+			},
+			die={
+				"sound/speech/shared/die/die_1.wav",
+				"sound/speech/shared/die/die_2.wav",
+				"sound/speech/shared/die/die_3.wav",
+				"sound/speech/shared/die/die_4.wav",
+				"sound/speech/shared/die/die_5.wav",
+				"sound/speech/shared/die/die_6.wav",
+			},
+			move={
+				"sound/speech/shared/move/405800.wav",
+				"sound/speech/shared/move/405801.wav",
+				"sound/speech/shared/move/405802.wav",
+				"sound/speech/shared/move/405803.wav",
+				"sound/speech/shared/move/405804.wav",
+				"sound/speech/shared/move/405805.wav",
+				"sound/speech/shared/move/405806.wav",
+				"sound/speech/shared/move/405807.wav",
+				"sound/speech/shared/move/405808.wav",
+				"sound/speech/shared/move/405809.wav",
+			},
+			selection={
+				"sound/speech/shared/selection/405760.wav",
+				"sound/speech/shared/selection/405761.wav",
+				"sound/speech/shared/selection/405762.wav",
+				"sound/speech/shared/selection/405763.wav",
+				"sound/speech/shared/selection/405764.wav",
+				"sound/speech/shared/selection/405765.wav",
+				"sound/speech/shared/selection/405766.wav",
+				"sound/speech/shared/selection/405767.wav",
+				"sound/speech/shared/selection/405768.wav",
+				"sound/speech/shared/selection/405769.wav",
+				"sound/speech/shared/selection/405770.wav",
+			},
+		},
+	},
 }

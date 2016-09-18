@@ -1,6 +1,4 @@
 uniform mat4 lightMatrix;
-uniform vec3 lightPos;
-uniform vec3 lightDir;
 
 varying vec4 lpos;
 varying vec2 texCoord;

@@ -51,7 +51,7 @@ ResourseDescriptor loadResourceDescriptor(const char* path) {
 	return resourceDescriptor;
 }
 
-void CSoundPlayerOpenSLES::Play(std::wstring const& file, float volume /*= 1.0f*/)
+void CSoundPlayerOpenSLES::Play(std::wstring const& channel, std::wstring const& file, float volume /*= 1.0f*/)
 {
 	ResourseDescriptor resourceDescriptor = loadResourceDescriptor("myMusic.mp3");
 	SLDataLocator_AndroidFD locatorIn = {
@@ -85,9 +85,9 @@ void CSoundPlayerOpenSLES::Play(std::wstring const& file, float volume /*= 1.0f*
 	(*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
 }
 
-void CSoundPlayerOpenSLES::PlaySoundPosition(std::wstring const& file, CVector3d const& position, float volume /*= 1.0f*/)
+void CSoundPlayerOpenSLES::PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3d const& position, float volume /*= 1.0f*/)
 {
-	Play(file, volume);
+	Play(channel, file, volume);
 }
 
 void CSoundPlayerOpenSLES::PlaySoundPlaylist(std::wstring const& name, std::vector<std::wstring> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
@@ -98,11 +98,11 @@ void CSoundPlayerOpenSLES::SetListenerPosition(CVector3d const& position, CVecto
 {
 }
 
-void CSoundPlayerOpenSLES::PausePlaylist(std::wstring const& name, bool pause)
+void CSoundPlayerOpenSLES::PauseChannel(std::wstring const& name, bool pause)
 {
 }
 
-void CSoundPlayerOpenSLES::StopPlaylist(std::wstring const& name)
+void CSoundPlayerOpenSLES::StopChannel(std::wstring const& name)
 {
 }
 

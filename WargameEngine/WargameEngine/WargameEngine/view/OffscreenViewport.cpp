@@ -3,15 +3,16 @@
 COffscreenViewport::COffscreenViewport(CachedTextureType type, int width, int height, float fieldOfView, IViewHelper & viewHelper, int textureIndex)
 	: m_depthOnly(type == CachedTextureType::DEPTH), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_viewHelper(viewHelper)
 {
-	if (textureIndex != -1)
-	{
-		m_viewHelper.ActivateTextureSlot(static_cast<TextureSlot>(textureIndex));
-	}
 	m_texture = m_viewHelper.CreateTexture(NULL, width, height, type);
 	m_FBO = m_viewHelper.CreateFramebuffer();
 	m_FBO->Bind();
 	m_FBO->AssignTexture(*m_texture, type);
 	m_FBO->UnBind();
+	if (textureIndex != -1)
+	{
+		m_viewHelper.ActivateTextureSlot(static_cast<TextureSlot>(textureIndex));
+	}
+	m_texture->Bind();
 	m_viewHelper.ActivateTextureSlot(TextureSlot::eDiffuse);
 }
 

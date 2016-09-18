@@ -21,6 +21,21 @@ function Init()
 	CreateTable(60, 30, "sand.dds")
 	SetSelectionCallback("OnSelection")
 	SetRMBCallback("OnRMB", true)
+	
+	PlaySoundPlaylist("music", {
+	"music/music_warhammer40ktheme.mp3", 
+	"music/music_theme_spacemarines_01.mp3", 
+	"music/music_force_commander_theme.mp3", 
+	"music/music_dawnofwartheme.mp3",
+	"music/battle_ingame_01.mp3",
+	"music/music_urban_wasteland.mp3",
+	"music/music_tank_march.mp3",
+	"music/music_main_title.mp3",
+	"music/music_invasion_theme.mp3",
+	"music/music_evil_isador_theme.mp3",
+	"music/music_acid.mp3",
+	"music/music_ork_theme.mp3"
+	}, 1.0, true, true)
 end
 
 function CreateUI()
@@ -43,7 +58,7 @@ function CreateUI()
 end
 
 function NewUnit1()
-	local unitStat = units["Tactical Marine"]
+	local unitStat = units[2]
 	local money = 0 + GetGlobalProperty("Player1Money")
 	if money < unitStat.Cost then
 		MessageBox("Not enough money")
@@ -52,13 +67,14 @@ function NewUnit1()
 	SetGlobalProperty("Player1Money", money - unitStat.Cost)
 	UI:GetChild("PanelResources"):GetChild("TextMoney"):SetText("Money: "..GetGlobalProperty("Player1Money"))
 	local unit = Object:New(unitStat.Model, 22, 0, 0)
-	unit:SetProperty("Name", "Tactical Marine")
+	unit:SetProperty("Name", 2)
 	unit:SetProperty("Owner", "Player1")
 	unit:SetProperty("Type", unitStat.Type)
 	unit:SetProperty("Health", unitStat.MaxHealth)
 	unit:SetProperty("Stance", unitStat.DefaultStance)
 	unit:SetMoveLimit("static")
 	playerUnits[#playerUnits + 1] = unit
+	PlaySpeech(unitStat.speech.unit_complete)
 end
 
 function Move()
@@ -94,8 +110,9 @@ function OnSelection()
 	local object = Object:GetSelected()
 	if(object ~= nil) then
 		local info = UI:GetChild("PanelInfo")
+		local unitStat = units[tonumber(object:GetProperty("Name"))]
 		info:SetVisible(true)
-		info:GetChild("TextUnitName"):SetText(object:GetProperty("Name"))
+		info:GetChild("TextUnitName"):SetText(unitStat.Name)
 		info:GetChild("TextHealth"):SetText("Health: " .. object:GetProperty("Health"))
 		info:GetChild("TextOwner"):SetText("Owner: " .. object:GetProperty("Owner"))
 		if(object:GetProperty("Owner") == "Player1") then
@@ -104,6 +121,8 @@ function OnSelection()
 			else
 				UI:GetChild("PanelUnit"):SetVisible(true)
 				UI:GetChild("PanelUnit"):GetChild("ButtonChangeStance"):SetText("Stance: "..object:GetProperty("Stance"))
+				
+				PlaySpeech(unitStat.speech.selection)
 			end
 		end
 	end
@@ -112,16 +131,17 @@ end
 function OnRMB(obj, x, y, z)--obj has no methods for some reason
 	local selected = Object:GetSelected()
 	if(selected ~= nil and selected:GetProperty("Owner") == "Player1" and selected:GetProperty("Type") ~= "Building") then
+		local name = tonumber(selected:GetProperty("Name"))
 		if(obj ~= nil--[[ and obj:GetProperty("Owner") ~= selected:GetProperty("Owner")]]) then
 			local range = math.sqrt((selected:GetX() - x) * (selected:GetX() - x) + (selected:GetY() - y) * (selected:GetY() - y))
-			local unitstat = units[selected:GetProperty("Name")]
-			if(range > unitstat.Range) then
+			if(range > units[name].Range) then
 				MessageBox("Out of range")
 				return
 			end
 			--attack
 			NewParticleTracer("tracer.xml", selected:GetX(), selected:GetY(), 1, x, y, 1, 0, 1, 30)
 			selected:PlayAnimation("shoot")
+			PlaySpeech(units[name].speech.attack)
 			--[[local rand = os.rand(unitstat.MinDamage, unitstat.MaxDamage)
 			obj:SetProperty("Health", obj:GetProperty("Health") - rand)
 			if(obj:GetProperty("Health") <= 0) then
@@ -130,23 +150,30 @@ function OnRMB(obj, x, y, z)--obj has no methods for some reason
 		else
 			--goto
 			selected:GoTo(x, y, 2, "walk", 1)
+			PlaySpeech(units[name].speech.move)
 		end
 	end
 end
 
+function PlaySpeech(speechArray)
+	local rand = math.random(1, #speechArray)
+	PlaySound("speech", speechArray[rand], 1.0)
+end
+
+math.randomseed( os.time() )
 RunScript("rtsunits.lua")
 Init()
 CreateUI()
 SetGlobalProperty("Player1Money", 1000)
-local buildingName = "Rhino"
-playerBuilding = Object:New(units[buildingName].Model, 25, 0, 90)
-playerBuilding:SetProperty("Name", "Rhino")
+local buildingName = 1
+playerBuilding = Object:New(units[1].Model, 25, 0, 90)
+playerBuilding:SetProperty("Name", buildingName)
 playerBuilding:SetProperty("Owner", "Player1")
 playerBuilding:SetProperty("Type", units[buildingName].Type)
 playerBuilding:SetProperty("Health", units[buildingName].MaxHealth)
 playerBuilding:SetMoveLimit("static")
 enemyBuilding = Object:New(units[buildingName].Model, -25, 0, -90)
-enemyBuilding:SetProperty("Name", "Rhino")
+enemyBuilding:SetProperty("Name", buildingName)
 enemyBuilding:SetProperty("Owner", "Player2")
 enemyBuilding:SetProperty("Type", units[buildingName].Type)
 enemyBuilding:SetProperty("Health", units[buildingName].MaxHealth)

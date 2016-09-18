@@ -313,13 +313,13 @@ void CGameView::Update()
 	auto& defaultCamera = m_viewports.front()->GetCamera();
 	m_soundPlayer->SetListenerPosition(defaultCamera.GetPosition(), defaultCamera.GetDirection());
 	m_soundPlayer->Update();
-	for (auto& viewport : m_viewports)
+	for (auto it = m_viewports.rbegin();  it != m_viewports.rend(); ++it)
 	{
-		m_currentViewport = viewport.get();
-		viewport->Draw([this, &viewport](bool depthOnly, bool drawUI) {
+		m_currentViewport = it->get();
+		m_currentViewport->Draw([this](bool depthOnly, bool drawUI) {
 			if (m_skybox && !depthOnly)
 			{
-				auto& camera = viewport->GetCamera();
+				auto& camera = m_currentViewport->GetCamera();
 				CVector3d direction = camera.GetDirection();
 				m_skybox->Draw(-direction[0], -direction[1], -direction[2], camera.GetScale());
 			}
@@ -485,44 +485,6 @@ void CGameView::SetUpShadowMapDraw()
 	m_shaderManager->SetUniformMatrix4("lightMatrix", 1, lightMatrix);
 }
 
-/*void CGameView::DrawShadowMap()
-{
-	if (!m_shadowMap) return;
-	m_viewHelper->EnableDepthTest(true);
-	m_viewHelper->SetUpViewport(m_lightPosition, { 0.0, 0.0, 0.0 }, m_shadowMapSize, m_shadowMapSize, m_shadowAngle, 3.0, 300.0);
-	m_shadowMapFBO->Bind();
-	m_viewHelper->ClearBuffers(false, true);
-	m_viewHelper->EnablePolygonOffset(true, 2.0f, 500.0f);
-
-	m_renderer->GetViewMatrix(m_lightModelViewMatrix);
-	m_viewHelper->GetProjectionMatrix(m_lightProjectionMatrix);
-
-	if (!m_tableListShadow) DrawTable(true);
-	m_tableListShadow->Draw();
-
-	size_t countObjects = m_gameModel->GetObjectCount();
-	for (size_t i = 0; i < countObjects; i++)
-	{
-		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
-		if (!object->CastsShadow()) continue;
-		m_renderer->PushMatrix();
-		m_renderer->Translate(object->GetX(), object->GetY(), object->GetZ());
-		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, true, m_shaderManager.get());
-		size_t secondaryModels = object->GetSecondaryModelsCount();
-		for (size_t j = 0; j < secondaryModels; ++j)
-		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, true, m_shaderManager.get());
-		}
-		m_renderer->PopMatrix();
-	}
-
-	m_viewHelper->EnablePolygonOffset(false);
-	m_shadowMapFBO->UnBind();
-	m_viewHelper->RestoreViewport();
-	m_viewHelper->EnableDepthTest(false);
-}*/
-
 void CGameView::CreateSkybox(double size, wstring const& textureFolder)
 {
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
@@ -578,7 +540,7 @@ void CGameView::EnableShadowMap(int size, float angle)
 	if (m_shadowMapViewport) return;
 	m_viewports.push_back(std::make_unique<COffscreenViewport>(CachedTextureType::DEPTH, size, size, angle, *m_viewHelper, static_cast<int>(TextureSlot::eShadowMap)));
 	m_shadowMapViewport = m_viewports.back().get();
-	m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 0.0, 1.0 })));
+	m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 1.0, 0.0 })));
 	m_shadowMapViewport->SetPolygonOffset(true, 2.0f, 500.0f);
 	m_shadowMapViewport->SetClippingPlanes(3.0, 300.0);
 }
