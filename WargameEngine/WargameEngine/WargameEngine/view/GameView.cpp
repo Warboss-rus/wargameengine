@@ -18,6 +18,7 @@
 #include "CameraFirstPerson.h"
 #include "FixedCamera.h"
 #include "MirrorCamera.h"
+#include "../IPhysicsEngine.h"
 
 using namespace std;
 using namespace placeholders;
@@ -38,11 +39,12 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_soundPlayer(move(context->soundPlayer))
 	, m_textWriter(move(context->textWriter))
 	, m_asyncFileProvider(m_threadPool, context->workingDir)
-	, m_modelManager(*m_renderer, *m_gameModel, m_asyncFileProvider)
+	, m_modelManager(*m_renderer, *m_physicsEngine, m_asyncFileProvider)
 	, m_textureManager(m_window->GetViewHelper(), m_asyncFileProvider)
 	, m_particles(*m_renderer)
 	, m_scriptHandlerFactory(context->scriptHandlerFactory)
 	, m_socketFactory(context->socketFactory)
+	, m_physicsEngine(move(context->physicsEngine))
 {
 	m_viewHelper->SetTextureManager(m_textureManager);
 	for (auto& reader : context->imageReaders)
@@ -76,6 +78,10 @@ CGameView::CGameView(sGameViewContext * context)
 		m_threadPool.CancelAll();
 	});
 
+#ifdef _DEBUG
+	//m_physicsEngine->EnableDebugDraw(*m_renderer);
+#endif
+
 	m_window->LaunchMainLoop();
 }
 
@@ -95,7 +101,7 @@ void CGameView::Init(sModule const& module)
 	ClearResources();
 	InitLandscape();
 	InitInput();
-	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory());
+	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory(), *m_physicsEngine);
 	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(module.script));
 	m_soundPlayer->Init();
 }
@@ -249,26 +255,14 @@ void CGameView::DrawUI()
 	});
 }
 
-void DrawBBox(IBounding* ibox, double x, double y, double z, double rotation, IRenderer & renderer)
+void DrawBBox(sBounding::sBox bbox, double x, double y, double z, double rotation, IRenderer & renderer)
 {
-	if (dynamic_cast<CBoundingCompound*>(ibox) != NULL)
-	{
-		CBoundingCompound * bbox = (CBoundingCompound *)ibox;
-		for (size_t i = 0; i < bbox->GetChildCount(); ++i)
-		{
-			DrawBBox(bbox->GetChild(i), x, y, z, rotation, renderer);
-		}
-		return;
-	}
-	CBoundingBox * bbox = (CBoundingBox *)ibox;
-	if (!bbox) return;
 	renderer.PushMatrix();
 	renderer.Translate(x, y, z);
 	renderer.Rotate(rotation, 0.0, 0.0, 1.0);
-	renderer.Scale(bbox->GetScale());
 	renderer.SetColor(0.0f, 0.0f, 255.0f);
-	const double * min = bbox->GetMin();
-	const double * max = bbox->GetMax();
+	const double * min = bbox.max;
+	const double * max = bbox.min;
 	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], min[1], min[2]), { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
 	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], min[1], min[2]), { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
 	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(max[0], min[1], min[2]), { max[0], max[1], min[2] }, { max[0], max[1], max[2] }, { max[0], min[1], max[2] } }, {}, {});//Right
@@ -290,18 +284,15 @@ void CGameView::DrawBoundingBox()
 				object = group->GetChild(i);
 				if(object)
 				{
-					auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
-					if (bbox)
-					{
-						DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), *m_renderer);
-					}
+					auto bbox = m_physicsEngine->GetBounding(object->GetPathToModel());
+					DrawBBox(bbox.GetBox(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), *m_renderer);
 				}
 			}
 		}
 		else
 		{
-			auto bbox = m_gameModel->GetBoundingBox(object->GetPathToModel());
-			if(bbox) DrawBBox(bbox.get(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), *m_renderer);
+			auto bbox = m_physicsEngine->GetBounding(object->GetPathToModel());
+			DrawBBox(bbox.GetBox(), object->GetX(), object->GetY(), object->GetZ(), object->GetRotation(), *m_renderer);
 		}
 	}
 }
@@ -328,7 +319,9 @@ void CGameView::Update()
 			{
 				DrawBoundingBox();
 				DrawRuler();
+				m_physicsEngine->Draw();
 			}
+			m_physicsEngine->Update(100 / 60);
 			if (drawUI)
 			{
 				DrawUI();
@@ -420,7 +413,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 	{
 		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		m_renderer->PushMatrix();
-		m_renderer->Translate(object->GetX(), object->GetY(), 0.0);
+		m_renderer->Translate(object->GetX(), object->GetY(), object->GetCoords().z);
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
 		m_modelManager.DrawModel(object->GetPathToModel(), object, shadowOnly, shaderManager);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
@@ -585,7 +578,7 @@ void CGameView::SetAnisotropyLevel(float level)
 
 void CGameView::ClearResources()
 {
-	m_modelManager.Reset(*m_gameModel);
+	m_modelManager.Reset();
 	m_textureManager.Reset();
 	if (m_skybox)
 	{

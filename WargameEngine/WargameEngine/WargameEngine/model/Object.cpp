@@ -4,12 +4,10 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <float.h>
-#include "..\Utils.h"
 
 CObject::CObject(std::wstring const& model, double x, double y, double z, double rotation, bool hasShadow)
-	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationBegin(0L), m_goSpeed(0.0f)
+	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationTime(0L), m_goSpeed(0.0f)
 {
-	m_lastUpdateTime = GetCurrentTimeLL();
 }
 
 std::wstring CObject::GetPathToModel() const
@@ -133,7 +131,7 @@ void CObject::PlayAnimation(std::string const& animation, eAnimationLoopMode loo
 	m_animation = animation;
 	m_animationLoop = loop;
 	m_animationSpeed = speed;
-	m_animationBegin =GetCurrentTimeLL();
+	m_animationTime = 0;
 }
 
 std::string CObject::GetAnimation() const
@@ -143,9 +141,8 @@ std::string CObject::GetAnimation() const
 
 float CObject::GetAnimationTime() const
 {
-	if (m_animationBegin == 0L) return 0.0f;
-	long long delta = GetCurrentTimeLL() - m_animationBegin;
-	return static_cast<float>((double)delta / 1000.0);
+	if (m_animationTime == 0L) return 0.0f;
+	return static_cast<float>((double)m_animationTime / 1000.0);
 }
 
 void CObject::AddSecondaryModel(std::wstring const& model)
@@ -191,21 +188,19 @@ void CObject::GoTo(CVector3d const& coords, double speed, std::string const& ani
 	PlayAnimation(animation, eAnimationLoopMode::LOOPING, animationSpeed);
 }
 
-void CObject::Update()
+void CObject::Update(long long timeSinceLastUpdate)
 {
-	long long current = GetCurrentTimeLL();
 	if (fabs(m_goSpeed) < DBL_EPSILON)
 	{
-		m_lastUpdateTime = current;
 		return;
 	}
 	CVector3d dir = m_goTarget - m_coords;
 	dir.Normalize();
 	m_rotation = atan2(dir.y, dir.x) * 180 / M_PI;
-	dir = dir * static_cast<double>(current - m_lastUpdateTime) / 1000.0 * m_goSpeed;
+	dir = dir * static_cast<double>(timeSinceLastUpdate) / 1000.0 * m_goSpeed;
 	if (dir.GetLength() > (m_goTarget - m_coords).GetLength()) dir = (m_goTarget - m_coords);
 	m_coords += dir;
-	m_lastUpdateTime = current;
+	m_animationTime += timeSinceLastUpdate;
 	if ((m_coords - m_goTarget).GetLength() < 0.0001)
 	{
 		m_goSpeed = 0.0;

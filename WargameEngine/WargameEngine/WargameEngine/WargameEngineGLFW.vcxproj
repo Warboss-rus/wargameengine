@@ -96,31 +96,31 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -217,6 +217,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\bullet\build3\vs2010\BulletCollision.vcxproj">
+      <Project>{51155a97-5122-7748-82ee-b5eb729a7104}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\bullet\build3\vs2010\BulletDynamics.vcxproj">
+      <Project>{6c3ad969-e349-6744-ac43-b9c86102a745}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\bullet\build3\vs2010\LinearMath.vcxproj">
+      <Project>{e57afbbf-8c5b-4d44-973d-d304dc6245c8}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
@@ -235,6 +244,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetSocket.cpp" />
+    <ClCompile Include="PhysicsEngineBullet.cpp" />
     <ClCompile Include="ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SoundPlayerFMod.cpp" />
@@ -246,6 +256,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetSocket.h" />
+    <ClInclude Include="PhysicsEngineBullet.h" />
     <ClInclude Include="ScriptHandlerLua.h" />
     <ClInclude Include="SoundPlayerFMod.h" />
     <ClInclude Include="view\GameWindowGLFW.h" />

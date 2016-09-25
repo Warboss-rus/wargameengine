@@ -86,9 +86,6 @@
     <ClInclude Include="..\..\WargameEngine\UI\UITheme.h">
       <Filter>Source Files\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\MathLibLite.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -189,9 +186,6 @@
       <Filter>Source Files\view\Readers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\model\Animation.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\model\Bounding.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\model\IBoundingBoxManager.h">
@@ -340,14 +334,14 @@
     <ClInclude Include="..\..\WargameEngine\view\MirrorCamera.h">
       <Filter>Source Files\view\Cameras</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\PhysicsEngineBullet.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="..\..\WargameEngine\AsyncFileProvider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\MathLibLite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\MemoryStream.cpp">
@@ -461,9 +455,6 @@
     <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp">
       <Filter>Source Files\view\Readers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\model\Bounding.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\WargameEngine\model\Landscape.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -564,6 +555,9 @@
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\view\MirrorCamera.cpp">
       <Filter>Source Files\view\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\PhysicsEngineBullet.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -23,6 +23,7 @@
 #include "SoundPlayerFMod.h"
 #include "view\TextWriter.h"
 #include "ScriptHandlerLua.h"
+#include "PhysicsEngineBullet.h"
 #include "NetSocket.h"
 #include "Utils.h"
 #ifdef _WINDOWS
@@ -60,6 +61,7 @@ int main(int argc, char* argv[])
 	context.window = std::make_unique<WINDOW_CLASS>();
 	context.soundPlayer = std::make_unique<CSoundPlayerFMod>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	context.scriptHandlerFactory = []() {
 		return std::make_unique<CScriptHandlerLua>();
 	};

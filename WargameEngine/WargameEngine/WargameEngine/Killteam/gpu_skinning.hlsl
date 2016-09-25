@@ -1,7 +1,7 @@
 struct sLightSource
 {
-	bool enabled;
-	float4 pos;
+	float3 pos;
+	int enabled;
 	float4 diffuse;
 	float4 ambient;
 	float4 specular;
@@ -13,12 +13,13 @@ struct sMaterial
 	float4 SpecularColor;
 	float Shininess;
 };
+#define NUMBEROFLIGHTS 1
 cbuffer Constant : register(b0)
 {
 	matrix WorldViewProjection : WORLDVIEWPROJECTION;
 	float4 Color;
 	sMaterial Material;
-	sLightSource Lights;
+	sLightSource Lights[NUMBEROFLIGHTS];
 	matrix joints[128];
 	matrix invBindMatrices[128];
 }

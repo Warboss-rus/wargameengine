@@ -241,9 +241,7 @@
     <ClCompile Include="controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="controller\ScriptRegisterUI.cpp" />
     <ClCompile Include="view\FixedCamera.cpp" />
-    <ClCompile Include="MathLibLite.cpp" />
     <ClCompile Include="MemoryStream.cpp" />
-    <ClCompile Include="model\Bounding.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
     <ClCompile Include="model\Projectile.cpp" />
     <ClCompile Include="controller\CommandChangeGlobalProperty.cpp" />
@@ -316,13 +314,12 @@
     <ClInclude Include="controller\ScriptObjectProtocol.h" />
     <ClInclude Include="controller\ScriptRegisterFunctions.h" />
     <ClInclude Include="controller\ScriptUIProtocol.h" />
+    <ClInclude Include="IPhysicsEngine.h" />
     <ClInclude Include="view\FixedCamera.h" />
     <ClInclude Include="IMemoryStream.h" />
     <ClInclude Include="ITask.h" />
-    <ClInclude Include="MathLibLite.h" />
     <ClInclude Include="MemoryStream.h" />
     <ClInclude Include="model\Animation.h" />
-    <ClInclude Include="model\Bounding.h" />
     <ClInclude Include="model\IBoundingBoxManager.h" />
     <ClInclude Include="model\IGameModel.h" />
     <ClInclude Include="model\Landscape.h" />

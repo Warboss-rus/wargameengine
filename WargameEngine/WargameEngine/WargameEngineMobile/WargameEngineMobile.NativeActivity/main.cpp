@@ -11,6 +11,7 @@
 #include "..\..\WargameEngine\view\ColladaModelFactory.h"
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
 #include "..\..\WargameEngine\view\GameWindowAndroid.h"
+#include "..\..\WargameEngine\PhysicsEngineBullet.h"
 /*
 * Copyright (C) 2010 The Android Open Source Project
 *
@@ -109,6 +110,7 @@ void android_main(struct android_app* state) {
 	context.window = std::make_unique<CGameWindowAndroid>(state);
 	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");
 	context.scriptHandlerFactory = []() {
 		return std::make_unique<CScriptHandlerLua>();

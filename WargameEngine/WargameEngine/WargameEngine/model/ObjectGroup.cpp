@@ -297,11 +297,11 @@ void CObjectGroup::GoTo(CVector3d const& coords, double speed, std::string const
 	}
 }
 
-void CObjectGroup::Update()
+void CObjectGroup::Update(long long timeSinceLastUpdate)
 {
 	for (size_t i = 0; i < m_children.size(); ++i)
 	{
-		m_children[i]->Update();
+		m_children[i]->Update(timeSinceLastUpdate);
 	}
 }
 

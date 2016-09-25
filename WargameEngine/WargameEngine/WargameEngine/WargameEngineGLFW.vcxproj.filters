@@ -38,6 +38,9 @@
     <ClCompile Include="NetSocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PhysicsEngineBullet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="view\GameWindowGLFW.h">
@@ -62,6 +65,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="NetSocket.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsEngineBullet.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

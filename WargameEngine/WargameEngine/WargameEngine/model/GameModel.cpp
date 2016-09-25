@@ -122,25 +122,15 @@ void CGameModel::ResetLandscape(double width, double depth, std::wstring const& 
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
 
-std::shared_ptr<IBounding> CGameModel::GetBoundingBox(std::wstring const& path) const
-{
-	return m_boundings.at(path);
-}
-
-void CGameModel::AddBoundingBox(std::wstring const& path, std::shared_ptr<IBounding> bbox)
-{
-	m_boundings[path] = bbox;
-}
-
-void CGameModel::Update()
+void CGameModel::Update(long long timeSinceLastUpdate)
 {
 	for (size_t i = 0; i < m_objects.size(); ++i)
 	{
-		m_objects[i]->Update();
+		m_objects[i]->Update(timeSinceLastUpdate);
 	}
 	for (size_t i = 0; i < m_projectiles.size(); ++i)
 	{
-		m_projectiles[i].Update();
+		m_projectiles[i].Update(timeSinceLastUpdate);
 	}
 }
 

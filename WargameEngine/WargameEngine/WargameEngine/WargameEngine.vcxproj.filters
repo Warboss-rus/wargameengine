@@ -137,9 +137,6 @@
     <ClCompile Include="PluginManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="model\Bounding.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
     <ClCompile Include="controller\CommandChangeGlobalProperty.cpp">
       <Filter>Source Files\controller\commands</Filter>
     </ClCompile>
@@ -220,9 +217,6 @@
     </ClCompile>
     <ClCompile Include="view\WBMModelFactory.cpp">
       <Filter>Source Files\view\Readers</Filter>
-    </ClCompile>
-    <ClCompile Include="MathLibLite.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
@@ -321,9 +315,6 @@
     </ClInclude>
     <ClInclude Include="controller\ICommand.h">
       <Filter>Source Files\controller\commands</Filter>
-    </ClInclude>
-    <ClInclude Include="model\Bounding.h">
-      <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="model\GameModel.h">
       <Filter>Source Files\model</Filter>
@@ -547,9 +538,6 @@
     <ClInclude Include="view\WBMModelFactory.h">
       <Filter>Source Files\view\Readers</Filter>
     </ClInclude>
-    <ClInclude Include="MathLibLite.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -579,6 +567,9 @@
     </ClInclude>
     <ClInclude Include="view\MirrorCamera.h">
       <Filter>Source Files\view\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="IPhysicsEngine.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

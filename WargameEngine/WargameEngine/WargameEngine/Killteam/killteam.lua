@@ -13,7 +13,9 @@ function Init()
 	SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
 	SetLightSpecular(1, 1, 1, 1, 1)
 	EnableShadowMap(4096, 65)
-	if(GetRendererName() ~= "DirectX11") then
+	if(GetRendererName() == "DirectX11") then
+		SetShaders("per_pixel.hlsl", "per_pixel.hlsl")
+	else
 		SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
 	end
 	SetSelectionCallback("OnSelection")

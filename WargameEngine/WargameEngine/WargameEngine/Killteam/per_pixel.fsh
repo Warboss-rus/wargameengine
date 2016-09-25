@@ -78,12 +78,5 @@ void main()
 	float dist = (shadowDist < diffuseDist) ? 0.5 : 1.0;
 	vec4 colorWithLight = vec4(color.xyz * ( diffuseColor + ambientColor + clamp(specularColor, 0.0, 1.0)).xyz, 1.0);
     
-        vec4 shadowCoordinateWdivide = shadowCoord / shadowCoord.w ;
-		
-	shadowCoordinateWdivide.z += 0.0005;
-	float distanceFromLight = texture2D(shadowMap, shadowCoordinateWdivide.st).z;
- 	float shadow = 1.0;
- 	if (shadowCoord.w > 0.0)
-		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
-	gl_FragColor =	 colorWithLight;
+	gl_FragColor = colorWithLight;
 }

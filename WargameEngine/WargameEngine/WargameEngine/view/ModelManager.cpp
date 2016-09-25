@@ -4,7 +4,6 @@
 #include "3dModel.h"
 #include "IModelReader.h"
 #include "../LogWriter.h"
-#include "../model/Bounding.h"
 #include "../model/IBoundingBoxManager.h"
 #include "../AsyncFileProvider.h"
 #include "../Utils.h"
@@ -18,22 +17,22 @@ CModelManager::~CModelManager()
 {
 }
 
-std::unique_ptr<IBounding> LoadBoundingFromFile(std::wstring const& path, double & scale, double * rotation)
+sBounding LoadBoundingFromFile(std::wstring const& path, double & scale, double * rotation)
 {
 	std::ifstream iFile;
 	OpenFile(iFile, path);
-	std::unique_ptr<IBounding> bounding(new CBoundingCompound());
+	sBounding::sCompound compound;
 	std::string line;
-	if (!iFile.good()) return NULL;
+	if (!iFile.good()) return sBounding(compound);
 	while (iFile.good())
 	{
 		iFile >> line;
 		if (line == "box")
 		{
-			double min[3], max[3];
-			iFile >> min[0] >> min[1] >> min[2] >> max[0] >> max[1] >> max[2];
-			CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
-			compound->AddChild(std::unique_ptr<IBounding>(new CBoundingBox(min, max)));
+			CVector3d min, max;
+			iFile >> min.x >> min.y >> min.z >> max.x >> max.y >> max.z;
+			sBounding::sBox box{ min, max };
+			compound.items.push_back(sBounding(box));
 		}
 		if (line == "scale")
 		{
@@ -53,8 +52,8 @@ std::unique_ptr<IBounding> LoadBoundingFromFile(std::wstring const& path, double
 		}
 	}
 	iFile.close();
-	CBoundingCompound * compound = (CBoundingCompound *)bounding.get();
-	compound->SetScale(scale);
+	sBounding bounding = compound.items.size() == 1 ? compound.items[0]: sBounding(compound);
+	bounding.scale = scale;
 	return bounding;
 }
 
@@ -65,8 +64,7 @@ void CModelManager::LoadIfNotExist(std::wstring const& path)
 		std::wstring boundingPath = path.substr(0, path.find_last_of('.')) + L".txt";
 		double scale = 1.0;
 		double rotation[3] = { 0.0, 0.0, 0.0 };
-		std::shared_ptr<IBounding> bounding = LoadBoundingFromFile(m_asyncFileProvider->GetModelAbsolutePath(boundingPath), scale, rotation);
-		m_bbManager->AddBoundingBox(path, bounding);
+		m_bbManager->AddBounding(path, LoadBoundingFromFile(m_asyncFileProvider->GetModelAbsolutePath(boundingPath), scale, rotation));
 		std::shared_ptr<C3DModel> model = std::make_shared<C3DModel>(scale, rotation[0], rotation[1], rotation[2]);
 		m_models[path] = model;
 		auto fullPath = m_asyncFileProvider->GetModelAbsolutePath(path);		
@@ -113,8 +111,7 @@ void CModelManager::RegisterModelReader(std::unique_ptr<IModelReader> && reader)
 	m_modelReaders.push_back(std::move(reader));
 }
 
-void CModelManager::Reset(IBoundingBoxManager & bbmanager)
+void CModelManager::Reset()
 {
 	m_models.clear();
-	m_bbManager = &bbmanager;
 }

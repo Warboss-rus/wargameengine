@@ -23,6 +23,7 @@
 class IScriptHandler;
 class INetSocket;
 class IImageReader;
+class IPhysicsEngine;
 
 struct sGameViewContext
 {
@@ -30,6 +31,7 @@ struct sGameViewContext
 	std::unique_ptr<IGameWindow> window;
 	std::unique_ptr<ISoundPlayer> soundPlayer;
 	std::unique_ptr<ITextWriter> textWriter;
+	std::unique_ptr<IPhysicsEngine> physicsEngine;
 	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
 	sModule module;
@@ -110,6 +112,7 @@ private:
 	std::unique_ptr<CSkyBox> m_skybox;
 	std::unique_ptr<IUIElement> m_ui;
 	std::unique_ptr<ITextWriter> m_textWriter;
+	std::unique_ptr<IPhysicsEngine> m_physicsEngine;
 	ThreadPool m_threadPool;
 	CAsyncFileProvider m_asyncFileProvider;
 	CModelManager m_modelManager;

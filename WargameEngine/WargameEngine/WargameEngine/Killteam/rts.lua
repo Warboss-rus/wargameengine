@@ -14,7 +14,9 @@ function Init()
 	EnableShadowMap(4096, 65)
 	SetAnisotropy(GetMaxAnisotropy())
 	EnableMSAA()
-	if(GetRendererName() ~= "DirectX11") then
+	if(GetRendererName() == "DirectX11") then
+		SetShaders("per_pixel.hlsl", "per_pixel.hlsl")
+	else
 		SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
 	end
 	CreateSkybox(80, "skybox_sand")

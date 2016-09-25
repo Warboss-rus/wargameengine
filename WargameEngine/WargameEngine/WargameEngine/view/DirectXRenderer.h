@@ -9,11 +9,11 @@
 class CShaderManagerDirectX;
 struct sLightSource
 {
-	bool enabled = false;
-	float pos[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	float diffuse[4] = { 0.0f, 0.0f, 0.0f, 1.0f };;
-	float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };;
-	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };;
+	float pos[3] = { 0.0f, 0.0f, 0.0f };
+	int enabled = 0;
+	float diffuse[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 };
 
 class CDirectXRenderer : public IViewHelper

@@ -22,7 +22,7 @@ public:
 	std::vector<std::string> GetAnimations(std::wstring const& path);
 	void EnableGPUSkinning(bool enable);
 	void RegisterModelReader(std::unique_ptr<IModelReader> && reader);
-	void Reset(IBoundingBoxManager & bbmanager);
+	void Reset();
 private:
 	std::map<std::wstring, std::shared_ptr<C3DModel>> m_models;
 	std::vector<std::unique_ptr<IModelReader>> m_modelReaders;

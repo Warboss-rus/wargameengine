@@ -22,3 +22,5 @@ Thumbs.db
 /WargameEngine/WargameEngine/WargameEngine/Debug_VR
 /WargameEngine/WargameEngine/WargameEngine/Release_VR
 *.ipch
+/WargameEngine/bullet/bin
+/WargameEngine/bullet/build3/vs2010/obj

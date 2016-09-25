@@ -9,10 +9,11 @@
 #include "..\Utils.h"
 
 static const std::string defaultShader = "\
+#define NUMBEROFLIGHTS 1\n\
 struct sLightSource\
 {\
-	bool enabled;\
-	float4 pos;\
+	float3 pos;\
+	int enabled;\
 	float4 diffuse;\
 	float4 ambient;\
 	float4 specular;\
@@ -29,7 +30,7 @@ cbuffer Constant : register( b0 )\
 	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
 	float4 Color;\
 	sMaterial Material;\
-	sLightSource Lights;\
+	sLightSource Lights[NUMBEROFLIGHTS];\
 }\
 struct PixelInputType\
 {\
@@ -330,6 +331,12 @@ void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 	DirectX::XMStoreFloat4x4(&fmatrix, matrix);
 	unsigned int begin = GetVariableOffset("Constant", "WorldViewProjection");
 
+	CopyConstantBufferData(begin, *fmatrix.m, sizeof(float) * 16);
+
+	matrix = DirectX::XMMATRIX(modelView);
+	matrix = DirectX::XMMatrixTranspose(matrix);
+	DirectX::XMStoreFloat4x4(&fmatrix, matrix);
+	begin = GetVariableOffset("Constant", "WorldView");
 	CopyConstantBufferData(begin, *fmatrix.m, sizeof(float) * 16);
 }
 

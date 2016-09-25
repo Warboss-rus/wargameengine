@@ -4,13 +4,11 @@
 #include <string>
 #include <map>
 #include "IGameModel.h"
-#include "IBoundingBoxManager.h"
 #include "ObjectInterface.h"
 #include "Projectile.h"
 #include "Landscape.h"
-#include "Bounding.h"
 
-class CGameModel : public IGameModel, public IBoundingBoxManager
+class CGameModel : public IGameModel
 {
 public:
 	CGameModel() = default;
@@ -31,12 +29,10 @@ public:
 	void AddProjectile(CProjectile const& projectile);
 	size_t GetProjectileCount() const;
 	CProjectile const& GetProjectile(size_t index) const;
-	void Update();
+	void Update(long long timeSinceLastUpdate);
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
 	void ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
-	std::shared_ptr<IBounding> GetBoundingBox(std::wstring const& path) const;
-	virtual void AddBoundingBox(std::wstring const& path, std::shared_ptr<IBounding> bbox) override;
 private:
 	CGameModel(CGameModel const&) = delete;
 
@@ -45,5 +41,4 @@ private:
 	std::shared_ptr<IObject> m_selectedObject;
 	std::map<std::wstring, std::wstring> m_properties;
 	CLandscape m_landscape;
-	std::map<std::wstring, std::shared_ptr<IBounding>> m_boundings;
 };

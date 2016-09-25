@@ -37,7 +37,7 @@ public:
 	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) override;
-	void Update() override;
+	void Update(long long timeSinceLastUpdate) override;
 	std::vector<sTeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
 	void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) override;
@@ -53,12 +53,11 @@ private:
 	std::unique_ptr<IMoveLimiter> m_movelimiter;
 	bool m_castsShadow;
 	std::string m_animation;
-	long long m_animationBegin;
+	long long m_animationTime;
 	eAnimationLoopMode m_animationLoop = eAnimationLoopMode::HOLDEND;
 	float m_animationSpeed = 1.0f;
 	CVector3d m_goTarget;
 	double m_goSpeed;
-	long long m_lastUpdateTime;
 	std::vector<sTeamColor> m_teamColor;
 	std::map<std::wstring, std::wstring> m_replaceTextures;
 };

@@ -42,7 +42,7 @@ public:
 	virtual std::wstring GetSecondaryModel(size_t index) const = 0;
 	virtual eAnimationLoopMode GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;
-	virtual void Update() = 0;
+	virtual void Update(long long timeSinceLastUpdate) = 0;
 	virtual std::vector<sTeamColor> const& GetTeamColor() const = 0;
 	virtual void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) = 0;
 	virtual void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) = 0;

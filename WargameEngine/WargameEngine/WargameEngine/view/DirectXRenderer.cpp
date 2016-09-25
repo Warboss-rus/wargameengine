@@ -768,8 +768,11 @@ void CDirectXRenderer::EnableLight(size_t index, bool enable)
 	{
 		m_lightSources.resize(index + 1);
 	}
-	m_lightSources[index].enabled = enable;
-	m_shaderManager->SetLight(index, m_lightSources[index]);
+	if ((m_lightSources[index].enabled != 0) != enable)
+	{
+		m_lightSources[index].enabled = enable ? 1 : 0;
+		m_shaderManager->SetLight(index, m_lightSources[index]);
+	}
 }
 
 void CDirectXRenderer::SetLightColor(size_t index, LightningType type, float * values)
@@ -791,8 +794,11 @@ void CDirectXRenderer::SetLightPosition(size_t index, float* pos)
 	{
 		m_lightSources.resize(index + 1);
 	}
-	memcpy(m_lightSources[index].pos, pos, sizeof(float) * 3);
-	m_shaderManager->SetLight(index, m_lightSources[index]);
+	if (memcmp(m_lightSources[index].pos, pos, sizeof(float) * 3))
+	{
+		memcpy(m_lightSources[index].pos, pos, sizeof(float) * 3);
+		m_shaderManager->SetLight(index, m_lightSources[index]);
+	}
 }
 
 float CDirectXRenderer::GetMaximumAnisotropyLevel() const
@@ -887,7 +893,15 @@ void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*
 
 void CDirectXRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
 {
-	LogWriter::WriteLine("Polygon offset is not yet supported");
+	/*CComPtr<ID3D11RasterizerState> rasterizerState;
+	m_devcon->RSGetState(&rasterizerState);
+	D3D11_RASTERIZER_DESC desc;
+	rasterizerState->GetDesc(&desc);
+	desc.DepthBias = enable ? static_cast<INT>(units) : 0;
+	desc.SlopeScaledDepthBias = enable ? factor : 1.0f;
+	rasterizerState = nullptr;
+	m_dev->CreateRasterizerState(&desc, &rasterizerState);
+	m_devcon->RSSetState(rasterizerState);*/
 }
 
 void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/)
@@ -979,6 +993,10 @@ void CDirectXRenderer::SetShaderManager(CShaderManagerDirectX * shaderManager)
 {
 	m_shaderManager = shaderManager ? shaderManager : m_defaultShaderManager.get();
 	UpdateMatrices();
+	for (size_t i = 0; i < m_lightSources.size(); ++i)
+	{
+		m_shaderManager->SetLight(i, m_lightSources[i]);
+	}
 }
 
 void CDirectXRenderer::UpdateMatrices()

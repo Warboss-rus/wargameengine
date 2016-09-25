@@ -10,6 +10,7 @@
 #include "../view/Vector3.h"
 #include "Network.h"
 #include "../Signal.h"
+#include "../IPhysicsEngine.h"
 
 class CGameView;
 
@@ -18,7 +19,7 @@ class CGameController : public IStateManager
 public:
 	typedef std::function<bool(std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
 
-	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler);
+	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine);
 	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
 	void Update();
 
@@ -69,16 +70,19 @@ private:
 	void MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY);
 	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
 	bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target);
-	size_t BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject);
+	size_t BBoxlos(double origin[3], sBounding * target, IObject * shooter, IObject * targetObject);
 	CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0);
 	static void PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream);
 
 	CGameModel& m_model;
+	CGameView* m_view;
+	IPhysicsEngine & m_physicsEngine;
 	CVector3d m_selectedObjectCapturePoint;
 	std::unique_ptr<CVector3d> m_selectedObjectBeginCoords;
 	std::unique_ptr<CVector2d> m_selectionRectangleBegin;
 	double m_selectedObjectPrevRotation = 0;
 	std::unique_ptr<CVector3d> m_rotationPosBegin;
+	long long m_lastUpdateTime;
 
 	std::unique_ptr<IScriptHandler> m_scriptHandler;
 	std::unique_ptr<CCommandHandler> m_commandHandler;

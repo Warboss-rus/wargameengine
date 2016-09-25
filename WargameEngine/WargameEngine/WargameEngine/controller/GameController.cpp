@@ -10,13 +10,14 @@
 #include "../MemoryStream.h"
 #include "../Utils.h"
 
-CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler)
-	:m_model(model), m_scriptHandler(std::move(scriptHandler))
+CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine)
+	:m_model(model), m_scriptHandler(std::move(scriptHandler)), m_physicsEngine(physicsEngine)
 {
 }
 
 void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath)
 {
+	m_view = &view;
 	m_commandHandler = std::make_unique<CCommandHandler>();
 	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model, socketFactory);
 	m_commandHandler->DoOnNewCommand([this] (ICommand * command){
@@ -25,6 +26,7 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 			m_network->SendAction(*command);
 		}
 	});
+	m_physicsEngine.Reset();
 
 	RegisterModelFunctions(*m_scriptHandler, m_model);
 	RegisterViewFunctions(*m_scriptHandler, view);
@@ -33,6 +35,8 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 	RegisterObject(*m_scriptHandler, *this, m_model, view.GetModelManager());
 	RegisterViewport(*m_scriptHandler, view);
 	m_scriptHandler->RunScript(scriptPath);
+
+	m_lastUpdateTime = GetCurrentTimeLL();
 }
 
 void CGameController::Update()
@@ -44,7 +48,11 @@ void CGameController::Update()
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
 	}
-	m_model.Update();
+	long long currentTime = GetCurrentTimeLL();
+	long long delta = currentTime - m_lastUpdateTime;
+	m_lastUpdateTime = currentTime;
+	m_model.Update(delta);
+	m_physicsEngine.Update(delta);
 }
 
 CVector3d CGameController::RayToPoint(CVector3d const& begin, CVector3d const& end, double z)
@@ -206,8 +214,9 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 
 std::shared_ptr<IObject> CGameController::GetNearestObject(const double * start, const double * end)
 {
-	std::shared_ptr<IObject> selectedObject = NULL;
-	double minDistance = 10000000.0;
+	IObject* selectedObject = nullptr;
+	m_physicsEngine.CastRay(CVector3d(start), CVector3d(end), &selectedObject, m_selectedObjectCapturePoint);
+	/*double minDistance = 10000000.0;
 	for (size_t i = 0; i < m_model.GetObjectCount(); ++i)
 	{
 		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
@@ -226,8 +235,8 @@ std::shared_ptr<IObject> CGameController::GetNearestObject(const double * start,
 				m_selectedObjectCapturePoint.z -= selectedObject->GetZ();
 			}
 		}
-	}
-	return selectedObject;
+	}*/
+	return m_model.Get3DObject(selectedObject);
 }
 
 void CGameController::SelectObject(const double * begin, const double * end, bool add, bool noCallback /*= false*/)
@@ -287,26 +296,7 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 
 bool CGameController::IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current)
 {
-	std::shared_ptr<IBounding> curBox = m_model.GetBoundingBox(current->GetPathToModel());
-	if (!curBox) return false;
-	CVector3d curPos(current->GetCoords());
-	double curAngle = current->GetRotation();
-	for (size_t i = 0; i < m_model.GetObjectCount(); ++i)
-	{
-		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
-		if (!object) continue;
-		std::shared_ptr<IBounding> bounding = m_model.GetBoundingBox(object->GetPathToModel());
-		if (!bounding) continue;
-		CVector3d pos(object->GetCoords());
-		double angle = object->GetRotation();
-		CObjectGroup * group = static_cast<CObjectGroup*>(current.get());
-		bool isGroupChild = m_model.IsGroup(current.get()) && group->ContainsChildren(object);
-		if (current != object && !isGroupChild && IsInteresect(curBox.get(), curPos, curAngle, bounding.get(), pos, angle))
-		{
-			return true;
-		}
-	}
-	return false;
+	return m_physicsEngine.TestObject(current.get());
 }
 
 bool CGameController::TestRay(double *origin, double *dir, IObject * shooter, IObject* target)
@@ -316,42 +306,39 @@ bool CGameController::TestRay(double *origin, double *dir, IObject * shooter, IO
 	{
 		IObject * current = m_model.Get3DObject(i).get();
 		if (current == shooter || current == target) continue;
-		IBounding * box = m_model.GetBoundingBox(current->GetPathToModel()).get();
+		/*sB * box = nullptr;//m_model.GetBoundingBox(current->GetPathToModel()).get();
 		if (!box) continue;
 		if (box->IsIntersectsRay(origin, dir, current->GetX(), current->GetY(), current->GetZ(), current->GetRotation(), coords))
 		{
 			return false;
-		}
+		}*/
 	}
 	return true;
 }
 
-size_t CGameController::BBoxlos(double origin[3], IBounding * target, IObject * shooter, IObject * targetObject)
+size_t CGameController::BBoxlos(double origin[3], sBounding * target, IObject * shooter, IObject * targetObject)
 {
 	size_t result = 0;
 	size_t total = 0;
-	CBoundingBox * tarBox = dynamic_cast<CBoundingBox *>(target);
-	if (!tarBox)
+	if (target->type == sBounding::eType::COMPOUND)
 	{
-		CBoundingCompound * compound = dynamic_cast<CBoundingCompound*>(target);
-		if (compound)
+		sBounding::sCompound compound = target->GetCompound();
+		for (size_t i = 0; i < compound.items.size(); ++i)
 		{
-			for (size_t i = 0; i < compound->GetChildCount(); ++i)
-			{
-				result += BBoxlos(origin, compound->GetChild(i), shooter, targetObject);
-			}
-			result /= compound->GetChildCount();
+			result += BBoxlos(origin, &compound.items[i], shooter, targetObject);
 		}
+		result /= compound.items.size();
 		total = 100;
 	}
 	else
 	{
+		sBounding::sBox const& tarBox = target->GetBox();
 		double dir[3];
-		for (dir[0] = tarBox->GetMin()[0] + targetObject->GetX(); dir[0] < tarBox->GetMax()[0] + targetObject->GetX(); dir[0] += (tarBox->GetMax()[0] - tarBox->GetMin()[0]) / 10.0 + 0.0001)
+		for (dir[0] = tarBox.min[0] + targetObject->GetX(); dir[0] < tarBox.max[0] + targetObject->GetX(); dir[0] += (tarBox.max[0] - tarBox.min[0]) / 10.0 + 0.0001)
 		{
-			for (dir[1] = tarBox->GetMin()[1] + targetObject->GetY(); dir[1] < tarBox->GetMax()[1] + targetObject->GetY(); dir[1] += (tarBox->GetMax()[1] - tarBox->GetMin()[1]) / 10.0 + 0.0001)
+			for (dir[1] = tarBox.min[1] + targetObject->GetY(); dir[1] < tarBox.max[1] + targetObject->GetY(); dir[1] += (tarBox.max[1] - tarBox.min[1]) / 10.0 + 0.0001)
 			{
-				for (dir[2] = tarBox->GetMin()[2] + targetObject->GetZ(); dir[2] < tarBox->GetMax()[2] + targetObject->GetZ(); dir[2] += (tarBox->GetMax()[2] - tarBox->GetMin()[2]) / 10.0 + 0.0001)
+				for (dir[2] = tarBox.min[2] + targetObject->GetZ(); dir[2] < tarBox.max[2] + targetObject->GetZ(); dir[2] += (tarBox.max[2] - tarBox.min[2]) / 10.0 + 0.0001)
 				{
 					total++;
 					if (TestRay(origin, dir, shooter, targetObject))
@@ -366,9 +353,9 @@ size_t CGameController::BBoxlos(double origin[3], IBounding * target, IObject * 
 size_t CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 {
 	if (!shooter || !target) return 0;
-	IBounding * targetBound = m_model.GetBoundingBox(target->GetPathToModel()).get();
+	sBounding targetBound = m_physicsEngine.GetBounding(target->GetPathToModel());
 	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
-	return BBoxlos(center, targetBound, shooter, target);
+	return BBoxlos(center, &targetBound, shooter, target);
 }
 
 void CGameController::SetSelectionCallback(std::function<void()> const& onSelect)
@@ -551,14 +538,17 @@ void CGameController::RotateObject(std::shared_ptr<IObject> obj, double deltaRot
 std::shared_ptr<IObject> CGameController::CreateObject(std::wstring const& model, double x, double y, double rotation)
 {
 	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, 0.0, rotation);
+	m_view->GetModelManager().LoadIfNotExist(model);
 	m_commandHandler->AddNewCreateObject(object, m_model);
 	m_network->AddAddressLocal(object);
+	m_physicsEngine.AddDynamicObject(object.get(), 1.0);
 	return object;
 }
 
 void CGameController::DeleteObject(std::shared_ptr<IObject> obj)
 {
 	m_commandHandler->AddNewDeleteObject(obj, m_model);
+	m_physicsEngine.RemoveDynamicObject(obj.get());
 }
 
 void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::wstring const& key, std::wstring const& value)
