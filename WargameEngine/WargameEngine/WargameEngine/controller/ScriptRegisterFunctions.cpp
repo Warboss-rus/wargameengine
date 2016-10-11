@@ -272,6 +272,17 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		return nullptr;
 	});
 
+	handler.RegisterFunction(SET_PARTICLE_SYSTEM_SHADERS, [&](IArguments const& args) {
+		int n = args.GetCount();
+		auto pathSource = view.GetAsyncFileProvider();
+		std::wstring vertex, fragment;
+		if (n > 0) vertex = pathSource.GetShaderAbsolutePath(args.GetWStr(1));
+		if (n > 1) fragment = pathSource.GetShaderAbsolutePath(args.GetWStr(2));
+		if (n > 3) throw std::runtime_error("up to 2 argument expected (vertex shader, fragment shader)");
+		view.GetParticleSystem().SetShaders(vertex, fragment);
+		return nullptr;
+	});
+
 	handler.RegisterFunction(SET_SHADERS, [&](IArguments const& args) {
 		int n = args.GetCount();
 		auto pathSource = view.GetAsyncFileProvider();
@@ -358,16 +369,15 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	});
 
 	handler.RegisterFunction(NEW_PARTICLE_EFFECT, [&](IArguments const& args) {
-		if (args.GetCount() != 7)
-			throw std::runtime_error("7 arguments expected (effect file, x, y, z coordinates, rotation, scale, lifetime)");
+		if (args.GetCount() != 5 && args.GetCount() != 6)
+			throw std::runtime_error("5-6 arguments expected (effect file, x, y, z coordinates, scale[, max particles])");
 		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
-		double x = args.GetDbl(2);
-		double y = args.GetDbl(3);
-		double z = args.GetDbl(4);
-		double rot = args.GetDbl(5);
-		double scale = args.GetDbl(6);
-		float lifetime = args.GetFloat(7);
-		view.GetParticleSystem().AddEffect(file, x, y, z, rot, scale, lifetime);
+		float x = args.GetFloat(2);
+		float y = args.GetFloat(3);
+		float z = args.GetFloat(4);
+		float scale = args.GetFloat(5);
+		size_t maxParticles = args.GetCount() > 5 ? (size_t)args.GetLong(6) : 1000u;
+		view.AddParticleEffect(file, { x, y, z }, scale, maxParticles);
 		return nullptr;
 	});
 
@@ -385,7 +395,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		double rot = args.GetDbl(8);
 		double scale = args.GetDbl(9);
 		float speed = args.GetFloat(10);
-		view.GetParticleSystem().AddTracer(file, begin, end, rot, scale, speed);
+		//view.GetParticleSystem().AddTracer(file, begin, end, rot, scale, speed);
 		return nullptr;
 	});
 

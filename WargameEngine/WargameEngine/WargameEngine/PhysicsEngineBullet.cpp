@@ -1,6 +1,7 @@
 #include "PhysicsEngineBullet.h"
 #include <vector>
 #include <map>
+#include <algorithm>
 #pragma warning (push)
 #pragma warning (disable: 4127)
 #include <btBulletDynamicsCommon.h>
@@ -8,10 +9,10 @@
 #include "model/ObjectInterface.h"
 #include "model/ObjectStatic.h"
 #include "model/Landscape.h"
-#include <algorithm>
 #include "view/IRenderer.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "LogWriter.h"
 
 CVector3d ToVector3d(btVector3 const& vec)
 {
@@ -32,7 +33,7 @@ class CDebugDrawer : public btIDebugDraw
 {
 public:
 	CDebugDrawer(IRenderer & renderer)
-		:m_renderer(renderer), m_debugMode(0)
+		:m_debugMode(0), m_renderer(renderer)
 	{
 	}
 	virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override
@@ -41,17 +42,17 @@ public:
 		m_renderer.RenderArrays(RenderMode::LINES, { ToVector3d(from), ToVector3d(to) }, {}, {});
 	}
 
-	virtual void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color) override
+	virtual void drawContactPoint(const btVector3& /*PointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) override
 	{
 		
 	}
 
 	virtual void reportErrorWarning(const char* warningString) override
 	{
-		
+		LogWriter::WriteLine(warningString);
 	}
 
-	virtual void draw3dText(const btVector3& location, const char* textString) override
+	virtual void draw3dText(const btVector3& /*location*/, const char* /*textString*/) override
 	{
 		
 	}
@@ -201,27 +202,39 @@ public:
 		landscape;
 	}
 
-	bool CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint) const
+	bool CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint, std::vector<IObject*> const& excludeObjects) const
 	{
 		*obj = nullptr;
-		btCollisionWorld::ClosestRayResultCallback RayCallback(ToBtVector3(origin), ToBtVector3(dest));
+		btCollisionWorld::AllHitsRayResultCallback RayCallback(ToBtVector3(origin), ToBtVector3(dest));
 		m_dynamicsWorld->rayTest(ToBtVector3(origin), ToBtVector3(dest), RayCallback);
 		if (RayCallback.hasHit())
 		{
-			const btCollisionObject* collisionObject = RayCallback.m_collisionObject;
-			const btRigidBody* body = btRigidBody::upcast(collisionObject);
-			btTransform trans;
-			if (body)
+			auto& objects = RayCallback.m_collisionObjects;
+			for (int i = 0; i < objects.size(); ++i)
 			{
-				trans = body->getWorldTransform();
-				*obj = reinterpret_cast<IObject*>(body->getUserPointer());
-			}
-			btVector3 btHitPoint = trans.invXform(RayCallback.m_hitPointWorld);
-			hitPoint = ToVector3d(btHitPoint);
-			auto offsetIt = body ? m_shapeOffset.find(body->getCollisionShape()) : m_shapeOffset.end();
-			if (offsetIt != m_shapeOffset.end())
-			{
-				hitPoint += offsetIt->second;
+				const btCollisionObject* collisionObject = objects[i];
+				const btRigidBody* body = btRigidBody::upcast(collisionObject);
+				btTransform trans;
+				if (body)
+				{
+					trans = body->getWorldTransform();
+					*obj = reinterpret_cast<IObject*>(body->getUserPointer());
+					if (std::find(excludeObjects.begin(), excludeObjects.end(), *obj) != excludeObjects.end())
+					{
+						*obj = 0;
+					}
+				}
+				btVector3 btHitPoint = trans.invXform(RayCallback.m_hitPointWorld[i]);
+				hitPoint = ToVector3d(btHitPoint);
+				auto offsetIt = body ? m_shapeOffset.find(body->getCollisionShape()) : m_shapeOffset.end();
+				if (offsetIt != m_shapeOffset.end())
+				{
+					hitPoint += offsetIt->second;
+				}
+				if (*obj)
+				{
+					return true;
+				}
 			}
 		}
 		return *obj != nullptr;
@@ -399,9 +412,9 @@ void CPhysicsEngineBullet::SetGround(CLandscape * landscape)
 	m_pImpl->SetGround(landscape);
 }
 
-bool CPhysicsEngineBullet::CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint) const
+bool CPhysicsEngineBullet::CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint, std::vector<IObject*> const& excludeObjects) const
 {
-	return m_pImpl->CastRay(origin, dest, obj, hitPoint);
+	return m_pImpl->CastRay(origin, dest, obj, hitPoint, excludeObjects);
 }
 
 bool CPhysicsEngineBullet::TestObject(IObject * object) const

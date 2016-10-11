@@ -102,11 +102,6 @@ public:
 		memcpy(ms.pData, indexPtr, sizeof(unsigned int) * count);                // copy the data
 		m_renderer->GetContext()->Unmap(m_pIndexBuffer, NULL);                        // unmap the buffer
 
-		ID3D11Buffer* buffers[5];
-		UINT strides[5];
-		UINT offsets[5];
-		m_renderer->GetContext()->IAGetVertexBuffers(0, 5, buffers, strides, offsets);
-
 		m_renderer->GetContext()->DrawIndexed(count, 0, 0);
 	}
 
@@ -150,6 +145,12 @@ public:
 	{
 		return m_pTexCoordBuffer;
 	}
+
+	virtual void DrawInstanced(size_t size, size_t instanceCount) override
+	{
+		m_renderer->GetContext()->DrawInstanced(size, instanceCount, 0, 0);
+	}
+
 private:
 	CComPtr<ID3D11Buffer> m_pVertexBuffer;
 	CComPtr<ID3D11Buffer> m_pTexCoordBuffer;

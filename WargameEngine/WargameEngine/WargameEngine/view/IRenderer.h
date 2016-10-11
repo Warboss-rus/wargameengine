@@ -38,6 +38,7 @@ public:
 	virtual void Bind() const = 0;
 	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) = 0;
 	virtual void DrawAll(size_t count) = 0;
+	virtual void DrawInstanced(size_t size, size_t instanceCount) = 0;
 	virtual void UnBind() const = 0;
 
 	virtual ~IVertexBuffer() {}

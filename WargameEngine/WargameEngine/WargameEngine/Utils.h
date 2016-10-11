@@ -15,6 +15,7 @@ void OpenFile(std::ifstream & stream, std::wstring const& path, std::ios::openmo
 
 #ifdef TO_STRING_HACK
 #include <sstream>
+#include <stdlib.h>
 namespace std
 {
 	template<class T>
@@ -37,6 +38,11 @@ namespace std
 	{
 		wchar_t *_Eptr;
 		return wcstol(_Str.c_str(), &_Eptr, _Base);
+	}
+	inline float stof(const string& _Str, size_t */*_Idx*/  = 0 )
+	{
+		char *_Eptr;
+		return strtof(_Str.c_str(), &_Eptr);
 	}
 }
 #endif

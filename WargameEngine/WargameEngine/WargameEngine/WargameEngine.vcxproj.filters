@@ -170,19 +170,10 @@
     <ClCompile Include="controller\CommandGoTo.cpp">
       <Filter>Source Files\controller\commands</Filter>
     </ClCompile>
-    <ClCompile Include="view\Particle.cpp">
-      <Filter>Source Files\view\Particles</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ParticleEffect.cpp">
-      <Filter>Source Files\view\Particles</Filter>
-    </ClCompile>
     <ClCompile Include="view\ParticleModel.cpp">
       <Filter>Source Files\view\Particles</Filter>
     </ClCompile>
     <ClCompile Include="view\ParticleSystem.cpp">
-      <Filter>Source Files\view\Particles</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ParticleTracer.cpp">
       <Filter>Source Files\view\Particles</Filter>
     </ClCompile>
     <ClCompile Include="controller\ScriptRegisterFunctions.cpp">
@@ -244,6 +235,9 @@
     </ClCompile>
     <ClCompile Include="view\MirrorCamera.cpp">
       <Filter>Source Files\view\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="model\Particle.cpp">
+      <Filter>Source Files\model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -454,19 +448,10 @@
     <ClInclude Include="view\ITextureHelper.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\Particle.h">
-      <Filter>Source Files\view\Particles</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleEffect.h">
-      <Filter>Source Files\view\Particles</Filter>
-    </ClInclude>
     <ClInclude Include="view\ParticleModel.h">
       <Filter>Source Files\view\Particles</Filter>
     </ClInclude>
     <ClInclude Include="view\ParticleSystem.h">
-      <Filter>Source Files\view\Particles</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ParticleTracer.h">
       <Filter>Source Files\view\Particles</Filter>
     </ClInclude>
     <ClInclude Include="view\Matrix4.h">
@@ -516,9 +501,6 @@
     </ClInclude>
     <ClInclude Include="MemoryStream.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="view\IParticleEffect.h">
-      <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\IImageReader.h">
       <Filter>Source Files\view</Filter>
@@ -570,6 +552,9 @@
     </ClInclude>
     <ClInclude Include="IPhysicsEngine.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Particle.h">
+      <Filter>Source Files\model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

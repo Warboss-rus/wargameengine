@@ -240,6 +240,7 @@
     <ClCompile Include="controller\ScriptRegisterFunctions.cpp" />
     <ClCompile Include="controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="controller\ScriptRegisterUI.cpp" />
+    <ClCompile Include="model\Particle.cpp" />
     <ClCompile Include="view\FixedCamera.cpp" />
     <ClCompile Include="MemoryStream.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
@@ -291,11 +292,8 @@
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
-    <ClCompile Include="view\Particle.cpp" />
-    <ClCompile Include="view\ParticleEffect.cpp" />
     <ClCompile Include="view\ParticleModel.cpp" />
     <ClCompile Include="view\ParticleSystem.cpp" />
-    <ClCompile Include="view\ParticleTracer.cpp" />
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
     <ClCompile Include="view\TranslationManager.cpp" />
@@ -315,6 +313,7 @@
     <ClInclude Include="controller\ScriptRegisterFunctions.h" />
     <ClInclude Include="controller\ScriptUIProtocol.h" />
     <ClInclude Include="IPhysicsEngine.h" />
+    <ClInclude Include="model\Particle.h" />
     <ClInclude Include="view\FixedCamera.h" />
     <ClInclude Include="IMemoryStream.h" />
     <ClInclude Include="ITask.h" />
@@ -363,7 +362,6 @@
     <ClInclude Include="view\IImageReader.h" />
     <ClInclude Include="view\IInput.h" />
     <ClInclude Include="view\IModelReader.h" />
-    <ClInclude Include="view\IParticleEffect.h" />
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\IShaderManager.h" />
     <ClInclude Include="view\IGameWindow.h" />
@@ -374,11 +372,8 @@
     <ClInclude Include="view\IViewport.h" />
     <ClInclude Include="view\KeyDefines.h" />
     <ClInclude Include="view\Matrix4.h" />
-    <ClInclude Include="view\Particle.h" />
-    <ClInclude Include="view\ParticleEffect.h" />
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
-    <ClInclude Include="view\ParticleTracer.h" />
     <ClInclude Include="view\TranslationManager.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />

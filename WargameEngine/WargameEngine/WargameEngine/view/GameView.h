@@ -49,7 +49,6 @@ public:
 	void CreateSkybox(double size, std::wstring const& textureFolder);
 	IUIElement * GetUI() const;
 	CModelManager& GetModelManager();
-	CParticleSystem& GetParticleSystem();
 	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
@@ -59,6 +58,7 @@ public:
 	ThreadPool& GetThreadPool();
 	IViewHelper& GetViewHelper();
 	IInput& GetInput();
+	CParticleSystem& GetParticleSystem();
 
 	size_t GetViewportCount() const;
 	IViewport& GetViewport(size_t index = 0);
@@ -81,6 +81,7 @@ public:
 	void EnableLight(size_t index, bool enable = true);
 	void SetLightColor(size_t index, LightningType type, float * values);
 	bool EnableVRMode(bool enable, bool mirrorToScreen = true);
+	void AddParticleEffect(std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();

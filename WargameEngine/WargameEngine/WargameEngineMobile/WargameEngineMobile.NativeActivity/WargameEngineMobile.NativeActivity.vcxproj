@@ -292,6 +292,7 @@
     <ClInclude Include="..\..\WargameEngine\model\ObjectGroup.h" />
     <ClInclude Include="..\..\WargameEngine\model\ObjectInterface.h" />
     <ClInclude Include="..\..\WargameEngine\model\ObjectStatic.h" />
+    <ClInclude Include="..\..\WargameEngine\model\Particle.h" />
     <ClInclude Include="..\..\WargameEngine\model\Projectile.h" />
     <ClInclude Include="..\..\WargameEngine\model\TeamColor.h" />
     <ClInclude Include="..\..\WargameEngine\Module.h" />
@@ -359,11 +360,8 @@
     <ClInclude Include="..\..\WargameEngine\view\OBJModelFactory.h" />
     <ClInclude Include="..\..\WargameEngine\view\OffscreenViewport.h" />
     <ClInclude Include="..\..\WargameEngine\view\OpenGLESRenderer.h" />
-    <ClInclude Include="..\..\WargameEngine\view\Particle.h" />
-    <ClInclude Include="..\..\WargameEngine\view\ParticleEffect.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleModel.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleSystem.h" />
-    <ClInclude Include="..\..\WargameEngine\view\ParticleTracer.h" />
     <ClInclude Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.h" />
     <ClInclude Include="..\..\WargameEngine\view\SkyBox.h" />
     <ClInclude Include="..\..\WargameEngine\view\TextureManager.h" />
@@ -400,6 +398,7 @@
     <ClCompile Include="..\..\WargameEngine\model\MovementLimiter.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\Object.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\ObjectGroup.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\Particle.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\Projectile.cpp" />
     <ClCompile Include="..\..\WargameEngine\Module.cpp" />
     <ClCompile Include="..\..\WargameEngine\NetSocket.cpp" />
@@ -442,11 +441,8 @@
     <ClCompile Include="..\..\WargameEngine\view\OBJModelFactory.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\OffscreenViewport.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\OpenGLESRenderer.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\Particle.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\ParticleEffect.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleModel.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleSystem.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\ParticleTracer.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\SkyBox.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\TextureManager.cpp" />

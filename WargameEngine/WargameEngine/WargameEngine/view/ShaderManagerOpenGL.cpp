@@ -6,11 +6,6 @@
 #include "../LogWriter.h"
 #include "../Module.h"
 
-static const std::map<IShaderManager::eVertexAttribute, unsigned int> attributeLocationMap = {
-	{ IShaderManager::eVertexAttribute::WEIGHT, 9 },
-	{ IShaderManager::eVertexAttribute::WEIGHT_INDEX, 10 }
-};
-
 CShaderManagerOpenGL::CShaderManagerOpenGL() :m_program(0)
 {
 }
@@ -95,10 +90,6 @@ void CShaderManagerOpenGL::NewProgram(std::wstring const& vertex, std::wstring c
 			geometryShader = CompileShader(geometry, m_program, GL_GEOMETRY_SHADER);
 		}
 	}
-	glBindAttribLocation(m_program, attributeLocationMap.at(eVertexAttribute::WEIGHT), "weights");
-	auto error = glGetError();
-	glBindAttribLocation(m_program, attributeLocationMap.at(eVertexAttribute::WEIGHT_INDEX), "weightIndices");
-	error = glGetError();
 	glLinkProgram(m_program);
 	glUseProgram(m_program);
 	int unfrm = glGetUniformLocation(m_program, "texture");
@@ -114,7 +105,7 @@ void CShaderManagerOpenGL::NewProgram(std::wstring const& vertex, std::wstring c
 	glDetachShader(m_program, framgentShader);
 	glDeleteShader(framgentShader);
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	glVertexAttrib4fv(attributeLocationMap.at(eVertexAttribute::WEIGHT), def);
+	glVertexAttrib4fv(glGetAttribLocation(m_program, "weights"), def);
 }
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int count, const float* value) const
@@ -195,38 +186,52 @@ void CShaderManagerOpenGL::SetUniformMatrix4(std::string const& uniform, size_t 
 	glUniformMatrix4fv(unfrm, count, false, value);
 }
 
-void CShaderManagerOpenGL::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t /*totalSize*/, float* values) const
+void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, int elementSize, size_t /*totalSize*/, float* values) const
 {
-	glEnableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttribPointer(attributeLocationMap.at(attributeIndex), elementSize, GL_FLOAT, false, 0, values);
+	int index = glGetAttribLocation(m_program, attribute.c_str());
+	glEnableVertexAttribArray(index);
+	glVertexAttribPointer(index, elementSize, GL_FLOAT, false, 0, values);
 }
 
-void CShaderManagerOpenGL::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t /*totalSize*/, int* values) const
+void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, int elementSize, size_t /*totalSize*/, int* values) const
 {
-	glEnableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttribIPointer(attributeLocationMap.at(attributeIndex), elementSize, GL_INT, 0, values);
+	int index = glGetAttribLocation(m_program, attribute.c_str());
+	glEnableVertexAttribArray(index);
+	glVertexAttribIPointer(index, elementSize, GL_INT, 0, values);
 }
 
-void CShaderManagerOpenGL::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t /*totalSize*/, unsigned int* values) const
+void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, int elementSize, size_t /*totalSize*/, unsigned int* values) const
 {
-	glEnableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttribIPointer(attributeLocationMap.at(attributeIndex), elementSize, GL_UNSIGNED_INT, 0, values);
+	int index = glGetAttribLocation(m_program, attribute.c_str());
+	glEnableVertexAttribArray(index);
+	glVertexAttribIPointer(index, elementSize, GL_UNSIGNED_INT, 0, values);
 }
 
-void CShaderManagerOpenGL::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* defaultValue) const
+void CShaderManagerOpenGL::SetPerInstanceVertexAttribute(std::string const& attribute, int elementSize, size_t /*totalSize*/, float* values) const
 {
-	glDisableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttrib4fv(attributeLocationMap.at(attributeIndex), defaultValue);
+	int index = glGetAttribLocation(m_program, attribute.c_str());
+	glEnableVertexAttribArray(index);
+	glVertexAttribPointer(index, elementSize, GL_FLOAT, false, 0, values);
+	glVertexAttribDivisor(index, 1);
 }
 
-void CShaderManagerOpenGL::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, int* defaultValue) const
+void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, float* defaultValue) const
 {
-	glDisableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttrib4iv(attributeLocationMap.at(attributeIndex), defaultValue);
+	int index = glGetAttribLocation(m_program, attribute.c_str());
+	glDisableVertexAttribArray(index);
+	glVertexAttrib4fv(index, defaultValue);
 }
 
-void CShaderManagerOpenGL::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, unsigned int* defaultValue) const
+void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, int* defaultValue) const
 {
-	glDisableVertexAttribArray(attributeLocationMap.at(attributeIndex));
-	glVertexAttrib4uiv(attributeLocationMap.at(attributeIndex), defaultValue);
+	int index = glGetAttribLocation(m_program, attribute.c_str());
+	glDisableVertexAttribArray(index);
+	glVertexAttrib4iv(index, defaultValue);
+}
+
+void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, unsigned int* defaultValue) const
+{
+	int index = glGetAttribLocation(m_program, attribute.c_str());
+	glDisableVertexAttribArray(index);
+	glVertexAttrib4uiv(index, defaultValue);
 }

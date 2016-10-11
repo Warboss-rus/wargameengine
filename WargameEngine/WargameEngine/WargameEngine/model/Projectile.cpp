@@ -1,7 +1,7 @@
 #include "Projectile.h"
 
-CProjectile::CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::wstring const& model, std::wstring const& particleFile, std::function<void()> const& onHit, std::function<void()> const& onCollision)
-	:CStaticObject(model, origin.x, origin.y, 0.0, model.empty()), m_target(target), m_speed(speed), m_particle(particleFile), m_onHit(onHit), m_onCollision(onCollision)
+CProjectile::CProjectile(CVector3d const& origin, CVector3d & target, double speed, std::wstring const& model, CParticleEffect * particleEffect, std::function<void()> const& onHit, std::function<void()> const& onCollision)
+	:CStaticObject(model, origin.x, origin.y, 0.0, model.empty()), m_target(target), m_speed(speed), m_particle(particleEffect), m_onHit(onHit), m_onCollision(onCollision)
 {
 }
 
@@ -22,9 +22,9 @@ bool CProjectile::Update(long long timeSinceLastUpdate)
 	return false;//Particle is not yet finished
 }
 
-const std::wstring CProjectile::GetParticle() const
+const CParticleEffect* CProjectile::GetParticle() const
 { 
-	return m_particle; 
+	return m_particle.get(); 
 
 }
 void  CProjectile::CallOnCollision() const

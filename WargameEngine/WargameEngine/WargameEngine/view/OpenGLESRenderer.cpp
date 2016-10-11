@@ -47,6 +47,7 @@ public:
 	virtual void Bind() const override;
 	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override;
 	virtual void DrawAll(size_t count) override;
+	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
 private:
 	const float * m_vertex;
@@ -448,6 +449,11 @@ void COpenGLVertexBuffer::DrawIndexes(unsigned int * indexPtr, size_t count)
 void COpenGLVertexBuffer::DrawAll(size_t count)
 {
 	glDrawArrays(GL_TRIANGLES, 0, count);
+}
+
+void COpenGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
+{
+	glDrawArraysInstanced(GL_TRIANGLES, 0, size, instanceCount);
 }
 
 void COpenGLVertexBuffer::UnBind() const

@@ -13,7 +13,7 @@ public:
 	virtual void AddStaticObject(CStaticObject * staticObject) override;
 	virtual void RemoveDynamicObject(IObject * object) override;
 	virtual void SetGround(CLandscape * landscape) override;
-	virtual bool CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint) const override;
+	virtual bool CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint, std::vector<IObject*> const& excludeObjects = std::vector<IObject*>()) const override;
 	virtual bool TestObject(IObject * object) const override;
 	virtual void Draw() const override;
 	virtual void EnableDebugDraw(IRenderer & renderer) override;

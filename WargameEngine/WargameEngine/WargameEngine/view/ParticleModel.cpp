@@ -1,48 +1,96 @@
 #include "ParticleModel.h"
 #include <fstream>
 #include <map>
-#include <string>
-#include <cstring>
-#include <sstream>
 #include "../rapidxml/rapidxml.hpp"
-#include "../AsyncFileProvider.h"
 #include "../Utils.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <algorithm>
 
 using namespace std;
 using namespace rapidxml;
 
-vector<float> GetFloatsArray(xml_node<>* data)
+namespace
 {
-	vector<float> res;
-	stringstream sstream(data->value());
-	while (!sstream.eof())
+vector<float> SplitFloatsBy(string const& data, char delimeter)
+{
+	vector<float> result;
+	size_t it1 = 0;
+	size_t it2 = data.find(delimeter);
+	while (it2 != data.npos)
 	{
-		float val;
-		sstream >> val;
-		res.push_back(val);
+		result.push_back(stof(data.substr(it1, it2)));
+		it1 = it2 + 1;
+		it2 = data.find(delimeter, it1);
 	}
-	res.shrink_to_fit();
-	return res;
+	if (it1 != data.npos)
+	{
+		result.push_back(stof(data.substr(it1)));
+	}
+	return result;
 }
 
-float StrToFloat(xml_attribute<>* strAttr, float defaultValue)
+CVector2f GetVector2f(std::string const& data)
 {
-	if (strAttr == NULL) return defaultValue;
-	string value = strAttr->value();
-	if (value.substr(0, 5) == "rand(")
-	{
-		double from = atof(value.substr(5, value.find(',') - 5).c_str());
-		double to = atof(value.substr(value.find(',') + 1).c_str());
-		return static_cast <float> (from + rand()) / (static_cast <float> (RAND_MAX / (to - from)));
-	}
-	else
-	{
-		return static_cast<float>(atof(strAttr->value()));
-	}
+	auto arr = SplitFloatsBy(data, ';');
+	return{ arr[0], arr[1] };
 }
 
-CParticleModel::CParticleModel(wstring const& file, IRenderer & renderer)
-	:m_renderer(renderer)
+std::pair<float, float> GetPair(std::string const& data)
+{
+	auto arr = SplitFloatsBy(data, '-');
+	return{ arr[0], arr[1] };
+}
+
+float frand(float start, float end)
+{
+	double r = static_cast<double>(rand()) / RAND_MAX;
+	return start + static_cast<float>(r * fabs(end - start));
+}
+float radians(float degrees)
+{
+	return degrees * (float)M_PI / 180;
+}
+class CSphereEmitter : public CParticleModel::IEmitter
+{
+public:
+	CSphereEmitter(float minInclination, float maxInclination, float minAzimuth, float maxAzimuth, float minRadius, float maxRadius, float minSpeed, float maxSpeed, float * color)
+		:m_minInclination(minInclination), m_maxInclination(maxInclination), m_minAzimuth(minAzimuth), m_maxAzimuth(maxAzimuth)
+		, m_minRadius(minRadius), m_maxRadius(maxRadius), m_minSpeed(minSpeed), m_maxSpeed(maxSpeed)
+	{
+		memcpy(m_color, color, sizeof(float) * 4);
+	}
+	virtual void InitParticle(sParticle & particle) override
+	{
+		float inclination = radians(frand(m_minInclination, m_maxInclination));
+		float azimuth = radians(frand(m_minAzimuth, m_maxAzimuth));
+
+		float radius = frand(m_minRadius, m_maxRadius);
+		float speed = frand(m_minSpeed, m_maxSpeed);
+
+		float sInclination = sinf(inclination);
+
+		float X = sInclination * cosf(azimuth);
+		float Y = sInclination * sinf(azimuth);
+		float Z = cosf(inclination);
+
+		CVector3f vector(Z, Y, X);
+
+		particle.m_position = (vector * radius);
+		particle.m_velocity = vector * speed;
+		memcpy(particle.m_color, m_color, sizeof(float) * 4);
+	}
+
+private:
+	float m_minInclination, m_maxInclination;
+	float m_minAzimuth, m_maxAzimuth;
+	float m_minRadius, m_maxRadius;
+	float m_minSpeed, m_maxSpeed;
+	float m_color[4];
+};
+}
+
+CParticleModel::CParticleModel(wstring const& file)
 {
 	auto slashPos = file.find_last_of(L"\\/");
 	wstring parentPath = slashPos == file.npos ? file : file.substr(0, slashPos);
@@ -53,103 +101,95 @@ CParticleModel::CParticleModel(wstring const& file, IRenderer & renderer)
 	doc->parse<parse_trim_whitespace>(&content[0]);
 	xml_node<>* root = doc->first_node();
 	if (!root) return;
-	m_duration = static_cast<float>(atof(root->first_attribute("duration")->value()));
-	xml_node<>* materials = root->first_node("materials");
-	if (!materials) return;
-	xml_node<>* material = materials->first_node("material");
-	map<string, unsigned int> materialIds;
-	while (material)
+	xml_node<>* texture = root->first_node("texture");
+	if (texture)
 	{
-		materialIds[material->first_attribute("id")->value()] = static_cast<unsigned>(m_textures.size());
-		m_textures.push_back(Utf8ToWstring(material->first_attribute("texture")->value()));
-		std::unique_ptr<IShaderManager> shaderman = m_renderer.CreateShaderManager();
-		std::wstring vertexShader = material->first_attribute("vertex_shader") ? Utf8ToWstring(material->first_attribute("vertex_shader")->value()) : L"";
-		std::wstring fragmentShader = material->first_attribute("fragment_shader") ? Utf8ToWstring(material->first_attribute("fragment_shader")->value()) : L"";
-		if (!vertexShader.empty() || !fragmentShader.empty())
+		m_texture = Utf8ToWstring(texture->first_attribute("path")->value());
+		m_textureFrameSize = GetVector2f(texture->first_attribute("frameSize")->value());
+		xml_node<>* frame = texture->first_node("frame");
+		while (frame)
 		{
-			shaderman->NewProgram(AppendPath(parentPath, vertexShader), AppendPath(parentPath, fragmentShader));
+			sFrame frameStruct;
+			frameStruct.startTime = std::stof(frame->first_attribute("start")->value());
+			if (frame->first_attribute("texFrameIndex"))
+			{
+				frameStruct.texCoords = GetVector2f(frame->first_attribute("texFrameIndex")->value()) / m_textureFrameSize;
+				frameStruct.texCoords.y = 1.0f - frameStruct.texCoords.y;
+			}
+			m_frames.push_back(frameStruct);
+			frame = frame->next_sibling("frame");
 		}
-		m_shaders.push_back(std::move(shaderman));
-		material = material->next_sibling("material");
 	}
-	map<string, unsigned int> particleIDs;
-	xml_node<>* particles = root->first_node("particles");
-	if (!particles) return;
-	xml_node<>* particle = particles->first_node("particle");
-	while (particle)
+	std::sort(m_frames.begin(), m_frames.end(), [](sFrame const& f1, sFrame const& f2) {return f1.startTime < f2.startTime;});
+	xml_node<>* particle = root->first_node("particle");
+	if (particle)
 	{
-		vector<float> keyframes = GetFloatsArray(particle->first_node("keyframes"));
-		vector<float> positions = GetFloatsArray(particle->first_node("positions"));
-		particleIDs[particle->first_attribute("id")->value()] = static_cast<unsigned>(m_particles.size());
-		float width = static_cast<float>(atof(particle->first_attribute("width")->value()));
-		float height = static_cast<float>(atof(particle->first_attribute("height")->value()));
-		m_particles.push_back(CParticle(keyframes, positions, materialIds.at(particle->first_attribute("material")->value()), width, height));
-		particle = particle->next_sibling("particle");
+		m_particleSize = GetVector2f(particle->first_attribute("size")->value());
 	}
-	xml_node<>* instances = root->first_node("instances");
-	if (!instances) return;
-	xml_node<>* instance = instances->first_node("instance");
-	while (instance)
+	xml_node<>* emitter = root->first_node("emitter");
+	if (emitter)
 	{
-		sParticleInstance pinstance;
-		pinstance.position.x = StrToFloat(instance->first_attribute("x"), 0.0f);
-		pinstance.position.y = StrToFloat(instance->first_attribute("y"), 0.0f);
-		pinstance.position.z = StrToFloat(instance->first_attribute("z"), 0.0f);
-		pinstance.rotation = StrToFloat(instance->first_attribute("rotation"), 0.0f);
-		pinstance.speed = StrToFloat(instance->first_attribute("speed"), 1.0f);
-		pinstance.scale = StrToFloat(instance->first_attribute("scale"), 1.0f);
-		pinstance.start = StrToFloat(instance->first_attribute("start"), 0.0f);
-		pinstance.particle = particleIDs[instance->first_attribute("particle")->value()];
-		xml_node<>* uniform = instance->first_node("uniform");
-		while (uniform)
+		auto p = GetPair(emitter->first_attribute("lifeTime")->value());
+		m_minLifeTime = p.first;
+		m_maxLifeTime = p.second;
+		p = GetPair(emitter->first_attribute("scale")->value());
+		m_minScale = p.first;
+		m_maxScale = p.second;
+		xml_node<>* sphereEmitter = emitter->first_node("sphereEmitter");
+		if (sphereEmitter)
 		{
-			pinstance.uniforms[uniform->first_attribute("key")->value()] = GetFloatsArray(uniform);
-			uniform = uniform->next_sibling("uniform");
+			auto inclination = GetPair(sphereEmitter->first_attribute("inclination")->value());
+			auto azimuth = GetPair(sphereEmitter->first_attribute("azimuth")->value());
+			auto radius = GetPair(sphereEmitter->first_attribute("radius")->value());
+			auto speed = GetPair(sphereEmitter->first_attribute("speed")->value());
+			auto color = SplitFloatsBy(sphereEmitter->first_attribute("color")->value(), ';');
+			m_emitter = std::make_unique<CSphereEmitter>(inclination.first, inclination.second, azimuth.first, azimuth.second, radius.first, radius.second, speed.first, speed.second, color.data());
 		}
-		m_instances.push_back(move(pinstance));
-		instance = instance->next_sibling("instance");
 	}
-	xml_node<> * randomInstance = instances->first_node("random_instance");
-	while (randomInstance)
+	xml_node<>* updater = root->first_node("updater");
+	if (updater)
 	{
-		int count = atoi(randomInstance->first_attribute("count")->value());
-		for (int i = 0; i < count; ++i)
-		{
-			sParticleInstance pinstance;
-			pinstance.position.x = StrToFloat(randomInstance->first_attribute("x"), 0.0f);
-			pinstance.position.y = StrToFloat(randomInstance->first_attribute("y"), 0.0f);
-			pinstance.position.z = StrToFloat(randomInstance->first_attribute("z"), 0.0f);
-			pinstance.rotation = StrToFloat(randomInstance->first_attribute("rotation"), 0.0f);
-			pinstance.speed = StrToFloat(randomInstance->first_attribute("speed"), 1.0f);
-			pinstance.scale = StrToFloat(randomInstance->first_attribute("scale"), 1.0f);
-			pinstance.start = StrToFloat(randomInstance->first_attribute("start"), 0.0f);
-			pinstance.particle = particleIDs[randomInstance->first_attribute("particle")->value()];
-			m_instances.push_back(move(pinstance));
-			randomInstance = randomInstance->next_sibling("random_instance");
-		}
+
 	}
 	doc->clear();
 }
 
-void CParticleModel::DrawParticle(CVector3f const& position, float width, float height) const
+std::wstring CParticleModel::GetTexture() const
 {
-	float modelview[4][4];
-	m_renderer.GetViewMatrix(&modelview[0][0]);
+	return m_texture;
+}
 
-	float sizeX2 = width * 0.5f;
-	float sizeY2 = height * 0.5f;
+CVector2f CParticleModel::GetParticleTexcoords(sParticle const& particle) const
+{
+	float lifePercent = particle.m_age / particle.m_lifeTime;
+	for (auto it = m_frames.rbegin(); it != m_frames.rend(); ++it)
+	{
+		if (lifePercent >= it->startTime)
+		{
+			return it->texCoords;
+		}
+	}
+	return m_frames.back().texCoords;
+}
 
-	CVector3d xAxis(modelview[0][0] * sizeX2, modelview[1][0] * sizeX2, modelview[2][0] * sizeX2);
-	CVector3d yAxis(modelview[0][1] * sizeY2, modelview[1][1] * sizeY2, modelview[2][1] * sizeY2);
-	CVector3d zAxis(modelview[0][2], modelview[1][2], modelview[2][2]);
+CVector2f CParticleModel::GetTextureFrameSize() const
+{
+	return m_textureFrameSize;
+}
 
-	CVector3d p0(-xAxis.x + yAxis.x + position.x, -xAxis.y + yAxis.y + position.y, -xAxis.z + yAxis.z + position.z);
-	CVector3d p1(-xAxis.x - yAxis.x + position.x, -xAxis.y - yAxis.y + position.y, -xAxis.z - yAxis.z + position.z);
-	CVector3d p2(+xAxis.x - yAxis.x + position.x, +xAxis.y - yAxis.y + position.y, +xAxis.z - yAxis.z + position.z);
-	CVector3d p3(+xAxis.x + yAxis.x + position.x, +xAxis.y + yAxis.y + position.y, +xAxis.z + yAxis.z + position.z);
+CVector2f CParticleModel::GetParticleSize() const
+{
+	return m_particleSize;
+}
 
-	static const std::vector<CVector2d> texCoords = { { 0.0, 0.0 }, { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } };
-	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { p0, p1, p3, p2 }, {}, texCoords);
+bool CParticleModel::HasDifferentTexCoords() const
+{
+	return true;
+}
+
+bool CParticleModel::HasDifferentColors() const
+{
+	return false;
 }
 
 CVector3f InterpolateVectors(CVector3f const& v1, CVector3f const& v2, float t)
@@ -162,56 +202,25 @@ CVector3f InterpolateVectors(CVector3f const& v1, CVector3f const& v2, float t)
 	return CVector3f(result);
 }
 
-void CParticleModel::Draw(float time) const 
+float CParticleModel::GetAverageLifeTime() const
 {
-	time = fmod(time, GetDuration());
-	for (size_t i = 0; i < m_instances.size(); ++i)
-	{
-		CParticle const& particle = m_particles[m_instances[i].particle];
-		float partTime = (time - m_instances[i].start) / (float)m_instances[i].speed;
-		if (partTime >= 0.0f && partTime <= particle.GetKeyFrames().back())//we need to draw this particle
-		{
-			m_renderer.PushMatrix();
-			CVector3d const & coords = m_instances[i].position;
-			m_renderer.Translate(coords.x, coords.y, coords.z);
-			m_renderer.Rotate(m_instances[i].rotation, 0.0, 1.0, 0.0);
-			m_renderer.Scale(m_instances[i].scale);
-			//calculate the position to draw
-			vector<float> const& keyframes = particle.GetKeyFrames();
-			unsigned int j = 0;//a frame to draw
-			for (; j < keyframes.size(); ++j)
-			{
-				if (partTime <= keyframes[j] && (j == 0 || keyframes[j - 1] <= partTime))
-				{
-					break;
-				}
-			}
-			//interpolate position here
-			if (j == keyframes.size()) j--;
-			CVector3f position = particle.GetPositions()[j];
-			if (j > 0)
-			{
-				position = InterpolateVectors(particle.GetPositions()[j], particle.GetPositions()[j - 1], (partTime - keyframes[j - 1]) / (keyframes[j] - keyframes[j - 1]));
-			}
-			m_renderer.SetTexture(m_textures[particle.GetMaterial()]);
-			m_shaders[particle.GetMaterial()]->BindProgram();
-			auto& uniforms = m_instances[i].uniforms;
-			for (auto k = uniforms.begin(); k != uniforms.end(); ++k)
-			{
-				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, static_cast<int>(k->second.size()), &k->second[0]);
-			}
-			DrawParticle(position, particle.GetWidth(), particle.GetHeight());
-			for (auto k = uniforms.begin(); k != uniforms.end(); ++k)
-			{
-				m_shaders[particle.GetMaterial()]->SetUniformValue(k->first, 0, (float*)nullptr);
-			}
-			m_shaders[particle.GetMaterial()]->UnBindProgram();
-			m_renderer.SetTexture(L"");
-			m_renderer.PopMatrix();
-		}
-	}
+	return (m_maxLifeTime + m_minLifeTime) * 0.5f;
 }
 
-float CParticleModel::GetDuration() const {
-	return m_duration;
+void CParticleModel::InitParticle(sParticle & particle) const
+{
+	if (m_emitter)
+	{
+		m_emitter->InitParticle(particle);
+	}
+	particle.m_lifeTime = frand(m_minLifeTime, m_maxLifeTime);
+	particle.m_scale = frand(m_minScale, m_maxScale);
+}
+
+void CParticleModel::UpdateParticle(sParticle & particle) const
+{
+	if (m_updater)
+	{
+		m_updater->Update(particle);
+	}
 }

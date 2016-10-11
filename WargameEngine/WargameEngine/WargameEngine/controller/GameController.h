@@ -65,11 +65,9 @@ private:
 	std::shared_ptr<IObject> GetNearestObject(const double * start, const double * end);
 	void SelectObjectGroup(double beginX, double beginY, double endX, double endY);
 	void SelectObject(const double * begin, const double * end, bool add, bool noCallback = false);
-	bool IsObjectInteresectSomeObjects(std::shared_ptr<IObject> current);
 	void TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3d const& pos);
 	void MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY);
 	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
-	bool TestRay(double *origin, double *dir, IObject * shooter, IObject* target);
 	size_t BBoxlos(double origin[3], sBounding * target, IObject * shooter, IObject * targetObject);
 	CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0);
 	static void PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream);

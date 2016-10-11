@@ -38,13 +38,13 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_shaderManager(m_renderer->CreateShaderManager())
 	, m_soundPlayer(move(context->soundPlayer))
 	, m_textWriter(move(context->textWriter))
+	, m_physicsEngine(move(context->physicsEngine))
 	, m_asyncFileProvider(m_threadPool, context->workingDir)
 	, m_modelManager(*m_renderer, *m_physicsEngine, m_asyncFileProvider)
 	, m_textureManager(m_window->GetViewHelper(), m_asyncFileProvider)
 	, m_particles(*m_renderer)
 	, m_scriptHandlerFactory(context->scriptHandlerFactory)
 	, m_socketFactory(context->socketFactory)
-	, m_physicsEngine(move(context->physicsEngine))
 {
 	m_viewHelper->SetTextureManager(m_textureManager);
 	for (auto& reader : context->imageReaders)
@@ -435,11 +435,15 @@ void CGameView::DrawObjects(bool shadowOnly)
 			m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
 			if (!projectile.GetPathToModel().empty())
 				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_shaderManager.get());
-			if (!projectile.GetParticle().empty())
-				m_particles.DrawEffect(projectile.GetParticle(), projectile.GetTime());
+			if (projectile.GetParticle())
+				m_particles.Draw(*projectile.GetParticle());
 			m_renderer->PopMatrix();
 		}
-		m_particles.DrawParticles();
+		for (size_t i = 0; i < m_gameModel->GetParticleCount(); ++i)
+		{
+			CParticleEffect const& effect = m_gameModel->GetParticleEffect(i);
+			m_particles.Draw(effect);
+		}
 	}
 	m_viewHelper->EnableDepthTest(false);
 }
@@ -491,11 +495,6 @@ CModelManager& CGameView::GetModelManager()
 IUIElement * CGameView::GetUI() const
 {
 	return m_ui.get();
-}
-
-CParticleSystem& CGameView::GetParticleSystem()
-{
-	return m_particles;
 }
 
 ISoundPlayer& CGameView::GetSoundPlayer()
@@ -618,6 +617,11 @@ IInput& CGameView::GetInput()
 	return *m_input;
 }
 
+CParticleSystem& CGameView::GetParticleSystem()
+{
+	return m_particles;
+}
+
 size_t CGameView::GetViewportCount() const
 {
 	return m_viewports.size();
@@ -727,6 +731,11 @@ bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)
 		//restore viewports
 	}
 	return result;
+}
+
+void CGameView::AddParticleEffect(std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles /*= 1000u*/)
+{
+	m_gameModel->AddParticleEffect(CParticleEffect(m_particles.GetParticleUpdater(effectPath), effectPath, position, scale, maxParticles));
 }
 
 void CGameView::EnableGPUSkinning(bool enable)

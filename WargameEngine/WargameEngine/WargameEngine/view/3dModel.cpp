@@ -62,8 +62,8 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
 		shaderManager->SetUniformMatrix4("invBindMatrices", m_skeleton.size(), m_gpuInverseMatrices.data());
-		shaderManager->SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT, 4, m_gpuWeight.size(), m_gpuWeight.data());
-		shaderManager->SetVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT_INDEX, 4, m_gpuWeightIndexes.size(), m_gpuWeightIndexes.data());
+		shaderManager->SetVertexAttribute("weights", 4, m_gpuWeight.size(), m_gpuWeight.data());
+		shaderManager->SetVertexAttribute("weightIndices", 4, m_gpuWeightIndexes.size(), m_gpuWeightIndexes.data());
 	}
 	const float * vertex = vertices.empty() ? nullptr : &vertices.data()->x;
 	const float * normal = normals.empty() || vertexOnly ? nullptr : &normals.data()->x;
@@ -114,9 +114,9 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	if (useGPUskinning)
 	{
 		float def[] = { 0.0f };
-		shaderManager->DisableVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT, 1, def);
+		shaderManager->DisableVertexAttribute("weights", 1, def);
 		int idef = 0;
-		shaderManager->DisableVertexAttribute(IShaderManager::eVertexAttribute::WEIGHT_INDEX, 1, &idef);
+		shaderManager->DisableVertexAttribute("weightIndices", 1, &idef);
 	}
 }
 

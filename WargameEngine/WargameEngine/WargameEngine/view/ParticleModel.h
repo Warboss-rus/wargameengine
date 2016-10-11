@@ -1,33 +1,51 @@
 #pragma once
 #include <string>
-#include <map>
-#include "Particle.h"
-#include "IShaderManager.h"
-#include "IRenderer.h"
+#include <vector>
+#include <memory>
+#include "..\model\Particle.h"
 
-struct sParticleInstance {
-	CVector3d position;
-	unsigned int particle;
-	double rotation;
-	double speed;
-	double scale;
-	float start;
-	std::map<std::string, std::vector<float>> uniforms;
-};
-
-class CParticleModel
+class CParticleModel : public IParticleUpdater
 {
 public:
-	CParticleModel(std::wstring const& file, IRenderer & renderer);
-	CParticleModel(IRenderer & renderer):m_renderer(renderer) {}
-	void Draw(float time) const;
-	float GetDuration() const;
+	CParticleModel(std::wstring const& file);
+	std::wstring GetTexture() const;
+	CVector2f GetParticleTexcoords(sParticle const& particle) const;
+	CVector2f GetTextureFrameSize() const;
+	CVector2f GetParticleSize() const;
+	bool HasDifferentTexCoords() const;
+	bool HasDifferentColors() const;
+	
+//IParticleUpdater
+	virtual float GetAverageLifeTime() const override;
+	virtual void InitParticle(sParticle & particle) const override;
+	virtual void UpdateParticle(sParticle & particle) const override;
+
+	class IEmitter
+	{
+	public:
+		virtual ~IEmitter() {}
+		virtual void InitParticle(sParticle & particle) = 0;
+	};
+	class IUpdater
+	{
+	public:
+		virtual ~IUpdater() {}
+		virtual void Update(sParticle & particle) = 0;
+	};
 private:
-	void DrawParticle(CVector3f const& position, float width, float height) const;
-	std::vector<sParticleInstance> m_instances;
-	std::vector<CParticle> m_particles;
-	std::vector<std::wstring> m_textures;
-	std::vector<std::unique_ptr<IShaderManager>> m_shaders;
-	float m_duration = 0.0f;
-	IRenderer & m_renderer;
+	std::unique_ptr<IEmitter> m_emitter;
+	std::unique_ptr<IUpdater> m_updater;
+	std::wstring m_texture;
+	float m_minLifeTime;
+	float m_maxLifeTime;
+	float m_minScale;
+	float m_maxScale;
+	CVector2f m_particleSize;
+	CVector2f m_textureFrameSize;
+	struct sFrame
+	{
+		float startTime;
+		CVector2f texCoords = {-1, -1};
+	};
+	std::vector<sFrame> m_frames;
 };

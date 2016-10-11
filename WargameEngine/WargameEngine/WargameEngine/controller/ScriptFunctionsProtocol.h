@@ -72,6 +72,8 @@
 
 #define PRELOAD_MODEL L"PreloadModel"
 
+#define SET_PARTICLE_SYSTEM_SHADERS L"SetParticleSystemShaders"
+
 #define SET_SHADERS L"SetShaders"
 
 #define UNIFORM_1I L"Uniform1i"

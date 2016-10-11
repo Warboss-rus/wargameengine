@@ -15,9 +15,9 @@ function Init()
 	SetAnisotropy(GetMaxAnisotropy())
 	EnableMSAA()
 	if(GetRendererName() == "DirectX11") then
-		SetShaders("per_pixel.hlsl", "per_pixel.hlsl")
+		SetShaders("directX11/per_pixel.hlsl", "directX11/per_pixel.hlsl")
 	else
-		SetShaders("per_pixel_shadow.vsh", "per_pixel_shadow.fsh")
+		SetShaders("openGL/per_pixel_shadow.vsh", "openGL/per_pixel_shadow.fsh")
 	end
 	CreateSkybox(80, "skybox_sand")
 	CreateTable(60, 30, "sand.dds")

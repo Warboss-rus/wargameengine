@@ -38,6 +38,7 @@ std::shared_ptr<IObject> CGameModel::Get3DObject(IObject * object)
 void CGameModel::AddObject(std::shared_ptr<IObject> pObject)
 {
 	m_objects.push_back(pObject);
+	m_onObjectCreation(pObject.get());
 }
 
 void CGameModel::SelectObject(std::shared_ptr<IObject> pObject)
@@ -71,6 +72,7 @@ void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 			return;
 		}
 	}
+	m_onObjectRemove(pObject.get());
 }
 
 bool CGameModel::IsGroup(IObject* object)
@@ -117,9 +119,39 @@ CProjectile const& CGameModel::GetProjectile(size_t index) const
 	return m_projectiles[index];
 }
 
+void CGameModel::AddParticleEffect(CParticleEffect const& effect)
+{
+	m_particleEffects.push_back(effect);
+}
+
+size_t CGameModel::GetParticleCount() const
+{
+	return m_particleEffects.size();
+}
+
+CParticleEffect const& CGameModel::GetParticleEffect(size_t index) const
+{
+	return m_particleEffects.at(index);
+}
+
+void CGameModel::RemoveParticleEffect(size_t index)
+{
+	m_particleEffects.erase(m_particleEffects.begin() + index);
+}
+
 void CGameModel::ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
+}
+
+void CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
+{
+	m_onObjectCreation = handler;
+}
+
+void CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
+{
+	m_onObjectRemove = handler;
 }
 
 void CGameModel::Update(long long timeSinceLastUpdate)
@@ -131,6 +163,10 @@ void CGameModel::Update(long long timeSinceLastUpdate)
 	for (size_t i = 0; i < m_projectiles.size(); ++i)
 	{
 		m_projectiles[i].Update(timeSinceLastUpdate);
+	}
+	for (auto& effect : m_particleEffects)
+	{
+		effect.Update(timeSinceLastUpdate);
 	}
 }
 

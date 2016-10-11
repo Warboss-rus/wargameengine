@@ -32,14 +32,15 @@ public:
 	virtual void SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const override;
 	virtual void SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const override;
 
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const override;
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const override;
-	virtual void SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, unsigned int* values) const override;
-	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, float* defaultValue) const override;
-	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, int* defaultValue) const override;
-	virtual void DisableVertexAttribute(eVertexAttribute attributeIndex, int size, unsigned int* defaultValue) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, int* values) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, unsigned int* values) const override;
+	virtual void SetPerInstanceVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, float* defaultValue) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, int* defaultValue) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, unsigned int* defaultValue) const override;
 
-	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat);
+	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat) const;
 	void SetMatrices(float * modelView, float * projection);
 	void SetColor(const float * color);
 	void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess);
@@ -50,7 +51,7 @@ private:
 	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size) const;
 	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
-	void MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, eVertexAttribute attributeIndex) const;
+	void MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const;
 
 	CComPtr<ID3D11Device> m_dev;
 	CDirectXRenderer * m_render;
@@ -60,7 +61,8 @@ private:
 	CComPtr<ID3D10Blob> m_VS;
 	CComPtr<ID3D11ShaderReflection> m_reflection;
 	mutable std::vector<unsigned char> m_constantBufferData;
-	mutable std::map<eVertexAttribute, CComPtr<ID3D11Buffer>> m_vertexAttributeBuffers;
-	mutable std::map<eVertexAttribute, size_t> m_vertexAttributeBufferSizes;
+	mutable std::map<std::string, CComPtr<ID3D11Buffer>> m_vertexAttributeBuffers;
+	mutable std::map<std::string, size_t> m_vertexAttributeBufferSizes;
+	mutable std::map<std::string, int> m_vertexAttributesLocation;
 	CComPtr<ID3D11Buffer> m_constantBuffer;
 };

@@ -7,6 +7,7 @@
 #include <DirectXMath.h>
 #include "..\AsyncFileProvider.h"
 #include "..\Utils.h"
+#include <algorithm>
 
 static const std::string defaultShader = "\
 #define NUMBEROFLIGHTS 1\n\
@@ -41,7 +42,7 @@ Texture2D shaderTexture : register( t0 );\
 Texture2D shadowTexture : register( t1 );\
 SamplerState SampleType;\
 \
-PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL, int4 indexes: WEIGHT_INDEX, float4 weight : WEIGHT )\
+PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL)\
 {\
 	PixelInputType result;\
 	result.position = mul(float4(Pos, 1.0f), WorldViewProjection);\
@@ -153,6 +154,7 @@ void CShaderManagerDirectX::BindProgram() const
 	context->GSSetShader(pGS, 0, 0);
 
 	m_render->SetShaderManager((CShaderManagerDirectX*)this);
+	SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 }
 
 void CShaderManagerDirectX::UnBindProgram() const
@@ -238,89 +240,130 @@ void CShaderManagerDirectX::SetUniformMatrix4(std::string const& uniform, size_t
 	CopyConstantBufferData(begin, value, sizeof(float) * count * 16);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, float* values) const
+std::string ToLower(std::string str)
 {
-	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attributeIndex) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attributeIndex] : nullptr;
-	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	std::transform(str.begin(), str.end(), str.begin(), tolower);
+	return str;
+}
+
+void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const
+{
+	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	MakeSureBufferCanFitData(buffer, totalSize, attributeIndex);
+	MakeSureBufferCanFitData(buffer, totalSize, attribute);
 	CopyBufferData(buffer, values, totalSize * sizeof(float));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, int* values) const
+void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, int* values) const
 {
-	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attributeIndex) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attributeIndex] : nullptr;
-	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	MakeSureBufferCanFitData(buffer, totalSize, attributeIndex);
+	MakeSureBufferCanFitData(buffer, totalSize, attribute);
 	CopyBufferData(buffer, values, totalSize * sizeof(int));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(eVertexAttribute attributeIndex, int elementSize, size_t totalSize, unsigned int* values) const
+void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, unsigned int* values) const
 {
-	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attributeIndex) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attributeIndex] : nullptr;
-	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
 	unsigned int stride = sizeof(float) * elementSize;
 	unsigned int offset = 0;
-	MakeSureBufferCanFitData(buffer, totalSize, attributeIndex);
+	MakeSureBufferCanFitData(buffer, totalSize, attribute);
 	CopyBufferData(buffer, values, totalSize * sizeof(unsigned int));
 	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
 }
 
-void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, eVertexAttribute attributeIndex) const
+void CShaderManagerDirectX::SetPerInstanceVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const
 {
-	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attributeIndex))
+	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
+	unsigned int stride = sizeof(float) * elementSize;
+	unsigned int offset = 0;
+	MakeSureBufferCanFitData(buffer, totalSize, attribute);
+	CopyBufferData(buffer, values, totalSize * sizeof(float));
+	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
+}
+
+void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const
+{
+	if (!buffer || totalSize > m_vertexAttributeBufferSizes.at(attribute))
 	{
 		CreateBuffer(&buffer, totalSize * sizeof(float));
-		m_vertexAttributeBufferSizes[attributeIndex] = totalSize;
-		m_vertexAttributeBuffers[attributeIndex] = buffer;
+		m_vertexAttributeBufferSizes[attribute] = totalSize;
+		m_vertexAttributeBuffers[attribute] = buffer;
 	}
 }
 
-void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, float* /*defaultValue*/) const
+void CShaderManagerDirectX::DisableVertexAttribute(std::string const& attribute, int /*size*/, float* /*defaultValue*/) const
 {
-	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
 	unsigned int stride = sizeof(float) * 4;
 	unsigned int offset = 0;
 	ID3D11Buffer* buffers[] = { NULL };
 	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
 }
 
-void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, int* /*defaultValue*/) const
+void CShaderManagerDirectX::DisableVertexAttribute(std::string const& attribute, int /*size*/, int* /*defaultValue*/) const
 {
-	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
 	unsigned int stride = sizeof(int);
 	unsigned int offset = 0;
 	ID3D11Buffer* buffers[] = { NULL };
 	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
 }
 
-void CShaderManagerDirectX::DisableVertexAttribute(eVertexAttribute attributeIndex, int /*size*/, unsigned int* /*defaultValue*/) const
+void CShaderManagerDirectX::DisableVertexAttribute(std::string const& attribute, int /*size*/, unsigned int* /*defaultValue*/) const
 {
-	unsigned int index = attributeIndex == eVertexAttribute::WEIGHT ? 4 : 3;
+	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
 	unsigned int stride = sizeof(int);
 	unsigned int offset = 0;
 	ID3D11Buffer* buffers[] = { NULL };
 	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
 }
 
-void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat)
+bool ReflectionHasAttribute(ID3D11ShaderReflection * reflection, LPCSTR name)
+{
+	D3D11_SIGNATURE_PARAMETER_DESC desc;
+	for (UINT i = 0; i < 10; ++i)
+	{
+		if (FAILED(reflection->GetInputParameterDesc(i, &desc)))
+		{
+			return false;
+		}
+		if (ToLower(desc.SemanticName) == ToLower(name))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat) const
 {
 	// create the input layout object
 	std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
 	ied.push_back({ "POSITION", 0, vertexFormat, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 	ied.push_back({ "TEXCOORD", 0, texCoordFormat, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
 	ied.push_back({ "NORMAL", 0, normalFormat, 2, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	ied.push_back({ "WEIGHT_INDEX", 0, DXGI_FORMAT_R32G32B32A32_SINT, 3, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	ied.push_back({ "WEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 4, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+	if (ReflectionHasAttribute(m_reflection, "weightIndices")) ied.push_back({ "weightIndices", 0, DXGI_FORMAT_R32G32B32A32_SINT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+	if (ReflectionHasAttribute(m_reflection, "WEIGHTS")) ied.push_back({ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+	if (ReflectionHasAttribute(m_reflection, "instancePosition")) ied.push_back({ "instancePosition", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 0 });
+	if (ReflectionHasAttribute(m_reflection, "instanceTexCoordPos")) ied.push_back({ "instanceTexCoordPos", 0, DXGI_FORMAT_R32G32_FLOAT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 0 });
 	CComPtr<ID3D11InputLayout> pLayout;
 	m_dev->CreateInputLayout(ied.data(), ied.size(), m_VS->GetBufferPointer(), m_VS->GetBufferSize(), &pLayout);
 	m_render->GetContext()->IASetInputLayout(pLayout);
 	m_render->GetContext()->VSSetShader(pVS, 0, 0);
+
+	for (auto& attr : ied)
+	{
+		m_vertexAttributesLocation[ToLower(attr.SemanticName)] = attr.InputSlot;
+	}
 }
 
 void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
