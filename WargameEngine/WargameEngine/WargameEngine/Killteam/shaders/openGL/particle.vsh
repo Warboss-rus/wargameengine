@@ -1,4 +1,4 @@
-#version 330 core
+#version 130
 attribute vec4 instancePosition;
 attribute vec2 instanceTexCoordPos;
 

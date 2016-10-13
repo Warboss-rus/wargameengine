@@ -6,6 +6,7 @@ uniform mat4 joints[512];
 uniform mat4 invBindMatrices[512];
 
 varying vec3 normal;
+varying vec2 texCoord;
 
 void main() {
     vec4 newVertex = gl_Vertex;
@@ -24,5 +25,5 @@ void main() {
 	
     normal  = normalize(gl_NormalMatrix * newNormal.xyz); 
     gl_Position = gl_ModelViewProjectionMatrix * newVertex;
-    gl_TexCoord[0] = gl_MultiTexCoord0;
+    texCoord = gl_MultiTexCoord0.st;
 }

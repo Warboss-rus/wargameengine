@@ -74,6 +74,8 @@ public:
 
 	virtual std::string GetName() const override;
 
+	virtual bool SupportsFeature(Feature feature) const override;
+
 	void EnableMultisampling(bool enable);
 private:
 	CTextureManager* m_textureManager;

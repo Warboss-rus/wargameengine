@@ -501,12 +501,12 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> cons
 {
 	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
 	UINT offset[] = { 0, 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, m_normalsBuffer };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, normals.empty() ? nullptr : m_normalsBuffer };
 
 	MakeSureBufferCanFitSize(vertices.size());
 	CopyDataToBuffer(m_vertexBuffer, vertices.data(), vertices.size() * sizeof(CVector3f));
 	CopyDataToBuffer(m_texCoordBuffer, texCoords.data(), texCoords.size() * sizeof(CVector2f));
-	CopyDataToBuffer(m_normalsBuffer, normals.data(), normals.size() * sizeof(CVector3f));
+	if(!normals.empty()) CopyDataToBuffer(m_normalsBuffer, normals.data(), normals.size() * sizeof(CVector3f));
 
 	m_shaderManager->SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
@@ -879,7 +879,7 @@ void CDirectXRenderer::EnableBlending(bool enable)
 
 		HRESULT hr = m_dev->CreateBlendState(&descr, &m_blendStates[index]);
 		if (FAILED(hr))
-		{
+		{ 
 			LogWriter::WriteLine("DirectX error: Cannot create blend state");
 		}
 	}
@@ -1044,6 +1044,11 @@ void CDirectXRenderer::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 	m_swapchain->GetDesc(&scd);
 	scd.SampleDesc.Count = enable ? static_cast<UINT>(level) : 1;
 	//Recreate swap chain?
+}
+
+bool CDirectXRenderer::SupportsFeature(Feature feature) const
+{
+	return true;
 }
 
 void CDirectXRenderer::DrawIn2D(std::function<void()> const& drawHandler)

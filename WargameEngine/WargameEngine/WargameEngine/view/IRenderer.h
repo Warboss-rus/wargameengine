@@ -24,6 +24,11 @@ enum class CachedTextureType
 	DEPTH
 };
 
+enum class Feature
+{
+	INSTANSING,
+};
+
 class IDrawingList
 {
 public:
@@ -82,6 +87,8 @@ public:
 	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const = 0;
 
 	virtual std::string GetName() const = 0;
+
+	virtual bool SupportsFeature(Feature feature) const = 0;
 
 	virtual ~IRenderer() {}
 };

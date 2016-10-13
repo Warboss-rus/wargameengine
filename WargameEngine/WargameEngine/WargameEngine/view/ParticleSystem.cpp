@@ -10,8 +10,11 @@ CParticleSystem::CParticleSystem(IRenderer & renderer)
 
 void CParticleSystem::SetShaders(std::wstring const& vertex, std::wstring const& fragment)
 {
-	m_shaderManager->NewProgram(vertex, fragment);
-	m_instanced = true;
+	if (m_renderer.SupportsFeature(Feature::INSTANSING))
+	{
+		m_shaderManager->NewProgram(vertex, fragment);
+		m_instanced = true;
+	}
 }
 
 void CParticleSystem::Draw(CParticleEffect const& particleEffect)

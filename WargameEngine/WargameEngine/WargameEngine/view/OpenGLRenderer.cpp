@@ -654,6 +654,15 @@ std::string COpenGLRenderer::GetName() const
 	return "OpenGL";
 }
 
+bool COpenGLRenderer::SupportsFeature(Feature feature) const
+{
+	if (feature == Feature::INSTANSING)
+	{
+		return GLEW_ARB_draw_instanced && GLEW_ARB_instanced_arrays;
+	}
+	return true;
+}
+
 void COpenGLRenderer::EnableMultisampling(bool enable)
 {
 	if (GLEW_ARB_multisample)

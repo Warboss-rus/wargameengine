@@ -212,7 +212,7 @@ void CShaderManagerOpenGL::SetPerInstanceVertexAttribute(std::string const& attr
 	int index = glGetAttribLocation(m_program, attribute.c_str());
 	glEnableVertexAttribArray(index);
 	glVertexAttribPointer(index, elementSize, GL_FLOAT, false, 0, values);
-	glVertexAttribDivisor(index, 1);
+	glVertexAttribDivisorARB(index, 1);
 }
 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, float* defaultValue) const
