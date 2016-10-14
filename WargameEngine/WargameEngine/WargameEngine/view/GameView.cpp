@@ -735,7 +735,7 @@ bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)
 
 void CGameView::AddParticleEffect(std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles /*= 1000u*/)
 {
-	m_gameModel->AddParticleEffect(CParticleEffect(m_particles.GetParticleUpdater(effectPath), effectPath, position, scale, maxParticles));
+	m_gameModel->AddParticleEffect(m_particles.GetParticleUpdater(effectPath), effectPath, position, scale, maxParticles);
 }
 
 void CGameView::EnableGPUSkinning(bool enable)

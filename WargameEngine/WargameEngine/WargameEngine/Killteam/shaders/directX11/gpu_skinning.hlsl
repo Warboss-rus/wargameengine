@@ -14,14 +14,15 @@ struct sMaterial
 	float Shininess;
 };
 #define NUMBEROFLIGHTS 1
+#define NUMBEROFBONES 128
 cbuffer Constant : register(b0)
 {
 	matrix WorldViewProjection : WORLDVIEWPROJECTION;
 	float4 Color;
 	sMaterial Material;
 	sLightSource Lights[NUMBEROFLIGHTS];
-	matrix joints[128];
-	matrix invBindMatrices[128];
+	matrix joints[NUMBEROFBONES];
+	matrix invBindMatrices[NUMBEROFBONES];
 }
 struct PixelInputType
 {
@@ -32,7 +33,7 @@ Texture2D shaderTexture : register(t0);
 Texture2D shadowTexture : register(t1);
 SamplerState SampleType;
 
-PixelInputType VShader(float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL, int4 weightIndices : weightIndices, float4 weights : WEIGHTS)
+PixelInputType VShader(float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL, int4 weightIndices : weightIndices, float4 weights : weights)
 {
 	PixelInputType result;
 	float4 finalPos = float4(Pos, 1.0f);

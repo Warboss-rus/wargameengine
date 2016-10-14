@@ -118,7 +118,7 @@ private:
 	size_t m_buffersSize = 0;
 
 	std::vector<sLightSource> m_lightSources;
-	std::vector<DirectX::XMMATRIX> m_viewMatrices;
-	std::vector<DirectX::XMMATRIX> m_projectionMatrices;
+	std::vector<DirectX::XMFLOAT4X4> m_viewMatrices;
+	std::vector<DirectX::XMFLOAT4X4> m_projectionMatrices;
 	float m_anisotropyLevel = 0.0f;
 };

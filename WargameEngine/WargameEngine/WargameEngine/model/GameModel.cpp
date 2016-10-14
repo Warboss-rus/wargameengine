@@ -119,9 +119,9 @@ CProjectile const& CGameModel::GetProjectile(size_t index) const
 	return m_projectiles[index];
 }
 
-void CGameModel::AddParticleEffect(CParticleEffect const& effect)
+void CGameModel::AddParticleEffect(const IParticleUpdater * updater, std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles)
 {
-	m_particleEffects.push_back(effect);
+	m_particleEffects.emplace_back(updater, effectPath, position, scale, maxParticles);
 }
 
 size_t CGameModel::GetParticleCount() const

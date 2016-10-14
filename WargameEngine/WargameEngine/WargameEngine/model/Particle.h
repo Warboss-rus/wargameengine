@@ -5,12 +5,13 @@
 
 struct sParticle
 {
+	float* m_position;
+	float* m_color;
+	float* m_scale;
+	float* m_texCoord;
 	float m_lifeTime;
-	CVector3f m_position;
-	CVector3f m_velocity;
-	float m_color[4];
-	float m_scale;
 	float m_age;
+	CVector3f m_velocity;
 };
 
 class IParticleUpdater
@@ -31,10 +32,17 @@ public:
 	float GetScale() const;
 	void Update(long long deltaTime);
 	std::wstring GetEffectPath() const;
+	std::vector<float> const& GetPositionCache() const;
+	std::vector<float> const& GetColorCache() const;
+	std::vector<float> const& GetTexCoordCache() const;
 private:
 	const IParticleUpdater * m_updater;
+	size_t m_maxParticles;
 	std::wstring m_effectPath;
 	std::vector<sParticle> m_particles;
+	std::vector<float> m_positionCache;
+	std::vector<float> m_texCoordCache;
+	std::vector<float> m_colorCache;
 	CVector3f m_center;
 	float m_scale;
 };

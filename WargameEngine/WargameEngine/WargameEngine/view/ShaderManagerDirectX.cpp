@@ -8,6 +8,7 @@
 #include "..\AsyncFileProvider.h"
 #include "..\Utils.h"
 #include <algorithm>
+#include <iterator>
 
 static const std::string defaultShader = "\
 #define NUMBEROFLIGHTS 1\n\
@@ -75,11 +76,10 @@ void CompileShader(std::wstring const& path, char * entryPoint, char * target, s
 	}
 }
 
-unsigned int GetShaderBufferSize(ID3D11ShaderReflectionConstantBuffer * buffer)
+std::string ToLower(std::string str)
 {
-	D3D11_SHADER_BUFFER_DESC desc;
-	buffer->GetDesc(&desc);
-	return desc.Size;
+	std::transform(str.begin(), str.end(), str.begin(), tolower);
+	return str;
 }
 
 void CShaderManagerDirectX::CreateConstantBuffer(unsigned int size, ID3D11Buffer ** constantBuffer) const
@@ -132,17 +132,38 @@ void CShaderManagerDirectX::NewProgram(std::wstring const& vertex /*= ""*/, std:
 		m_dev->CreateGeometryShader(GS->GetBufferPointer(), GS->GetBufferSize(), NULL, &pGS);
 	}
 
-	m_reflection = nullptr;
 	if (m_VS)
 	{
+		CComPtr<ID3D11ShaderReflection> reflection;
 		D3DReflect(m_VS->GetBufferPointer(), m_VS->GetBufferSize(),
-			IID_ID3D11ShaderReflection, (void**)&m_reflection);
+			IID_ID3D11ShaderReflection, (void**)&reflection);
 
-		unsigned int size = GetShaderBufferSize(m_reflection->GetConstantBufferByName("Constant"));
-		m_constantBufferData.resize(size);
-		memset(m_constantBufferData.data(), 0, m_constantBufferData.size());
+		auto constantBuffer = reflection->GetConstantBufferByName("Constant");
+		D3D11_SHADER_BUFFER_DESC desc;
+		constantBuffer->GetDesc(&desc);
+		m_constantBufferData.resize(desc.Size, 0);
 		m_constantBuffer = nullptr;
 		CreateConstantBuffer(m_constantBufferData.size(), &m_constantBuffer);
+
+		m_variableOffsets.clear();
+		for (UINT i = 0; i < desc.Variables; ++i)
+		{
+			auto variable = constantBuffer->GetVariableByIndex(i);
+			D3D11_SHADER_VARIABLE_DESC variableDesc;
+			variable->GetDesc(&variableDesc);
+			m_variableOffsets.emplace(std::make_pair(std::string(variableDesc.Name), static_cast<size_t>(variableDesc.StartOffset)));
+		}
+		D3D11_SHADER_DESC shaderDesc;
+		reflection->GetDesc(&shaderDesc);
+		D3D11_SIGNATURE_PARAMETER_DESC inputDesc;
+		for(UINT i = 0; i < shaderDesc.InputParameters; ++i)
+		{
+			reflection->GetInputParameterDesc(i, &inputDesc);
+			D3D11_INPUT_ELEMENT_DESC elementDesc = { inputDesc.SemanticName, 0, DXGI_FORMAT_R32G32B32A32_FLOAT, inputDesc.Register, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
+			m_vertexAttributeDescriptions.emplace(std::make_pair(inputDesc.SemanticName, elementDesc));
+			auto it = m_vertexAttributeDescriptions.find(inputDesc.SemanticName);
+			it->second.SemanticName = it->first.c_str();
+		}
 	}
 }
 
@@ -153,141 +174,209 @@ void CShaderManagerDirectX::BindProgram() const
 	context->PSSetShader(pPS, 0, 0);
 	context->GSSetShader(pGS, 0, 0);
 
+	ResetBuffers();
 	m_render->SetShaderManager((CShaderManagerDirectX*)this);
-	SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
+}
+
+void CShaderManagerDirectX::ResetBuffers() const
+{
+	std::vector<UINT> stride(m_vertexAttributeDescriptions.size(), 0);
+	std::vector<UINT> offset(m_vertexAttributeDescriptions.size(), 0);
+	std::vector<ID3D11Buffer*> buffers(m_vertexAttributeDescriptions.size(), NULL);
+	m_render->GetContext()->IASetVertexBuffers(0, buffers.size(), buffers.data(), stride.data(), offset.data());
 }
 
 void CShaderManagerDirectX::UnBindProgram() const
 {
+	ResetBuffers();
 	m_render->SetShaderManager(nullptr);
 }
 
 void CShaderManagerDirectX::SetUniformValue(std::string const& uniform, int count, const float* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(float) * count);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(float) * count);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue(std::string const& uniform, int count, const int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(int) * count);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(int) * count);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue(std::string const& uniform, int count, const unsigned int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(unsigned int) * count);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(unsigned int) * count);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue2(std::string const& uniform, int count, const float* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(float) * count * 2);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(float) * count * 2);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue2(std::string const& uniform, int count, const int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(int) * count * 2);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(int) * count * 2);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue2(std::string const& uniform, int count, const unsigned int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(unsigned int) * count * 2);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(unsigned int) * count * 2);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue3(std::string const& uniform, int count, const float* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(float) * count * 3);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(float) * count * 3);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue3(std::string const& uniform, int count, const int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(int) * count * 3);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(int) * count * 3);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue3(std::string const& uniform, int count, const unsigned int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(unsigned int) * count * 3);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(unsigned int) * count * 3);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue4(std::string const& uniform, int count, const float* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(float) * count * 4);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(float) * count * 4);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue4(std::string const& uniform, int count, const int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(int) * count * 4);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(int) * count * 4);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(unsigned int) * count * 4);
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(unsigned int) * count * 4);
+	}
 }
 
 void CShaderManagerDirectX::SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const
 {
-	unsigned int begin = GetVariableOffset("Constant", uniform);
-	CopyConstantBufferData(begin, value, sizeof(float) * count * 16);
-}
-
-std::string ToLower(std::string str)
-{
-	std::transform(str.begin(), str.end(), str.begin(), tolower);
-	return str;
+	auto it = m_variableOffsets.find(uniform);
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, value, sizeof(float) * count * 16);
+	}
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const
 {
-	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
-	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
-	unsigned int stride = sizeof(float) * elementSize;
-	unsigned int offset = 0;
-	MakeSureBufferCanFitData(buffer, totalSize, attribute);
-	CopyBufferData(buffer, values, totalSize * sizeof(float));
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
+	auto descIt = m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_vertexAttributeDescriptions.end())
+	{
+		CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
+		static const DXGI_FORMAT format[] = { DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT };
+		desc.Format = format[elementSize - 1];
+		unsigned int stride = sizeof(float) * elementSize;
+		unsigned int offset = 0;
+		MakeSureBufferCanFitData(buffer, totalSize, attribute);
+		CopyBufferData(buffer, values, totalSize * sizeof(float));
+		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer.p, &stride, &offset);
+	}
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, int* values) const
 {
-	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
-	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
-	unsigned int stride = sizeof(float) * elementSize;
-	unsigned int offset = 0;
-	MakeSureBufferCanFitData(buffer, totalSize, attribute);
-	CopyBufferData(buffer, values, totalSize * sizeof(int));
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
+	auto descIt = m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_vertexAttributeDescriptions.end())
+	{
+		CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
+		static const DXGI_FORMAT format[] = { DXGI_FORMAT_R32_SINT, DXGI_FORMAT_R32G32_SINT, DXGI_FORMAT_R32G32B32_SINT, DXGI_FORMAT_R32G32B32A32_SINT };
+		desc.Format = format[elementSize - 1];
+		unsigned int stride = sizeof(int) * elementSize;
+		unsigned int offset = 0;
+		MakeSureBufferCanFitData(buffer, totalSize, attribute);
+		CopyBufferData(buffer, values, totalSize * sizeof(int));
+		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer.p, &stride, &offset);
+	}
 }
 
 void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, unsigned int* values) const
 {
-	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
-	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
-	unsigned int stride = sizeof(float) * elementSize;
-	unsigned int offset = 0;
-	MakeSureBufferCanFitData(buffer, totalSize, attribute);
-	CopyBufferData(buffer, values, totalSize * sizeof(unsigned int));
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
+	auto descIt = m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_vertexAttributeDescriptions.end())
+	{
+		CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
+		static const DXGI_FORMAT format[] = { DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32G32_UINT, DXGI_FORMAT_R32G32B32_UINT, DXGI_FORMAT_R32G32B32A32_UINT };
+		desc.Format = format[elementSize - 1];
+		unsigned int stride = sizeof(unsigned) * elementSize;
+		unsigned int offset = 0;
+		MakeSureBufferCanFitData(buffer, totalSize, attribute);
+		CopyBufferData(buffer, values, totalSize * sizeof(unsigned));
+		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer.p, &stride, &offset);
+	}
 }
 
 void CShaderManagerDirectX::SetPerInstanceVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const
 {
-	CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
-	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
-	unsigned int stride = sizeof(float) * elementSize;
-	unsigned int offset = 0;
-	MakeSureBufferCanFitData(buffer, totalSize, attribute);
-	CopyBufferData(buffer, values, totalSize * sizeof(float));
-	m_render->GetContext()->IASetVertexBuffers(index, 1, &buffer.p, &stride, &offset);
+	auto descIt = m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_vertexAttributeDescriptions.end())
+	{
+		CComPtr<ID3D11Buffer> buffer = m_vertexAttributeBuffers.find(attribute) != m_vertexAttributeBuffers.end() ? m_vertexAttributeBuffers[attribute] : nullptr;
+		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
+		static const DXGI_FORMAT format[] = { DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT };
+		desc.Format = format[elementSize - 1];
+		desc.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+		desc.InstanceDataStepRate = 1;
+		unsigned int stride = sizeof(float) * elementSize;
+		unsigned int offset = 0;
+		MakeSureBufferCanFitData(buffer, totalSize, attribute);
+		CopyBufferData(buffer, values, totalSize * sizeof(float));
+		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer.p, &stride, &offset);
+	}
 }
 
 void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const
@@ -302,91 +391,93 @@ void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buf
 
 void CShaderManagerDirectX::DisableVertexAttribute(std::string const& attribute, int /*size*/, float* /*defaultValue*/) const
 {
-	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
-	unsigned int stride = sizeof(float) * 4;
-	unsigned int offset = 0;
-	ID3D11Buffer* buffers[] = { NULL };
-	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
+	auto descIt = m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_vertexAttributeDescriptions.end())
+	{
+		unsigned int stride = sizeof(float) * 4;
+		unsigned int offset = 0;
+		ID3D11Buffer* buffers[] = { NULL };
+		m_render->GetContext()->IASetVertexBuffers(descIt->second.InputSlot, 1, buffers, &stride, &offset);
+	}
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(std::string const& attribute, int /*size*/, int* /*defaultValue*/) const
 {
-	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
-	unsigned int stride = sizeof(int);
-	unsigned int offset = 0;
-	ID3D11Buffer* buffers[] = { NULL };
-	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
+	auto descIt = m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_vertexAttributeDescriptions.end())
+	{
+		unsigned int stride = sizeof(int);
+		unsigned int offset = 0;
+		ID3D11Buffer* buffers[] = { NULL };
+		m_render->GetContext()->IASetVertexBuffers(descIt->second.InputSlot, 1, buffers, &stride, &offset);
+	}
 }
 
 void CShaderManagerDirectX::DisableVertexAttribute(std::string const& attribute, int /*size*/, unsigned int* /*defaultValue*/) const
 {
-	unsigned int index = m_vertexAttributesLocation.at(ToLower(attribute));
-	unsigned int stride = sizeof(int);
-	unsigned int offset = 0;
-	ID3D11Buffer* buffers[] = { NULL };
-	m_render->GetContext()->IASetVertexBuffers(index, 1, buffers, &stride, &offset);
-}
-
-bool ReflectionHasAttribute(ID3D11ShaderReflection * reflection, LPCSTR name)
-{
-	D3D11_SIGNATURE_PARAMETER_DESC desc;
-	for (UINT i = 0; i < 10; ++i)
+	auto descIt = m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_vertexAttributeDescriptions.end())
 	{
-		if (FAILED(reflection->GetInputParameterDesc(i, &desc)))
-		{
-			return false;
-		}
-		if (ToLower(desc.SemanticName) == ToLower(name))
-		{
-			return true;
-		}
+		unsigned int stride = sizeof(int);
+		unsigned int offset = 0;
+		ID3D11Buffer* buffers[] = { NULL };
+		m_render->GetContext()->IASetVertexBuffers(descIt->second.InputSlot, 1, buffers, &stride, &offset);
 	}
-	return false;
 }
 
 void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat) const
 {
 	// create the input layout object
 	std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
-	ied.push_back({ "POSITION", 0, vertexFormat, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	ied.push_back({ "TEXCOORD", 0, texCoordFormat, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	ied.push_back({ "NORMAL", 0, normalFormat, 2, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	if (ReflectionHasAttribute(m_reflection, "weightIndices")) ied.push_back({ "weightIndices", 0, DXGI_FORMAT_R32G32B32A32_SINT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	if (ReflectionHasAttribute(m_reflection, "WEIGHTS")) ied.push_back({ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 });
-	if (ReflectionHasAttribute(m_reflection, "instancePosition")) ied.push_back({ "instancePosition", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 0 });
-	if (ReflectionHasAttribute(m_reflection, "instanceTexCoordPos")) ied.push_back({ "instanceTexCoordPos", 0, DXGI_FORMAT_R32G32_FLOAT, ied.size(), D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 0 });
-	CComPtr<ID3D11InputLayout> pLayout;
-	m_dev->CreateInputLayout(ied.data(), ied.size(), m_VS->GetBufferPointer(), m_VS->GetBufferSize(), &pLayout);
-	m_render->GetContext()->IASetInputLayout(pLayout);
-	m_render->GetContext()->VSSetShader(pVS, 0, 0);
-
-	for (auto& attr : ied)
+	m_vertexAttributeDescriptions["POSITION"].Format = vertexFormat;
+	m_vertexAttributeDescriptions["TEXCOORD"].Format = texCoordFormat;
+	m_vertexAttributeDescriptions["NORMAL"].Format = normalFormat;
+	for (auto& p : m_vertexAttributeDescriptions)
 	{
-		m_vertexAttributesLocation[ToLower(attr.SemanticName)] = attr.InputSlot;
+		ied.push_back(p.second);
 	}
+	
+	InputLayoutDesc key;
+	std::transform(ied.begin(), ied.end(), std::back_inserter(key), [](D3D11_INPUT_ELEMENT_DESC const& desc) {return std::make_pair(desc.SemanticName, desc.Format);});
+	auto it = m_inputLayouts.find(key);
+	if(it == m_inputLayouts.end())
+	{
+		CComPtr<ID3D11InputLayout> pLayout;
+		m_dev->CreateInputLayout(ied.data(), ied.size(), m_VS->GetBufferPointer(), m_VS->GetBufferSize(), &pLayout);
+		it = m_inputLayouts.emplace(std::make_pair(key, std::move(pLayout))).first;
+	}
+	m_render->GetContext()->IASetInputLayout(it->second);
 }
 
 void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 {
-	DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(DirectX::XMMATRIX(modelView), DirectX::XMMATRIX(projection));
-	matrix = DirectX::XMMatrixTranspose(matrix);
 	DirectX::XMFLOAT4X4 fmatrix;
-	DirectX::XMStoreFloat4x4(&fmatrix, matrix);
-	unsigned int begin = GetVariableOffset("Constant", "WorldViewProjection");
+	auto it = m_variableOffsets.find("WorldViewProjection");
+	if (it != m_variableOffsets.end())
+	{
+		DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(DirectX::XMMATRIX(modelView), DirectX::XMMATRIX(projection));
+		matrix = DirectX::XMMatrixTranspose(matrix);
+		DirectX::XMStoreFloat4x4(&fmatrix, matrix);
+		CopyConstantBufferData(it->second, *fmatrix.m, sizeof(float) * 16);
+	}
 
-	CopyConstantBufferData(begin, *fmatrix.m, sizeof(float) * 16);
-
-	matrix = DirectX::XMMATRIX(modelView);
-	matrix = DirectX::XMMatrixTranspose(matrix);
-	DirectX::XMStoreFloat4x4(&fmatrix, matrix);
-	begin = GetVariableOffset("Constant", "WorldView");
-	CopyConstantBufferData(begin, *fmatrix.m, sizeof(float) * 16);
+	it = m_variableOffsets.find("WorldView");
+	if (it != m_variableOffsets.end())
+	{
+		DirectX::XMMATRIX matrix = DirectX::XMMATRIX(modelView);
+		matrix = DirectX::XMMatrixTranspose(matrix);
+		DirectX::XMStoreFloat4x4(&fmatrix, matrix);
+		CopyConstantBufferData(it->second, *fmatrix.m, sizeof(float) * 16);
+	}
 }
 
 void CShaderManagerDirectX::SetColor(const float * color)
 {
-	auto begin = GetVariableOffset("Constant", "Color");
-	CopyConstantBufferData(begin, color, sizeof(float) * 4);
+	auto it = m_variableOffsets.find("Color");
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second, color, sizeof(float) * 4);
+	}
 }
 
 struct sMaterial
@@ -399,17 +490,25 @@ struct sMaterial
 
 void CShaderManagerDirectX::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
-	sMaterial material;
-	memcpy(&material.AmbientColor, ambient, sizeof(float) * 4);
-	memcpy(&material.DiffuseColor, diffuse, sizeof(float) * 4);
-	memcpy(&material.SpecularColor, specular, sizeof(float) * 4);
-	material.Shininess = shininess;
-	CopyConstantBufferData(GetVariableOffset("Constant", "Material"), &material, sizeof(sMaterial));
+	auto it = m_variableOffsets.find("Material");
+	if (it != m_variableOffsets.end())
+	{
+		sMaterial material;
+		memcpy(&material.AmbientColor, ambient, sizeof(float) * 4);
+		memcpy(&material.DiffuseColor, diffuse, sizeof(float) * 4);
+		memcpy(&material.SpecularColor, specular, sizeof(float) * 4);
+		material.Shininess = shininess;
+		CopyConstantBufferData(it->second, &material, sizeof(sMaterial));
+	}
 }
 
 void CShaderManagerDirectX::SetLight(size_t index, sLightSource & lightSource)
 {
-	CopyConstantBufferData(GetVariableOffset("Constant", "Lights") + index * sizeof(sLightSource), &lightSource, sizeof(sLightSource));
+	auto it = m_variableOffsets.find("Material");
+	if (it != m_variableOffsets.end())
+	{
+		CopyConstantBufferData(it->second + index * sizeof(sLightSource), &lightSource, sizeof(sLightSource));
+	}
 }
 
 void CShaderManagerDirectX::CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const
@@ -430,14 +529,4 @@ void CShaderManagerDirectX::CopyBufferData(ID3D11Buffer * buffer, const void * d
 	m_render->GetContext()->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	memcpy(mappedResource.pData, data, size);
 	m_render->GetContext()->Unmap(buffer, 0);
-}
-
-unsigned int CShaderManagerDirectX::GetVariableOffset(std::string const& bufferName, std::string const& name, unsigned int * size) const
-{
-	auto buffer = m_reflection->GetConstantBufferByName(bufferName.c_str());
-	auto variable = buffer->GetVariableByName(name.c_str());
-	D3D11_SHADER_VARIABLE_DESC vdesc;
-	variable->GetDesc(&vdesc);
-	if (size) *size = vdesc.Size;
-	return vdesc.StartOffset;
 }

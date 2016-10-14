@@ -9,7 +9,6 @@ class CParticleModel : public IParticleUpdater
 public:
 	CParticleModel(std::wstring const& file);
 	std::wstring GetTexture() const;
-	CVector2f GetParticleTexcoords(sParticle const& particle) const;
 	CVector2f GetTextureFrameSize() const;
 	CVector2f GetParticleSize() const;
 	bool HasDifferentTexCoords() const;
@@ -42,10 +41,4 @@ private:
 	float m_maxScale;
 	CVector2f m_particleSize;
 	CVector2f m_textureFrameSize;
-	struct sFrame
-	{
-		float startTime;
-		CVector2f texCoords = {-1, -1};
-	};
-	std::vector<sFrame> m_frames;
 };

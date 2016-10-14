@@ -50,22 +50,10 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 	if (m_instanced)
 	{
 		m_shaderManager->BindProgram();
-		m_positionBuffer.resize(particleEffect.GetParticles().size() * 4);
-		if (useTexCoordAttrib) m_texCoordBuffer.resize(particleEffect.GetParticles().size() * 2);
-		if (useColorAttrib) m_colorBuffer.resize(particleEffect.GetParticles().size() * 4);
-		size_t arrIndex = 0;
-		for (auto& particle : particleEffect.GetParticles())
-		{
-			memcpy(m_positionBuffer.data() + arrIndex * 4, &particle.m_position, sizeof(float) * 3);
-			m_positionBuffer[arrIndex * 4 + 3] = particle.m_scale;
-			if (useTexCoordAttrib) memcpy(m_texCoordBuffer.data() + arrIndex * 2, &model.GetParticleTexcoords(particle), sizeof(float) * 2);
-			if (useColorAttrib) memcpy(m_colorBuffer.data() + arrIndex * 4, particle.m_color, sizeof(float) * 4);
-			++arrIndex;
-		}
-		m_shaderManager->SetPerInstanceVertexAttribute("instancePosition", 4, m_positionBuffer.size() / 4, m_positionBuffer.data());
+		m_shaderManager->SetPerInstanceVertexAttribute("instancePosition", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetPositionCache().data());
 		if (useTexCoordAttrib)
 		{
-			m_shaderManager->SetPerInstanceVertexAttribute("instanceTexCoordPos", 2, m_texCoordBuffer.size() / 2, m_texCoordBuffer.data());
+			m_shaderManager->SetPerInstanceVertexAttribute("instanceTexCoordPos", 2, particleEffect.GetParticles().size(), (float*)particleEffect.GetTexCoordCache().data());
 		}
 		else
 		{
@@ -74,12 +62,12 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		}
 		if (useColorAttrib)
 		{
-			m_shaderManager->SetPerInstanceVertexAttribute("instanceColor", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
+			m_shaderManager->SetPerInstanceVertexAttribute("instanceColor", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetColorCache().data());
 		}
 		else
 		{
 			static float emptyColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			m_renderer.SetColor(emptyColor);
+			m_shaderManager->DisableVertexAttribute("instanceColor", 4, emptyColor);
 		}
 
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
@@ -89,10 +77,6 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		buffer->DrawInstanced(6, particleEffect.GetParticles().size());
 		buffer->UnBind();
 
-		float def[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		m_shaderManager->DisableVertexAttribute("instancePosition", 3, def);
-		m_shaderManager->DisableVertexAttribute("instanceTexCoordPos", 2, def);
-		//m_shaderManager->DisableVertexAttribute("instanceColor", 4, def);
 		m_shaderManager->UnBindProgram();
 	}
 	else
@@ -103,14 +87,14 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		size_t arrIndex = 0;
 		for (auto& particle : particleEffect.GetParticles())
 		{
-			auto& pos = particle.m_position;
-			float scale = particle.m_scale;
-			auto tc = model.GetParticleTexcoords(particle);
+			CVector3f pos(particle.m_position);
+			float scale = *particle.m_scale;
+			CVector2f tc(particle.m_texCoord);
 			m_vertexBuffer.insert(m_vertexBuffer.end(), { p0 * scale + pos, p1 * scale + pos, p2 * scale + pos, p3 * scale + pos });
 			if (useTexCoordAttrib) m_texCoordBuffer2.insert(m_texCoordBuffer2.end(), { t0 + tc, t1 + tc, t2 + tc, t3 + tc });
 			if (useColorAttrib) 
-				for(int i = 0; i < 6; ++i)
-					memcpy(m_colorBuffer.data() + arrIndex * 24 + i * 4, particle.m_color, sizeof(float) * 4);
+				for(int i = 0; i < 4; ++i)
+					memcpy(m_colorBuffer.data() + arrIndex * 16 + i * 4, particle.m_color, sizeof(float) * 4);
 			++arrIndex;
 		}
 		if(useColorAttrib) m_shaderManager->SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());

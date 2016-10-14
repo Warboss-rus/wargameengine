@@ -47,22 +47,28 @@ public:
 	void SetLight(size_t index, sLightSource & lightSource);
 private:
 	void CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer) const;
-	unsigned int GetVariableOffset(std::string const& buffer, std::string const& name, unsigned int * size = nullptr) const;
 	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size) const;
 	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
 	void MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const;
+	void ResetBuffers() const;
 
 	CComPtr<ID3D11Device> m_dev;
 	CDirectXRenderer * m_render;
+
 	CComPtr<ID3D11VertexShader> pVS;    // the vertex shader
 	CComPtr<ID3D11PixelShader> pPS;     // the pixel shader
 	CComPtr<ID3D11GeometryShader> pGS;     // the geometry shader
 	CComPtr<ID3D10Blob> m_VS;
-	CComPtr<ID3D11ShaderReflection> m_reflection;
+
+	CComPtr<ID3D11Buffer> m_constantBuffer;
 	mutable std::vector<unsigned char> m_constantBufferData;
+	std::map<std::string, size_t> m_variableOffsets;
+
 	mutable std::map<std::string, CComPtr<ID3D11Buffer>> m_vertexAttributeBuffers;
 	mutable std::map<std::string, size_t> m_vertexAttributeBufferSizes;
-	mutable std::map<std::string, int> m_vertexAttributesLocation;
-	CComPtr<ID3D11Buffer> m_constantBuffer;
+	mutable std::map<std::string, D3D11_INPUT_ELEMENT_DESC> m_vertexAttributeDescriptions;
+
+	typedef std::vector<std::pair<LPCSTR, DXGI_FORMAT>> InputLayoutDesc;
+	mutable std::map<InputLayoutDesc, CComPtr<ID3D11InputLayout>> m_inputLayouts;
 };

@@ -1,21 +1,24 @@
 #include "Particle.h"
 
-template <class T>
-T max(T const& first, T const& second)
-{
-	return first > second ? first : second;
-}
-
 CParticleEffect::CParticleEffect(const IParticleUpdater * updater, std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles)
-	: m_updater(updater), m_effectPath(effectPath), m_center(position), m_scale(scale)
+	: m_updater(updater), m_effectPath(effectPath), m_center(position), m_scale(scale), m_maxParticles(maxParticles)
 {
 #ifdef _DEBUG
-	maxParticles = maxParticles > 1000 ? 1000 : maxParticles;
+	m_maxParticles = m_maxParticles > 1000 ? 1000 : m_maxParticles;
 #endif
-	sParticle deadParticle;
-	deadParticle.m_age = 1.0f;
-	deadParticle.m_lifeTime = 0.0f;
-	m_particles.resize(maxParticles, deadParticle);
+	m_particles.resize(m_maxParticles);
+	m_positionCache.resize(m_maxParticles * 4);
+	m_colorCache.resize(m_maxParticles * 4);
+	m_texCoordCache.resize(m_maxParticles * 2);
+	for (size_t i = 0; i < m_maxParticles; ++i)
+	{
+		m_particles[i].m_position = m_positionCache.data() + i * 4;
+		m_particles[i].m_color = m_colorCache.data() + i * 4;
+		m_particles[i].m_scale = m_positionCache.data() + i * 4 + 3;
+		m_particles[i].m_texCoord = m_texCoordCache.data() + i * 2;
+		m_particles[i].m_age = 1.0f;
+		m_particles[i].m_lifeTime = 0.0f;
+	}
 }
 
 std::vector<sParticle> const& CParticleEffect::GetParticles() const
@@ -53,7 +56,10 @@ void CParticleEffect::Update(long long deltaTime)
 				m_updater->UpdateParticle(particle);
 			}
 		}
-		particle.m_position += particle.m_velocity * ftime;
+		for (int i = 0; i < 3; ++i)
+		{
+			particle.m_position[i] += particle.m_velocity[i] * ftime;
+		}
 	}
 	/*if (m_updater)
 	{
@@ -70,4 +76,19 @@ void CParticleEffect::Update(long long deltaTime)
 std::wstring CParticleEffect::GetEffectPath() const
 {
 	return m_effectPath;
+}
+
+std::vector<float> const& CParticleEffect::GetPositionCache() const
+{
+	return m_positionCache;
+}
+
+std::vector<float> const& CParticleEffect::GetColorCache() const
+{
+	return m_colorCache;
+}
+
+std::vector<float> const& CParticleEffect::GetTexCoordCache() const
+{
+	return m_texCoordCache;
 }

@@ -30,7 +30,7 @@ public:
 	void AddProjectile(CProjectile const& projectile);
 	size_t GetProjectileCount() const;
 	CProjectile const& GetProjectile(size_t index) const;
-	void AddParticleEffect(CParticleEffect const& effect);
+	void AddParticleEffect(const IParticleUpdater * updater, std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
 	size_t GetParticleCount() const;
 	CParticleEffect const& GetParticleEffect(size_t index) const;
 	void RemoveParticleEffect(size_t index);

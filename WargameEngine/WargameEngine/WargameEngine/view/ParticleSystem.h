@@ -23,6 +23,5 @@ private:
 	std::vector<CVector3f> m_vertexBuffer;
 	std::vector<CVector2f> m_texCoordBuffer2;
 	std::vector<float> m_texCoordBuffer;
-	std::vector<float> m_positionBuffer;
 	std::vector<float> m_colorBuffer;
 };

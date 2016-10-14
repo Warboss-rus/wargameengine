@@ -1,59 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <effect>
-	<texture path="AnimatedExplosion_ME1.png" frameSize="7;7">
-		<frame start="0.0" texFrameIndex="0;0"/>
-		<frame start="0.02040816326530612244897959183673" texFrameIndex="1;0"/>
-		<frame start="0.04081632653061224489795918367347" texFrameIndex="2;0"/>
-		<frame start="0.0612244897959183673469387755102" texFrameIndex="3;0"/>
-		<frame start="0.08163265306122448979591836734694" texFrameIndex="4;0"/>
-		<frame start="0.10204081632653061224489795918367" texFrameIndex="5;0"/>
-		<frame start="0.12244897959183673469387755102041" texFrameIndex="6;0"/>
-		<frame start="0.14285714285714285714285714285714" texFrameIndex="0;1"/>
-		<frame start="0.16326530612244897959183673469388" texFrameIndex="1;1"/>
-		<frame start="0.18367346938775510204081632653061" texFrameIndex="2;1"/>
-		<frame start="0.20408163265306122448979591836735" texFrameIndex="3;1"/>
-		<frame start="0.22448979591836734693877551020408" texFrameIndex="4;1"/>
-		<frame start="0.24489795918367346938775510204082" texFrameIndex="5;1"/>
-		<frame start="0.26530612244897959183673469387755" texFrameIndex="6;1"/>
-		<frame start="0.28571428571428571428571428571429" texFrameIndex="0;2"/>
-		<frame start="0.30612244897959183673469387755102" texFrameIndex="1;2"/>
-		<frame start="0.32653061224489795918367346938776" texFrameIndex="2;2"/>
-		<frame start="0.34693877551020408163265306122449" texFrameIndex="3;2"/>
-		<frame start="0.36734693877551020408163265306122" texFrameIndex="4;2"/>
-		<frame start="0.38775510204081632653061224489796" texFrameIndex="5;2"/>
-		<frame start="0.40816326530612244897959183673469" texFrameIndex="6;2"/>
-		<frame start="0.42857142857142857142857142857143" texFrameIndex="0;3"/>
-		<frame start="0.44897959183673469387755102040816" texFrameIndex="1;3"/>
-		<frame start="0.4693877551020408163265306122449" texFrameIndex="2;3"/>
-		<frame start="0.48979591836734693877551020408163" texFrameIndex="3;3"/>
-		<frame start="0.51020408163265306122448979591837" texFrameIndex="4;3"/>
-		<frame start="0.5306122448979591836734693877551" texFrameIndex="5;3"/>
-		<frame start="0.55102040816326530612244897959184" texFrameIndex="6;3"/>
-		<frame start="0.57142857142857142857142857142857" texFrameIndex="0;4"/>
-		<frame start="0.59183673469387755102040816326531" texFrameIndex="1;4"/>
-		<frame start="0.61224489795918367346938775510204" texFrameIndex="2;4"/>
-		<frame start="0.63265306122448979591836734693878" texFrameIndex="3;4"/>
-		<frame start="0.65306122448979591836734693877551" texFrameIndex="4;4"/>
-		<frame start="0.67346938775510204081632653061224" texFrameIndex="5;4"/>
-		<frame start="0.69387755102040816326530612244898" texFrameIndex="6;4"/>
-		<frame start="0.71428571428571428571428571428571" texFrameIndex="0;5"/>
-		<frame start="0.73469387755102040816326530612245" texFrameIndex="1;5"/>
-		<frame start="0.75510204081632653061224489795918" texFrameIndex="2;5"/>
-		<frame start="0.77551020408163265306122448979592" texFrameIndex="3;5"/>
-		<frame start="0.79591836734693877551020408163265" texFrameIndex="4;5"/>
-		<frame start="0.81632653061224489795918367346939" texFrameIndex="5;5"/>
-		<frame start="0.83673469387755102040816326530612" texFrameIndex="6;5"/>
-		<frame start="0.85714285714285714285714285714286" texFrameIndex="0;0"/>
-		<frame start="0.87755102040816326530612244897959" texFrameIndex="1;6"/>
-		<frame start="0.89795918367346938775510204081633" texFrameIndex="2;6"/>
-		<frame start="0.91836734693877551020408163265306" texFrameIndex="3;6"/>
-		<frame start="0.9387755102040816326530612244898" texFrameIndex="4;6"/>
-		<frame start="0.95918367346938775510204081632653" texFrameIndex="5;6"/>
-		<frame start="0.97959183673469387755102040816327" texFrameIndex="6;6"/>
-	</texture>
+	<texture path="AnimatedExplosion_ME1.png" frameSize="7;7"/>
 	<particle size="0.1;0.1"/>
 	<emitter lifeTime="4-6" scale="0.5-2">
 		<sphereEmitter inclination="0-360" azimuth="0-360" radius="0-1" speed="0.5-1.0" color="0;0;0;1"/>
 	</emitter>
-	<updater/>
+	<updater>
+		<frameUpdater>
+			<frame start="0.0" texFrameIndex="0;0"/>
+			<frame start="0.02040816326530612244897959183673" texFrameIndex="1;0"/>
+			<frame start="0.04081632653061224489795918367347" texFrameIndex="2;0"/>
+			<frame start="0.0612244897959183673469387755102" texFrameIndex="3;0"/>
+			<frame start="0.08163265306122448979591836734694" texFrameIndex="4;0"/>
+			<frame start="0.10204081632653061224489795918367" texFrameIndex="5;0"/>
+			<frame start="0.12244897959183673469387755102041" texFrameIndex="6;0"/>
+			<frame start="0.14285714285714285714285714285714" texFrameIndex="0;1"/>
+			<frame start="0.16326530612244897959183673469388" texFrameIndex="1;1"/>
+			<frame start="0.18367346938775510204081632653061" texFrameIndex="2;1"/>
+			<frame start="0.20408163265306122448979591836735" texFrameIndex="3;1"/>
+			<frame start="0.22448979591836734693877551020408" texFrameIndex="4;1"/>
+			<frame start="0.24489795918367346938775510204082" texFrameIndex="5;1"/>
+			<frame start="0.26530612244897959183673469387755" texFrameIndex="6;1"/>
+			<frame start="0.28571428571428571428571428571429" texFrameIndex="0;2"/>
+			<frame start="0.30612244897959183673469387755102" texFrameIndex="1;2"/>
+			<frame start="0.32653061224489795918367346938776" texFrameIndex="2;2"/>
+			<frame start="0.34693877551020408163265306122449" texFrameIndex="3;2"/>
+			<frame start="0.36734693877551020408163265306122" texFrameIndex="4;2"/>
+			<frame start="0.38775510204081632653061224489796" texFrameIndex="5;2"/>
+			<frame start="0.40816326530612244897959183673469" texFrameIndex="6;2"/>
+			<frame start="0.42857142857142857142857142857143" texFrameIndex="0;3"/>
+			<frame start="0.44897959183673469387755102040816" texFrameIndex="1;3"/>
+			<frame start="0.4693877551020408163265306122449" texFrameIndex="2;3"/>
+			<frame start="0.48979591836734693877551020408163" texFrameIndex="3;3"/>
+			<frame start="0.51020408163265306122448979591837" texFrameIndex="4;3"/>
+			<frame start="0.5306122448979591836734693877551" texFrameIndex="5;3"/>
+			<frame start="0.55102040816326530612244897959184" texFrameIndex="6;3"/>
+			<frame start="0.57142857142857142857142857142857" texFrameIndex="0;4"/>
+			<frame start="0.59183673469387755102040816326531" texFrameIndex="1;4"/>
+			<frame start="0.61224489795918367346938775510204" texFrameIndex="2;4"/>
+			<frame start="0.63265306122448979591836734693878" texFrameIndex="3;4"/>
+			<frame start="0.65306122448979591836734693877551" texFrameIndex="4;4"/>
+			<frame start="0.67346938775510204081632653061224" texFrameIndex="5;4"/>
+			<frame start="0.69387755102040816326530612244898" texFrameIndex="6;4"/>
+			<frame start="0.71428571428571428571428571428571" texFrameIndex="0;5"/>
+			<frame start="0.73469387755102040816326530612245" texFrameIndex="1;5"/>
+			<frame start="0.75510204081632653061224489795918" texFrameIndex="2;5"/>
+			<frame start="0.77551020408163265306122448979592" texFrameIndex="3;5"/>
+			<frame start="0.79591836734693877551020408163265" texFrameIndex="4;5"/>
+			<frame start="0.81632653061224489795918367346939" texFrameIndex="5;5"/>
+			<frame start="0.83673469387755102040816326530612" texFrameIndex="6;5"/>
+			<frame start="0.85714285714285714285714285714286" texFrameIndex="0;0"/>
+			<frame start="0.87755102040816326530612244897959" texFrameIndex="1;6"/>
+			<frame start="0.89795918367346938775510204081633" texFrameIndex="2;6"/>
+			<frame start="0.91836734693877551020408163265306" texFrameIndex="3;6"/>
+			<frame start="0.9387755102040816326530612244898" texFrameIndex="4;6"/>
+			<frame start="0.95918367346938775510204081632653" texFrameIndex="5;6"/>
+			<frame start="0.97959183673469387755102040816327" texFrameIndex="6;6"/>
+		</frameUpdater>
+	</updater>
 </effect>

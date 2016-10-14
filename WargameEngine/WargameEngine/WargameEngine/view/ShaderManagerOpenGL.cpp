@@ -90,6 +90,8 @@ void CShaderManagerOpenGL::NewProgram(std::wstring const& vertex, std::wstring c
 			geometryShader = CompileShader(geometry, m_program, GL_GEOMETRY_SHADER);
 		}
 	}
+	glBindAttribLocation(m_program, 9, "weights");
+	glBindAttribLocation(m_program, 10, "weightIndices");
 	glLinkProgram(m_program);
 	glUseProgram(m_program);
 	int unfrm = glGetUniformLocation(m_program, "texture");

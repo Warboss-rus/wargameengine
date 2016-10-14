@@ -75,12 +75,13 @@ public:
 	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
 	virtual bool Force32Bits() const override;
 	virtual bool ForceFlipBMP() const override;
-
+	virtual bool SupportsFeature(Feature feature) const override;
 	virtual std::string GetName() const override;
 
 	void SetVersion(int version);
 	void Init();
 	void BindShaderManager(const CShaderManagerOpenGLES * shaderManager) const;
+
 private:
 	void UpdateUniforms() const;
 	CTextureManager* m_textureManager;

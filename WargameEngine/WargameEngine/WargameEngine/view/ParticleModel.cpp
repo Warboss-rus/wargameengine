@@ -76,7 +76,8 @@ public:
 
 		CVector3f vector(Z, Y, X);
 
-		particle.m_position = (vector * radius);
+		CVector3f position = vector * radius;
+		memcpy(particle.m_position, &position.x, sizeof(float) * 3);
 		particle.m_velocity = vector * speed;
 		memcpy(particle.m_color, m_color, sizeof(float) * 4);
 	}
@@ -87,6 +88,43 @@ private:
 	float m_minRadius, m_maxRadius;
 	float m_minSpeed, m_maxSpeed;
 	float m_color[4];
+};
+class CFrameUpdater : public CParticleModel::IUpdater
+{
+public:
+	struct sFrame
+	{
+		float startTime;
+		CVector2f texCoords = { -1, -1 };
+	};
+	CFrameUpdater(std::vector<sFrame> && frames)
+		:m_frames(std::move(frames))
+	{
+		std::sort(m_frames.begin(), m_frames.end(), [](sFrame const& f1, sFrame const& f2) {return f1.startTime < f2.startTime;});
+	}
+
+	virtual void Update(sParticle & particle) override
+	{
+		float lifePercent = particle.m_age / particle.m_lifeTime;
+		size_t begin = 0;
+		size_t end = m_frames.size();
+		size_t center;
+		while (end - begin > 1)
+		{
+			center = (begin + end) / 2;
+			if (lifePercent < m_frames[center].startTime)
+			{
+				end = center;
+			}
+			else
+			{
+				begin = center;
+			}
+		}
+		memcpy(particle.m_texCoord, m_frames[begin].texCoords, sizeof(float) * 2);
+	}
+private:
+	std::vector<sFrame> m_frames;
 };
 }
 
@@ -106,21 +144,7 @@ CParticleModel::CParticleModel(wstring const& file)
 	{
 		m_texture = Utf8ToWstring(texture->first_attribute("path")->value());
 		m_textureFrameSize = GetVector2f(texture->first_attribute("frameSize")->value());
-		xml_node<>* frame = texture->first_node("frame");
-		while (frame)
-		{
-			sFrame frameStruct;
-			frameStruct.startTime = std::stof(frame->first_attribute("start")->value());
-			if (frame->first_attribute("texFrameIndex"))
-			{
-				frameStruct.texCoords = GetVector2f(frame->first_attribute("texFrameIndex")->value()) / m_textureFrameSize;
-				frameStruct.texCoords.y = 1.0f - frameStruct.texCoords.y;
-			}
-			m_frames.push_back(frameStruct);
-			frame = frame->next_sibling("frame");
-		}
 	}
-	std::sort(m_frames.begin(), m_frames.end(), [](sFrame const& f1, sFrame const& f2) {return f1.startTime < f2.startTime;});
 	xml_node<>* particle = root->first_node("particle");
 	if (particle)
 	{
@@ -149,7 +173,25 @@ CParticleModel::CParticleModel(wstring const& file)
 	xml_node<>* updater = root->first_node("updater");
 	if (updater)
 	{
-
+		xml_node<>* frameUpdater = updater->first_node("frameUpdater");
+		if (frameUpdater)
+		{
+			std::vector<CFrameUpdater::sFrame> frames;
+			xml_node<>* frame = frameUpdater->first_node("frame");
+			while (frame)
+			{
+				CFrameUpdater::sFrame frameStruct;
+				frameStruct.startTime = std::stof(frame->first_attribute("start")->value());
+				if (frame->first_attribute("texFrameIndex"))
+				{
+					frameStruct.texCoords = GetVector2f(frame->first_attribute("texFrameIndex")->value()) / m_textureFrameSize;
+					frameStruct.texCoords.y = 1.0f - frameStruct.texCoords.y;
+				}
+				frames.push_back(frameStruct);
+				frame = frame->next_sibling("frame");
+			}
+			m_updater = std::make_unique<CFrameUpdater>(std::move(frames));
+		}
 	}
 	doc->clear();
 }
@@ -157,19 +199,6 @@ CParticleModel::CParticleModel(wstring const& file)
 std::wstring CParticleModel::GetTexture() const
 {
 	return m_texture;
-}
-
-CVector2f CParticleModel::GetParticleTexcoords(sParticle const& particle) const
-{
-	float lifePercent = particle.m_age / particle.m_lifeTime;
-	for (auto it = m_frames.rbegin(); it != m_frames.rend(); ++it)
-	{
-		if (lifePercent >= it->startTime)
-		{
-			return it->texCoords;
-		}
-	}
-	return m_frames.back().texCoords;
 }
 
 CVector2f CParticleModel::GetTextureFrameSize() const
@@ -214,7 +243,9 @@ void CParticleModel::InitParticle(sParticle & particle) const
 		m_emitter->InitParticle(particle);
 	}
 	particle.m_lifeTime = frand(m_minLifeTime, m_maxLifeTime);
-	particle.m_scale = frand(m_minScale, m_maxScale);
+	*particle.m_scale = frand(m_minScale, m_maxScale);
+	particle.m_texCoord[0] = 0.0f;
+	particle.m_texCoord[1] = 0.0f;
 }
 
 void CParticleModel::UpdateParticle(sParticle & particle) const

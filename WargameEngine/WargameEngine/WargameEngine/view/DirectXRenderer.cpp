@@ -9,6 +9,18 @@
 
 using namespace DirectX;
 
+DirectX::XMFLOAT4X4 Store(DirectX::XMMATRIX const& matrix)
+{
+	DirectX::XMFLOAT4X4 result;
+	XMStoreFloat4x4(&result, matrix);
+	return result;
+}
+
+DirectX::XMMATRIX Load(DirectX::XMFLOAT4X4 const& matrix)
+{
+	return XMLoadFloat4x4(&matrix);
+}
+
 class CDirectXCachedTexture : public ICachedTexture
 {
 public:
@@ -152,12 +164,12 @@ public:
 	}
 
 private:
-	CComPtr<ID3D11Buffer> m_pVertexBuffer;
-	CComPtr<ID3D11Buffer> m_pTexCoordBuffer;
-	CComPtr<ID3D11Buffer> m_pNormalBuffer;
+	ID3D11Buffer* m_pVertexBuffer = nullptr;
+	ID3D11Buffer* m_pTexCoordBuffer = nullptr;
+	ID3D11Buffer* m_pNormalBuffer = nullptr;
 	CComPtr<ID3D11Buffer> m_pIndexBuffer;
 	CDirectXRenderer * m_renderer;
-	CComPtr<ID3D11Device> m_dev;
+	ID3D11Device* m_dev;
 	size_t m_indexBufferSize;
 };
 
@@ -318,9 +330,9 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	}
 	m_devcon->RSSetState(pRasterState);
 	
-	m_viewMatrices.push_back(DirectX::XMMatrixIdentity());
+	m_viewMatrices.push_back(Store(DirectX::XMMatrixIdentity()));
 	float aspect = GetAspectRatio(m_hWnd);
-	m_projectionMatrices.push_back(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
+	m_projectionMatrices.push_back(Store(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f)));
 
 	m_defaultShaderManager = std::make_unique<CShaderManagerDirectX>(m_dev, this);
 	m_defaultShaderManager->BindProgram();
@@ -551,27 +563,21 @@ void CDirectXRenderer::PopMatrix()
 void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
 {
 	if (dx == 0 && dy == 0 && dz == 0) return;
-	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
-	m_viewMatrices.back() = matrix;
+	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), Load(m_viewMatrices.back())));
 	UpdateMatrices();
 }
 
 void CDirectXRenderer::Translate(const double dx, const double dy, const double dz)
 {
 	if (abs(dx) < DBL_EPSILON && abs(dy) < DBL_EPSILON && abs(dz) < DBL_EPSILON) return;
-	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
-	m_viewMatrices.back() = matrix;
+	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), Load(m_viewMatrices.back())));
 	UpdateMatrices();
 }
 
 void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
-	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), matrix);
-	m_viewMatrices.back() = matrix;
+	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)), Load(m_viewMatrices.back())));
 	UpdateMatrices();
 }
 
@@ -579,33 +585,26 @@ void CDirectXRenderer::Rotate(const double angle, const double x, const double y
 {
 	if (fabs(angle) < DBL_EPSILON) return;
 	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f);
-	auto matrix = m_viewMatrices.back();
-	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), matrix);
-	m_viewMatrices.back() = matrix;
+	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), Load(m_viewMatrices.back())));
 	UpdateMatrices();
 }
 
 void CDirectXRenderer::Scale(const double scale)
 {
 	if (fabs(scale - 1.0) < DBL_EPSILON) return;
-	auto matrix = m_viewMatrices.back();
 	float fscale = static_cast<float>(scale);
-	matrix = DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), matrix);
-	m_viewMatrices.back() = matrix;
+	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), Load(m_viewMatrices.back())));
 	UpdateMatrices();
 }
 
 void CDirectXRenderer::GetViewMatrix(float * matrix) const
 {
-	XMFLOAT4X4 view;
-	auto mat = m_viewMatrices.back();
-	XMStoreFloat4x4(&view, mat);
-	memcpy(matrix, *view.m, sizeof(float) * 16);
+	memcpy(matrix, *m_viewMatrices.back().m, sizeof(float) * 16);
 }
 
 void CDirectXRenderer::ResetViewMatrix()
 {
-	m_viewMatrices.back() = DirectX::XMMatrixIdentity();
+	m_viewMatrices.back() = Store(DirectX::XMMatrixIdentity());
 	UpdateMatrices();
 }
 
@@ -619,7 +618,7 @@ void CDirectXRenderer::LookAt(CVector3d const& position, CVector3d const& direct
 	XMVECTOR pos = Vec3ToXMVector(position);
 	XMVECTOR dir = Vec3ToXMVector(direction);
 	XMVECTOR upVec = Vec3ToXMVector(up);
-	m_viewMatrices.back() = DirectX::XMMatrixLookAtLH(pos, dir, upVec);
+	m_viewMatrices.back() = Store(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
 	UpdateMatrices();
 }
 
@@ -650,7 +649,7 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 	D3D11_VIEWPORT oldViewport;
 	m_devcon->OMGetRenderTargets(1, &oldRenderTargetView, &oldDepthStencilView);
 	m_devcon->RSGetViewports(&numViewports, &oldViewport);
-	m_projectionMatrices.push_back(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 0.0f, 1.0f));
+	m_projectionMatrices.push_back(Store(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 0.0f, 1.0f)));
 	m_viewMatrices.push_back(m_viewMatrices.back());
 	ResetViewMatrix();
 
@@ -819,10 +818,7 @@ void CDirectXRenderer::EnableVertexLightning(bool enable)
 
 void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
 {
-	XMFLOAT4X4 projection;
-	auto mprojection = m_projectionMatrices.back();
-	XMStoreFloat4x4(&projection, mprojection);
-	memcpy(matrix, *projection.m, sizeof(float) * 16);
+	memcpy(matrix, *m_projectionMatrices.back().m, sizeof(float) * 16);
 }
 
 void CDirectXRenderer::EnableDepthTest(bool enable)
@@ -888,7 +884,7 @@ void CDirectXRenderer::EnableBlending(bool enable)
 
 void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
 {
-	m_projectionMatrices.back() = DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane));
+	m_projectionMatrices.back() = Store(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane)));
 	UpdateMatrices();
 }
 
@@ -1002,13 +998,7 @@ void CDirectXRenderer::SetShaderManager(CShaderManagerDirectX * shaderManager)
 
 void CDirectXRenderer::UpdateMatrices()
 {
-	XMFLOAT4X4 view;
-	XMFLOAT4X4 projection;
-	auto viewMatrix = m_viewMatrices.back();
-	XMStoreFloat4x4(&view, viewMatrix);
-	auto projectionMatrix = m_projectionMatrices.back();
-	XMStoreFloat4x4(&projection, projectionMatrix);
-	m_shaderManager->SetMatrices(*view.m, *projection.m);
+	m_shaderManager->SetMatrices(*m_viewMatrices.back().m, *m_projectionMatrices.back().m);
 }
 
 void CDirectXRenderer::CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size)
@@ -1055,9 +1045,9 @@ void CDirectXRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 {
 	RECT rect;
 	GetClientRect(m_hWnd, &rect);
-	m_projectionMatrices.push_back(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(rect.left), static_cast<float>(rect.right), 
-		static_cast<float>(rect.bottom), static_cast<float>(rect.top), 0.0f, 1.0f));
-	m_viewMatrices.push_back(DirectX::XMMatrixIdentity());
+	m_projectionMatrices.push_back(Store(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(rect.left), static_cast<float>(rect.right), 
+		static_cast<float>(rect.bottom), static_cast<float>(rect.top), 0.0f, 1.0f)));
+	m_viewMatrices.push_back(Store(DirectX::XMMatrixIdentity()));
 	UpdateMatrices();
 	drawHandler();
 	m_projectionMatrices.pop_back();

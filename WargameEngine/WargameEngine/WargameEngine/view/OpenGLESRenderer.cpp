@@ -106,37 +106,16 @@ COpenGLESRenderer::COpenGLESRenderer()
 	m_projectionMatrices.push_back(Matrix4F());
 }
 
-void Bind(const void* vertices, const void* normals, const void* texCoords, GLenum vertexType, GLenum normalType, GLenum texCoordType, int vertexAxesCount)
-{
-	if (vertices)
-	{
-		glEnableVertexAttribArray(positionIndex);
-		glVertexAttribPointer(positionIndex, vertexAxesCount, vertexType, GL_FALSE, 0, vertices);
-	}
-	if (normals)
-	{
-		glEnableVertexAttribArray(normalIndex);
-		glVertexAttribPointer(normalIndex, 3, normalType, GL_FALSE, 0, normals);
-	}
-	if (texCoords)
-	{
-		glEnableVertexAttribArray(texCoordIndex);
-		glVertexAttribPointer(texCoordIndex, 2, texCoordType, GL_FALSE, 0, texCoords);
-	}
-}
-
-void Unbind()
-{
-	glDisableVertexAttribArray(positionIndex);
-	glDisableVertexAttribArray(normalIndex);
-	glDisableVertexAttribArray(texCoordIndex);
-}
-
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
-	Bind(vertices.data(), normals.data(), texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 3);
+	m_shaderManager->SetVertexAttribute("Position", 3, vertices.size(), (float*)&vertices[0].x);
+	m_shaderManager->SetVertexAttribute("Normal", 3, normals.size(), (float*)&normals[0].x);
+	m_shaderManager->SetVertexAttribute("TexCoord", 2, texCoords.size(), (float*)&texCoords[0].x);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
+	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	m_shaderManager->DisableVertexAttribute("Position", 3, def);
+	m_shaderManager->DisableVertexAttribute("Normal", 3, def);
+	m_shaderManager->DisableVertexAttribute("TexCoord", 2, def);
 }
 
 std::vector<float> TransformDoubleToFloat(const void * data, size_t count)
@@ -156,23 +135,34 @@ void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> con
 	auto vertexf = TransformDoubleToFloat(vertices.data(), vertices.size() * 3);
 	auto normalsf = TransformDoubleToFloat(normals.data(), normals.size() * 3);
 	auto texCoordsf = TransformDoubleToFloat(texCoords.data(), texCoords.size() * 2);
-	Bind(vertexf.data(), normalsf.data(), texCoordsf.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 3);
+	m_shaderManager->SetVertexAttribute("Position", 3, vertices.size(), vertexf.data());
+	m_shaderManager->SetVertexAttribute("Normal", 3, normals.size(), normalsf.data());
+	m_shaderManager->SetVertexAttribute("TexCoord", 2, texCoords.size(), texCoordsf.data());
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
+	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	m_shaderManager->DisableVertexAttribute("Position", 3, def);
+	m_shaderManager->DisableVertexAttribute("Normal", 3, def);
+	m_shaderManager->DisableVertexAttribute("TexCoord", 2, def);
 }
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	Bind(vertices.data(), NULL, texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 2);
+	m_shaderManager->SetVertexAttribute("Position", 2, vertices.size(), (int*)&vertices[0].x);
+	m_shaderManager->SetVertexAttribute("TexCoord", 2, texCoords.size(), (float*)&texCoords[0].x);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
+	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	m_shaderManager->DisableVertexAttribute("Position", 3, def);
+	m_shaderManager->DisableVertexAttribute("TexCoord", 2, def);
 }
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	Bind(vertices.data(), NULL, texCoords.data(), GL_FIXED, GL_FIXED, GL_FLOAT, 2);
+	m_shaderManager->SetVertexAttribute("Position", 2, vertices.size(), (int*)&vertices[0].x);
+	m_shaderManager->SetVertexAttribute("TexCoord", 2, texCoords.size(), (float*)&texCoords[0].x);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
+	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	m_shaderManager->DisableVertexAttribute("Position", 3, def);
+	m_shaderManager->DisableVertexAttribute("TexCoord", 2, def);
 }
 
 void COpenGLESRenderer::PushMatrix()
@@ -690,6 +680,11 @@ void COpenGLESRenderer::BindShaderManager(const CShaderManagerOpenGLES * shaderM
 {
 	m_shaderManager = shaderManager;
 	UpdateUniforms();
+}
+
+bool COpenGLESRenderer::SupportsFeature(Feature /*feature*/) const
+{
+	return true;
 }
 
 void COpenGLESRenderer::UpdateUniforms() const
