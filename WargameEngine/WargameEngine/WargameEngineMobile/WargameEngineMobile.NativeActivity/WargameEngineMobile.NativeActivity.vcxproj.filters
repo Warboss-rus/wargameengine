@@ -284,20 +284,12 @@
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp">
       <Filter>Source Files\rapidxml</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\NetSocket.h" />
-    <ClInclude Include="..\..\WargameEngine\ScriptHandlerLua.h" />
-    <ClInclude Include="..\..\WargameEngine\view\OpenGLESRenderer.h" />
-    <ClInclude Include="..\..\WargameEngine\view\TextWriter.h" />
     <ClInclude Include="..\..\WargameEngine\view\gluLite.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.h" />
-    <ClInclude Include="..\..\WargameEngine\SoundPlayerOpenSLES.h" />
     <ClInclude Include="..\..\WargameEngine\Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\GameWindowAndroid.h" />
-    <ClInclude Include="..\..\WargameEngine\view\InputAndroid.h" />
     <ClInclude Include="..\..\WargameEngine\view\InputBase.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -325,12 +317,18 @@
     <ClInclude Include="..\..\WargameEngine\view\MirrorCamera.h">
       <Filter>Source Files\view\Cameras</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\PhysicsEngineBullet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\model\Particle.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\impl\GameWindowAndroid.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\InputAndroid.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\NetSocket.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\OpenGLESRenderer.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\ScriptHandlerLua.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\PhysicsEngineBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />
@@ -503,20 +501,12 @@
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterUI.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\NetSocket.cpp" />
-    <ClCompile Include="..\..\WargameEngine\ScriptHandlerLua.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\OpenGLESRenderer.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\TextWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\gluLite.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\ShaderManagerOpenGLES.cpp" />
-    <ClCompile Include="..\..\WargameEngine\SoundPlayerOpenSLES.cpp" />
     <ClCompile Include="..\..\WargameEngine\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\GameWindowAndroid.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\InputAndroid.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\InputBase.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -541,12 +531,18 @@
     <ClCompile Include="..\..\WargameEngine\view\MirrorCamera.cpp">
       <Filter>Source Files\view\Cameras</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\PhysicsEngineBullet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\WargameEngine\model\Particle.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\impl\GameWindowAndroid.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\InputAndroid.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\NetSocket.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\OpenGLESRenderer.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\ScriptHandlerLua.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\PhysicsEngineBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

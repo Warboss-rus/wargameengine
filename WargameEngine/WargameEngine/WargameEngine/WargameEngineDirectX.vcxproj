@@ -236,27 +236,27 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NetSocket.cpp" />
-    <ClCompile Include="PhysicsEngineBullet.cpp" />
-    <ClCompile Include="ScriptHandlerLua.cpp" />
+    <ClCompile Include="impl\NetSocket.cpp" />
+    <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
+    <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SoundPlayerFMod.cpp" />
-    <ClCompile Include="view\DirectXRenderer.cpp" />
-    <ClCompile Include="view\GameWindowDirectX.cpp" />
-    <ClCompile Include="view\InputDirectX.cpp" />
-    <ClCompile Include="view\ShaderManagerDirectX.cpp" />
-    <ClCompile Include="view\TextWriter.cpp" />
+    <ClCompile Include="impl\SoundPlayerFMod.cpp" />
+    <ClCompile Include="impl\DirectXRenderer.cpp" />
+    <ClCompile Include="impl\GameWindowDirectX.cpp" />
+    <ClCompile Include="impl\InputDirectX.cpp" />
+    <ClCompile Include="impl\ShaderManagerDirectX.cpp" />
+    <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NetSocket.h" />
-    <ClInclude Include="PhysicsEngineBullet.h" />
-    <ClInclude Include="ScriptHandlerLua.h" />
-    <ClInclude Include="SoundPlayerFMod.h" />
-    <ClInclude Include="view\DirectXRenderer.h" />
-    <ClInclude Include="view\GameWindowDirectX.h" />
-    <ClInclude Include="view\InputDirectX.h" />
-    <ClInclude Include="view\ShaderManagerDirectX.h" />
-    <ClInclude Include="view\TextWriter.h" />
+    <ClInclude Include="impl\NetSocket.h" />
+    <ClInclude Include="impl\PhysicsEngineBullet.h" />
+    <ClInclude Include="impl\ScriptHandlerLua.h" />
+    <ClInclude Include="impl\SoundPlayerFMod.h" />
+    <ClInclude Include="impl\DirectXRenderer.h" />
+    <ClInclude Include="impl\GameWindowDirectX.h" />
+    <ClInclude Include="impl\InputDirectX.h" />
+    <ClInclude Include="impl\ShaderManagerDirectX.h" />
+    <ClInclude Include="impl\TextWriter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

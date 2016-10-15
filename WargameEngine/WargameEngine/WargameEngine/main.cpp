@@ -8,23 +8,23 @@
 #include <cstring>
 #include <time.h>
 #ifdef DIRECTX
-#include "view\GameWindowDirectX.h"
+#include "impl\GameWindowDirectX.h"
 #define WINDOW_CLASS CGameWindowDirectX
 #elif GLFW
-#include "view\GameWindowGLFW.h"
+#include "impl\GameWindowGLFW.h"
 #define WINDOW_CLASS CGameWindowGLFW
 #elif VR
-#include "view/GameWindowVR.h"
+#include "impl/GameWindowVR.h"
 #define WINDOW_CLASS CGameWindowVR
 #else
-#include "view\GameWindowGLUT.h"
+#include "impl\GameWindowGLUT.h"
 #define WINDOW_CLASS CGameWindowGLUT
 #endif
-#include "SoundPlayerFMod.h"
-#include "view\TextWriter.h"
-#include "ScriptHandlerLua.h"
-#include "PhysicsEngineBullet.h"
-#include "NetSocket.h"
+#include "impl\SoundPlayerFMod.h"
+#include "impl\TextWriter.h"
+#include "impl\ScriptHandlerLua.h"
+#include "impl\PhysicsEngineBullet.h"
+#include "impl\NetSocket.h"
 #include "Utils.h"
 #ifdef _WINDOWS
 #include <windows.h>

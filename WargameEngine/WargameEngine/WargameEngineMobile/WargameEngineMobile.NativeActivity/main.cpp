@@ -2,16 +2,16 @@
 #include <android/log.h>
 #include "android_native_app_glue.h"
 #include "..\..\WargameEngine\view\GameView.h"
-#include "..\..\WargameEngine\SoundPlayerOpenSLES.h"
-#include "..\..\WargameEngine\view\TextWriter.h"
-#include "..\..\WargameEngine\ScriptHandlerLua.h"
-#include "..\..\WargameEngine\NetSocket.h"
+#include "..\..\WargameEngine\impl\SoundPlayerOpenSLES.h"
+#include "..\..\WargameEngine\impl\TextWriter.h"
+#include "..\..\WargameEngine\impl\ScriptHandlerLua.h"
+#include "..\..\WargameEngine\impl\NetSocket.h"
 #include "..\..\WargameEngine\view\BuiltInImageReaders.h"
 #include "..\..\WargameEngine\view\OBJModelFactory.h"
 #include "..\..\WargameEngine\view\ColladaModelFactory.h"
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
-#include "..\..\WargameEngine\view\GameWindowAndroid.h"
-#include "..\..\WargameEngine\PhysicsEngineBullet.h"
+#include "..\..\WargameEngine\impl\GameWindowAndroid.h"
+#include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
 /*
 * Copyright (C) 2010 The Android Open Source Project
 *

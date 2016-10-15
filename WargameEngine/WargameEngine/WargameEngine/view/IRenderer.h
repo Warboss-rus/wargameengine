@@ -85,11 +85,11 @@ public:
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) = 0;
 
-	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const = 0;
-
 	virtual std::string GetName() const = 0;
 
 	virtual bool SupportsFeature(Feature feature) const = 0;
+
+	virtual IShaderManager& GetShaderManager() = 0;
 
 	virtual ~IRenderer() {}
 };

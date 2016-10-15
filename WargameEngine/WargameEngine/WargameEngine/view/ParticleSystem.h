@@ -6,7 +6,7 @@
 #include "..\model\Particle.h"
 
 class IRenderer;
-class IShaderManager;
+class IShaderProgram;
 
 class CParticleSystem
 {
@@ -19,7 +19,7 @@ private:
 	bool m_instanced = false;
 	std::map<std::wstring, CParticleModel> m_models;
 	IRenderer & m_renderer;
-	std::unique_ptr<IShaderManager> m_shaderManager;
+	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::vector<CVector3f> m_vertexBuffer;
 	std::vector<CVector2f> m_texCoordBuffer2;
 	std::vector<float> m_texCoordBuffer;

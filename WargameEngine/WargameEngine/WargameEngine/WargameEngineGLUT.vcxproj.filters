@@ -11,63 +11,63 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SoundPlayerFMod.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GameWindowGLUT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\InputGLUT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\OpenGLRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ShaderManagerOpenGL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\TextWriter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ScriptHandlerLua.cpp">
+    <ClCompile Include="impl\GameWindowGLUT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NetSocket.cpp">
+    <ClCompile Include="impl\InputGLUT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PhysicsEngineBullet.cpp">
+    <ClCompile Include="impl\NetSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\OpenGLRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\PhysicsEngineBullet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\ScriptHandlerLua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\ShaderManagerOpenGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\SoundPlayerFMod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\TextWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SoundPlayerFMod.h">
+    <ClInclude Include="impl\GameWindowGLUT.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\GameWindowGLUT.h">
+    <ClInclude Include="impl\InputGLUT.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\InputGLUT.h">
+    <ClInclude Include="impl\NetSocket.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\OpenGLRenderer.h">
+    <ClInclude Include="impl\OpenGLRenderer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\ShaderManagerOpenGL.h">
+    <ClInclude Include="impl\PhysicsEngineBullet.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\TextWriter.h">
+    <ClInclude Include="impl\ScriptHandlerLua.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScriptHandlerLua.h">
+    <ClInclude Include="impl\ShaderManagerOpenGL.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="NetSocket.h">
+    <ClInclude Include="impl\SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicsEngineBullet.h">
+    <ClInclude Include="impl\TextWriter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

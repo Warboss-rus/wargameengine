@@ -1,14 +1,21 @@
 #pragma once
 #include <string>
+#include <memory>
+
+class IShaderProgram
+{
+public:
+	virtual ~IShaderProgram() {}
+};
 
 class IShaderManager
 {
 public:
 	virtual ~IShaderManager() {}
 
-	virtual void NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") = 0;
-	virtual void BindProgram() const = 0;
-	virtual void UnBindProgram() const = 0;
+	virtual std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") = 0;
+	virtual void PushProgram(IShaderProgram const& program) const = 0;
+	virtual void PopProgram() const = 0;
 
 	virtual void SetUniformValue(std::string const& uniform, int count, const float* value) const = 0;
 	virtual void SetUniformValue(std::string const& uniform, int count, const int* value) const = 0;

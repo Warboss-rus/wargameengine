@@ -243,27 +243,27 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NetSocket.cpp" />
-    <ClCompile Include="PhysicsEngineBullet.cpp" />
-    <ClCompile Include="ScriptHandlerLua.cpp" />
+    <ClCompile Include="impl\NetSocket.cpp" />
+    <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
+    <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SoundPlayerFMod.cpp" />
-    <ClCompile Include="view\GameWindowGLFW.cpp" />
-    <ClCompile Include="view\InputGLFW.cpp" />
-    <ClCompile Include="view\OpenGLRenderer.cpp" />
-    <ClCompile Include="view\ShaderManagerOpenGL.cpp" />
-    <ClCompile Include="view\TextWriter.cpp" />
+    <ClCompile Include="impl\SoundPlayerFMod.cpp" />
+    <ClCompile Include="impl\GameWindowGLFW.cpp" />
+    <ClCompile Include="impl\InputGLFW.cpp" />
+    <ClCompile Include="impl\OpenGLRenderer.cpp" />
+    <ClCompile Include="impl\ShaderManagerOpenGL.cpp" />
+    <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NetSocket.h" />
-    <ClInclude Include="PhysicsEngineBullet.h" />
-    <ClInclude Include="ScriptHandlerLua.h" />
-    <ClInclude Include="SoundPlayerFMod.h" />
-    <ClInclude Include="view\GameWindowGLFW.h" />
-    <ClInclude Include="view\InputGLFW.h" />
-    <ClInclude Include="view\OpenGLRenderer.h" />
-    <ClInclude Include="view\ShaderManagerOpenGL.h" />
-    <ClInclude Include="view\TextWriter.h" />
+    <ClInclude Include="impl\NetSocket.h" />
+    <ClInclude Include="impl\PhysicsEngineBullet.h" />
+    <ClInclude Include="impl\ScriptHandlerLua.h" />
+    <ClInclude Include="impl\SoundPlayerFMod.h" />
+    <ClInclude Include="impl\GameWindowGLFW.h" />
+    <ClInclude Include="impl\InputGLFW.h" />
+    <ClInclude Include="impl\OpenGLRenderer.h" />
+    <ClInclude Include="impl\ShaderManagerOpenGL.h" />
+    <ClInclude Include="impl\TextWriter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

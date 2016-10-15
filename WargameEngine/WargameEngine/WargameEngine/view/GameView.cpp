@@ -35,7 +35,6 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_renderer(&m_window->GetRenderer())
 	, m_viewHelper(&m_window->GetViewHelper())
 	, m_gameModel(make_unique<CGameModel>())
-	, m_shaderManager(m_renderer->CreateShaderManager())
 	, m_soundPlayer(move(context->soundPlayer))
 	, m_textWriter(move(context->textWriter))
 	, m_physicsEngine(move(context->physicsEngine))
@@ -394,9 +393,10 @@ void CGameView::DrawObjects(bool shadowOnly)
 {
 	m_viewHelper->EnableDepthTest(true);
 	m_viewHelper->EnableBlending(!shadowOnly);
+	auto& shaderManager = m_renderer->GetShaderManager();
 	if (!shadowOnly)
 	{
-		m_shaderManager->BindProgram();
+		if(m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
 		if (m_vertexLightning)
 		{
 			m_viewHelper->EnableVertexLightning(true);
@@ -408,22 +408,22 @@ void CGameView::DrawObjects(bool shadowOnly)
 	list->Draw();
 	DrawStaticObjects(shadowOnly);
 	size_t countObjects = m_gameModel->GetObjectCount();
-	auto shaderManager = shadowOnly ? nullptr : m_shaderManager.get();
+	auto shaderManagerPtr = shadowOnly ? nullptr : &shaderManager;
 	for (size_t i = 0; i < countObjects; i++)
 	{
 		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
 		m_renderer->PushMatrix();
 		m_renderer->Translate(object->GetX(), object->GetY(), object->GetCoords().z);
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, shadowOnly, shaderManager);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, shadowOnly, shaderManagerPtr);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, shadowOnly, shaderManager);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, shadowOnly, shaderManagerPtr);
 		}
 		m_renderer->PopMatrix();
 	}
-	m_shaderManager->UnBindProgram();
+	if(!shadowOnly && m_shaderProgram) shaderManager.PopProgram();
 	m_viewHelper->EnableVertexLightning(false);
 	if (!shadowOnly)
 	{
@@ -434,7 +434,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 			m_renderer->Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
 			m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
 			if (!projectile.GetPathToModel().empty())
-				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, m_shaderManager.get());
+				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, shaderManagerPtr);
 			if (projectile.GetParticle())
 				m_particles.Draw(*projectile.GetParticle());
 			m_renderer->PopMatrix();
@@ -459,7 +459,7 @@ void CGameView::DrawStaticObjects(bool shadowOnly)
 			m_renderer->PushMatrix();
 			m_renderer->Translate(object.GetX(), object.GetY(), object.GetZ());
 			m_renderer->Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
-			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, m_shaderManager.get());
+			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, &m_renderer->GetShaderManager());
 			m_renderer->PopMatrix();
 		}
 	}
@@ -479,7 +479,7 @@ void CGameView::SetUpShadowMapDraw()
 	lightMatrix *= m_shadowMapViewport->GetViewMatrix();
 	lightMatrix *= cameraInverseModelViewMatrix;
 
-	m_shaderManager->SetUniformMatrix4("lightMatrix", 1, lightMatrix);
+	m_renderer->GetShaderManager().SetUniformMatrix4("lightMatrix", 1, lightMatrix);
 }
 
 void CGameView::CreateSkybox(float size, wstring const& textureFolder)
@@ -515,6 +515,16 @@ CRuler& CGameView::GetRuler()
 IRenderer& CGameView::GetRenderer()
 {
 	return *m_renderer;
+}
+
+void CGameView::NewShaderProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry)
+{
+	m_shaderProgram = m_renderer->GetShaderManager().NewProgram(vertex, fragment, geometry);
+}
+
+IShaderProgram const& CGameView::GetShaderProgram() const
+{
+	return *m_shaderProgram;
 }
 
 void CGameView::ResizeWindow(int height, int width)
@@ -590,11 +600,6 @@ void CGameView::ClearResources()
 void CGameView::SetWindowTitle(wstring const& title)
 {
 	m_window->SetTitle(title + L" - Wargame Engine");
-}
-
-IShaderManager& CGameView::GetShaderManager()
-{
-	return *m_shaderManager;
 }
 
 CAsyncFileProvider& CGameView::GetAsyncFileProvider()

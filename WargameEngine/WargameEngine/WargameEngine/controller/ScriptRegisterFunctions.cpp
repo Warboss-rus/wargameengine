@@ -291,7 +291,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (n > 1) fragment = pathSource.GetShaderAbsolutePath(args.GetWStr(2));
 		if (n > 2) geometry = pathSource.GetShaderAbsolutePath(args.GetWStr(3));
 		if (n > 3) throw std::runtime_error("up to 3 argument expected (vertex shader, fragment shader, geometry shader)");
-		view.GetShaderManager().NewProgram(vertex, fragment, geometry);
+		view.NewShaderProgram(vertex, fragment, geometry);
 		return nullptr;
 	});
 
@@ -300,7 +300,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 			throw std::runtime_error("2 arguments expected (uniform name, value)");
 		std::string name = args.GetStr(1);
 		int value = args.GetInt(2);
-		view.GetShaderManager().SetUniformValue(name, 1, &value);
+		auto& shaderManager = view.GetRenderer().GetShaderManager();
+		shaderManager.PushProgram(view.GetShaderProgram());
+		shaderManager.SetUniformValue(name, 1, &value);
+		shaderManager.PopProgram();
 		return nullptr;
 	});
 
@@ -309,7 +312,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 			throw std::runtime_error("2 arguments expected (uniform name, value)");
 		std::string name = args.GetStr(1);
 		float value = args.GetFloat(2);
-		view.GetShaderManager().SetUniformValue(name, 1, &value);
+		auto& shaderManager = view.GetRenderer().GetShaderManager();
+		shaderManager.PushProgram(view.GetShaderProgram());
+		shaderManager.SetUniformValue(name, 1, &value);
+		shaderManager.PopProgram();
 		return nullptr;
 	});
 
@@ -320,7 +326,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		unsigned int count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count) throw std::runtime_error("Not enough elements in the array");
-		view.GetShaderManager().SetUniformValue(name, count, &value[0]);
+		auto& shaderManager = view.GetRenderer().GetShaderManager();
+		shaderManager.PushProgram(view.GetShaderProgram());
+		shaderManager.SetUniformValue(name, 1, &value[0]);
+		shaderManager.PopProgram();
 		return nullptr;
 	});
 
@@ -331,7 +340,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		unsigned int count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 2) throw std::runtime_error("Not enough elements in the array");
-		view.GetShaderManager().SetUniformValue2(name, count, &value[0]);
+		auto& shaderManager = view.GetRenderer().GetShaderManager();
+		shaderManager.PushProgram(view.GetShaderProgram());
+		shaderManager.SetUniformValue2(name, count, &value[0]);
+		shaderManager.PopProgram();
 		return nullptr;
 	});
 
@@ -342,7 +354,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		unsigned int count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 3) throw std::runtime_error("Not enough elements in the array");
-		view.GetShaderManager().SetUniformValue3(name, count, &value[0]);
+		auto& shaderManager = view.GetRenderer().GetShaderManager();
+		shaderManager.PushProgram(view.GetShaderProgram());
+		shaderManager.SetUniformValue3(name, count, &value[0]);
+		shaderManager.PopProgram();
 		return nullptr;
 	});
 
@@ -353,7 +368,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		unsigned int count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 4) throw std::runtime_error("Not enough elements in the array");
-		view.GetShaderManager().SetUniformValue4(name, count, &value[0]);
+		auto& shaderManager = view.GetRenderer().GetShaderManager();
+		shaderManager.PushProgram(view.GetShaderProgram());
+		shaderManager.SetUniformValue4(name, count, &value[0]);
+		shaderManager.PopProgram();
 		return nullptr;
 	});
 
@@ -364,7 +382,10 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		unsigned int count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 16) throw std::runtime_error("Not enough elements in the array");
-		view.GetShaderManager().SetUniformMatrix4(name, count, &value[0]);
+		auto& shaderManager = view.GetRenderer().GetShaderManager();
+		shaderManager.PushProgram(view.GetShaderProgram());
+		shaderManager.SetUniformMatrix4(name, count, &value[0]);
+		shaderManager.PopProgram();
 		return nullptr;
 	});
 

@@ -53,7 +53,8 @@ public:
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
 	IRenderer& GetRenderer();
-	IShaderManager & GetShaderManager();
+	void NewShaderProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry);
+	IShaderProgram const& GetShaderProgram() const;
 	CAsyncFileProvider& GetAsyncFileProvider();
 	ThreadPool& GetThreadPool();
 	IViewHelper& GetViewHelper();
@@ -107,7 +108,7 @@ private:
 	IInput * m_input;
 	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
-	std::unique_ptr<IShaderManager> m_shaderManager;
+	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::unique_ptr<ISoundPlayer> m_soundPlayer;
 	std::vector<std::unique_ptr<IViewport>> m_viewports;
 	std::unique_ptr<CSkyBox> m_skybox;

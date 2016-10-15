@@ -11,63 +11,63 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="view\DirectXRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GameWindowDirectX.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\InputDirectX.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\ShaderManagerDirectX.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="view\TextWriter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SoundPlayerFMod.cpp">
+    <ClCompile Include="impl\DirectXRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ScriptHandlerLua.cpp">
+    <ClCompile Include="impl\GameWindowDirectX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NetSocket.cpp">
+    <ClCompile Include="impl\InputDirectX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PhysicsEngineBullet.cpp">
+    <ClCompile Include="impl\NetSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\PhysicsEngineBullet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\ScriptHandlerLua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\ShaderManagerDirectX.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\SoundPlayerFMod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\TextWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="view\DirectXRenderer.h">
+    <ClInclude Include="impl\DirectXRenderer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\GameWindowDirectX.h">
+    <ClInclude Include="impl\GameWindowDirectX.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\InputDirectX.h">
+    <ClInclude Include="impl\InputDirectX.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\ShaderManagerDirectX.h">
+    <ClInclude Include="impl\NetSocket.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\TextWriter.h">
+    <ClInclude Include="impl\PhysicsEngineBullet.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="SoundPlayerFMod.h">
+    <ClInclude Include="impl\ScriptHandlerLua.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ScriptHandlerLua.h">
+    <ClInclude Include="impl\ShaderManagerDirectX.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="NetSocket.h">
+    <ClInclude Include="impl\SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicsEngineBullet.h">
+    <ClInclude Include="impl\TextWriter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

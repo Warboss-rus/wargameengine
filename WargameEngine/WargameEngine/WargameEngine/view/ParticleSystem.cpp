@@ -4,7 +4,7 @@
 using namespace std;
 
 CParticleSystem::CParticleSystem(IRenderer & renderer)
-	:m_renderer(renderer), m_shaderManager(m_renderer.CreateShaderManager())
+	:m_renderer(renderer)
 {
 }
 
@@ -12,7 +12,7 @@ void CParticleSystem::SetShaders(std::wstring const& vertex, std::wstring const&
 {
 	if (m_renderer.SupportsFeature(Feature::INSTANSING))
 	{
-		m_shaderManager->NewProgram(vertex, fragment);
+		m_shaderProgram = m_renderer.GetShaderManager().NewProgram(vertex, fragment);
 		m_instanced = true;
 	}
 }
@@ -46,28 +46,29 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 
 	bool useTexCoordAttrib = model.HasDifferentTexCoords();
 	bool useColorAttrib = model.HasDifferentColors();
+	auto& shaderManager = m_renderer.GetShaderManager();
 
 	if (m_instanced)
 	{
-		m_shaderManager->BindProgram();
-		m_shaderManager->SetPerInstanceVertexAttribute("instancePosition", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetPositionCache().data());
+		if(m_shaderProgram) shaderManager.PushProgram(*m_shaderProgram);
+		shaderManager.SetPerInstanceVertexAttribute("instancePosition", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetPositionCache().data());
 		if (useTexCoordAttrib)
 		{
-			m_shaderManager->SetPerInstanceVertexAttribute("instanceTexCoordPos", 2, particleEffect.GetParticles().size(), (float*)particleEffect.GetTexCoordCache().data());
+			shaderManager.SetPerInstanceVertexAttribute("instanceTexCoordPos", 2, particleEffect.GetParticles().size(), (float*)particleEffect.GetTexCoordCache().data());
 		}
 		else
 		{
 			static CVector2f emptyTexCoord(0.0f, 0.0f);
-			m_shaderManager->DisableVertexAttribute("instanceTexCoordPos", 2, &emptyTexCoord.x);
+			shaderManager.DisableVertexAttribute("instanceTexCoordPos", 2, &emptyTexCoord.x);
 		}
 		if (useColorAttrib)
 		{
-			m_shaderManager->SetPerInstanceVertexAttribute("instanceColor", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetColorCache().data());
+			shaderManager.SetPerInstanceVertexAttribute("instanceColor", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetColorCache().data());
 		}
 		else
 		{
 			static float emptyColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			m_shaderManager->DisableVertexAttribute("instanceColor", 4, emptyColor);
+			shaderManager.DisableVertexAttribute("instanceColor", 4, emptyColor);
 		}
 
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
@@ -76,8 +77,7 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		buffer->Bind();
 		buffer->DrawInstanced(6, particleEffect.GetParticles().size());
 		buffer->UnBind();
-
-		m_shaderManager->UnBindProgram();
+		if (m_shaderProgram) shaderManager.PopProgram();
 	}
 	else
 	{
@@ -97,7 +97,7 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 					memcpy(m_colorBuffer.data() + arrIndex * 16 + i * 4, particle.m_color, sizeof(float) * 4);
 			++arrIndex;
 		}
-		if(useColorAttrib) m_shaderManager->SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
+		if(useColorAttrib) shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
 		m_renderer.RenderArrays(RenderMode::RECTANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
 	}
 	m_renderer.SetTexture(L"");

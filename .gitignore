@@ -24,3 +24,4 @@ Thumbs.db
 *.ipch
 /WargameEngine/bullet/bin
 /WargameEngine/bullet/build3/vs2010/obj
+/WargameEngine/bullet/build3/vs2010/*.db
