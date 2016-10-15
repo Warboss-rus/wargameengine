@@ -1,8 +1,8 @@
 #include "SkyBox.h"
 #include "TextureManager.h"
 
-CSkyBox::CSkyBox(double width, double height, double length, std::wstring const& imageFolder, IRenderer & renderer) 
-	: m_height(static_cast<float>(height)), m_width(static_cast<float>(width)), m_length(static_cast<float>(length))
+CSkyBox::CSkyBox(float width, float height, float length, std::wstring const& imageFolder, IRenderer & renderer) 
+	: m_height(height), m_width(width), m_length(length)
 	, m_imageFolder(imageFolder), m_renderer(renderer)
 {
 }

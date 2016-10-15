@@ -13,6 +13,7 @@ class IObject;
 class IShaderManager;
 class IDrawingList;
 class IRenderer;
+class IVertexBuffer;
 
 struct sMesh
 {
@@ -65,7 +66,7 @@ public:
 	void PreloadTextures(IRenderer & renderer) const;
 	std::vector<std::string> GetAnimations() const;
 private:
-	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, bool useGPUrendering = false, IShaderManager * shaderManager = nullptr, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
+	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer, bool useGPUrendering = false, IShaderManager * shaderManager = nullptr, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
 	void CalculateGPUWeights();
 	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, bool gpuSkinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
@@ -86,6 +87,7 @@ private:
 	std::vector<int> m_gpuWeightIndexes;
 	std::vector<float> m_gpuWeight;
 	std::vector<float> m_gpuInverseMatrices;
+	std::unique_ptr<IVertexBuffer> m_vertexBuffer;
 };
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix);

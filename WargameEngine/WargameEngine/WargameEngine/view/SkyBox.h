@@ -5,7 +5,7 @@
 class CSkyBox
 {
 public:
-	CSkyBox(double width, double height, double length, std::wstring const& imageFolder, IRenderer & renderer);
+	CSkyBox(float width, float height, float length, std::wstring const& imageFolder, IRenderer & renderer);
 	~CSkyBox();
 	void Draw(double x, double y, double z, double scale);
 	void ResetList();

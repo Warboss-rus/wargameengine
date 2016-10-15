@@ -40,8 +40,9 @@ public:
 class IVertexBuffer
 {
 public:
+	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) = 0;
 	virtual void Bind() const = 0;
-	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) = 0;
+	virtual void DrawIndexes(size_t begin, size_t count) = 0;
 	virtual void DrawAll(size_t count) = 0;
 	virtual void DrawInstanced(size_t size, size_t instanceCount) = 0;
 	virtual void UnBind() const = 0;
@@ -82,7 +83,7 @@ public:
 
 	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void()> const& func) = 0;
 
-	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0) = 0;
+	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) = 0;
 
 	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const = 0;
 

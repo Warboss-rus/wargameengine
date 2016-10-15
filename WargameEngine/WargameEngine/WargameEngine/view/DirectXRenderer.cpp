@@ -70,7 +70,7 @@ class CDirectXVertexBuffer : public IVertexBuffer
 {
 public:
 	CDirectXVertexBuffer(CComPtr<ID3D11Device> dev, CDirectXRenderer * renderer)
-		:m_dev(dev), m_renderer(renderer), m_indexBufferSize(0)
+		:m_dev(dev), m_renderer(renderer)
 	{
 	}
 
@@ -86,16 +86,16 @@ public:
 		m_renderer->SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	}
 
-	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override
-	{		
-		if (count == 0) return;
-		if (count > m_indexBufferSize)
+	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
+	{
+		if (indexesSize == 0) return;
+		if (indexesSize > m_indexBufferSize || !m_pIndexBuffer)
 		{
 			D3D11_BUFFER_DESC bd;
 			ZeroMemory(&bd, sizeof(bd));
 
 			bd.Usage = D3D11_USAGE_DYNAMIC;                // write access access by CPU and GPU
-			bd.ByteWidth = sizeof(unsigned int) * count;             // size is the index
+			bd.ByteWidth = sizeof(unsigned int) * indexesSize;             // size is the index
 			bd.BindFlags = D3D11_BIND_INDEX_BUFFER;       // use as a index buffer
 			bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;    // allow CPU to write in buffer
 
@@ -103,18 +103,23 @@ public:
 			HRESULT hr = m_dev->CreateBuffer(&bd, NULL, &m_pIndexBuffer);       // create the buffer
 			if (FAILED(hr))
 			{
-				LogWriter::WriteLine("DirectX error: Cannot create render target view for texture rendering");
+				LogWriter::WriteLine("DirectX error: Cannot create index buffer");
 			}
-			m_indexBufferSize = count;
-			Bind();
+			m_indexBufferSize = indexesSize;
+			if (m_sharedIndexBuffer)
+			{
+				m_renderer->SetSharedIndexBuffer(m_pIndexBuffer);
+			}
 		}
-
 		D3D11_MAPPED_SUBRESOURCE ms;
 		m_renderer->GetContext()->Map(m_pIndexBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);   // map the buffer
-		memcpy(ms.pData, indexPtr, sizeof(unsigned int) * count);                // copy the data
+		memcpy(ms.pData, indexPtr, sizeof(unsigned int) * indexesSize);                // copy the data
 		m_renderer->GetContext()->Unmap(m_pIndexBuffer, NULL);                        // unmap the buffer
+	}
 
-		m_renderer->GetContext()->DrawIndexed(count, 0, 0);
+	virtual void DrawIndexes(size_t begin, size_t count) override
+	{		
+		m_renderer->GetContext()->DrawIndexed(count, begin, 0);
 	}
 
 	virtual void DrawAll(size_t count) override
@@ -158,19 +163,32 @@ public:
 		return m_pTexCoordBuffer;
 	}
 
+	void SetIndexBufferPtr(ID3D11Buffer* indexBuffer)
+	{
+		D3D11_BUFFER_DESC desc;
+		if (indexBuffer)
+		{
+			indexBuffer->GetDesc(&desc);
+			m_indexBufferSize = desc.ByteWidth / sizeof(unsigned int);
+		}
+		m_pIndexBuffer = indexBuffer;
+		m_sharedIndexBuffer = true;
+	}
+
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override
 	{
 		m_renderer->GetContext()->DrawInstanced(size, instanceCount, 0, 0);
 	}
 
 private:
-	ID3D11Buffer* m_pVertexBuffer = nullptr;
-	ID3D11Buffer* m_pTexCoordBuffer = nullptr;
-	ID3D11Buffer* m_pNormalBuffer = nullptr;
+	CComPtr<ID3D11Buffer> m_pVertexBuffer;
+	CComPtr<ID3D11Buffer> m_pTexCoordBuffer;
+	CComPtr<ID3D11Buffer> m_pNormalBuffer;
 	CComPtr<ID3D11Buffer> m_pIndexBuffer;
 	CDirectXRenderer * m_renderer;
 	ID3D11Device* m_dev;
-	size_t m_indexBufferSize;
+	size_t m_indexBufferSize = 0;
+	bool m_sharedIndexBuffer = false;
 };
 
 class CDirectXFrameBuffer : public IFrameBuffer
@@ -698,25 +716,38 @@ std::unique_ptr<IDrawingList> CDirectXRenderer::CreateDrawingList(std::function<
 	return std::make_unique<CDirectXDrawingList>(func);
 }
 
-std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t size)
+std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
 	auto buffer = std::make_unique<CDirectXVertexBuffer>(m_dev, this);
 
-	MakeSureBufferCanFitSize(size / 3);
+	if(temp) MakeSureBufferCanFitSize(size);
 	if (vertex)
 	{
-		*buffer->GetVertexBufferPtr() = m_vertexBuffer;
-		CopyDataToBuffer(buffer->GetVertexBuffer(), vertex, sizeof(float) * size);
+		if (temp)
+			*buffer->GetVertexBufferPtr() = m_vertexBuffer;
+		else
+			CreateBuffer(buffer->GetVertexBufferPtr(), size * 3 * sizeof(float));
+		CopyDataToBuffer(buffer->GetVertexBuffer(), vertex, sizeof(float) * size * 3);
 	}
 	if (normals)
 	{
-		*buffer->GetNormalBufferPtr() = m_normalsBuffer;
-		CopyDataToBuffer(buffer->GetNormalBuffer(), normals, sizeof(float) * size);
+		if(temp)
+			*buffer->GetNormalBufferPtr() = m_normalsBuffer;
+		else
+			CreateBuffer(buffer->GetNormalBufferPtr(), size * 3 * sizeof(float));
+		CopyDataToBuffer(buffer->GetNormalBuffer(), normals, sizeof(float) * size * 3);
 	}
 	if (texcoords)
 	{
-		*buffer->GetTexCoordBufferPtr() = m_texCoordBuffer;
-		CopyDataToBuffer(buffer->GetTexCoordBuffer(), texcoords, sizeof(float) * size * 2 / 3);
+		if(temp)
+			*buffer->GetTexCoordBufferPtr() = m_texCoordBuffer;
+		else
+			CreateBuffer(buffer->GetTexCoordBufferPtr(), size * 2 * sizeof(float));
+		CopyDataToBuffer(buffer->GetTexCoordBuffer(), texcoords, sizeof(float) * size * 2);
+	}
+	if (temp)
+	{
+		buffer->SetIndexBufferPtr(m_sharedIndexBuffer);
 	}
 
 	return std::move(buffer);
@@ -1036,9 +1067,14 @@ void CDirectXRenderer::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 	//Recreate swap chain?
 }
 
-bool CDirectXRenderer::SupportsFeature(Feature feature) const
+void CDirectXRenderer::SetSharedIndexBuffer(CComPtr<ID3D11Buffer> const& buffer)
 {
-	return true;
+	m_sharedIndexBuffer = buffer;
+}
+
+bool CDirectXRenderer::SupportsFeature(Feature) const
+{
+	return true;//DirectX cannot have unsupported features
 }
 
 void CDirectXRenderer::DrawIn2D(std::function<void()> const& drawHandler)

@@ -56,7 +56,7 @@ void SetMaterial(IRenderer & renderer, const sMaterial * material, const std::ve
 	renderer.SetTexture(material->bumpMap, TextureSlot::eBump);
 }
 
-void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, 
+void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer,
 	bool useGPUskinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
 {
 	if (useGPUskinning && m_skeleton.size() > 0)
@@ -65,11 +65,7 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 		shaderManager->SetVertexAttribute("weights", 4, m_gpuWeight.size(), m_gpuWeight.data());
 		shaderManager->SetVertexAttribute("weightIndices", 4, m_gpuWeightIndexes.size(), m_gpuWeightIndexes.data());
 	}
-	const float * vertex = vertices.empty() ? nullptr : &vertices.data()->x;
-	const float * normal = normals.empty() || vertexOnly ? nullptr : &normals.data()->x;
-	const float * texCoord = m_textureCoords.empty() || vertexOnly ? nullptr : &m_textureCoords.data()->x;
-	auto buffer = renderer.CreateVertexBuffer(vertex, normal, texCoord, vertices.size() * 3);
-	buffer->Bind();
+	vertexBuffer.Bind();
 	renderer.PushMatrix();
 	renderer.Rotate(m_rotation.x, 1.0, 0.0, 0.0);//causes transparent models
 	renderer.Rotate(m_rotation.y, 0.0, 1.0, 0.0);
@@ -84,7 +80,7 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 			if (hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
 			{
 				end = m_meshes[i].polygonIndex;
-				buffer->DrawIndexes(&m_indexes[begin], end - begin);
+				vertexBuffer.DrawIndexes(begin, end - begin);
 				if (!vertexOnly) SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
 				begin = (i + 1 == m_meshes.size()) ? m_count : m_meshes[i + 1].polygonIndex;
 				continue;
@@ -94,20 +90,21 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 				continue;
 			}
 			end = m_meshes[i].polygonIndex;
-			buffer->DrawIndexes(&m_indexes[begin], end - begin);
+			vertexBuffer.DrawIndexes(begin, end - begin);
 			if (!vertexOnly) SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
 			begin = end;
 		}
 		end = m_count;
 		if (begin != end)
 		{
-			buffer->DrawIndexes(&m_indexes[begin], end - begin);
+			vertexBuffer.DrawIndexes(begin, end - begin);
 		}
 	}
 	else //Draw in a row
 	{
-		buffer->DrawAll(m_count);
+		vertexBuffer.DrawAll(m_count);
 	}
+	vertexBuffer.UnBind();
 	sMaterial empty;
 	SetMaterial(renderer, &empty, nullptr);
 	renderer.PopMatrix();
@@ -300,7 +297,7 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 			CalculateGPUWeights();
 		}
 		shaderManager->SetUniformMatrix4("joints", m_skeleton.size(), jointMatrices.data());
-		DrawModel(renderer, hideMeshes, vertexOnly, m_vertices, m_normals, true, shaderManager, teamcolor, replaceTextures);
+		DrawModel(renderer, hideMeshes, vertexOnly, *m_vertexBuffer, true, shaderManager, teamcolor, replaceTextures);
 	}
 	else
 	{
@@ -327,13 +324,21 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 				normals[i] += normal;
 			}
 		}
-		DrawModel(renderer, hideMeshes, vertexOnly, vertices, normals, false, shaderManager, teamcolor, replaceTextures);
+		auto vertexBuffer = renderer.CreateVertexBuffer(&vertices.data()->x, &normals.data()->x, &m_textureCoords.data()->x, vertices.size(), true);
+		vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
+		DrawModel(renderer, hideMeshes, vertexOnly, *vertexBuffer, false, shaderManager, teamcolor, replaceTextures);
 	}
 	return result;
 }
 
 void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning, IShaderManager * shaderManager)
 {
+	if (!m_vertexBuffer)
+	{
+		m_vertexBuffer = renderer.CreateVertexBuffer(&m_vertices.data()->x, &m_normals.data()->x, &m_textureCoords.data()->x, m_vertices.size(), false);
+		m_vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
+	}
+
 	sModelCallListKey key;
 	if (object)
 	{
@@ -368,7 +373,7 @@ void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool 
 		if (m_lists.find(key) == m_lists.end())
 		{
 			m_lists[key] = renderer.CreateDrawingList([&] {
-				DrawModel(renderer, &key.hiddenMeshes, vertexOnly, m_vertices, m_normals, false, shaderManager, &key.teamcolor, &key.replaceTextures);
+				DrawModel(renderer, &key.hiddenMeshes, vertexOnly, *m_vertexBuffer, false, shaderManager, &key.teamcolor, &key.replaceTextures);
 			});
 		}
 		m_lists.at(key)->Draw();

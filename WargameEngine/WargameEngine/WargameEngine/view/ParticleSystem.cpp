@@ -72,7 +72,7 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
 		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
-		auto buffer = m_renderer.CreateVertexBuffer(&vertex->x, nullptr, &texCoord->x, sizeof(vertex) / sizeof(float));
+		auto buffer = m_renderer.CreateVertexBuffer(&vertex->x, nullptr, &texCoord->x, 6, true);
 		buffer->Bind();
 		buffer->DrawInstanced(6, particleEffect.GetParticles().size());
 		buffer->UnBind();

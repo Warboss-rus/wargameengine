@@ -23,17 +23,23 @@ private:
 class COpenGLVertexBuffer : public IVertexBuffer
 {
 public:
-	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr);
+	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = true);
 	~COpenGLVertexBuffer();
 	virtual void Bind() const override;
-	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override;
+	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
+	virtual void DrawIndexes(size_t begin, size_t count) override;
 	virtual void DrawAll(size_t count) override;
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
 private:
-	const float * m_vertex;
-	const float * m_normals;
-	const float * m_texCoords;
+	const float * m_vertex = NULL;
+	const float * m_normals = NULL;
+	const float * m_texCoords = NULL;
+	const unsigned int* m_indexes = NULL;
+	GLuint m_vertexBuffer = NULL;
+	GLuint m_normalsBuffer = NULL;
+	GLuint m_texCoordBuffer = NULL;
+	GLuint m_indexesBuffer = NULL;
 };
 
 class COpenGLFrameBuffer : public IFrameBuffer
@@ -297,9 +303,9 @@ std::unique_ptr<IDrawingList> COpenGLRenderer::CreateDrawingList(std::function<v
 	return std::make_unique<COpenGLDrawingList>(list);
 }
 
-std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t /*size*/)
+std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
-	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords);
+	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords, size, temp);
 }
 
 std::unique_ptr<IFrameBuffer> COpenGLRenderer::CreateFramebuffer() const
@@ -365,38 +371,90 @@ void COpenGLDrawingList::Draw() const
 	glCallList(m_id);
 }
 
-COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/)
-	:m_vertex(vertex), m_normals(normals), m_texCoords(texcoords)
+COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
+	if (temp)
+	{
+		m_vertex = vertex;
+		m_normals = normals;
+		m_texCoords = texcoords;
+	}
+	else
+	{
+		if (vertex)
+		{
+			glGenBuffers(1, &m_vertexBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+			glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float), vertex, GL_STATIC_DRAW);
+		}
+		if (normals)
+		{
+			glGenBuffers(1, &m_normalsBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
+			glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float), normals, GL_STATIC_DRAW);
+		}
+		if (texcoords)
+		{
+			glGenBuffers(1, &m_texCoordBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
+			glBufferData(GL_ARRAY_BUFFER, size * 2 * sizeof(float), texcoords, GL_STATIC_DRAW);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, NULL);
+	}
 }
 
 COpenGLVertexBuffer::~COpenGLVertexBuffer()
 {
 	UnBind();
+	glDeleteBuffers(4, &m_vertexBuffer);
 }
 
 void COpenGLVertexBuffer::Bind() const
 {
-	if (m_vertex)
+	if (m_vertex || m_vertexBuffer)
 	{
+		if (m_vertexBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, m_vertex);
+		glVertexPointer(3, GL_FLOAT, 0, m_vertexBuffer ? 0 : m_vertex);
 	}
-	if (m_normals)
+	if (m_normals || m_normalsBuffer)
 	{
+		if (m_normalsBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
 		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_FLOAT, 0, m_normals);
+		glNormalPointer(GL_FLOAT, 0, m_normalsBuffer ? 0 : m_normals);
 	}
-	if (m_texCoords)
+	if (m_texCoords || m_texCoordBuffer)
 	{
+		if (m_texCoordBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, GL_FLOAT, 0, m_texCoords);
+		glTexCoordPointer(2, GL_FLOAT, 0, m_texCoordBuffer ? 0 : m_texCoords);
+	}
+	if (m_indexesBuffer)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
+
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, NULL);
+}
+
+void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
+{
+	if ((m_vertexBuffer || m_normalsBuffer || m_texCoordBuffer) && indexPtr)
+	{
+		glGenBuffers(1, &m_indexesBuffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+	}
+	else
+	{
+		m_indexes = indexPtr;
 	}
 }
 
-void COpenGLVertexBuffer::DrawIndexes(unsigned int * indexPtr, size_t count)
+void COpenGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
 {
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, indexPtr);
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
 }
 
 void COpenGLVertexBuffer::DrawAll(size_t count)
@@ -414,6 +472,7 @@ void COpenGLVertexBuffer::UnBind() const
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_VERTEX_ARRAY);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 }
 
 std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)

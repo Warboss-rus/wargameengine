@@ -46,7 +46,7 @@ public:
 	CGameView(sGameViewContext * context);
 	~CGameView();
 	void Init(sModule const& module);
-	void CreateSkybox(double size, std::wstring const& textureFolder);
+	void CreateSkybox(float size, std::wstring const& textureFolder);
 	IUIElement * GetUI() const;
 	CModelManager& GetModelManager();
 	ISoundPlayer& GetSoundPlayer();

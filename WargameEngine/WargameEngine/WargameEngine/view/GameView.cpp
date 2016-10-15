@@ -482,7 +482,7 @@ void CGameView::SetUpShadowMapDraw()
 	m_shaderManager->SetUniformMatrix4("lightMatrix", 1, lightMatrix);
 }
 
-void CGameView::CreateSkybox(double size, wstring const& textureFolder)
+void CGameView::CreateSkybox(float size, wstring const& textureFolder)
 {
 	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
 }

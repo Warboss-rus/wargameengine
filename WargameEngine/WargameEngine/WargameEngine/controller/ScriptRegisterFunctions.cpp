@@ -66,7 +66,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	handler.RegisterFunction(CREATE_SKYBOX, [&](IArguments const& args) {
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 argument expected (size, texture folder)");
-		double size = args.GetDbl(1);
+		float size = args.GetFloat(1);
 		std::wstring texture = args.GetWStr(2);
 		view.CreateSkybox(size, texture);
 		return nullptr;

@@ -42,17 +42,19 @@ private:
 class COpenGLVertexBuffer : public IVertexBuffer
 {
 public:
-	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr);
+	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false);
 	~COpenGLVertexBuffer();
 	virtual void Bind() const override;
-	virtual void DrawIndexes(unsigned int * indexPtr, size_t count) override;
+	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
+	virtual void DrawIndexes(size_t begin, size_t count) override;
 	virtual void DrawAll(size_t count) override;
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
 private:
-	const float * m_vertex;
-	const float * m_normals;
-	const float * m_texCoords;
+	const float * m_vertex = nullptr;
+	const float * m_normals = nullptr;
+	const float * m_texCoords = nullptr;
+	unsigned int* m_indexBuffer = nullptr;
 };
 
 class COpenGLESFrameBuffer : public IFrameBuffer
@@ -337,9 +339,9 @@ std::unique_ptr<IDrawingList> COpenGLESRenderer::CreateDrawingList(std::function
 	return std::make_unique<COpenGLDrawingList>(func);
 }
 
-std::unique_ptr<IVertexBuffer> COpenGLESRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t /*size*/)
+std::unique_ptr<IVertexBuffer> COpenGLESRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
-	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords);
+	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords, size, temp);
 }
 
 std::unique_ptr<IFrameBuffer> COpenGLESRenderer::CreateFramebuffer() const
@@ -402,7 +404,7 @@ void COpenGLDrawingList::Draw() const
 	m_onDraw();
 }
 
-COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/)
+COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t /*size*/, bool /*temp*/)
 	:m_vertex(vertex), m_normals(normals), m_texCoords(texcoords)
 {
 }
@@ -431,9 +433,14 @@ void COpenGLVertexBuffer::Bind() const
 	}
 }
 
-void COpenGLVertexBuffer::DrawIndexes(unsigned int * indexPtr, size_t count)
+void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t /*indexesSize*/)
 {
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, indexPtr);
+	m_indexBuffer = indexPtr;
+}
+
+void COpenGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
+{
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexBuffer + begin);
 }
 
 void COpenGLVertexBuffer::DrawAll(size_t count)

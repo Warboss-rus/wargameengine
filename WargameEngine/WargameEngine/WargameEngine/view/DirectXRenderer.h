@@ -53,7 +53,7 @@ public:
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 
 	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void() > const& func) override;
-	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0) override;
+	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	virtual std::unique_ptr<IShaderManager> CreateShaderManager() const override;
 
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const override;
@@ -92,6 +92,7 @@ public:
 	void Present();
 	void ToggleFullscreen();
 	void EnableMultisampling(bool enable, int level = 1.0f);
+	void SetSharedIndexBuffer(CComPtr<ID3D11Buffer> const& buffer);
 private:
 	void MakeSureBufferCanFitSize(size_t size);
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize);
@@ -115,6 +116,7 @@ private:
 	CComPtr<ID3D11Buffer> m_vertexBuffer;
 	CComPtr<ID3D11Buffer> m_normalsBuffer;
 	CComPtr<ID3D11Buffer> m_texCoordBuffer;
+	CComPtr<ID3D11Buffer> m_sharedIndexBuffer;
 	size_t m_buffersSize = 0;
 
 	std::vector<sLightSource> m_lightSources;
