@@ -35,7 +35,6 @@ struct sGameViewContext
 	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
 	sModule module;
-	std::wstring workingDir;
 	std::vector<std::unique_ptr<IImageReader>> imageReaders;
 	std::vector<std::unique_ptr<IModelReader>> modelReaders;
 };

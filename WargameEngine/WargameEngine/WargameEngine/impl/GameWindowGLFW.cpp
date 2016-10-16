@@ -273,3 +273,8 @@ IViewHelper& CGameWindowGLFW::GetViewHelper()
 	return *m_renderer;
 }
 
+void CGameWindowGLFW::GetWindowSize(int& width, int& height)
+{
+	glfwGetWindowSize(m_window, &width, &height);
+}
+

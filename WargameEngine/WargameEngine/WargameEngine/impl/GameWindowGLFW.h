@@ -29,6 +29,7 @@ public:
 	virtual IInput& ResetInput() override;
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;
+	virtual void GetWindowSize(int& width, int& height) override;
 private:
 	void CreateNewWindow(GLFWmonitor * monitor = NULL);
 

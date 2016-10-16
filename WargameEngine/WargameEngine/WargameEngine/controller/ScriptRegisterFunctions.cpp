@@ -268,7 +268,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (module file)");
 		std::wstring module = args.GetWStr(1);
-		view.LoadModule(module);
+		view.LoadModule(view.GetAsyncFileProvider().GetAbsolutePath(module));
 		return nullptr;
 	});
 

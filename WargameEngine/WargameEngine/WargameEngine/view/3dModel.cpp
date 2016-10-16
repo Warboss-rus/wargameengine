@@ -27,6 +27,7 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 	std::swap(m_materials, materials);
 	m_meshes.swap(meshes);
 	m_lists.clear();
+	m_vertexBuffer.reset();
 }
 
 void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations)

@@ -61,6 +61,12 @@ IViewHelper& CGameWindowGLUT::GetViewHelper()
 	return *m_renderer;
 }
 
+void CGameWindowGLUT::GetWindowSize(int& width, int& height)
+{
+	width = glutGet(GLUT_WINDOW_WIDTH);
+	height = glutGet(GLUT_WINDOW_HEIGHT);
+}
+
 CGameWindowGLUT::CGameWindowGLUT()
 {
 	g_instance = this;

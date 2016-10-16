@@ -20,6 +20,7 @@ public:
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
+	virtual void GetWindowSize(int& width, int& height) override;
 private:
 	struct Impl;
 	std::unique_ptr<Impl> m_pImpl;

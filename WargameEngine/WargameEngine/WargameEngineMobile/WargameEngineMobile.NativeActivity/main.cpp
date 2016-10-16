@@ -104,8 +104,9 @@ void android_main(struct android_app* state) {
 	if (context.module.name.empty())
 	{
 		context.module.script = L"main.lua";
-		context.module.textures = L"texture\\";
-		context.module.models = L"models\\";
+		context.module.textures = L"texture/";
+		context.module.models = L"models/";
+		context.module.folder = L"/sdcard/WargameEngine/";
 	}
 	context.window = std::make_unique<CGameWindowAndroid>(state);
 	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
@@ -125,7 +126,6 @@ void android_main(struct android_app* state) {
 	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
-	context.workingDir = L"/sdcard/WargameEngine/";
 
 	state->userData = &engine;
 	state->onAppCmd = engine_handle_cmd;

@@ -1018,6 +1018,11 @@ bool CDirectXRenderer::ForceFlipBMP() const
 	return true;
 }
 
+bool CDirectXRenderer::ConvertBgra() const
+{
+	return false;
+}
+
 std::string CDirectXRenderer::GetName() const
 {
 	return "DirectX11";

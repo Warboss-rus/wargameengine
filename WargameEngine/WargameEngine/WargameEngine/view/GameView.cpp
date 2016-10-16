@@ -38,7 +38,7 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_soundPlayer(move(context->soundPlayer))
 	, m_textWriter(move(context->textWriter))
 	, m_physicsEngine(move(context->physicsEngine))
-	, m_asyncFileProvider(m_threadPool, context->workingDir)
+	, m_asyncFileProvider(m_threadPool)
 	, m_modelManager(*m_renderer, *m_physicsEngine, m_asyncFileProvider)
 	, m_textureManager(m_window->GetViewHelper(), m_asyncFileProvider)
 	, m_particles(*m_renderer)
@@ -90,7 +90,9 @@ void CGameView::Init(sModule const& module)
 	m_vertexLightning = false;
 	m_shadowMapViewport = nullptr;
 	m_viewports.clear();
-	m_viewports.push_back(std::make_unique<CViewport>(0, 0, 600, 600, 60.0f, *m_viewHelper, true));
+	int width, height;
+	m_window->GetWindowSize(width, height);
+	m_viewports.push_back(std::make_unique<CViewport>(0, 0, width, height, 60.0f, *m_viewHelper, true));
 	m_viewports.front()->SetCamera(make_unique<CCameraStrategy>(100.0, 100.0, 2.8, 0.5));
 	m_gameController.reset();
 
@@ -320,7 +322,6 @@ void CGameView::Update()
 				DrawRuler();
 				m_physicsEngine->Draw();
 			}
-			m_physicsEngine->Update(100 / 60);
 			if (drawUI)
 			{
 				DrawUI();

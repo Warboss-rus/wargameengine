@@ -27,7 +27,7 @@ uniform sampler2D texture;\n\
 varying vec2 v_texcoord;\n\
 void main()\n\
 {\n\
-	gl_FragColor = texture2D(texture, v_texcoord);\n\
+	gl_FragColor = texture2D(texture, v_texcoord) + color;\n\
 }";
 
 class COpenGLESShaderProgram : public IShaderProgram
@@ -38,7 +38,6 @@ public:
 
 CShaderManagerOpenGLES::CShaderManagerOpenGLES()
 {
-	PushProgram(*NewProgram());
 }
 
 void CShaderManagerOpenGLES::PushProgram(IShaderProgram const& program) const

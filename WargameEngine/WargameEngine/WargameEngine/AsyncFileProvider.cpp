@@ -69,8 +69,8 @@ private:
 	AsyncReadHandler m_handler;
 };
 
-CAsyncFileProvider::CAsyncFileProvider(ThreadPool & threadPool, std::wstring const & workingDir)
-	:m_threadPool(threadPool), m_workingDir(workingDir)
+CAsyncFileProvider::CAsyncFileProvider(ThreadPool & threadPool)
+	:m_threadPool(threadPool)
 {
 }
 
@@ -138,7 +138,7 @@ std::wstring AppendPath(std::wstring const& oldPath, std::wstring const& newPath
 
 void CAsyncFileProvider::SetModule(sModule const & module)
 {
-	m_moduleDir = AppendPath(m_workingDir, module.folder);
+	m_moduleDir = module.folder;
 	m_textureDir = AppendPath(m_moduleDir, module.textures);
 	m_modelDir = AppendPath(m_moduleDir, module.models);
 	m_scriptDir = m_moduleDir;

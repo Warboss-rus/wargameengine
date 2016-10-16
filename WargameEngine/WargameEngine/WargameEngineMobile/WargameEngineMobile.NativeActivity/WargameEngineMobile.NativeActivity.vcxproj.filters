@@ -284,9 +284,6 @@
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp">
       <Filter>Source Files\rapidxml</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\gluLite.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -500,9 +497,6 @@
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterUI.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\gluLite.cpp">
-      <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\Utils.cpp">
       <Filter>Source Files</Filter>

@@ -145,6 +145,14 @@ public:
 			m_onResize(LOWORD(lParam), HIWORD(lParam));
 		}
 	}
+
+	void GetWindowSize(int& width, int& height)
+	{
+		RECT rect;
+		GetClientRect(m_hWnd, &rect);
+		width = rect.right - rect.left;
+		height = rect.bottom - rect.top;
+	}
 private:
 	void CreateMainWindow()
 	{
@@ -265,4 +273,9 @@ IViewHelper& CGameWindowDirectX::GetViewHelper()
 void CGameWindowDirectX::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 {
 	m_pImpl->EnableMultisampling(enable, level);
+}
+
+void CGameWindowDirectX::GetWindowSize(int& width, int& height)
+{
+	m_pImpl->GetWindowSize(width, height);
 }

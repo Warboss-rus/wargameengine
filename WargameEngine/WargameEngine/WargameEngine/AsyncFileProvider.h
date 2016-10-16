@@ -8,7 +8,7 @@ struct sModule;
 class CAsyncFileProvider
 {
 public:
-	CAsyncFileProvider(ThreadPool & threadPool, std::wstring const& workingDir);
+	CAsyncFileProvider(ThreadPool & threadPool);
 	void SetModule(sModule const& module);
 	typedef std::function<void(void*, size_t)> ProcessHandler;
 	typedef std::function<void()> CompletionHandler;

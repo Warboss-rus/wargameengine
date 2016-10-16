@@ -281,12 +281,20 @@ std::vector<unsigned char> UncompressTGA(unsigned char * data, unsigned int widt
 	return uncompressedData;
 }
 
+void ConvertBgra(unsigned char * data, size_t count, unsigned short bpp)
+{
+	for (size_t i = 0; i < count; ++i)
+	{
+		std::swap(data[i * bpp], data[i * bpp + 2]);
+	}
+}
+
 bool CBmpImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/) const
 {
 	return strncmp((char*)data, "BM", 2) == 0;
 }
 
-CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
+CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, sReaderParameters const& params)
 {
 	unsigned int headerSize = *(int*)&(data[0x0A]);     // Position in the file where the actual data begins
 	unsigned int width = *(int*)&(data[0x12]);
@@ -297,11 +305,16 @@ CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	if (headerSize == 0)  // Some BMP files are misformatted, guess missing information
 		headerSize = 54;
 	data += headerSize;
-	if (flipBmp)
+	if (params.flipBmp)
 	{
 		FlipImage(data, width, height, bpp / 8, false, flags);
 	}
-	if (force32bit && bpp == 24)
+	if (params.convertBgra)
+	{
+		ConvertBgra(data, width * height, bpp / 8);
+		flags = 0;
+	}
+	if (params.force32bit && bpp == 24)
 	{
 		flags |= TEXTURE_HAS_ALPHA;
 		std::vector<unsigned char> uncompressed;
@@ -318,7 +331,7 @@ bool CTgaImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, st
 	return extension == L"tga" && (data[2] == 2 || data[2] == 10);//non-rgb texture
 }
 
-CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
+CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, sReaderParameters const& params)
 {
 	unsigned int width = data[13] * 256 + data[12];
 	unsigned int height = data[15] * 256 + data[14];
@@ -334,11 +347,11 @@ CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	{
 		result = CImage(data + 18, width, height, bpp, flags);
 	}
-	if (flipBmp)
+	if (params.flipBmp)
 	{
 		FlipImage(result.GetData(), result.GetWidth(), result.GetHeight(), result.GetBPP() / 8, false, result.GetFlags());
 	}
-	if (force32bit && bpp == 24)
+	if (params.force32bit && bpp == 24)
 	{
 		ConvertTo32Bit(result.GetData(), result.GetWidth(), result.GetHeight(), result.GetUncompressedData(), &result.GetMipmaps());
 		result.SetBpp(32);
@@ -352,7 +365,7 @@ bool CDdsImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, st
 	return strncmp((char*)data, "DDS ", 4) == 0;
 }
 
-CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, bool flipBmp /*= false*/, bool force32bit /*= false*/)
+CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, sReaderParameters const& params)
 {
 	struct DDS_PIXELFORMAT
 	{
@@ -457,7 +470,7 @@ CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 		d = clamp_size(d >> 1);
 		data += imageSize;
 	}
-	if (!flipBmp)
+	if (!params.flipBmp)
 	{
 		FlipImage(result.GetData(), width, height, bpp / 8, compressed, flags);
 		for (auto& mipmap : result.GetMipmaps())
@@ -465,7 +478,7 @@ CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 			FlipImage(mipmap.data, mipmap.width, mipmap.height, bpp / 8, compressed, flags);
 		}
 	}
-	if (force32bit && bpp == 24)
+	if (params.force32bit && bpp == 24)
 	{
 		ConvertTo32Bit(result.GetData(), width, height, result.GetUncompressedData(), &result.GetMipmaps());
 		result.SetBpp(32);
@@ -479,7 +492,7 @@ bool CStbImageReader::ImageIsSupported(unsigned char * /*data*/, size_t /*size*/
 	return true;
 }
 
-CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, std::wstring const& /*filePath*/, bool flipBmp, bool /*force32bit*/)
+CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, std::wstring const& /*filePath*/, sReaderParameters const& params)
 {
 	int width, height, bpp;
 	unsigned char * newData = stbi_load_from_memory(data, static_cast<int>(size), &width, &height, &bpp, 4);
@@ -493,7 +506,7 @@ CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, std::wstrin
 		memcpy(&uncompressedData[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
 	}
 	stbi_image_free(newData);
-	if (flipBmp)
+	if (params.flipBmp)
 	{
 		FlipImage(uncompressedData.data(), width, height, static_cast<unsigned short>(bpp), false, TEXTURE_HAS_ALPHA);
 	}

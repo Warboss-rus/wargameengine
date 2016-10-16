@@ -119,28 +119,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
@@ -335,7 +335,6 @@
     <ClInclude Include="..\..\WargameEngine\view\FixedCamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\GameView.h" />
     <ClInclude Include="..\..\WargameEngine\impl\GameWindowAndroid.h" />
-    <ClInclude Include="..\..\WargameEngine\view\gluLite.h" />
     <ClInclude Include="..\..\WargameEngine\view\ICamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\IGameWindow.h" />
     <ClInclude Include="..\..\WargameEngine\view\IImageReader.h" />
@@ -432,7 +431,6 @@
     <ClCompile Include="..\..\WargameEngine\view\FixedCamera.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\GameView.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\GameWindowAndroid.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\gluLite.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\InputAndroid.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\InputBase.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\MaterialManager.cpp" />

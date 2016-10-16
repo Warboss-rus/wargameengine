@@ -22,4 +22,5 @@ public:
 	virtual IRenderer& GetRenderer() = 0;
 	virtual IViewHelper& GetViewHelper() = 0;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) = 0;
+	virtual void GetWindowSize(int& width, int& height) = 0;
 };

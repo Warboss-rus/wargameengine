@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include "Utils.h"
+#include <algorithm>
 
 std::wstring RemoveSpaces(std::wstring const& str)
 {
@@ -20,6 +21,12 @@ std::wstring AddSlash(std::wstring const& str)
 	return str;
 }
 
+std::wstring GetParent(std::wstring const& path)
+{
+	auto pos = path.find_last_of(L'/');
+	return pos == path.npos ? L"" : path.substr(0, pos + 1);
+}
+
 void sModule::Load(std::wstring const& filename)
 {
 	std::wifstream iFile;
@@ -29,6 +36,7 @@ void sModule::Load(std::wstring const& filename)
 	std::wstring value;
 	while (std::getline(iFile, line))
 	{
+		line.erase(std::remove(line.begin(), line.end(), L'\r'));
 		size_t equal = line.find('=');
 		size_t comment = line.find(';');
 		size_t end = (comment == line.npos) ? line.size() : comment - 1;
@@ -40,7 +48,7 @@ void sModule::Load(std::wstring const& filename)
 		else if (key == L"Author") author = value;
 		else if (key == L"Site") site = value;
 		else if (key == L"Playable") playable = std::stoi(value.c_str()) != 0;
-		else if (key == L"Folder") folder = AddSlash(value);
+		else if (key == L"Folder") folder = AddSlash(GetParent(filename) + value);
 		else if (key == L"Script") script = value;
 		else if (key == L"Models") models = AddSlash(value);
 		else if (key == L"Textures") textures = AddSlash(value);

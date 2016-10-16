@@ -25,9 +25,11 @@ void ApplyTeamcolor(CImage & image, std::wstring const& maskFile, unsigned char 
 std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::wstring const& path, std::vector<sTeamColor> const& teamcolor, bool now, int flags)
 {
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
-	ICachedTexture& texRef = *tex;	
-	bool force32b = m_helper.Force32Bits();
-	bool forceFlip = m_helper.ForceFlipBMP();
+	ICachedTexture& texRef = *tex;
+	sReaderParameters params;
+	params.flipBmp = m_helper.ForceFlipBMP();
+	params.force32bit = m_helper.Force32Bits();
+	params.convertBgra = m_helper.ConvertBgra();
 	std::shared_ptr<CImage> img = std::make_shared<CImage>();
 	m_asyncFileProvider.GetTextureAsync(path, [=](void* data, size_t size) {
 		unsigned char* charData = reinterpret_cast<unsigned char*>(data);
@@ -37,7 +39,7 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(std::wstring const&
 			{
 				try
 				{
-					*img = reader->ReadImage(charData, size, path, forceFlip, force32b);
+					*img = reader->ReadImage(charData, size, path, params);
 					if (!img->IsCompressed())
 					{
 						for (auto& color: teamcolor)

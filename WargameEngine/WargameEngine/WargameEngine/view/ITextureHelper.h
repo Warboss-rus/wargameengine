@@ -53,4 +53,5 @@ public:
 
 	virtual bool Force32Bits() const = 0;
 	virtual bool ForceFlipBMP() const = 0;
+	virtual bool ConvertBgra() const = 0;
 };

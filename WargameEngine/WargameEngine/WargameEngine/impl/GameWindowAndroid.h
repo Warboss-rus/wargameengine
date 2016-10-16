@@ -31,6 +31,7 @@ public:
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
+	virtual void GetWindowSize(int& width, int& height) override;
 private:
 	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;

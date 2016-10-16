@@ -71,6 +71,7 @@ public:
 	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
 	virtual bool Force32Bits() const override;
 	virtual bool ForceFlipBMP() const override;
+	virtual bool ConvertBgra() const override;
 
 	virtual std::string GetName() const override;
 

@@ -708,6 +708,11 @@ bool COpenGLRenderer::ForceFlipBMP() const
 	return false;
 }
 
+bool COpenGLRenderer::ConvertBgra() const
+{
+	return false;
+}
+
 std::string COpenGLRenderer::GetName() const
 {
 	return "OpenGL";
