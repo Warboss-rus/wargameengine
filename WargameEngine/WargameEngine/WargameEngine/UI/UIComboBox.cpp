@@ -21,13 +21,13 @@ void CUIComboBox::Draw() const
 			auto& theme = m_theme->combobox;
 			int elementSize = theme.elementSize;
 			m_renderer.SetColor(m_theme->defaultColor);
-			m_renderer.RenderArrays(RenderMode::RECTANGLES,
-			{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 
 			m_renderer.SetColor(m_theme->textfieldColor);
 			int borderSize = theme.borderSize;
-			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize},
-			{GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize},
+			{ GetWidth() - borderSize, borderSize }, {GetWidth() - borderSize, GetHeight() - borderSize} }, {});
 
 			auto& textTheme = theme.text;
 			m_renderer.SetColor(textTheme.color);
@@ -40,16 +40,16 @@ void CUIComboBox::Draw() const
 			m_renderer.SetTexture(m_theme->texture, true);
 			float * texCoords = m_expanded ? theme.expandedTexCoord : theme.texCoord;
 			int firstX = GetWidth() - static_cast<int>(GetHeight() * theme.buttonWidthCoeff);
-			m_renderer.RenderArrays(RenderMode::RECTANGLES,
-			{ CVector2i(firstX, 0), { firstX, GetHeight() }, {GetWidth(), GetHeight()}, {GetWidth(), 0} },
-			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			{ CVector2i(firstX, 0), { firstX, GetHeight() },{ GetWidth(), 0 }, {GetWidth(), GetHeight()} },
+			{ CVector2f(texCoords), {texCoords[0], texCoords[3]},{ texCoords[2], texCoords[1] }, {texCoords[2], texCoords[3]} });
 			m_renderer.SetTexture(L"");
 
 			if (m_expanded)
 			{
 				m_renderer.SetColor(m_theme->textfieldColor);
 				int totalHeight = GetHeight() + elementSize * static_cast<int>(m_items.size());
-				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, GetHeight()), { 0, totalHeight }, {GetWidth(), totalHeight}, {GetWidth(), GetHeight()} }, {});
+				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, GetHeight()), { 0, totalHeight },{ GetWidth(), GetHeight()}, {GetWidth(), totalHeight} }, {});
 
 				m_renderer.SetColor(textTheme.color);
 				for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)

@@ -97,10 +97,10 @@ private:
 	const float * m_normals = nullptr;
 	const float * m_texCoords = nullptr;
 	unsigned int* m_indexes = nullptr;
-	GLuint m_vertexBuffer = NULL;
-	GLuint m_normalsBuffer = NULL;
-	GLuint m_texCoordBuffer = NULL;
-	GLuint m_indexesBuffer = NULL;
+	GLuint m_vertexBuffer = 0;
+	GLuint m_normalsBuffer = 0;
+	GLuint m_texCoordBuffer = 0;
+	GLuint m_indexesBuffer = 0;
 };
 
 class COpenGLESFrameBuffer : public IFrameBuffer
@@ -115,6 +115,7 @@ private:
 	unsigned int m_id;
 };
 
+static const float emptyColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
 {
@@ -123,19 +124,19 @@ void COpenGLESRenderer::SetTexture(std::wstring const& texture, bool forceLoadNo
 		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
 	m_textureManager->SetTexture(texture, nullptr, flags);
-	SetColor(0, 0, 0);
+	SetColor(emptyColor);
 }
 
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, slot, flags);
-	SetColor(0, 0, 0);
+	SetColor(emptyColor);
 }
 
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, teamcolor, flags);
-	SetColor(0, 0, 0);
+	SetColor(emptyColor);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
@@ -464,7 +465,7 @@ COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex, const float * nor
 			glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
 			glBufferData(GL_ARRAY_BUFFER, size * 2 * sizeof(float), texcoords, GL_STATIC_DRAW);
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
 
@@ -498,7 +499,7 @@ void COpenGLVertexBuffer::Bind() const
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, NULL);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
@@ -508,7 +509,7 @@ void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexes
 		glGenBuffers(1, &m_indexesBuffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	else
 	{
@@ -536,7 +537,7 @@ void COpenGLVertexBuffer::UnBind() const
 	glDisableVertexAttribArray(texCoordIndex);
 	glDisableVertexAttribArray(normalIndex);
 	glDisableVertexAttribArray(positionIndex);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const

@@ -27,7 +27,8 @@ uniform sampler2D texture;\n\
 varying vec2 v_texcoord;\n\
 void main()\n\
 {\n\
-	gl_FragColor = texture2D(texture, v_texcoord) + color;\n\
+	vec4 tex = texture2D(texture, v_texcoord);\n\
+	gl_FragColor = vec4(tex.xyz + color.xyz, tex.w * color.w);\n\
 }";
 
 class COpenGLESShaderProgram : public IShaderProgram

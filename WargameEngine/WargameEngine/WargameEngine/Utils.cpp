@@ -55,6 +55,21 @@ void OpenFile(std::ifstream & stream, std::wstring const& path, std::ios::openmo
 #endif
 }
 
+std::wstring ReplaceAll(std::wstring const& text, std::map<std::wstring, std::wstring> const& replaceMap)
+{
+	std::wstring result = text;
+	for (auto& p : replaceMap)
+	{
+		size_t pos = result.find(p.first);
+		while (pos != result.npos)
+		{
+			result.replace(pos, p.first.size(), p.second);
+			pos = result.find(p.first, pos + p.second.size());
+		}
+	}
+	return result;
+}
+
 std::vector<char> ReadFile(std::wstring const& path)
 {
 	std::vector<char> result;

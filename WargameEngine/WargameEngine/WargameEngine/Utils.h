@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <map>
 
 std::wstring Utf8ToWstring(std::string const& str);
 std::string WStringToUtf8(std::wstring const& str);
@@ -12,6 +13,7 @@ long long GetCurrentTimeLL();
 std::wstring ToWstring(double value, size_t precision = 0);
 void OpenFile(std::wifstream & stream, std::wstring const& path, std::ios::openmode mode = std::ios::in);
 void OpenFile(std::ifstream & stream, std::wstring const& path, std::ios::openmode mode = std::ios::in);
+std::wstring ReplaceAll(std::wstring const& text, std::map<std::wstring, std::wstring> const& replaceMap);
 
 #ifdef TO_STRING_HACK
 #include <sstream>

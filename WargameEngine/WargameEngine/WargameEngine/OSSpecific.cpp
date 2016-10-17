@@ -46,10 +46,34 @@ std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const&
 #include <dirent.h>
 #include <algorithm>
 
+bool match(char const *needle, char const *haystack) {
+	for (; *needle != '\0'; ++needle) {
+		switch (*needle) {
+		case '?': ++haystack;
+			break;
+		case '*': {
+			size_t max = strlen(haystack);
+			if (needle[1] == '\0' || max == 0)
+				return true;
+			for (size_t i = 0; i < max; i++)
+				if (match(needle + 1, haystack + i))
+					return true;
+			return false;
+		}
+		default:
+			if (*haystack != *needle)
+				return false;
+			++haystack;
+		}
+	}
+	return *haystack == '\0';
+}
+
 std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const& mask, bool recursive)
 {
     std::vector<std::wstring> result;
     std::vector<std::wstring> dirs;
+	std::string smask = WStringToUtf8(mask);
     DIR *d = opendir(WStringToUtf8(path).c_str());
     struct dirent *dir;
     if (d)
@@ -65,7 +89,10 @@ std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const&
             }
             else
             {
-                result.push_back(Utf8ToWstring(dir->d_name));
+				if (match(smask.c_str(), dir->d_name))
+				{
+					result.push_back(Utf8ToWstring(dir->d_name));
+				}
             }
         }
         closedir(d);

@@ -20,12 +20,12 @@ void CUIEdit::Draw() const
 	{
 		m_cache = m_renderer.RenderToTexture([this]() {
 			m_renderer.SetColor(m_theme->defaultColor);
-			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), GetHeight() }, { GetWidth(), 0 } }, {});
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, GetHeight() },{ GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 			m_renderer.SetColor(m_theme->textfieldColor);
 			auto& theme = m_theme->edit;
 			auto& textTheme = theme.text;
 			int borderSize = theme.borderSize;
-			m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, GetHeight() - borderSize}, {GetWidth() - borderSize, borderSize} }, {});
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize}, { GetWidth() - borderSize, borderSize }, {GetWidth() - borderSize, GetHeight() - borderSize} }, {});
 			int fonty = (GetHeight() + textTheme.fontSize) / 2;
 			if (IsFocused(nullptr))
 			{
@@ -39,8 +39,8 @@ void CUIEdit::Draw() const
 				int selectionBegin = m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_beginSelection));
 				int selectionEnd = m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_pos));
 				int fontHeight = m_textWriter.GetStringHeight(textTheme.font, textTheme.fontSize, m_text);
-				m_renderer.RenderArrays(RenderMode::RECTANGLES, { CVector2i(borderSize + selectionBegin, fonty),
-				{ borderSize + selectionBegin, fonty - fontHeight }, {borderSize + selectionEnd, fonty - fontHeight }, {borderSize + selectionEnd, fonty} }, {});
+				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize + selectionBegin, fonty),
+				{ borderSize + selectionBegin, fonty - fontHeight },{ borderSize + selectionEnd, fonty }, {borderSize + selectionEnd, fonty - fontHeight } }, {});
 			}
 			PrintText(m_renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme);
 		}, GetWidth(), GetHeight());

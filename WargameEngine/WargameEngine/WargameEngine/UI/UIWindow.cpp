@@ -23,15 +23,15 @@ void CUIWindow::Draw() const
 			m_renderer.SetColor(0.4f, 0.4f, 1.0f);
 			auto& theme = m_theme->window;
 			int headerHeight = theme.headerHeight;
-			m_renderer.RenderArrays(RenderMode::RECTANGLES,
-			{ CVector2i(0, 0),{ 0, headerHeight },{ GetWidth(), headerHeight },{ GetWidth(), 0 } }, {});
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			{ CVector2i(0, 0),{ 0, headerHeight },{ GetWidth(), 0 },{ GetWidth(), headerHeight } }, {});
 			m_renderer.SetTexture(m_theme->texture);
 			int buttonSize = theme.buttonSize;
 			int right = GetWidth() - buttonSize;
 			float * texCoord = theme.closeButtonTexCoord;
-			m_renderer.RenderArrays(RenderMode::RECTANGLES,
-			{ CVector2i(right, 0),{ right, buttonSize },{ GetWidth(), buttonSize },{ GetWidth(), 0 } }, 
-			{ CVector2f(texCoord[0], texCoord[1]), { texCoord[0], texCoord[3] }, { texCoord[2], texCoord[3] }, { texCoord[2], texCoord[1] } });
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			{ CVector2i(right, 0),{ right, buttonSize },{ GetWidth(), 0 },{ GetWidth(), buttonSize } },
+			{ CVector2f(texCoord[0], texCoord[1]), { texCoord[0], texCoord[3] },{ texCoord[2], texCoord[1] }, { texCoord[2], texCoord[3] } });
 			m_renderer.SetTexture(L"");
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

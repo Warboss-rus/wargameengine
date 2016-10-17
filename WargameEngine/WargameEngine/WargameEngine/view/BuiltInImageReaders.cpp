@@ -347,6 +347,11 @@ CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	{
 		result = CImage(data + 18, width, height, bpp, flags);
 	}
+	if (params.convertBgra && bpp == 24)
+	{
+		ConvertBgra(result.GetData(), result.GetWidth() * result.GetHeight(), result.GetBPP() / 8);
+		result.SetFlags(0);
+	}
 	if (params.flipBmp)
 	{
 		FlipImage(result.GetData(), result.GetWidth(), result.GetHeight(), result.GetBPP() / 8, false, result.GetFlags());

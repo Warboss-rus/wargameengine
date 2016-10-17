@@ -21,9 +21,9 @@ void CUICheckBox::Draw() const
 			auto& theme = m_theme->checkbox;
 			float * texCoords = m_state ? theme.checkedTexCoord : theme.texCoord;
 			float size = GetHeight() * theme.checkboxSizeCoeff;
-			m_renderer.RenderArrays(RenderMode::RECTANGLES,
-			{ CVector2f(0.0f, 0.0f), {0.0f, size}, {size, size}, {size, 0.0f} },
-			{ CVector2f(texCoords), {texCoords[0], texCoords[3]}, {texCoords[2], texCoords[3]}, {texCoords[2], texCoords[1]} });
+			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			{ CVector2f(0.0f, 0.0f), {0.0f, size},{ size, 0.0f }, {size, size} },
+			{ CVector2f(texCoords), {texCoords[0], texCoords[3]},{ texCoords[2], texCoords[1] }, {texCoords[2], texCoords[3]} });
 			PrintText(m_renderer, m_textWriter, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 		}, GetWidth(), GetHeight());
 	}
