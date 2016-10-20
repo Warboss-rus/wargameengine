@@ -20,9 +20,9 @@ void CUICheckBox::Draw() const
 			m_renderer.SetTexture(m_theme->texture, true);
 			auto& theme = m_theme->checkbox;
 			float * texCoords = m_state ? theme.checkedTexCoord : theme.texCoord;
-			float size = GetHeight() * theme.checkboxSizeCoeff;
+			int size = static_cast<int>(GetHeight() * theme.checkboxSizeCoeff);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-			{ CVector2f(0.0f, 0.0f), {0.0f, size},{ size, 0.0f }, {size, size} },
+			{ CVector2i(0, 0), {0, size},{ size, 0 }, {size, size} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]},{ texCoords[2], texCoords[1] }, {texCoords[2], texCoords[3]} });
 			PrintText(m_renderer, m_textWriter, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text);
 		}, GetWidth(), GetHeight());

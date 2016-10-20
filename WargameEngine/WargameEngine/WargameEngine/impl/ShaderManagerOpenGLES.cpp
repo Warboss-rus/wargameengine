@@ -37,6 +37,37 @@ public:
 	unsigned program;
 };
 
+class COpenGLVertexAttribCache : public IVertexAttribCache
+{
+public:
+	COpenGLVertexAttribCache(int elementSize, size_t count, const void* data, GLenum format)
+		:m_elementSize(elementSize)
+		, m_format(format)
+	{
+		glGenBuffers(1, &m_cache);
+		glBindBuffer(GL_ARRAY_BUFFER, m_cache);
+		glBufferData(GL_ARRAY_BUFFER, count * elementSize * sizeof(float), data, GL_STATIC_DRAW);
+	}
+	~COpenGLVertexAttribCache()
+	{
+		glDeleteBuffers(1, &m_cache);
+	}
+	void Bind() const
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, m_cache);
+	}
+	void UnBind() const
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+	int GetElementSize() const { return m_elementSize; }
+	GLenum GetFormat() const { return m_format; }
+private:
+	GLuint m_cache;
+	const int m_elementSize;
+	const GLenum m_format;
+};
+
 CShaderManagerOpenGLES::CShaderManagerOpenGLES()
 {
 }
@@ -122,128 +153,139 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 	return std::move(program);
 }
 
-void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int count, const float* value) const
+void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const
 {
 	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform1fv(unfrm, count, value);
+	switch (elementSize)
+	{
+	case 1:
+		glUniform1fv(unfrm, count, value);
+		break;
+	case 2:
+		glUniform2fv(unfrm, count, value);
+		break;
+	case 3:
+		glUniform3fv(unfrm, count, value);
+		break;
+	case 4:
+		glUniform4fv(unfrm, count, value);
+		break;
+	case 16:
+		glUniformMatrix4fv(unfrm, count, false, value);
+		break;
+	default:
+		throw std::runtime_error("Unknown elementSize. 1, 2, 3, 4 or 16 expected");
+	}
 }
 
-void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int count, const int* value) const
+void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const
 {
 	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform1iv(unfrm, count, value);
+	switch (elementSize)
+	{
+	case 1:
+		glUniform1iv(unfrm, count, value);
+		break;
+	case 2:
+		glUniform2iv(unfrm, count, value);
+		break;
+	case 3:
+		glUniform3iv(unfrm, count, value);
+		break;
+	case 4:
+		glUniform4iv(unfrm, count, value);
+		break;
+	default:
+		throw std::runtime_error("Unknown elementSize. 1, 2, 3 or 4 expected");
+	}
 }
 
-void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int count, const unsigned int* value) const
+void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const
 {
 	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform1uiv(unfrm, count, value);
+	switch (elementSize)
+	{
+	case 1:
+		glUniform1uiv(unfrm, count, value);
+		break;
+	case 2:
+		glUniform2uiv(unfrm, count, value);
+		break;
+	case 3:
+		glUniform3uiv(unfrm, count, value);
+		break;
+	case 4:
+		glUniform4uiv(unfrm, count, value);
+		break;
+	default:
+		throw std::runtime_error("Unknown elementSize. 1, 2, 3 or 4 expected");
+	}
 }
 
-void CShaderManagerOpenGLES::SetUniformValue2(std::string const& uniform, int count, const float* value) const
+std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGLES::CreateVertexAttribCache(int elementSize, size_t count, const float* value) const
 {
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform2fv(unfrm, count, value);
+	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_FLOAT);
 }
 
-void CShaderManagerOpenGLES::SetUniformValue2(std::string const& uniform, int count, const int* value) const
+std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGLES::CreateVertexAttribCache(int elementSize, size_t count, const int* value) const
 {
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform2iv(unfrm, count, value);
+	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_INT);
 }
 
-void CShaderManagerOpenGLES::SetUniformValue2(std::string const& uniform, int count, const unsigned int* value) const
+std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGLES::CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const
 {
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform2uiv(unfrm, count, value);
+	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerOpenGLES::SetUniformValue3(std::string const& uniform, int count, const float* value) const
-{
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform3fv(unfrm, count, value);
-}
-
-void CShaderManagerOpenGLES::SetUniformValue3(std::string const& uniform, int count, const int* value) const
-{
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform3iv(unfrm, count, value);
-}
-
-void CShaderManagerOpenGLES::SetUniformValue3(std::string const& uniform, int count, const unsigned int* value) const
-{
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform3uiv(unfrm, count, value);
-}
-
-void CShaderManagerOpenGLES::SetUniformValue4(std::string const& uniform, int count, const float* value) const
-{
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform4fv(unfrm, count, value);
-}
-
-void CShaderManagerOpenGLES::SetUniformValue4(std::string const& uniform, int count, const int* value) const
-{
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform4iv(unfrm, count, value);
-}
-
-void CShaderManagerOpenGLES::SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const
-{
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniform4uiv(unfrm, count, value);
-}
-
-void CShaderManagerOpenGLES::SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const
-{
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
-	glUniformMatrix4fv(unfrm, count, false, value);
-}
-
-void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, int elementSize, size_t /*totalSize*/, float* values) const
+void CShaderManagerOpenGLES::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
 	glEnableVertexAttribArray(index);
-	glVertexAttribPointer(index, elementSize, GL_FLOAT, false, 0, values);
+	if (format == GL_FLOAT)
+		glVertexAttribPointer(index, elementSize, format, false, 0, values);
+	else
+		glVertexAttribIPointer(index, elementSize, format, 0, values);
+	if (perInstance) glVertexAttribDivisor(index, 1);
 }
 
-void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, int elementSize, size_t /*totalSize*/, int* values) const
+void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance) const
 {
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
-	glEnableVertexAttribArray(index);
-	glVertexAttribIPointer(index, elementSize, GL_INT, 0, values);
+	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_FLOAT);
 }
 
-void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, int elementSize, size_t /*totalSize*/, unsigned int* values) const
+void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance) const
 {
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
-	glEnableVertexAttribArray(index);
-	glVertexAttribIPointer(index, elementSize, GL_UNSIGNED_INT, 0, values);
+	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_INT);
 }
 
-void CShaderManagerOpenGLES::SetPerInstanceVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const
+void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance) const
 {
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
-	glEnableVertexAttribArray(index);
-	glVertexAttribPointer(index, elementSize, GL_FLOAT, false, 0, values);
-	glVertexAttribDivisor(index, 1);
+	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, float* defaultValue) const
+void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+{
+	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
+	glCache.Bind();
+	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, NULL, perInstance, glCache.GetFormat());
+	glCache.UnBind();
+}
+
+void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* defaultValue) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4fv(index, defaultValue);
 }
 
-void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, int* defaultValue) const
+void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, const int* defaultValue) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
 	glDisableVertexAttribArray(index);
 	glVertexAttribI4iv(index, defaultValue);
 }
 
-void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, unsigned int* defaultValue) const
+void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, const unsigned int* defaultValue) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
 	glDisableVertexAttribArray(index);

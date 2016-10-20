@@ -17,7 +17,7 @@ public:
 //IParticleUpdater
 	virtual float GetAverageLifeTime() const override;
 	virtual void InitParticle(sParticle & particle) const override;
-	virtual void UpdateParticle(sParticle & particle) const override;
+	virtual void UpdateParticles(std::vector<sParticle> & particles) const override;
 
 	class IEmitter
 	{
@@ -29,7 +29,7 @@ public:
 	{
 	public:
 		virtual ~IUpdater() {}
-		virtual void Update(sParticle & particle) = 0;
+		virtual void Update(std::vector<sParticle> & particles) = 0;
 	};
 private:
 	std::unique_ptr<IEmitter> m_emitter;

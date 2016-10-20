@@ -40,3 +40,5 @@
 
 
 #define CLASS_CAMERA L"Camera"
+
+#define ENABLE_TOUCH_MODE L"EnableTouchMode"

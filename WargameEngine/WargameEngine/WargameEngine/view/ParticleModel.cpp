@@ -103,25 +103,28 @@ public:
 		std::sort(m_frames.begin(), m_frames.end(), [](sFrame const& f1, sFrame const& f2) {return f1.startTime < f2.startTime;});
 	}
 
-	virtual void Update(sParticle & particle) override
+	virtual void Update(std::vector<sParticle> & particles) override
 	{
-		float lifePercent = particle.m_age / particle.m_lifeTime;
-		size_t begin = 0;
-		size_t end = m_frames.size();
-		size_t center;
-		while (end - begin > 1)
+		for (auto& particle : particles)
 		{
-			center = (begin + end) / 2;
-			if (lifePercent < m_frames[center].startTime)
+			float lifePercent = particle.m_age / particle.m_lifeTime;
+			size_t begin = 0;
+			size_t end = m_frames.size();
+			size_t center;
+			while (end - begin > 1)
 			{
-				end = center;
+				center = (begin + end) / 2;
+				if (lifePercent < m_frames[center].startTime)
+				{
+					end = center;
+				}
+				else
+				{
+					begin = center;
+				}
 			}
-			else
-			{
-				begin = center;
-			}
+			memcpy(particle.m_texCoord, m_frames[begin].texCoords, sizeof(float) * 2);
 		}
-		memcpy(particle.m_texCoord, m_frames[begin].texCoords, sizeof(float) * 2);
 	}
 private:
 	std::vector<sFrame> m_frames;
@@ -130,8 +133,6 @@ private:
 
 CParticleModel::CParticleModel(wstring const& file)
 {
-	auto slashPos = file.find_last_of(L"\\/");
-	wstring parentPath = slashPos == file.npos ? file : file.substr(0, slashPos);
 	ifstream istream;
 	OpenFile(istream, file);
 	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
@@ -248,10 +249,10 @@ void CParticleModel::InitParticle(sParticle & particle) const
 	particle.m_texCoord[1] = 0.0f;
 }
 
-void CParticleModel::UpdateParticle(sParticle & particle) const
+void CParticleModel::UpdateParticles(std::vector<sParticle> & particles) const
 {
 	if (m_updater)
 	{
-		m_updater->Update(particle);
+		m_updater->Update(particles);
 	}
 }

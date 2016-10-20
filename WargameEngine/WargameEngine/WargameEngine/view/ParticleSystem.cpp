@@ -51,10 +51,10 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 	if (m_instanced)
 	{
 		if(m_shaderProgram) shaderManager.PushProgram(*m_shaderProgram);
-		shaderManager.SetPerInstanceVertexAttribute("instancePosition", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetPositionCache().data());
+		shaderManager.SetVertexAttribute("instancePosition", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetPositionCache().data(), true);
 		if (useTexCoordAttrib)
 		{
-			shaderManager.SetPerInstanceVertexAttribute("instanceTexCoordPos", 2, particleEffect.GetParticles().size(), (float*)particleEffect.GetTexCoordCache().data());
+			shaderManager.SetVertexAttribute("instanceTexCoordPos", 2, particleEffect.GetParticles().size(), (float*)particleEffect.GetTexCoordCache().data(), true);
 		}
 		else
 		{
@@ -63,7 +63,7 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		}
 		if (useColorAttrib)
 		{
-			shaderManager.SetPerInstanceVertexAttribute("instanceColor", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetColorCache().data());
+			shaderManager.SetVertexAttribute("instanceColor", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetColorCache().data(), true);
 		}
 		else
 		{
@@ -81,24 +81,24 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 	}
 	else
 	{
-		m_vertexBuffer.resize(particleEffect.GetParticles().size() * 4);
-		m_texCoordBuffer2.resize(particleEffect.GetParticles().size() * 4);
-		if (useColorAttrib) m_colorBuffer.resize(particleEffect.GetParticles().size() * 4 * 4);
+		m_vertexBuffer.resize(particleEffect.GetParticles().size() * 6);
+		m_texCoordBuffer2.resize(particleEffect.GetParticles().size() * 6);
+		if (useColorAttrib) m_colorBuffer.resize(particleEffect.GetParticles().size() * 4 * 6);
 		size_t arrIndex = 0;
 		for (auto& particle : particleEffect.GetParticles())
 		{
 			CVector3f pos(particle.m_position);
 			float scale = *particle.m_scale;
 			CVector2f tc(particle.m_texCoord);
-			m_vertexBuffer.insert(m_vertexBuffer.end(), { p0 * scale + pos, p1 * scale + pos, p2 * scale + pos, p3 * scale + pos });
-			if (useTexCoordAttrib) m_texCoordBuffer2.insert(m_texCoordBuffer2.end(), { t0 + tc, t1 + tc, t2 + tc, t3 + tc });
+			m_vertexBuffer.insert(m_vertexBuffer.end(), { p0 * scale + pos, p1 * scale + pos, p2 * scale + pos, p1 * scale + pos, p2 * scale + pos, p3 * scale + pos });
+			if (useTexCoordAttrib) m_texCoordBuffer2.insert(m_texCoordBuffer2.end(), { t0 + tc, t1 + tc, t2 + tc, t1 + tc, t2 + tc, t3 + tc });
 			if (useColorAttrib) 
-				for(int i = 0; i < 4; ++i)
-					memcpy(m_colorBuffer.data() + arrIndex * 16 + i * 4, particle.m_color, sizeof(float) * 4);
+				for(int i = 0; i < 6; ++i)
+					memcpy(m_colorBuffer.data() + arrIndex * 24 + i * 4, particle.m_color, sizeof(float) * 4);
 			++arrIndex;
 		}
 		if(useColorAttrib) shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
-		m_renderer.RenderArrays(RenderMode::RECTANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
+		m_renderer.RenderArrays(RenderMode::TRIANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
 	}
 	m_renderer.SetTexture(L"");
 	m_renderer.PopMatrix();

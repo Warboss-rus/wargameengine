@@ -14,6 +14,7 @@ class IShaderManager;
 class IDrawingList;
 class IRenderer;
 class IVertexBuffer;
+class IVertexAttribCache;
 
 struct sMesh
 {
@@ -88,6 +89,8 @@ private:
 	std::vector<float> m_gpuWeight;
 	std::vector<float> m_gpuInverseMatrices;
 	std::unique_ptr<IVertexBuffer> m_vertexBuffer;
+	std::unique_ptr<IVertexAttribCache> m_weightsCache;
+	std::unique_ptr<IVertexAttribCache> m_weightIndiciesCache;
 };
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix);

@@ -75,7 +75,15 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 	handler.RegisterMethod(CLASS_VIEWPORT, GET_CAMERA, [&](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected ()");
-		auto viewport = static_cast<IViewport*>(instance);
+		auto viewport = instance ? static_cast<IViewport*>(instance) : &view.GetViewport();
 		return FunctionArgument(&viewport->GetCamera(), CLASS_CAMERA);
+	});
+
+	handler.RegisterMethod(CLASS_CAMERA, ENABLE_TOUCH_MODE, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 0)
+			throw std::runtime_error("no arguments expected ()");
+		auto camera = static_cast<ICamera*>(instance);
+		camera->EnableTouchMode();
+		return nullptr;
 	});
 }

@@ -10,6 +10,7 @@ public:
 	virtual CVector3d GetUpVector() const override;
 	virtual const double GetScale() const override;
 	virtual void SetInput(IInput & input) override;
+	virtual void EnableTouchMode() override;
 private:
 	ICamera * m_parentCamera;
 	CVector3d m_translation;

@@ -80,7 +80,7 @@ bool CGameController::OnLeftMouseDown(CVector3d const& begin, CVector3d const& e
 	{
 		m_selectedObjectBeginCoords = std::make_unique<CVector3d>(selected->GetCoords());
 	}
-	return true;
+	return selected.get() != nullptr;
 }
 
 bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end, int)
@@ -112,7 +112,7 @@ bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end
 	}
 	m_selectedObjectBeginCoords.reset();
 	m_selectionRectangleBegin.reset();
-	return true;
+	return selected.get() != nullptr;
 }
 
 bool CGameController::OnRightMouseDown(CVector3d const& begin, CVector3d const& end, int)

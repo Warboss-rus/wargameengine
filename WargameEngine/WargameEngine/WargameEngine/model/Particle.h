@@ -20,7 +20,7 @@ public:
 	virtual ~IParticleUpdater() {}
 	virtual float GetAverageLifeTime() const = 0;
 	virtual void InitParticle(sParticle & particle) const = 0;
-	virtual void UpdateParticle(sParticle & particle) const = 0;
+	virtual void UpdateParticles(std::vector<sParticle> & particles) const = 0;
 };
 
 class CParticleEffect

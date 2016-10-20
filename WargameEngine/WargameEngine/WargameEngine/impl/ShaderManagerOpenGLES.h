@@ -11,33 +11,29 @@ public:
 	void PushProgram(IShaderProgram const& program) const override;
 	void PopProgram() const override;
 
-	virtual void SetUniformValue(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformValue2(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue2(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue2(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformValue3(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue3(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue3(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformValue4(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue4(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const override;
+	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const override;
+	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const override;
+	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const override;
 
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, int* values) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, unsigned int* values) const override;
-	virtual void SetPerInstanceVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const override;
-	virtual void DisableVertexAttribute(std::string const& attribute, int size, float* defaultValue) const override;
-	virtual void DisableVertexAttribute(std::string const& attribute, int size, int* defaultValue) const override;
-	virtual void DisableVertexAttribute(std::string const& attribute, int size, unsigned int* defaultValue) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, const float* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, const int* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, const unsigned int* values, bool perInstance = false) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, const float* defaultValue) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const override;
+
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const float* value) const override;
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const int* value) const override;
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const override;
+
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false) const override;
 
 	int GetVertexLocation() const { return m_positionLocation; }
 	int GetNormalLocation() const { return m_normalsLocation; }
 	int GetTexCoordLocation() const { return m_texCoordLocation; }
 	void DoOnProgramChange(std::function<void()> const& handler);
 private:
+	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	mutable std::vector<unsigned> m_programs;
 	std::function<void()> m_onProgramChange;
 	int m_positionLocation;

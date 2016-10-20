@@ -196,16 +196,6 @@ void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> con
 	m_shaderManager.DisableVertexAttribute("TexCoord", 2, def);
 }
 
-void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> const& vertices, std::vector<CVector2f> const& texCoords)
-{
-	m_shaderManager.SetVertexAttribute("Position", 2, vertices.size(), (int*)&vertices[0].x);
-	if (!texCoords.empty()) m_shaderManager.SetVertexAttribute("TexCoord", 2, texCoords.size(), (float*)&texCoords[0].x);
-	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_shaderManager.DisableVertexAttribute("Position", 3, def);
-	m_shaderManager.DisableVertexAttribute("TexCoord", 2, def);
-}
-
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
 	m_shaderManager.SetVertexAttribute("Position", 2, vertices.size(), (int*)&vertices[0].x);
@@ -277,7 +267,7 @@ void COpenGLESRenderer::SetColor(const float r, const float g, const float b)
 {
 	float color[] = { r, g, b, 1.0f };
 	memcpy(m_color, color, sizeof(color));
-	m_shaderManager.SetUniformValue4("color", 1, m_color);
+	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
 }
 
 float ToFloat(int color)
@@ -295,7 +285,7 @@ void COpenGLESRenderer::SetColor(const int r, const int g, const int b)
 void COpenGLESRenderer::SetColor(const float * color)
 {
 	memcpy(m_color, color, sizeof(float) * 4);
-	m_shaderManager.SetUniformValue4("color", 1, m_color);
+	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
 }
 
 void COpenGLESRenderer::SetColor(const int * color)
@@ -785,8 +775,8 @@ void COpenGLESRenderer::UpdateUniforms() const
 {
 	Matrix4F m = m_projectionMatrices.back();
 	m *= m_viewMatrices.back();
-	m_shaderManager.SetUniformMatrix4("mvp_matrix", 1, m);
-	m_shaderManager.SetUniformValue4("color", 1, m_color);
+	m_shaderManager.SetUniformValue("mvp_matrix", 16, 1, m);
+	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
 }
 
 void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)

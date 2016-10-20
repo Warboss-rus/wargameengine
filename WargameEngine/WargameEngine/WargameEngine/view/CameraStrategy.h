@@ -11,6 +11,7 @@ public:
 	virtual CVector3d GetUpVector() const override;
 	virtual void SetInput(IInput & input) override;
 	virtual const double GetScale() const override;
+	virtual void EnableTouchMode() override;
 private:
 	void Reset();
 	void Translate(double transX, double transY);

@@ -15,15 +15,21 @@ struct sMaterial
 };
 #define NUMBEROFLIGHTS 1
 #define NUMBEROFBONES 128
-cbuffer Constant : register(b0)
+cbuffer Constant
 {
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;
+	matrix joints[NUMBEROFBONES];
+	matrix invBindMatrices[NUMBEROFBONES];
+};
+cbuffer Fragment
+{
 	float4 Color;
 	sMaterial Material;
 	sLightSource Lights[NUMBEROFLIGHTS];
-	matrix joints[NUMBEROFBONES];
-	matrix invBindMatrices[NUMBEROFBONES];
-}
+};
+cbuffer Vertex
+{
+	matrix WorldViewProjection : WORLDVIEWPROJECTION;
+};
 struct PixelInputType
 {
 	float4 position : SV_POSITION;

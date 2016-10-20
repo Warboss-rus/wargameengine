@@ -378,10 +378,10 @@ void CGameView::DrawTable(bool shadowOnly)
 				m_renderer->Translate(decal.x, decal.y, 0.0);
 				m_renderer->Rotate(decal.rotation, 0.0, 0.0, 1.0);
 				m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
-					CVector3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.0001),
-					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.0001 },
-					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.0001 },
-					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.0001 }
+					CVector3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001),
+					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001 },
+					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001 },
+					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001 }
 					}, {},{ CVector2d(0.0, 0.0), { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } });
 				m_renderer->PopMatrix();
 			}
@@ -480,7 +480,7 @@ void CGameView::SetUpShadowMapDraw()
 	lightMatrix *= m_shadowMapViewport->GetViewMatrix();
 	lightMatrix *= cameraInverseModelViewMatrix;
 
-	m_renderer->GetShaderManager().SetUniformMatrix4("lightMatrix", 1, lightMatrix);
+	m_renderer->GetShaderManager().SetUniformValue("lightMatrix", 16, 1, lightMatrix);
 }
 
 void CGameView::CreateSkybox(float size, wstring const& textureFolder)
@@ -663,9 +663,9 @@ void CGameView::Preload(wstring const& image)
 		m_viewHelper->ClearBuffers(true, true);
 		m_viewHelper->DrawIn2D([this, &image] {
 			m_renderer->SetTexture(image);
-			float width = 640.0f;//glutGet(GLUT_WINDOW_WIDTH);
-			float height = 480.0f;//glutGet(GLUT_WINDOW_HEIGHT);
-			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2f(0.0f, 0.0f), { 0.0f, height }, { width, 0.0f }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
+			int width = 640;//glutGet(GLUT_WINDOW_WIDTH);
+			int height = 480;//glutGet(GLUT_WINDOW_HEIGHT);
+			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, height }, { width, 0 }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 			//glutSwapBuffers();
 		});
 	}

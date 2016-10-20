@@ -62,9 +62,9 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 {
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
-		shaderManager->SetUniformMatrix4("invBindMatrices", m_skeleton.size(), m_gpuInverseMatrices.data());
-		shaderManager->SetVertexAttribute("weights", 4, m_gpuWeight.size(), m_gpuWeight.data());
-		shaderManager->SetVertexAttribute("weightIndices", 4, m_gpuWeightIndexes.size(), m_gpuWeightIndexes.data());
+		shaderManager->SetUniformValue("invBindMatrices", 16, m_skeleton.size(), m_gpuInverseMatrices.data());
+		shaderManager->SetVertexAttribute("weights", *m_weightsCache);
+		shaderManager->SetVertexAttribute("weightIndices", *m_weightIndiciesCache);
 	}
 	vertexBuffer.Bind();
 	renderer.PushMatrix();
@@ -296,8 +296,10 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 		if (m_gpuWeight.empty())
 		{
 			CalculateGPUWeights();
+			m_weightsCache = renderer.GetShaderManager().CreateVertexAttribCache(4, m_gpuWeight.size() / 4, m_gpuWeight.data());
+			m_weightIndiciesCache = renderer.GetShaderManager().CreateVertexAttribCache(4, m_gpuWeightIndexes.size() / 4, m_gpuWeightIndexes.data());
 		}
-		shaderManager->SetUniformMatrix4("joints", m_skeleton.size(), jointMatrices.data());
+		shaderManager->SetUniformValue("joints", 16, m_skeleton.size(), jointMatrices.data());
 		DrawModel(renderer, hideMeshes, vertexOnly, *m_vertexBuffer, true, shaderManager, teamcolor, replaceTextures);
 	}
 	else

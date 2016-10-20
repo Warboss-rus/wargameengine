@@ -28,3 +28,7 @@ const double CFixedCamera::GetScale() const
 void CFixedCamera::SetInput(IInput &)
 {
 }
+
+void CFixedCamera::EnableTouchMode()
+{
+}

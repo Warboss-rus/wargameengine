@@ -3,6 +3,7 @@
 #include <math.h>
 #define TRANSLATE					  0.3
 #include "KeyDefines.h"
+#include <memory>
 
 CCameraFirstPerson::CCameraFirstPerson()
 	:m_input(nullptr)
@@ -120,6 +121,35 @@ void CCameraFirstPerson::SetInput(IInput & input)
 		}
 		return true;
 	}, 1, g_cameraTag);
+}
+
+void CCameraFirstPerson::EnableTouchMode()
+{
+	std::shared_ptr<CVector2i> lastCoords = std::make_shared<CVector2i>();
+	m_input->DoOnLMBDown([lastCoords](int x, int y) {
+		lastCoords->x = x;
+		lastCoords->y = y;
+		return false;
+	}, 10, g_cameraTag);
+	m_input->DoOnMouseMove([lastCoords, this](int x, int y) {
+		if (lastCoords->x != 0 && lastCoords->y != 0)
+		{
+			m_rotX += (x - lastCoords->x) * 0.01;
+			m_rotZ += (y - lastCoords->y) * 0.01;
+			lastCoords->x = x;
+			lastCoords->y = y;
+		}
+		return false;
+	}, 10, g_cameraTag);
+	m_input->DoOnLMBUp([lastCoords, this](int x, int y) {
+		if (lastCoords->x != 0 && lastCoords->y != 0)
+		{
+			m_rotX += (x - lastCoords->x) * 0.01;
+			m_rotZ += (y - lastCoords->y) * 0.01;
+		}
+		*lastCoords = CVector2i();
+		return false;
+	}, 10, g_cameraTag);
 }
 
 void CCameraFirstPerson::AttachVR(IInput & input)

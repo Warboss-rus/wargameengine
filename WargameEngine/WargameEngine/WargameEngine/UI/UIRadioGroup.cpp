@@ -20,11 +20,11 @@ void CUIRadioGroup::Draw() const
 			{
 				m_renderer.SetTexture(m_theme->texture, true);
 				auto& theme = m_theme->radiogroup;
-				float buttonSize = theme.buttonSize;
-				float y = theme.elementSize * i + (theme.elementSize - buttonSize) / 2;
+				int buttonSize = static_cast<int>(theme.buttonSize);
+				int y = static_cast<int>(theme.elementSize * i + (theme.elementSize - buttonSize) / 2);
 				float * texCoord = (i == m_selected) ? theme.selectedTexCoord : theme.texCoord;
 				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-				{ CVector2f(0.0f, y), { 0.0f, y + buttonSize }, { buttonSize, y }, { buttonSize, y + buttonSize} },
+				{ CVector2i(0, y), { 0, y + buttonSize }, { buttonSize, y }, { buttonSize, y + buttonSize} },
 				{ CVector2f(texCoord), {texCoord[0], texCoord[3]}, {texCoord[2], texCoord[1]}, {texCoord[2], texCoord[3]} });
 				int intSize = static_cast<int>(theme.elementSize);
 				PrintText(m_renderer, m_textWriter, static_cast<int>(buttonSize) + 1, intSize * static_cast<int>(i), GetWidth(), intSize, m_items[i], m_theme->text);

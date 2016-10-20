@@ -19,27 +19,22 @@ public:
 	virtual void PushProgram(IShaderProgram const& program) const override;
 	virtual void PopProgram() const override;
 
-	virtual void SetUniformValue(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformValue2(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue2(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue2(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformValue3(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue3(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue3(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformValue4(std::string const& uniform, int count, const float* value) const override;
-	virtual void SetUniformValue4(std::string const& uniform, int count, const int* value) const override;
-	virtual void SetUniformValue4(std::string const& uniform, int count, const unsigned int* value) const override;
-	virtual void SetUniformMatrix4(std::string const& uniform, size_t count, float* value) const override;
+	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const override;
+	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const override;
+	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const override;
 
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, int* values) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, unsigned int* values) const override;
-	virtual void SetPerInstanceVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, float* values) const override;
-	virtual void DisableVertexAttribute(std::string const& attribute, int size, float* defaultValue) const override;
-	virtual void DisableVertexAttribute(std::string const& attribute, int size, int* defaultValue) const override;
-	virtual void DisableVertexAttribute(std::string const& attribute, int size, unsigned int* defaultValue) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance = false) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, const float* defaultValue) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const override;
+	virtual void DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const override;
+
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const float* value) const override;
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const int* value) const override;
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const override;
+
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false) const override;
 
 	void SetDevice(ID3D11Device* dev);
 	void DoOnProgramChange(std::function<void()> const& handler);
@@ -49,17 +44,31 @@ public:
 	void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess);
 	void SetLight(size_t index, sLightSource & lightSource);
 private:
+	struct sConstantBuffer;
+	class CDirectXShaderProgramImpl;
+	class CDirectXShaderProgram;
+	void SetUniformValueImpl(std::string const& uniform, int elementSize, size_t count, const void* value) const;
+	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, DXGI_FORMAT format, bool perInstance, const void* values) const;
+	void DisableAttributeImpl(std::string const& attribute) const;
 	void CreateConstantBuffer(unsigned int size, ID3D11Buffer ** m_constantBuffer) const;
-	void CopyConstantBufferData(unsigned int begin, const void * data, unsigned int size) const;
+	void CopyConstantBufferData(sConstantBuffer const& buffer, unsigned int begin, const void * data, unsigned int size) const;
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int size) const;
 	void CopyBufferData(ID3D11Buffer * buffer, const void * data, unsigned int size) const;
 	void MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const;
 	void ResetBuffers() const;
+	void ReflectConstantBuffers(ID3D10Blob * blob, CDirectXShaderProgramImpl & program, UINT stage);
+	sConstantBuffer* FindBuffer(std::string const& uniform) const;
 
 	ID3D11Device* m_dev;
 	CDirectXRenderer * m_render;
 	std::function<void()> m_onProgramChange;
-	class CDirectXShaderProgram;
+	struct sConstantBuffer
+	{
+		CComPtr<ID3D11Buffer> m_constantBuffer;
+		mutable std::vector<unsigned char> m_constantBufferData;
+		std::map<std::string, size_t> m_variableOffsets;
+		UINT m_startSlots[3] = {UINT_MAX, UINT_MAX, UINT_MAX};
+	};
 	class CDirectXShaderProgramImpl
 	{
 	public:
@@ -68,9 +77,7 @@ private:
 		CComPtr<ID3D11GeometryShader> pGS;     // the geometry shader
 		CComPtr<ID3D10Blob> m_VS;
 
-		CComPtr<ID3D11Buffer> m_constantBuffer;
-		mutable std::vector<unsigned char> m_constantBufferData;
-		std::map<std::string, size_t> m_variableOffsets;
+		std::map<std::string, sConstantBuffer> m_constantBuffers;
 
 		mutable std::map<std::string, CComPtr<ID3D11Buffer>> m_vertexAttributeBuffers;
 		mutable std::map<std::string, size_t> m_vertexAttributeBufferSizes;
@@ -82,4 +89,5 @@ private:
 
 	typedef std::vector<std::pair<LPCSTR, DXGI_FORMAT>> InputLayoutDesc;
 	mutable std::map<InputLayoutDesc, CComPtr<ID3D11InputLayout>> m_inputLayouts;
+	mutable InputLayoutDesc m_lastInputLayout;
 };

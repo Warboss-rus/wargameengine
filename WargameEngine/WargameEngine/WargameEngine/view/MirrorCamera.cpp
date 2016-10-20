@@ -30,3 +30,8 @@ void CCameraMirror::SetInput(IInput &)
 {
 	//mirror camera has no inputs on its own
 }
+
+void CCameraMirror::EnableTouchMode()
+{
+	//mirror camera has no inputs on its own
+}

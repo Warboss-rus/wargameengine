@@ -134,13 +134,6 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> const
 	Unbind();
 }
 
-void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> const& vertices, std::vector<CVector2f> const& texCoords)
-{
-	Bind(vertices.data(), NULL, texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 2);
-	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
-}
-
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
 	/*Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
@@ -432,7 +425,6 @@ void COpenGLVertexBuffer::Bind() const
 	if (m_indexesBuffer)
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
-
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, NULL);
 }

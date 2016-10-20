@@ -14,15 +14,16 @@ struct sMaterial
 	float Shininess;
 };
 #define NUMBEROFLIGHTS 1
-cbuffer Constant : register(b0)
+cbuffer Constant
 {
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;
 	float4 Color;
 	sMaterial Material;
 	sLightSource Lights[NUMBEROFLIGHTS];
-	matrix joints[128];
-	matrix invBindMatrices[128];
-}
+};
+cbuffer Vertex
+{
+	matrix WorldViewProjection : WORLDVIEWPROJECTION;
+};
 struct PixelInputType
 {
 	float4 position : SV_POSITION;

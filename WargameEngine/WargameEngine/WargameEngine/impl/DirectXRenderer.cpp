@@ -471,27 +471,6 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 	m_devcon->Draw(vertices.size(), 0);
 }
 
-void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2f> const& vertices, std::vector<CVector2f> const& texCoords)
-{
-	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), 0 };
-	UINT offset[] = { 0, 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, nullptr };
-
-	if (mode == RenderMode::RECTANGLES)
-	{
-		FlipRectangleTopology(const_cast<float*>(&vertices[0].x), !texCoords.empty() ? const_cast<float*>(&texCoords[0].x) : NULL, NULL, 2, vertices.size());
-	}
-
-	MakeSureBufferCanFitSize(vertices.size());
-	CopyDataToBuffer(m_vertexBuffer, vertices.data(), vertices.size() * sizeof(CVector2f));
-	CopyDataToBuffer(m_texCoordBuffer, texCoords.data(), texCoords.size() * sizeof(CVector2f));
-
-	m_shaderManager.SetInputLayout(DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
-	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
-	m_devcon->IASetPrimitiveTopology(renderModeMap.at(mode));
-	m_devcon->Draw(vertices.size(), 0);
-}
-
 std::vector<float> ConvertVector3D(std::vector<CVector3d> const& vec)
 {
 	std::vector<float> result;

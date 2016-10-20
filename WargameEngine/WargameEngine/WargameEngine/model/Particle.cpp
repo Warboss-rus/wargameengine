@@ -51,15 +51,15 @@ void CParticleEffect::Update(long long deltaTime)
 				m_updater->InitParticle(particle);
 				particlesEmmitted++;
 			}
-			else
-			{
-				m_updater->UpdateParticle(particle);
-			}
 		}
 		for (int i = 0; i < 3; ++i)
 		{
 			particle.m_position[i] += particle.m_velocity[i] * ftime;
 		}
+	}
+	if (m_updater)
+	{
+		m_updater->UpdateParticles(m_particles);
 	}
 	/*if (m_updater)
 	{

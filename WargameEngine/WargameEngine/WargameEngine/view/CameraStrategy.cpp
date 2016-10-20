@@ -4,6 +4,7 @@
 #define TRANSLATE					  0.3
 #define SCALE						  1.1
 #include "KeyDefines.h"
+#include <memory>
 
 CCameraStrategy::CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
 	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false), m_oldX(0), m_oldY(0), m_input(nullptr)
@@ -162,4 +163,33 @@ void CCameraStrategy::SetInput(IInput & input)
 const double CCameraStrategy::GetScale() const
 {
 	return m_scale;
+}
+
+void CCameraStrategy::EnableTouchMode()
+{
+	std::shared_ptr<CVector2i> lastCoords = std::make_shared<CVector2i>();
+	m_input->DoOnLMBDown([lastCoords](int x, int y) {
+		lastCoords->x = x;
+		lastCoords->y = y;
+		return false;
+	}, 10, g_cameraTag);
+	m_input->DoOnMouseMove([lastCoords, this](int x, int y) {
+		if (lastCoords->x != 0 && lastCoords->y != 0)
+		{
+			m_transX -= (x - lastCoords->x) * 0.01;
+			m_transY += (y - lastCoords->y) * 0.01;
+			lastCoords->x = x;
+			lastCoords->y = y;
+		}
+		return false;
+	}, 10, g_cameraTag);
+	m_input->DoOnLMBUp([lastCoords, this](int x, int y) {
+		if (lastCoords->x != 0 && lastCoords->y != 0)
+		{
+			m_transX -= (x - lastCoords->x) * 0.01;
+			m_transY += (y - lastCoords->y) * 0.01;
+		}
+		*lastCoords = CVector2i();
+		return false;
+	}, 10, g_cameraTag);
 }
