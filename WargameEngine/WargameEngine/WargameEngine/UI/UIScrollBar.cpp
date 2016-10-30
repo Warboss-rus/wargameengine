@@ -20,33 +20,35 @@ void CUIScrollBar::Draw() const
 {
 	if (m_size >= m_contentSize) return;
 	auto& theme = m_theme->sbar;
-	int scrollBegin = theme.buttonSize;
-	int scrollEnd = m_size - theme.buttonSize;
+	int scrollBegin = static_cast<int>(theme.buttonSize * m_scale);
+	int scrollEnd = m_size - static_cast<int>(theme.buttonSize * m_scale);
 	int scrollSize = static_cast<int>((scrollEnd - scrollBegin) * (m_size / static_cast<float>(m_contentSize)));
 	int intPos = static_cast<int>(m_position);
+	int scrollWidth = static_cast<int>(theme.width * m_scale);
+	int buttonSize = scrollBegin;
 	m_renderer->SetTexture(L"");
 	m_renderer->SetColor(0.5f, 0.5f, 0.5f);
-	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - theme.width, scrollBegin), { m_width, scrollBegin }, { m_width - theme.width, scrollEnd }, { m_width, scrollEnd } }, {});
+	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
 	m_renderer->SetColor(0.75f, 0.75f, 0.75f);
-	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - theme.width, scrollBegin + intPos),{ m_width, scrollBegin + intPos },
-	{ m_width - theme.width, scrollBegin + intPos + scrollSize },{ m_width, scrollBegin + intPos + scrollSize } }, {});
+	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width -scrollWidth, scrollBegin + intPos),{ m_width, scrollBegin + intPos },
+	{ m_width - scrollWidth, scrollBegin + intPos + scrollSize },{ m_width, scrollBegin + intPos + scrollSize } }, {});
 	m_renderer->SetTexture(m_theme->texture, true);
 	float * themeTexCoords = (m_upButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
 	std::vector<CVector2f> texCoords = { CVector2f(themeTexCoords),{ themeTexCoords[2], themeTexCoords[1] },{ themeTexCoords[0], themeTexCoords[3] },{ themeTexCoords[2], themeTexCoords[3] } };
 	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP,
-	{ CVector2i(m_width - theme.width, 0), { m_width, 0 }, { m_width - theme.width, theme.buttonSize }, { m_width, theme.buttonSize } }, texCoords);
+	{ CVector2i(m_width - scrollWidth, 0), { m_width, 0 }, { m_width - scrollWidth, scrollBegin }, { m_width, scrollBegin } }, texCoords);
 	
 	themeTexCoords = (m_downButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
 	texCoords = { CVector2f(themeTexCoords),{ themeTexCoords[2], themeTexCoords[1] },{ themeTexCoords[0], themeTexCoords[3] },{ themeTexCoords[2], themeTexCoords[3] } };
 	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP,
-	{ CVector2i(m_width - theme.width, m_size), { m_width, m_size }, { m_width - theme.width, m_size - theme.buttonSize }, { m_width, m_size - theme.buttonSize } }, texCoords);
+	{ CVector2i(m_width - scrollWidth, m_size), { m_width, m_size }, { m_width - scrollWidth, m_size - buttonSize }, { m_width, m_size - buttonSize } }, texCoords);
 
 }
 
 bool CUIScrollBar::LeftMouseButtonDown(int x, int y)
 {
 	if (!IsOnElement(x, y)) return false;
-	int buttonSize = m_theme->sbar.buttonSize;
+	int buttonSize = static_cast<int>(m_theme->sbar.buttonSize * m_scale);
 	if (y < buttonSize)
 	{
 		m_upButtonPressed = true;
@@ -67,7 +69,7 @@ bool CUIScrollBar::LeftMouseButtonUp(int x, int y)
 	m_upButtonPressed = false;
 	m_downButtonPressed = false;
 	m_pressed = false;
-	int buttonSize = m_theme->sbar.buttonSize;
+	int buttonSize = static_cast<int>(m_theme->sbar.buttonSize);
 	if (!IsOnElement(x, y)) return false;
 	int scrollSize = static_cast<int>(m_size * ((float)m_size / (float)m_contentSize));
 	if (y < buttonSize && m_upButtonPressed)//Up Button pressed
@@ -111,10 +113,15 @@ bool CUIScrollBar::OnMouseMove(int, int y)
 bool CUIScrollBar::IsOnElement(int x, int y) const
 {
 	if (m_size >= m_contentSize) return false;
-	return (x >= m_width - m_theme->sbar.width && x <= m_width && y >= 0.0f && y <= m_size);
+	return (x >= m_width - static_cast<int>(m_theme->sbar.width * m_scale) && x <= m_width && y >= 0.0f && y <= m_size);
 }
 
 int CUIScrollBar::GetPosition() const 
 { 
-	return static_cast<int>(m_position * m_contentSize / (m_size - 2 * m_theme->sbar.buttonSize)); 
+	return static_cast<int>(m_position * m_contentSize / (m_size - 2 * m_theme->sbar.buttonSize * m_scale)); 
+}
+
+void CUIScrollBar::SetScale(float scale)
+{
+	m_scale = scale;
 }

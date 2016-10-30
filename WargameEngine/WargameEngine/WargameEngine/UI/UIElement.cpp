@@ -13,19 +13,29 @@
 
 void CUIElement::Draw() const
 {
-	if(!m_visible)
+	if(!m_visible || m_children.empty())
 		return;
-	for(auto i = m_children.begin(); i != m_children.end(); ++i)
+	if (!m_childrenCache)
 	{
-		if (i->second && i->second.get() != m_focused)
-		{
-			i->second->Draw();
-		}
+		m_childrenCache = m_renderer.RenderToTexture([this] {
+			for (auto i = m_children.begin(); i != m_children.end(); ++i)
+			{
+				if (i->second && i->second.get() != m_focused)
+				{
+					i->second->Draw();
+				}
+			}
+			if (m_focused)
+			{
+				m_focused->Draw();
+			}
+		}, GetWidth(), GetHeight());
 	}
-	if(m_focused)
-	{
-		m_focused->Draw();
-	}
+	m_childrenCache->Bind();
+	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0,GetHeight() },{ GetWidth(), GetHeight() } },
+	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
+	m_childrenCache->UnBind();
 }
 
 void CUIElement::SetVisible(bool visible)
@@ -45,7 +55,7 @@ m_windowHeight(640), m_windowWidth(640), m_visible(true), m_parent(parent), m_fo
 }
 
 CUIElement::CUIElement(IRenderer & renderer, ITextWriter & textWriter) 
-	:m_x(0), m_y(0), m_height(0), m_width(0), m_windowHeight(640), m_windowWidth(640), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter)
+	:m_x(0), m_y(0), m_height(640), m_width(640), m_windowHeight(640), m_windowWidth(640), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter)
 {
 
 }
@@ -59,6 +69,9 @@ void CUIElement::AddChild(std::string const& name, std::shared_ptr<IUIElement> e
 	m_children[name] = element;
 	element->SetTheme(m_theme);
 	element->Resize(m_windowHeight, m_windowWidth);
+	element->SetTargetSize(m_uiWidth, m_uiHeight);
+	element->SetScale(m_scale);
+	InvalidateChildren();
 }
 
 IUIElement* CUIElement::GetChildByName(std::string const& name)
@@ -73,6 +86,7 @@ void CUIElement::DeleteChild(std::string const& name)
 		m_focused = NULL;
 	}
 	m_children.erase(m_children.find(name));
+	InvalidateChildren();
 }
 
 void CUIElement::DeleteChild(IUIElement * element)
@@ -82,6 +96,7 @@ void CUIElement::DeleteChild(IUIElement * element)
 	{
 		m_children.erase(it);
 	}
+	InvalidateChildren();
 }
 
 bool CUIElement::PointIsOnElement(int x, int y) const
@@ -94,6 +109,33 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 void CUIElement::Invalidate() const
 {
 	m_cache.reset();
+	if(m_parent) m_parent->InvalidateChildren();
+}
+
+void CUIElement::InvalidateChildren() const
+{
+	m_childrenCache.reset();
+	if (m_parent) m_parent->InvalidateChildren();
+}
+
+void CUIElement::SetTargetSize(int width, int height)
+{
+	m_uiWidth = width;
+	m_uiHeight = height;
+	for (auto& child : m_children)
+	{
+		child.second->SetTargetSize(width, height);
+	}
+}
+
+void CUIElement::SetScale(float scale)
+{
+	m_scale = scale;
+	Invalidate();
+	for (auto& child : m_children)
+	{
+		child.second->SetScale(scale);
+	}
 }
 
 void CUIElement::SetState(bool)
@@ -317,22 +359,22 @@ void CUIElement::ClearChildren()
 
 int CUIElement::GetX() const
 {
-	return m_x * m_windowWidth / 600;
+	return m_x * m_windowWidth / m_uiWidth;
 }
 
 int CUIElement::GetY() const
 {
-	return m_y * m_windowHeight / 600;
+	return m_y * m_windowHeight / m_uiHeight;
 }
 
 int CUIElement::GetHeight() const
 {
-	return m_height * m_windowHeight / 600;
+	return m_height * m_windowHeight / m_uiHeight;
 }
 
 int CUIElement::GetWidth() const
 {
-	return m_width * m_windowWidth / 600;
+	return m_width * m_windowWidth / m_uiWidth;
 }
 
 void CUIElement::Resize(int windowHeight, int windowWidth)

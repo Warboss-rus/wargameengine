@@ -15,6 +15,7 @@ public:
 	bool OnMouseMove(int x, int y);
 	bool IsOnElement(int x, int y) const;
 	int GetPosition() const;
+	void SetScale(float scale);
 private:
 	float m_position;
 	int m_size;
@@ -22,6 +23,7 @@ private:
 	int m_width;
 	int m_mousePos;
 	int m_step;
+	float m_scale = 1.0f;
 	bool m_pressed;
 	bool m_upButtonPressed;
 	bool m_downButtonPressed;

@@ -22,11 +22,11 @@ void CUIWindow::Draw() const
 		m_cache = m_renderer.RenderToTexture([this]() {
 			m_renderer.SetColor(0.4f, 0.4f, 1.0f);
 			auto& theme = m_theme->window;
-			int headerHeight = theme.headerHeight;
+			int headerHeight = static_cast<int>(theme.headerHeight * m_scale);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(0, 0),{ 0, headerHeight },{ GetWidth(), 0 },{ GetWidth(), headerHeight } }, {});
 			m_renderer.SetTexture(m_theme->texture);
-			int buttonSize = theme.buttonSize;
+			int buttonSize = static_cast<int>(theme.buttonSize * m_scale);
 			int right = GetWidth() - buttonSize;
 			float * texCoord = theme.closeButtonTexCoord;
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
@@ -36,7 +36,7 @@ void CUIWindow::Draw() const
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(0, headerHeight),{ GetWidth(), headerHeight },{ 0, GetHeight() },{ GetWidth(), GetHeight() }, }, {});
-			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth() - buttonSize, headerHeight, m_headerText, theme.headerText);
+			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth() - buttonSize, headerHeight, m_headerText, theme.headerText, m_scale);
 
 		}, GetWidth(), GetHeight());
 	}

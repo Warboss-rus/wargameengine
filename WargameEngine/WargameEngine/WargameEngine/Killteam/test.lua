@@ -189,6 +189,8 @@ if(GetRendererName() == "DirectX11") then
 elseif(GetRendererName() == "OpenGLES") then
 	SetShaders("GLES/gpu_skinning.vsh", "GLES/gpu_skinning.fsh")
 	SetParticleSystemShaders("GLES/particle.vsh", "GLES/particle.fsh")
+	UI:SetScale(2)
+	Viewport:EnableTouchMode()
 else
 	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
 	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")

@@ -46,6 +46,9 @@ public:
 	virtual void SetState(bool state) = 0;
 	virtual bool GetState() const = 0;
 	virtual void Invalidate() const = 0;
+	virtual void InvalidateChildren() const = 0;
+	virtual void SetTargetSize(int width, int height) = 0;
+	virtual void SetScale(float scale) = 0;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick) = 0;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text) = 0;

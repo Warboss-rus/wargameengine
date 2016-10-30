@@ -124,6 +124,14 @@
 //Loads and applies a theme to the element and all its children. If no such theme is present the default theme will be applied. If called without instance, root element will be used as the instance.
 #define APPLY_THEME L"ApplyTheme"
 
+//void UI:SetTargetSize(int width, int height)
+//Sets the native size of UI that will then be adjusted for current resolution
+#define SET_TARGET_SIZE L"SetTargetSize"
+
+//void UI:SetScale(float scale)
+//Sets the scale of UI elements that don't adjust to resolution, like borders, line sizes, etc. Also affects font size
+#define SET_SCALE L"SetScale"
+
 /*PROPERTIES*/
 
 //Gets or sets whether the element is visible. Invisible elements don't displayed on the screen and don't receive input events. If called without instance, root element will be used as the instance

@@ -14,18 +14,18 @@ void CUIComboBox::Draw() const
 	m_renderer.PushMatrix();
 	m_renderer.Translate(GetX(), GetY(), 0);
 	int realHeight = GetHeight();
-	if (m_expanded) realHeight += m_theme->combobox.elementSize * static_cast<int>(m_items.size());
+	if (m_expanded) realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
 	if (!m_cache)
 	{
 		m_cache = m_renderer.RenderToTexture([this]() {
 			auto& theme = m_theme->combobox;
-			int elementSize = theme.elementSize;
+			int elementSize = static_cast<int>(theme.elementSize * m_scale);
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 
 			m_renderer.SetColor(m_theme->textfieldColor);
-			int borderSize = theme.borderSize;
+			int borderSize = static_cast<int>(theme.borderSize * m_scale);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize},
 			{ GetWidth() - borderSize, borderSize }, {GetWidth() - borderSize, GetHeight() - borderSize} }, {});
 
@@ -33,7 +33,7 @@ void CUIComboBox::Draw() const
 			m_renderer.SetColor(textTheme.color);
 			if (m_selected >= 0)
 			{
-				PrintText(m_renderer, m_textWriter, borderSize, borderSize, GetWidth(), GetHeight(), m_items[m_selected], textTheme);
+				PrintText(m_renderer, m_textWriter, borderSize, borderSize, GetWidth(), GetHeight(), m_items[m_selected], textTheme, m_scale);
 			}
 
 			m_renderer.SetColor(m_theme->defaultColor);
@@ -55,7 +55,7 @@ void CUIComboBox::Draw() const
 				for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 				{
 					if (GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight) break;
-					PrintText(m_renderer, m_textWriter, borderSize, GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition(), GetWidth(), elementSize, m_items[i], textTheme);
+					PrintText(m_renderer, m_textWriter, borderSize, GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition(), GetWidth(), elementSize, m_items[i], textTheme, m_scale);
 				}
 
 				m_renderer.PushMatrix();
@@ -111,7 +111,7 @@ bool CUIComboBox::LeftMouseButtonUp(int x, int y)
 		{
 			if(m_expanded && PointIsOnElement(x, y))
 			{
-				int index = (y - GetHeight() - GetY() + m_scrollbar.GetPosition()) / m_theme->combobox.elementSize;
+				int index = (y - GetHeight() - GetY() + m_scrollbar.GetPosition()) / static_cast<int>(m_theme->combobox.elementSize * m_scale);
 				if(index >= 0) m_selected = index;
 				if(m_onChange) m_onChange();
 			}
@@ -136,7 +136,7 @@ void CUIComboBox::AddItem(std::wstring const& str)
 	{
 		m_selected = 0;
 	}
-	int elementSize = m_theme->combobox.elementSize;
+	int elementSize = static_cast<int>(m_theme->combobox.elementSize * m_scale);
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
 	Invalidate();
 }
@@ -157,7 +157,7 @@ bool CUIComboBox::PointIsOnElement(int x, int y) const
 	int height = GetHeight();
 	if(m_expanded)
 	{
-		height += m_theme->combobox.elementSize * static_cast<int>(m_items.size());
+		height += static_cast<int>(m_theme->combobox.elementSize * m_scale * m_items.size());
 	}
 	if(x > GetX() && x < GetX() + GetWidth() && y > GetY() && y < GetY() + height)
 		return true;
@@ -169,7 +169,7 @@ void CUIComboBox::DeleteItem(size_t index)
 	m_items.erase(m_items.begin() + index);
 	if(m_selected == static_cast<int>(index)) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
-	int elementSize = m_theme->combobox.elementSize;
+	int elementSize = static_cast<int>(m_theme->combobox.elementSize * m_scale);
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
 	Invalidate();
 }
@@ -190,7 +190,7 @@ void CUIComboBox::SetText(std::wstring const& text)
 void CUIComboBox::Resize(int windowHeight, int windowWidth) 
 {
 	CUIElement::Resize(windowHeight, windowWidth);
-	int elementSize = m_theme->combobox.elementSize;
+	int elementSize = static_cast<int>(m_theme->combobox.elementSize * m_scale);
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
 	Invalidate();
 }
@@ -227,6 +227,12 @@ void CUIComboBox::SetTheme(std::shared_ptr<CUITheme> theme)
 	m_theme = theme; 
 	m_scrollbar = CUIScrollBar(theme, m_renderer); 
 	Invalidate();
+}
+
+void CUIComboBox::SetScale(float scale)
+{
+	CUIElement::SetScale(scale);
+	m_scrollbar.SetScale(scale);
 }
 
 void CUIComboBox::OnMouseMove(int x, int y)

@@ -47,6 +47,9 @@ public:
 	virtual void SetState(bool state) override;
 	virtual bool GetState() const override;
 	virtual void Invalidate() const override;
+	virtual void InvalidateChildren() const override;
+	virtual void SetTargetSize(int width, int height) override;
+	virtual void SetScale(float scale) override;
 
 	virtual IUIElement* AddNewButton(std::string const& name, int x, int y, int height, int width, std::wstring const& text, std::function<void()> const& onClick) override;
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
@@ -69,6 +72,9 @@ protected:
 	int m_width;
 	int m_windowHeight;
 	int m_windowWidth;
+	int m_uiWidth = 600;
+	int m_uiHeight = 600;
+	float m_scale = 1.0f;
 	bool m_visible;
 	IUIElement * m_parent;
 	IUIElement * m_focused;
@@ -76,4 +82,5 @@ protected:
 	IRenderer & m_renderer;
 	ITextWriter & m_textWriter;
 	mutable std::unique_ptr<ICachedTexture> m_cache;
+	mutable std::unique_ptr<ICachedTexture> m_childrenCache;
 };

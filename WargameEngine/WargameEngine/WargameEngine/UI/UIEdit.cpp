@@ -42,7 +42,7 @@ void CUIEdit::Draw() const
 				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize + selectionBegin, fonty),
 				{ borderSize + selectionBegin, fonty - fontHeight },{ borderSize + selectionEnd, fonty }, {borderSize + selectionEnd, fonty - fontHeight } }, {});
 			}
-			PrintText(m_renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme);
+			PrintText(m_renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme, m_scale);
 		}, GetWidth(), GetHeight());
 	}
 	m_cache->Bind();

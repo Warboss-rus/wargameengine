@@ -21,8 +21,8 @@ void CUIList::Draw() const
 			{ CVector2i(0, 0), { 0, GetHeight() },{ GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 			m_renderer.SetColor(m_theme->textfieldColor);
 			auto& theme = m_theme->list;
-			int borderSize = theme.borderSize;
-			int elementSize = theme.elementSize;
+			int borderSize = static_cast<int>(theme.borderSize * m_scale);
+			int elementSize = static_cast<int>(theme.elementSize * m_scale);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize},{ GetWidth() - borderSize, borderSize }, {GetWidth() - borderSize, GetHeight() - borderSize} }, {});
 			if (m_items.size() > 0)
@@ -36,7 +36,7 @@ void CUIList::Draw() const
 			for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 			{
 				if (borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize) > GetHeight()) break;
-				PrintText(m_renderer, m_textWriter, borderSize, borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize), GetWidth(), theme.text.fontSize, m_items[i], theme.text);
+				PrintText(m_renderer, m_textWriter, borderSize, borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize), GetWidth(), static_cast<int>(theme.text.fontSize * m_scale), m_items[i], theme.text, m_scale);
 			}
 			m_scrollbar.Draw();
 		}, GetWidth(), GetHeight());
@@ -72,7 +72,7 @@ bool CUIList::LeftMouseButtonUp(int x, int y)
 	if (m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY())) return true;
 	if(PointIsOnElement(x, y))
 	{
-		int index = (y - GetY()) / m_theme->list.elementSize;
+		int index = (y - GetY()) / static_cast<int>(m_theme->list.elementSize * m_scale);
 		if(index >= 0 && static_cast<unsigned int>(index) < m_items.size()) m_selected = static_cast<size_t>(index);
 		if(m_onChange) m_onChange();
 		SetFocus();
@@ -88,7 +88,7 @@ void CUIList::AddItem(std::wstring const& str)
 	{
 		m_selected = 0;
 	}
-	int elementSize = m_theme->list.elementSize;
+	int elementSize = static_cast<int>(m_theme->list.elementSize * m_scale);
 	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
@@ -113,7 +113,7 @@ void CUIList::DeleteItem(size_t index)
 	m_items.erase(m_items.begin() + index);
 	if(m_selected == index) m_selected--;
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
-	int elementSize = m_theme->list.elementSize;
+	int elementSize = static_cast<int>(m_theme->list.elementSize * m_scale);
 	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
@@ -134,7 +134,7 @@ void CUIList::SetText(std::wstring const& text)
 void CUIList::Resize(int windowHeight, int windowWidth)
 {
 	CUIElement::Resize(windowHeight, windowWidth);
-	int elementSize = m_theme->list.elementSize;
+	int elementSize = static_cast<int>(m_theme->list.elementSize * m_scale);
 	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
@@ -171,6 +171,12 @@ void CUIList::SetTheme(std::shared_ptr<CUITheme> theme)
 	m_theme = theme; 
 	m_scrollbar = CUIScrollBar(theme, m_renderer); 
 	Invalidate();
+}
+
+void CUIList::SetScale(float scale)
+{
+	CUIElement::SetScale(scale);
+	m_scrollbar.SetScale(scale);
 }
 
 void CUIList::OnMouseMove(int x, int y)

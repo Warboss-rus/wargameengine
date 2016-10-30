@@ -298,6 +298,8 @@ void COpenGLESRenderer::SetColor(const int * color)
 std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
 {
 	//set up texture
+	GLint prevTexture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
 	auto texture = std::make_unique<COpenGlCachedTexture>();
 	texture->Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -308,6 +310,8 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	UnbindTexture();
 	//set up buffer
+	GLint prevBuffer;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
 	GLuint framebuffer = 0;
 	glGenFramebuffers(1, &framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -332,7 +336,8 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	UpdateUniforms();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
+	glBindTexture(GL_TEXTURE_2D, prevTexture);
 	glDeleteFramebuffers(1, &framebuffer);
 	return move(texture);
 }

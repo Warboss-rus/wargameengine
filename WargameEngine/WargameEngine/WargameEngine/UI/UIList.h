@@ -22,6 +22,7 @@ public:
 	virtual void SetOnChangeCallback(std::function<void()> const& onChange) override;
 	virtual void Resize(int windowHeight, int windowWidth) override;
 	virtual void SetTheme(std::shared_ptr<CUITheme> theme) override;
+	virtual void SetScale(float scale) override;
 private:
 	std::vector<std::wstring> m_items;
 	size_t m_selected;

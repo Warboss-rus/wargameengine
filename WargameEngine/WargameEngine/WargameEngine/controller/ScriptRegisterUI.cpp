@@ -331,6 +331,25 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		return nullptr;
 	});
 
+	handler.RegisterMethod(CLASS_UI, SET_TARGET_SIZE, [&, uiRoot](void* instance, IArguments const& args) {
+		if (args.GetCount() != 2)
+			throw std::runtime_error("2 arguments expected (width, height)");
+		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
+		int width = args.GetInt(1);
+		int height = args.GetInt(2);
+		c->SetTargetSize(width, height);
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_UI, SET_SCALE, [&, uiRoot](void* instance, IArguments const& args) {
+		if (args.GetCount() != 1)
+			throw std::runtime_error("1 argument expected (scale)");
+		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
+		float scale = args.GetFloat(1);
+		c->SetScale(scale);
+		return nullptr;
+	});
+
 	handler.RegisterProperty(CLASS_UI, PROPERTY_VISIBLE, [&, uiRoot](void* instance, IArguments const& args){
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected (visible)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;

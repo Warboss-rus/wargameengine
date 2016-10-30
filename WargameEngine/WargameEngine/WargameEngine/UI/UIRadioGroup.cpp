@@ -27,7 +27,7 @@ void CUIRadioGroup::Draw() const
 				{ CVector2i(0, y), { 0, y + buttonSize }, { buttonSize, y }, { buttonSize, y + buttonSize} },
 				{ CVector2f(texCoord), {texCoord[0], texCoord[3]}, {texCoord[2], texCoord[1]}, {texCoord[2], texCoord[3]} });
 				int intSize = static_cast<int>(theme.elementSize);
-				PrintText(m_renderer, m_textWriter, static_cast<int>(buttonSize) + 1, intSize * static_cast<int>(i), GetWidth(), intSize, m_items[i], m_theme->text);
+				PrintText(m_renderer, m_textWriter, static_cast<int>(buttonSize) + 1, intSize * static_cast<int>(i), GetWidth(), intSize, m_items[i], m_theme->text, m_scale);
 			}
 		}, GetWidth(), GetHeight());
 	}
