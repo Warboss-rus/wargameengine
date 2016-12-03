@@ -60,7 +60,7 @@ void CInputBase::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int 
 	m_onGamepadAxis.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnHeadRotationChange(std::function<bool(double x, double y, double z)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+void CInputBase::DoOnHeadRotationChange(std::function<bool(int deviceIndex, float x, float y, float z)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
 {
 	m_onHeadRotation.Connect(handler, priority, tag);
 }
@@ -141,7 +141,7 @@ void CInputBase::OnGamepadAxis(int gamepadIndex, int axisIndex, double horizonta
 	m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
 }
 
-void CInputBase::OnHeadRotation(double x, double y, double z)
+void CInputBase::OnHeadRotation(int deviceIndex, float x, float y, float z)
 {
-	m_onHeadRotation(x, y, z);
+	m_onHeadRotation(deviceIndex, x, y, z);
 }

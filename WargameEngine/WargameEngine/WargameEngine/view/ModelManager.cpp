@@ -17,7 +17,7 @@ CModelManager::~CModelManager()
 {
 }
 
-sBounding LoadBoundingFromFile(std::wstring const& path, double & scale, double * rotation)
+sBounding LoadBoundingFromFile(std::wstring const& path, float & scale, double * rotation)
 {
 	std::ifstream iFile;
 	OpenFile(iFile, path);
@@ -29,7 +29,7 @@ sBounding LoadBoundingFromFile(std::wstring const& path, double & scale, double 
 		iFile >> line;
 		if (line == "box")
 		{
-			CVector3d min, max;
+			CVector3f min, max;
 			iFile >> min.x >> min.y >> min.z >> max.x >> max.y >> max.z;
 			sBounding::sBox box{ min, max };
 			compound.items.push_back(sBounding(box));
@@ -62,7 +62,7 @@ void CModelManager::LoadIfNotExist(std::wstring const& path)
 	if(m_models.find(path) == m_models.end())
 	{
 		std::wstring boundingPath = path.substr(0, path.find_last_of('.')) + L".txt";
-		double scale = 1.0;
+		float scale = 1.0;
 		double rotation[3] = { 0.0, 0.0, 0.0 };
 		m_bbManager->AddBounding(path, LoadBoundingFromFile(m_asyncFileProvider->GetModelAbsolutePath(boundingPath), scale, rotation));
 		std::shared_ptr<C3DModel> model = std::make_shared<C3DModel>(scale, rotation[0], rotation[1], rotation[2]);
@@ -89,11 +89,11 @@ void CModelManager::LoadIfNotExist(std::wstring const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::wstring const& path, std::shared_ptr<IObject> object, bool vertexOnly, IShaderManager * shaderManager)
+void CModelManager::DrawModel(std::wstring const& path, IObject* object, bool vertexOnly)
 {
 	LoadIfNotExist(path);
 	std::unique_lock<std::mutex> lk(m_mutex);
-	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning, shaderManager);
+	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning);
 }
 
 std::vector<std::string> CModelManager::GetAnimations(std::wstring const& path)

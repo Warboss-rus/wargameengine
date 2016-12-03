@@ -1,7 +1,7 @@
 #include "Particle.h"
 
 CParticleEffect::CParticleEffect(const IParticleUpdater * updater, std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles)
-	: m_updater(updater), m_effectPath(effectPath), m_center(position), m_scale(scale), m_maxParticles(maxParticles)
+	: m_updater(updater), m_maxParticles(maxParticles), m_effectPath(effectPath), m_center(position), m_scale(scale)
 {
 #ifdef _DEBUG
 	m_maxParticles = m_maxParticles > 1000 ? 1000 : m_maxParticles;
@@ -38,7 +38,7 @@ float CParticleEffect::GetScale() const
 
 void CParticleEffect::Update(long long deltaTime)
 {
-	float ftime = static_cast<float>(static_cast<double>(deltaTime) / 1000.0);
+	float ftime = static_cast<float>(deltaTime) / 1000.0f;
 	size_t particlesEmmitted = 0;
 	for (auto& particle : m_particles)
 	{

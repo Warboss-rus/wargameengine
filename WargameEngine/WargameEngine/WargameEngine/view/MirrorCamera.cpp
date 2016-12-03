@@ -1,27 +1,27 @@
 #include "MirrorCamera.h"
 
-CCameraMirror::CCameraMirror(ICamera * parentCamera, CVector3d const& translation /*= CVector3d()*/)
+CCameraMirror::CCameraMirror(ICamera * parentCamera, CVector3f const& translation /*= CVector3d()*/)
 	:m_parentCamera(parentCamera), m_translation(translation)
 {
 
 }
 
-CVector3d CCameraMirror::GetPosition() const
+CVector3f CCameraMirror::GetPosition() const
 {
 	return m_parentCamera->GetPosition() + m_translation;
 }
 
-CVector3d CCameraMirror::GetDirection() const
+CVector3f CCameraMirror::GetDirection() const
 {
 	return m_parentCamera->GetDirection() + m_translation;
 }
 
-CVector3d CCameraMirror::GetUpVector() const
+CVector3f CCameraMirror::GetUpVector() const
 {
 	return m_parentCamera->GetUpVector();
 }
 
-const double CCameraMirror::GetScale() const
+const float CCameraMirror::GetScale() const
 {
 	return m_parentCamera->GetScale();
 }

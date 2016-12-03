@@ -9,6 +9,7 @@ class IObject;
 class IGameModel;
 class IReadMemoryStream;
 class CCommandCompound;
+class CObjectDecorator;
 
 class CCommandHandler
 {
@@ -17,12 +18,12 @@ public:
 	~CCommandHandler();
 	void AddNewCreateObject(std::shared_ptr<IObject> object, IGameModel & model);
 	void AddNewDeleteObject(std::shared_ptr<IObject> object, IGameModel & model);
-	void AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY);
-	void AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation);
+	void AddNewMoveObject(std::shared_ptr<IObject> object, float deltaX, float deltaY);
+	void AddNewRotateObject(std::shared_ptr<IObject> object, float deltaRotation);
 	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::wstring const& key, std::wstring const& value);
 	void AddNewChangeGlobalProperty(std::wstring const& key, std::wstring const& value, IGameModel & model);
 	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
-	void AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed);
+	void AddNewGoTo(std::shared_ptr<CObjectDecorator> object, float x, float y, float speed, std::string const& animation, float animationSpeed);
 	void Undo();
 	void Redo();
 	void BeginCompound();

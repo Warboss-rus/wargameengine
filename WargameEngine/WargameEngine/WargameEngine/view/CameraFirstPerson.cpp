@@ -1,9 +1,11 @@
 #include "CameraFirstPerson.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#define TRANSLATE					  0.3
+#define TRANSLATE					  0.3f
 #include "KeyDefines.h"
 #include <memory>
+
+constexpr float PI = (float)M_PI;
 
 CCameraFirstPerson::CCameraFirstPerson()
 	:m_input(nullptr)
@@ -31,24 +33,21 @@ void CCameraFirstPerson::Reset()
 	m_rotZ = 0.0;
 }
 
-CVector3d CCameraFirstPerson::GetPosition() const
+CVector3f CCameraFirstPerson::GetPosition() const
 {
 	return { m_transX, m_transY, m_transZ };
 }
 
-CVector3d CCameraFirstPerson::GetDirection() const
+CVector3f CCameraFirstPerson::GetDirection() const
 {
-	CVector3d pos;
-	pos.x = 0.0;
-	pos.y = 10.0;
-	pos.z = 0.0;
+	CVector3f pos = {0.0f, 10.0f, 0.0f};
 	//rotateX
-	double temp1 = pos.y * cos(m_rotX * M_PI / 180) + pos.z * sin(m_rotX * M_PI / 180);
-	pos.z = pos.y * sin(m_rotX * M_PI / 180) + pos.z * cos(m_rotX * M_PI / 180);
+	float temp1 = pos.y * cos(m_rotX * PI / 180) + pos.z * sin(m_rotX * PI / 180);
+	pos.z = pos.y * sin(m_rotX * PI / 180) + pos.z * cos(m_rotX * PI / 180);
 	pos.y = temp1;
 	//rotateZ
-	double temp = pos.x * cos(m_rotZ * M_PI / 180) + pos.y * sin(m_rotZ * M_PI / 180);
-	pos.y = pos.x * sin(m_rotZ * M_PI / 180) + pos.y * cos(m_rotZ * M_PI / 180);
+	float temp = pos.x * cos(m_rotZ * PI / 180) + pos.y * sin(m_rotZ * PI / 180);
+	pos.y = pos.x * sin(m_rotZ * PI / 180) + pos.y * cos(m_rotZ * PI / 180);
 	pos.x = temp;
 	//translate
 	pos.x += m_transX;
@@ -57,28 +56,25 @@ CVector3d CCameraFirstPerson::GetDirection() const
 	return pos;
 }
 
-CVector3d CCameraFirstPerson::GetUpVector() const
+CVector3f CCameraFirstPerson::GetUpVector() const
 {
-	CVector3d up;
-	up.x = 0.0;
-	up.y = 0.0;
-	up.z = 1.0;
+	CVector3f up = {0.0f, 0.0f, 1.0f};
 	//rotateZ
-	double temp = up[0] * cos(m_rotZ * M_PI / 180) + up[1] * sin(m_rotZ * M_PI / 180);
-	up.y = up[0] * sin(m_rotZ * M_PI / 180) + up[1] * cos(m_rotZ * M_PI / 180);
+	float temp = up[0] * cos(m_rotZ * PI / 180) + up[1] * sin(m_rotZ * PI / 180);
+	up.y = up[0] * sin(m_rotZ * PI / 180) + up[1] * cos(m_rotZ * PI / 180);
 	up.x = temp;
 	return up;
 }
 
-const double CCameraFirstPerson::GetScale() const
+const float CCameraFirstPerson::GetScale() const
 {
 	return 1.0;
 }
 
-void CCameraFirstPerson::Rotate(double rotZ, double rotX)
+void CCameraFirstPerson::Rotate(float rotZ, float rotX)
 {
-	m_rotZ = fmod(m_rotZ + rotZ, 360);
-	m_rotX = fmod(m_rotX + rotX, 360);
+	m_rotZ = fmodf(m_rotZ + rotZ, 360);
+	m_rotX = fmodf(m_rotX + rotX, 360);
 }
 
 void CCameraFirstPerson::SetInput(IInput & input)
@@ -87,7 +83,7 @@ void CCameraFirstPerson::SetInput(IInput & input)
 	int m_oldX = input.GetMouseX();
 	int m_oldY = input.GetMouseY();
 	input.DoOnMouseMove([=](int x, int y) {
-		Rotate(x - m_oldX, y - m_oldY);
+		Rotate(static_cast<float>(x - m_oldX), static_cast<float>(y - m_oldY));
 		return true;
 	}, 1, g_cameraTag);
 	input.DoOnKeyDown([this, &input](int key, int) {
@@ -134,8 +130,8 @@ void CCameraFirstPerson::EnableTouchMode()
 	m_input->DoOnMouseMove([lastCoords, this](int x, int y) {
 		if (lastCoords->x != 0 && lastCoords->y != 0)
 		{
-			m_rotX += (x - lastCoords->x) * 0.01;
-			m_rotZ += (y - lastCoords->y) * 0.01;
+			m_rotX += (x - lastCoords->x) * 0.01f;
+			m_rotZ += (y - lastCoords->y) * 0.01f;
 			lastCoords->x = x;
 			lastCoords->y = y;
 		}
@@ -144,28 +140,32 @@ void CCameraFirstPerson::EnableTouchMode()
 	m_input->DoOnLMBUp([lastCoords, this](int x, int y) {
 		if (lastCoords->x != 0 && lastCoords->y != 0)
 		{
-			m_rotX += (x - lastCoords->x) * 0.01;
-			m_rotZ += (y - lastCoords->y) * 0.01;
+			m_rotX += (x - lastCoords->x) * 0.01f;
+			m_rotZ += (y - lastCoords->y) * 0.01f;
 		}
 		*lastCoords = CVector2i();
 		return false;
 	}, 10, g_cameraTag);
 }
 
-void CCameraFirstPerson::AttachVR(IInput & input)
+void CCameraFirstPerson::AttachVR(IInput & input, int device)
 {
-	input.DoOnHeadRotationChange([this] (double x, double y, double z){
-		m_rotX = x;
-		m_rotY = y;
-		m_rotZ = z;
-		return true;
+	input.DoOnHeadRotationChange([this, device] (int deviceIndex, float x, float y, float z){
+		if (deviceIndex == device)
+		{
+			m_rotX = x;
+			m_rotY = y;
+			m_rotZ = z;
+			return true;
+		}
+		return false;
 	});
 }
 
-void CCameraFirstPerson::Translate(double transX, double transY)
+void CCameraFirstPerson::Translate(float transX, float transY)
 {
-	double transY1 = transY * cos(m_rotX * M_PI / 180.0);
-	m_transZ += transY * sin(m_rotX * M_PI / 180.0);
-	m_transX += transX * cos(m_rotZ * M_PI / 180.0) + transY1 * sin(m_rotZ * M_PI / 180.0);
-	m_transY += -transX * sin(m_rotZ * M_PI / 180.0) + transY1 * cos(m_rotZ * M_PI / 180.0);
+	float transY1 = transY * cos(m_rotX * PI / 180.0f);
+	m_transZ += transY * sin(m_rotX * PI / 180.0f);
+	m_transX += transX * cos(m_rotZ * PI / 180.0f) + transY1 * sin(m_rotZ * PI / 180.0f);
+	m_transY += -transX * sin(m_rotZ * PI / 180.0f) + transY1 * cos(m_rotZ * PI / 180.0f);
 }

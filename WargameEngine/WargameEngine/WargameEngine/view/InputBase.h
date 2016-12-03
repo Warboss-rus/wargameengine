@@ -17,7 +17,7 @@ public:
 	virtual void DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority = 0, std::string const& tag = "") override;
-	virtual void DoOnHeadRotationChange(std::function<bool(double x, double y, double z)> const& handler, int priority = 0, std::string const& tag = "") override;
+	virtual void DoOnHeadRotationChange(std::function<bool(int deviceIndex, float x, float y, float z)> const& handler, int priority = 0, std::string const& tag = "") override;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) override;
 protected:
 	void OnLMBDown(int x, int y);
@@ -32,7 +32,7 @@ protected:
 	void OnMouseMove(int x, int y);
 	void OnGamepadButton(int gamepadIndex, int buttonIndex, bool newState);
 	void OnGamepadAxis(int gamepadIndex, int axisIndex, double horizontal, double vertical);
-	void OnHeadRotation(double x, double y, double z);
+	void OnHeadRotation(int deviceIndex, float x, float y, float z);
 private:
 	CSignal<int, int> m_onLMBDown;
 	CSignal<int, int> m_onLMBUp;
@@ -46,5 +46,5 @@ private:
 	CSignal<int, int> m_onMouseMove;
 	CSignal<int, int, bool> m_onGamepadButton;
 	CSignal<int, int, double, double> m_onGamepadAxis;
-	CSignal<double, double, double> m_onHeadRotation;
+	CSignal<int, float, float, float> m_onHeadRotation;
 };

@@ -3,7 +3,10 @@
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
+#pragma warning(push)
+#pragma warning(disable: 4505)
 #include <GL/glut.h>
+#pragma warning(pop)
 #endif
 
 CInputGLUT* CInputGLUT::m_instance = nullptr;

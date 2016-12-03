@@ -85,7 +85,7 @@ void CSoundPlayerOpenSLES::Play(std::wstring const& channel, std::wstring const&
 	(*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
 }
 
-void CSoundPlayerOpenSLES::PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3d const& position, float volume /*= 1.0f*/)
+void CSoundPlayerOpenSLES::PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3f const& position, float volume /*= 1.0f*/)
 {
 	Play(channel, file, volume);
 }
@@ -94,7 +94,7 @@ void CSoundPlayerOpenSLES::PlaySoundPlaylist(std::wstring const& name, std::vect
 {
 }
 
-void CSoundPlayerOpenSLES::SetListenerPosition(CVector3d const& position, CVector3d const& center)
+void CSoundPlayerOpenSLES::SetListenerPosition(CVector3f const& position, CVector3f const& center)
 {
 }
 

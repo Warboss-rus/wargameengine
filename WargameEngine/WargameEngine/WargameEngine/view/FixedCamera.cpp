@@ -1,26 +1,26 @@
 #include "FixedCamera.h"
 
-CFixedCamera::CFixedCamera(CVector3d const& position, CVector3d const& direction, CVector3d const& up, double scale /*= 1.0*/)
+CFixedCamera::CFixedCamera(CVector3f const& position, CVector3f const& direction, CVector3f const& up, float scale /*= 1.0*/)
 	:m_position(position), m_direction(direction), m_up(up), m_scale(scale)
 {
 }
 
-CVector3d CFixedCamera::GetPosition() const
+CVector3f CFixedCamera::GetPosition() const
 {
 	return m_position;
 }
 
-CVector3d CFixedCamera::GetDirection() const
+CVector3f CFixedCamera::GetDirection() const
 {
 	return m_direction;
 }
 
-CVector3d CFixedCamera::GetUpVector() const
+CVector3f CFixedCamera::GetUpVector() const
 {
 	return m_up;
 }
 
-const double CFixedCamera::GetScale() const
+const float CFixedCamera::GetScale() const
 {
 	return m_scale;
 }

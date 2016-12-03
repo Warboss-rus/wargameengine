@@ -1,13 +1,14 @@
 #pragma once
 #include <string>
 #include "IRenderer.h"
+#include "Vector3.h"
 
 class CSkyBox
 {
 public:
 	CSkyBox(float width, float height, float length, std::wstring const& imageFolder, IRenderer & renderer);
 	~CSkyBox();
-	void Draw(double x, double y, double z, double scale);
+	void Draw(CVector3f const& pos, float scale);
 	void ResetList();
 private:
 	float m_height;

@@ -24,7 +24,7 @@ public:
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
 	virtual void ResetViewMatrix() override;
-	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) override;
+	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
 
@@ -47,8 +47,8 @@ public:
 
 	virtual void SetTextureManager(CTextureManager & textureManager) override;
 
-	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const override;
-	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const override;
+	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
+	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
 	virtual void EnableLight(size_t index, bool enable) override;
 	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
 	virtual void SetLightPosition(size_t index, float* pos) override;

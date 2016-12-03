@@ -6,22 +6,22 @@ class CCameraFirstPerson : public ICamera
 public:
 	CCameraFirstPerson();
 	~CCameraFirstPerson();
-	virtual CVector3d GetPosition() const override;
-	virtual CVector3d GetDirection() const override;
-	virtual CVector3d GetUpVector() const override;
-	virtual const double GetScale() const override;
+	virtual CVector3f GetPosition() const override;
+	virtual CVector3f GetDirection() const override;
+	virtual CVector3f GetUpVector() const override;
+	virtual const float GetScale() const override;
 	virtual void SetInput(IInput & input) override;
 	virtual void EnableTouchMode() override;
-	void AttachVR(IInput & input);
+	void AttachVR(IInput & input, int device = 0);
 private:
 	void Reset();
-	void Translate(double transX, double transY);
-	void Rotate(double rotZ, double rotX);
-	double m_transX;
-	double m_transY;
-	double m_transZ;
-	double m_rotX;
-	double m_rotY;
-	double m_rotZ;
+	void Translate(float transX, float transY);
+	void Rotate(float rotZ, float rotX);
+	float m_transX;
+	float m_transY;
+	float m_transZ;
+	float m_rotX;
+	float m_rotY;
+	float m_rotZ;
 	IInput* m_input;
 };

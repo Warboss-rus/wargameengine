@@ -23,7 +23,7 @@ public:
 	virtual void DoOnMouseMove(std::function<bool(int, int)> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual void DoOnHeadRotationChange(std::function<bool(double x, double y, double z)> const& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual void DoOnHeadRotationChange(std::function<bool(int deviceIndex, float x, float y, float z)> const& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void EnableCursor(bool enable = true) = 0;
 	virtual int GetModifiers() const = 0;
 	virtual int GetMouseX() const = 0;

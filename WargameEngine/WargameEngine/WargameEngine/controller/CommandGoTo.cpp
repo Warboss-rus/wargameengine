@@ -2,41 +2,44 @@
 #include "../model/ObjectInterface.h"
 #include "../IMemoryStream.h"
 #include "../model/IGameModel.h"
+#include "GameController.h"
 
-CCommandGoTo::CCommandGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed)
-	:m_object(object), m_x(x), m_y(y), m_speed(speed), m_animation(animation), m_animationSpeed(animationSpeed)
+CCommandGoTo::CCommandGoTo(std::shared_ptr<CObjectDecorator> object, CVector3f const& target, float speed, std::string const& animation, float animationSpeed)
+	:m_object(object), m_target(target), m_speed(speed), m_animation(animation), m_animationSpeed(animationSpeed)
 {
-	m_oldCoords = object->GetCoords();
+	m_oldCoords = object->GetObject()->GetCoords();
 }
 
 
-CCommandGoTo::CCommandGoTo(IReadMemoryStream & stream, IGameModel& model)
+CCommandGoTo::CCommandGoTo(IReadMemoryStream & stream, IGameModel & model, CGameController& controller)
 {
-	m_object = model.Get3DObject(reinterpret_cast<IObject*>(stream.ReadPointer()));
-	m_x = stream.ReadDouble();
-	m_y = stream.ReadDouble();
-	m_speed = stream.ReadDouble();
+	auto objectPtr = reinterpret_cast<IObject*>(stream.ReadPointer());
+	m_object = controller.GetDecorator(model.Get3DObject(objectPtr));
+	float x = stream.ReadFloat();
+	float y = stream.ReadFloat();
+	m_target = { x, y, 0.0f };
+	m_speed = stream.ReadFloat();
 	m_animationSpeed = stream.ReadFloat();
 	m_animation = stream.ReadString();
 }
 
 void CCommandGoTo::Execute()
 {
-	m_object->GoTo(CVector3d(m_x, m_y, 0.0), m_speed, m_animation, m_animationSpeed);
+	m_object->GoTo(m_target, m_speed, m_animation, m_animationSpeed);
 }
 
 void CCommandGoTo::Rollback()
 {
-	m_object->SetCoords(m_oldCoords);
+	m_object->GetObject()->SetCoords(m_oldCoords);
 }
 
 void CCommandGoTo::Serialize(IWriteMemoryStream & stream) const
 {
 	stream.WriteByte(7);//its a goto command
 	stream.WritePointer(m_object.get());
-	stream.WriteDouble(m_x);
-	stream.WriteDouble(m_y);
-	stream.WriteDouble(m_speed);
+	stream.WriteFloat(m_target.x);
+	stream.WriteFloat(m_target.y);
+	stream.WriteFloat(m_speed);
 	stream.WriteFloat(m_animationSpeed);
 	stream.WriteString(m_animation);
 }

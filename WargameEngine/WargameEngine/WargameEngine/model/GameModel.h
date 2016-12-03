@@ -23,7 +23,6 @@ public:
 	void SelectObject(std::shared_ptr<IObject> pObject);
 	std::shared_ptr<const IObject> GetSelectedObject() const;
 	std::shared_ptr<IObject> GetSelectedObject();
-	static bool IsGroup(IObject* object);
 	virtual void SetProperty(std::wstring const& key, std::wstring const& value) override;
 	virtual std::wstring GetProperty(std::wstring const& key) const override;
 	std::map<std::wstring, std::wstring> const& GetAllProperties() const;

@@ -13,13 +13,13 @@ CCommandCreateObject::CCommandCreateObject(IReadMemoryStream & stream, IGameMode
 	: m_model(model)
 {
 	stream.ReadPointer();//skip pointer
-	double x = stream.ReadDouble();
-	double y = stream.ReadDouble();
-	double z = stream.ReadDouble();
-	double rotation = stream.ReadDouble();
+	float x = stream.ReadFloat();
+	float y = stream.ReadFloat();
+	float z = stream.ReadFloat();
+	float rotation = stream.ReadFloat();
 	std::wstring path = stream.ReadWString();
 	bool shadow = stream.ReadBool();
-	m_pObject = std::make_shared<CObject>(path, x, y, z, rotation, shadow);
+	m_pObject = std::make_shared<CObject>(path, CVector3f{ x, y, z }, rotation, shadow);
 }
 
 void CCommandCreateObject::Execute()
@@ -36,10 +36,10 @@ void CCommandCreateObject::Serialize(IWriteMemoryStream & stream) const
 {
 	stream.WriteByte(0);//This is a CCommandCreateObject action
 	stream.WritePointer(m_pObject.get());
-	stream.WriteDouble(m_pObject->GetX());
-	stream.WriteDouble(m_pObject->GetY());
-	stream.WriteDouble(m_pObject->GetZ());
-	stream.WriteDouble(m_pObject->GetRotation());
+	stream.WriteFloat(m_pObject->GetX());
+	stream.WriteFloat(m_pObject->GetY());
+	stream.WriteFloat(m_pObject->GetZ());
+	stream.WriteFloat(m_pObject->GetRotation());
 	stream.WriteWString(m_pObject->GetPathToModel());
 	stream.WriteBool(m_pObject->CastsShadow());
 }

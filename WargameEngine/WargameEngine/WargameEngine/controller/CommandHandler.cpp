@@ -55,13 +55,13 @@ void CCommandHandler::AddNewDeleteObject(std::shared_ptr<IObject> object, IGameM
 	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY)
+void CCommandHandler::AddNewMoveObject(std::shared_ptr<IObject> object, float deltaX, float deltaY)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandMoveObject>(object, deltaX, deltaY);
 	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewRotateObject(std::shared_ptr<IObject> object, double deltaRotation)
+void CCommandHandler::AddNewRotateObject(std::shared_ptr<IObject> object, float deltaRotation)
 {
 	std::unique_ptr<ICommand> action = std::make_unique<CCommandRotateObject>(object, deltaRotation);
 	AddNewCommand(std::move(action));
@@ -88,9 +88,9 @@ void CCommandHandler::AddNewPlayAnimation(std::shared_ptr<IObject> object, std::
 	AddNewCommand(std::move(action));
 }
 
-void CCommandHandler::AddNewGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed)
+void CCommandHandler::AddNewGoTo(std::shared_ptr<CObjectDecorator> object, float x, float y, float speed, std::string const& animation, float animationSpeed)
 {
-	std::unique_ptr<ICommand> action = std::make_unique<CCommandGoTo>(object, x, y, speed, animation, animationSpeed);
+	std::unique_ptr<ICommand> action = std::make_unique<CCommandGoTo>(object, CVector3f{ x, y, 0.0f }, speed, animation, animationSpeed);
 	action->Execute();
 	AddNewCommand(std::move(action));
 }
@@ -164,7 +164,7 @@ void CCommandHandler::ReadCommandFromStream(IReadMemoryStream & stream, IGameMod
 	}break;
 	case 7://GoTo
 	{
-		action = std::make_unique<CCommandGoTo>(stream, model);
+		//action = std::make_unique<CCommandGoTo>(stream, model);
 	}break;
 	default:return;
 	}

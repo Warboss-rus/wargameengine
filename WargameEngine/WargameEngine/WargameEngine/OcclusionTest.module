@@ -1,10 +1,10 @@
-Name = RTS
-Version = 1
+Name = Test
+Version = 123
 Author = Warboss-rus
 Site = galaxyinfire.ucoz.ru ; comment here
 Playable = 1
 Folder = Killteam
-Script = rts.lua
+Script = occlusion_test.lua
 Models = models
 Textures = texture
 Shaders = shaders

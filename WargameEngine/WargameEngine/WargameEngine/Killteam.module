@@ -7,4 +7,4 @@ Folder = Killteam
 Script = main.lua
 Models = models
 Textures = texture
-Shaders = 
+Shaders = shaders

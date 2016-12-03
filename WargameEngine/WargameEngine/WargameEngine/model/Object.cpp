@@ -5,64 +5,9 @@
 #include <math.h>
 #include <float.h>
 
-CObject::CObject(std::wstring const& model, double x, double y, double z, double rotation, bool hasShadow)
-	:m_model(model), m_coords(x, y, z), m_rotation(rotation), m_isSelectable(true), m_castsShadow(hasShadow), m_animationTime(0L), m_goSpeed(0.0f)
+CObject::CObject(std::wstring const& model, CVector3f const& position, float rotation, bool hasShadow)
+	: CBaseObject(model, position, rotation, hasShadow), m_isSelectable(true), m_animationTime(0L)
 {
-}
-
-std::wstring CObject::GetPathToModel() const
-{
-	return m_model;
-}
-
-void CObject::Move(double x, double y, double z)
-{ 
-	m_coords.x += x; 
-	m_coords.y += y;
-	m_coords.z += z;
-	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation, m_coords, m_rotation);
-}
-
-void CObject::SetCoords(double x, double y, double z) 
-{ 
-	m_coords = CVector3d(x, y, z);
-	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation, m_coords, m_rotation);
-}
-
-void CObject::SetCoords(CVector3d const& coords)
-{
-	m_coords = coords;
-}
-
-void CObject::Rotate(double rotation)
-{ 
-	m_rotation = fmod(m_rotation + rotation + 360.0, 360); 
-	if (m_movelimiter) m_movelimiter->FixPosition(m_coords, m_rotation, m_coords, m_rotation);
-}
-
-double CObject::GetX() const
-{
-	return m_coords.x;
-}
-
-double CObject::GetY() const
-{
-	return m_coords.y;
-}
-
-double CObject::GetZ() const
-{
-	return m_coords.z;
-}
-
-CVector3d CObject::GetCoords() const
-{
-	return m_coords;
-}
-
-double CObject::GetRotation() const
-{
-	return m_rotation;
 }
 
 std::set<std::string> const& CObject::GetHiddenMeshes() const
@@ -121,11 +66,6 @@ std::map<std::wstring, std::wstring> const& CObject::GetAllProperties() const
 	return m_properties;
 }
 
-bool CObject::CastsShadow() const
-{
-	return m_castsShadow;
-}
-
 void CObject::PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed)
 {
 	m_animation = animation;
@@ -181,31 +121,9 @@ float CObject::GetAnimationSpeed() const
 	return m_animationSpeed;
 }
 
-void CObject::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)
-{
-	m_goTarget = coords;
-	m_goSpeed = speed;
-	PlayAnimation(animation, eAnimationLoopMode::LOOPING, animationSpeed);
-}
-
 void CObject::Update(long long timeSinceLastUpdate)
 {
-	if (fabs(m_goSpeed) < DBL_EPSILON)
-	{
-		return;
-	}
-	CVector3d dir = m_goTarget - m_coords;
-	dir.Normalize();
-	m_rotation = atan2(dir.y, dir.x) * 180 / M_PI;
-	dir = dir * static_cast<double>(timeSinceLastUpdate) / 1000.0 * m_goSpeed;
-	if (dir.GetLength() > (m_goTarget - m_coords).GetLength()) dir = (m_goTarget - m_coords);
-	m_coords += dir;
 	m_animationTime += timeSinceLastUpdate;
-	if ((m_coords - m_goTarget).GetLength() < 0.0001)
-	{
-		m_goSpeed = 0.0;
-		PlayAnimation("", eAnimationLoopMode::NONLOOPING, 0.0f);
-	}
 }
 
 std::vector<sTeamColor> const& CObject::GetTeamColor() const
@@ -243,4 +161,9 @@ void CObject::ReplaceTexture(std::wstring const& oldTexture, std::wstring const&
 std::map<std::wstring, std::wstring> const& CObject::GetReplaceTextures() const
 {
 	return m_replaceTextures;
+}
+
+bool CObject::IsGroup() const
+{
+	return false;
 }

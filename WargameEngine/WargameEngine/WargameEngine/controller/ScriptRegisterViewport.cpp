@@ -53,10 +53,10 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 	handler.RegisterMethod(CLASS_VIEWPORT, CAMERA_STRATEGY, [&](void* instance, IArguments const& args) {
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (max trans x, max trans y, max scale, min scale)");
-		double maxTransX = args.GetDbl(1);
-		double maxTransY = args.GetDbl(2);
-		double maxScale = args.GetDbl(3);
-		double minScale = args.GetDbl(4);
+		float maxTransX = args.GetFloat(1);
+		float maxTransY = args.GetFloat(2);
+		float maxScale = args.GetFloat(3);
+		float minScale = args.GetFloat(4);
 		auto viewport = instance ? static_cast<IViewport*>(instance) : &view.GetViewport(0);
 		viewport->SetCamera(std::make_unique<CCameraStrategy>(maxTransX, maxTransY, maxScale, minScale));
 		viewport->GetCamera().SetInput(view.GetInput());

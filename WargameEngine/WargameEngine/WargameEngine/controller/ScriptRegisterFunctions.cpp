@@ -53,10 +53,10 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (model, x, y, rotation)");
 		std::wstring objectModel = args.GetWStr(1);
-		double x = args.GetDbl(2);
-		double y = args.GetDbl(3);
-		double rotation = args.GetDbl(4);
-		model.GetLandscape().AddStaticObject(CStaticObject(objectModel, x, y, rotation));
+		float x = args.GetFloat(2);
+		float y = args.GetFloat(3);
+		float rotation = args.GetFloat(4);
+		model.GetLandscape().AddStaticObject(CStaticObject(objectModel, { x, y, 0.0f }, rotation));
 		return nullptr;
 	});
 }
@@ -435,11 +435,11 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 			throw std::runtime_error("5 or 6 arguments expected (channel, file, x, y, z, volume)");
 		std::wstring channel = args.GetWStr(1);
 		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(2));
-		double x = args.GetDbl(3);
-		double y = args.GetDbl(4);
-		double z = args.GetDbl(5);
+		float x = args.GetFloat(3);
+		float y = args.GetFloat(4);
+		float z = args.GetFloat(5);
 		float volume = args.GetFloat(6);
-		view.GetSoundPlayer().PlaySoundPosition(channel, file, CVector3d(x, y, z), volume);
+		view.GetSoundPlayer().PlaySoundPosition(channel, file, CVector3f(x, y, z), volume);
 		return nullptr;
 	});
 

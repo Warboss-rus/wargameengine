@@ -1,12 +1,14 @@
 #include "CameraStrategy.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
-#define TRANSLATE					  0.3
-#define SCALE						  1.1
+#define TRANSLATE					  0.3f
+#define SCALE						  1.1f
 #include "KeyDefines.h"
 #include <memory>
 
-CCameraStrategy::CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
+constexpr float PI = (float)M_PI;
+
+CCameraStrategy::CCameraStrategy(float maxTransX, float maxTransY, float maxScale, float minScale)
 	:m_maxTransX(maxTransX), m_maxTransY(maxTransY), m_maxScale(maxScale), m_minScale(minScale), m_hidePointer(false), m_oldX(0), m_oldY(0), m_input(nullptr)
 {
 	Reset();
@@ -31,19 +33,19 @@ void CCameraStrategy::Reset()
 	m_scale = 1.0;
 }
 
-CVector3d CCameraStrategy::GetPosition() const
+CVector3f CCameraStrategy::GetPosition() const
 {
-	CVector3d pos;
+	CVector3f pos;
 	pos.x = 0.0;
 	pos.y = 0.0;
 	pos.z = 10.0;
 	//rotateX
-	double temp1 = pos.y * cos(-m_rotX * M_PI / 180) + pos.z * sin(-m_rotX * M_PI / 180);
-	pos.z = pos.y * sin(-m_rotX * M_PI / 180) + pos.z * cos(-m_rotX * M_PI / 180);
+	float temp1 = pos.y * cos(-m_rotX * PI / 180) + pos.z * sin(-m_rotX * PI / 180);
+	pos.z = pos.y * sin(-m_rotX * PI / 180) + pos.z * cos(-m_rotX * PI / 180);
 	pos.y = temp1;
 	//rotateZ
-	double temp = pos.x * cos(m_rotZ * M_PI / 180) + pos.y * sin(m_rotZ * M_PI / 180);
-	pos.y = pos.x * sin(m_rotZ * M_PI / 180) + pos.y * cos(m_rotZ * M_PI / 180);
+	float temp = pos.x * cos(m_rotZ * PI / 180) + pos.y * sin(m_rotZ * PI / 180);
+	pos.y = pos.x * sin(m_rotZ * PI / 180) + pos.y * cos(m_rotZ * PI / 180);
 	pos.x = temp;
 	//scale
 	pos /= m_scale;
@@ -53,37 +55,37 @@ CVector3d CCameraStrategy::GetPosition() const
 	return pos;
 }
 
-CVector3d CCameraStrategy::GetDirection() const
+CVector3f CCameraStrategy::GetDirection() const
 {
 	return{ m_transX, m_transY, 0.0 };
 }
 
-CVector3d CCameraStrategy::GetUpVector() const
+CVector3f CCameraStrategy::GetUpVector() const
 {
-	CVector3d up;
+	CVector3f up;
 	up.x = 0.0;
 	up.y = 0.0;
 	up.z = 1.0;
 	//rotateZ
-	double temp = up.x * cos(m_rotZ * M_PI / 180) + up.y * sin(m_rotZ * M_PI / 180);
-	up.y = up.x * sin(m_rotZ * M_PI / 180) + up.y * cos(m_rotZ * M_PI / 180);
+	float temp = up.x * cos(m_rotZ * PI / 180) + up.y * sin(m_rotZ * PI / 180);
+	up.y = up.x * sin(m_rotZ * PI / 180) + up.y * cos(m_rotZ * PI / 180);
 	up.x = temp;
 	return up;
 }
 
-void CCameraStrategy::Translate(double transX, double transY)
+void CCameraStrategy::Translate(float transX, float transY)
 {
-	m_transX += transX * cos(m_rotZ * M_PI / 180.0) + transY * sin(m_rotZ * M_PI / 180.0);
+	m_transX += transX * cos(m_rotZ * PI / 180.0f) + transY * sin(m_rotZ * PI / 180.0f);
 	if (m_transX > m_maxTransX) m_transX = m_maxTransX;
 	if (m_transX < -m_maxTransX) m_transX = -m_maxTransX;
-	m_transY += -transX * sin(m_rotZ * M_PI / 180.0) + transY * cos(m_rotZ * M_PI / 180.0);
+	m_transY += -transX * sin(m_rotZ * PI / 180.0f) + transY * cos(m_rotZ * PI / 180.0f);
 	if (m_transY > m_maxTransY) m_transY = m_maxTransY;
 	if (m_transY < -m_maxTransY) m_transY = -m_maxTransY;
 }
 
-void CCameraStrategy::Rotate(double rotZ, double rotX)
+void CCameraStrategy::Rotate(float rotZ, float rotX)
 {
-	m_rotZ = fmod(m_rotZ + rotZ, 360);
+	m_rotZ = fmod(m_rotZ + rotZ, 360.0f);
 	m_rotX += rotX;
 	if (m_rotX > 90.0) m_rotX = 90.0;
 	if (m_rotX < 1.0) m_rotX = 1.0;
@@ -107,7 +109,7 @@ void CCameraStrategy::SetInput(IInput & input)
 		int modifiers = m_input->GetModifiers();
 		if (m_hidePointer)
 		{
-			Rotate(x - m_oldX, m_oldY - y);
+			Rotate(static_cast<float>(x - m_oldX), static_cast<float>(m_oldY - y));
 			if (!(modifiers & IInput::MODIFIER_ALT))
 			{
 				m_hidePointer = false;
@@ -160,7 +162,7 @@ void CCameraStrategy::SetInput(IInput & input)
 	}, 1, g_cameraTag);
 }
 
-const double CCameraStrategy::GetScale() const
+const float CCameraStrategy::GetScale() const
 {
 	return m_scale;
 }
@@ -176,8 +178,8 @@ void CCameraStrategy::EnableTouchMode()
 	m_input->DoOnMouseMove([lastCoords, this](int x, int y) {
 		if (lastCoords->x != 0 && lastCoords->y != 0)
 		{
-			m_transX -= (x - lastCoords->x) * 0.01;
-			m_transY += (y - lastCoords->y) * 0.01;
+			m_transX -= (x - lastCoords->x) * 0.01f;
+			m_transY += (y - lastCoords->y) * 0.01f;
 			lastCoords->x = x;
 			lastCoords->y = y;
 		}
@@ -186,8 +188,8 @@ void CCameraStrategy::EnableTouchMode()
 	m_input->DoOnLMBUp([lastCoords, this](int x, int y) {
 		if (lastCoords->x != 0 && lastCoords->y != 0)
 		{
-			m_transX -= (x - lastCoords->x) * 0.01;
-			m_transY += (y - lastCoords->y) * 0.01;
+			m_transX -= (x - lastCoords->x) * 0.01f;
+			m_transY += (y - lastCoords->y) * 0.01f;
 		}
 		*lastCoords = CVector2i();
 		return false;

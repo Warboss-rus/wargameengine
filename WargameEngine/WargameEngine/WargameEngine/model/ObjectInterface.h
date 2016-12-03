@@ -8,21 +8,27 @@
 #include "TeamColor.h"
 #include "MovementLimiter.h"
 
-class IObject
+class IBaseObject
 {
 public:
+	~IBaseObject() {}
 	virtual std::wstring GetPathToModel() const = 0;
-	virtual ~IObject() {}
-	virtual void Move(double x, double y, double z) = 0;
-	virtual void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) = 0;
-	virtual void SetCoords(double x, double y, double z) = 0;
-	virtual void SetCoords(CVector3d const& coords) = 0;
-	virtual void Rotate(double rotation) = 0;
-	virtual double GetX() const = 0;
-	virtual double GetY() const = 0;
-	virtual double GetZ() const = 0;
-	virtual CVector3d GetCoords() const = 0;
-	virtual double GetRotation() const = 0;
+	virtual void SetCoords(float x, float y, float z) = 0;
+	virtual void SetCoords(CVector3f const& coords) = 0;
+	virtual void Move(float dx, float dy, float dz) = 0;
+	virtual CVector3f GetCoords() const = 0;
+	virtual float GetX() const = 0;
+	virtual float GetY() const = 0;
+	virtual float GetZ() const = 0;
+	virtual void Rotate(float rotation) = 0;
+	virtual void SetRotation(float rotation) = 0;
+	virtual float GetRotation() const = 0;
+	virtual bool CastsShadow() const = 0;
+};
+
+class IObject : public IBaseObject
+{
+public:
 	virtual std::set<std::string> const& GetHiddenMeshes() const = 0;
 	virtual void HideMesh(std::string const& meshName) = 0;
 	virtual void ShowMesh(std::string const& meshName) = 0;
@@ -32,7 +38,6 @@ public:
 	virtual void SetSelectable(bool selectable) = 0;
 	virtual void SetMovementLimiter(IMoveLimiter * limiter) = 0;
 	virtual std::map<std::wstring, std::wstring> const& GetAllProperties() const = 0;
-	virtual bool CastsShadow() const = 0;
 	virtual void PlayAnimation(std::string const& animation, eAnimationLoopMode loop = eAnimationLoopMode::NONLOOPING, float speed = 1.0f) = 0;
 	virtual std::string GetAnimation() const = 0;
 	virtual float GetAnimationTime() const = 0;
@@ -47,4 +52,5 @@ public:
 	virtual void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) = 0;
 	virtual void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) = 0;
 	virtual std::map<std::wstring, std::wstring> const& GetReplaceTextures() const = 0;
+	virtual bool IsGroup() const = 0;
 };

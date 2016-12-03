@@ -14,6 +14,19 @@
 
 class CGameView;
 
+class CObjectDecorator
+{
+public:
+	CObjectDecorator(std::shared_ptr<IObject> const& object);
+	void GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed);
+	IObject* GetObject();
+	void Update(long long timeSinceLastUpdate);
+private:
+	std::shared_ptr<IObject> m_object;
+	CVector3f m_goTarget;
+	float m_goSpeed;
+};
+
 class CGameController : public IStateManager
 {
 public:
@@ -26,11 +39,11 @@ public:
 	virtual void SerializeState(IWriteMemoryStream & stream, bool hasAdresses = false) const override;
 	virtual void LoadState(IReadMemoryStream & stream, bool hasAdresses = false) override;
 
-	bool OnLeftMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
-	bool OnLeftMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
-	bool OnRightMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers);
-	bool OnRightMouseUp(CVector3d const& begin, CVector3d const& end, int modifiers);
-	bool OnMouseMove(CVector3d const& begin, CVector3d const& end, int modifiers);
+	bool OnLeftMouseDown(CVector3f const& begin, CVector3f const& end, int modifiers);
+	bool OnLeftMouseUp(CVector3f const& begin, CVector3f const& end, int modifiers);
+	bool OnRightMouseDown(CVector3f const& begin, CVector3f const& end, int modifiers);
+	bool OnRightMouseUp(CVector3f const& begin, CVector3f const& end, int modifiers);
+	bool OnMouseMove(CVector3f const& begin, CVector3f const& end, int modifiers);
 	bool OnGamepadButtonStateChange(int gamepadIndex, int buttonIndex, bool newState);
 	bool OnGamepadAxisChange(int gamepadIndex, int axisIndex, double horizontal, double vertical);
 	size_t GetLineOfSight(IObject * shooter, IObject * target);
@@ -45,13 +58,14 @@ public:
 	void Load(std::wstring const& filename);
 	void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);
 	bool OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt);
-	std::shared_ptr<IObject> CreateObject(std::wstring const& model, double x, double y, double rotation);
+	std::shared_ptr<IObject> CreateObject(std::wstring const& model, float x, float y, float rotation);
 	void DeleteObject(std::shared_ptr<IObject> obj);
 	void SetObjectProperty(std::shared_ptr<IObject> obj, std::wstring const& key, std::wstring const& value);
 	void PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
-	void ObjectGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed);
+	void ObjectGoTo(std::shared_ptr<IObject> object, float x, float y, float speed, std::string const& animation, float animationSpeed);
 	CCommandHandler & GetCommandHandler();
 	CNetwork& GetNetwork();
+	std::shared_ptr<CObjectDecorator> GetDecorator(std::shared_ptr<IObject> const& object);
 private:
 	struct sKeyBind
 	{
@@ -62,24 +76,24 @@ private:
 		bool alt;
 	};
 	CGameController(CGameController const&) = delete;
-	std::shared_ptr<IObject> GetNearestObject(const double * start, const double * end);
+	std::shared_ptr<IObject> GetNearestObject(const float * start, const float * end);
 	void SelectObjectGroup(double beginX, double beginY, double endX, double endY);
-	void SelectObject(const double * begin, const double * end, bool add, bool noCallback = false);
-	void TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3d const& pos);
-	void MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY);
-	void RotateObject(std::shared_ptr<IObject> obj, double deltaRot);
-	size_t BBoxlos(double origin[3], sBounding * target, IObject * shooter, IObject * targetObject);
-	CVector3d RayToPoint(CVector3d const& begin, CVector3d const& end, double z = 0);
+	void SelectObject(const float * begin, const float * end, bool add, bool noCallback = false);
+	void TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3f const& pos);
+	void MoveObject(std::shared_ptr<IObject> obj, float deltaX, float deltaY);
+	void RotateObject(std::shared_ptr<IObject> obj, float deltaRot);
+	size_t BBoxlos(CVector3f const& origin, sBounding * target, IObject * shooter, IObject * targetObject);
+	CVector3f RayToPoint(CVector3f const& begin, CVector3f const& end, float z = 0);
 	static void PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream);
 
 	CGameModel& m_model;
 	CGameView* m_view;
 	IPhysicsEngine & m_physicsEngine;
-	CVector3d m_selectedObjectCapturePoint;
-	std::unique_ptr<CVector3d> m_selectedObjectBeginCoords;
+	CVector3f m_selectedObjectCapturePoint;
+	std::unique_ptr<CVector3f> m_selectedObjectBeginCoords;
 	std::unique_ptr<CVector2d> m_selectionRectangleBegin;
-	double m_selectedObjectPrevRotation = 0;
-	std::unique_ptr<CVector3d> m_rotationPosBegin;
+	float m_selectedObjectPrevRotation = 0;
+	std::unique_ptr<CVector3f> m_rotationPosBegin;
 	long long m_lastUpdateTime;
 
 	std::unique_ptr<IScriptHandler> m_scriptHandler;
@@ -94,6 +108,7 @@ private:
 	CSignal<int, int, double, double> m_onGamepadAxis;
 	MouseButtonCallback m_lmbCallback;
 	MouseButtonCallback m_rmbCallback;
+	std::map<IObject*, std::shared_ptr<CObjectDecorator>> m_objectDecorators;
 
 	friend bool operator< (sKeyBind const& one, sKeyBind const& two);
 };

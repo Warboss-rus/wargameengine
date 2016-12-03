@@ -45,7 +45,7 @@ glm::highp_vec3 FromVector3(CVector3d const& v)
 	return result;
 }
 
-CVector3d ToVector3d(glm::highp_vec3 const& v)
+CVector3f ToVector3f(glm::highp_vec3 const& v)
 {
 	return{ v.x, v.y, v.z };
 }
@@ -257,7 +257,7 @@ void COpenGLESRenderer::ResetViewMatrix()
 	UpdateUniforms();
 }
 
-void COpenGLESRenderer::LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up)
+void COpenGLESRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
 	m_viewMatrices.back() = ToMatrix4(glm::lookAt(FromVector3(position), FromVector3(direction), FromVector3(up)));
 	UpdateUniforms();
@@ -535,7 +535,7 @@ void COpenGLVertexBuffer::UnBind() const
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const
+void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const
 {
 	float viewportData[4] = { (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() };
 	//Set OpenGL Windows coordinates
@@ -543,16 +543,16 @@ void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, i
 	double winY = viewportData[3] - (double)y;
 
 	//Cast a ray from eye to mouse cursor;
-	start = ToVector3d(glm::unProject(FromVector3(CVector3f(winX, winY, 0.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
+	start = ToVector3f(glm::unProject(FromVector3(CVector3f(winX, winY, 0.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
 		Vec4FromData(viewportData)));
-	end = ToVector3d(glm::unProject(FromVector3(CVector3f(winX, winY, 1.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
+	end = ToVector3f(glm::unProject(FromVector3(CVector3f(winX, winY, 1.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
 		Vec4FromData(viewportData)));
 }
 
-void COpenGLESRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const
+void COpenGLESRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
 	float viewportData[4] = { (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() };
-	CVector3d windowPos = ToVector3d(glm::project(FromVector3(worldCoords), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), Vec4FromData(viewportData)));
+	auto windowPos = glm::project(FromVector3(worldCoords), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), Vec4FromData(viewportData));
 	x = static_cast<int>(windowPos.x);
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }

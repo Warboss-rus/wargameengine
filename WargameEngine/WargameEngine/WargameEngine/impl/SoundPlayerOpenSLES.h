@@ -9,11 +9,11 @@ public:
 
 	virtual void Play(std::wstring const& channel, std::wstring const& file, float volume = 1.0f) override;
 
-	virtual void PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3d const& position, float volume = 1.0f) override;
+	virtual void PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3f const& position, float volume = 1.0f) override;
 
 	virtual void PlaySoundPlaylist(std::wstring const& name, std::vector<std::wstring> const& files, float volume = 1.0f, bool shuffle = false, bool repeat = false) override;
 
-	virtual void SetListenerPosition(CVector3d const& position, CVector3d const& center) override;
+	virtual void SetListenerPosition(CVector3f const& position, CVector3f const& center) override;
 
 	virtual void PauseChannel(std::wstring const& name, bool pause) override;
 

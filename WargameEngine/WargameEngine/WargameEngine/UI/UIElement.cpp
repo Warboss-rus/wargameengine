@@ -355,6 +355,7 @@ void CUIElement::ClearChildren()
 {
 	m_children.clear();
 	m_focused = NULL;
+	InvalidateChildren();
 }
 
 int CUIElement::GetX() const

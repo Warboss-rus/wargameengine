@@ -95,9 +95,9 @@ private:
 	void InitLandscape();
 
 	void InitInput();
-	void DrawText3D(CVector3d const& pos, std::wstring const& text);
-	void WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ = 0);
-	void WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end);
+	void DrawText3D(CVector3f const& pos, std::wstring const& text);
+	void WindowCoordsToWorldCoords(int windowX, int windowY, float & worldX, float & worldY, float worldZ = 0);
+	void WindowCoordsToWorldVector(int x, int y, CVector3f & start, CVector3f & end);
 	CGameView(CGameView const&) = delete;
 	CGameView& operator=(const CGameView&) = delete;
 
@@ -128,5 +128,5 @@ private:
 	bool m_vertexLightning;
 	IViewport * m_shadowMapViewport;
 	IViewport * m_currentViewport;
-	CVector3d m_lightPosition;
+	CVector3f m_lightPosition;
 };

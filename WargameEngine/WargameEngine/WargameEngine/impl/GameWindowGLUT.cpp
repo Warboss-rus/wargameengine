@@ -1,8 +1,10 @@
 #include "GameWindowGLUT.h"
+#pragma warning(push)
+#pragma warning(disable: 4505)
 #include <GL/freeglut.h>
+#pragma warning(pop)
 #include "InputGLUT.h"
 #include "OpenGLRenderer.h"
-#include <stdexcept>
 #include "../Utils.h"
 #include "../LogWriter.h"
 

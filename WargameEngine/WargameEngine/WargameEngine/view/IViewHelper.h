@@ -24,8 +24,8 @@ class IViewport;
 class IViewHelper : public ITextureHelper, public IRenderer
 {
 public:
-	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const = 0;
-	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const = 0;
+	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const = 0;
+	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const = 0;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const = 0;
 	virtual void EnableLight(size_t index, bool enable) = 0;
 	virtual void SetLightColor(size_t index, LightningType type, float * values) = 0;

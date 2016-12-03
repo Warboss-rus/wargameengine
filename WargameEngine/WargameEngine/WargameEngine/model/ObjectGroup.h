@@ -9,15 +9,16 @@ class CObjectGroup : public IObject
 public:
 	CObjectGroup(IGameModel & model);
 	std::wstring GetPathToModel() const override;
-	void Move(double x, double y, double z) override;
-	void SetCoords(double x, double y, double z) override;
-	void SetCoords(CVector3d const& coords) override;
-	void Rotate(double rotation) override;
-	double GetX() const override;
-	double GetY() const override;
-	double GetZ() const override;
-	CVector3d GetCoords() const override;
-	double GetRotation() const override;
+	void Move(float dx, float dy, float dz) override;
+	void SetCoords(float x, float y, float z) override;
+	void SetCoords(CVector3f const& coords) override;
+	void Rotate(float rotation) override;
+	void SetRotation(float rotation) override;
+	float GetX() const override;
+	float GetY() const override;
+	float GetZ() const override;
+	CVector3f GetCoords() const override;
+	float GetRotation() const override;
 	std::set<std::string> const& GetHiddenMeshes() const override;
 	void HideMesh(std::string const& meshName) override;
 	void ShowMesh(std::string const& meshName) override;
@@ -45,12 +46,12 @@ public:
 	std::wstring GetSecondaryModel(size_t index) const override;
 	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
-	void GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed) override;
 	void Update(long long timeSinceLastUpdate) override;
 	std::vector<sTeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
 	void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) override;
 	std::map<std::wstring, std::wstring> const& GetReplaceTextures() const override;
+	virtual bool IsGroup() const override;
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

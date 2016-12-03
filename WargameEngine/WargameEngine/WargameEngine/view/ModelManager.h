@@ -10,14 +10,13 @@ class IBoundingBoxManager;
 class CAsyncFileProvider;
 class IModelReader;
 class C3DModel;
-class IShaderManager;
 
 class CModelManager
 {
 public:
 	CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager, CAsyncFileProvider & asyncFileProvider);
 	~CModelManager();
-	void DrawModel(std::wstring const& path, std::shared_ptr<IObject> object, bool vertexOnly = false, IShaderManager * shaderManager = nullptr);
+	void DrawModel(std::wstring const& path, IObject* object, bool vertexOnly = false);
 	void LoadIfNotExist(std::wstring const& path);
 	std::vector<std::string> GetAnimations(std::wstring const& path);
 	void EnableGPUSkinning(bool enable);

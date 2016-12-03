@@ -39,7 +39,7 @@ public:
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
 	virtual void ResetViewMatrix() override;
-	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) override;
+	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
 	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
@@ -54,8 +54,8 @@ public:
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	virtual IShaderManager& GetShaderManager() override;
 
-	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const override;
-	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const override;
+	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
+	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
 	virtual void EnableLight(size_t index, bool enable) override;
 	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
@@ -118,6 +118,6 @@ private:
 
 	std::vector<sLightSource> m_lightSources;
 	std::vector<DirectX::XMFLOAT4X4> m_viewMatrices;
-	std::vector<DirectX::XMFLOAT4X4> m_projectionMatrices;
+	DirectX::XMFLOAT4X4 m_projectionMatrix;
 	float m_anisotropyLevel = 0.0f;
 };

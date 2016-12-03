@@ -102,7 +102,7 @@ void CGameWindowGLFW::LaunchMainLoop()
 						auto matrix = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[i].mDeviceToAbsoluteTracking);
 						double x, y, z;
 						GetRotation(matrix, z, y, x);
-						m_input->SetHeadRotation(i, -x * 180 / M_PI, y * 180 / M_PI,z * 180 / M_PI);
+						m_input->SetHeadRotation(i, static_cast<float>(-x * 180 / M_PI), static_cast<float>(y * 180 / M_PI), static_cast<float>(z * 180 / M_PI));
 					}
 				}
 			}

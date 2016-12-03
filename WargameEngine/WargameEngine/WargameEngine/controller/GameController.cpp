@@ -53,21 +53,25 @@ void CGameController::Update()
 	long long currentTime = GetCurrentTimeLL();
 	long long delta = currentTime - m_lastUpdateTime;
 	m_lastUpdateTime = currentTime;
+	for (auto& decorator : m_objectDecorators)
+	{
+		decorator.second->Update(delta);
+	}
 	m_model.Update(delta);
 	m_physicsEngine.Update(delta);
 }
 
-CVector3d CGameController::RayToPoint(CVector3d const& begin, CVector3d const& end, double z)
+CVector3f CGameController::RayToPoint(CVector3f const& begin, CVector3f const& end, float z)
 {
-	CVector3d result;
-	double a = (z - begin.z) / (end.z - begin.z);
+	CVector3f result;
+	float a = (z - begin.z) / (end.z - begin.z);
 	result.x = a * (end.x - begin.x) + begin.x;
 	result.y = a * (end.y - begin.y) + begin.y;
 	result.z = z;
 	return result;
 }
 
-bool CGameController::OnLeftMouseDown(CVector3d const& begin, CVector3d const& end, int modifiers)
+bool CGameController::OnLeftMouseDown(CVector3f const& begin, CVector3f const& end, int modifiers)
 {
 	SelectObject(begin, end, modifiers & IInput::MODIFIER_SHIFT);
 	auto selected = m_model.GetSelectedObject();
@@ -78,12 +82,12 @@ bool CGameController::OnLeftMouseDown(CVector3d const& begin, CVector3d const& e
 	}
 	else
 	{
-		m_selectedObjectBeginCoords = std::make_unique<CVector3d>(selected->GetCoords());
+		m_selectedObjectBeginCoords = std::make_unique<CVector3f>(selected->GetCoords());
 	}
 	return selected.get() != nullptr;
 }
 
-bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end, int)
+bool CGameController::OnLeftMouseUp(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto selected = m_model.GetSelectedObject();
 	auto pos = RayToPoint(begin, end);
@@ -115,21 +119,21 @@ bool CGameController::OnLeftMouseUp(CVector3d const& begin, CVector3d const& end
 	return selected.get() != nullptr;
 }
 
-bool CGameController::OnRightMouseDown(CVector3d const& begin, CVector3d const& end, int)
+bool CGameController::OnRightMouseDown(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto prev = m_model.GetSelectedObject();
 	SelectObject(begin, end, false);
 	auto object = m_model.GetSelectedObject();
 	if (!object) m_model.SelectObject(prev);
 	m_selectedObjectPrevRotation = (object) ? object->GetRotation() : 0;
-	m_rotationPosBegin = std::make_unique<CVector3d>(RayToPoint(begin, end));
+	m_rotationPosBegin = std::make_unique<CVector3f>(RayToPoint(begin, end));
 	return !!object;
 }
 
-bool CGameController::OnRightMouseUp(CVector3d const& begin, CVector3d const& end, int)
+bool CGameController::OnRightMouseUp(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto object = m_model.GetSelectedObject();
-	double rot = object ? object->GetRotation() : 0.0;
+	float rot = object ? object->GetRotation() : 0.0f;
 	auto point = RayToPoint(begin, end);
 	if (m_rmbCallback && m_rmbCallback(GetNearestObject(begin, end), L"Object", point.x, point.y, point.z))
 	{
@@ -139,7 +143,7 @@ bool CGameController::OnRightMouseUp(CVector3d const& begin, CVector3d const& en
 	bool result = false;
 	if (m_rotationPosBegin && object)
 	{
-		double rotation = 90 + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180 / M_PI);
+		float rotation = 90.0f + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180.0f / (float)M_PI);
 		if (sqrt((point.x - m_rotationPosBegin->x) * (point.x - m_rotationPosBegin->x) + (point.y - m_rotationPosBegin->y) * (point.y - m_rotationPosBegin->y)) > 0.2)
 		{
 			object->Rotate(rotation - rot);
@@ -151,7 +155,7 @@ bool CGameController::OnRightMouseUp(CVector3d const& begin, CVector3d const& en
 	return result;
 }
 
-bool CGameController::OnMouseMove(CVector3d const& begin, CVector3d const& end, int)
+bool CGameController::OnMouseMove(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto selected = m_model.GetSelectedObject();
 	if (selected && m_selectedObjectBeginCoords)
@@ -162,9 +166,9 @@ bool CGameController::OnMouseMove(CVector3d const& begin, CVector3d const& end, 
 	}
 	if (selected && m_rotationPosBegin)
 	{
-		double rot = selected->GetRotation();
+		float rot = selected->GetRotation();
 		auto point = RayToPoint(begin, end);
-		double rotation = 90 + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180 / M_PI);
+		float rotation = 90 + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180 / (float)M_PI);
 		if (sqrt((point.x - m_rotationPosBegin->x) * (point.x - m_rotationPosBegin->x) + (point.y - m_rotationPosBegin->y) * (point.y - m_rotationPosBegin->y)) > 0.2)
 			m_model.GetSelectedObject()->Rotate(rotation - rot);
 	}
@@ -214,14 +218,14 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 	if (m_selectionCallback) m_selectionCallback();
 }
 
-std::shared_ptr<IObject> CGameController::GetNearestObject(const double * start, const double * end)
+std::shared_ptr<IObject> CGameController::GetNearestObject(const float * start, const float * end)
 {
 	IObject* selectedObject = nullptr;
-	m_physicsEngine.CastRay(CVector3d(start), CVector3d(end), &selectedObject, m_selectedObjectCapturePoint);
+	m_physicsEngine.CastRay(CVector3f(start), CVector3f(end), &selectedObject, m_selectedObjectCapturePoint);
 	return m_model.Get3DObject(selectedObject);
 }
 
-void CGameController::SelectObject(const double * begin, const double * end, bool add, bool noCallback /*= false*/)
+void CGameController::SelectObject(const float * begin, const float * end, bool add, bool noCallback /*= false*/)
 {
 	std::shared_ptr<IObject> selectedObject = GetNearestObject(begin, end);
 	if (selectedObject && !selectedObject->IsSelectable())
@@ -229,7 +233,7 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 		return;
 	}
 	std::shared_ptr<IObject> object = m_model.GetSelectedObject();
-	if (CGameModel::IsGroup(object.get()))
+	if (object && object->IsGroup())
 	{
 		CObjectGroup * group = (CObjectGroup *)object.get();
 		if (add)
@@ -276,7 +280,7 @@ void CGameController::SelectObject(const double * begin, const double * end, boo
 	if (m_selectionCallback && !noCallback) m_selectionCallback();
 }
 
-size_t CGameController::BBoxlos(double origin[3], sBounding * target, IObject * shooter, IObject * targetObject)
+size_t CGameController::BBoxlos(CVector3f const& origin, sBounding * target, IObject * shooter, IObject * targetObject)
 {
 	size_t result = 0;
 	size_t total = 0;
@@ -293,17 +297,17 @@ size_t CGameController::BBoxlos(double origin[3], sBounding * target, IObject * 
 	else
 	{
 		sBounding::sBox const& tarBox = target->GetBox();
-		double dir[3];
-		for (dir[0] = tarBox.min[0] + targetObject->GetX(); dir[0] < tarBox.max[0] + targetObject->GetX(); dir[0] += (tarBox.max[0] - tarBox.min[0]) / 10.0 + 0.0001)
+		CVector3f dir;
+		for (dir.x = tarBox.min[0] + targetObject->GetX(); dir.x < tarBox.max[0] + targetObject->GetX(); dir.x += (tarBox.max[0] - tarBox.min[0]) / 10.0f + 0.0001f)
 		{
-			for (dir[1] = tarBox.min[1] + targetObject->GetY(); dir[1] < tarBox.max[1] + targetObject->GetY(); dir[1] += (tarBox.max[1] - tarBox.min[1]) / 10.0 + 0.0001)
+			for (dir.y = tarBox.min[1] + targetObject->GetY(); dir.y < tarBox.max[1] + targetObject->GetY(); dir.y += (tarBox.max[1] - tarBox.min[1]) / 10.0f + 0.0001f)
 			{
-				for (dir[2] = tarBox.min[2] + targetObject->GetZ(); dir[2] < tarBox.max[2] + targetObject->GetZ(); dir[2] += (tarBox.max[2] - tarBox.min[2]) / 10.0 + 0.0001)
+				for (dir.z = tarBox.min[2] + targetObject->GetZ(); dir.z < tarBox.max[2] + targetObject->GetZ(); dir.z += (tarBox.max[2] - tarBox.min[2]) / 10.0f + 0.0001f)
 				{
 					total++;
-					CVector3d coords;
+					CVector3f coords;
 					IObject * obj;
-					if (!m_physicsEngine.CastRay(CVector3d(origin), CVector3d(dir), &obj, coords, { shooter, targetObject }))
+					if (!m_physicsEngine.CastRay(origin, dir, &obj, coords, { shooter, targetObject }))
 						result++;
 				}
 			}
@@ -316,7 +320,8 @@ size_t CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 {
 	if (!shooter || !target) return 0;
 	sBounding targetBound = m_physicsEngine.GetBounding(target->GetPathToModel());
-	double center[3] = { shooter->GetX(), shooter->GetY(), shooter->GetZ() + 2.0 };
+	CVector3f center = shooter->GetCoords();
+	center.z += 2.0f;
 	return BBoxlos(center, &targetBound, shooter, target);
 }
 
@@ -342,10 +347,10 @@ void CGameController::SerializeState(IWriteMemoryStream & stream, bool hasAdress
 	for (size_t i = 0; i < count; ++i)
 	{
 		IObject * object = m_model.Get3DObject(i).get();
-		stream.WriteDouble(object->GetX());
-		stream.WriteDouble(object->GetY());
-		stream.WriteDouble(object->GetZ());
-		stream.WriteDouble(object->GetRotation());
+		stream.WriteFloat(object->GetX());
+		stream.WriteFloat(object->GetY());
+		stream.WriteFloat(object->GetZ());
+		stream.WriteFloat(object->GetRotation());
 		stream.WriteWString(object->GetPathToModel());
 		if (hasAdresses)
 		{
@@ -362,12 +367,12 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 	m_model.Clear();
 	for (size_t i = 0; i < count; ++i)
 	{
-		double x = stream.ReadDouble();
-		double y = stream.ReadDouble();
-		double z = stream.ReadDouble();
-		double rotation = stream.ReadDouble();
+		float x = stream.ReadFloat();
+		float y = stream.ReadFloat();
+		float z = stream.ReadFloat();
+		float rotation = stream.ReadFloat();
 		std::wstring path = stream.ReadWString();
-		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, x, y, z, rotation));
+		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, { x, y, z }, rotation));
 		m_model.AddObject(object);
 		if (hasAdresses)
 		{
@@ -405,7 +410,7 @@ void CGameController::Load(std::wstring const& filename)
 	m_network->CallStateRecievedCallback();
 }
 
-void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3d const& pos)
+void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3f const& pos)
 {
 	if (!object)
 	{
@@ -419,7 +424,7 @@ void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, CVe
 		return;
 	}
 
-	CVector3d old(object->GetCoords());
+	CVector3f old(object->GetCoords());
 	if (m_model.GetLandscape().isCoordsOnTable(pos.x, pos.y))
 	{
 		object->SetCoords(pos.x - m_selectedObjectCapturePoint.x, pos.y - m_selectedObjectCapturePoint.y, pos.z);
@@ -487,19 +492,19 @@ bool CGameController::OnKeyPress(unsigned char key, bool shift, bool ctrl, bool 
 	return false;
 }
 
-void CGameController::MoveObject(std::shared_ptr<IObject> obj, double deltaX, double deltaY)
+void CGameController::MoveObject(std::shared_ptr<IObject> obj, float deltaX, float deltaY)
 {
 	m_commandHandler->AddNewMoveObject(obj, deltaX, deltaY);
 }
 
-void CGameController::RotateObject(std::shared_ptr<IObject> obj, double deltaRot)
+void CGameController::RotateObject(std::shared_ptr<IObject> obj, float deltaRot)
 {
 	m_commandHandler->AddNewRotateObject(obj, deltaRot);
 }
 
-std::shared_ptr<IObject> CGameController::CreateObject(std::wstring const& model, double x, double y, double rotation)
+std::shared_ptr<IObject> CGameController::CreateObject(std::wstring const& model, float x, float y, float rotation)
 {
-	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, x, y, 0.0, rotation);
+	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, CVector3f{ x, y, 0.0f }, rotation);
 	m_view->GetModelManager().LoadIfNotExist(model);
 	m_commandHandler->AddNewCreateObject(object, m_model);
 	m_network->AddAddressLocal(object);
@@ -521,9 +526,9 @@ void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> object, std::
 	m_commandHandler->AddNewPlayAnimation(object, animation, loopMode, speed);
 }
 
-void CGameController::ObjectGoTo(std::shared_ptr<IObject> object, double x, double y, double speed, std::string const& animation, float animationSpeed)
+void CGameController::ObjectGoTo(std::shared_ptr<IObject> object, float x, float y, float speed, std::string const& animation, float animationSpeed)
 {
-	m_commandHandler->AddNewGoTo(object, x, y, speed, animation, animationSpeed);
+	m_commandHandler->AddNewGoTo(GetDecorator(object), x, y, speed, animation, animationSpeed);
 }
 
 CCommandHandler & CGameController::GetCommandHandler()
@@ -536,7 +541,52 @@ CNetwork& CGameController::GetNetwork()
 	return *m_network;
 }
 
+std::shared_ptr<CObjectDecorator> CGameController::GetDecorator(std::shared_ptr<IObject> const& object)
+{
+	if (m_objectDecorators.find(object.get()) == m_objectDecorators.end())
+	{
+		m_objectDecorators[object.get()] = std::make_shared<CObjectDecorator>(object);
+	}
+	return m_objectDecorators[object.get()];
+}
+
 bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind const& two)
 {
 	return one.key < two.key;
+}
+
+CObjectDecorator::CObjectDecorator(std::shared_ptr<IObject> const& object)
+	:m_object(object)
+{
+}
+
+void CObjectDecorator::GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed)
+{
+	m_goTarget = coords;
+	m_goSpeed = speed;
+	m_object->PlayAnimation(animation, eAnimationLoopMode::LOOPING, animationSpeed);
+}
+
+IObject* CObjectDecorator::GetObject()
+{
+	return m_object.get();
+}
+
+void CObjectDecorator::Update(long long timeSinceLastUpdate)
+{
+	if (fabs(m_goSpeed) < DBL_EPSILON)
+	{
+		return;
+	}
+	CVector3f dir = m_goTarget - m_object->GetCoords();
+	dir.Normalize();
+	m_object->SetRotation(atan2(dir.y, dir.x) * 180.0f / (float)M_PI);
+	dir = dir * static_cast<float>(timeSinceLastUpdate) / 1000.0f * m_goSpeed;
+	if (dir.GetLength() > (m_goTarget - m_object->GetCoords()).GetLength()) dir = (m_goTarget - m_object->GetCoords());
+	m_object->Move(dir.x, dir.y, dir.z);
+	if ((m_object->GetCoords() - m_goTarget).GetLength() < 0.0001)
+	{
+		m_goSpeed = 0.0;
+		m_object->PlayAnimation("", eAnimationLoopMode::NONLOOPING, 0.0f);
+	}
 }

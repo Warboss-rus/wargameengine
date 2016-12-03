@@ -93,7 +93,7 @@ void CGameView::Init(sModule const& module)
 	int width, height;
 	m_window->GetWindowSize(width, height);
 	m_viewports.push_back(std::make_unique<CViewport>(0, 0, width, height, 60.0f, *m_viewHelper, true));
-	m_viewports.front()->SetCamera(make_unique<CCameraStrategy>(100.0, 100.0, 2.8, 0.5));
+	m_viewports.front()->SetCamera(make_unique<CCameraStrategy>(100.0f, 100.0f, 2.8f, 0.5f));
 	m_gameController.reset();
 
 	m_asyncFileProvider.SetModule(module);
@@ -115,16 +115,16 @@ void CGameView::InitLandscape()
 	});
 }
 
-void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, double & worldX, double & worldY, double worldZ)
+void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, float & worldX, float & worldY, float worldZ)
 {
-	CVector3d start, end;
+	CVector3f start, end;
 	WindowCoordsToWorldVector(windowX, windowY, start, end);
-	double a = (worldZ - start.z) / (end.z - start.z);
+	float a = (worldZ - start.z) / (end.z - start.z);
 	worldX = a * (end.x - start.x) + start.x;
 	worldY = a * (end.y - start.y) + start.y;
 }
 
-void CGameView::WindowCoordsToWorldVector(int x, int y, CVector3d & start, CVector3d & end)
+void CGameView::WindowCoordsToWorldVector(int x, int y, CVector3f & start, CVector3f & end)
 {
 	for (auto& viewport : m_viewports)
 	{
@@ -159,7 +159,7 @@ void CGameView::InitInput()
 	}, 9);
 	//Ruler
 	m_input->DoOnLMBDown([this](int x, int y) {
-		double wx, wy;
+		float wx, wy;
 		WindowCoordsToWorldCoords(x, y, wx, wy);
 		if (m_ruler.IsVisible())
 		{
@@ -176,7 +176,7 @@ void CGameView::InitInput()
 		return false;
 	}, 2);
 	m_input->DoOnLMBUp([this](int x, int y) {
-		double wx, wy;
+		float wx, wy;
 		WindowCoordsToWorldCoords(x, y, wx, wy);
 		m_ruler.SetEnd(wx, wy);
 		return false;
@@ -189,7 +189,7 @@ void CGameView::InitInput()
 		return false;
 	}, 2);
 	m_input->DoOnMouseMove([this](int x, int y) {
-		double wx, wy;
+		float wx, wy;
 		WindowCoordsToWorldCoords(x, y, wx, wy);
 		if (m_ruler.IsEnabled())
 		{
@@ -199,7 +199,7 @@ void CGameView::InitInput()
 	}, 2);
 	//Game Controller
 	m_input->DoOnLMBDown([this](int x, int y) {
-		CVector3d begin, end;
+		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnLeftMouseDown(begin, end, m_input->GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
@@ -210,7 +210,7 @@ void CGameView::InitInput()
 		return result;
 	}, 5, g_controllerTag);
 	m_input->DoOnLMBUp([this](int x, int y) {
-		CVector3d begin, end;
+		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnLeftMouseUp(begin, end, m_input->GetModifiers());
 		if (result && !m_ruler.IsEnabled())
@@ -221,7 +221,7 @@ void CGameView::InitInput()
 		return result;
 	}, 5, g_controllerTag);
 	m_input->DoOnMouseMove([this](int x, int y) {
-		CVector3d begin, end;
+		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
 		bool result = m_gameController->OnMouseMove(begin, end, m_input->GetModifiers());
 		auto object = m_gameModel->GetSelectedObject();
@@ -232,12 +232,12 @@ void CGameView::InitInput()
 		return result;
 	}, 5, g_controllerTag);
 	m_input->DoOnRMBDown([this](int x, int y) {
-		CVector3d begin, end;
+		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
 		return m_gameController->OnRightMouseDown(begin, end, m_input->GetModifiers());
 	}, 5, g_controllerTag);
 	m_input->DoOnRMBUp([this](int x, int y) {
-		CVector3d begin, end;
+		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
 		return m_gameController->OnRightMouseUp(begin, end, m_input->GetModifiers());
 	}, 5, g_controllerTag);
@@ -262,13 +262,13 @@ void DrawBBox(sBounding::sBox bbox, double x, double y, double z, double rotatio
 	renderer.Translate(x, y, z);
 	renderer.Rotate(rotation, 0.0, 0.0, 1.0);
 	renderer.SetColor(0.0f, 0.0f, 255.0f);
-	const double * min = bbox.max;
-	const double * max = bbox.min;
-	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], min[1], min[2]), { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
-	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], min[1], min[2]), { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
-	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(max[0], min[1], min[2]), { max[0], max[1], min[2] }, { max[0], max[1], max[2] }, { max[0], min[1], max[2] } }, {}, {});//Right
-	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3d(min[0], max[1], min[2]), { min[0], max[1], max[2] }, { max[0], max[1], max[2] }, { max[0], max[1], min[2] } }, {}, {}); //Front
-	renderer.SetColor(255.0f, 255.0f, 255.0f);
+	CVector3f min = bbox.max;
+	CVector3f max = bbox.min;
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
+	renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
+	renderer.SetColor(0, 0, 0);
 	renderer.PopMatrix();
 }
 
@@ -277,7 +277,7 @@ void CGameView::DrawBoundingBox()
 	shared_ptr<IObject> object = m_gameModel->GetSelectedObject();
 	if(object)
 	{
-		if (CGameModel::IsGroup(object.get()))
+		if (object->IsGroup())
 		{
 			CObjectGroup * group = (CObjectGroup *)object.get();
 			for(size_t i = 0; i < group->GetCount(); ++i)
@@ -312,8 +312,7 @@ void CGameView::Update()
 			if (m_skybox && !depthOnly)
 			{
 				auto& camera = m_currentViewport->GetCamera();
-				CVector3d direction = camera.GetDirection();
-				m_skybox->Draw(-direction[0], -direction[1], -direction[2], camera.GetScale());
+				m_skybox->Draw(-camera.GetDirection(), camera.GetScale());
 			}
 			DrawObjects(depthOnly);
 			if (!depthOnly)
@@ -342,7 +341,7 @@ void CGameView::DrawRuler()
 	}
 }
 void CGameView::DrawTable(bool shadowOnly)
-{	
+{
 	auto& tableList = shadowOnly ? m_tableListShadow : m_tableList;
 	tableList = m_renderer->CreateDrawingList([this, shadowOnly] {
 		CLandscape const& landscape = m_gameModel->GetLandscape();
@@ -382,7 +381,7 @@ void CGameView::DrawTable(bool shadowOnly)
 					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001 },
 					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001 },
 					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001 }
-					}, {},{ CVector2d(0.0, 0.0), { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } });
+				}, {}, { CVector2d(0.0, 0.0), { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } });
 				m_renderer->PopMatrix();
 			}
 		}
@@ -409,18 +408,34 @@ void CGameView::DrawObjects(bool shadowOnly)
 	list->Draw();
 	DrawStaticObjects(shadowOnly);
 	size_t countObjects = m_gameModel->GetObjectCount();
-	auto shaderManagerPtr = shadowOnly ? nullptr : &shaderManager;
+	auto isVisibleInFrustum = [this](IBaseObject* obj) {
+		int x(-1), y(-1);
+		m_viewHelper->WorldCoordsToWindowCoords(*m_currentViewport, obj->GetCoords(), x, y);
+		return x >= m_currentViewport->GetX() && x <= m_currentViewport->GetX() + m_currentViewport->GetWidth() &&
+			y >= m_currentViewport->GetY() && y <= m_currentViewport->GetY() + m_currentViewport->GetHeight();
+	};
+	std::vector<IObject*> objects;
+	objects.reserve(countObjects);
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		shared_ptr<IObject> object = m_gameModel->Get3DObject(i);
+		auto obj = m_gameModel->Get3DObject(i).get();
+		if (isVisibleInFrustum(obj))
+		{
+			objects.push_back(obj);
+		}
+	};
+	CVector3f cameraPos = m_currentViewport->GetCamera().GetPosition();
+	std::sort(objects.begin(), objects.end(), [&cameraPos](IBaseObject* o1, IBaseObject* o2) {return (o1->GetCoords() - cameraPos).GetLength() < (o2->GetCoords() - cameraPos).GetLength();});
+	for(auto& object : objects)
+	{
 		m_renderer->PushMatrix();
 		m_renderer->Translate(object->GetX(), object->GetY(), object->GetCoords().z);
 		m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-		m_modelManager.DrawModel(object->GetPathToModel(), object, shadowOnly, shaderManagerPtr);
+		m_modelManager.DrawModel(object->GetPathToModel(), object, shadowOnly);
 		size_t secondaryModels = object->GetSecondaryModelsCount();
 		for (size_t j = 0; j < secondaryModels; ++j)
 		{
-			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, shadowOnly, shaderManagerPtr);
+			m_modelManager.DrawModel(object->GetSecondaryModel(j), object, shadowOnly);
 		}
 		m_renderer->PopMatrix();
 	}
@@ -435,7 +450,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 			m_renderer->Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
 			m_renderer->Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
 			if (!projectile.GetPathToModel().empty())
-				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false, shaderManagerPtr);
+				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false);
 			if (projectile.GetParticle())
 				m_particles.Draw(*projectile.GetParticle());
 			m_renderer->PopMatrix();
@@ -460,7 +475,7 @@ void CGameView::DrawStaticObjects(bool shadowOnly)
 			m_renderer->PushMatrix();
 			m_renderer->Translate(object.GetX(), object.GetY(), object.GetZ());
 			m_renderer->Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
-			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly, &m_renderer->GetShaderManager());
+			m_modelManager.DrawModel(object.GetPathToModel(), nullptr, shadowOnly);
 			m_renderer->PopMatrix();
 		}
 	}
@@ -543,7 +558,7 @@ void CGameView::EnableShadowMap(int size, float angle)
 	if (m_shadowMapViewport) return;
 	m_viewports.push_back(std::make_unique<COffscreenViewport>(CachedTextureType::DEPTH, size, size, angle, *m_viewHelper, static_cast<int>(TextureSlot::eShadowMap)));
 	m_shadowMapViewport = m_viewports.back().get();
-	m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 1.0, 0.0 })));
+	m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3f({ 0.0f, 0.0f, 0.0f }), CVector3f({ 0.0f, 1.0f, 0.0f })));
 	m_shadowMapViewport->SetPolygonOffset(true, 2.0f, 500.0f);
 	m_shadowMapViewport->SetClippingPlanes(3.0, 300.0);
 }
@@ -567,7 +582,7 @@ void CGameView::SetLightPosition(int index, float* pos)
 	if (index == 0)
 	{
 		m_lightPosition = { pos[0], pos[1], pos[2] };
-		if(m_shadowMapViewport) m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3d({ 0.0, 0.0, 0.0 }), CVector3d({ 0.0, 0.0, 1.0 })));
+		if(m_shadowMapViewport) m_shadowMapViewport->SetCamera(std::make_unique<CFixedCamera>(m_lightPosition, CVector3f({ 0.0, 0.0, 0.0 }), CVector3f({ 0.0, 0.0, 1.0 })));
 	}
 }
 
@@ -663,8 +678,9 @@ void CGameView::Preload(wstring const& image)
 		m_viewHelper->ClearBuffers(true, true);
 		m_viewHelper->DrawIn2D([this, &image] {
 			m_renderer->SetTexture(image);
-			int width = 640;//glutGet(GLUT_WINDOW_WIDTH);
-			int height = 480;//glutGet(GLUT_WINDOW_HEIGHT);
+			int width = 640;
+			int height = 480;
+			m_window->GetWindowSize(width, height);
 			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, height }, { width, 0 }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 			//glutSwapBuffers();
 		});
@@ -688,7 +704,7 @@ void CGameView::LoadModule(wstring const& modulePath)
 	});
 }
 
-void CGameView::DrawText3D(CVector3d const& pos, wstring const& text)
+void CGameView::DrawText3D(CVector3f const& pos, wstring const& text)
 {
 	m_viewHelper->DrawIn2D([&] {
 		int x, y;
@@ -717,7 +733,7 @@ bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)
 		camera = cameraPtr.get();
 		cameraPtr->AttachVR(*m_input);
 		first.SetCamera(std::move(cameraPtr));
-		second.SetCamera(std::make_unique<CCameraMirror>(camera, CVector3d{0, 0, 0}));
+		second.SetCamera(std::make_unique<CCameraMirror>(camera, CVector3f{0, 0, 0}));
 		return std::pair<IViewport&, IViewport&>(first, second);
 	};
 	bool result = m_window->EnableVRMode(enable, viewportFactory);

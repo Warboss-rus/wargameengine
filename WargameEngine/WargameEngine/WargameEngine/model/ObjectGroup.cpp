@@ -12,15 +12,15 @@ std::wstring CObjectGroup::GetPathToModel() const
 	return m_children[m_current]->GetPathToModel();
 }
 
-void CObjectGroup::Move(double x, double y, double z)
+void CObjectGroup::Move(float dx, float dy, float dz)
 {
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
-		i->get()->Move(x, y, z);
+		i->get()->Move(dx, dy, dz);
 	}
 }
 
-void CObjectGroup::SetCoords(double x, double y, double z)
+void CObjectGroup::SetCoords(float x, float y, float z)
 {
 	x -= GetX();
 	y -= GetY();
@@ -31,18 +31,18 @@ void CObjectGroup::SetCoords(double x, double y, double z)
 	}
 }
 
-void CObjectGroup::SetCoords(CVector3d const& coords)
+void CObjectGroup::SetCoords(CVector3f const& coords)
 {
-	double x = coords.x - GetX();
-	double y = coords.y - GetY();
-	double z = coords.z - GetZ();
+	float x = coords.x - GetX();
+	float y = coords.y - GetY();
+	float z = coords.z - GetZ();
 	for (auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
 		i->get()->Move(x, y, z);
 	}
 }
 
-void CObjectGroup::Rotate(double rotation)
+void CObjectGroup::Rotate(float rotation)
 {
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)
 	{
@@ -50,45 +50,53 @@ void CObjectGroup::Rotate(double rotation)
 	}
 }
 
-double CObjectGroup::GetX() const
+void CObjectGroup::SetRotation(float rotation)
+{
+	for (auto i = m_children.begin(); i != m_children.end(); ++i)
+	{
+		i->get()->SetRotation(rotation);
+	}
+}
+
+float CObjectGroup::GetX() const
 {
 	if(m_current < m_children.size())
 	{
 		return m_children[m_current]->GetX();
 	}
-	return 0.0;
+	return 0.0f;
 }
 
-double CObjectGroup::GetY() const
+float CObjectGroup::GetY() const
 {
 	if(m_current < m_children.size())
 	{
 		return m_children[m_current]->GetY();
 	}
-	return 0.0;
+	return 0.0f;
 }
 
-double CObjectGroup::GetZ() const
+float CObjectGroup::GetZ() const
 {
 	if(m_current < m_children.size())
 	{
 		return m_children[m_current]->GetZ();
 	}
-	return 0.0;
+	return 0.0f;
 }
 
-CVector3d CObjectGroup::GetCoords() const
+CVector3f CObjectGroup::GetCoords() const
 {
-	return CVector3d(GetX(), GetY(), GetZ());
+	return CVector3f(GetX(), GetY(), GetZ());
 }
 
-double CObjectGroup::GetRotation() const
+float CObjectGroup::GetRotation() const
 {
 	if(m_current < m_children.size())
 	{
 		return m_children[m_current]->GetRotation();
 	}
-	return 0.0;
+	return 0.0f;
 }
 
 std::set<std::string> const& CObjectGroup::GetHiddenMeshes() const
@@ -287,16 +295,6 @@ float CObjectGroup::GetAnimationSpeed() const
 	return m_children[m_current]->GetAnimationSpeed();
 }
 
-void CObjectGroup::GoTo(CVector3d const& coords, double speed, std::string const& animation, float animationSpeed)//needs to be reworked
-{
-	CVector3d groupPos = GetCoords();
-	for (size_t i = 0; i < m_children.size(); ++i)
-	{
-		CVector3d delta = m_children[i]->GetCoords() - groupPos;
-		m_children[i]->GoTo(coords + delta, speed, animation, animationSpeed);
-	}
-}
-
 void CObjectGroup::Update(long long timeSinceLastUpdate)
 {
 	for (size_t i = 0; i < m_children.size(); ++i)
@@ -339,4 +337,9 @@ std::map<std::wstring, std::wstring> const& CObjectGroup::GetReplaceTextures() c
 		return dummy;
 	}
 	return m_children[m_current]->GetReplaceTextures();
+}
+
+bool CObjectGroup::IsGroup() const
+{
+	return true;
 }

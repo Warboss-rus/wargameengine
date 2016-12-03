@@ -58,7 +58,7 @@ std::shared_ptr<IObject> CGameModel::GetSelectedObject()
 
 void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 {
-	if(IsGroup(pObject.get()))
+	if(pObject.get()->IsGroup())
 	{
 		CObjectGroup* group = (CObjectGroup*)pObject.get();
 		group->DeleteAll();
@@ -73,11 +73,6 @@ void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
 		}
 	}
 	m_onObjectRemove(pObject.get());
-}
-
-bool CGameModel::IsGroup(IObject* object)
-{
-	return dynamic_cast<CObjectGroup *>(object) != nullptr;
 }
 
 void CGameModel::Clear()

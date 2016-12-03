@@ -193,7 +193,7 @@ void COpenGLRenderer::ResetViewMatrix()
 	glLoadIdentity();
 }
 
-void COpenGLRenderer::LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up)
+void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
 }
@@ -477,12 +477,12 @@ std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)
 	std::vector<double> result(16);
 	for (size_t i = 0; i < 16; ++i)
 	{
-		result[i] = static_cast<float>(matrix[i]);
+		result[i] = matrix[i];
 	}
 	return result;
 }
 
-void COpenGLRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3d & start, CVector3d & end) const
+void COpenGLRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const
 {
 	//Get model, projection and viewport matrices
 	auto matModelView = Matrix2DoubleArray(viewport.GetViewMatrix());
@@ -492,22 +492,28 @@ void COpenGLRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int
 	double winX = (double)x;
 	double winY = viewportData[3] - (double)y;
 
+	CVector3d startd;
+	CVector3d endd;
 	//Cast a ray from eye to mouse cursor;
 	gluUnProject(winX, winY, 0.0, matModelView.data(), matProjection.data(),
-		viewportData, &start.x, &start.y, &start.z);
+		viewportData, &startd.x, &startd.y, &startd.z);
 	gluUnProject(winX, winY, 1.0, matModelView.data(), matProjection.data(),
-		viewportData, &end.x, &end.y, &end.z);
+		viewportData, &endd.x, &endd.y, &endd.z);
+	start = { static_cast<float>(startd.x), static_cast<float>(startd.y), static_cast<float>(startd.z) };
+	end = { static_cast<float>(endd.x), static_cast<float>(endd.y), static_cast<float>(endd.z) };
 }
 
-void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3d const& worldCoords, int& x, int& y) const
+void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
 	auto matModelView = Matrix2DoubleArray(viewport.GetViewMatrix());
 	auto matProjection = Matrix2DoubleArray(viewport.GetProjectionMatrix());
 	int viewportData[4] = { viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight() };
 	CVector3d windowPos;
-	gluProject(worldCoords.x, worldCoords.y, worldCoords.z, matModelView.data(), matProjection.data(), viewportData, &windowPos.x, &windowPos.y, &windowPos.z);
-	x = static_cast<int>(windowPos.x);
-	y = static_cast<int>(viewportData[3] - windowPos.y);
+	if (gluProject(worldCoords.x, worldCoords.y, worldCoords.z, matModelView.data(), matProjection.data(), viewportData, &windowPos.x, &windowPos.y, &windowPos.z) != GL_FALSE)
+	{
+		x = static_cast<int>(windowPos.x);
+		y = static_cast<int>(viewportData[3] - windowPos.y);
+	}
 }
 
 void COpenGLRenderer::EnableLight(size_t index, bool enable)

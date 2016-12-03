@@ -12,14 +12,14 @@ void CSkyBox::ResetList()
 	m_list.reset();
 }
 
-void CSkyBox::Draw(double x, double y, double z, double scale)
+void CSkyBox::Draw(CVector3f const& pos, float scale)
 {
 	m_renderer.PushMatrix();
-	x = -x - m_width / (scale * 2);
-	y = -y - m_height / (scale * 2);
-	z = -z - m_length / (scale * 2);
+	float x = -pos.x - m_width / (scale * 2);
+	float y = -pos.y - m_height / (scale * 2);
+	float z = -pos.z - m_length / (scale * 2);
 	m_renderer.Translate(x, y, z);
-	m_renderer.Scale(1.0 / scale);
+	m_renderer.Scale(1.0f / scale);
 	if (!m_list)
 	{
 		m_list = m_renderer.CreateDrawingList([&] {

@@ -4,14 +4,14 @@
 class CCameraMirror : public ICamera
 {
 public:
-	CCameraMirror(ICamera * parentCamera, CVector3d const& translation = CVector3d());
-	virtual CVector3d GetPosition() const override;
-	virtual CVector3d GetDirection() const override;
-	virtual CVector3d GetUpVector() const override;
-	virtual const double GetScale() const override;
+	CCameraMirror(ICamera * parentCamera, CVector3f const& translation = CVector3f());
+	virtual CVector3f GetPosition() const override;
+	virtual CVector3f GetDirection() const override;
+	virtual CVector3f GetUpVector() const override;
+	virtual const float GetScale() const override;
 	virtual void SetInput(IInput & input) override;
 	virtual void EnableTouchMode() override;
 private:
 	ICamera * m_parentCamera;
-	CVector3d m_translation;
+	CVector3f m_translation;
 };

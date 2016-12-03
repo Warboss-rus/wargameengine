@@ -8,8 +8,8 @@ struct sBounding
 {
 	struct sBox
 	{
-		CVector3d min;
-		CVector3d max;
+		CVector3f min;
+		CVector3f max;
 	};
 	struct sCompound
 	{
@@ -31,7 +31,7 @@ struct sBounding
 	{
 		return *reinterpret_cast<sCompound*>(shape.get());
 	}
-	double scale = 1.0;
+	float scale = 1.0;
 	enum class eType
 	{
 		BOX,

@@ -2,7 +2,7 @@
 #include "../model/GameModel.h"
 #include "../IMemoryStream.h"
 
-CCommandRotateObject::CCommandRotateObject(std::shared_ptr<IObject> object, double deltaRotation) :
+CCommandRotateObject::CCommandRotateObject(std::shared_ptr<IObject> object, float deltaRotation) :
 	m_pObject(object), m_deltaRotation(deltaRotation)
 {
 }
@@ -10,7 +10,7 @@ CCommandRotateObject::CCommandRotateObject(std::shared_ptr<IObject> object, doub
 CCommandRotateObject::CCommandRotateObject(IReadMemoryStream & stream, IGameModel& model)
 {
 	m_pObject = model.Get3DObject(reinterpret_cast<IObject*>(stream.ReadPointer()));
-	m_deltaRotation = stream.ReadDouble();
+	m_deltaRotation = stream.ReadFloat();
 }
 
 void CCommandRotateObject::Execute()
@@ -27,5 +27,5 @@ void CCommandRotateObject::Serialize(IWriteMemoryStream & stream) const
 {
 	stream.WriteByte(3);//This is a CCommandRotateObject action
 	stream.WritePointer(m_pObject.get());
-	stream.WriteDouble(m_deltaRotation);
+	stream.WriteFloat(m_deltaRotation);
 }

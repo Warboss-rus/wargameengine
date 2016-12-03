@@ -14,19 +14,19 @@
 #include <math.h>
 #include "../LogWriter.h"
 
-CVector3d ToVector3d(btVector3 const& vec)
+CVector3f ToVector3f(btVector3 const& vec)
 {
-	return CVector3d(vec.x(), vec.z(), vec.y());
+	return CVector3f(vec.x(), vec.z(), vec.y());
 }
 
-btVector3 ToBtVector3(CVector3d const& vec)
+btVector3 ToBtVector3(CVector3f const& vec)
 {
-	return btVector3(static_cast<btScalar>(vec.x), static_cast<btScalar>(vec.z), static_cast<btScalar>(vec.y));
+	return btVector3(vec.x, vec.z, vec.y);
 }
 
-btQuaternion RotationToQuaternion(double rotation)
+btQuaternion RotationToQuaternion(float rotation)
 {
-	return btQuaternion(btVector3(0, -1, 0), static_cast<btScalar>(rotation * M_PI / 180));
+	return btQuaternion(btVector3(0, -1, 0), rotation * (float)M_PI / 180);
 }
 
 class CDebugDrawer : public btIDebugDraw
@@ -39,7 +39,7 @@ public:
 	virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override
 	{
 		m_renderer.SetColor(color.x(), color.y(), color.z());
-		m_renderer.RenderArrays(RenderMode::LINES, { ToVector3d(from), ToVector3d(to) }, {}, {});
+		m_renderer.RenderArrays(RenderMode::LINES, { ToVector3f(from), ToVector3f(to) }, {}, {});
 	}
 
 	virtual void drawContactPoint(const btVector3& /*PointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) override
@@ -106,7 +106,7 @@ public:
 		}
 	}
 
-	static btTransform GetObjectTransform(IObject * object, CVector3d const& shapeOffset)
+	static btTransform GetObjectTransform(IObject * object, CVector3f const& shapeOffset)
 	{
 		btTransform transform;
 		transform.setIdentity();
@@ -143,7 +143,7 @@ public:
 				IObject * object = reinterpret_cast<IObject*>(body->getUserPointer());
 				if (object)
 				{
-					object->SetCoords(ToVector3d(trans.getOrigin()) - m_shapeOffset[body->getCollisionShape()]);
+					object->SetCoords(ToVector3f(trans.getOrigin()) - m_shapeOffset[body->getCollisionShape()]);
 				}
 			}
 		}
@@ -180,7 +180,7 @@ public:
 		m_objects.push_back(Object{ std::move(body), std::move(motionState), object });
 	}
 
-	void AddStaticObject(CStaticObject * staticObject)
+	void AddStaticObject(IBaseObject * staticObject)
 	{
 		btScalar mass(0.);
 		btVector3 localInertia(0, 0, 0);
@@ -202,7 +202,7 @@ public:
 		landscape;
 	}
 
-	bool CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint, std::vector<IObject*> const& excludeObjects) const
+	bool CastRay(CVector3f const& origin, CVector3f const& dest, IObject ** obj, CVector3f & hitPoint, std::vector<IObject*> const& excludeObjects) const
 	{
 		*obj = nullptr;
 		btCollisionWorld::AllHitsRayResultCallback RayCallback(ToBtVector3(origin), ToBtVector3(dest));
@@ -225,7 +225,7 @@ public:
 					}
 				}
 				btVector3 btHitPoint = trans.invXform(RayCallback.m_hitPointWorld[i]);
-				hitPoint = ToVector3d(btHitPoint);
+				hitPoint = ToVector3f(btHitPoint);
 				auto offsetIt = body ? m_shapeOffset.find(body->getCollisionShape()) : m_shapeOffset.end();
 				if (offsetIt != m_shapeOffset.end())
 				{
@@ -246,8 +246,8 @@ public:
 			if (bounding.type == sBounding::eType::BOX)
 			{
 				auto& box = bounding.GetBox();
-				CVector3d halfSize = (box.max - box.min) / 2;
-				CVector3d boxCenter = (box.max + box.min) / 2 * bounding.scale;
+				CVector3f halfSize = (box.max - box.min) / 2;
+				CVector3f boxCenter = (box.max + box.min) / 2 * bounding.scale;
 				auto shape = std::make_unique<btBoxShape>(ToBtVector3(halfSize));
 				m_shapeOffset[shape.get()] = boxCenter;
 				btScalar btScale = static_cast<btScalar>(bounding.scale);
@@ -351,7 +351,7 @@ public:
 		transform.setIdentity();
 		it->second->getAabb(transform, min, max);
 		auto offset = m_shapeOffset.find(it->second.get())->second;
-		return{ ToVector3d(min) + offset, ToVector3d(max) + offset };
+		return{ ToVector3f(min) + offset, ToVector3f(max) + offset };
 	}
 private:
 	struct Object
@@ -368,7 +368,7 @@ private:
 	std::vector<Object> m_objects;
 	std::map<std::wstring, std::unique_ptr<btCollisionShape>> m_collisionShapes;
 	std::vector<std::unique_ptr<btCollisionShape>> m_childCollisionShapes;
-	std::map<const btCollisionShape*, CVector3d> m_shapeOffset;
+	std::map<const btCollisionShape*, CVector3f> m_shapeOffset;
 	std::unique_ptr<CDebugDrawer> m_debugDrawer;
 	btCollisionObject * m_ground;
 };
@@ -397,7 +397,7 @@ void CPhysicsEngineBullet::AddDynamicObject(IObject * object, double mass)
 	m_pImpl->AddDynamicObject(object, mass);
 }
 
-void CPhysicsEngineBullet::AddStaticObject(CStaticObject * staticObject)
+void CPhysicsEngineBullet::AddStaticObject(IBaseObject * staticObject)
 {
 	m_pImpl->AddStaticObject(staticObject);
 }
@@ -412,7 +412,7 @@ void CPhysicsEngineBullet::SetGround(CLandscape * landscape)
 	m_pImpl->SetGround(landscape);
 }
 
-bool CPhysicsEngineBullet::CastRay(CVector3d const& origin, CVector3d const& dest, IObject ** obj, CVector3d & hitPoint, std::vector<IObject*> const& excludeObjects) const
+bool CPhysicsEngineBullet::CastRay(CVector3f const& origin, CVector3f const& dest, IObject ** obj, CVector3f & hitPoint, std::vector<IObject*> const& excludeObjects) const
 {
 	return m_pImpl->CastRay(origin, dest, obj, hitPoint, excludeObjects);
 }

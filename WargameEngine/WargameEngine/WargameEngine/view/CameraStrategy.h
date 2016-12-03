@@ -4,28 +4,28 @@
 class CCameraStrategy : public ICamera
 {
 public:
-	CCameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale);
+	CCameraStrategy(float maxTransX, float maxTransY, float maxScale, float minScale);
 	~CCameraStrategy();
-	virtual CVector3d GetPosition() const override;
-	virtual CVector3d GetDirection() const override;
-	virtual CVector3d GetUpVector() const override;
+	virtual CVector3f GetPosition() const override;
+	virtual CVector3f GetDirection() const override;
+	virtual CVector3f GetUpVector() const override;
 	virtual void SetInput(IInput & input) override;
-	virtual const double GetScale() const override;
+	virtual const float GetScale() const override;
 	virtual void EnableTouchMode() override;
 private:
 	void Reset();
-	void Translate(double transX, double transY);
-	void Rotate(double rotZ, double rotX);
+	void Translate(float transX, float transY);
+	void Rotate(float rotZ, float rotX);
 
-	const double m_maxTransX;
-	const double m_maxTransY;
-	const double m_maxScale;
-	const double m_minScale;
-	double m_transX;
-	double m_transY;
-	double m_rotX;
-	double m_rotZ;
-	double m_scale;
+	const float m_maxTransX;
+	const float m_maxTransY;
+	const float m_maxScale;
+	const float m_minScale;
+	float m_transX;
+	float m_transY;
+	float m_rotX;
+	float m_rotZ;
+	float m_scale;
 	bool m_hidePointer;
 	int m_oldX;
 	int m_oldY;

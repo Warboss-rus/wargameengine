@@ -2,7 +2,7 @@
 #include "../model/GameModel.h"
 #include "../IMemoryStream.h"
 
-CCommandMoveObject::CCommandMoveObject(std::shared_ptr<IObject> object, double deltaX, double deltaY) :
+CCommandMoveObject::CCommandMoveObject(std::shared_ptr<IObject> object, float deltaX, float deltaY) :
 	m_pObject(object), m_deltaX(deltaX), m_deltaY(deltaY)
 {
 }
@@ -10,8 +10,8 @@ CCommandMoveObject::CCommandMoveObject(std::shared_ptr<IObject> object, double d
 CCommandMoveObject::CCommandMoveObject(IReadMemoryStream & stream, IGameModel& model)
 {
 	m_pObject = model.Get3DObject(reinterpret_cast<IObject*>(stream.ReadPointer()));
-	m_deltaX = stream.ReadDouble();
-	m_deltaY = stream.ReadDouble();
+	m_deltaX = stream.ReadFloat();
+	m_deltaY = stream.ReadFloat();
 }
 
 void CCommandMoveObject::Execute()
@@ -28,6 +28,6 @@ void CCommandMoveObject::Serialize(IWriteMemoryStream & stream) const
 {
 	stream.WriteByte(2);//This is a CCommandMoveObject action
 	stream.WritePointer(m_pObject.get());
-	stream.WriteDouble(m_deltaX);
-	stream.WriteDouble(m_deltaY);
+	stream.WriteFloat(m_deltaX);
+	stream.WriteFloat(m_deltaY);
 }

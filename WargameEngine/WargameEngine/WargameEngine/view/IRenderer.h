@@ -50,6 +50,15 @@ public:
 	virtual ~IVertexBuffer() {}
 };
 
+class IOcclusionQuery
+{
+public:
+	virtual void Query(std::function<void()> const& handler) = 0;
+	virtual bool IsVisible() const = 0;
+
+	virtual ~IOcclusionQuery() {}
+};
+
 class IRenderer
 {
 public:
@@ -70,7 +79,7 @@ public:
 	virtual void Scale(const double scale) = 0;
 	virtual void GetViewMatrix(float * matrix) const = 0;
 	virtual void ResetViewMatrix() = 0;
-	virtual void LookAt(CVector3d const& position, CVector3d const& direction, CVector3d const& up) = 0;
+	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) = 0;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) = 0;

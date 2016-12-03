@@ -16,9 +16,9 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (model, x, y, rotation)");
 		std::wstring model =  args.GetWStr(1);
-		double x = args.GetDbl(2);
-		double y = args.GetDbl(3);
-		double rotation = args.GetDbl(4);
+		float x = args.GetFloat(2);
+		float y = args.GetFloat(3);
+		float rotation = args.GetFloat(4);
 		std::shared_ptr<IObject> object = controller.CreateObject(model, x, y, rotation);
 		return FunctionArgument(object.get(), L"Object");
 	});
@@ -111,7 +111,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		object->Move(args.GetDbl(1), args.GetDbl(2), args.GetDbl(3));
+		object->Move(args.GetFloat(1), args.GetFloat(2), args.GetFloat(3));
 		return nullptr;
 	});
 
@@ -122,7 +122,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		object->Rotate(args.GetDbl(1));
+		object->Rotate(args.GetFloat(1));
 		return nullptr;
 	});
 
@@ -271,7 +271,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		return CGameModel::IsGroup(object);
+		return object->IsGroup();
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_GROUP_CHILDREN_COUNT, [&](void* instance, IArguments const& args)
@@ -283,7 +283,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			throw std::runtime_error("should be called with a valid instance");
 		if (object)
 		{
-			if (!CGameModel::IsGroup(object)) return 1; //single object
+			if (!object->IsGroup()) return 1; //single object
 			CObjectGroup * group = (CObjectGroup *)object;
 			return (int)group->GetCount();
 		}
@@ -298,7 +298,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
 		size_t index = args.GetLong(1);
-		if (object && CGameModel::IsGroup(object))
+		if (object && object->IsGroup())
 		{
 			CObjectGroup * group = (CObjectGroup *)object;
 			if (index > group->GetCount()) FunctionArgument(NULL, L"Object");
@@ -373,9 +373,9 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		double x = args.GetDbl(1);
-		double y = args.GetDbl(2);
-		double speed = args.GetDbl(3);
+		float x = args.GetFloat(1);
+		float y = args.GetFloat(2);
+		float speed = args.GetFloat(3);
 		std::string anim = args.GetStr(4);
 		float animSpeed = args.GetFloat(5);
 		auto objectPtr = model.Get3DObject(object);
@@ -415,7 +415,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected(x)");
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object) throw std::runtime_error("should be called with a valid instance");
-		double x = args.GetDbl(1);
+		float x = args.GetFloat(1);
 		object->SetCoords(x, object->GetY(), object->GetZ());
 	}, [](void* instance) {
 		IObject* object = reinterpret_cast<IObject *>(instance);
@@ -427,7 +427,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected(y)");
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object) throw std::runtime_error("should be called with a valid instance");
-		double y = args.GetDbl(1);
+		float y = args.GetFloat(1);
 		object->SetCoords(object->GetX(), y, object->GetZ());
 	}, [](void* instance) {
 		IObject* object = reinterpret_cast<IObject *>(instance);
@@ -439,7 +439,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected(z)");
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object) throw std::runtime_error("should be called with a valid instance");
-		double z = args.GetDbl(1);
+		float z = args.GetFloat(1);
 		object->SetCoords(object->GetX(), object->GetY(), z);
 	}, [](void* instance) {
 		IObject* object = reinterpret_cast<IObject *>(instance);
@@ -451,7 +451,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected(rotation)");
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object) throw std::runtime_error("should be called with a valid instance");
-		double rotation = args.GetDbl(1);
+		float rotation = args.GetFloat(1);
 		object->Rotate(object->GetRotation() - rotation);
 	}, [](void* instance) {
 		IObject* object = reinterpret_cast<IObject *>(instance);

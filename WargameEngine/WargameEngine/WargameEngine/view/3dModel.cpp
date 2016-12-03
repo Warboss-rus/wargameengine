@@ -58,13 +58,14 @@ void SetMaterial(IRenderer & renderer, const sMaterial * material, const std::ve
 }
 
 void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer,
-	bool useGPUskinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
+	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
 {
+	auto& shaderManager = renderer.GetShaderManager();
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
-		shaderManager->SetUniformValue("invBindMatrices", 16, m_skeleton.size(), m_gpuInverseMatrices.data());
-		shaderManager->SetVertexAttribute("weights", *m_weightsCache);
-		shaderManager->SetVertexAttribute("weightIndices", *m_weightIndiciesCache);
+		shaderManager.SetUniformValue("invBindMatrices", 16, m_skeleton.size(), m_gpuInverseMatrices.data());
+		shaderManager.SetVertexAttribute("weights", *m_weightsCache);
+		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache);
 	}
 	vertexBuffer.Bind();
 	renderer.PushMatrix();
@@ -112,9 +113,9 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	if (useGPUskinning)
 	{
 		float def[] = { 0.0f };
-		shaderManager->DisableVertexAttribute("weights", 1, def);
+		shaderManager.DisableVertexAttribute("weights", 1, def);
 		int idef = 0;
-		shaderManager->DisableVertexAttribute("weightIndices", 1, &idef);
+		shaderManager.DisableVertexAttribute("weightIndices", 1, &idef);
 	}
 }
 
@@ -287,7 +288,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 
 //returns if animations is ended
 bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, 
-	bool gpuSkinning, IShaderManager * shaderManager, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
+	bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
 {
 	bool result;
 	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);
@@ -299,8 +300,8 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 			m_weightsCache = renderer.GetShaderManager().CreateVertexAttribCache(4, m_gpuWeight.size() / 4, m_gpuWeight.data());
 			m_weightIndiciesCache = renderer.GetShaderManager().CreateVertexAttribCache(4, m_gpuWeightIndexes.size() / 4, m_gpuWeightIndexes.data());
 		}
-		shaderManager->SetUniformValue("joints", 16, m_skeleton.size(), jointMatrices.data());
-		DrawModel(renderer, hideMeshes, vertexOnly, *m_vertexBuffer, true, shaderManager, teamcolor, replaceTextures);
+		renderer.GetShaderManager().SetUniformValue("joints", 16, m_skeleton.size(), jointMatrices.data());
+		DrawModel(renderer, hideMeshes, vertexOnly, *m_vertexBuffer, true, teamcolor, replaceTextures);
 	}
 	else
 	{
@@ -329,12 +330,12 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 		}
 		auto vertexBuffer = renderer.CreateVertexBuffer(&vertices.data()->x, &normals.data()->x, &m_textureCoords.data()->x, vertices.size(), true);
 		vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
-		DrawModel(renderer, hideMeshes, vertexOnly, *vertexBuffer, false, shaderManager, teamcolor, replaceTextures);
+		DrawModel(renderer, hideMeshes, vertexOnly, *vertexBuffer, false, teamcolor, replaceTextures);
 	}
 	return result;
 }
 
-void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool vertexOnly, bool gpuSkinning, IShaderManager * shaderManager)
+void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool gpuSkinning)
 {
 	if (!m_vertexBuffer)
 	{
@@ -357,7 +358,7 @@ void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool 
 			if (m_lists.find(key) == m_lists.end())
 			{
 				m_lists[key] = renderer.CreateDrawingList([&] {
-					DrawSkinned(renderer, &key.hiddenMeshes, vertexOnly, "", eAnimationLoopMode::NONLOOPING, 0.0f, gpuSkinning, shaderManager, &key.teamcolor, &key.replaceTextures);
+					DrawSkinned(renderer, &key.hiddenMeshes, vertexOnly, "", eAnimationLoopMode::NONLOOPING, 0.0f, gpuSkinning, &key.teamcolor, &key.replaceTextures);
 				});
 			}
 			m_lists.at(key)->Draw();
@@ -365,7 +366,7 @@ void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool 
 		else//animation is playing, full computation
 		{
 			if (DrawSkinned(renderer, &key.hiddenMeshes, vertexOnly, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), 
-				gpuSkinning, shaderManager, &key.teamcolor, &key.replaceTextures))
+				gpuSkinning, &key.teamcolor, &key.replaceTextures))
 			{
 				object->PlayAnimation("");
 			}
@@ -376,7 +377,7 @@ void C3DModel::Draw(IRenderer & renderer, std::shared_ptr<IObject> object, bool 
 		if (m_lists.find(key) == m_lists.end())
 		{
 			m_lists[key] = renderer.CreateDrawingList([&] {
-				DrawModel(renderer, &key.hiddenMeshes, vertexOnly, *m_vertexBuffer, false, shaderManager, &key.teamcolor, &key.replaceTextures);
+				DrawModel(renderer, &key.hiddenMeshes, vertexOnly, *m_vertexBuffer, false, &key.teamcolor, &key.replaceTextures);
 			});
 		}
 		m_lists.at(key)->Draw();

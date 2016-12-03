@@ -9,13 +9,13 @@ class CCommandRotateObject :
 	public ICommand
 {
 public:
-	CCommandRotateObject(std::shared_ptr<IObject> object, double deltaRotation);
+	CCommandRotateObject(std::shared_ptr<IObject> object, float deltaRotation);
 	CCommandRotateObject(IReadMemoryStream & stream, IGameModel& model);
 	void Execute();
 	void Rollback();
 	void Serialize(IWriteMemoryStream & stream) const;
 private:
 	std::shared_ptr<IObject> m_pObject;
-	double m_deltaRotation;
+	float m_deltaRotation;
 };
 
