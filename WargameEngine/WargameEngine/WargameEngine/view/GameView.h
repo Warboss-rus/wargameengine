@@ -24,6 +24,7 @@ class IScriptHandler;
 class INetSocket;
 class IImageReader;
 class IPhysicsEngine;
+class IOcclusionQuery;
 
 struct sGameViewContext
 {
@@ -34,9 +35,9 @@ struct sGameViewContext
 	std::unique_ptr<IPhysicsEngine> physicsEngine;
 	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
-	sModule module;
 	std::vector<std::unique_ptr<IImageReader>> imageReaders;
 	std::vector<std::unique_ptr<IModelReader>> modelReaders;
+	sModule module;
 };
 
 class CGameView
@@ -63,13 +64,13 @@ public:
 	size_t GetViewportCount() const;
 	IViewport& GetViewport(size_t index = 0);
 	IViewport& AddViewport(std::unique_ptr<IViewport> && viewport);
+	IViewport& CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition);
 	void RemoveViewport(IViewport * viewport);
 
 	void ResizeWindow(int height, int width);
 	void EnableVertexLightning(bool enable);
 	void EnableGPUSkinning(bool enable);
-	void EnableShadowMap(int size, float angle);
-	void DisableShadowMap();
+	void DisableShadowMap(IViewport& viewport);
 	void SetLightPosition(int index, float* pos);
 	void EnableMSAA(bool enable, int level = 1.0f);
 	float GetMaxAnisotropy() const;
@@ -88,12 +89,8 @@ private:
 	void Update();
 	void DrawRuler();
 	void DrawObjects(bool shadowOnly);
-	void DrawStaticObjects(bool shadowOnly);
 	void DrawBoundingBox();
-	void SetUpShadowMapDraw();
-
 	void InitLandscape();
-
 	void InitInput();
 	void DrawText3D(CVector3f const& pos, std::wstring const& text);
 	void WindowCoordsToWorldCoords(int windowX, int windowY, float & worldX, float & worldY, float worldZ = 0);
@@ -126,7 +123,6 @@ private:
 	std::unique_ptr<IDrawingList> m_tableList;
 	std::unique_ptr<IDrawingList> m_tableListShadow;
 	bool m_vertexLightning;
-	IViewport * m_shadowMapViewport;
 	IViewport * m_currentViewport;
-	CVector3f m_lightPosition;
+	long long m_lastFrameTime = 0;
 };

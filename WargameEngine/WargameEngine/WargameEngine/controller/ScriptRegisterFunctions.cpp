@@ -175,22 +175,6 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		return nullptr;
 	});
 
-	handler.RegisterFunction(ENABLE_SHADOW_MAP, [&](IArguments const& args) {
-		if (args.GetCount() != 2)
-			throw std::runtime_error("2 arguments (shadowMap size, shadow max Angle) expected");
-		int size = args.GetInt(1);
-		float angle = args.GetFloat(2);
-		view.EnableShadowMap(size, angle);
-		return nullptr;
-	});
-
-	handler.RegisterFunction(DISABLE_SHADOW_MAP, [&](IArguments const& args) {
-		if (args.GetCount() != 0)
-			throw std::runtime_error("no arguments expected");
-		view.DisableShadowMap();
-		return nullptr;
-	});
-
 	handler.RegisterFunction(ENABLE_MSAA, [&](IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");

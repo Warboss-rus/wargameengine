@@ -47,6 +47,8 @@ public:
 
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
 
+	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
+
 	virtual IShaderManager& GetShaderManager() override;
 
 	virtual void SetTextureManager(CTextureManager & textureManager) override;

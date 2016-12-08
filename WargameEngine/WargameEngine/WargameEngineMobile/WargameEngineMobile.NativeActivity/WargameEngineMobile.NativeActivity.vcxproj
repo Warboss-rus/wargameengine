@@ -369,6 +369,7 @@
     <ClInclude Include="..\..\WargameEngine\view\Vector2.h" />
     <ClInclude Include="..\..\WargameEngine\view\Vector3.h" />
     <ClInclude Include="..\..\WargameEngine\view\Viewport.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ViewportBase.h" />
     <ClInclude Include="..\..\WargameEngine\view\WBMModelFactory.h" />
     <ClInclude Include="android_native_app_glue.h" />
   </ItemGroup>
@@ -447,6 +448,7 @@
     <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\TranslationManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\Viewport.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ViewportBase.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp" />
     <ClCompile Include="android_native_app_glue.c" />
     <ClCompile Include="main.cpp" />

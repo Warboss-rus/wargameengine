@@ -1,30 +1,10 @@
 #include "Viewport.h"
-#include <stdexcept>
 #include "ICamera.h"
 #include "IViewHelper.h"
 
 CViewport::CViewport(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer, bool resize)
-	: m_x(x), m_y(y), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_renderer(renderer), m_resize(resize)
+	: CViewportBase(x, y, width, height, fieldOfView, renderer), m_resize(resize)
 {
-}
-
-CViewport::~CViewport()
-{
-}
-
-ICamera& CViewport::GetCamera()
-{
-	return *m_camera;
-}
-
-ICamera const& CViewport::GetCamera() const
-{
-	return *m_camera;
-}
-
-void CViewport::SetCamera(std::unique_ptr<ICamera> && camera)
-{
-	m_camera = std::move(camera);
 }
 
 void CViewport::Draw(DrawFunc const& draw)
@@ -41,21 +21,6 @@ void CViewport::Draw(DrawFunc const& draw)
 	draw(false, true);
 }
 
-ICachedTexture const& CViewport::GetTexture() const
-{
-	throw std::runtime_error("Viewports renders to the screen so there is no texture");
-}
-
-Matrix4F CViewport::GetProjectionMatrix() const
-{
-	return m_projectionMatrix;
-}
-
-Matrix4F CViewport::GetViewMatrix() const
-{
-	return m_viewMatrix;
-}
-
 void CViewport::Resize(int width, int height)
 {
 	if (m_resize)
@@ -63,21 +28,4 @@ void CViewport::Resize(int width, int height)
 		m_width = width;
 		m_height = height;
 	}
-}
-
-void CViewport::SetPolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
-{
-	m_polygonOffsetFactor = enable ? factor : 0.0f;
-	m_polygonOffsetUnits = enable ? units : 0.0f;
-}
-
-void CViewport::SetClippingPlanes(double near /*= 1.0*/, double far /*= 1000.0*/)
-{
-	m_nearPane = near;
-	m_farPane = far;
-}
-
-bool CViewport::PointIsInViewport(int x, int y) const
-{
-	return x >= m_x && x <= m_x + m_width && y >= m_y && y <= m_y + m_height;
 }

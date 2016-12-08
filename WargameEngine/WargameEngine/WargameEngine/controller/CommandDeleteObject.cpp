@@ -10,7 +10,7 @@ CCommandDeleteObject::CCommandDeleteObject(std::shared_ptr<IObject> object, IGam
 CCommandDeleteObject::CCommandDeleteObject(IReadMemoryStream & stream, IGameModel& model)
 	:m_model(model)
 {
-	m_pObject = m_model.Get3DObject(reinterpret_cast<IObject*>(stream.ReadPointer()));
+	m_pObject = m_model.Get3DObject(reinterpret_cast<IBaseObject*>(stream.ReadPointer()));
 }
 
 void CCommandDeleteObject::Execute()

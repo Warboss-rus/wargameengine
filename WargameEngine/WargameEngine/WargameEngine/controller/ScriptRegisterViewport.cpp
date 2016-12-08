@@ -30,6 +30,17 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		return FunctionArgument(&view.AddViewport(std::make_unique<COffscreenViewport>(CachedTextureType::RGBA, width, height, fieldOfView, view.GetViewHelper(), textureSlot)), CLASS_VIEWPORT);
 	});
 
+	handler.RegisterMethod(CLASS_VIEWPORT, CREATE_SHADOW_MAP_VIEWPORT, [&](void*, IArguments const& args) {
+		if (args.GetCount() != 5)
+			throw std::runtime_error("5 arguments (shadowMap size, shadow max Angle, x, y, z) expected");
+		int size = args.GetInt(1);
+		float angle = args.GetFloat(2);
+		float x = args.GetFloat(3);
+		float y = args.GetFloat(4);
+		float z = args.GetFloat(5);
+		return FunctionArgument(&view.CreateShadowMapViewport(size, angle, {x, y, z}), CLASS_VIEWPORT);
+	});
+
 	handler.RegisterMethod(CLASS_VIEWPORT, VIEWPORT_COUNT, [&](void*, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
@@ -47,6 +58,22 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		view.RemoveViewport(static_cast<IViewport*>(instance));
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, SET_SHADOW_MAP_VIEWPORT, [&](void* instance, IArguments const& args){
+		if (args.GetCount() != 1)
+			throw std::runtime_error("1 argument expected(viewport)");
+		auto viewport = instance ? static_cast<IViewport*>(instance) : &view.GetViewport(0);
+		auto shadowViewport = static_cast<IViewport*>(args.GetClassInstance(1));
+		viewport->SetShadowViewport(shadowViewport);
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, DISABLE_SHADOW_MAP, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 0)
+			throw std::runtime_error("no arguments expected");
+		view.DisableShadowMap(*static_cast<IViewport*>(instance));
 		return nullptr;
 	});
 

@@ -343,15 +343,24 @@ public:
 		m_dynamicsWorld->setDebugDrawer(m_debugDrawer.get());
 	}
 
-	sBounding::sBox GetAABB(std::wstring const& path) const
+	sBounding GetAABB(std::wstring const& path) const
 	{
 		auto it = m_collisionShapes.find(path);
+		if (it == m_collisionShapes.end())
+		{
+			return sBounding();
+		}
 		btVector3 min, max;
 		btTransform transform;
 		transform.setIdentity();
 		it->second->getAabb(transform, min, max);
-		auto offset = m_shapeOffset.find(it->second.get())->second;
-		return{ ToVector3f(min) + offset, ToVector3f(max) + offset };
+		auto it2 = m_shapeOffset.find(it->second.get());
+		if (it2 == m_shapeOffset.end())
+		{
+			return sBounding();
+		}
+		auto offset = it2->second;
+		return sBounding::sBox{ ToVector3f(min) + offset, ToVector3f(max) + offset };
 	}
 private:
 	struct Object

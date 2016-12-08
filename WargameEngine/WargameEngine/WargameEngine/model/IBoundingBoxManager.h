@@ -15,6 +15,10 @@ struct sBounding
 	{
 		std::vector<sBounding> items;
 	};
+	sBounding()
+		:type(eType::NONE)
+	{
+	}
 	sBounding(sBox const& box)
 		:type(eType::BOX), shape(std::make_shared<sBox>(box))
 	{
@@ -36,7 +40,9 @@ struct sBounding
 	{
 		BOX,
 		COMPOUND,
+		NONE,
 	} type;
+	operator bool() { return type != eType::NONE; }
 private:
 	std::shared_ptr<void> shape;
 };

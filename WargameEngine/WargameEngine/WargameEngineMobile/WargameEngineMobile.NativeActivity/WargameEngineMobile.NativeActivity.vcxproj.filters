@@ -326,6 +326,9 @@
     <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.h" />
     <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h" />
     <ClInclude Include="..\..\WargameEngine\impl\PhysicsEngineBullet.h" />
+    <ClInclude Include="..\..\WargameEngine\view\ViewportBase.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />
@@ -537,6 +540,9 @@
     <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\PhysicsEngineBullet.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\ViewportBase.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

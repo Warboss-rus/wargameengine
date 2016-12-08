@@ -48,10 +48,6 @@
 
 #define DISABLE_VERTEX_LIGHTING L"DisableVertexLighting"
 
-#define ENABLE_SHADOW_MAP L"EnableShadowMap"
-
-#define DISABLE_SHADOW_MAP L"DisableShadowMap"
-
 #define ENABLE_MSAA L"EnableMSAA"
 
 #define DISABLE_MSAA L"DisableMSAA"

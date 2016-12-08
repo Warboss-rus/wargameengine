@@ -239,6 +239,9 @@
     <ClCompile Include="model\Particle.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
+    <ClCompile Include="view\ViewportBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -555,6 +558,9 @@
     </ClInclude>
     <ClInclude Include="model\Particle.h">
       <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\ViewportBase.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

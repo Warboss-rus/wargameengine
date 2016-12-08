@@ -112,7 +112,52 @@ public:
 	virtual void UnBind() const override;
 	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override;
 private:
-	unsigned int m_id;
+	GLuint m_id;
+};
+
+class COpenGLESOcclusionQuery : public IOcclusionQuery
+{
+public:
+	COpenGLESOcclusionQuery()
+	{
+		glGenQueries(1, &m_id);
+	}
+	~COpenGLESOcclusionQuery()
+	{
+		glDeleteQueries(1, &m_id);
+	}
+	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override
+	{
+		if (!renderToScreen)
+		{
+			glDepthMask(GL_FALSE);
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		}
+		glBeginQuery(GL_ANY_SAMPLES_PASSED, m_id);
+		handler();
+		glEndQuery(GL_ANY_SAMPLES_PASSED);
+		if (!renderToScreen)
+		{
+			glDepthMask(GL_TRUE);
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
+	}
+
+	virtual bool IsVisible() const override
+	{
+		GLuint result = 0;
+		glGetQueryObjectuiv(m_id, GL_QUERY_RESULT_AVAILABLE, &result);
+		int err = glGetError();
+		if (result != 0)
+		{
+			glGetQueryObjectuiv(m_id, GL_QUERY_RESULT, &result);
+			err = glGetError();
+			return result != 0;
+		}
+		return true;
+	}
+private:
+	GLuint m_id = 0;
 };
 
 static const float emptyColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -377,6 +422,11 @@ std::unique_ptr<IVertexBuffer> COpenGLESRenderer::CreateVertexBuffer(const float
 std::unique_ptr<IFrameBuffer> COpenGLESRenderer::CreateFramebuffer() const
 {
 	return std::make_unique<COpenGLESFrameBuffer>();
+}
+
+std::unique_ptr<IOcclusionQuery> COpenGLESRenderer::CreateOcclusionQuery()
+{
+	return std::make_unique<COpenGLESOcclusionQuery>();
 }
 
 IShaderManager& COpenGLESRenderer::GetShaderManager()

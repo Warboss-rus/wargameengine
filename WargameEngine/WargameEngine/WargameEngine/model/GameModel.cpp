@@ -19,7 +19,7 @@ std::shared_ptr<IObject> CGameModel::Get3DObject(size_t number)
 	return m_objects[number];
 }
 
-std::shared_ptr<IObject> CGameModel::Get3DObject(IObject * object)
+std::shared_ptr<IObject> CGameModel::Get3DObject(const IBaseObject * object)
 {
 	for (auto i = m_objects.begin(); i != m_objects.end(); ++i)
 	{

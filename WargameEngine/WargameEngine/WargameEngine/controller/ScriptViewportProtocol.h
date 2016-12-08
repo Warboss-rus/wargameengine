@@ -24,6 +24,15 @@
 //Removes viewport
 #define REMOVE_VIEWPORT L"Remove"
 
+//Object Viewport:CreateShadowMapViewport(int size, float fovAngle, float x, float y, float z)
+#define CREATE_SHADOW_MAP_VIEWPORT L"CreateShadowMapViewport"
+
+//void Viewport:DisableShadowMap()
+#define DISABLE_SHADOW_MAP L"DisableShadowMap"
+
+//void Viewport:SetShadowMapViewport(Object viewport)
+#define SET_SHADOW_MAP_VIEWPORT L"SetShadowMapViewport"
+
 //void Viewport:CameraStrategy(double maxTransX, double maxTransY, double maxScale, double minScale)
 //Creates a third person camera typically seen in strategy games. It can be zoomed with a mouse wheel and moved around via arrow keys. Holding Alt + moving the mouse
 //will allow you to turn the camera around. The function arguments determine the translation limits for the camera.

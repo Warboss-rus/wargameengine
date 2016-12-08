@@ -5,6 +5,8 @@
 
 class ICamera;
 class ICachedTexture;
+class IOcclusionQuery;
+class IBaseObject;
 
 class IViewport
 {
@@ -19,6 +21,8 @@ public:
 	virtual void Draw(DrawFunc const& draw) = 0;
 
 	virtual ICachedTexture const& GetTexture() const= 0;
+
+	virtual IOcclusionQuery & GetOcclusionQuery(const IBaseObject* object) = 0;
 
 	virtual Matrix4F GetProjectionMatrix() const = 0;
 	virtual Matrix4F GetViewMatrix() const = 0;
@@ -35,4 +39,8 @@ public:
 	virtual int GetY() const = 0;
 	virtual int GetWidth() const = 0;
 	virtual int GetHeight() const = 0;
+
+	virtual void SetShadowViewport(IViewport* viewport) = 0;
+	virtual void SetUpShadowMap() const = 0;
+	virtual IViewport* GetShadowViewport() const = 0;
 };

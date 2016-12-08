@@ -248,6 +248,10 @@ void CShaderManagerDirectX::ResetBuffers() const
 void CShaderManagerDirectX::PopProgram() const
 {
 	m_programs.pop_back();
+	auto context = m_render->GetContext();
+	context->VSSetShader(m_programs.back()->pVS, 0, 0);
+	context->PSSetShader(m_programs.back()->pPS, 0, 0);
+	context->GSSetShader(m_programs.back()->pGS, 0, 0);
 	ResetBuffers();
 	if (m_onProgramChange) m_onProgramChange();
 }

@@ -25,14 +25,8 @@ class CDirectXCachedTexture : public ICachedTexture
 {
 public:
 	CDirectXCachedTexture(CDirectXRenderer *renderer)
-		: m_renderer(renderer), m_resourceView(nullptr), m_texture(nullptr)
+		: m_renderer(renderer)
 	{
-	}
-
-	~CDirectXCachedTexture()
-	{
-		if(m_resourceView) m_resourceView->Release();
-		if(m_texture) m_texture->Release();
 	}
 
 	virtual void Bind() const override
@@ -47,8 +41,8 @@ public:
 private:
 	friend class CDirectXRenderer;
 	friend class CDirectXFrameBuffer;
-	ID3D11ShaderResourceView* m_resourceView;
-	ID3D11Texture2D* m_texture;
+	CComPtr<ID3D11ShaderResourceView> m_resourceView;
+	CComPtr<ID3D11Texture2D> m_texture;
 	CDirectXRenderer * m_renderer;
 };
 
@@ -249,6 +243,36 @@ private:
 	CComPtr<ID3D11DepthStencilView> m_depthStencilView;
 };
 
+class CDirectXOcclusionQuery : public IOcclusionQuery
+{
+public:
+	CDirectXOcclusionQuery(ID3D11Device * dev, CDirectXRenderer * renderer)
+		: m_renderer(renderer)
+	{
+		D3D11_QUERY_DESC desc;
+		desc.Query = D3D11_QUERY_OCCLUSION;
+		desc.MiscFlags = 0;
+		CComPtr<ID3D11Query> query;
+		dev->CreateQuery(&desc, &m_query);
+	}
+
+	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override
+	{
+		m_renderer->GetContext()->Begin(m_query);
+		handler();
+		m_renderer->GetContext()->End(m_query);
+	}
+
+	virtual bool IsVisible() const override
+	{
+		UINT64 result = 1;
+		m_renderer->GetContext()->GetData(m_query, &result, sizeof(UINT64), 0);
+		return result != 0;
+	}
+private:
+	CComPtr<ID3D11Query> m_query;
+	CDirectXRenderer * m_renderer;
+};
 
 float GetAspectRatio(HWND m_hWnd)
 {
@@ -733,6 +757,11 @@ std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float 
 	}
 
 	return std::move(buffer);
+}
+
+std::unique_ptr<IOcclusionQuery> CDirectXRenderer::CreateOcclusionQuery()
+{
+	return std::make_unique<CDirectXOcclusionQuery>(m_dev, this);
 }
 
 IShaderManager& CDirectXRenderer::GetShaderManager()

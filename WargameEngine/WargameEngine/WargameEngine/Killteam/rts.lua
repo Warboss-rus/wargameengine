@@ -11,7 +11,7 @@ function Init()
 	SetLightDiffuse(1, 1, 1, 1, 1)
 	SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
 	SetLightSpecular(1, 1, 1, 1, 1)
-	EnableShadowMap(4096, 65)
+	Viewport:SetShadowMapViewport(Viewport:CreateShadowMapViewport(4096, 65, 0, 0, 50))
 	SetAnisotropy(GetMaxAnisotropy())
 	EnableMSAA()
 	if(GetRendererName() == "DirectX11") then

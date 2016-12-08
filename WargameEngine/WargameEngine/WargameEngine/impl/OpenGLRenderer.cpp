@@ -54,6 +54,59 @@ private:
 	unsigned int m_id;
 };
 
+class COpenGLOcclusionQuery : public IOcclusionQuery
+{
+public:
+	COpenGLOcclusionQuery()
+	{
+		glGenQueries(1, &m_id);
+	}
+	~COpenGLOcclusionQuery()
+	{
+		glDeleteQueries(1, &m_id);
+	}
+	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override
+	{
+		if (!renderToScreen)
+		{
+			glDepthMask(GL_FALSE);
+			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		}
+		glBeginQuery(GL_ANY_SAMPLES_PASSED, m_id);
+		handler();
+		glEndQuery(GL_ANY_SAMPLES_PASSED);
+		if (!renderToScreen)
+		{
+			glDepthMask(GL_TRUE);
+			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		}
+	}
+
+	virtual bool IsVisible() const override
+	{
+		if (GLEW_ARB_query_buffer_object)
+		{
+			int result = 1;//true by default
+			glGetQueryObjectiv(m_id, GL_QUERY_RESULT_NO_WAIT, &result);
+			return result != 0;
+		}
+		else
+		{
+			GLint result = 0;
+			glGetQueryObjectiv(m_id, GL_QUERY_RESULT_AVAILABLE, &result);
+			int err = glGetError();
+			if (result != 0)
+			{
+				glGetQueryObjectiv(m_id, GL_QUERY_RESULT, &result);
+				err = glGetError();
+				return result != 0;
+			}
+			return true;
+		}
+	}
+private:
+	GLuint m_id = 0;
+};
 
 void COpenGLRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
 {
@@ -743,6 +796,11 @@ void COpenGLRenderer::EnableMultisampling(bool enable)
 	{
 		throw std::runtime_error("MSAA is not supported");
 	}
+}
+
+std::unique_ptr<IOcclusionQuery> COpenGLRenderer::CreateOcclusionQuery()
+{
+	return std::make_unique<COpenGLOcclusionQuery>();
 }
 
 void COpenGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)

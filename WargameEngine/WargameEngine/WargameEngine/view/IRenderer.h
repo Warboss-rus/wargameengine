@@ -53,7 +53,7 @@ public:
 class IOcclusionQuery
 {
 public:
-	virtual void Query(std::function<void()> const& handler) = 0;
+	virtual void Query(std::function<void()> const& handler, bool renderToScreen) = 0;
 	virtual bool IsVisible() const = 0;
 
 	virtual ~IOcclusionQuery() {}
@@ -92,6 +92,8 @@ public:
 	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void()> const& func) = 0;
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) = 0;
+
+	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() = 0;
 
 	virtual std::string GetName() const = 0;
 

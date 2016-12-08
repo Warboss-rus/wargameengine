@@ -43,6 +43,8 @@ public:
 
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
 
+	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
+
 	virtual IShaderManager& GetShaderManager()  override;
 
 	virtual void SetTextureManager(CTextureManager & textureManager) override;
@@ -73,9 +75,7 @@ public:
 	virtual bool ConvertBgra() const override;
 
 	virtual std::string GetName() const override;
-
 	virtual bool SupportsFeature(Feature feature) const override;
-
 	void EnableMultisampling(bool enable);
 private:
 	CTextureManager* m_textureManager;

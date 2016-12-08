@@ -1,9 +1,9 @@
 attribute vec4 Position;
+attribute vec3 Normal;
 attribute vec2 TexCoord;
+uniform mat4 mvp_matrix;
 attribute vec4 instancePosition;
 attribute vec2 instanceTexCoordPos;
-uniform mat4 mvp_matrix;
-
 varying vec2 v_texCoord;
 
 void main()

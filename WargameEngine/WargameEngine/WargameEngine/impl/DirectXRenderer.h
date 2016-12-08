@@ -52,6 +52,7 @@ public:
 
 	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void() > const& func) override;
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
+	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
 	virtual IShaderManager& GetShaderManager() override;
 
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;

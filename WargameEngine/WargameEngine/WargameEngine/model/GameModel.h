@@ -17,7 +17,7 @@ public:
 	void Clear();
 	std::shared_ptr<const IObject> Get3DObject(size_t number) const;
 	virtual std::shared_ptr<IObject> Get3DObject(size_t number) override;
-	virtual std::shared_ptr<IObject> Get3DObject(IObject * obj) override;
+	virtual std::shared_ptr<IObject> Get3DObject(const IBaseObject * obj) override;
 	virtual void AddObject(std::shared_ptr<IObject> pObject) override;
 	virtual void DeleteObjectByPtr(std::shared_ptr<IObject> pObject) override;
 	void SelectObject(std::shared_ptr<IObject> pObject);
