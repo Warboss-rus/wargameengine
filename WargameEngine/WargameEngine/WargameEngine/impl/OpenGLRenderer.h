@@ -1,6 +1,10 @@
 #pragma once
 #include "../view/IViewHelper.h"
 #include "ShaderManagerOpenGL.h"
+#pragma warning(push)
+#pragma warning(disable: 4201)
+#include <mat4x4.hpp>
+#pragma warning(pop)
 
 class COpenGLRenderer : public IViewHelper
 {
@@ -8,7 +12,6 @@ public:
 	COpenGLRenderer();
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords) override;
 
 	virtual void PushMatrix() override;
@@ -17,8 +20,8 @@ public:
 	virtual void Translate(const double dx, const double dy, const double dz) override;
 	virtual void Translate(const int dx, const int dy, const int dz) override;
 	virtual void Rotate(const double angle, const double x, const double y, const double z) override;
-	virtual void SetColor(const float r, const float g, const float b) override;
-	virtual void SetColor(const int r, const int g, const int b) override;
+	virtual void SetColor(const float r, const float g, const float b, const float a = 1.0f) override;
+	virtual void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) override;
 	virtual void SetColor(const float * color) override;
 	virtual void SetColor(const int * color) override;
 	virtual void Scale(const double scale) override;
@@ -59,7 +62,7 @@ public:
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;
-	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
 	virtual void DrawIn2D(std::function<void()> const& drawHandler) override;
@@ -78,8 +81,15 @@ public:
 	virtual bool SupportsFeature(Feature feature) const override;
 	void EnableMultisampling(bool enable);
 private:
+	void UpdateMatrices() const;
+	void UpdateColor() const;
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGL m_shaderManager;
+	std::vector<glm::mat4> m_viewMatrices;
+	glm::mat4 m_projectionMatrix;
+	glm::vec4 m_color;
+	std::unique_ptr<IShaderProgram> m_defaultProgram;
+	unsigned int m_vao;
 };
 
 class COpenGlCachedTexture : public ICachedTexture

@@ -192,8 +192,8 @@ elseif(GetRendererName() == "OpenGLES") then
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
 else
-	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
-	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
+	--SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
+	--SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
 end
 EnableGPUSkinning()
 --EnableVertexLightning()

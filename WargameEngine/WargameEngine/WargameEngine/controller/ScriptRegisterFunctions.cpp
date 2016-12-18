@@ -40,11 +40,11 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 			throw std::runtime_error("6 argument expected (decal, x, y, rotation, width, height)");
 		sDecal decal;
 		decal.texture = args.GetWStr(1);
-		decal.x = args.GetDbl(2);
-		decal.y = args.GetDbl(3);
-		decal.rotation = args.GetDbl(4);
-		decal.width = args.GetDbl(5);
-		decal.depth = args.GetDbl(6);
+		decal.x = args.GetFloat(2);
+		decal.y = args.GetFloat(3);
+		decal.rotation = args.GetFloat(4);
+		decal.width = args.GetFloat(5);
+		decal.depth = args.GetFloat(6);
 		model.GetLandscape().AddNewDecal(decal);
 		return nullptr;
 	});

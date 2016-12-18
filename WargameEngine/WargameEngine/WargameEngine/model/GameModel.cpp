@@ -134,7 +134,7 @@ void CGameModel::RemoveParticleEffect(size_t index)
 	m_particleEffects.erase(m_particleEffects.begin() + index);
 }
 
-void CGameModel::ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+void CGameModel::ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }

@@ -1,11 +1,11 @@
 #include "ThreadPool.h"
 #include "LogWriter.h"
 #include <mutex>
-#include <future>
 #include <deque>
 #include <vector>
 #include "ITask.h"
 #include <algorithm>
+#include <condition_variable>
 
 struct ThreadPool::Impl
 {
@@ -85,7 +85,7 @@ public:
 	{
 		if ((!m_funcs.empty() || !m_tasks.empty()) && m_threads.size() < m_maxThreads)
 		{
-			m_threads.push_back(std::async(std::launch::async, std::bind(&Impl::WorkerThread, this)));
+			m_threads.push_back(std::thread(std::bind(&Impl::WorkerThread, this)));
 		}
 		while (!m_callbacks.empty())
 		{
@@ -149,6 +149,10 @@ public:
 		m_callbackMutex.lock();
 		m_callbacks.clear();
 		m_callbackMutex.unlock();
+		for (auto& th : m_threads)
+		{
+			th.join();
+		}
 		m_threads.clear();
 		m_cancelled = false;
 	}
@@ -247,7 +251,7 @@ public:
 	size_t m_nextTimedCallbackIndex = 0;
 	unsigned int m_maxThreads = std::thread::hardware_concurrency();
 	bool m_cancelled = false;
-	std::vector<std::future<void>> m_threads;
+	std::vector<std::thread> m_threads;
 	std::condition_variable m_conditional;
 	std::mutex m_conditionalMutex;
 	std::mutex m_callbackMutex;

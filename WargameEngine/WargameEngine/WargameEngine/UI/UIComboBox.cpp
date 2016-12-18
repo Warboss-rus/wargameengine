@@ -36,7 +36,7 @@ void CUIComboBox::Draw() const
 				PrintText(m_renderer, m_textWriter, borderSize, borderSize, GetWidth(), GetHeight(), m_items[m_selected], textTheme, m_scale);
 			}
 
-			m_renderer.SetColor(m_theme->defaultColor);
+			m_renderer.SetColor(0, 0, 0);
 			m_renderer.SetTexture(m_theme->texture, true);
 			float * texCoords = m_expanded ? theme.expandedTexCoord : theme.texCoord;
 			int firstX = GetWidth() - static_cast<int>(GetHeight() * theme.buttonWidthCoeff);
@@ -63,6 +63,7 @@ void CUIComboBox::Draw() const
 				m_scrollbar.Draw();
 				m_renderer.PopMatrix();
 			}
+			m_renderer.SetColor(0, 0, 0);
 		}, GetWidth(), realHeight);
 	}
 

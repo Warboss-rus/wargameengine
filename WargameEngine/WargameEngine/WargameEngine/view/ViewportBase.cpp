@@ -58,7 +58,7 @@ void CViewportBase::SetPolygonOffset(bool enable, float factor /*= 0.0f*/, float
 	m_polygonOffsetUnits = enable ? units : 0.0f;
 }
 
-void CViewportBase::SetClippingPlanes(double near /*= 1.0*/, double far /*= 1000.0*/)
+void CViewportBase::SetClippingPlanes(float near /*= 1.0f*/, float far /*= 1000.0f*/)
 {
 	m_nearPane = near;
 	m_farPane = far;

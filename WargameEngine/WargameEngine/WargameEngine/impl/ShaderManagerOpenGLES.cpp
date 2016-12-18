@@ -37,10 +37,10 @@ public:
 	unsigned program;
 };
 
-class COpenGLVertexAttribCache : public IVertexAttribCache
+class COpenGLESVertexAttribCache : public IVertexAttribCache
 {
 public:
-	COpenGLVertexAttribCache(int elementSize, size_t count, const void* data, GLenum format)
+	COpenGLESVertexAttribCache(int elementSize, size_t count, const void* data, GLenum format)
 		:m_elementSize(elementSize)
 		, m_format(format)
 	{
@@ -48,7 +48,7 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, m_cache);
 		glBufferData(GL_ARRAY_BUFFER, count * elementSize * sizeof(float), data, GL_STATIC_DRAW);
 	}
-	~COpenGLVertexAttribCache()
+	~COpenGLESVertexAttribCache()
 	{
 		glDeleteBuffers(1, &m_cache);
 	}
@@ -224,17 +224,17 @@ void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int ele
 
 std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGLES::CreateVertexAttribCache(int elementSize, size_t count, const float* value) const
 {
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_FLOAT);
+	return std::make_unique<COpenGLESVertexAttribCache>(elementSize, count, value, GL_FLOAT);
 }
 
 std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGLES::CreateVertexAttribCache(int elementSize, size_t count, const int* value) const
 {
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_INT);
+	return std::make_unique<COpenGLESVertexAttribCache>(elementSize, count, value, GL_INT);
 }
 
 std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGLES::CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const
 {
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_UNSIGNED_INT);
+	return std::make_unique<COpenGLESVertexAttribCache>(elementSize, count, value, GL_UNSIGNED_INT);
 }
 
 void CShaderManagerOpenGLES::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
@@ -265,7 +265,7 @@ void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, in
 
 void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
 {
-	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
+	auto& glCache = reinterpret_cast<COpenGLESVertexAttribCache const&>(cache);
 	glCache.Bind();
 	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, NULL, perInstance, glCache.GetFormat());
 	glCache.UnBind();

@@ -109,7 +109,7 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 void CUIElement::Invalidate() const
 {
 	m_cache.reset();
-	if(m_parent) m_parent->InvalidateChildren();
+	if (m_parent) m_parent->InvalidateChildren();
 }
 
 void CUIElement::InvalidateChildren() const

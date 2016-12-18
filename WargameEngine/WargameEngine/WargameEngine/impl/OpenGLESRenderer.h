@@ -12,7 +12,6 @@ public:
 	COpenGLESRenderer();
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords) override;
 
 	virtual void PushMatrix() override;
@@ -21,8 +20,8 @@ public:
 	virtual void Translate(const double dx, const double dy, const double dz) override;
 	virtual void Translate(const int dx, const int dy, const int dz) override;
 	virtual void Rotate(const double angle, const double x, const double y, const double z) override;
-	virtual void SetColor(const float r, const float g, const float b) override;
-	virtual void SetColor(const int r, const int g, const int b) override;
+	virtual void SetColor(const float r, const float g, const float b, const float a = 1.0f) override;
+	virtual void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) override;
 	virtual void SetColor(const float * color) override;
 	virtual void SetColor(const int * color) override;
 	virtual void Scale(const double scale) override;
@@ -63,7 +62,7 @@ public:
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;
-	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
 	virtual void DrawIn2D(std::function<void()> const& drawHandler) override;
@@ -91,4 +90,5 @@ private:
 	std::vector<Matrix4F> m_viewMatrices;
 	std::vector<Matrix4F> m_projectionMatrices;
 	float m_color[4];
+	std::unique_ptr<IShaderProgram> m_defaultProgram;
 };

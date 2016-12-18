@@ -250,7 +250,7 @@ public:
 		: m_renderer(renderer)
 	{
 		D3D11_QUERY_DESC desc;
-		desc.Query = D3D11_QUERY_OCCLUSION;
+		desc.Query = D3D11_QUERY_OCCLUSION_PREDICATE;
 		desc.MiscFlags = 0;
 		CComPtr<ID3D11Query> query;
 		dev->CreateQuery(&desc, &m_query);
@@ -265,9 +265,9 @@ public:
 
 	virtual bool IsVisible() const override
 	{
-		UINT64 result = 1;
-		m_renderer->GetContext()->GetData(m_query, &result, sizeof(UINT64), 0);
-		return result != 0;
+		BOOL result = 1;
+		m_renderer->GetContext()->GetData(m_query, &result, sizeof(BOOL), 0);
+		return result != FALSE;
 	}
 private:
 	CComPtr<ID3D11Query> m_query;
@@ -495,47 +495,6 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 	m_devcon->Draw(vertices.size(), 0);
 }
 
-std::vector<float> ConvertVector3D(std::vector<CVector3d> const& vec)
-{
-	std::vector<float> result;
-	result.reserve(vec.size() * 3);
-	for (auto& item : vec)
-	{
-		result.push_back(static_cast<float>(item.x));
-		result.push_back(static_cast<float>(item.y));
-		result.push_back(static_cast<float>(item.z));
-	}
-	return std::move(result);
-}
-
-void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords)
-{
-	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
-	UINT offset[] = { 0, 0, 0 };
-
-	auto floatVertices = ConvertVector3D(vertices);
-	auto floatNormals = ConvertVector3D(normals);
-	std::vector<float> floatTexCoords;
-	floatTexCoords.reserve(texCoords.size() * 3);
-	for (auto& item : texCoords)
-	{
-		floatTexCoords.push_back(static_cast<float>(item.x));
-		floatTexCoords.push_back(static_cast<float>(item.y));
-	}
-
-	MakeSureBufferCanFitSize(vertices.size());
-	CopyDataToBuffer(m_vertexBuffer, floatVertices.data(), floatVertices.size() * sizeof(float));
-	CopyDataToBuffer(m_texCoordBuffer, floatTexCoords.data(), floatTexCoords.size() * sizeof(float));
-	CopyDataToBuffer(m_normalsBuffer, floatNormals.data(), floatNormals.size() * sizeof(float));
-
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, m_normalsBuffer };
-
-	m_shaderManager.SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
-	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
-	m_devcon->IASetPrimitiveTopology(renderModeMap.at(mode));
-	m_devcon->Draw(vertices.size(), 0);
-}
-
 void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
 	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
@@ -564,15 +523,15 @@ void CDirectXRenderer::SetColor(const float * color)
 	m_shaderManager.SetColor(color);
 }
 
-void CDirectXRenderer::SetColor(const int r, const int g, const int b)
+void CDirectXRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
-	float fcolor[4] = { static_cast<float>(INT_MAX) / r, static_cast<float>(INT_MAX) / g, static_cast<float>(INT_MAX) / b, 1.0f };
+	float fcolor[4] = { static_cast<float>(INT_MAX) / r, static_cast<float>(INT_MAX) / g, static_cast<float>(INT_MAX) / b, static_cast<float>(INT_MAX) / a };
 	m_shaderManager.SetColor(fcolor);
 }
 
-void CDirectXRenderer::SetColor(const float r, const float g, const float b)
+void CDirectXRenderer::SetColor(const float r, const float g, const float b, const float a)
 {
-	float fcolor[4] = { r, g, b, 1.0f };
+	float fcolor[4] = { r, g, b, a };
 	m_shaderManager.SetColor(fcolor);
 }
 
@@ -922,9 +881,9 @@ void CDirectXRenderer::EnableBlending(bool enable)
 	m_devcon->OMSetBlendState(m_blendStates[index], NULL, 0xffffffff);
 }
 
-void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
+void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0*/, float farPane /*= 1000.0*/)
 {
-	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane)));
+	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, nearPane, farPane));
 	UpdateMatrices();
 }
 

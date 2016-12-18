@@ -45,11 +45,6 @@ glm::highp_vec3 FromVector3(CVector3d const& v)
 	return result;
 }
 
-CVector3f ToVector3f(glm::highp_vec3 const& v)
-{
-	return{ v.x, v.y, v.z };
-}
-
 glm::highp_vec4 Vec4FromData(float* data)
 {
 	glm::highp_vec4 result;
@@ -226,21 +221,6 @@ std::vector<float> TransformDoubleToFloat(const void * data, size_t count)
 	return result;
 }
 
-void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords)
-{
-	auto vertexf = TransformDoubleToFloat(vertices.data(), vertices.size() * 3);
-	auto normalsf = TransformDoubleToFloat(normals.data(), normals.size() * 3);
-	auto texCoordsf = TransformDoubleToFloat(texCoords.data(), texCoords.size() * 2);
-	m_shaderManager.SetVertexAttribute("Position", 3, vertices.size(), vertexf.data());
-	if (!normals.empty()) m_shaderManager.SetVertexAttribute("Normal", 3, normals.size(), normalsf.data());
-	if (!texCoords.empty()) m_shaderManager.SetVertexAttribute("TexCoord", 2, texCoords.size(), texCoordsf.data());
-	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_shaderManager.DisableVertexAttribute("Position", 3, def);
-	m_shaderManager.DisableVertexAttribute("Normal", 3, def);
-	m_shaderManager.DisableVertexAttribute("TexCoord", 2, def);
-}
-
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
 	m_shaderManager.SetVertexAttribute("Position", 2, vertices.size(), (int*)&vertices[0].x);
@@ -274,7 +254,7 @@ void COpenGLESRenderer::Translate(const double dx, const double dy, const double
 
 void COpenGLESRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	m_viewMatrices.back() = ToMatrix4(glm::translate(FromMatrix(m_viewMatrices.back()), FromVector3(CVector3f(dx, dy, dz))));
+	m_viewMatrices.back() = ToMatrix4(glm::translate(FromMatrix(m_viewMatrices.back()), glm::vec3(dx, dy, dz)));
 	UpdateUniforms();
 }
 
@@ -308,21 +288,21 @@ void COpenGLESRenderer::LookAt(CVector3f const& position, CVector3f const& direc
 	UpdateUniforms();
 }
 
-void COpenGLESRenderer::SetColor(const float r, const float g, const float b)
+void COpenGLESRenderer::SetColor(const float r, const float g, const float b, const float a)
 {
-	float color[] = { r, g, b, 1.0f };
+	float color[] = { r, g, b, a };
 	memcpy(m_color, color, sizeof(color));
 	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
 }
 
 float ToFloat(int color)
 {
-	return static_cast<float>(color) / 255.0f;
+	return static_cast<float>(color) / UCHAR_MAX;
 }
 
-void COpenGLESRenderer::SetColor(const int r, const int g, const int b)
+void COpenGLESRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
-	float color[] = { ToFloat(r), ToFloat(g), ToFloat(b), 1.0f };
+	float color[] = { ToFloat(r), ToFloat(g), ToFloat(b), ToFloat(a) };
 	memcpy(m_color, color, sizeof(color));
 	//m_shaderManager.SetUniformValue4("color", 1, m_color);
 }
@@ -593,6 +573,7 @@ void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, i
 	double winY = viewportData[3] - (double)y;
 
 	//Cast a ray from eye to mouse cursor;
+	auto ToVector3f = [](glm::vec3 const& src) {return CVector3f(src.x, src.y, src.z); };
 	start = ToVector3f(glm::unProject(FromVector3(CVector3f(winX, winY, 0.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
 		Vec4FromData(viewportData)));
 	end = ToVector3f(glm::unProject(FromVector3(CVector3f(winX, winY, 1.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
@@ -678,7 +659,7 @@ void COpenGLESRenderer::EnableBlending(bool enable)
 		glDisable(GL_BLEND);
 }
 
-void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
+void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
 	m_projectionMatrices.back() = ToMatrix4(glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), viewportWidth, viewportHeight, nearPane, farPane));
 	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
@@ -741,12 +722,12 @@ void COpenGLESRenderer::UploadTexture(ICachedTexture & texture, unsigned char * 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	error = glGetError();
 	GLenum format = (flags & TEXTURE_BGRA) ? GL_BGRA_EXT : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	error = glGetError();
 	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
 		auto& mipmap = mipmaps[i];
-		glTexImage2D(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
+		glTexImage2D(GL_TEXTURE_2D, i + 1, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
 	}
 	if (m_version >= 3)
 	{
@@ -817,8 +798,8 @@ void COpenGLESRenderer::Init(int width, int height)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glViewport(0, 0, width, height);
-	auto program = m_shaderManager.NewProgram();
-	m_shaderManager.PushProgram(*program);
+	m_defaultProgram = m_shaderManager.NewProgram();
+	m_shaderManager.PushProgram(*m_defaultProgram);
 }
 
 bool COpenGLESRenderer::SupportsFeature(Feature /*feature*/) const

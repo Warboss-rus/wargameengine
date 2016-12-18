@@ -6,8 +6,36 @@
 #include "ShaderManagerOpenGL.h"
 #include "../view/Matrix4.h"
 #include "../view/IViewport.h"
+#include <gtc/matrix_transform.inl>
+#pragma warning(push)
+#pragma warning(disable: 4201)
+#include <gtc/type_ptr.hpp>
+#pragma warning(pop)
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace std;
+
+namespace
+{
+static const int positionIndex = 0;
+static const int normalIndex = 2;
+static const int texCoordIndex = 1;
+
+glm::vec3 FromVector3(CVector3f const& v)
+{
+	glm::vec3 result;
+	memcpy(&result.x, &v.x, sizeof(float) * 3);
+	return result;
+}
+
+glm::mat4 FromMatrix(Matrix4F const& m)
+{
+	glm::mat4 result;
+	memcpy(&result, &m, sizeof(float) * 16);
+	return result;
+}
+}
 
 class COpenGLDrawingList : public IDrawingList
 {
@@ -23,7 +51,7 @@ private:
 class COpenGLVertexBuffer : public IVertexBuffer
 {
 public:
-	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = true);
+	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = true, GLuint mainVAO = 0);
 	~COpenGLVertexBuffer();
 	virtual void Bind() const override;
 	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
@@ -32,13 +60,10 @@ public:
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
 private:
-	const float * m_vertex = NULL;
-	const float * m_normals = NULL;
-	const float * m_texCoords = NULL;
-	const unsigned int* m_indexes = NULL;
-	GLuint m_vertexBuffer = NULL;
-	GLuint m_normalsBuffer = NULL;
-	GLuint m_texCoordBuffer = NULL;
+	void CreateVBO(size_t size, size_t components, const void* data, GLuint program, const char* attribName);
+	GLuint m_vao = 0;
+	GLuint m_mainVAO = 0;
+	std::vector<GLuint> m_buffers;
 	GLuint m_indexesBuffer = NULL;
 };
 
@@ -135,140 +160,128 @@ static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
 };
 
-void Bind(const void* vertices, const void* normals, const void* texCoords, GLenum vertexType, GLenum normalType, GLenum texCoordType, int vertexAxesCount)
-{
-	if (vertices)
-	{
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(vertexAxesCount, vertexType, 0, vertices);
-	}
-	if (normals)
-	{
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(normalType, 0, normals);
-	}
-	if (texCoords)
-	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, texCoordType, 0, texCoords);
-	}
-}
-
-void Unbind()
-{
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-}
-
 COpenGLRenderer::COpenGLRenderer()
 	:m_textureManager(nullptr)
 {
 	glDepthFunc(GL_LESS);
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.01f);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glewInit();
+
+	glGenVertexArrays(1, &m_vao);
+	glBindVertexArray(m_vao);
+
+	m_viewMatrices.push_back(glm::mat4());
+	m_color.a = 1.0f;
+	m_shaderManager.DoOnProgramChange([this]() {
+		UpdateMatrices();
+		UpdateColor();
+	});
+
+	m_defaultProgram = m_shaderManager.NewProgram();
+	m_shaderManager.PushProgram(*m_defaultProgram);
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
-	Bind(vertices.data(), normals.data(), texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 3);
+	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::VERTEX_ATTRIB_NAME, 3, vertices.size(), (float*)vertices.data(), false);
+	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::NORMAL_ATTRIB_NAME, 3, normals.size(), normals.empty() ? nullptr : (float*)normals.data(), false);
+	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
-}
-
-void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords)
-{
-	Bind(vertices.data(), normals.data(), texCoords.data(), GL_DOUBLE, GL_DOUBLE, GL_DOUBLE, 3);
-	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	/*Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
-	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();*/
-	glBegin(renderModeMap.at(mode));
-	for (size_t i = 0; i < vertices.size(); ++i)
+	std::vector<float> fvalues;
+	fvalues.reserve(vertices.size() * 2);
+	for (auto& v : vertices)
 	{
-		if (i < texCoords.size()) glTexCoord2f(texCoords[i].x, texCoords[i].y);
-		glVertex2i(vertices[i].x, vertices[i].y);
+		fvalues.push_back(static_cast<float>(v.x));
+		fvalues.push_back(static_cast<float>(v.y));
 	}
-	glEnd();
+	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::VERTEX_ATTRIB_NAME, 2, vertices.size(), fvalues.data(), false);
+	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::NORMAL_ATTRIB_NAME, 3, 0, (float*)nullptr, false);
+	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
+	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 }
 
 void COpenGLRenderer::PushMatrix()
 {
-	glPushMatrix();
+	m_viewMatrices.push_back(m_viewMatrices.back());
 }
 
 void COpenGLRenderer::PopMatrix()
 {
-	glPopMatrix();
+	m_viewMatrices.pop_back();
+	UpdateMatrices();
 }
 
 void COpenGLRenderer::Translate(const int dx, const int dy, const int dz)
 {
-	glTranslated(static_cast<double>(dx), static_cast<double>(dy), static_cast<double>(dz));
+	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 }
 
 void COpenGLRenderer::Translate(const double dx, const double dy, const double dz)
 {
-	glTranslated(dx, dy, dz);
+	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 }
 
 void COpenGLRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	glTranslatef(dx, dy, dz);
+	m_viewMatrices.back() = glm::translate(m_viewMatrices.back(), glm::vec3(dx, dy, dz));
+	UpdateMatrices();
 }
 
 void COpenGLRenderer::Scale(double scale)
 {
-	glScaled(scale, scale, scale);
+	float fscale = static_cast<float>(scale);
+	m_viewMatrices.back() = glm::scale(m_viewMatrices.back(), glm::vec3(fscale, fscale, fscale));
+	UpdateMatrices();
 }
 
 void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
 {
-	glRotated(angle, x, y, z);
+	m_viewMatrices.back() = glm::rotate(m_viewMatrices.back(), static_cast<float>(angle * M_PI / 180), glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+	UpdateMatrices();
 }
 
 void COpenGLRenderer::GetViewMatrix(float * matrix) const
 {
-	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+	memcpy(matrix, glm::value_ptr(m_viewMatrices.back()), sizeof(Matrix4F));
 }
 
 void COpenGLRenderer::ResetViewMatrix()
 {
-	glLoadIdentity();
+	m_viewMatrices.back() = glm::mat4();
+	UpdateMatrices();
 }
 
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
+	m_viewMatrices.back() = glm::lookAt(FromVector3(position), FromVector3(direction), FromVector3(up));
+	UpdateMatrices();
 }
 
-void COpenGLRenderer::SetColor(const float r, const float g, const float b)
+void COpenGLRenderer::SetColor(const float r, const float g, const float b, const float a)
 {
-	glColor3f(r, g, b);
+	m_color = glm::vec4(r, g, b, a);
+	UpdateColor();
 }
 
-void COpenGLRenderer::SetColor(const int r, const int g, const int b)
+void COpenGLRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
-	glColor3i(r, g, b);
+	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
+	SetColor(charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a));
 }
 
 void COpenGLRenderer::SetColor(const float * color)
 {
-	glColor3fv(color);
+	SetColor(color[0], color[1], color[2], color[3]);
 }
 
 void COpenGLRenderer::SetColor(const int * color)
 {
-	glColor3iv(color);
+	SetColor(color[0], color[1], color[2], color[3]);
 }
 
 std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
@@ -280,11 +293,11 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 	texture->Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
-
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	SetTexture(L"");
+	UnbindTexture();
 	//set up buffer
 	GLint prevBuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
@@ -297,25 +310,20 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 	{
 		LogWriter::WriteLine("framebuffer error code=" + std::to_string(status));
 	}
-	glPushAttrib(GL_VIEWPORT_BIT);
+	GLint oldViewport[4];
+	glGetIntegerv(GL_VIEWPORT, oldViewport);
 	glViewport(0, 0, width, height);
-	glPushMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glScalef(1.0f, -1.0f, 1.0f);
-	glOrtho(0, width, height, 0, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	auto oldProjectionMatrix = m_projectionMatrix;
+	m_projectionMatrix = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
+	PushMatrix();
+	ResetViewMatrix();
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	func();
 
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glPopAttrib();
+	m_projectionMatrix = oldProjectionMatrix;
+	PopMatrix();
+	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
 	glBindTexture(GL_TEXTURE_2D, prevTexture);
@@ -327,16 +335,21 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_RGBA },
-		{ CachedTextureType::ALPHA, GL_ALPHA },
+		{ CachedTextureType::ALPHA, GL_RED },
 		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
 	};
 	auto texture = std::make_unique<COpenGlCachedTexture>();
 	texture->Bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, type == CachedTextureType::ALPHA ? GL_R8 : typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
+	if (type == CachedTextureType::ALPHA)
+	{
+		GLint swizzleMask[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
+		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	if (type == CachedTextureType::DEPTH)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
@@ -345,18 +358,35 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data
 	return move(texture);
 }
 
+class CMockDrawingList : public IDrawingList
+{
+public:
+	CMockDrawingList(std::function<void() > const& func)
+		:m_func(func)
+	{
+	}
+
+	virtual void Draw() const override
+	{
+		m_func();
+	}
+private:
+	std::function<void() > m_func;
+};
+
 std::unique_ptr<IDrawingList> COpenGLRenderer::CreateDrawingList(std::function<void() > const& func)
 {
-	unsigned int list = glGenLists(1);
+	return std::make_unique<CMockDrawingList>(func);
+	/*unsigned int list = glGenLists(1);
 	glNewList(list, GL_COMPILE);
 	func();
 	glEndList();
-	return std::make_unique<COpenGLDrawingList>(list);
+	return std::make_unique<COpenGLDrawingList>(list);*/
 }
 
 std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
-	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords, size, temp);
+	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords, size, temp, m_vao);
 }
 
 std::unique_ptr<IFrameBuffer> COpenGLRenderer::CreateFramebuffer() const
@@ -422,89 +452,70 @@ void COpenGLDrawingList::Draw() const
 	glCallList(m_id);
 }
 
-COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
+COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool /*temp*/, GLuint mainVAO)
+	: m_mainVAO(mainVAO)
 {
-	if (temp)
+	GLint program;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+	glGenVertexArrays(1, &m_vao);
+	glBindVertexArray(m_vao);
+	if (vertex)
 	{
-		m_vertex = vertex;
-		m_normals = normals;
-		m_texCoords = texcoords;
+		CreateVBO(size, 3, vertex, program, CShaderManagerOpenGL::VERTEX_ATTRIB_NAME);
 	}
-	else
+	if (normals)
 	{
-		if (vertex)
-		{
-			glGenBuffers(1, &m_vertexBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-			glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float), vertex, GL_STATIC_DRAW);
-		}
-		if (normals)
-		{
-			glGenBuffers(1, &m_normalsBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
-			glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float), normals, GL_STATIC_DRAW);
-		}
-		if (texcoords)
-		{
-			glGenBuffers(1, &m_texCoordBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
-			glBufferData(GL_ARRAY_BUFFER, size * 2 * sizeof(float), texcoords, GL_STATIC_DRAW);
-		}
-		glBindBuffer(GL_ARRAY_BUFFER, NULL);
+		CreateVBO(size, 3, normals, program, CShaderManagerOpenGL::NORMAL_ATTRIB_NAME);
 	}
+	if (texcoords)
+	{
+		CreateVBO(size, 2, texcoords, program, CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME);
+	}
+	UnBind();
+}
+
+void COpenGLVertexBuffer::CreateVBO(size_t size, size_t components, const void* data, GLuint program, const char* attribName)
+{
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, size * components * sizeof(float), data, GL_STATIC_DRAW);
+	int index = glGetAttribLocation(program, attribName);
+	if (index == -1) return;
+	glVertexAttribPointer(index, components, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(index);
+	m_buffers.push_back(buffer);
 }
 
 COpenGLVertexBuffer::~COpenGLVertexBuffer()
 {
 	UnBind();
-	glDeleteBuffers(4, &m_vertexBuffer);
+	glDeleteBuffers(m_buffers.size(), m_buffers.data());
+	glDeleteBuffers(1, &m_indexesBuffer);
+	glDeleteVertexArrays(1, &m_vao);
 }
 
 void COpenGLVertexBuffer::Bind() const
 {
-	if (m_vertex || m_vertexBuffer)
-	{
-		if (m_vertexBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glVertexPointer(3, GL_FLOAT, 0, m_vertexBuffer ? 0 : m_vertex);
-	}
-	if (m_normals || m_normalsBuffer)
-	{
-		if (m_normalsBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_FLOAT, 0, m_normalsBuffer ? 0 : m_normals);
-	}
-	if (m_texCoords || m_texCoordBuffer)
-	{
-		if (m_texCoordBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2, GL_FLOAT, 0, m_texCoordBuffer ? 0 : m_texCoords);
-	}
-	if (m_indexesBuffer)
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
-	}
-	glBindBuffer(GL_ARRAY_BUFFER, NULL);
+	auto err = glGetError();
+	glBindVertexArray(m_vao);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
+	err = glGetError();
 }
 
 void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
 {
-	if ((m_vertexBuffer || m_normalsBuffer || m_texCoordBuffer) && indexPtr)
-	{
-		glGenBuffers(1, &m_indexesBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
-	}
-	else
-	{
-		m_indexes = indexPtr;
-	}
+	glGenBuffers(1, &m_indexesBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 }
 
 void COpenGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
 {
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
+	auto err = glGetError();
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
+	err = glGetError();
 }
 
 void COpenGLVertexBuffer::DrawAll(size_t count)
@@ -519,54 +530,29 @@ void COpenGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
 
 void COpenGLVertexBuffer::UnBind() const
 {
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
-}
-
-std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)
-{
-	std::vector<double> result(16);
-	for (size_t i = 0; i < 16; ++i)
-	{
-		result[i] = matrix[i];
-	}
-	return result;
+	glBindVertexArray(m_mainVAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void COpenGLRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const
 {
-	//Get model, projection and viewport matrices
-	auto matModelView = Matrix2DoubleArray(viewport.GetViewMatrix());
-	auto matProjection = Matrix2DoubleArray(viewport.GetProjectionMatrix());
-	int viewportData[4] = {viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight()};
+	glm::vec4 viewportData((float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight());
 	//Set OpenGL Windows coordinates
-	double winX = (double)x;
-	double winY = viewportData[3] - (double)y;
+	float winX = (float)x;
+	float winY = viewportData[3] - (float)y;
 
-	CVector3d startd;
-	CVector3d endd;
+	auto ToVector3f = [](glm::vec3 const& v)->CVector3f { return { v.x, v.y, v.z }; };
 	//Cast a ray from eye to mouse cursor;
-	gluUnProject(winX, winY, 0.0, matModelView.data(), matProjection.data(),
-		viewportData, &startd.x, &startd.y, &startd.z);
-	gluUnProject(winX, winY, 1.0, matModelView.data(), matProjection.data(),
-		viewportData, &endd.x, &endd.y, &endd.z);
-	start = { static_cast<float>(startd.x), static_cast<float>(startd.y), static_cast<float>(startd.z) };
-	end = { static_cast<float>(endd.x), static_cast<float>(endd.y), static_cast<float>(endd.z) };
+	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), viewportData));
+	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), viewportData));
 }
 
 void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
-	auto matModelView = Matrix2DoubleArray(viewport.GetViewMatrix());
-	auto matProjection = Matrix2DoubleArray(viewport.GetProjectionMatrix());
-	int viewportData[4] = { viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight() };
-	CVector3d windowPos;
-	if (gluProject(worldCoords.x, worldCoords.y, worldCoords.z, matModelView.data(), matProjection.data(), viewportData, &windowPos.x, &windowPos.y, &windowPos.z) != GL_FALSE)
-	{
-		x = static_cast<int>(windowPos.x);
-		y = static_cast<int>(viewportData[3] - windowPos.y);
-	}
+	glm::vec4 viewportData( (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() );
+	auto windowPos = glm::project(FromVector3(worldCoords), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), viewportData);
+	x = static_cast<int>(windowPos.x);
+	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
 
 void COpenGLRenderer::EnableLight(size_t index, bool enable)
@@ -622,7 +608,7 @@ void COpenGLRenderer::EnableVertexLightning(bool enable)
 
 void COpenGLRenderer::GetProjectionMatrix(float * matrix) const
 {
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	memcpy(matrix, glm::value_ptr(m_projectionMatrix), sizeof(float) * 16);
 }
 
 void COpenGLRenderer::EnableDepthTest(bool enable)
@@ -641,13 +627,9 @@ void COpenGLRenderer::EnableBlending(bool enable)
 		glDisable(GL_BLEND);
 }
 
-void COpenGLRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane, double farPane)
+void COpenGLRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	GLdouble aspect = (GLdouble)viewportWidth / (GLdouble)viewportHeight;
-	gluPerspective(viewingAngle, aspect, nearPane, farPane);
-	glMatrixMode(GL_MODELVIEW);
+	m_projectionMatrix = glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
 	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
@@ -697,26 +679,23 @@ void COpenGLRenderer::SetTextureAnisotropy(float value)
 	}
 }
 
-void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
+void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short, int flags, TextureMipMaps const& mipmaps)
 {
 	texture.Bind();
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	if (flags & TEXTURE_BUILD_MIPMAPS)
 	{
-		gluBuild2DMipmaps(GL_TEXTURE_2D, bpp / 8, width, height, format, GL_UNSIGNED_BYTE, data);
-	}
-	else
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, bpp / 8, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
 		auto& mipmap = mipmaps[i];
-		glTexImage2D(GL_TEXTURE_2D, i + 1, bpp / 8, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
+		glTexImage2D(GL_TEXTURE_2D, i + 1, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
@@ -730,8 +709,8 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned
 		LogWriter::WriteLine("Compressed textures are not supported");
 		return;
 	}
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 
@@ -808,28 +787,19 @@ void COpenGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glEnable(GL_BLEND);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(viewport[0], viewport[2], viewport[3], viewport[1], -1, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
+	glm::mat4 oldProjection = m_projectionMatrix;
+	m_projectionMatrix = glm::ortho(static_cast<float>(viewport[0]), static_cast<float>(viewport[2]), static_cast<float>(viewport[3]), static_cast<float>(viewport[1]));
+	PushMatrix();
+	ResetViewMatrix();
 
 	drawHandler();
 
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	m_projectionMatrix = oldProjection;
+	PopMatrix();
 }
 
 COpenGLFrameBuffer::COpenGLFrameBuffer()
 {
-	if (!GLEW_EXT_framebuffer_object)
-	{
-		throw std::runtime_error("GL_EXT_framebuffer_object is not supported");
-	}
 	glGenFramebuffers(1, &m_id);
 	Bind();
 }
@@ -877,4 +847,15 @@ void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureTy
 	{
 		throw std::runtime_error("Error creating framebuffer");
 	}
+}
+
+void COpenGLRenderer::UpdateMatrices() const
+{
+	auto m = m_projectionMatrix * m_viewMatrices.back();
+	m_shaderManager.SetUniformValue("mvp_matrix", 16, 1, glm::value_ptr(m));
+}
+
+void COpenGLRenderer::UpdateColor() const
+{
+	m_shaderManager.SetUniformValue("color", 4, 1, glm::value_ptr(m_color));
 }

@@ -31,7 +31,7 @@ public:
 
 	virtual void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) = 0;
 
-	virtual void SetClippingPlanes(double near = 1.0, double far = 1000.0) = 0;
+	virtual void SetClippingPlanes(float near = 1.0, float far = 1000.0) = 0;
 
 	virtual bool PointIsInViewport(int x, int y) const = 0;
 

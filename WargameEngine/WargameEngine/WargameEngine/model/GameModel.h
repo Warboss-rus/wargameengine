@@ -36,7 +36,7 @@ public:
 	void Update(long long timeSinceLastUpdate);
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
-	void ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	void ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
 
 	void DoOnObjectCreation(std::function<void(IObject*)> const& handler);
 	void DoOnObjectRemove(std::function<void(IObject*)> const& handler);

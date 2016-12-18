@@ -35,7 +35,7 @@ public:
 	virtual void GetProjectionMatrix(float * matrix) const = 0;
 	virtual void EnableDepthTest(bool enable) = 0;
 	virtual void EnableBlending(bool enable) = 0;
-	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) = 0;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) = 0;
 	virtual void DrawIn2D(std::function<void()> const& drawHandler) = 0;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) = 0;
 	virtual void ClearBuffers(bool color = true, bool depth = true) = 0;

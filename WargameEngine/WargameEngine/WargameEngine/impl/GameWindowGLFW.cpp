@@ -157,13 +157,15 @@ CGameWindowGLFW::CGameWindowGLFW()
 	g_instance = this;
 
 	glfwInit();
-	glfwWindowHint(GLFW_SAMPLES, 16);
 #ifdef VULKAN_API
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 #endif
 
-	CreateNewWindow();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	CreateNewWindow();
 	m_renderer = std::make_unique<COpenGLRenderer>();
 }
 
@@ -181,9 +183,7 @@ void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
 void CGameWindowGLFW::DoOnResize(std::function<void(int, int)> const& handler)
 {
 	m_onResize = handler;
-	int width, height;
-	glfwGetWindowSize(m_window, &width, &height);
-	OnReshape(m_window, width, height);
+	OnReshape(m_window, 600, 600);
 }
 
 void CGameWindowGLFW::DoOnShutdown(std::function<void()> const& handler)

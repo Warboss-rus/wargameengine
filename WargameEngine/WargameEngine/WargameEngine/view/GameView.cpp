@@ -353,19 +353,19 @@ void CGameView::DrawTable(bool shadowOnly)
 	auto& tableList = shadowOnly ? m_tableListShadow : m_tableList;
 	tableList = m_renderer->CreateDrawingList([this, shadowOnly] {
 		CLandscape const& landscape = m_gameModel->GetLandscape();
-		double x1 = -landscape.GetWidth() / 2.0;
-		double x2 = landscape.GetWidth() / 2.0;
-		double y1 = -landscape.GetDepth() / 2.0;
-		double y2 = landscape.GetDepth() / 2.0;
-		double xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
-		double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
+		float x1 = -landscape.GetWidth() / 2.0f;
+		float x2 = landscape.GetWidth() / 2.0f;
+		float y1 = -landscape.GetDepth() / 2.0f;
+		float y2 = landscape.GetDepth() / 2.0f;
+		float xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
+		float ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
 		m_renderer->SetTexture(landscape.GetTexture());
 		unsigned int k = 0;
-		for (double x = x1; x <= x2 - xstep; x += xstep)
+		for (float x = x1; x <= x2 - xstep; x += xstep)
 		{
-			vector<CVector3d> vertex;
-			vector<CVector2d> texCoord;
-			for (double y = y1; y <= y2; y += ystep, k++)
+			vector<CVector3f> vertex;
+			vector<CVector2f> texCoord;
+			for (float y = y1; y <= y2; y += ystep, k++)
 			{
 				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x, y, landscape.GetHeight(k) });
@@ -382,14 +382,14 @@ void CGameView::DrawTable(bool shadowOnly)
 				sDecal const& decal = landscape.GetDecal(i);
 				m_renderer->SetTexture(decal.texture);
 				m_renderer->PushMatrix();
-				m_renderer->Translate(decal.x, decal.y, 0.0);
+				m_renderer->Translate(decal.x, decal.y, 0.0f);
 				m_renderer->Rotate(decal.rotation, 0.0, 0.0, 1.0);
 				m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
-					CVector3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001),
-					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001 },
-					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001 },
-					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001 }
-				}, {}, { CVector2d(0.0, 0.0), { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } });
+					CVector3f(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001f),
+					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
+					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001f },
+					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001f }
+				}, {}, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 				m_renderer->PopMatrix();
 			}
 		}

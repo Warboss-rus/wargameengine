@@ -23,7 +23,7 @@ public:
 	virtual Matrix4F GetViewMatrix() const override;
 
 	virtual void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
-	virtual void SetClippingPlanes(double near = 1.0, double far = 1000.0) override;
+	virtual void SetClippingPlanes(float near = 1.0, float far = 1000.0) override;
 
 	virtual bool PointIsInViewport(int x, int y) const override;
 
@@ -50,8 +50,8 @@ protected:
 	Matrix4F m_viewMatrix;
 	float m_polygonOffsetFactor = 0.0f;
 	float m_polygonOffsetUnits = 0.0f;
-	double m_nearPane = 1.0;
-	double m_farPane = 1000.0;
+	float m_nearPane = 1.0f;
+	float m_farPane = 1000.0f;
 	IViewport* m_shadowMapViewport = nullptr;
 	std::map<const IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
 };
