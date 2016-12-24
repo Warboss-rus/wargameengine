@@ -87,7 +87,6 @@ CGameView::CGameView(sGameViewContext * context)
 void CGameView::Init(sModule const& module)
 {
 	m_ui->ClearChildren();
-	m_vertexLightning = false;
 	m_viewports.clear();
 	int width, height;
 	m_window->GetWindowSize(width, height);
@@ -260,15 +259,35 @@ void DrawBBox(sBounding::sBox bbox, IBaseObject const& object, IRenderer & rende
 	renderer.PushMatrix();
 	renderer.Translate(object.GetX(), object.GetY(), object.GetZ());
 	renderer.Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
-	renderer.SetColor(0.0f, 0.0f, 255.0f);
 	CVector3f min = bbox.max;
 	CVector3f max = bbox.min;
-	RenderMode mode = wireframe ? RenderMode::LINE_LOOP : RenderMode::RECTANGLES;
-	renderer.RenderArrays(mode, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
-	renderer.RenderArrays(mode, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
-	renderer.RenderArrays(mode, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
-	renderer.RenderArrays(mode, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
-	renderer.SetColor(0, 0, 0);
+	if (wireframe)
+	{
+		renderer.SetColor(0.0f, 0.0f, 255.0f);
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
+		renderer.SetColor(0, 0, 0);
+	}
+	else
+	{
+		std::vector<CVector3f> vertices = {
+			//left
+			min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] },
+			{ min[0], max[1], min[2] }, { min[0], max[1], max[2] },{ min[0], min[1], max[2] },
+			//back
+			min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] },
+			{ min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] },
+			//right
+			CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max,
+			{ max[0], max[1], min[2] }, max, { max[0], min[1], max[2] },
+			//front
+			CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
+			{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
+		};
+		renderer.RenderArrays(RenderMode::TRIANGLES, vertices, {}, {});
+	}
 	renderer.PopMatrix();
 }
 
@@ -404,10 +423,6 @@ void CGameView::DrawObjects(bool shadowOnly)
 	if (!shadowOnly)
 	{
 		if(m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
-		if (m_vertexLightning)
-		{
-			m_viewHelper->EnableVertexLightning(true);
-		}
 		m_currentViewport->SetUpShadowMap();
 	}
 	auto& list = shadowOnly ? m_tableListShadow : m_tableList;
@@ -474,7 +489,6 @@ void CGameView::DrawObjects(bool shadowOnly)
 		}, queryResult);
 	}
 	if(!shadowOnly && m_shaderProgram) shaderManager.PopProgram();
-	m_viewHelper->EnableVertexLightning(false);
 	if (!shadowOnly)
 	{
 		for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
@@ -546,11 +560,6 @@ IShaderProgram const& CGameView::GetShaderProgram() const
 void CGameView::ResizeWindow(int height, int width)
 {
 	m_window->ResizeWindow(width, height);
-}
-
-void CGameView::EnableVertexLightning(bool enable)
-{ 
-	m_vertexLightning = enable;
 }
 
 IViewport& CGameView::CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition)

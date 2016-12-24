@@ -128,9 +128,9 @@ public:
 			glDepthMask(GL_FALSE);
 			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		}
-		glBeginQuery(GL_ANY_SAMPLES_PASSED, m_id);
+		glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, m_id);
 		handler();
-		glEndQuery(GL_ANY_SAMPLES_PASSED);
+		glEndQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
 		if (!renderToScreen)
 		{
 			glDepthMask(GL_TRUE);

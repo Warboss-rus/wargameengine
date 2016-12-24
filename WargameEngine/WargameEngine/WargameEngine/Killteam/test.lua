@@ -192,8 +192,8 @@ elseif(GetRendererName() == "OpenGLES") then
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
 else
-	--SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
-	--SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
+	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
+	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
 end
 EnableGPUSkinning()
 --EnableVertexLightning()
@@ -237,5 +237,5 @@ SetSelectionCallback("OnSelection")
 NewDecal("chaos_crater_02.tga", 2.5, 2.5, 0, 5, 5)
 SetOnStringRecievedCallback("StringRecieved")
 SetRMBCallback("RMB", false)
---NewParticleEffect("effect.xml", 0, 0, 0, 1, 1000000)
+NewParticleEffect("effect.xml", 0, 0, 0, 1, 1000)
 SetGamepadButtonsCallback("GamepadButtons")

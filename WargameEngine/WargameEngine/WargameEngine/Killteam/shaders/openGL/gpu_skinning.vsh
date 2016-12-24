@@ -1,16 +1,20 @@
-#version 130
-attribute ivec4 weightIndices;
-attribute vec4 weights;
+#version 330 core
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec3 Normal;
+layout (location = 2) in vec2 TexCoord;
+layout (location = 3) in ivec4 weightIndices;
+layout (location = 4) in vec4 weights;
 
-uniform mat4 joints[512];
-uniform mat4 invBindMatrices[512];
+uniform mat4 mvp_matrix;
+uniform mat4 view_matrix;
+uniform mat4 joints[256];
 
-varying vec3 normal;
-varying vec2 texCoord;
+out vec3 v_normal;
+out vec2 v_texCoord;
 
 void main() {
-    vec4 newVertex = gl_Vertex;
-	vec4 newNormal = vec4(gl_Normal, 1.0);
+    vec4 newVertex = vec4(Position, 1.0);
+	vec4 newNormal = vec4(Normal, 1.0);
     
 	if(weights.x > 0.0)//there are weights
 	{
@@ -18,12 +22,12 @@ void main() {
 		newNormal = vec4(0.0);
 		for(int i = 0; i < 4; ++i)
 		{
-			newVertex += (gl_Vertex * invBindMatrices[weightIndices[i]] * joints[weightIndices[i]]) * weights[i];
-			newNormal += (vec4(gl_Normal, 1.0) * invBindMatrices[weightIndices[i]] * joints[weightIndices[i]]) * weights[i];
+			newVertex += (vec4(Position, 1.0) * joints[weightIndices[i]]) * weights[i];
+			newNormal += (vec4(Normal, 1.0) * joints[weightIndices[i]]) * weights[i];
 		}
 	}
 	
-    normal  = normalize(gl_NormalMatrix * newNormal.xyz); 
-    gl_Position = gl_ModelViewProjectionMatrix * newVertex;
-    texCoord = gl_MultiTexCoord0.st;
+    v_normal = normalize(mat3(transpose(inverse(view_matrix))) * newNormal.xyz); 
+    gl_Position = mvp_matrix * newVertex;
+    v_texCoord = TexCoord;
 }

@@ -87,7 +87,6 @@ private:
 	size_t m_count;
 	std::vector<int> m_gpuWeightIndexes;
 	std::vector<float> m_gpuWeight;
-	std::vector<float> m_gpuInverseMatrices;
 	std::unique_ptr<IVertexBuffer> m_vertexBuffer;
 	std::unique_ptr<IVertexAttribCache> m_weightsCache;
 	std::unique_ptr<IVertexAttribCache> m_weightIndiciesCache;

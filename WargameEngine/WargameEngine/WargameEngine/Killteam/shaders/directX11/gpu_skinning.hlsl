@@ -14,11 +14,10 @@ struct sMaterial
 	float Shininess;
 };
 #define NUMBEROFLIGHTS 1
-#define NUMBEROFBONES 128
+#define NUMBEROFBONES 512
 cbuffer Constant
 {
 	matrix joints[NUMBEROFBONES];
-	matrix invBindMatrices[NUMBEROFBONES];
 };
 cbuffer Fragment
 {
@@ -49,7 +48,7 @@ PixelInputType VShader(float3 Pos : POSITION, float2 texCoords : TEXCOORD, float
 		for(int i = 0; i < 4; ++i)
 		{
 			int index = weightIndices[i];
-			finalPos += mul(mul(float4(Pos, 1.0f), invBindMatrices[index]), joints[index]) * weights[i];
+			finalPos += mul(float4(Pos, 1.0f), joints[index]) * weights[i];
 		}
 	}
 	result.position = mul(finalPos, WorldViewProjection);

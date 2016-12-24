@@ -68,7 +68,6 @@ public:
 	void RemoveViewport(IViewport * viewport);
 
 	void ResizeWindow(int height, int width);
-	void EnableVertexLightning(bool enable);
 	void EnableGPUSkinning(bool enable);
 	void DisableShadowMap(IViewport& viewport);
 	void SetLightPosition(int index, float* pos);
@@ -122,7 +121,6 @@ private:
 	std::function<std::unique_ptr<INetSocket>()> m_socketFactory;
 	std::unique_ptr<IDrawingList> m_tableList;
 	std::unique_ptr<IDrawingList> m_tableListShadow;
-	bool m_vertexLightning;
 	IViewport * m_currentViewport;
 	long long m_lastFrameTime = 0;
 };

@@ -273,28 +273,21 @@ void CShaderManagerOpenGL::DoOnProgramChange(std::function<void()> const& handle
 
 void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
 {
-	auto err = glGetError();
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
 	if (index == -1) return;
 	if (m_vertexAttribBuffers.find(attribute) == m_vertexAttribBuffers.end())
 	{
 		unsigned int buffer;
 		glGenBuffers(1, &buffer);
-		err = glGetError();
 		m_vertexAttribBuffers.emplace(std::make_pair(attribute, buffer));
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexAttribBuffers.at(attribute));
-	err = glGetError();
-	glBufferData(GL_ARRAY_BUFFER, elementSize * count * (format == GL_DOUBLE ? sizeof(double) : sizeof(float)), values, GL_STATIC_DRAW);
-	err = glGetError();
+	glBufferData(GL_ARRAY_BUFFER, elementSize * count * sizeof(float), values, GL_STATIC_DRAW);
 
 	if(format == GL_FLOAT)
 		glVertexAttribPointer(index, elementSize, format, GL_FALSE, 0, NULL);
-	else if (format == GL_DOUBLE)
-		glVertexAttribLPointer(index, elementSize, format, 0, NULL);
 	else
 		glVertexAttribIPointer(index, elementSize, format, 0, NULL);
-	err = glGetError();
 	glEnableVertexAttribArray(index);
 	if (perInstance) glVertexAttribDivisorARB(index, 1);
 }
@@ -323,13 +316,23 @@ void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVer
 {
 	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
 	glCache.Bind();
-	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, NULL, perInstance, glCache.GetFormat());
+	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	if (index != -1)
+	{
+		if (glCache.GetFormat() == GL_FLOAT)
+			glVertexAttribPointer(index, glCache.GetElementSize(), glCache.GetFormat(), GL_FALSE, 0, NULL);
+		else
+			glVertexAttribIPointer(index, glCache.GetElementSize(), glCache.GetFormat(), 0, NULL);
+		glEnableVertexAttribArray(index);
+		if (perInstance) glVertexAttribDivisorARB(index, 1);
+	}
 	glCache.UnBind();
 }
 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* defaultValue) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4fv(index, defaultValue);
 }
@@ -337,6 +340,7 @@ void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const int* defaultValue) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4iv(index, defaultValue);
 }
@@ -344,6 +348,7 @@ void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const unsigned int* defaultValue) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4uiv(index, defaultValue);
 }

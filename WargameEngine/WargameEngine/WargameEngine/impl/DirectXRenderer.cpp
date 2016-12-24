@@ -805,16 +805,6 @@ float CDirectXRenderer::GetMaximumAnisotropyLevel() const
 	return D3D11_REQ_MAXANISOTROPY;
 }
 
-void CDirectXRenderer::EnableVertexLightning(bool enable)
-{
-	static bool warningDisplayed = false;
-	if (enable && !warningDisplayed)
-	{
-		LogWriter::WriteLine("There is no built in vertex lightning in DirectX11");
-		warningDisplayed = true;
-	}
-}
-
 void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
 {
 	memcpy(matrix, *m_projectionMatrix.m, sizeof(float) * 16);

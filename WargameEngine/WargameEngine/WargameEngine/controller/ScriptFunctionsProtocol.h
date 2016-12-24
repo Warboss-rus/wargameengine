@@ -44,10 +44,6 @@
 
 #define SET_LIGHT_SOURCE_SPECULAR L"SetLightSpecular"
 
-#define ENABLE_VERTEX_LIGHTING L"EnableVertexLighting"
-
-#define DISABLE_VERTEX_LIGHTING L"DisableVertexLighting"
-
 #define ENABLE_MSAA L"EnableMSAA"
 
 #define DISABLE_MSAA L"DisableMSAA"

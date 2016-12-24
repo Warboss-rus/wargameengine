@@ -177,12 +177,14 @@ bool CGameController::OnMouseMove(CVector3f const& begin, CVector3f const& end, 
 
 bool CGameController::OnGamepadButtonStateChange(int gamepadIndex, int buttonIndex, bool newState)
 {
-	return m_onGamepadButton(gamepadIndex, buttonIndex, newState);
+	m_onGamepadButton(gamepadIndex, buttonIndex, newState);
+	return m_onGamepadButton;
 }
 
 bool CGameController::OnGamepadAxisChange(int gamepadIndex, int axisIndex, double horizontal, double vertical)
 {
-	return m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
+	m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
+	return m_onGamepadAxis;
 }
 
 void CGameController::SelectObjectGroup(double beginX, double beginY, double endX, double endY)

@@ -15,8 +15,8 @@ elseif(GetRendererName() == "OpenGLES") then
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
 else
-	--SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")--Slows down rendering by 50%
-	--SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
+	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
+	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
 end
 EnableGPUSkinning()
 CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))

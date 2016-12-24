@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "../Signal.h"
 #include "IGameModel.h"
 #include "ObjectInterface.h"
 #include "Projectile.h"
@@ -38,8 +39,8 @@ public:
 	CLandscape & GetLandscape();
 	void ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
 
-	void DoOnObjectCreation(std::function<void(IObject*)> const& handler);
-	void DoOnObjectRemove(std::function<void(IObject*)> const& handler);
+	CSignalConnection<void, IObject*> DoOnObjectCreation(std::function<void(IObject*)> const& handler);
+	CSignalConnection<void, IObject*> DoOnObjectRemove(std::function<void(IObject*)> const& handler);
 private:
 	CGameModel(CGameModel const&) = delete;
 
@@ -49,6 +50,6 @@ private:
 	std::shared_ptr<IObject> m_selectedObject;
 	std::map<std::wstring, std::wstring> m_properties;
 	CLandscape m_landscape;
-	std::function<void(IObject *)> m_onObjectCreation;
-	std::function<void(IObject *)> m_onObjectRemove;
+	CSignal<void, IObject *> m_onObjectCreation;
+	CSignal<void, IObject *> m_onObjectRemove;
 };

@@ -2,6 +2,7 @@
 #include "../model/Object.h"
 #include "IRenderer.h"
 #include <float.h>
+#include "Matrix4.h"
 
 C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
 
@@ -61,13 +62,12 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
 {
 	auto& shaderManager = renderer.GetShaderManager();
+	vertexBuffer.Bind();
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
-		shaderManager.SetUniformValue("invBindMatrices", 16, m_skeleton.size(), m_gpuInverseMatrices.data());
 		shaderManager.SetVertexAttribute("weights", *m_weightsCache);
 		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache);
 	}
-	vertexBuffer.Bind();
 	renderer.PushMatrix();
 	renderer.Rotate(m_rotation.x, 1.0, 0.0, 0.0);//causes transparent models
 	renderer.Rotate(m_rotation.y, 0.0, 1.0, 0.0);
@@ -145,11 +145,6 @@ void C3DModel::CalculateGPUWeights()
 		{
 			m_gpuWeight[i * 4 + j] /= sum;
 		}
-	}
-	m_gpuInverseMatrices.resize(m_skeleton.size() * 16);
-	for (size_t i = 0; i < m_skeleton.size(); ++i)
-	{
-		memcpy(&m_gpuInverseMatrices[i * 16], m_skeleton[i].invBindMatrix, sizeof(float) * 16);
 	}
 }
 
@@ -282,6 +277,13 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 			MultiplyMatrices(parent, &jointMatrices[i * 16]);
 			memcpy(&jointMatrices[i * 16], parent, sizeof(float) * 16);
 		}
+	}
+	//multiply all matrices by invBindMatrices
+	for (size_t i = 0; i < skeleton.size(); ++i)
+	{
+		Matrix4F m(skeleton[i].invBindMatrix);
+		m *= &jointMatrices[i * 16];
+		memcpy(&jointMatrices[i * 16], m, sizeof(float) * 16);
 	}
 	return jointMatrices;
 }

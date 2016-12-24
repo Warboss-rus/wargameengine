@@ -61,7 +61,6 @@ public:
 	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
 	virtual void SetLightPosition(size_t index, float* pos) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
-	virtual void EnableVertexLightning(bool enable) override;
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;

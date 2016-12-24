@@ -161,20 +161,6 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		return nullptr;
 	});
 
-	handler.RegisterFunction(ENABLE_VERTEX_LIGHTING, [&](IArguments const& args) {
-		if (args.GetCount() != 0)
-			throw std::runtime_error("no arguments expected");
-		view.EnableVertexLightning(true);
-		return nullptr;
-	});
-
-	handler.RegisterFunction(DISABLE_VERTEX_LIGHTING, [&](IArguments const& args) {
-		if (args.GetCount() != 0)
-			throw std::runtime_error("no arguments expected");
-		view.EnableVertexLightning(false);
-		return nullptr;
-	});
-
 	handler.RegisterFunction(ENABLE_MSAA, [&](IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");

@@ -139,14 +139,14 @@ void CGameModel::ResetLandscape(float width, float depth, std::wstring const& te
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
 
-void CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
+CSignalConnection<void, IObject*> CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
 {
-	m_onObjectCreation = handler;
+	return m_onObjectCreation.Connect(handler);
 }
 
-void CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
+CSignalConnection<void, IObject*> CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
 {
-	m_onObjectRemove = handler;
+	return m_onObjectRemove.Connect(handler);
 }
 
 void CGameModel::Update(long long timeSinceLastUpdate)
