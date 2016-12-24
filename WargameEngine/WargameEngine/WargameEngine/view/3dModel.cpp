@@ -106,10 +106,6 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	{
 		vertexBuffer.DrawAll(m_count);
 	}
-	vertexBuffer.UnBind();
-	sMaterial empty;
-	SetMaterial(renderer, &empty, nullptr);
-	renderer.PopMatrix();
 	if (useGPUskinning)
 	{
 		float def[] = { 0.0f };
@@ -117,6 +113,10 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 		int idef = 0;
 		shaderManager.DisableVertexAttribute("weightIndices", 1, &idef);
 	}
+	vertexBuffer.UnBind();
+	sMaterial empty;
+	SetMaterial(renderer, &empty, nullptr);
+	renderer.PopMatrix();
 }
 
 //GPU skinning is limited to 4 weights per vertex (no more, no less). So we will add some empty weights if there is less or delete exceeding if there is more

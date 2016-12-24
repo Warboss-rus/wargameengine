@@ -12,5 +12,5 @@ out vec2 v_texCoord;
 void main()
 {
 	gl_Position = mvp_matrix * vec4(Position * instancePosition.w + instancePosition.xyz, 1.0);
-	v_texCoord =TexCoord + instanceTexCoordPos;
+	v_texCoord = TexCoord + instanceTexCoordPos;
 }

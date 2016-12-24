@@ -23,13 +23,14 @@ static const std::string defaultFragmentShader = "\
 uniform sampler2D mainTexture;\n\
 uniform vec4 color;\n\
 in vec2 v_texcoord;\n\
+out vec4 fragColor;\n\
 void main()\n\
 {\n\
 	vec4 tex = texture(mainTexture, v_texcoord);\n\
 	float alpha = tex.w * color.w;\n\
 	if(alpha <= 0.01)\n\
 		discard;\n\
-	gl_FragColor = vec4(tex.xyz + color.xyz, alpha);\n\
+	fragColor = vec4(tex.xyz + color.xyz, alpha);\n\
 }";
 
 class COpenGLShaderProgram : public IShaderProgram

@@ -19,8 +19,8 @@ public:
 
 	virtual IOcclusionQuery & GetOcclusionQuery(const IBaseObject* object) override;
 
-	virtual Matrix4F GetProjectionMatrix() const override;
-	virtual Matrix4F GetViewMatrix() const override;
+	virtual const float* GetProjectionMatrix() const override;
+	virtual const float* GetViewMatrix() const override;
 
 	virtual void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void SetClippingPlanes(float near = 1.0, float far = 1000.0) override;

@@ -73,7 +73,7 @@ private:
 	{
 		m_callbacks.erase(it);
 	}
-	friend class Connection;
+	friend class CSignalConnection<Result, Arguments...>;
 protected:
 	std::list<sCallback> m_callbacks;
 };
@@ -84,7 +84,7 @@ class CExclusiveSignal : public CSignal<bool, Arguments...>
 public:
 	void operator() (Arguments... args) override
 	{
-		for (auto callback : m_callbacks)
+		for (auto& callback : this->m_callbacks)
 		{
 			if (!callback.func)
 			{
@@ -102,8 +102,8 @@ template<typename Result, typename... Arguments>
 class CScopedConnection : public CSignalConnection<Result, Arguments...>
 {
 public:
-	CScopedConnection(CSignalConnection const& connection)
-		: CSignalConnection(connection)
+	CScopedConnection(CSignalConnection<Result, Arguments...> const& connection)
+		: CSignalConnection<Result, Arguments...>(connection)
 	{}
-	~CScopedConnection() { Disconnect(); }
+	~CScopedConnection() { this->Disconnect(); }
 };

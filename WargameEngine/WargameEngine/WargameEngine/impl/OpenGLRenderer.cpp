@@ -16,27 +16,6 @@
 
 using namespace std;
 
-namespace
-{
-static const int positionIndex = 0;
-static const int normalIndex = 2;
-static const int texCoordIndex = 1;
-
-glm::vec3 FromVector3(CVector3f const& v)
-{
-	glm::vec3 result;
-	memcpy(&result.x, &v.x, sizeof(float) * 3);
-	return result;
-}
-
-glm::mat4 FromMatrix(Matrix4F const& m)
-{
-	glm::mat4 result;
-	memcpy(&result, &m, sizeof(float) * 16);
-	return result;
-}
-}
-
 class COpenGLDrawingList : public IDrawingList
 {
 public:
@@ -275,7 +254,7 @@ void COpenGLRenderer::ResetViewMatrix()
 
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	m_viewMatrices.back() = glm::lookAt(FromVector3(position), FromVector3(direction), FromVector3(up));
+	m_viewMatrices.back() = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
 	UpdateMatrices();
 }
 
@@ -578,14 +557,16 @@ void COpenGLRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int
 
 	auto ToVector3f = [](glm::vec3 const& v)->CVector3f { return { v.x, v.y, v.z }; };
 	//Cast a ray from eye to mouse cursor;
-	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), viewportData));
-	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), viewportData));
+	glm::mat4 proj = glm::make_mat4(viewport.GetProjectionMatrix());
+	glm::mat4 view = glm::make_mat4(viewport.GetViewMatrix());
+	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), view, proj, viewportData));
+	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), view, proj, viewportData));
 }
 
 void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
 	glm::vec4 viewportData( (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() );
-	auto windowPos = glm::project(FromVector3(worldCoords), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), viewportData);
+	auto windowPos = glm::project(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()), viewportData);
 	x = static_cast<int>(windowPos.x);
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }

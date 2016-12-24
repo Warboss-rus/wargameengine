@@ -42,12 +42,12 @@ IOcclusionQuery & CViewportBase::GetOcclusionQuery(const IBaseObject* object)
 	return *it->second;
 }
 
-Matrix4F CViewportBase::GetProjectionMatrix() const
+const float* CViewportBase::GetProjectionMatrix() const
 {
-	return m_projectionMatrix;
+	return m_projectionMatrix.m_items;
 }
 
-Matrix4F CViewportBase::GetViewMatrix() const
+const float* CViewportBase::GetViewMatrix() const
 {
 	return m_viewMatrix;
 }

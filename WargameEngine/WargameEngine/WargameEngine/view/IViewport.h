@@ -24,8 +24,8 @@ public:
 
 	virtual IOcclusionQuery & GetOcclusionQuery(const IBaseObject* object) = 0;
 
-	virtual Matrix4F GetProjectionMatrix() const = 0;
-	virtual Matrix4F GetViewMatrix() const = 0;
+	virtual const float* GetProjectionMatrix() const = 0;
+	virtual const float* GetViewMatrix() const = 0;
 
 	virtual void Resize(int width, int height) = 0;
 

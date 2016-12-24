@@ -11,10 +11,6 @@
 
 using namespace std;
 
-static const int positionIndex = 0;
-static const int normalIndex = 2;
-static const int texCoordIndex = 1;
-
 Matrix4F ToMatrix4(glm::tmat4x4<float, glm::packed_highp> const& m)
 {
 	Matrix4F result;
@@ -502,23 +498,28 @@ COpenGLVertexBuffer::~COpenGLVertexBuffer()
 
 void COpenGLVertexBuffer::Bind() const
 {
+	GLint program;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
 	if (m_vertex || m_vertexBuffer)
 	{
+		int index = glGetAttribLocation(program, "Position");
 		if (m_vertexBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-		glEnableVertexAttribArray(positionIndex);
-		glVertexAttribPointer(positionIndex, 3, GL_FLOAT, GL_FALSE, 0, m_vertexBuffer ? 0 : m_vertex);
+		glEnableVertexAttribArray(index);
+		glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, 0, m_vertexBuffer ? 0 : m_vertex);
 	}
 	if (m_normals || m_normalsBuffer)
 	{
+		int index = glGetAttribLocation(program, "Normal");
 		if (m_normalsBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
-		glEnableVertexAttribArray(normalIndex);
-		glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, m_normalsBuffer ? 0 : m_normals);
+		glEnableVertexAttribArray(index);
+		glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, 0, m_normalsBuffer ? 0 : m_normals);
 	}
 	if (m_texCoords || m_texCoordBuffer)
 	{
+		int index = glGetAttribLocation(program, "TexCoord");
 		if (m_texCoordBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
-		glEnableVertexAttribArray(texCoordIndex);
-		glVertexAttribPointer(texCoordIndex, 2, GL_FLOAT, GL_FALSE, 0, m_texCoordBuffer ? 0 : m_texCoords);
+		glEnableVertexAttribArray(index);
+		glVertexAttribPointer(index, 2, GL_FLOAT, GL_FALSE, 0, m_texCoordBuffer ? 0 : m_texCoords);
 	}
 	if (m_indexesBuffer)
 	{
@@ -559,9 +560,11 @@ void COpenGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
 
 void COpenGLVertexBuffer::UnBind() const
 {
-	glDisableVertexAttribArray(texCoordIndex);
-	glDisableVertexAttribArray(normalIndex);
-	glDisableVertexAttribArray(positionIndex);
+	GLint program;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+	glDisableVertexAttribArray(glGetAttribLocation(program, "TexCoord"));
+	glDisableVertexAttribArray(glGetAttribLocation(program, "Normal"));
+	glDisableVertexAttribArray(glGetAttribLocation(program, "Position"));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
@@ -621,21 +624,6 @@ float COpenGLESRenderer::GetMaximumAnisotropyLevel() const
 	float aniso = 16.0f;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &aniso);
 	return aniso;
-}
-
-void COpenGLESRenderer::EnableVertexLightning(bool enable)
-{
-	/*glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, enable ? GL_MODULATE : GL_REPLACE);
-	if (enable)
-	{
-		glEnable(GL_LIGHTING);
-		glEnable(GL_NORMALIZE);
-	}
-	else
-	{
-		glDisable(GL_LIGHTING);
-		glDisable(GL_NORMALIZE);
-	}*/
 }
 
 void COpenGLESRenderer::GetProjectionMatrix(float * matrix) const

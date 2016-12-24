@@ -13,7 +13,6 @@ void CParticleSystem::SetShaders(std::wstring const& vertex, std::wstring const&
 	if (m_renderer.SupportsFeature(Feature::INSTANSING))
 	{
 		m_shaderProgram = m_renderer.GetShaderManager().NewProgram(vertex, fragment);
-		m_instanced = true;
 	}
 }
 
@@ -48,36 +47,30 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 	bool useColorAttrib = model.HasDifferentColors();
 	auto& shaderManager = m_renderer.GetShaderManager();
 
-	if (m_instanced)
+	if (m_shaderProgram)
 	{
-		if(m_shaderProgram) shaderManager.PushProgram(*m_shaderProgram);
+		shaderManager.PushProgram(*m_shaderProgram);
+		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
+		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
+		auto buffer = m_renderer.CreateVertexBuffer(&vertex->x, nullptr, &texCoord->x, 6, true);
+		buffer->Bind();
 		shaderManager.SetVertexAttribute("instancePosition", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetPositionCache().data(), true);
 		if (useTexCoordAttrib)
 		{
 			shaderManager.SetVertexAttribute("instanceTexCoordPos", 2, particleEffect.GetParticles().size(), (float*)particleEffect.GetTexCoordCache().data(), true);
 		}
-		else
-		{
-			static CVector2f emptyTexCoord(0.0f, 0.0f);
-			shaderManager.DisableVertexAttribute("instanceTexCoordPos", 2, &emptyTexCoord.x);
-		}
 		if (useColorAttrib)
 		{
 			shaderManager.SetVertexAttribute("instanceColor", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetColorCache().data(), true);
 		}
-		else
-		{
-			static float emptyColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			shaderManager.DisableVertexAttribute("instanceColor", 4, emptyColor);
-		}
 
-		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
-		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
-		auto buffer = m_renderer.CreateVertexBuffer(&vertex->x, nullptr, &texCoord->x, 6, true);
-		buffer->Bind();
 		buffer->DrawInstanced(6, particleEffect.GetParticles().size());
+		static float empty[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		shaderManager.DisableVertexAttribute("instanceColor", 4, empty);
+		shaderManager.DisableVertexAttribute("instancePosition", 4, empty);
+		shaderManager.DisableVertexAttribute("instanceTexCoordPos", 2, empty);
 		buffer->UnBind();
-		if (m_shaderProgram) shaderManager.PopProgram();
+		shaderManager.PopProgram();
 	}
 	else
 	{

@@ -23,11 +23,11 @@ static const std::string defaultFragmentShader = "\
 precision mediump float;\
 uniform mat4 mvp_matrix;\n\
 uniform vec4 color;\n\
-uniform sampler2D texture;\n\
+uniform sampler2D mainTexture;\n\
 varying vec2 v_texcoord;\n\
 void main()\n\
 {\n\
-	vec4 tex = texture2D(texture, v_texcoord);\n\
+	vec4 tex = texture2D(mainTexture, v_texcoord);\n\
 	gl_FragColor = vec4(tex.xyz + color.xyz, tex.w * color.w);\n\
 }";
 
@@ -132,7 +132,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 	}
 	glLinkProgram(program->program);
 	glUseProgram(program->program);
-	int unfrm = glGetUniformLocation(program->program, "texture");
+	int unfrm = glGetUniformLocation(program->program, "mainTexture");
 	glUniform1i(unfrm, 0);
 	unfrm = glGetUniformLocation(program->program, "shadowMap");
 	glUniform1i(unfrm, 1);

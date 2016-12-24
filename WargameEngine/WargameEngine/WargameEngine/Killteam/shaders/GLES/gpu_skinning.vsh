@@ -1,19 +1,22 @@
-attribute vec4 Position;
-attribute vec3 Normal;
-attribute vec2 TexCoord;
-attribute vec4 weightIndices;
-attribute vec4 weights;
+#version 300 es
+in vec3 Position;
+in vec3 Normal;
+in vec2 TexCoord;
+in ivec4 weightIndices;
+in vec4 weights;
 
 uniform mat4 mvp_matrix;
 uniform mat4 joints[128];
-uniform mat4 invBindMatrices[128];
 
-varying vec3 v_normal;
-varying vec2 v_texCoord;
+out vec3 v_normal;
+out vec2 v_texCoord;
 
 void main() {
-    vec4 newVertex = Position;
-	vec4 newNormal = vec4(Normal, 1.0);
+    vec4 pos = vec4(Position, 1.0);
+	vec4 norm = vec4(Normal, 1.0);
+	
+	vec4 newVertex = pos;
+	vec4 newNormal = norm;
     
 	if(weights.x > 0.0)//there are weights
 	{
@@ -21,9 +24,8 @@ void main() {
 		newNormal = vec4(0.0);
 		for(int i = 0; i < 4; ++i)
 		{
-			int index = int(weightIndices[i]);
-			newVertex += (Position * invBindMatrices[index] * joints[index]) * weights[i];
-			newNormal += (vec4(Normal, 1.0) * invBindMatrices[index] * joints[index]) * weights[i];
+			newVertex += (pos * joints[weightIndices[i]]) * weights[i];
+			newNormal += (norm * joints[weightIndices[i]]) * weights[i];
 		}
 	}
 	
