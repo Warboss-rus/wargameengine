@@ -39,6 +39,7 @@ public:
 private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	mutable std::vector<unsigned int> m_programs;
+	mutable unsigned int m_activeProgram;
 	std::function<void()> m_onProgramChange;
 	mutable std::map<std::string, unsigned> m_vertexAttribBuffers;
 };

@@ -1,6 +1,6 @@
 #pragma once
 #include "../view/IViewHelper.h"
-#include "../view/Matrix4.h"
+#include <mat4x4.hpp>
 #include <vector>
 #include "ShaderManagerOpenGLES.h"
 
@@ -37,6 +37,7 @@ public:
 
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
+	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 
@@ -86,8 +87,9 @@ private:
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;
 	int m_version;
-	std::vector<Matrix4F> m_viewMatrices;
-	std::vector<Matrix4F> m_projectionMatrices;
+	std::vector<glm::mat4> m_viewMatrices;
+	glm::mat4 * m_viewMatrix;
+	glm::mat4 m_projectionMatrix;
 	float m_color[4];
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
 };

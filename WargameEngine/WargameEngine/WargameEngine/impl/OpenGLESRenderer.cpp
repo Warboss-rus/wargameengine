@@ -8,44 +8,15 @@
 #include <GLES2/gl2ext.h>//GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, GL_BGRA_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT
 #include <GLES3/gl3.h>
 #include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 using namespace std;
 
-Matrix4F ToMatrix4(glm::tmat4x4<float, glm::packed_highp> const& m)
+namespace
 {
-	Matrix4F result;
-	memcpy(&result, &m, sizeof(float) * 16);
-	return result;
-}
-
-glm::tmat4x4<float, glm::packed_highp> FromMatrix(Matrix4F const& m)
-{
-	glm::tmat4x4<float, glm::packed_highp> result;
-	memcpy(&result, &m, sizeof(float) * 16);
-	return result;
-}
-
-glm::highp_vec3 FromVector3(CVector3f const& v)
-{
-	glm::highp_vec3 result;
-	memcpy(&result.x, &v.x, sizeof(float) * 3);
-	return result;
-}
-
-glm::highp_vec3 FromVector3(CVector3d const& v)
-{
-	glm::highp_vec3 result;
-	result.x = static_cast<float>(v.x);
-	result.y = static_cast<float>(v.y);
-	result.z = static_cast<float>(v.z);
-	return result;
-}
-
-glm::highp_vec4 Vec4FromData(float* data)
-{
-	glm::highp_vec4 result;
-	memcpy(&result.x, data, sizeof(float) * 4);
-	return result;
+static const std::string POSITION_KEY = "Position";
+static const std::string NORMAL_KEY = "Normal";
+static const std::string TEXCOORD_KEY = "TexCoord";
 }
 
 class COpenGlCachedTexture : public ICachedTexture
@@ -186,8 +157,8 @@ static const map<RenderMode, GLenum> renderModeMap = {
 COpenGLESRenderer::COpenGLESRenderer()
 	: m_textureManager(nullptr), m_version(3)
 {
-	m_viewMatrices.push_back(Matrix4F());
-	m_projectionMatrices.push_back(Matrix4F());
+	m_viewMatrices.push_back(glm::mat4());
+	m_viewMatrix = &m_viewMatrices.back();
 	m_shaderManager.DoOnProgramChange([this]() {
 		UpdateUniforms();
 	});
@@ -195,14 +166,14 @@ COpenGLESRenderer::COpenGLESRenderer()
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
-	m_shaderManager.SetVertexAttribute("Position", 3, vertices.size(), (float*)&vertices[0].x);
-	if (!normals.empty()) m_shaderManager.SetVertexAttribute("Normal", 3, normals.size(), (float*)&normals[0].x);
-	if (!texCoords.empty()) m_shaderManager.SetVertexAttribute("TexCoord", 2, texCoords.size(), (float*)&texCoords[0].x);
+	m_shaderManager.SetVertexAttribute(POSITION_KEY, 3, vertices.size(), (float*)&vertices[0].x);
+	if (!normals.empty()) m_shaderManager.SetVertexAttribute(NORMAL_KEY, 3, normals.size(), (float*)&normals[0].x);
+	if (!texCoords.empty()) m_shaderManager.SetVertexAttribute(TEXCOORD_KEY, 2, texCoords.size(), (float*)&texCoords[0].x);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_shaderManager.DisableVertexAttribute("Position", 3, def);
-	m_shaderManager.DisableVertexAttribute("Normal", 3, def);
-	m_shaderManager.DisableVertexAttribute("TexCoord", 2, def);
+	m_shaderManager.DisableVertexAttribute(POSITION_KEY, 3, def);
+	m_shaderManager.DisableVertexAttribute(NORMAL_KEY, 3, def);
+	m_shaderManager.DisableVertexAttribute(TEXCOORD_KEY, 2, def);
 }
 
 std::vector<float> TransformDoubleToFloat(const void * data, size_t count)
@@ -219,22 +190,24 @@ std::vector<float> TransformDoubleToFloat(const void * data, size_t count)
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
-	m_shaderManager.SetVertexAttribute("Position", 2, vertices.size(), (int*)&vertices[0].x);
-	if(!texCoords.empty()) m_shaderManager.SetVertexAttribute("TexCoord", 2, texCoords.size(), (float*)&texCoords[0].x);
+	m_shaderManager.SetVertexAttribute(POSITION_KEY, 2, vertices.size(), (int*)&vertices[0].x);
+	if(!texCoords.empty()) m_shaderManager.SetVertexAttribute(TEXCOORD_KEY, 2, texCoords.size(), (float*)&texCoords[0].x);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_shaderManager.DisableVertexAttribute("Position", 3, def);
-	m_shaderManager.DisableVertexAttribute("TexCoord", 2, def);
+	m_shaderManager.DisableVertexAttribute(POSITION_KEY, 3, def);
+	m_shaderManager.DisableVertexAttribute(TEXCOORD_KEY, 2, def);
 }
 
 void COpenGLESRenderer::PushMatrix()
 {
-	m_viewMatrices.push_back(m_viewMatrices.back());
+	m_viewMatrices.push_back(*m_viewMatrix);
+	m_viewMatrix = &m_viewMatrices.back();
 }
 
 void COpenGLESRenderer::PopMatrix()
 {
 	m_viewMatrices.pop_back();
+	m_viewMatrix = &m_viewMatrices.back();
 	UpdateUniforms();
 }
 
@@ -250,45 +223,43 @@ void COpenGLESRenderer::Translate(const double dx, const double dy, const double
 
 void COpenGLESRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	m_viewMatrices.back() = ToMatrix4(glm::translate(FromMatrix(m_viewMatrices.back()), glm::vec3(dx, dy, dz)));
+	*m_viewMatrix = glm::translate(*m_viewMatrix, glm::vec3(dx, dy, dz));
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Scale(double scale)
 {
-	
-	m_viewMatrices.back() = ToMatrix4(glm::scale(FromMatrix(m_viewMatrices.back()), FromVector3(CVector3d(scale, scale, scale))));
+	*m_viewMatrix = glm::scale(*m_viewMatrix, glm::vec3(static_cast<float>(scale), static_cast<float>(scale), static_cast<float>(scale)));
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Rotate(double angle, double x, double y, double z)
 {
-	m_viewMatrices.back() = ToMatrix4(glm::rotate(FromMatrix(m_viewMatrices.back()), (float)angle, FromVector3(CVector3d(x, y, z))));
+	*m_viewMatrix = glm::rotate(*m_viewMatrix, (float)angle, glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::GetViewMatrix(float * matrix) const
 {
-	memcpy(matrix, m_viewMatrices.back(), sizeof(Matrix4F));
+	memcpy(matrix, glm::value_ptr(*m_viewMatrix), sizeof(Matrix4F));
 }
 
 void COpenGLESRenderer::ResetViewMatrix()
 {
-	m_viewMatrices.back() = Matrix4F();
+	*m_viewMatrix = glm::mat4();
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	m_viewMatrices.back() = ToMatrix4(glm::lookAt(FromVector3(position), FromVector3(direction), FromVector3(up)));
+	*m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::SetColor(const float r, const float g, const float b, const float a)
 {
 	float color[] = { r, g, b, a };
-	memcpy(m_color, color, sizeof(color));
-	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
+	SetColor(color);
 }
 
 float ToFloat(int color)
@@ -299,21 +270,20 @@ float ToFloat(int color)
 void COpenGLESRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
 	float color[] = { ToFloat(r), ToFloat(g), ToFloat(b), ToFloat(a) };
-	memcpy(m_color, color, sizeof(color));
-	//m_shaderManager.SetUniformValue4("color", 1, m_color);
+	SetColor(color);
 }
 
 void COpenGLESRenderer::SetColor(const float * color)
 {
 	memcpy(m_color, color, sizeof(float) * 4);
-	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
+	static const std::string colorKey = "color";
+	m_shaderManager.SetUniformValue(colorKey, 4, 1, m_color);
 }
 
 void COpenGLESRenderer::SetColor(const int * color)
 {
 	float fcolor[] = { ToFloat(color[0]), ToFloat(color[1]), ToFloat(color[2]), 1.0f };
-	memcpy(m_color, fcolor, sizeof(fcolor));
-	//m_shaderManager.SetUniformValue4("color", 1, m_color);
+	SetColor(fcolor);
 }
 
 std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
@@ -345,16 +315,16 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	GLint oldViewport[4];
 	glGetIntegerv(GL_VIEWPORT, oldViewport);
 	glViewport(0, 0, width, height);
-	m_projectionMatrices.push_back(ToMatrix4(glm::ortho<float>(0, width, 0, height)));
-	m_viewMatrices.push_back(Matrix4F());
-	UpdateUniforms();
+	glm::mat4 oldProjection = m_projectionMatrix;
+	m_projectionMatrix = glm::ortho<float>(0, width, 0, height);
+	PushMatrix();
+	ResetViewMatrix();
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	func();
 
-	m_projectionMatrices.pop_back();
-	m_viewMatrices.pop_back();
-	UpdateUniforms();
+	m_projectionMatrix = oldProjection;
+	PopMatrix();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
@@ -383,6 +353,11 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * da
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	}
 	return move(texture);
+}
+
+ICachedTexture* COpenGLESRenderer::GetTexturePtr(std::wstring const& texture) const
+{
+	return m_textureManager->GetTexturePtr(texture);
 }
 
 std::unique_ptr<IDrawingList> COpenGLESRenderer::CreateDrawingList(std::function<void() > const& func)
@@ -502,21 +477,21 @@ void COpenGLVertexBuffer::Bind() const
 	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
 	if (m_vertex || m_vertexBuffer)
 	{
-		int index = glGetAttribLocation(program, "Position");
+		int index = glGetAttribLocation(program, POSITION_KEY.c_str());
 		if (m_vertexBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
 		glEnableVertexAttribArray(index);
 		glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, 0, m_vertexBuffer ? 0 : m_vertex);
 	}
 	if (m_normals || m_normalsBuffer)
 	{
-		int index = glGetAttribLocation(program, "Normal");
+		int index = glGetAttribLocation(program, NORMAL_KEY.c_str());
 		if (m_normalsBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
 		glEnableVertexAttribArray(index);
 		glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, 0, m_normalsBuffer ? 0 : m_normals);
 	}
 	if (m_texCoords || m_texCoordBuffer)
 	{
-		int index = glGetAttribLocation(program, "TexCoord");
+		int index = glGetAttribLocation(program, TEXCOORD_KEY.c_str());
 		if (m_texCoordBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
 		glEnableVertexAttribArray(index);
 		glVertexAttribPointer(index, 2, GL_FLOAT, GL_FALSE, 0, m_texCoordBuffer ? 0 : m_texCoords);
@@ -562,9 +537,9 @@ void COpenGLVertexBuffer::UnBind() const
 {
 	GLint program;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-	glDisableVertexAttribArray(glGetAttribLocation(program, "TexCoord"));
-	glDisableVertexAttribArray(glGetAttribLocation(program, "Normal"));
-	glDisableVertexAttribArray(glGetAttribLocation(program, "Position"));
+	glDisableVertexAttribArray(glGetAttribLocation(program, TEXCOORD_KEY.c_str()));
+	glDisableVertexAttribArray(glGetAttribLocation(program, NORMAL_KEY.c_str()));
+	glDisableVertexAttribArray(glGetAttribLocation(program, POSITION_KEY.c_str()));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
@@ -577,16 +552,16 @@ void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, i
 
 	//Cast a ray from eye to mouse cursor;
 	auto ToVector3f = [](glm::vec3 const& src) {return CVector3f(src.x, src.y, src.z); };
-	start = ToVector3f(glm::unProject(FromVector3(CVector3f(winX, winY, 0.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
-		Vec4FromData(viewportData)));
-	end = ToVector3f(glm::unProject(FromVector3(CVector3f(winX, winY, 1.0f)), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()),
-		Vec4FromData(viewportData)));
+	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()),
+		glm::make_vec4(viewportData)));
+	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()),
+		glm::make_vec4(viewportData)));
 }
 
 void COpenGLESRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
 	float viewportData[4] = { (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() };
-	auto windowPos = glm::project(FromVector3(worldCoords), FromMatrix(viewport.GetViewMatrix()), FromMatrix(viewport.GetProjectionMatrix()), Vec4FromData(viewportData));
+	auto windowPos = glm::project(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()), glm::make_vec4(viewportData));
 	x = static_cast<int>(windowPos.x);
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
@@ -628,7 +603,7 @@ float COpenGLESRenderer::GetMaximumAnisotropyLevel() const
 
 void COpenGLESRenderer::GetProjectionMatrix(float * matrix) const
 {
-	memcpy(matrix, m_projectionMatrices.back(), sizeof(Matrix4F));
+	memcpy(matrix, glm::value_ptr(m_projectionMatrix), sizeof(Matrix4F));
 }
 
 void COpenGLESRenderer::EnableDepthTest(bool enable)
@@ -649,7 +624,7 @@ void COpenGLESRenderer::EnableBlending(bool enable)
 
 void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
-	m_projectionMatrices.back() = ToMatrix4(glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), viewportWidth, viewportHeight, nearPane, farPane));
+	m_projectionMatrix = glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), viewportWidth, viewportHeight, nearPane, farPane);
 	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
@@ -797,10 +772,11 @@ bool COpenGLESRenderer::SupportsFeature(Feature /*feature*/) const
 
 void COpenGLESRenderer::UpdateUniforms() const
 {
-	Matrix4F m = m_projectionMatrices.back();
-	m *= m_viewMatrices.back();
-	m_shaderManager.SetUniformValue("mvp_matrix", 16, 1, m);
-	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
+	auto m = m_projectionMatrix * *m_viewMatrix;
+	static const std::string mvpKey = "mvp_matrix";
+	m_shaderManager.SetUniformValue(mvpKey, 16, 1, glm::value_ptr(m));
+	static const std::string colorKey = "color";
+	m_shaderManager.SetUniformValue(colorKey, 4, 1, m_color);
 }
 
 void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)
@@ -808,15 +784,16 @@ void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glEnable(GL_BLEND);
-	m_projectionMatrices.push_back(ToMatrix4(glm::ortho<float>(viewport[0], viewport[2], viewport[3], viewport[1])));
-	m_viewMatrices.push_back(Matrix4F());
+	glm::mat4 oldProjection = m_projectionMatrix;
+	m_projectionMatrix = glm::ortho<float>(viewport[0], viewport[2], viewport[3], viewport[1]);
+	m_viewMatrices.push_back(glm::mat4());
+	m_viewMatrix = &m_viewMatrices.back();
 	UpdateUniforms();
 
 	drawHandler();
 
-	m_viewMatrices.pop_back();
-	m_projectionMatrices.pop_back();
-	UpdateUniforms();
+	m_projectionMatrix = oldProjection;;
+	PopMatrix();
 }
 
 COpenGLESFrameBuffer::COpenGLESFrameBuffer()

@@ -20,9 +20,9 @@ struct sMesh
 {
 	std::string name;
 	std::string materialName;
-	size_t polygonIndex;
-	bool operator== (sMesh const& other) { return name == other.name && materialName == other.materialName && polygonIndex == other.polygonIndex; }
-	bool operator!= (sMesh const& other) { return !operator==(other); }
+	size_t begin;
+	size_t end;
+	sMaterial * material;
 };
 
 struct sJoint
@@ -44,16 +44,6 @@ struct sAnimation
 	float duration;
 };
 
-struct sModelCallListKey
-{
-	std::set<std::string> hiddenMeshes;
-	bool vertexOnly;
-	std::vector<sTeamColor> teamcolor;
-	std::map<std::wstring, std::wstring> replaceTextures;
-};
-
-bool operator< (sModelCallListKey const& one, sModelCallListKey const& two);
-
 class C3DModel
 {
 public:
@@ -68,7 +58,7 @@ public:
 	std::vector<std::string> GetAnimations() const;
 private:
 	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
-	void CalculateGPUWeights();
+	void CalculateGPUWeights(IRenderer & renderer);
 	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
@@ -81,12 +71,9 @@ private:
 	std::vector<sAnimation> m_animations;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
-	std::map<sModelCallListKey, std::unique_ptr<IDrawingList>> m_lists;
 	double m_scale;
 	CVector3d m_rotation;
 	size_t m_count;
-	std::vector<int> m_gpuWeightIndexes;
-	std::vector<float> m_gpuWeight;
 	std::unique_ptr<IVertexBuffer> m_vertexBuffer;
 	std::unique_ptr<IVertexAttribCache> m_weightsCache;
 	std::unique_ptr<IVertexAttribCache> m_weightIndiciesCache;

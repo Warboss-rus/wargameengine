@@ -9,14 +9,14 @@
 
 using namespace DirectX;
 
-DirectX::XMFLOAT4X4 Store(DirectX::XMMATRIX const& matrix)
+inline DirectX::XMFLOAT4X4 Store(DirectX::XMMATRIX const& matrix)
 {
 	DirectX::XMFLOAT4X4 result;
 	XMStoreFloat4x4(&result, matrix);
 	return result;
 }
 
-DirectX::XMMATRIX Load(DirectX::XMFLOAT4X4 const& matrix)
+inline DirectX::XMMATRIX Load(DirectX::XMFLOAT4X4 const& matrix)
 {
 	return XMLoadFloat4x4(&matrix);
 }
@@ -382,6 +382,7 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	m_devcon->RSSetState(pRasterState);
 	
 	m_viewMatrices.push_back(Store(DirectX::XMMatrixIdentity()));
+	m_viewMatrix = &m_viewMatrices.back();
 	float aspect = GetAspectRatio(m_hWnd);
 	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
 
@@ -537,12 +538,14 @@ void CDirectXRenderer::SetColor(const float r, const float g, const float b, con
 
 void CDirectXRenderer::PushMatrix()
 {
-	m_viewMatrices.push_back(m_viewMatrices.back());
+	m_viewMatrices.push_back(*m_viewMatrix);
+	m_viewMatrix = &m_viewMatrices.back();
 }
 
 void CDirectXRenderer::PopMatrix()
 {
 	m_viewMatrices.pop_back();
+	m_viewMatrix = &m_viewMatrices.back();
 	UpdateMatrices();
 }
 
@@ -559,7 +562,7 @@ void CDirectXRenderer::Translate(const double dx, const double dy, const double 
 void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
-	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(dx, dy, dz), Load(m_viewMatrices.back())));
+	*m_viewMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(dx, dy, dz), Load(*m_viewMatrix)));
 	UpdateMatrices();
 }
 
@@ -567,7 +570,7 @@ void CDirectXRenderer::Rotate(const double angle, const double x, const double y
 {
 	if (fabs(angle) < DBL_EPSILON) return;
 	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f);
-	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), Load(m_viewMatrices.back())));
+	*m_viewMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), Load(*m_viewMatrix)));
 	UpdateMatrices();
 }
 
@@ -575,18 +578,18 @@ void CDirectXRenderer::Scale(const double scale)
 {
 	if (fabs(scale - 1.0) < DBL_EPSILON) return;
 	float fscale = static_cast<float>(scale);
-	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), Load(m_viewMatrices.back())));
+	*m_viewMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), Load(*m_viewMatrix)));
 	UpdateMatrices();
 }
 
 void CDirectXRenderer::GetViewMatrix(float * matrix) const
 {
-	memcpy(matrix, *m_viewMatrices.back().m, sizeof(float) * 16);
+	memcpy(matrix, *m_viewMatrix->m, sizeof(float) * 16);
 }
 
 void CDirectXRenderer::ResetViewMatrix()
 {
-	m_viewMatrices.back() = Store(DirectX::XMMatrixIdentity());
+	*m_viewMatrix = Store(DirectX::XMMatrixIdentity());
 	UpdateMatrices();
 }
 
@@ -600,7 +603,7 @@ void CDirectXRenderer::LookAt(CVector3f const& position, CVector3f const& direct
 	XMVECTOR pos = Vec3ToXMVector(position);
 	XMVECTOR dir = Vec3ToXMVector(direction);
 	XMVECTOR upVec = Vec3ToXMVector(up);
-	m_viewMatrices.back() = Store(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
+	*m_viewMatrix = Store(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
 	UpdateMatrices();
 }
 
@@ -669,6 +672,11 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateTexture(const void * dat
 	auto tex = std::make_unique<CDirectXCachedTexture>(this);
 	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, type != CachedTextureType::ALPHA, 0, type);
 	return std::move(tex);
+}
+
+ICachedTexture* CDirectXRenderer::GetTexturePtr(std::wstring const& texture) const
+{
+	return m_textureManager->GetTexturePtr(texture);
 }
 
 void CDirectXRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
@@ -982,7 +990,7 @@ std::string CDirectXRenderer::GetName() const
 
 void CDirectXRenderer::UpdateMatrices()
 {
-	m_shaderManager.SetMatrices(*m_viewMatrices.back().m, *m_projectionMatrix.m);
+	m_shaderManager.SetMatrices(*m_viewMatrix->m, *m_projectionMatrix.m);
 }
 
 void CDirectXRenderer::CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size)

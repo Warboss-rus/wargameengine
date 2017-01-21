@@ -16,7 +16,7 @@ function Init()
 	if(GetRendererName() == "DirectX11") then
 		SetShaders("directX11/per_pixel.hlsl", "directX11/per_pixel.hlsl")
 	else
-		SetShaders("openGL/per_pixel_shadow.vsh", "openGL/per_pixel_shadow.fsh")
+		SetShaders("openGL/per_pixel.vsh", "openGL/per_pixel.fsh")
 	end
 	SetSelectionCallback("OnSelection")
 	UI:NewButton("ButtonEndPhase", 10, 10, 30, 90, "End phase", "EndPhase")

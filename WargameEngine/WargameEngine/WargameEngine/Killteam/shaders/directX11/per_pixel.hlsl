@@ -1,10 +1,10 @@
 struct sLightSource
 {
-	bool enabled;
 	float3 pos;
 	float4 diffuse;
 	float4 ambient;
 	float4 specular;
+	bool enabled;
 };
 struct sMaterial
 {

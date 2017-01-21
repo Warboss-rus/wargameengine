@@ -343,3 +343,8 @@ bool CObjectGroup::IsGroup() const
 {
 	return true;
 }
+
+IObject* CObjectGroup::GetFullObject()
+{
+	return nullptr;
+}

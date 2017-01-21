@@ -1,6 +1,6 @@
 #include "MaterialManager.h"
 
-const sMaterial * CMaterialManager::GetMaterial(std::string const& name) const
+sMaterial * CMaterialManager::GetMaterial(std::string const& name)
 {
 	if(m_materials.find(name) == m_materials.end())
 	{

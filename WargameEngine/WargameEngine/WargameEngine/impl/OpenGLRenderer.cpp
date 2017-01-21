@@ -39,7 +39,7 @@ public:
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
 private:
-	void CreateVBO(size_t size, size_t components, const float* data, GLuint program, const char* attribName);
+	void CreateVBO(size_t size, size_t components, const float* data, const char* attribName);
 	CShaderManagerOpenGL & m_shaderMan;
 	GLuint m_vao = 0;
 	GLuint m_mainVAO = 0;
@@ -168,6 +168,7 @@ COpenGLRenderer::COpenGLRenderer()
 	glBindVertexArray(m_vao);
 
 	m_viewMatrices.push_back(glm::mat4());
+	m_viewMatrix = &m_viewMatrices.back();
 	m_color.a = 1.0f;
 	m_shaderManager.DoOnProgramChange([this]() {
 		UpdateMatrices();
@@ -204,11 +205,13 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const
 void COpenGLRenderer::PushMatrix()
 {
 	m_viewMatrices.push_back(m_viewMatrices.back());
+	m_viewMatrix = &m_viewMatrices.back();
 }
 
 void COpenGLRenderer::PopMatrix()
 {
 	m_viewMatrices.pop_back();
+	m_viewMatrix = &m_viewMatrices.back();
 	UpdateMatrices();
 }
 
@@ -224,37 +227,37 @@ void COpenGLRenderer::Translate(const double dx, const double dy, const double d
 
 void COpenGLRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	m_viewMatrices.back() = glm::translate(m_viewMatrices.back(), glm::vec3(dx, dy, dz));
+	*m_viewMatrix = glm::translate(*m_viewMatrix, glm::vec3(dx, dy, dz));
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::Scale(double scale)
 {
 	float fscale = static_cast<float>(scale);
-	m_viewMatrices.back() = glm::scale(m_viewMatrices.back(), glm::vec3(fscale, fscale, fscale));
+	*m_viewMatrix = glm::scale(*m_viewMatrix, glm::vec3(fscale, fscale, fscale));
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
 {
-	m_viewMatrices.back() = glm::rotate(m_viewMatrices.back(), static_cast<float>(angle * M_PI / 180), glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+	*m_viewMatrix = glm::rotate(*m_viewMatrix, static_cast<float>(angle * M_PI / 180), glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::GetViewMatrix(float * matrix) const
 {
-	memcpy(matrix, glm::value_ptr(m_viewMatrices.back()), sizeof(Matrix4F));
+	memcpy(matrix, glm::value_ptr(*m_viewMatrix), sizeof(Matrix4F));
 }
 
 void COpenGLRenderer::ResetViewMatrix()
 {
-	m_viewMatrices.back() = glm::mat4();
+	*m_viewMatrix = glm::mat4();
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	m_viewMatrices.back() = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	*m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
 	UpdateMatrices();
 }
 
@@ -354,6 +357,11 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data
 	return move(texture);
 }
 
+ICachedTexture* COpenGLRenderer::GetTexturePtr(std::wstring const& texture) const
+{
+	return m_textureManager->GetTexturePtr(texture);
+}
+
 class CMockDrawingList : public IDrawingList
 {
 public:
@@ -402,10 +410,14 @@ void COpenGLRenderer::SetTextureManager(CTextureManager & textureManager)
 
 void COpenGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
-	m_shaderManager.SetUniformValue("material.ambient", 4, 1, ambient);
-	m_shaderManager.SetUniformValue("material.diffuse", 4, 1, diffuse);
-	m_shaderManager.SetUniformValue("material.specular", 4, 1, specular);
-	m_shaderManager.SetUniformValue("material.shininess", 1, 1, &shininess);
+	static const std::string ambientKey = "material.ambient";
+	static const std::string diffuseKey = "material.diffuse";
+	static const std::string specularKey = "material.specular";
+	static const std::string shininessKey = "material.shininess";
+	m_shaderManager.SetUniformValue(ambientKey, 4, 1, ambient);
+	m_shaderManager.SetUniformValue(diffuseKey, 4, 1, diffuse);
+	m_shaderManager.SetUniformValue(specularKey, 4, 1, specular);
+	m_shaderManager.SetUniformValue(shininessKey, 1, 1, &shininess);
 }
 
 COpenGlCachedTexture::COpenGlCachedTexture()
@@ -461,27 +473,25 @@ COpenGLVertexBuffer::COpenGLVertexBuffer(CShaderManagerOpenGL & shaderMan, const
 	}
 	else
 	{
-		GLint program;
-		glGetIntegerv(GL_CURRENT_PROGRAM, &program);
 		glGenVertexArrays(1, &m_vao);
 		glBindVertexArray(m_vao);
 		if (vertex)
 		{
-			CreateVBO(size, 3, vertex, program, CShaderManagerOpenGL::VERTEX_ATTRIB_NAME);
+			CreateVBO(size, 3, vertex, CShaderManagerOpenGL::VERTEX_ATTRIB_NAME);
 		}
 		if (normals)
 		{
-			CreateVBO(size, 3, normals, program, CShaderManagerOpenGL::NORMAL_ATTRIB_NAME);
+			CreateVBO(size, 3, normals, CShaderManagerOpenGL::NORMAL_ATTRIB_NAME);
 		}
 		if (texcoords)
 		{
-			CreateVBO(size, 2, texcoords, program, CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME);
+			CreateVBO(size, 2, texcoords, CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME);
 		}
 		UnBind();
 	}
 }
 
-void COpenGLVertexBuffer::CreateVBO(size_t size, size_t components, const float* data, GLuint program, const char* attribName)
+void COpenGLVertexBuffer::CreateVBO(size_t size, size_t components, const float* data, const char* attribName)
 {
 	m_buffers.push_back(m_shaderMan.CreateVertexAttribCache(components, size, data));
 	m_shaderMan.SetVertexAttribute(attribName, *m_buffers.back());
@@ -504,7 +514,7 @@ void COpenGLVertexBuffer::Bind() const
 	{
 		m_shaderMan.SetVertexAttribute(CShaderManagerOpenGL::VERTEX_ATTRIB_NAME, 3, m_vertexCount, m_vertex);
 		m_shaderMan.SetVertexAttribute(CShaderManagerOpenGL::NORMAL_ATTRIB_NAME, 3, m_vertexCount, m_normals);
-		m_shaderMan.SetVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 3, m_vertexCount, m_texCoords);
+		m_shaderMan.SetVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 2, m_vertexCount, m_texCoords);
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
 }
@@ -573,30 +583,24 @@ void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f 
 
 void COpenGLRenderer::EnableLight(size_t index, bool enable)
 {
-	if (enable)
-	{
-		glEnable(GL_LIGHT0 + index);
-	}
-	else
-	{
-		glDisable(GL_LIGHT0 + index);
-	}
+	int intEnable = enable ? 1 : 0;
+	m_shaderManager.SetUniformValue("lights[" + std::to_string(index) + "].enabled", 1, 1, &intEnable);
 }
 
-static const map<LightningType, GLenum> lightningTypesMap = {
-	{ LightningType::DIFFUSE, GL_DIFFUSE },
-	{ LightningType::AMBIENT, GL_AMBIENT },
-	{ LightningType::SPECULAR, GL_SPECULAR }
+static const map<LightningType, std::string> lightningTypesMap = {
+	{ LightningType::DIFFUSE, "diffuse" },
+	{ LightningType::AMBIENT, "ambient" },
+	{ LightningType::SPECULAR, "specular" }
 };
 
 void COpenGLRenderer::SetLightColor(size_t index, LightningType type, float * values)
 {
-	//glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
+	m_shaderManager.SetUniformValue("lights[" + std::to_string(index) + "]." + lightningTypesMap.at(type), 4, 1, values);
 }
 
 void COpenGLRenderer::SetLightPosition(size_t index, float* pos)
 {
-	//glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
+	m_shaderManager.SetUniformValue("lights[" + std::to_string(index) + "].pos", 3, 1, pos);
 }
 
 float COpenGLRenderer::GetMaximumAnisotropyLevel() const
@@ -851,9 +855,11 @@ void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureTy
 
 void COpenGLRenderer::UpdateMatrices() const
 {
-	auto m = m_projectionMatrix * m_viewMatrices.back();
-	m_shaderManager.SetUniformValue("mvp_matrix", 16, 1, glm::value_ptr(m));
-	m_shaderManager.SetUniformValue("view_matrix", 16, 1, glm::value_ptr(m_viewMatrices.back()));
+	glm::mat4 m = m_projectionMatrix * *m_viewMatrix;
+	static const std::string mvpMatrixKey = "mvp_matrix";
+	static const std::string view_matrix_key = "view_matrix";
+	m_shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
+	m_shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(*m_viewMatrix));
 }
 
 void COpenGLRenderer::UpdateColor() const

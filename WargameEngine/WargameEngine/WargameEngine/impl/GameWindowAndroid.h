@@ -40,7 +40,7 @@ private:
 	CInputAndroid m_input;
 	bool m_active;
 	bool m_destroyRequested;
-	void* m_display;
+	void* m_display = 0;
 	void* m_surface;
 	void* m_context;
 	struct android_app* m_app;

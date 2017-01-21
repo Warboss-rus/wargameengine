@@ -22,9 +22,7 @@ public:
 	CLandscape();
 	void Reset(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
 	void SetHeight(float x, float y, float value);
-	void SetHeight(unsigned int index, float value);
 	float GetHeight(float x, float y) const;
-	float GetHeight(unsigned int index) const;
 	float GetWidth() const;
 	float GetDepth() const;
 	float GetHorizontalTextureScale() const;
@@ -38,7 +36,7 @@ public:
 	sDecal const& GetDecal(size_t index) const;
 	void AddStaticObject(CStaticObject const& object);
 	size_t GetStaticObjectCount() const;
-	CStaticObject const& GetStaticObject(size_t index) const;
+	CStaticObject & GetStaticObject(size_t index);
 	void DoOnUpdated(std::function<void()> const& onUpdated);
 private:
 	float m_width;

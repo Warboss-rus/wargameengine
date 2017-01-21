@@ -1,8 +1,9 @@
-uniform sampler2D texture;
+#version 330 core
+uniform sampler2D mainTexture;
 uniform sampler2DShadow shadowMap;
 
-varying vec4 lpos;
-varying vec2 texCoord;
+varying vec4 v_lpos;
+varying vec2 v_texcoord;
 
 void main (void)
 {
@@ -15,9 +16,9 @@ void main (void)
 	float shadow = 0;
 	for (int i = 0; i < 4; i++)
 	{
-		shadow += shadow2DProj(shadowMap, lpos + poissonDisk[i]/50.0).x;
+		shadow += textureProj(shadowMap, v_lpos + poissonDisk[i]/50.0).x;
 	}
 	shadow = clamp(shadow / 4, 0.4, 1.0);
-	vec4 color = texture2D(texture, texCoord);
+	vec4 color = texture(mainTexture, v_texcoord);
 	gl_FragColor = vec4(color.xyz * shadow, color.w);
 }

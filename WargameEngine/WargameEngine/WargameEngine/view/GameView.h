@@ -121,6 +121,8 @@ private:
 	std::function<std::unique_ptr<INetSocket>()> m_socketFactory;
 	std::unique_ptr<IDrawingList> m_tableList;
 	std::unique_ptr<IDrawingList> m_tableListShadow;
+	std::unique_ptr<IVertexBuffer> m_tableBuffer;
+	size_t m_tableBufferSize;
 	IViewport * m_currentViewport;
 	long long m_lastFrameTime = 0;
 };

@@ -52,6 +52,7 @@ public:
 	void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) override;
 	std::map<std::wstring, std::wstring> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
+	virtual IObject* GetFullObject() override;
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

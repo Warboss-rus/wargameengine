@@ -86,14 +86,16 @@ void CShaderManagerOpenGL::PushProgram(IShaderProgram const& program) const
 {
 	unsigned int p = reinterpret_cast<COpenGLShaderProgram const&>(program).program;
 	m_programs.push_back(p);
-	glUseProgram(m_programs.back());
+	m_activeProgram = m_programs.back();
+	glUseProgram(m_activeProgram);
 	m_onProgramChange();
 }
 
 void CShaderManagerOpenGL::PopProgram() const
 {
 	m_programs.pop_back();
-	glUseProgram(m_programs.back());
+	m_activeProgram = m_programs.back();
+	glUseProgram(m_activeProgram);
 	m_onProgramChange();
 }
 
@@ -179,13 +181,18 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(std::wstring co
 	glDeleteShader(framgentShader);
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	glVertexAttrib4fv(glGetAttribLocation(program->program, "weights"), def);
+	if (!m_programs.empty())
+	{
+		glUseProgram(m_activeProgram);
+	}
 
 	return std::move(program);
 }
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const
 {
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
+	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
@@ -210,7 +217,8 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const
 {
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
+	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
@@ -232,7 +240,8 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const
 {
-	int unfrm = glGetUniformLocation(m_programs.back(), uniform.c_str());
+	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
@@ -274,7 +283,7 @@ void CShaderManagerOpenGL::DoOnProgramChange(std::function<void()> const& handle
 
 void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
 {
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index == -1) return;
 	if (m_vertexAttribBuffers.find(attribute) == m_vertexAttribBuffers.end())
 	{
@@ -283,7 +292,7 @@ void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, 
 		m_vertexAttribBuffers.emplace(std::make_pair(attribute, buffer));
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexAttribBuffers.at(attribute));
-	glBufferData(GL_ARRAY_BUFFER, elementSize * count * sizeof(float), values, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, elementSize * count * sizeof(float), values, GL_DYNAMIC_DRAW);
 
 	if(format == GL_FLOAT)
 		glVertexAttribPointer(index, elementSize, format, GL_FALSE, 0, NULL);
@@ -317,7 +326,7 @@ void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVer
 {
 	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
 	glCache.Bind();
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index != -1)
 	{
 		if (glCache.GetFormat() == GL_FLOAT)
@@ -332,7 +341,7 @@ void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVer
 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* defaultValue) const
 {
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4fv(index, defaultValue);
@@ -340,7 +349,7 @@ void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, 
 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const int* defaultValue) const
 {
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4iv(index, defaultValue);
@@ -348,7 +357,7 @@ void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, 
 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const unsigned int* defaultValue) const
 {
-	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());
+	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4uiv(index, defaultValue);

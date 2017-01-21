@@ -35,18 +35,9 @@ void CLandscape::SetHeight(float x, float y, float value)
 	if (m_onUpdated) m_onUpdated();
 }
 
-void CLandscape::SetHeight(unsigned int index, float value)
-{
-	m_heights[index] = value;
-}
-
 float CLandscape::GetHeight(float x, float y) const
 {
-	return m_heights[static_cast<size_t>((m_width / 2 + x) / (m_width / m_pointsPerWidth) + (m_depth / 2 + y) / (m_depth / m_pointsPerDepth))];
-}
-
-float CLandscape::GetHeight(unsigned int index) const
-{
+	size_t index = static_cast<size_t>((m_width / 2.0f + x) / (m_width / m_pointsPerWidth)) + static_cast<size_t>((m_depth / 2.0f + y) / m_depth);
 	return m_heights[index];
 }
 
@@ -132,7 +123,7 @@ size_t CLandscape::GetStaticObjectCount() const
 	return m_staticObjects.size();
 }
 
-CStaticObject const& CLandscape::GetStaticObject(size_t index) const
+CStaticObject & CLandscape::GetStaticObject(size_t index)
 {
 	return m_staticObjects[index];
 }

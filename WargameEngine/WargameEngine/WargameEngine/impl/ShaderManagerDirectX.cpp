@@ -174,7 +174,7 @@ void CShaderManagerDirectX::ReflectConstantBuffers(ID3D10Blob * blob, CDirectXSh
 
 CShaderManagerDirectX::sConstantBuffer* CShaderManagerDirectX::FindBuffer(std::string const& uniform) const
 {
-	for (auto& buf : m_programs.back()->m_constantBuffers)
+	for (auto& buf : m_activeProgram->m_constantBuffers)
 	{
 		auto it = buf.second.m_variableOffsets.find(uniform);
 		if (it != buf.second.m_variableOffsets.end())
@@ -222,10 +222,11 @@ std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(std::wstring c
 void CShaderManagerDirectX::PushProgram(IShaderProgram const& program) const
 {
 	m_programs.push_back(reinterpret_cast<CDirectXShaderProgram const&>(program).impl);
+	m_activeProgram = m_programs.back();
 	auto context = m_render->GetContext();
-	context->VSSetShader(m_programs.back()->pVS, 0, 0);
-	context->PSSetShader(m_programs.back()->pPS, 0, 0);
-	context->GSSetShader(m_programs.back()->pGS, 0, 0);
+	context->VSSetShader(m_activeProgram->pVS, 0, 0);
+	context->PSSetShader(m_activeProgram->pPS, 0, 0);
+	context->GSSetShader(m_activeProgram->pGS, 0, 0);
 
 	ResetBuffers();
 	if(m_onProgramChange) m_onProgramChange();
@@ -233,11 +234,11 @@ void CShaderManagerDirectX::PushProgram(IShaderProgram const& program) const
 
 void CShaderManagerDirectX::ResetBuffers() const
 {
-	std::vector<UINT> stride(m_programs.back()->m_vertexAttributeDescriptions.size(), 0);
-	std::vector<UINT> offset(m_programs.back()->m_vertexAttributeDescriptions.size(), 0);
-	std::vector<ID3D11Buffer*> buffers(m_programs.back()->m_vertexAttributeDescriptions.size(), NULL);
+	std::vector<UINT> stride(m_activeProgram->m_vertexAttributeDescriptions.size(), 0);
+	std::vector<UINT> offset(m_activeProgram->m_vertexAttributeDescriptions.size(), 0);
+	std::vector<ID3D11Buffer*> buffers(m_activeProgram->m_vertexAttributeDescriptions.size(), NULL);
 	m_render->GetContext()->IASetVertexBuffers(0, buffers.size(), buffers.data(), stride.data(), offset.data());
-	for (auto& buffer : m_programs.back()->m_constantBuffers)
+	for (auto& buffer : m_activeProgram->m_constantBuffers)
 	{
 		if (buffer.second.m_startSlots[0] != UINT_MAX) m_render->GetContext()->VSSetConstantBuffers(buffer.second.m_startSlots[0], 1, &buffer.second.m_constantBuffer.p);
 		if (buffer.second.m_startSlots[1] != UINT_MAX) m_render->GetContext()->PSSetConstantBuffers(buffer.second.m_startSlots[1], 1, &buffer.second.m_constantBuffer.p);
@@ -248,10 +249,11 @@ void CShaderManagerDirectX::ResetBuffers() const
 void CShaderManagerDirectX::PopProgram() const
 {
 	m_programs.pop_back();
+	m_activeProgram = m_programs.back();
 	auto context = m_render->GetContext();
-	context->VSSetShader(m_programs.back()->pVS, 0, 0);
-	context->PSSetShader(m_programs.back()->pPS, 0, 0);
-	context->GSSetShader(m_programs.back()->pGS, 0, 0);
+	context->VSSetShader(m_activeProgram->pVS, 0, 0);
+	context->PSSetShader(m_activeProgram->pPS, 0, 0);
+	context->GSSetShader(m_activeProgram->pGS, 0, 0);
 	ResetBuffers();
 	if (m_onProgramChange) m_onProgramChange();
 }
@@ -286,10 +288,10 @@ void CShaderManagerDirectX::SetUniformValueImpl(std::string const& uniform, int 
 
 void CShaderManagerDirectX::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, DXGI_FORMAT format, bool perInstance, const void* values) const
 {
-	auto descIt = m_programs.back()->m_vertexAttributeDescriptions.find(attribute);
-	if (descIt != m_programs.back()->m_vertexAttributeDescriptions.end())
+	auto descIt = m_activeProgram->m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_activeProgram->m_vertexAttributeDescriptions.end())
 	{
-		CComPtr<ID3D11Buffer> buffer = m_programs.back()->m_vertexAttributeBuffers.find(attribute) != m_programs.back()->m_vertexAttributeBuffers.end() ? m_programs.back()->m_vertexAttributeBuffers[attribute] : nullptr;
+		CComPtr<ID3D11Buffer> buffer = m_activeProgram->m_vertexAttributeBuffers.find(attribute) != m_activeProgram->m_vertexAttributeBuffers.end() ? m_activeProgram->m_vertexAttributeBuffers[attribute] : nullptr;
 		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
 		desc.Format = format;
 		if (perInstance)
@@ -353,8 +355,8 @@ void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int
 void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
 {
 	auto& dxCache = reinterpret_cast<CVertexAttribCacheDirectX const&>(cache);
-	auto descIt = m_programs.back()->m_vertexAttributeDescriptions.find(attribute);
-	if (descIt != m_programs.back()->m_vertexAttributeDescriptions.end())
+	auto descIt = m_activeProgram->m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_activeProgram->m_vertexAttributeDescriptions.end())
 	{
 		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
 		desc.Format = dxCache.GetFormat();
@@ -372,18 +374,18 @@ void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVe
 
 void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const
 {
-	if (!buffer || totalSize > m_programs.back()->m_vertexAttributeBufferSizes.at(attribute))
+	if (!buffer || totalSize > m_activeProgram->m_vertexAttributeBufferSizes.at(attribute))
 	{
 		CreateBuffer(&buffer, totalSize * sizeof(float));
-		m_programs.back()->m_vertexAttributeBufferSizes[attribute] = totalSize;
-		m_programs.back()->m_vertexAttributeBuffers[attribute] = buffer;
+		m_activeProgram->m_vertexAttributeBufferSizes[attribute] = totalSize;
+		m_activeProgram->m_vertexAttributeBuffers[attribute] = buffer;
 	}
 }
 
 void CShaderManagerDirectX::DisableAttributeImpl(std::string const& attribute) const
 {
-	auto descIt = m_programs.back()->m_vertexAttributeDescriptions.find(attribute);
-	if (descIt != m_programs.back()->m_vertexAttributeDescriptions.end())
+	auto descIt = m_activeProgram->m_vertexAttributeDescriptions.find(attribute);
+	if (descIt != m_activeProgram->m_vertexAttributeDescriptions.end())
 	{
 		unsigned int stride = sizeof(float) * 4;
 		unsigned int offset = 0;
@@ -422,10 +424,10 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 {
 	// create the input layout object
 	std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
-	m_programs.back()->m_vertexAttributeDescriptions["POSITION"].Format = vertexFormat;
-	m_programs.back()->m_vertexAttributeDescriptions["TEXCOORD"].Format = texCoordFormat;
-	m_programs.back()->m_vertexAttributeDescriptions["NORMAL"].Format = normalFormat;
-	for (auto& p : m_programs.back()->m_vertexAttributeDescriptions)
+	m_activeProgram->m_vertexAttributeDescriptions["POSITION"].Format = vertexFormat;
+	m_activeProgram->m_vertexAttributeDescriptions["TEXCOORD"].Format = texCoordFormat;
+	m_activeProgram->m_vertexAttributeDescriptions["NORMAL"].Format = normalFormat;
+	for (auto& p : m_activeProgram->m_vertexAttributeDescriptions)
 	{
 		ied.push_back(p.second);
 	}
@@ -438,7 +440,7 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 	if(it == m_inputLayouts.end())
 	{
 		CComPtr<ID3D11InputLayout> pLayout;
-		m_dev->CreateInputLayout(ied.data(), ied.size(), m_programs.back()->m_VS->GetBufferPointer(), m_programs.back()->m_VS->GetBufferSize(), &pLayout);
+		m_dev->CreateInputLayout(ied.data(), ied.size(), m_activeProgram->m_VS->GetBufferPointer(), m_activeProgram->m_VS->GetBufferSize(), &pLayout);
 		it = m_inputLayouts.emplace(std::make_pair(key, std::move(pLayout))).first;
 	}
 	m_render->GetContext()->IASetInputLayout(it->second);
@@ -446,11 +448,13 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 
 void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 {
-	auto buffer = FindBuffer("WorldViewProjection");
+	static const std::string mvpMatrixKey = "WorldViewProjection";
+	static const std::string viewMatrixKey = "WorldView";
+	auto buffer = FindBuffer(mvpMatrixKey);
 	DirectX::XMFLOAT4X4 fmatrix;
 	if (buffer)
 	{
-		auto it = buffer->m_variableOffsets.find("WorldViewProjection");
+		auto it = buffer->m_variableOffsets.find(mvpMatrixKey);
 		if (it != buffer->m_variableOffsets.end())
 		{
 			DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(DirectX::XMMATRIX(modelView), DirectX::XMMATRIX(projection));
@@ -460,10 +464,10 @@ void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 		}
 	}
 
-	buffer = FindBuffer("WorldView");
+	buffer = FindBuffer(viewMatrixKey);
 	if (buffer)
 	{
-		auto it = buffer->m_variableOffsets.find("WorldView");
+		auto it = buffer->m_variableOffsets.find(viewMatrixKey);
 		if (it != buffer->m_variableOffsets.end())
 		{
 			DirectX::XMMATRIX matrix = DirectX::XMMATRIX(modelView);
@@ -476,8 +480,9 @@ void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
 
 void CShaderManagerDirectX::SetColor(const float * color)
 {
-	auto buffer = FindBuffer("Color");
-	auto it = buffer->m_variableOffsets.find("Color");
+	static const std::string colorKey = "Color";
+	auto buffer = FindBuffer(colorKey);
+	auto it = buffer->m_variableOffsets.find(colorKey);
 	if (it != buffer->m_variableOffsets.end())
 	{
 		CopyConstantBufferData(*buffer, it->second, color, sizeof(float) * 4);
@@ -494,8 +499,9 @@ struct sMaterial
 
 void CShaderManagerDirectX::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
-	auto buffer = FindBuffer("Material");
-	auto it = buffer->m_variableOffsets.find("Material");
+	static const std::string materialKey = "Material";
+	auto buffer = FindBuffer(materialKey);
+	auto it = buffer->m_variableOffsets.find(materialKey);
 	if (it != buffer->m_variableOffsets.end())
 	{
 		sMaterial material;
@@ -509,8 +515,9 @@ void CShaderManagerDirectX::SetMaterial(const float * ambient, const float * dif
 
 void CShaderManagerDirectX::SetLight(size_t index, sLightSource & lightSource)
 {
-	auto buffer = FindBuffer("Lights");
-	auto it = buffer->m_variableOffsets.find("Lights");
+	static const std::string lightKey = "Lights";
+	auto buffer = FindBuffer(lightKey);
+	auto it = buffer->m_variableOffsets.find(lightKey);
 	if (it != buffer->m_variableOffsets.end())
 	{
 		CopyConstantBufferData(*buffer, it->second + index * sizeof(sLightSource), &lightSource, sizeof(sLightSource));

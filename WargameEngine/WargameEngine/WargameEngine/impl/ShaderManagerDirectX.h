@@ -86,6 +86,7 @@ private:
 	typedef std::tuple<std::wstring, std::wstring, std::wstring> ProgramCacheKey;
 	std::map<ProgramCacheKey, CDirectXShaderProgramImpl> m_programsCache;
 	mutable std::vector<CDirectXShaderProgramImpl*> m_programs;
+	mutable CDirectXShaderProgramImpl* m_activeProgram;
 
 	typedef std::vector<std::pair<LPCSTR, DXGI_FORMAT>> InputLayoutDesc;
 	mutable std::map<InputLayoutDesc, CComPtr<ID3D11InputLayout>> m_inputLayouts;

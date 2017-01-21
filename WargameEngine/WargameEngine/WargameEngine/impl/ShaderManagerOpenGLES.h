@@ -35,6 +35,7 @@ public:
 private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	mutable std::vector<unsigned> m_programs;
+	mutable unsigned m_activeProgram;
 	std::function<void()> m_onProgramChange;
 	int m_positionLocation;
 	int m_normalsLocation;

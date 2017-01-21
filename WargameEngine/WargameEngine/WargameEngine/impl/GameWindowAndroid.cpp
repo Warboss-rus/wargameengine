@@ -80,17 +80,10 @@ void CGameWindowAndroid::DrawFrame()
 {
 	if (m_active) 
 	{
-		/*if (m_onDraw)
+		if (m_onDraw)
 		{
 			m_onDraw();
-		}*/
-		if(m_onDraw) m_onDraw();
-		/*m_renderer.ClearBuffers(true, true);
-		m_renderer.SetColor(1.0f, 0.0f, 0.0f);
-		m_renderer.SetTexture(L"g2Default.png");
-		m_renderer.DrawIn2D([this] {
-			m_renderer.RenderArrays(RenderMode::TRIANGLES, { CVector2i(100, 100), {1100, 100}, {600, 1000} }, {});
-		});*/
+		}
 		// Drawing is throttled to the screen update rate, so there
 		// is no need to do timing here.
 		eglSwapBuffers(m_display, m_surface);
@@ -152,6 +145,15 @@ void CGameWindowAndroid::Shutdown()
 void CGameWindowAndroid::SetActive(bool active)
 {
 	m_active = active;
+	if (!m_display) return;
+	if (active)
+	{
+		eglMakeCurrent(m_display, m_surface, m_surface, m_context);
+	}
+	else
+	{
+		eglMakeCurrent(m_display, nullptr, nullptr, nullptr);
+	}
 }
 
 void CGameWindowAndroid::HandleInput(AInputEvent* event)

@@ -110,6 +110,7 @@ void CGameView::InitLandscape()
 	m_gameModel->GetLandscape().DoOnUpdated([this]() {
 		m_tableList.reset();
 		m_tableListShadow.reset();
+		m_tableBuffer.reset();
 	});
 }
 
@@ -369,8 +370,8 @@ void CGameView::DrawRuler()
 }
 void CGameView::DrawTable(bool shadowOnly)
 {
-	auto& tableList = shadowOnly ? m_tableListShadow : m_tableList;
-	tableList = m_renderer->CreateDrawingList([this, shadowOnly] {
+	if (!m_tableBuffer)
+	{
 		CLandscape const& landscape = m_gameModel->GetLandscape();
 		float x1 = -landscape.GetWidth() / 2.0f;
 		float x2 = landscape.GetWidth() / 2.0f;
@@ -378,22 +379,41 @@ void CGameView::DrawTable(bool shadowOnly)
 		float y2 = landscape.GetDepth() / 2.0f;
 		float xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
 		float ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
-		m_renderer->SetTexture(landscape.GetTexture());
-		unsigned int k = 0;
+		vector<CVector3f> vertex;
+		vector<CVector2f> texCoord;
 		for (float x = x1; x <= x2 - xstep; x += xstep)
 		{
-			vector<CVector3f> vertex;
-			vector<CVector2f> texCoord;
-			for (float y = y1; y <= y2; y += ystep, k++)
+			for (float y = y1; y <= y2 - ystep; y += ystep)
 			{
 				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
-				vertex.push_back({ x, y, landscape.GetHeight(k) });
+				vertex.push_back({ x, y, landscape.GetHeight(x, y) });
+
 				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
-				vertex.push_back({ x + xstep, y, landscape.GetHeight(k + 1) });
+				vertex.push_back({ x + xstep, y, landscape.GetHeight(x + xstep, y) });
+
+				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x, y + ystep, landscape.GetHeight(x, y + ystep) });
+
+				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x + xstep, y, landscape.GetHeight(x + xstep, y) });
+
+				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x, y + ystep, landscape.GetHeight(x, y + ystep) });
+
+				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x + xstep, y + ystep, landscape.GetHeight(x + xstep, y + ystep) });
 			}
-			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, vertex, {}, texCoord);
 		}
-		m_renderer->SetTexture(L"");
+		m_tableBuffer = m_renderer->CreateVertexBuffer(vertex.data()->ptr(), nullptr, &texCoord.data()->x, vertex.size());
+		m_tableBufferSize = vertex.size();
+	}
+	auto& tableList = shadowOnly ? m_tableListShadow : m_tableList;
+	tableList = m_renderer->CreateDrawingList([this, shadowOnly] {
+		CLandscape const& landscape = m_gameModel->GetLandscape();
+		if (!shadowOnly)m_renderer->SetTexture(landscape.GetTexture());
+		m_tableBuffer->Bind();
+		m_tableBuffer->DrawAll(m_tableBufferSize);
+		m_tableBuffer->UnBind();
 		if (!shadowOnly)//Don't draw decals because they don't cast shadows
 		{
 			for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
@@ -436,7 +456,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 	};
 	size_t countObjects = m_gameModel->GetObjectCount();
 	size_t staticObjectsCount = m_gameModel->GetLandscape().GetStaticObjectCount();
-	std::vector<const IBaseObject*> objects;
+	std::vector<IBaseObject*> objects;
 	objects.reserve(countObjects + staticObjectsCount);
 	for (size_t i = 0; i < countObjects; i++)
 	{
@@ -449,7 +469,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 
 	for (size_t i = 0; i < staticObjectsCount; i++)
 	{
-		auto& obj = m_gameModel->GetLandscape().GetStaticObject(i);
+		CStaticObject& obj = m_gameModel->GetLandscape().GetStaticObject(i);
 		if (isVisibleInFrustum(&obj))
 		{
 			objects.push_back(&obj);
@@ -470,7 +490,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 				m_renderer->PushMatrix();
 				m_renderer->Translate(object->GetX(), object->GetY(), object->GetCoords().z);
 				m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-				IObject* fullObject = m_gameModel->Get3DObject(object).get();
+				IObject* fullObject = object->GetFullObject();
 				m_modelManager.DrawModel(object->GetPathToModel(), fullObject, shadowOnly);
 				if (fullObject)
 				{

@@ -37,6 +37,7 @@ public:
 
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
+	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 
@@ -85,6 +86,7 @@ private:
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGL m_shaderManager;
 	std::vector<glm::mat4> m_viewMatrices;
+	glm::mat4* m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
 	glm::vec4 m_color;
 	std::unique_ptr<IShaderProgram> m_defaultProgram;

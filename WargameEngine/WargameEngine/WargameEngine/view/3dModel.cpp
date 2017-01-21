@@ -3,6 +3,7 @@
 #include "IRenderer.h"
 #include <float.h>
 #include "Matrix4.h"
+#include <algorithm>
 
 C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
 
@@ -27,8 +28,16 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 	m_indexes.swap(indexes);
 	std::swap(m_materials, materials);
 	m_meshes.swap(meshes);
-	m_lists.clear();
 	m_vertexBuffer.reset();
+	for (size_t i = 0; i < m_meshes.size(); ++i)
+	{
+		auto& mesh = m_meshes[i];
+		mesh.material = m_materials.GetMaterial(mesh.materialName);
+		mesh.end = (i == m_meshes.size() - 1) ? m_indexes.size() + 1 : m_meshes[i + 1].begin;
+	}
+	std::sort(m_meshes.begin(), m_meshes.end(), [](sMesh const& first, sMesh const& second) {
+		return first.materialName < second.materialName;
+	});
 }
 
 void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations)
@@ -38,24 +47,36 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_weights.swap(weights);
 	m_skeleton.swap(skeleton);
 	m_animations.swap(animations);
-	m_lists.clear();
 }
 
-void SetMaterial(IRenderer & renderer, const sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr)
+void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr)
 {
 	if(!material)
 	{
+		renderer.SetTexture(L"");
 		return;
 	}
-	renderer.SetMaterial(material->ambient, material->diffuse, material->specular, material->shininess);
-	std::wstring texture = material->texture;
-	if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
+	sMaterial& mat = *material;
+	renderer.SetMaterial(mat.ambient, mat.diffuse, mat.specular, mat.shininess);
+	if (!replaceTextures && !teamcolor)
 	{
-		texture = replaceTextures->at(texture);
+		if (!mat.texturePtr)
+		{
+			mat.texturePtr = renderer.GetTexturePtr(mat.texture);
+		}
+		mat.texturePtr->Bind();
 	}
-	renderer.SetTexture(texture, teamcolor);
-	renderer.SetTexture(material->specularMap, TextureSlot::eSpecular);
-	renderer.SetTexture(material->bumpMap, TextureSlot::eBump);
+	else 
+	{
+		std::wstring texture = material->texture;
+		if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
+		{
+			texture = replaceTextures->at(texture);
+		}
+		renderer.SetTexture(texture, teamcolor);
+	}
+	if (!mat.specularMap.empty()) renderer.SetTexture(mat.specularMap, TextureSlot::eSpecular);
+	if (!mat.bumpMap.empty()) renderer.SetTexture(mat.bumpMap, TextureSlot::eBump);
 }
 
 void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer,
@@ -75,31 +96,20 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	renderer.Scale(m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{
-		size_t begin = 0;
-		size_t end;
+		sMaterial * material = nullptr;
 		for (size_t i = 0; i < m_meshes.size(); ++i)
 		{
-			if (hideMeshes && hideMeshes->find(m_meshes[i].name) != hideMeshes->end())
-			{
-				end = m_meshes[i].polygonIndex;
-				vertexBuffer.DrawIndexes(begin, end - begin);
-				if (!vertexOnly) SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
-				begin = (i + 1 == m_meshes.size()) ? m_count : m_meshes[i + 1].polygonIndex;
-				continue;
-			}
-			if (vertexOnly || (i > 0 && m_meshes[i].materialName == m_meshes[i - 1].materialName))
+			sMesh& mesh = m_meshes[i];
+			if (hideMeshes && hideMeshes->find(mesh.name) != hideMeshes->end())
 			{
 				continue;
 			}
-			end = m_meshes[i].polygonIndex;
-			vertexBuffer.DrawIndexes(begin, end - begin);
-			if (!vertexOnly) SetMaterial(renderer, m_materials.GetMaterial(m_meshes[i].materialName), teamcolor, replaceTextures);
-			begin = end;
-		}
-		end = m_count;
-		if (begin != end)
-		{
-			vertexBuffer.DrawIndexes(begin, end - begin);
+			if (!vertexOnly && mesh.material != material)
+			{
+				material = mesh.material;
+				SetMaterial(renderer, material, teamcolor, replaceTextures);
+			}
+			vertexBuffer.DrawIndexes(mesh.begin, mesh.end - mesh.begin);
 		}
 	}
 	else //Draw in a row
@@ -114,14 +124,16 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 		shaderManager.DisableVertexAttribute("weightIndices", 1, &idef);
 	}
 	vertexBuffer.UnBind();
-	sMaterial empty;
-	SetMaterial(renderer, &empty, nullptr);
 	renderer.PopMatrix();
 }
 
 //GPU skinning is limited to 4 weights per vertex (no more, no less). So we will add some empty weights if there is less or delete exceeding if there is more
-void C3DModel::CalculateGPUWeights()
+void C3DModel::CalculateGPUWeights(IRenderer & renderer)
 {
+	std::vector<int> gpuWeightIndexes;
+	std::vector<float> gpuWeight;
+	gpuWeightIndexes.reserve(m_weightsCount.size() * 4);
+	gpuWeight.reserve(m_weightsCount.size() * 4);
 	unsigned int k = 0;
 	for (size_t i = 0; i < m_weightsCount.size(); ++i)
 	{
@@ -131,21 +143,23 @@ void C3DModel::CalculateGPUWeights()
 		{
 			if (j < 4)
 			{
-				m_gpuWeight.push_back(m_weights[k]);
-				m_gpuWeightIndexes.push_back(m_weightsIndexes[k]);
+				gpuWeight.push_back(m_weights[k]);
+				gpuWeightIndexes.push_back(m_weightsIndexes[k]);
 			}
 			sum += m_weights[k];
 		}
 		for (; j < 4; ++j)
 		{
-			m_gpuWeight.push_back(0.0f);
-			m_gpuWeightIndexes.push_back(0);
+			gpuWeight.push_back(0.0f);
+			gpuWeightIndexes.push_back(0);
 		}
 		for (j = 0; j < 4; ++j)
 		{
-			m_gpuWeight[i * 4 + j] /= sum;
+			gpuWeight[i * 4 + j] /= sum;
 		}
 	}
+	m_weightsCache = renderer.GetShaderManager().CreateVertexAttribCache(4, gpuWeight.size() / 4, gpuWeight.data());
+	m_weightIndiciesCache = renderer.GetShaderManager().CreateVertexAttribCache(4, gpuWeightIndexes.size() / 4, gpuWeightIndexes.data());
 }
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
@@ -296,11 +310,9 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);
 	if (gpuSkinning)
 	{
-		if (m_gpuWeight.empty())
+		if (!m_weightsCache)
 		{
-			CalculateGPUWeights();
-			m_weightsCache = renderer.GetShaderManager().CreateVertexAttribCache(4, m_gpuWeight.size() / 4, m_gpuWeight.data());
-			m_weightIndiciesCache = renderer.GetShaderManager().CreateVertexAttribCache(4, m_gpuWeightIndexes.size() / 4, m_gpuWeightIndexes.data());
+			CalculateGPUWeights(renderer);
 		}
 		renderer.GetShaderManager().SetUniformValue("joints", 16, m_skeleton.size(), jointMatrices.data());
 		DrawModel(renderer, hideMeshes, vertexOnly, *m_vertexBuffer, true, teamcolor, replaceTextures);
@@ -345,30 +357,19 @@ void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool
 		m_vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
 	}
 
-	sModelCallListKey key;
-	if (object)
-	{
-		key.hiddenMeshes = object->GetHiddenMeshes();
-		key.teamcolor = object->GetTeamColor();
-		key.replaceTextures = object->GetReplaceTextures();
-	}
-	key.vertexOnly = vertexOnly;
+	auto* hiddenMeshes = (object && !object->GetHiddenMeshes().empty()) ? &object->GetHiddenMeshes() : nullptr;
+	auto* teamcolor = (object && !object->GetTeamColor().empty()) ? &object->GetTeamColor() : nullptr;
+	auto* replaceTextures = (object && !object->GetReplaceTextures().empty()) ? &object->GetReplaceTextures() : nullptr;
 	if (!m_weightsCount.empty() && object)//object needs to be skinned
 	{
 		if (object->GetAnimation().empty())//no animation is playing, default pose
 		{
-			if (m_lists.find(key) == m_lists.end())
-			{
-				m_lists[key] = renderer.CreateDrawingList([&] {
-					DrawSkinned(renderer, &key.hiddenMeshes, vertexOnly, "", eAnimationLoopMode::NONLOOPING, 0.0f, gpuSkinning, &key.teamcolor, &key.replaceTextures);
-				});
-			}
-			m_lists.at(key)->Draw();
+			DrawSkinned(renderer, hiddenMeshes, vertexOnly, "", eAnimationLoopMode::NONLOOPING, 0.0f, gpuSkinning, teamcolor, replaceTextures);
 		}
 		else//animation is playing, full computation
 		{
-			if (DrawSkinned(renderer, &key.hiddenMeshes, vertexOnly, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(), 
-				gpuSkinning, &key.teamcolor, &key.replaceTextures))
+			if (DrawSkinned(renderer, hiddenMeshes, vertexOnly, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(),
+				gpuSkinning, teamcolor, replaceTextures))
 			{
 				object->PlayAnimation("");
 			}
@@ -376,13 +377,7 @@ void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool
 	}
 	else//static object
 	{
-		if (m_lists.find(key) == m_lists.end())
-		{
-			m_lists[key] = renderer.CreateDrawingList([&] {
-				DrawModel(renderer, &key.hiddenMeshes, vertexOnly, *m_vertexBuffer, false, &key.teamcolor, &key.replaceTextures);
-			});
-		}
-		m_lists.at(key)->Draw();
+		DrawModel(renderer, hiddenMeshes, vertexOnly, *m_vertexBuffer, false, teamcolor, replaceTextures);
 	}
 }
 
@@ -390,8 +385,8 @@ void C3DModel::PreloadTextures(IRenderer & renderer) const
 {
 	for (size_t i = 0; i < m_meshes.size(); ++i)
 	{
-		if (!m_materials.GetMaterial(m_meshes[i].materialName)) continue;
-		renderer.SetTexture(m_materials.GetMaterial(m_meshes[i].materialName)->texture);
+		if (m_meshes[i].material) continue;
+		renderer.SetTexture(m_meshes[i].material->texture);
 	}
 }
 
@@ -403,15 +398,4 @@ std::vector<std::string> C3DModel::GetAnimations() const
 		result.push_back(m_animations[i].id);
 	}
 	return result;
-}
-
-bool operator< (sModelCallListKey const& one, sModelCallListKey const& two) 
-{ 
-	if (one.hiddenMeshes < two.hiddenMeshes) return true;
-	if (one.hiddenMeshes > two.hiddenMeshes) return false;
-	if (one.teamcolor < two.teamcolor) return true;
-	if (one.teamcolor > two.teamcolor) return false;
-	if (one.replaceTextures < two.replaceTextures) return true;
-	if (one.replaceTextures > two.replaceTextures) return false;
-	return one.vertexOnly < two.vertexOnly;
 }

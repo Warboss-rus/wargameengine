@@ -9,10 +9,10 @@
 struct sLightSource
 {
 	float pos[3] = { 0.0f, 0.0f, 0.0f };
-	int enabled = 0;
 	float diffuse[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	bool enabled = 0;
 };
 
 class CDirectXRenderer : public IViewHelper
@@ -46,6 +46,7 @@ public:
 
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
+	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 
@@ -117,6 +118,7 @@ private:
 
 	std::vector<sLightSource> m_lightSources;
 	std::vector<DirectX::XMFLOAT4X4> m_viewMatrices;
+	DirectX::XMFLOAT4X4* m_viewMatrix;
 	DirectX::XMFLOAT4X4 m_projectionMatrix;
 	float m_anisotropyLevel = 0.0f;
 };
