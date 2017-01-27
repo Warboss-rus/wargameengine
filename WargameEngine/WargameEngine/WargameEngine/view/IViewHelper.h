@@ -11,13 +11,6 @@ public:
 	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) = 0;
 };
 
-enum class LightningType
-{
-	DIFFUSE,
-	AMBIENT,
-	SPECULAR
-};
-
 class CTextureManager;
 class IViewport;
 
@@ -27,9 +20,8 @@ public:
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const = 0;
 	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const = 0;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const = 0;
-	virtual void EnableLight(size_t index, bool enable) = 0;
-	virtual void SetLightColor(size_t index, LightningType type, float * values) = 0;
-	virtual void SetLightPosition(size_t index, float* pos) = 0;
+	virtual void SetNumberOfLights(size_t count) = 0;
+	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) = 0;
 	virtual float GetMaximumAnisotropyLevel() const = 0;
 	virtual void GetProjectionMatrix(float * matrix) const = 0;
 	virtual void EnableDepthTest(bool enable) = 0;

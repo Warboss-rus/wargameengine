@@ -12,7 +12,6 @@ attribute vec4 Position;\n\
 attribute vec3 Normal;\n\
 attribute vec2 TexCoord;\n\
 uniform mat4 mvp_matrix;\n\
-uniform vec3 color;\n\
 varying vec2 v_texcoord;\n\
 void main()\n\
 {\n\
@@ -21,7 +20,6 @@ void main()\n\
 }";
 static const std::string defaultFragmentShader = "\
 precision mediump float;\
-uniform mat4 mvp_matrix;\n\
 uniform vec4 color;\n\
 uniform sampler2D mainTexture;\n\
 varying vec2 v_texcoord;\n\
@@ -34,7 +32,7 @@ void main()\n\
 class COpenGLESShaderProgram : public IShaderProgram
 {
 public:
-	unsigned program;
+	unsigned int program;
 };
 
 class COpenGLESVertexAttribCache : public IVertexAttribCache
@@ -68,8 +66,12 @@ private:
 	const GLenum m_format;
 };
 
-CShaderManagerOpenGLES::CShaderManagerOpenGLES()
+CShaderManagerOpenGLES::~CShaderManagerOpenGLES()
 {
+	for (auto& buf : m_vertexAttribBuffers)
+	{
+		glDeleteBuffers(1, &buf.second);
+	}
 }
 
 void CShaderManagerOpenGLES::PushProgram(IShaderProgram const& program) const
@@ -107,7 +109,7 @@ GLuint CompileShader(std::string const& shaderText, GLuint program, GLenum type)
 	return shader;
 }
 
-GLuint ComplieShaderFromFile(std::wstring const& path, GLuint program, GLenum type)
+GLuint CompileShaderFromFile(std::wstring const& path, GLuint program, GLenum type)
 {
 	std::string shaderText;
 	std::string line;
@@ -126,8 +128,8 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 	std::unique_ptr<COpenGLESShaderProgram> program = std::make_unique<COpenGLESShaderProgram>();
 	program->program = glCreateProgram();
 	GLuint vertexShader(0), framgentShader(0);
-	vertexShader = vertex.empty() ? CompileShader(defaultVertexShader, program->program, GL_VERTEX_SHADER) : ComplieShaderFromFile(vertex, program->program, GL_VERTEX_SHADER);
-	framgentShader = fragment.empty() ? CompileShader(defaultFragmentShader, program->program, GL_FRAGMENT_SHADER) : ComplieShaderFromFile(fragment, program->program, GL_FRAGMENT_SHADER);
+	vertexShader = vertex.empty() ? CompileShader(defaultVertexShader, program->program, GL_VERTEX_SHADER) : CompileShaderFromFile(vertex, program->program, GL_VERTEX_SHADER);
+	framgentShader = fragment.empty() ? CompileShader(defaultFragmentShader, program->program, GL_FRAGMENT_SHADER): CompileShaderFromFile(fragment, program->program, GL_FRAGMENT_SHADER);
 	if(!geometry.empty())
 	{
 		LogWriter::WriteLine("Geomerty shaders are not supported in openGL ES");
@@ -157,21 +159,18 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 	glDeleteShader(framgentShader);
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	glVertexAttrib4fv(glGetAttribLocation(program->program, "weights"), def);
-
 	if (!m_programs.empty())
 	{
 		glUseProgram(m_activeProgram);
 	}
 
-	m_positionLocation = glGetAttribLocation(program->program, "Position");
-	m_normalsLocation = glGetAttribLocation(program->program, "Normal");
-	m_texCoordLocation = glGetAttribLocation(program->program, "TexCoord");
 	return std::move(program);
 }
 
 void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const
 {
 	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
@@ -197,6 +196,7 @@ void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int ele
 void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const
 {
 	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
@@ -219,6 +219,7 @@ void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int ele
 void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const
 {
 	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
@@ -253,14 +254,34 @@ std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGLES::CreateVertexAttribCa
 	return std::make_unique<COpenGLESVertexAttribCache>(elementSize, count, value, GL_UNSIGNED_INT);
 }
 
+void CShaderManagerOpenGLES::DoOnProgramChange(std::function<void()> const& handler)
+{
+	m_onProgramChange = handler;
+}
+
 void CShaderManagerOpenGLES::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
 {
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
-	glEnableVertexAttribArray(index);
-	if (format == GL_FLOAT)
-		glVertexAttribPointer(index, elementSize, format, false, 0, values);
+	if (index == -1) return;
+	if (!values)
+	{
+		glDisableVertexAttribArray(index);
+		return;
+	}
+	if (m_vertexAttribBuffers.find(attribute) == m_vertexAttribBuffers.end())
+	{
+		unsigned int buffer;
+		glGenBuffers(1, &buffer);
+		m_vertexAttribBuffers.emplace(std::make_pair(attribute, buffer));
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, m_vertexAttribBuffers.at(attribute));
+	glBufferData(GL_ARRAY_BUFFER, elementSize * count * sizeof(float), values, GL_DYNAMIC_DRAW);
+
+	if(format == GL_FLOAT)
+		glVertexAttribPointer(index, elementSize, format, GL_FALSE, 0, NULL);
 	else
-		glVertexAttribIPointer(index, elementSize, format, 0, values);
+		glVertexAttribIPointer(index, elementSize, format, 0, NULL);
+	glEnableVertexAttribArray(index);
 	if (perInstance) glVertexAttribDivisor(index, 1);
 }
 
@@ -283,13 +304,23 @@ void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IV
 {
 	auto& glCache = reinterpret_cast<COpenGLESVertexAttribCache const&>(cache);
 	glCache.Bind();
-	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, NULL, perInstance, glCache.GetFormat());
+	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
+	if (index != -1)
+	{
+		if (glCache.GetFormat() == GL_FLOAT)
+			glVertexAttribPointer(index, glCache.GetElementSize(), glCache.GetFormat(), GL_FALSE, 0, NULL);
+		else
+			glVertexAttribIPointer(index, glCache.GetElementSize(), glCache.GetFormat(), 0, NULL);
+		glEnableVertexAttribArray(index);
+		if (perInstance) glVertexAttribDivisor(index, 1);
+	}
 	glCache.UnBind();
 }
 
 void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* defaultValue) const
 {
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
+	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttrib4fv(index, defaultValue);
 }
@@ -297,6 +328,7 @@ void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute
 void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, const int* defaultValue) const
 {
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
+	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttribI4iv(index, defaultValue);
 }
@@ -304,11 +336,7 @@ void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute
 void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute, int /*size*/, const unsigned int* defaultValue) const
 {
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
+	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttribI4uiv(index, defaultValue);
-}
-
-void CShaderManagerOpenGLES::DoOnProgramChange(std::function<void()> const& handler)
-{
-	m_onProgramChange = handler;
 }

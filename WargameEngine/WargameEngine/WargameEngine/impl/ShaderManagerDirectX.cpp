@@ -35,7 +35,7 @@ cbuffer Constant \
 };\
 cbuffer VertexConstant\
 {\
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;\
+	matrix mvp_matrix : WORLDVIEWPROJECTION;\
 };\
 struct PixelInputType\
 {\
@@ -49,7 +49,7 @@ SamplerState SampleType;\
 PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL)\
 {\
 	PixelInputType result;\
-	result.position = mul(float4(Pos, 1.0f), WorldViewProjection);\
+	result.position = mul(float4(Pos, 1.0f), mvp_matrix);\
 	result.tex = texCoords;\
 	return result;\
 }\
@@ -196,7 +196,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(std::wstring c
 		CComPtr<ID3D10Blob> PS, GS;
 		CompileShader(vertex, "VShader", "vs_4_0", defaultShader, &program.m_VS);
 		CompileShader(fragment, "PShader", "ps_4_0", defaultShader, &PS);
-		CompileShader(geometry, "GShader", "gs_4_0", "", &GS);
+		if(!geometry.empty()) CompileShader(geometry, "GShader", "gs_4_0", "", &GS);
 
 		if (program.m_VS)
 		{
@@ -444,38 +444,6 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 		it = m_inputLayouts.emplace(std::make_pair(key, std::move(pLayout))).first;
 	}
 	m_render->GetContext()->IASetInputLayout(it->second);
-}
-
-void CShaderManagerDirectX::SetMatrices(float * modelView, float * projection)
-{
-	static const std::string mvpMatrixKey = "WorldViewProjection";
-	static const std::string viewMatrixKey = "WorldView";
-	auto buffer = FindBuffer(mvpMatrixKey);
-	DirectX::XMFLOAT4X4 fmatrix;
-	if (buffer)
-	{
-		auto it = buffer->m_variableOffsets.find(mvpMatrixKey);
-		if (it != buffer->m_variableOffsets.end())
-		{
-			DirectX::XMMATRIX matrix = DirectX::XMMatrixMultiply(DirectX::XMMATRIX(modelView), DirectX::XMMATRIX(projection));
-			matrix = DirectX::XMMatrixTranspose(matrix);
-			DirectX::XMStoreFloat4x4(&fmatrix, matrix);
-			CopyConstantBufferData(*buffer, it->second, *fmatrix.m, sizeof(float) * 16);
-		}
-	}
-
-	buffer = FindBuffer(viewMatrixKey);
-	if (buffer)
-	{
-		auto it = buffer->m_variableOffsets.find(viewMatrixKey);
-		if (it != buffer->m_variableOffsets.end())
-		{
-			DirectX::XMMATRIX matrix = DirectX::XMMATRIX(modelView);
-			matrix = DirectX::XMMatrixTranspose(matrix);
-			DirectX::XMStoreFloat4x4(&fmatrix, matrix);
-			CopyConstantBufferData(*buffer, it->second, *fmatrix.m, sizeof(float) * 16);
-		}
-	}
 }
 
 void CShaderManagerDirectX::SetColor(const float * color)

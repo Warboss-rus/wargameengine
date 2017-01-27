@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <limits.h>
 #include "IShaderManager.h"
 #include "../model/TeamColor.h"
 
@@ -77,7 +78,6 @@ public:
 	virtual void Rotate(const double angle, const double x, const double y, const double z) = 0;
 	virtual void Scale(const double scale) = 0;
 	virtual void GetViewMatrix(float * matrix) const = 0;
-	virtual void ResetViewMatrix() = 0;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) = 0;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) = 0;

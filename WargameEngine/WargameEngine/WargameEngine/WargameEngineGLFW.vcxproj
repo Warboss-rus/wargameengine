@@ -96,31 +96,31 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
     <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

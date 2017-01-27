@@ -38,7 +38,6 @@ public:
 	virtual void SetUpShadowMap() const override;
 	virtual IViewport* GetShadowViewport() const override { return m_shadowMapViewport; }
 protected:
-
 	std::unique_ptr<ICamera> m_camera;
 	int m_x;
 	int m_y;
@@ -46,8 +45,8 @@ protected:
 	int m_height;
 	float m_fieldOfView;
 	IViewHelper & m_renderer;
-	Matrix4F m_projectionMatrix;
-	Matrix4F m_viewMatrix;
+	float m_projectionMatrix[16];
+	float m_viewMatrix[16];
 	float m_polygonOffsetFactor = 0.0f;
 	float m_polygonOffsetUnits = 0.0f;
 	float m_nearPane = 1.0f;

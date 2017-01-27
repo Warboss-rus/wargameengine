@@ -562,5 +562,8 @@
     <ClInclude Include="view\ViewportBase.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="model\Light.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

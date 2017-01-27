@@ -9,7 +9,7 @@
 #include "CommandPlayAnimation.h"
 #include "CommandGoTo.h"
 #include "CommandCompound.h"
-#include "..\IMemoryStream.h"
+#include "../IMemoryStream.h"
 
 void CCommandHandler::AddNewCommand(std::unique_ptr<ICommand> && command, bool local)
 {

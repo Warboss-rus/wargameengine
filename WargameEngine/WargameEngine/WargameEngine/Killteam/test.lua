@@ -179,6 +179,7 @@ function VR()
 	EnableVR(true, true)
 end
 
+AddLight()
 SetLightPosition(1, 0, 0, 30)
 --EnableShadowMap(1024, 53)
 EnableMSAA()

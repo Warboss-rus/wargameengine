@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include "ParticleModel.h"
-#include "..\model\Particle.h"
+#include "../model/Particle.h"
 
 class IRenderer;
 class IShaderProgram;

@@ -1,14 +1,13 @@
 #include "OpenGLESRenderer.h"
 #include "../LogWriter.h"
 #include "../view/TextureManager.h"
-#include "ShaderManagerOpenGLES.h"
 #include "../Utils.h"
 #include "../view/Matrix4.h"
 #include "../view/IViewport.h"
 #include <GLES2/gl2ext.h>//GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, GL_BGRA_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT
 #include <GLES3/gl3.h>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
 
@@ -19,11 +18,11 @@ static const std::string NORMAL_KEY = "Normal";
 static const std::string TEXCOORD_KEY = "TexCoord";
 }
 
-class COpenGlCachedTexture : public ICachedTexture
+class COpenGLESCachedTexture : public ICachedTexture
 {
 public:
-	COpenGlCachedTexture();
-	~COpenGlCachedTexture();
+	COpenGLESCachedTexture();
+	~COpenGLESCachedTexture();
 
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
@@ -33,21 +32,21 @@ private:
 	unsigned int m_id;
 };
 
-class COpenGLDrawingList : public IDrawingList
+class CMockDrawingList : public IDrawingList
 {
 public:
-	COpenGLDrawingList(std::function<void()> const& onDraw);
+	CMockDrawingList(std::function<void()> const& onDraw);
 
 	virtual void Draw() const override;
 private:
 	std::function<void()> m_onDraw;
 };
 
-class COpenGLVertexBuffer : public IVertexBuffer
+class COpenGLESVertexBuffer : public IVertexBuffer
 {
 public:
-	COpenGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false);
-	~COpenGLVertexBuffer();
+	COpenGLESVertexBuffer(CShaderManagerOpenGLES & shaderMan, const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = true, GLuint mainVAO = 0);
+	~COpenGLESVertexBuffer();
 	virtual void Bind() const override;
 	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
 	virtual void DrawIndexes(size_t begin, size_t count) override;
@@ -55,14 +54,16 @@ public:
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
 private:
-	const float * m_vertex = nullptr;
-	const float * m_normals = nullptr;
-	const float * m_texCoords = nullptr;
-	unsigned int* m_indexes = nullptr;
-	GLuint m_vertexBuffer = 0;
-	GLuint m_normalsBuffer = 0;
-	GLuint m_texCoordBuffer = 0;
+	void CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName);
+	CShaderManagerOpenGLES & m_shaderMan;
+	GLuint m_vao = 0;
+	GLuint m_mainVAO = 0;
 	GLuint m_indexesBuffer = 0;
+	std::vector<std::unique_ptr<IVertexAttribCache>> m_buffers;
+	const float * m_vertex;
+	const float * m_normals;
+	const float * m_texCoords;
+	size_t m_vertexCount;
 };
 
 class COpenGLESFrameBuffer : public IFrameBuffer
@@ -82,7 +83,7 @@ class COpenGLESOcclusionQuery : public IOcclusionQuery
 public:
 	COpenGLESOcclusionQuery()
 	{
-		glGenQueries(1, &m_id);
+		
 	}
 	~COpenGLESOcclusionQuery()
 	{
@@ -90,6 +91,10 @@ public:
 	}
 	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override
 	{
+		if (!m_id)
+		{
+			glGenQueries(1, &m_id);
+		}
 		if (!renderToScreen)
 		{
 			glDepthMask(GL_FALSE);
@@ -109,11 +114,9 @@ public:
 	{
 		GLuint result = 0;
 		glGetQueryObjectuiv(m_id, GL_QUERY_RESULT_AVAILABLE, &result);
-		int err = glGetError();
 		if (result != 0)
 		{
 			glGetQueryObjectuiv(m_id, GL_QUERY_RESULT, &result);
-			err = glGetError();
 			return result != 0;
 		}
 		return true;
@@ -122,8 +125,6 @@ private:
 	GLuint m_id = 0;
 };
 
-static const float emptyColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
 {
 	if (forceLoadNow)
@@ -131,25 +132,22 @@ void COpenGLESRenderer::SetTexture(std::wstring const& texture, bool forceLoadNo
 		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
 	m_textureManager->SetTexture(texture, nullptr, flags);
-	SetColor(emptyColor);
 }
 
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, slot, flags);
-	SetColor(emptyColor);
 }
 
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, teamcolor, flags);
-	SetColor(emptyColor);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::TRIANGLES, GL_TRIANGLES },
 	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::RECTANGLES, GL_TRIANGLE_STRIP },
+	{ RenderMode::RECTANGLES, GL_TRIANGLE_STRIP },//deprecated
 	{ RenderMode::LINES, GL_LINES },
 	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
 };
@@ -157,8 +155,8 @@ static const map<RenderMode, GLenum> renderModeMap = {
 COpenGLESRenderer::COpenGLESRenderer()
 	: m_textureManager(nullptr), m_version(3)
 {
-	m_viewMatrices.push_back(glm::mat4());
-	m_viewMatrix = &m_viewMatrices.back();
+	m_modelMatrices.push_back(glm::mat4());
+	m_modelMatrix = &m_modelMatrices.back();
 	m_shaderManager.DoOnProgramChange([this]() {
 		UpdateUniforms();
 	});
@@ -167,47 +165,29 @@ COpenGLESRenderer::COpenGLESRenderer()
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
 	m_shaderManager.SetVertexAttribute(POSITION_KEY, 3, vertices.size(), (float*)&vertices[0].x);
-	if (!normals.empty()) m_shaderManager.SetVertexAttribute(NORMAL_KEY, 3, normals.size(), (float*)&normals[0].x);
-	if (!texCoords.empty()) m_shaderManager.SetVertexAttribute(TEXCOORD_KEY, 2, texCoords.size(), (float*)&texCoords[0].x);
+	m_shaderManager.SetVertexAttribute(NORMAL_KEY, 3, normals.size(), normals.empty() ? nullptr : (float*)normals.data());
+	m_shaderManager.SetVertexAttribute(TEXCOORD_KEY, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data());
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_shaderManager.DisableVertexAttribute(POSITION_KEY, 3, def);
-	m_shaderManager.DisableVertexAttribute(NORMAL_KEY, 3, def);
-	m_shaderManager.DisableVertexAttribute(TEXCOORD_KEY, 2, def);
-}
-
-std::vector<float> TransformDoubleToFloat(const void * data, size_t count)
-{
-	double * ddata = (double*)data;
-	std::vector<float> result;
-	result.reserve(count);
-	for (size_t i = 0; i < count; ++i)
-	{
-		result.push_back(ddata[i]);
-	}
-	return result;
 }
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
 	m_shaderManager.SetVertexAttribute(POSITION_KEY, 2, vertices.size(), (int*)&vertices[0].x);
-	if(!texCoords.empty()) m_shaderManager.SetVertexAttribute(TEXCOORD_KEY, 2, texCoords.size(), (float*)&texCoords[0].x);
+	m_shaderManager.SetVertexAttribute(NORMAL_KEY, 3, 0, (float*)nullptr, false);
+	m_shaderManager.SetVertexAttribute(TEXCOORD_KEY, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data());
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	float def[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	m_shaderManager.DisableVertexAttribute(POSITION_KEY, 3, def);
-	m_shaderManager.DisableVertexAttribute(TEXCOORD_KEY, 2, def);
 }
 
 void COpenGLESRenderer::PushMatrix()
 {
-	m_viewMatrices.push_back(*m_viewMatrix);
-	m_viewMatrix = &m_viewMatrices.back();
+	m_modelMatrices.push_back(*m_modelMatrix);
+	m_modelMatrix = &m_modelMatrices.back();
 }
 
 void COpenGLESRenderer::PopMatrix()
 {
-	m_viewMatrices.pop_back();
-	m_viewMatrix = &m_viewMatrices.back();
+	m_modelMatrices.pop_back();
+	m_modelMatrix = &m_modelMatrices.back();
 	UpdateUniforms();
 }
 
@@ -223,36 +203,43 @@ void COpenGLESRenderer::Translate(const double dx, const double dy, const double
 
 void COpenGLESRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	*m_viewMatrix = glm::translate(*m_viewMatrix, glm::vec3(dx, dy, dz));
+	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
+	*m_modelMatrix = glm::translate(*m_modelMatrix, glm::vec3(dx, dy, dz));
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Scale(double scale)
 {
-	*m_viewMatrix = glm::scale(*m_viewMatrix, glm::vec3(static_cast<float>(scale), static_cast<float>(scale), static_cast<float>(scale)));
+	if (fabs(scale - 1.0) < DBL_EPSILON) return;
+	float fscale = static_cast<float>(scale);
+	*m_modelMatrix = glm::scale(*m_modelMatrix, glm::vec3(fscale, fscale, fscale));
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::Rotate(double angle, double x, double y, double z)
 {
-	*m_viewMatrix = glm::rotate(*m_viewMatrix, (float)angle, glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+	if (fabs(angle) < DBL_EPSILON) return;
+	*m_modelMatrix = glm::rotate(*m_modelMatrix, static_cast<float>(angle * M_PI / 180), glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::GetViewMatrix(float * matrix) const
 {
-	memcpy(matrix, glm::value_ptr(*m_viewMatrix), sizeof(Matrix4F));
+	glm::mat4 modelView = m_viewMatrix * *m_modelMatrix;
+	memcpy(matrix, glm::value_ptr(modelView), sizeof(Matrix4F));
 }
 
 void COpenGLESRenderer::ResetViewMatrix()
 {
-	*m_viewMatrix = glm::mat4();
+	*m_modelMatrix = glm::mat4();
+	m_viewMatrix = glm::mat4();
 	UpdateUniforms();
 }
 
 void COpenGLESRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	*m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	*m_modelMatrix = glm::mat4();
 	UpdateUniforms();
 }
 
@@ -262,14 +249,9 @@ void COpenGLESRenderer::SetColor(const float r, const float g, const float b, co
 	SetColor(color);
 }
 
-float ToFloat(int color)
-{
-	return static_cast<float>(color) / UCHAR_MAX;
-}
-
 void COpenGLESRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
-	float color[] = { ToFloat(r), ToFloat(g), ToFloat(b), ToFloat(a) };
+	int color[] = { r, g, b, a };
 	SetColor(color);
 }
 
@@ -282,7 +264,8 @@ void COpenGLESRenderer::SetColor(const float * color)
 
 void COpenGLESRenderer::SetColor(const int * color)
 {
-	float fcolor[] = { ToFloat(color[0]), ToFloat(color[1]), ToFloat(color[2]), 1.0f };
+	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
+	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), 1.0f };
 	SetColor(fcolor);
 }
 
@@ -291,7 +274,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	//set up texture
 	GLint prevTexture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
-	auto texture = std::make_unique<COpenGlCachedTexture>();
+	auto texture = std::make_unique<COpenGLESCachedTexture>();
 	texture->Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -316,6 +299,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	glGetIntegerv(GL_VIEWPORT, oldViewport);
 	glViewport(0, 0, width, height);
 	glm::mat4 oldProjection = m_projectionMatrix;
+	auto oldView = m_viewMatrix;
 	m_projectionMatrix = glm::ortho<float>(0, width, 0, height);
 	PushMatrix();
 	ResetViewMatrix();
@@ -324,6 +308,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	func();
 
 	m_projectionMatrix = oldProjection;
+	m_viewMatrix = oldView;
 	PopMatrix();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 
@@ -340,7 +325,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * da
 		{ CachedTextureType::ALPHA, GL_ALPHA },
 		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
 	};
-	auto texture = std::make_unique<COpenGlCachedTexture>();
+	auto texture = std::make_unique<COpenGLESCachedTexture>();
 	texture->Bind();
 	glTexImage2D(GL_TEXTURE_2D, 0, typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -362,12 +347,12 @@ ICachedTexture* COpenGLESRenderer::GetTexturePtr(std::wstring const& texture) co
 
 std::unique_ptr<IDrawingList> COpenGLESRenderer::CreateDrawingList(std::function<void() > const& func)
 {
-	return std::make_unique<COpenGLDrawingList>(func);
+	return std::make_unique<CMockDrawingList>(func);
 }
 
 std::unique_ptr<IVertexBuffer> COpenGLESRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
-	return std::make_unique<COpenGLVertexBuffer>(vertex, normals, texcoords, size, temp);
+	return std::make_unique<COpenGLESVertexBuffer>(m_shaderManager, vertex, normals, texcoords, size, temp, m_vao);
 }
 
 std::unique_ptr<IFrameBuffer> COpenGLESRenderer::CreateFramebuffer() const
@@ -392,206 +377,186 @@ void COpenGLESRenderer::SetTextureManager(CTextureManager & textureManager)
 
 void COpenGLESRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
-	/*glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialf(GL_FRONT, GL_SHININESS, shininess);*/
+	static const std::string ambientKey = "material.ambient";
+	static const std::string diffuseKey = "material.diffuse";
+	static const std::string specularKey = "material.specular";
+	static const std::string shininessKey = "material.shininess";
+	m_shaderManager.SetUniformValue(ambientKey, 4, 1, ambient);
+	m_shaderManager.SetUniformValue(diffuseKey, 4, 1, diffuse);
+	m_shaderManager.SetUniformValue(specularKey, 4, 1, specular);
+	m_shaderManager.SetUniformValue(shininessKey, 1, 1, &shininess);
 }
 
-COpenGlCachedTexture::COpenGlCachedTexture()
+COpenGLESCachedTexture::COpenGLESCachedTexture()
 {
 	glGenTextures(1, &m_id);
 }
 
-COpenGlCachedTexture::~COpenGlCachedTexture()
+COpenGLESCachedTexture::~COpenGLESCachedTexture()
 {
 	glDeleteTextures(1, &m_id);
 }
 
-void COpenGlCachedTexture::Bind() const
+void COpenGLESCachedTexture::Bind() const
 {
 	glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
-void COpenGlCachedTexture::UnBind() const
+void COpenGLESCachedTexture::UnBind() const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-COpenGlCachedTexture::operator unsigned int()
+COpenGLESCachedTexture::operator unsigned int()
 {
 	return m_id;
 }
 
-COpenGLDrawingList::COpenGLDrawingList(std::function<void()> const& onDraw)
+CMockDrawingList::CMockDrawingList(std::function<void()> const& onDraw)
 	:m_onDraw(onDraw)
 {
 }
 
-void COpenGLDrawingList::Draw() const
+void CMockDrawingList::Draw() const
 {
 	m_onDraw();
 }
 
-COpenGLVertexBuffer::COpenGLVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
+COpenGLESVertexBuffer::COpenGLESVertexBuffer(CShaderManagerOpenGLES & shaderMan, const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp, GLuint mainVAO)
+	: m_shaderMan(shaderMan)
+	, m_mainVAO(mainVAO)
 {
 	if (temp)
 	{
 		m_vertex = vertex;
 		m_normals = normals;
 		m_texCoords = texcoords;
+		m_vertexCount = size;
 	}
 	else
 	{
+		glGenVertexArrays(1, &m_vao);
+		glBindVertexArray(m_vao);
 		if (vertex)
 		{
-			glGenBuffers(1, &m_vertexBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-			glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float), vertex, GL_STATIC_DRAW);
+			CreateVBO(size, 3, vertex, POSITION_KEY);
 		}
 		if (normals)
 		{
-			glGenBuffers(1, &m_normalsBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
-			glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float), normals, GL_STATIC_DRAW);
+			CreateVBO(size, 3, normals, NORMAL_KEY);
 		}
 		if (texcoords)
 		{
-			glGenBuffers(1, &m_texCoordBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
-			glBufferData(GL_ARRAY_BUFFER, size * 2 * sizeof(float), texcoords, GL_STATIC_DRAW);
+			CreateVBO(size, 2, texcoords, TEXCOORD_KEY);
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		UnBind();
 	}
 }
 
-COpenGLVertexBuffer::~COpenGLVertexBuffer()
+void COpenGLESVertexBuffer::CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName)
+{
+	m_buffers.push_back(m_shaderMan.CreateVertexAttribCache(components, size, data));
+	m_shaderMan.SetVertexAttribute(attribName, *m_buffers.back());
+}
+
+COpenGLESVertexBuffer::~COpenGLESVertexBuffer()
 {
 	UnBind();
-	glDeleteBuffers(4, &m_vertexBuffer);
+	if(m_indexesBuffer) glDeleteBuffers(1, &m_indexesBuffer);
+	if(m_vao) glDeleteVertexArrays(1, &m_vao);
 }
 
-void COpenGLVertexBuffer::Bind() const
+void COpenGLESVertexBuffer::Bind() const
 {
-	GLint program;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-	if (m_vertex || m_vertexBuffer)
+	if (m_vao)
 	{
-		int index = glGetAttribLocation(program, POSITION_KEY.c_str());
-		if (m_vertexBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-		glEnableVertexAttribArray(index);
-		glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, 0, m_vertexBuffer ? 0 : m_vertex);
-	}
-	if (m_normals || m_normalsBuffer)
-	{
-		int index = glGetAttribLocation(program, NORMAL_KEY.c_str());
-		if (m_normalsBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_normalsBuffer);
-		glEnableVertexAttribArray(index);
-		glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, 0, m_normalsBuffer ? 0 : m_normals);
-	}
-	if (m_texCoords || m_texCoordBuffer)
-	{
-		int index = glGetAttribLocation(program, TEXCOORD_KEY.c_str());
-		if (m_texCoordBuffer) glBindBuffer(GL_ARRAY_BUFFER, m_texCoordBuffer);
-		glEnableVertexAttribArray(index);
-		glVertexAttribPointer(index, 2, GL_FLOAT, GL_FALSE, 0, m_texCoordBuffer ? 0 : m_texCoords);
-	}
-	if (m_indexesBuffer)
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
-	}
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
-{
-	if ((m_vertexBuffer || m_normalsBuffer || m_texCoordBuffer) && indexPtr)
-	{
-		glGenBuffers(1, &m_indexesBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindVertexArray(m_vao);
 	}
 	else
 	{
-		m_indexes = indexPtr;
+		m_shaderMan.SetVertexAttribute(POSITION_KEY, 3, m_vertexCount, m_vertex);
+		m_shaderMan.SetVertexAttribute(NORMAL_KEY, 3, m_vertexCount, m_normals);
+		m_shaderMan.SetVertexAttribute(TEXCOORD_KEY, 2, m_vertexCount, m_texCoords);
 	}
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
 }
 
-void COpenGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
+void COpenGLESVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
 {
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
+	glGenBuffers(1, &m_indexesBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void COpenGLVertexBuffer::DrawAll(size_t count)
+void COpenGLESVertexBuffer::DrawIndexes(size_t begin, size_t count)
+{
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
+}
+
+void COpenGLESVertexBuffer::DrawAll(size_t count)
 {
 	glDrawArrays(GL_TRIANGLES, 0, count);
 }
 
-void COpenGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
+void COpenGLESVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
 {
 	glDrawArraysInstanced(GL_TRIANGLES, 0, size, instanceCount);
 }
 
-void COpenGLVertexBuffer::UnBind() const
+void COpenGLESVertexBuffer::UnBind() const
 {
-	GLint program;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
-	glDisableVertexAttribArray(glGetAttribLocation(program, TEXCOORD_KEY.c_str()));
-	glDisableVertexAttribArray(glGetAttribLocation(program, NORMAL_KEY.c_str()));
-	glDisableVertexAttribArray(glGetAttribLocation(program, POSITION_KEY.c_str()));
+	if (m_vao)
+	{
+		glBindVertexArray(m_mainVAO);
+	}
+	else
+	{
+		CVector3f def;
+		m_shaderMan.DisableVertexAttribute(POSITION_KEY, 3, def);
+		m_shaderMan.DisableVertexAttribute(NORMAL_KEY, 3, def);
+		m_shaderMan.DisableVertexAttribute(TEXCOORD_KEY, 2, def);
+	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void COpenGLESRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const
 {
-	float viewportData[4] = { (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() };
+	glm::vec4 viewportData((float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight());
 	//Set OpenGL Windows coordinates
-	double winX = (double)x;
-	double winY = viewportData[3] - (double)y;
+	float winX = (float)x;
+	float winY = viewportData[3] - (float)y;
 
+	auto ToVector3f = [](glm::vec3 const& v)->CVector3f { return { v.x, v.y, v.z }; };
 	//Cast a ray from eye to mouse cursor;
-	auto ToVector3f = [](glm::vec3 const& src) {return CVector3f(src.x, src.y, src.z); };
-	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()),
-		glm::make_vec4(viewportData)));
-	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()),
-		glm::make_vec4(viewportData)));
+	glm::mat4 proj = glm::make_mat4(viewport.GetProjectionMatrix());
+	glm::mat4 view = glm::make_mat4(viewport.GetViewMatrix());
+	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), view, proj, viewportData));
+	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), view, proj, viewportData));
 }
 
 void COpenGLESRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
-	float viewportData[4] = { (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() };
-	auto windowPos = glm::project(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()), glm::make_vec4(viewportData));
+	glm::vec4 viewportData( (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() );
+	auto windowPos = glm::project(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()), viewportData);
 	x = static_cast<int>(windowPos.x);
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
 
-void COpenGLESRenderer::EnableLight(size_t index, bool enable)
+void COpenGLESRenderer::SetNumberOfLights(size_t count)
 {
-	/*if (enable)
-	{
-		glEnable(GL_LIGHT0 + index);
-	}
-	else
-	{
-		glDisable(GL_LIGHT0 + index);
-	}*/
+	static const std::string numberOfLightsKey = "lightsCount";
+	int number = static_cast<int>(count);
+	m_shaderManager.SetUniformValue(numberOfLightsKey, 1, 1, &number);
 }
 
-/*static const map<LightningType, GLenum> lightningTypesMap = {
-	{ LightningType::DIFFUSE, GL_DIFFUSE },
-	{ LightningType::AMBIENT, GL_AMBIENT },
-	{ LightningType::SPECULAR, GL_SPECULAR }
-};*/
-
-void COpenGLESRenderer::SetLightColor(size_t index, LightningType type, float * values)
+void COpenGLESRenderer::SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular)
 {
-	//glLightfv(GL_LIGHT0 + index, lightningTypesMap.at(type), values);
-}
-
-void COpenGLESRenderer::SetLightPosition(size_t index, float* pos)
-{
-	//glLightfv(GL_LIGHT0 + index, GL_POSITION, pos);
+	const std::string key = "lights[" + std::to_string(index) + "].";
+	m_shaderManager.SetUniformValue(key + "pos", 3, 1, position.ptr());
+	m_shaderManager.SetUniformValue(key + "ambient", 4, 1, ambient);
+	m_shaderManager.SetUniformValue(key + "diffuse", 4, 1, diffuse);
+	m_shaderManager.SetUniformValue(key + "specular", 4, 1, specular);
 }
 
 float COpenGLESRenderer::GetMaximumAnisotropyLevel() const
@@ -603,7 +568,7 @@ float COpenGLESRenderer::GetMaximumAnisotropyLevel() const
 
 void COpenGLESRenderer::GetProjectionMatrix(float * matrix) const
 {
-	memcpy(matrix, glm::value_ptr(m_projectionMatrix), sizeof(Matrix4F));
+	memcpy(matrix, glm::value_ptr(m_projectionMatrix), sizeof(float) * 16);
 }
 
 void COpenGLESRenderer::EnableDepthTest(bool enable)
@@ -624,7 +589,7 @@ void COpenGLESRenderer::EnableBlending(bool enable)
 
 void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
-	m_projectionMatrix = glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), viewportWidth, viewportHeight, nearPane, farPane);
+	m_projectionMatrix = glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
 	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
@@ -663,7 +628,7 @@ void COpenGLESRenderer::UnbindTexture()
 
 std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateEmptyTexture()
 {
-	return std::make_unique<COpenGlCachedTexture>();
+	return std::make_unique<COpenGLESCachedTexture>();
 }
 
 void COpenGLESRenderer::SetTextureAnisotropy(float value)
@@ -673,30 +638,24 @@ void COpenGLESRenderer::SetTextureAnisotropy(float value)
 
 void COpenGLESRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short /*bpp*/, int flags, TextureMipMaps const& mipmaps)
 {
-	GLint maxTextureSize;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
-	auto error = glGetError();
 	texture.Bind();
-	error = glGetError();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-	error = glGetError();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-	error = glGetError();
-	GLenum format = (flags & TEXTURE_BGRA) ? GL_BGRA_EXT : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGRA_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-	error = glGetError();
+	if (flags & TEXTURE_BUILD_MIPMAPS)
+	{
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
 	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
 		auto& mipmap = mipmaps[i];
 		glTexImage2D(GL_TEXTURE_2D, i + 1, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
 	}
-	if (m_version >= 3)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
-	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 }
 
 void COpenGLESRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
@@ -722,11 +681,8 @@ void COpenGLESRenderer::UploadCompressedTexture(ICachedTexture & texture, unsign
 		auto& mipmap = mipmaps[i];
 		glCompressedTexImage2D(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, mipmap.size, mipmap.data);
 	}
-	if (m_version >= 3)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
-	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 }
 
 bool COpenGLESRenderer::Force32Bits() const
@@ -761,6 +717,14 @@ void COpenGLESRenderer::Init(int width, int height)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glViewport(0, 0, width, height);
+	glGenVertexArrays(1, &m_vao);
+	glBindVertexArray(m_vao);
+	m_modelMatrices.push_back(glm::mat4());
+	m_modelMatrix = &m_modelMatrices.back();
+	m_color[3] = 1.0f;
+	m_shaderManager.DoOnProgramChange([this]() {
+		UpdateUniforms();
+	});
 	m_defaultProgram = m_shaderManager.NewProgram();
 	m_shaderManager.PushProgram(*m_defaultProgram);
 }
@@ -772,9 +736,15 @@ bool COpenGLESRenderer::SupportsFeature(Feature /*feature*/) const
 
 void COpenGLESRenderer::UpdateUniforms() const
 {
-	auto m = m_projectionMatrix * *m_viewMatrix;
-	static const std::string mvpKey = "mvp_matrix";
-	m_shaderManager.SetUniformValue(mvpKey, 16, 1, glm::value_ptr(m));
+	glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
+	static const std::string mvpMatrixKey = "mvp_matrix";
+	static const std::string view_matrix_key = "view_matrix";
+	static const std::string model_matrix_key = "model_matrix";
+	static const std::string proj_matrix_key = "proj_matrix";
+	m_shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
+	m_shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
+	m_shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
+	m_shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
 	static const std::string colorKey = "color";
 	m_shaderManager.SetUniformValue(colorKey, 4, 1, m_color);
 }
@@ -785,14 +755,17 @@ void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glEnable(GL_BLEND);
 	glm::mat4 oldProjection = m_projectionMatrix;
+	glm::mat4 oldView = m_viewMatrix;
 	m_projectionMatrix = glm::ortho<float>(viewport[0], viewport[2], viewport[3], viewport[1]);
-	m_viewMatrices.push_back(glm::mat4());
-	m_viewMatrix = &m_viewMatrices.back();
+	m_modelMatrices.push_back(glm::mat4());
+	m_modelMatrix = &m_modelMatrices.back();
+	m_viewMatrix = glm::mat4();
 	UpdateUniforms();
 
 	drawHandler();
 
 	m_projectionMatrix = oldProjection;;
+	m_viewMatrix = oldView;
 	PopMatrix();
 }
 
@@ -830,7 +803,7 @@ void COpenGLESFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTexture
 		glDrawBuffers(0, NULL);
 		glReadBuffer(GL_NONE);
 	}
-	glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGlCachedTexture&)texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGLESCachedTexture&)texture, 0);
 	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{

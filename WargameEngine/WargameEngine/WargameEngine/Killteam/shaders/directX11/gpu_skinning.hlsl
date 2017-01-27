@@ -27,7 +27,7 @@ cbuffer Fragment
 };
 cbuffer Vertex
 {
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;
+	matrix mvp_matrix : WORLDVIEWPROJECTION;
 };
 struct PixelInputType
 {
@@ -51,7 +51,7 @@ PixelInputType VShader(float3 Pos : POSITION, float2 texCoords : TEXCOORD, float
 			finalPos += mul(float4(Pos, 1.0f), joints[index]) * weights[i];
 		}
 	}
-	result.position = mul(finalPos, WorldViewProjection);
+	result.position = mul(finalPos, mvp_matrix);
 	result.tex = texCoords;
 	return result;
 }

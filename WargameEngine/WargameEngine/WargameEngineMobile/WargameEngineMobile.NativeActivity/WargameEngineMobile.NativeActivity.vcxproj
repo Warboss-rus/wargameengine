@@ -119,28 +119,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm\glm;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
@@ -287,6 +287,7 @@
     <ClInclude Include="..\..\WargameEngine\model\IBoundingBoxManager.h" />
     <ClInclude Include="..\..\WargameEngine\model\IGameModel.h" />
     <ClInclude Include="..\..\WargameEngine\model\Landscape.h" />
+    <ClInclude Include="..\..\WargameEngine\model\Light.h" />
     <ClInclude Include="..\..\WargameEngine\model\MovementLimiter.h" />
     <ClInclude Include="..\..\WargameEngine\model\Object.h" />
     <ClInclude Include="..\..\WargameEngine\model\ObjectGroup.h" />

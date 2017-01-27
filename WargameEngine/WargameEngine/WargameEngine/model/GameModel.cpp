@@ -139,6 +139,27 @@ void CGameModel::ResetLandscape(float width, float depth, std::wstring const& te
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
 
+void CGameModel::AddLight()
+{
+	CVector3f defaultPos;
+	m_lights.emplace_back(defaultPos);
+}
+
+void CGameModel::RemoveLight(size_t index)
+{
+	m_lights.erase(m_lights.begin() + index);
+}
+
+CLight& CGameModel::GetLight(size_t index)
+{
+	return m_lights.at(index);
+}
+
+const std::vector<CLight>& CGameModel::GetLights() const
+{
+	return m_lights;
+}
+
 CSignalConnection<void, IObject*> CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
 {
 	return m_onObjectCreation.Connect(handler);

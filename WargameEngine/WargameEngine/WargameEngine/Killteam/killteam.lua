@@ -7,7 +7,7 @@ hunterGroupIndex = nil
 function Init()
 	--math.randomseed(os.time())
 	Viewport:CameraStrategy(30, 12, 5, 0.3)
-	EnableLight(1)
+	AddLight()
 	SetLightPosition(1, 0, 0, 50)
 	SetLightDiffuse(1, 1, 1, 1, 1)
 	SetLightAmbient(1, 0.5, 0.5, 0.5, 1)

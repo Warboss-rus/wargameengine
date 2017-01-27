@@ -1,18 +1,31 @@
 #include "OpenGLRenderer.h"
 #include <GL/glew.h>
-#include "gl.h"
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
+#ifdef _WINDOWS
+#include <Windows.h>
+#endif
+#include <GL/gl.h>
+#endif
 #include "../LogWriter.h"
 #include "../view/TextureManager.h"
-#include "ShaderManagerOpenGL.h"
 #include "../view/Matrix4.h"
 #include "../view/IViewport.h"
-#include <gtc/matrix_transform.inl>
+#include <glm/gtc/matrix_transform.hpp>
 #pragma warning(push)
 #pragma warning(disable: 4201)
-#include <gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #pragma warning(pop)
 #define _USE_MATH_DEFINES
 #include <math.h>
+
+namespace
+{
+static const std::string VERTEX_ATTRIB_NAME = "Position";
+static const std::string NORMAL_ATTRIB_NAME = "Normal";
+static const std::string TEXCOORD_ATTRIB_NAME = "TexCoord";
+}
 
 using namespace std;
 
@@ -39,7 +52,7 @@ public:
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
 private:
-	void CreateVBO(size_t size, size_t components, const float* data, const char* attribName);
+	void CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName);
 	CShaderManagerOpenGL & m_shaderMan;
 	GLuint m_vao = 0;
 	GLuint m_mainVAO = 0;
@@ -49,8 +62,6 @@ private:
 	const float * m_normals;
 	const float * m_texCoords;
 	size_t m_vertexCount;
-	const int * m_indexes;
-	size_t m_indexesSize;
 };
 
 class COpenGLFrameBuffer : public IFrameBuffer
@@ -62,7 +73,7 @@ public:
 	virtual void UnBind() const override;
 	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override;
 private:
-	unsigned int m_id;
+	GLuint m_id;
 };
 
 class COpenGLOcclusionQuery : public IOcclusionQuery
@@ -149,7 +160,12 @@ static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::LINE_LOOP, GL_LINE_LOOP } //
 };
 
+
+#ifdef _WINDOWS
 void APIENTRY ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/, const GLchar *message, const void * /*userParam*/)
+#else
+void ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/, const GLchar *message, const void * /*userParam*/)
+#endif
 {
 	LogWriter::WriteLine(message);
 }
@@ -167,9 +183,9 @@ COpenGLRenderer::COpenGLRenderer()
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
 
-	m_viewMatrices.push_back(glm::mat4());
-	m_viewMatrix = &m_viewMatrices.back();
-	m_color.a = 1.0f;
+	m_modelMatrices.push_back(glm::mat4());
+	m_modelMatrix = &m_modelMatrices.back();
+	m_color[3] = 1.0f;
 	m_shaderManager.DoOnProgramChange([this]() {
 		UpdateMatrices();
 		UpdateColor();
@@ -181,9 +197,9 @@ COpenGLRenderer::COpenGLRenderer()
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
-	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::VERTEX_ATTRIB_NAME, 3, vertices.size(), (float*)vertices.data(), false);
-	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::NORMAL_ATTRIB_NAME, 3, normals.size(), normals.empty() ? nullptr : (float*)normals.data(), false);
-	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
+	m_shaderManager.SetVertexAttribute(VERTEX_ATTRIB_NAME, 3, vertices.size(), (float*)vertices.data(), false);
+	m_shaderManager.SetVertexAttribute(NORMAL_ATTRIB_NAME, 3, normals.size(), normals.empty() ? nullptr : (float*)normals.data(), false);
+	m_shaderManager.SetVertexAttribute(TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 }
 
@@ -196,22 +212,22 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const
 		fvalues.push_back(static_cast<float>(v.x));
 		fvalues.push_back(static_cast<float>(v.y));
 	}
-	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::VERTEX_ATTRIB_NAME, 2, vertices.size(), fvalues.data(), false);
-	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::NORMAL_ATTRIB_NAME, 3, 0, (float*)nullptr, false);
-	m_shaderManager.SetVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
+	m_shaderManager.SetVertexAttribute(VERTEX_ATTRIB_NAME, 2, vertices.size(), fvalues.data(), false);
+	m_shaderManager.SetVertexAttribute(NORMAL_ATTRIB_NAME, 3, 0, (float*)nullptr, false);
+	m_shaderManager.SetVertexAttribute(TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 }
 
 void COpenGLRenderer::PushMatrix()
 {
-	m_viewMatrices.push_back(m_viewMatrices.back());
-	m_viewMatrix = &m_viewMatrices.back();
+	m_modelMatrices.push_back(m_modelMatrices.back());
+	m_modelMatrix = &m_modelMatrices.back();
 }
 
 void COpenGLRenderer::PopMatrix()
 {
-	m_viewMatrices.pop_back();
-	m_viewMatrix = &m_viewMatrices.back();
+	m_modelMatrices.pop_back();
+	m_modelMatrix = &m_modelMatrices.back();
 	UpdateMatrices();
 }
 
@@ -227,60 +243,69 @@ void COpenGLRenderer::Translate(const double dx, const double dy, const double d
 
 void COpenGLRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	*m_viewMatrix = glm::translate(*m_viewMatrix, glm::vec3(dx, dy, dz));
+	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
+	*m_modelMatrix = glm::translate(*m_modelMatrix, glm::vec3(dx, dy, dz));
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::Scale(double scale)
 {
+	if (fabs(scale - 1.0) < DBL_EPSILON) return;
 	float fscale = static_cast<float>(scale);
-	*m_viewMatrix = glm::scale(*m_viewMatrix, glm::vec3(fscale, fscale, fscale));
+	*m_modelMatrix = glm::scale(*m_modelMatrix, glm::vec3(fscale, fscale, fscale));
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
 {
-	*m_viewMatrix = glm::rotate(*m_viewMatrix, static_cast<float>(angle * M_PI / 180), glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+	if (fabs(angle) < DBL_EPSILON) return;
+	*m_modelMatrix = glm::rotate(*m_modelMatrix, static_cast<float>(angle * M_PI / 180), glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::GetViewMatrix(float * matrix) const
 {
-	memcpy(matrix, glm::value_ptr(*m_viewMatrix), sizeof(Matrix4F));
+	glm::mat4 modelView = m_viewMatrix * *m_modelMatrix;
+	memcpy(matrix, glm::value_ptr(modelView), sizeof(Matrix4F));
 }
 
-void COpenGLRenderer::ResetViewMatrix()
+void COpenGLRenderer::ResetModelView()
 {
-	*m_viewMatrix = glm::mat4();
+	*m_modelMatrix = glm::mat4();
+	m_viewMatrix = glm::mat4();
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	*m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	*m_modelMatrix = glm::mat4();
 	UpdateMatrices();
 }
 
 void COpenGLRenderer::SetColor(const float r, const float g, const float b, const float a)
 {
-	m_color = glm::vec4(r, g, b, a);
-	UpdateColor();
+	const float color[] = { r, g, b, a };
+	SetColor(color);
 }
 
 void COpenGLRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
-	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
-	SetColor(charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a));
+	const int color[] = { r, g, b, a };
+	SetColor(color);
 }
 
 void COpenGLRenderer::SetColor(const float * color)
 {
-	SetColor(color[0], color[1], color[2], color[3]);
+	memcpy(m_color, color, sizeof(float) * 4);
+	UpdateColor();
 }
 
 void COpenGLRenderer::SetColor(const int * color)
 {
-	SetColor(color[0], color[1], color[2], color[3]);
+	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
+	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), charToFloat(color[3]) };
+	SetColor(fcolor);
 }
 
 std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
@@ -312,15 +337,17 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 	GLint oldViewport[4];
 	glGetIntegerv(GL_VIEWPORT, oldViewport);
 	glViewport(0, 0, width, height);
-	auto oldProjectionMatrix = m_projectionMatrix;
+	glm::mat4 oldProjectionMatrix = m_projectionMatrix;
+	auto oldView = m_viewMatrix;
 	m_projectionMatrix = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
 	PushMatrix();
-	ResetViewMatrix();
+	ResetModelView();
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	func();
 
 	m_projectionMatrix = oldProjectionMatrix;
+	m_viewMatrix = oldView;
 	PopMatrix();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 
@@ -477,21 +504,21 @@ COpenGLVertexBuffer::COpenGLVertexBuffer(CShaderManagerOpenGL & shaderMan, const
 		glBindVertexArray(m_vao);
 		if (vertex)
 		{
-			CreateVBO(size, 3, vertex, CShaderManagerOpenGL::VERTEX_ATTRIB_NAME);
+			CreateVBO(size, 3, vertex, VERTEX_ATTRIB_NAME);
 		}
 		if (normals)
 		{
-			CreateVBO(size, 3, normals, CShaderManagerOpenGL::NORMAL_ATTRIB_NAME);
+			CreateVBO(size, 3, normals, NORMAL_ATTRIB_NAME);
 		}
 		if (texcoords)
 		{
-			CreateVBO(size, 2, texcoords, CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME);
+			CreateVBO(size, 2, texcoords, TEXCOORD_ATTRIB_NAME);
 		}
 		UnBind();
 	}
 }
 
-void COpenGLVertexBuffer::CreateVBO(size_t size, size_t components, const float* data, const char* attribName)
+void COpenGLVertexBuffer::CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName)
 {
 	m_buffers.push_back(m_shaderMan.CreateVertexAttribCache(components, size, data));
 	m_shaderMan.SetVertexAttribute(attribName, *m_buffers.back());
@@ -512,9 +539,9 @@ void COpenGLVertexBuffer::Bind() const
 	}
 	else
 	{
-		m_shaderMan.SetVertexAttribute(CShaderManagerOpenGL::VERTEX_ATTRIB_NAME, 3, m_vertexCount, m_vertex);
-		m_shaderMan.SetVertexAttribute(CShaderManagerOpenGL::NORMAL_ATTRIB_NAME, 3, m_vertexCount, m_normals);
-		m_shaderMan.SetVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 2, m_vertexCount, m_texCoords);
+		m_shaderMan.SetVertexAttribute(VERTEX_ATTRIB_NAME, 3, m_vertexCount, m_vertex);
+		m_shaderMan.SetVertexAttribute(NORMAL_ATTRIB_NAME, 3, m_vertexCount, m_normals);
+		m_shaderMan.SetVertexAttribute(TEXCOORD_ATTRIB_NAME, 2, m_vertexCount, m_texCoords);
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
 }
@@ -551,9 +578,9 @@ void COpenGLVertexBuffer::UnBind() const
 	else
 	{
 		CVector3f def;
-		m_shaderMan.DisableVertexAttribute(CShaderManagerOpenGL::VERTEX_ATTRIB_NAME, 3, def);
-		m_shaderMan.DisableVertexAttribute(CShaderManagerOpenGL::NORMAL_ATTRIB_NAME, 3, def);
-		m_shaderMan.DisableVertexAttribute(CShaderManagerOpenGL::TEXCOORD_ATTRIB_NAME, 2, def);
+		m_shaderMan.DisableVertexAttribute(VERTEX_ATTRIB_NAME, 3, def);
+		m_shaderMan.DisableVertexAttribute(NORMAL_ATTRIB_NAME, 3, def);
+		m_shaderMan.DisableVertexAttribute(TEXCOORD_ATTRIB_NAME, 2, def);
 	}
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
@@ -581,26 +608,20 @@ void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f 
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
 
-void COpenGLRenderer::EnableLight(size_t index, bool enable)
+void COpenGLRenderer::SetNumberOfLights(size_t count)
 {
-	int intEnable = enable ? 1 : 0;
-	m_shaderManager.SetUniformValue("lights[" + std::to_string(index) + "].enabled", 1, 1, &intEnable);
+	static const std::string numberOfLightsKey = "lightsCount";
+	int number = static_cast<int>(count);
+	m_shaderManager.SetUniformValue(numberOfLightsKey, 1, 1, &number);
 }
 
-static const map<LightningType, std::string> lightningTypesMap = {
-	{ LightningType::DIFFUSE, "diffuse" },
-	{ LightningType::AMBIENT, "ambient" },
-	{ LightningType::SPECULAR, "specular" }
-};
-
-void COpenGLRenderer::SetLightColor(size_t index, LightningType type, float * values)
+void COpenGLRenderer::SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular)
 {
-	m_shaderManager.SetUniformValue("lights[" + std::to_string(index) + "]." + lightningTypesMap.at(type), 4, 1, values);
-}
-
-void COpenGLRenderer::SetLightPosition(size_t index, float* pos)
-{
-	m_shaderManager.SetUniformValue("lights[" + std::to_string(index) + "].pos", 3, 1, pos);
+	const std::string key = "lights[" + std::to_string(index) + "].";
+	m_shaderManager.SetUniformValue(key + "pos", 3, 1, position.ptr());
+	m_shaderManager.SetUniformValue(key + "ambient", 4, 1, ambient);
+	m_shaderManager.SetUniformValue(key + "diffuse", 4, 1, diffuse);
+	m_shaderManager.SetUniformValue(key + "specular", 4, 1, specular);
 }
 
 float COpenGLRenderer::GetMaximumAnisotropyLevel() const
@@ -731,7 +752,7 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned
 	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
 		auto& mipmap = mipmaps[i];
-		glCompressedTexImage2DARB(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, mipmap.size, mipmap.data);
+		glCompressedTexImage2D(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, mipmap.size, mipmap.data);
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
@@ -792,13 +813,15 @@ void COpenGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glEnable(GL_BLEND);
 	glm::mat4 oldProjection = m_projectionMatrix;
+	glm::mat4 oldView = m_viewMatrix;
 	m_projectionMatrix = glm::ortho(static_cast<float>(viewport[0]), static_cast<float>(viewport[2]), static_cast<float>(viewport[3]), static_cast<float>(viewport[1]));
 	PushMatrix();
-	ResetViewMatrix();
+	ResetModelView();
 
 	drawHandler();
 
 	m_projectionMatrix = oldProjection;
+	m_viewMatrix = oldView;
 	PopMatrix();
 }
 
@@ -855,14 +878,18 @@ void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureTy
 
 void COpenGLRenderer::UpdateMatrices() const
 {
-	glm::mat4 m = m_projectionMatrix * *m_viewMatrix;
+	glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
 	static const std::string mvpMatrixKey = "mvp_matrix";
 	static const std::string view_matrix_key = "view_matrix";
+	static const std::string model_matrix_key = "model_matrix";
+	static const std::string proj_matrix_key = "proj_matrix";
 	m_shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
-	m_shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(*m_viewMatrix));
+	m_shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
+	m_shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
+	m_shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
 }
 
 void COpenGLRenderer::UpdateColor() const
 {
-	m_shaderManager.SetUniformValue("color", 4, 1, glm::value_ptr(m_color));
+	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
 }

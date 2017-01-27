@@ -1,10 +1,18 @@
 #include "ShaderManagerOpenGL.h"
 #include <map>
 #include <GL/glew.h>
-#include "gl.h"
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
+#ifdef _WINDOWS
+#include <Windows.h>
+#endif
+#include <GL/gl.h>
+#endif
 #include <fstream>
 #include "../LogWriter.h"
 #include "../Module.h"
+#include "../Utils.h"
 
 static const std::string defaultVertexShader = "\
 #version 330 core\n\
@@ -88,7 +96,7 @@ void CShaderManagerOpenGL::PushProgram(IShaderProgram const& program) const
 	m_programs.push_back(p);
 	m_activeProgram = m_programs.back();
 	glUseProgram(m_activeProgram);
-	m_onProgramChange();
+	if(m_onProgramChange) m_onProgramChange();
 }
 
 void CShaderManagerOpenGL::PopProgram() const
@@ -96,7 +104,7 @@ void CShaderManagerOpenGL::PopProgram() const
 	m_programs.pop_back();
 	m_activeProgram = m_programs.back();
 	glUseProgram(m_activeProgram);
-	m_onProgramChange();
+	if (m_onProgramChange) m_onProgramChange();
 }
 
 GLuint CompileShader(std::string const& shaderText, GLuint program, GLenum type)
@@ -122,7 +130,8 @@ GLuint CompileShaderFromFile(std::wstring const& path, GLuint program, GLenum ty
 {
 	std::string shaderText;
 	std::string line;
-	std::ifstream iFile(path);
+	std::ifstream iFile;
+	OpenFile(iFile, path);
 	while (std::getline(iFile, line))
 	{
 		shaderText += line + '\n';
@@ -285,6 +294,11 @@ void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, 
 {
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index == -1) return;
+	if (!values)
+	{
+		glDisableVertexAttribArray(index);
+		return;
+	}
 	if (m_vertexAttribBuffers.find(attribute) == m_vertexAttribBuffers.end())
 	{
 		unsigned int buffer;
@@ -352,7 +366,7 @@ void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, 
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index == -1) return;
 	glDisableVertexAttribArray(index);
-	glVertexAttrib4iv(index, defaultValue);
+	glVertexAttribI4iv(index, defaultValue);
 }
 
 void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const unsigned int* defaultValue) const
@@ -360,5 +374,5 @@ void CShaderManagerOpenGL::DisableVertexAttribute(std::string const& attribute, 
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index == -1) return;
 	glDisableVertexAttribArray(index);
-	glVertexAttrib4uiv(index, defaultValue);
+	glVertexAttribI4uiv(index, defaultValue);
 }

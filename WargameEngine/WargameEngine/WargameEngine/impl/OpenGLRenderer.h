@@ -3,7 +3,7 @@
 #include "ShaderManagerOpenGL.h"
 #pragma warning(push)
 #pragma warning(disable: 4201)
-#include <mat4x4.hpp>
+#include <glm/mat4x4.hpp>
 #pragma warning(pop)
 
 class COpenGLRenderer : public IViewHelper
@@ -26,7 +26,6 @@ public:
 	virtual void SetColor(const int * color) override;
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
-	virtual void ResetViewMatrix() override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
@@ -55,9 +54,8 @@ public:
 
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
 	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
-	virtual void EnableLight(size_t index, bool enable) override;
-	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
-	virtual void SetLightPosition(size_t index, float* pos) override;
+	virtual void SetNumberOfLights(size_t count) override;
+	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
@@ -76,19 +74,21 @@ public:
 	virtual bool Force32Bits() const override;
 	virtual bool ForceFlipBMP() const override;
 	virtual bool ConvertBgra() const override;
-
-	virtual std::string GetName() const override;
 	virtual bool SupportsFeature(Feature feature) const override;
+	virtual std::string GetName() const override;
+	
 	void EnableMultisampling(bool enable);
 private:
 	void UpdateMatrices() const;
 	void UpdateColor() const;
+	void ResetModelView();
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGL m_shaderManager;
-	std::vector<glm::mat4> m_viewMatrices;
-	glm::mat4* m_viewMatrix;
+	std::vector<glm::mat4> m_modelMatrices;
+	glm::mat4* m_modelMatrix;
+	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
-	glm::vec4 m_color;
+	float m_color[4];
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
 	unsigned int m_vao;
 };

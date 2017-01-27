@@ -1,6 +1,6 @@
 #pragma once
 #include "IInput.h"
-#include "..\Signal.h"
+#include "../Signal.h"
 
 class CInputBase : public IInput
 {

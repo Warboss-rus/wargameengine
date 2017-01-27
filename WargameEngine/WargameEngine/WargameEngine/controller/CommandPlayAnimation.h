@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include "ICommand.h"
-#include "..\model\Animation.h"
+#include "../model/Animation.h"
 
 class IObject;
 class IGameModel;

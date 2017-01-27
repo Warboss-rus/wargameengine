@@ -6,7 +6,7 @@ layout (location = 3) in ivec4 weightIndices;
 layout (location = 4) in vec4 weights;
 
 uniform mat4 mvp_matrix;
-uniform mat4 view_matrix;
+uniform mat4 model_matrix;
 uniform mat4 joints[256];
 
 out vec3 v_normal;
@@ -27,7 +27,7 @@ void main() {
 		}
 	}
 	
-    v_normal = normalize(mat3(transpose(inverse(view_matrix))) * newNormal.xyz); 
+    v_normal = normalize(mat3(transpose(inverse(model_matrix))) * newNormal.xyz); 
     gl_Position = mvp_matrix * newVertex;
     v_texCoord = TexCoord;
 }

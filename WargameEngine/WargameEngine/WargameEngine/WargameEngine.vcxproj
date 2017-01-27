@@ -317,6 +317,7 @@
     <ClInclude Include="controller\ScriptRegisterFunctions.h" />
     <ClInclude Include="controller\ScriptUIProtocol.h" />
     <ClInclude Include="IPhysicsEngine.h" />
+    <ClInclude Include="model\Light.h" />
     <ClInclude Include="model\Particle.h" />
     <ClInclude Include="view\FixedCamera.h" />
     <ClInclude Include="IMemoryStream.h" />

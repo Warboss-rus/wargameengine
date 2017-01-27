@@ -1,4 +1,5 @@
 #include "OffscreenViewport.h"
+#include <float.h>
 
 COffscreenViewport::COffscreenViewport(CachedTextureType type, int width, int height, float fieldOfView, IViewHelper & viewHelper, int textureIndex)
 	: CViewportBase(0, 0, width, height, fieldOfView, viewHelper), m_depthOnly(type == CachedTextureType::DEPTH)

@@ -1,6 +1,6 @@
 #pragma once
 #include "../view/IViewHelper.h"
-#include <mat4x4.hpp>
+#include <glm/mat4x4.hpp>
 #include <vector>
 #include "ShaderManagerOpenGLES.h"
 
@@ -26,7 +26,6 @@ public:
 	virtual void SetColor(const int * color) override;
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
-	virtual void ResetViewMatrix() override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
@@ -55,9 +54,8 @@ public:
 
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
 	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
-	virtual void EnableLight(size_t index, bool enable) override;
-	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
-	virtual void SetLightPosition(size_t index, float* pos) override;
+	virtual void SetNumberOfLights(size_t count) override;
+	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
@@ -84,12 +82,15 @@ public:
 
 private:
 	void UpdateUniforms() const;
+	void ResetViewMatrix();
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;
 	int m_version;
-	std::vector<glm::mat4> m_viewMatrices;
-	glm::mat4 * m_viewMatrix;
+	std::vector<glm::mat4> m_modelMatrices;
+	glm::mat4 * m_modelMatrix;
+	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
 	float m_color[4];
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
+	unsigned int m_vao;
 };

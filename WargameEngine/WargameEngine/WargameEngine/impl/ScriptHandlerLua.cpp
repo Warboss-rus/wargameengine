@@ -1,5 +1,5 @@
 #include "ScriptHandlerLua.h"
-#include "..\..\LUA\lua.hpp"
+#include <lua.hpp>
 #include "../LogWriter.h"
 #include "../Utils.h"
 

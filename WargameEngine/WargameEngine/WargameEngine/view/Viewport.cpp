@@ -1,6 +1,7 @@
 #include "Viewport.h"
 #include "ICamera.h"
 #include "IViewHelper.h"
+#include <float.h>
 
 CViewport::CViewport(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer, bool resize)
 	: CViewportBase(x, y, width, height, fieldOfView, renderer), m_resize(resize)

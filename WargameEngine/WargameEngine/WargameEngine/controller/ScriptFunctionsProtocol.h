@@ -22,6 +22,30 @@
 //Creates a new static object with given model and positions. Static objects have bounding boxes, but they cannot be selected, moved or deleted. They are part of game model.
 #define NEW_STATIC_OBJECT L"NewStaticObject"
 
+//void AddLight()
+//Adds a new light to the scene
+#define ADD_LIGHT L"AddLight"
+
+//void RemoveLight(int index)
+//Removes light by its index
+#define REMOVE_LIGHT L"RemoveLight"
+
+//void SetLightPosition(int index, double x, double y, double z)
+//Changes the position of light source
+#define SET_LIGHT_SOURCE_POSITION L"SetLightPosition"
+
+//void SetLightPosition(int index, double r, double g, double a, double a)
+//Changes the ambient color of light source
+#define SET_LIGHT_SOURCE_AMBIENT L"SetLightAmbient"
+
+//void SetLightPosition(int index, double r, double g, double a, double a)
+//Changes the diffuse color of light source
+#define SET_LIGHT_SOURCE_DIFFUSE L"SetLightDiffuse"
+
+//void SetLightPosition(int index, double r, double g, double a, double a)
+//Changes the specular color of light source
+#define SET_LIGHT_SOURCE_SPECULAR L"SetLightSpecular"
+
 /*VIEW*/
 
 //void CreateSkybox(double size, string textureFolder)
@@ -31,18 +55,6 @@
 #define ENABLE_RULER L"Ruler"
 
 #define RESIZE_WINDOW L"ResizeWindow"
-
-#define ENABLE_LIGHT_SOURCE L"EnableLight"
-
-#define DISABLE_LIGHT_SOURCE L"DisableLight"
-
-#define SET_LIGHT_SOURCE_POSITION L"SetLightPosition"
-
-#define SET_LIGHT_SOURCE_AMBIENT L"SetLightAmbient"
-
-#define SET_LIGHT_SOURCE_DIFFUSE L"SetLightDiffuse"
-
-#define SET_LIGHT_SOURCE_SPECULAR L"SetLightSpecular"
 
 #define ENABLE_MSAA L"EnableMSAA"
 

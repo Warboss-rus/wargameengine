@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "..\model\Particle.h"
+#include "../model/Particle.h"
 
 class CParticleModel : public IParticleUpdater
 {

@@ -1,6 +1,6 @@
 #pragma once
-#include "view\Vector3.h"
-#include "model\IBoundingBoxManager.h"
+#include "view/Vector3.h"
+#include "model/IBoundingBoxManager.h"
 
 class IObject;
 class IBaseObject;

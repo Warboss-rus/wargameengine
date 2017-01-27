@@ -1,7 +1,7 @@
 #include "CommandChangeProperty.h"
-#include "..\model\ObjectInterface.h"
-#include "..\IMemoryStream.h"
-#include "..\model\IGameModel.h"
+#include "../model/ObjectInterface.h"
+#include "../IMemoryStream.h"
+#include "../model/IGameModel.h"
 
 CCommandChangeProperty::CCommandChangeProperty(std::shared_ptr<IObject> object, std::wstring const& key, std::wstring const& value) :m_pObject(object), m_key(key), 
 	m_oldValue(m_pObject->GetProperty(key)), m_newValue(value)

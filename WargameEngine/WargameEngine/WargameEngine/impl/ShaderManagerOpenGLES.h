@@ -1,12 +1,13 @@
 #pragma once
-#include <string>
 #include "../view/IShaderManager.h"
 #include <vector>
+#include <functional>
+#include <map>
 
 class CShaderManagerOpenGLES : public IShaderManager
 {
 public:
-	CShaderManagerOpenGLES();
+	~CShaderManagerOpenGLES();
 	std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
 	void PushProgram(IShaderProgram const& program) const override;
 	void PopProgram() const override;
@@ -15,9 +16,11 @@ public:
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const override;
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const override;
 
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, const float* values, bool perInstance = false) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, const int* values, bool perInstance = false) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t totalSize, const unsigned int* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false) const override;
+
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const float* defaultValue) const override;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const override;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const override;
@@ -26,18 +29,11 @@ public:
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const int* value) const override;
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const override;
 
-	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false) const override;
-
-	int GetVertexLocation() const { return m_positionLocation; }
-	int GetNormalLocation() const { return m_normalsLocation; }
-	int GetTexCoordLocation() const { return m_texCoordLocation; }
 	void DoOnProgramChange(std::function<void()> const& handler);
 private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
-	mutable std::vector<unsigned> m_programs;
-	mutable unsigned m_activeProgram;
+	mutable std::vector<unsigned int> m_programs;
+	mutable unsigned int m_activeProgram;
 	std::function<void()> m_onProgramChange;
-	int m_positionLocation;
-	int m_normalsLocation;
-	int m_texCoordLocation;
+	mutable std::map<std::string, unsigned> m_vertexAttribBuffers;
 };

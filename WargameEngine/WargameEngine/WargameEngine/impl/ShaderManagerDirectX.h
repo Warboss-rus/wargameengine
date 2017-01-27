@@ -39,7 +39,6 @@ public:
 	void SetDevice(ID3D11Device* dev);
 	void DoOnProgramChange(std::function<void()> const& handler);
 	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat) const;
-	void SetMatrices(float * modelView, float * projection);
 	void SetColor(const float * color);
 	void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess);
 	void SetLight(size_t index, sLightSource & lightSource);

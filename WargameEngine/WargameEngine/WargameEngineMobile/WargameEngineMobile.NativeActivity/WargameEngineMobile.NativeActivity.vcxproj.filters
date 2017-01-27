@@ -329,6 +329,9 @@
     <ClInclude Include="..\..\WargameEngine\view\ViewportBase.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\model\Light.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />

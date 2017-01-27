@@ -2,7 +2,7 @@
 #include "../view/InputBase.h"
 #include <memory>
 #include <vector>
-#include <GLFW\glfw3.h>
+#include <GLFW/glfw3.h>
 
 class IObject;
 
@@ -14,8 +14,8 @@ public:
 	virtual void EnableCursor(bool enable = true) override;
 	virtual int GetMouseX() const override;
 	virtual int GetMouseY() const override;
-	virtual VirtualKey CInputGLFW::KeycodeToVirtualKey(int key) const override;
-	virtual int CInputGLFW::GetModifiers() const override;
+	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
+	virtual int GetModifiers() const override;
 
 	static void OnMouse(GLFWwindow* window, int button, int action, int mods);
 	static void OnScroll(GLFWwindow* window, double xoffset, double yoffset);

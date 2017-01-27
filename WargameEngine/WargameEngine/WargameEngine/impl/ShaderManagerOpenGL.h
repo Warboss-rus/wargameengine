@@ -7,10 +7,6 @@
 class CShaderManagerOpenGL : public IShaderManager
 {
 public:
-	static constexpr char* VERTEX_ATTRIB_NAME = "Position";
-	static constexpr char* NORMAL_ATTRIB_NAME = "Normal";
-	static constexpr char* TEXCOORD_ATTRIB_NAME = "TexCoord";
-
 	CShaderManagerOpenGL();
 	~CShaderManagerOpenGL();
 	std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;

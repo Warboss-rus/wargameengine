@@ -9,6 +9,7 @@
 #include "Projectile.h"
 #include "Particle.h"
 #include "Landscape.h"
+#include "Light.h"
 
 class CGameModel : public IGameModel
 {
@@ -38,6 +39,10 @@ public:
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
 	void ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	void AddLight();
+	void RemoveLight(size_t index);
+	CLight& GetLight(size_t index);
+	const std::vector<CLight>& GetLights() const;
 
 	CSignalConnection<void, IObject*> DoOnObjectCreation(std::function<void(IObject*)> const& handler);
 	CSignalConnection<void, IObject*> DoOnObjectRemove(std::function<void(IObject*)> const& handler);
@@ -50,6 +55,7 @@ private:
 	std::shared_ptr<IObject> m_selectedObject;
 	std::map<std::wstring, std::wstring> m_properties;
 	CLandscape m_landscape;
+	std::vector<CLight> m_lights;
 	CSignal<void, IObject *> m_onObjectCreation;
 	CSignal<void, IObject *> m_onObjectRemove;
 };

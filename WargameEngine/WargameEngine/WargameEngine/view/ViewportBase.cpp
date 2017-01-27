@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "ICamera.h"
 #include "IViewHelper.h"
+#include "Matrix4.h"
 
 CViewportBase::CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer)
 	: m_x(x), m_y(y), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_renderer(renderer)
@@ -44,7 +45,7 @@ IOcclusionQuery & CViewportBase::GetOcclusionQuery(const IBaseObject* object)
 
 const float* CViewportBase::GetProjectionMatrix() const
 {
-	return m_projectionMatrix.m_items;
+	return m_projectionMatrix;
 }
 
 const float* CViewportBase::GetViewMatrix() const

@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "..\view\Vector3.h"
+#include "../view/Vector3.h"
 
 struct sParticle
 {

@@ -11,6 +11,7 @@
 #include "../view/IViewport.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "../view/Matrix4.h"
 
 static CGameWindowGLFW* g_instance = nullptr;
 bool CGameWindowGLFW::m_visible = true;

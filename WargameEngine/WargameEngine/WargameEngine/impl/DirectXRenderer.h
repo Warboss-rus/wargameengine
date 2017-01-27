@@ -8,11 +8,10 @@
 
 struct sLightSource
 {
-	float pos[3] = { 0.0f, 0.0f, 0.0f };
 	float diffuse[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	bool enabled = 0;
+	float pos[3] = { 0.0f, 0.0f, 0.0f };
 };
 
 class CDirectXRenderer : public IViewHelper
@@ -37,7 +36,6 @@ public:
 	virtual void Rotate(const double angle, const double x, const double y, const double z) override;
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
-	virtual void ResetViewMatrix() override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
@@ -58,9 +56,8 @@ public:
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
 	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
-	virtual void EnableLight(size_t index, bool enable) override;
-	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
-	virtual void SetLightPosition(size_t index, float* pos) override;
+	virtual void SetNumberOfLights(size_t count) override;
+	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
@@ -99,6 +96,7 @@ private:
 	void UpdateMatrices();
 	void CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size);
 	void CreateDepthBuffer(unsigned int width, unsigned int height, ID3D11DepthStencilView ** buffer);
+	void ResetViewMatrix();
 
 	CComPtr<IDXGISwapChain> m_swapchain;// the pointer to the swap chain interface
 	CComPtr<ID3D11Device> m_dev;
@@ -116,9 +114,9 @@ private:
 	CComPtr<ID3D11Buffer> m_sharedIndexBuffer;
 	size_t m_buffersSize = 0;
 
-	std::vector<sLightSource> m_lightSources;
-	std::vector<DirectX::XMFLOAT4X4> m_viewMatrices;
-	DirectX::XMFLOAT4X4* m_viewMatrix;
+	std::vector<DirectX::XMFLOAT4X4> m_modelMatrices;
+	DirectX::XMFLOAT4X4* m_modelMatrix;
+	DirectX::XMFLOAT4X4 m_viewMatrix;
 	DirectX::XMFLOAT4X4 m_projectionMatrix;
 	float m_anisotropyLevel = 0.0f;
 };

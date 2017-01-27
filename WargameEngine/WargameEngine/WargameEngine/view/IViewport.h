@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include <functional>
-#include "Matrix4.h"
 
 class ICamera;
 class ICachedTexture;
