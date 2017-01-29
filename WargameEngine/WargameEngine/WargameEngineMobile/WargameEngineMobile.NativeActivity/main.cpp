@@ -2,7 +2,7 @@
 #include <android/log.h>
 #include "android_native_app_glue.h"
 #include "..\..\WargameEngine\view\GameView.h"
-#include "..\..\WargameEngine\impl\SoundPlayerOpenSLES.h"
+#include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
 #include "..\..\WargameEngine\impl\TextWriter.h"
 #include "..\..\WargameEngine\impl\ScriptHandlerLua.h"
 #include "..\..\WargameEngine\impl\NetSocket.h"
@@ -116,7 +116,7 @@ void android_main(struct android_app* state) {
 		context.module.folder = L"/sdcard/WargameEngine/";
 	}
 	context.window = std::make_unique<CGameWindowAndroid>(state);
-	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
+	context.soundPlayer = std::make_unique<CSoundPlayerFMod>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");
