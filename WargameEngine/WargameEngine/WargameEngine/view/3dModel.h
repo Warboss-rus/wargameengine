@@ -6,8 +6,8 @@
 #include <map>
 #include "MaterialManager.h"
 #include "Vector3.h"
-#include "..\model\Animation.h"
-#include "..\model\TeamColor.h"
+#include "../model/Animation.h"
+#include "../model/TeamColor.h"
 
 class IObject;
 class IShaderManager;

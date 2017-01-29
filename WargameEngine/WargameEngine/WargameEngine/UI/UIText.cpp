@@ -1,7 +1,7 @@
 #include "UIText.h"
 #include "UITheme.h"
-#include "..\view\ITextWriter.h"
-#include "..\view\IRenderer.h"
+#include "../view/ITextWriter.h"
+#include "../view/IRenderer.h"
 
 void PrintText(IRenderer & renderer, ITextWriter & textWriter, int x, int y, int width, int height, std::string const& str, CUITheme::sText const& theme, float scale)
 {

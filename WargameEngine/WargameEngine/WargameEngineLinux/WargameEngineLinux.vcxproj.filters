@@ -267,6 +267,9 @@
     <ClCompile Include="..\WargameEngine\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\WargameEngine\impl\GameWindowGLFW.cpp">
+      <Filter>Source Files\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\WargameEngine\AsyncFileProvider.h">

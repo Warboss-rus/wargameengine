@@ -291,7 +291,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		unsigned int count = args.GetLong(2);
+		size_t count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -305,7 +305,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		unsigned int count = args.GetLong(2);
+		size_t count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 2) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -319,7 +319,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		unsigned int count = args.GetLong(2);
+		size_t count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 3) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -333,7 +333,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		unsigned int count = args.GetLong(2);
+		size_t count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 4) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -347,7 +347,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		unsigned int count = args.GetLong(2);
+		size_t count = args.GetLong(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 16) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -464,7 +464,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	handler.RegisterFunction(DELETE_TIMED_CALLBACK, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (ID)");
-		unsigned int id = args.GetLong(1);
+		size_t id = args.GetLong(1);
 		threadPool.RemoveTimedCallback(id);
 		return nullptr;
 	});

@@ -61,22 +61,22 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;$(IncludePath)</IncludePath>
+    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;/usr/include/fmod;/usr/include/freetype2;/usr/include/openvr;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;$(IncludePath)</IncludePath>
+    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;/usr/include/fmod;/usr/include/freetype2;/usr/include/openvr;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;$(IncludePath)</IncludePath>
+    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;/usr/include/fmod;/usr/include/freetype2;/usr/include/openvr;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;$(IncludePath)</IncludePath>
+    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;/usr/include/fmod;/usr/include/freetype2;/usr/include/openvr;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;$(IncludePath)</IncludePath>
+    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;/usr/include/fmod;/usr/include/freetype2;/usr/include/openvr;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;$(IncludePath)</IncludePath>
+    <IncludePath>/usr/include/bullet;/usr/include/lua5.3;/usr/include/fmod;/usr/include/freetype2;/usr/include/openvr;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="..\WargameEngine\AsyncFileProvider.cpp" />
@@ -96,6 +96,7 @@
     <ClCompile Include="..\WargameEngine\controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="..\WargameEngine\controller\ScriptRegisterUI.cpp" />
     <ClCompile Include="..\WargameEngine\controller\ScriptRegisterViewport.cpp" />
+    <ClCompile Include="..\WargameEngine\impl\GameWindowGLFW.cpp" />
     <ClCompile Include="..\WargameEngine\impl\InputGLFW.cpp" />
     <ClCompile Include="..\WargameEngine\impl\NetSocket.cpp" />
     <ClCompile Include="..\WargameEngine\impl\OpenGLRenderer.cpp" />
@@ -277,30 +278,70 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
       <PreprocessorDefinitions>GLFW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lGL;-llua5.3;-lfreetype;-lBulletDynamics;-lBulletCollision;-lLinearMath;-lglfw;-lGLEW;-lopenvr_api;-lfmod;-ldl;-pthread;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile>
       <PreprocessorDefinitions>GLFW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lGL;-llua5.3;-lfreetype;-lBulletDynamics;-lBulletCollision;-lLinearMath;-lglfw;-lGLEW;-lopenvr_api;-lfmod;-ldl;-pthread;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>GLFW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lGL;-llua5.3;-lfreetype;-lBulletDynamics;-lBulletCollision;-lLinearMath;-lglfw;-lGLEW;-lopenvr_api;-lfmod;-ldl;-pthread;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>GLFW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lGL;-llua5.3;-lfreetype;-lBulletDynamics;-lBulletCollision;-lLinearMath;-lglfw;-lGLEW;-lopenvr_api;-lfmod;-ldl;-pthread;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile />
+    <ClCompile>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile />
+    <ClCompile>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lGL;-llua5.3;-lfreetype;-lBulletDynamics;-lBulletCollision;-lLinearMath;-lglfw;-lGLEW;-lopenvr_api;-lfmod;-ldl;-pthread;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <CppLanguageStandard>gnu++1y</CppLanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lGL;-llua5.3;-lfreetype;-lBulletDynamics;-lBulletCollision;-lLinearMath;-lglfw;-lGLEW;-lopenvr_api;-lfmod;-ldl;-pthread;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

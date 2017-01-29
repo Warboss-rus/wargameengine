@@ -1,5 +1,6 @@
 #include "MemoryStream.h"
 #include "Utils.h"
+#include <string.h>
 
 CReadMemoryStream::CReadMemoryStream(const char* data) :m_data(data), m_position(0)
 {

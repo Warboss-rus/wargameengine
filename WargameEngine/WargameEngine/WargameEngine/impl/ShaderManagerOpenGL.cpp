@@ -188,6 +188,11 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(std::wstring co
 	glDeleteShader(vertexShader);
 	glDetachShader(program->program, framgentShader);
 	glDeleteShader(framgentShader);
+	if (geometryShader)
+	{
+		glDetachShader(program->program, geometryShader);
+		glDeleteShader(geometryShader);
+	}
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	glVertexAttrib4fv(glGetAttribLocation(program->program, "weights"), def);
 	if (!m_programs.empty())
@@ -205,19 +210,19 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 	switch (elementSize)
 	{
 	case 1:
-		glUniform1fv(unfrm, count, value);
+		glUniform1fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 2:
-		glUniform2fv(unfrm, count, value);
+		glUniform2fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 3:
-		glUniform3fv(unfrm, count, value);
+		glUniform3fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 4:
-		glUniform4fv(unfrm, count, value);
+		glUniform4fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 16:
-		glUniformMatrix4fv(unfrm, count, false, value);
+		glUniformMatrix4fv(unfrm, static_cast<GLsizei>(count), false, value);
 		break;
 	default:
 		throw std::runtime_error("Unknown elementSize. 1, 2, 3, 4 or 16 expected");

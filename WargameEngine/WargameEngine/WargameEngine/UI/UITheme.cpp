@@ -1,5 +1,6 @@
 #include "UITheme.h"
 #include <limits.h>
+#include <string.h>
 #include "../LogWriter.h"
 #include "../rapidxml/rapidxml.hpp"
 #include <fstream>

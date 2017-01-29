@@ -56,7 +56,7 @@ private:
 	CShaderManagerOpenGL & m_shaderMan;
 	GLuint m_vao = 0;
 	GLuint m_mainVAO = 0;
-	GLuint m_indexesBuffer = NULL;
+	GLuint m_indexesBuffer = 0;
 	std::vector<std::unique_ptr<IVertexAttribCache>> m_buffers;
 	const float * m_vertex;
 	const float * m_normals;
@@ -173,12 +173,13 @@ void ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*s
 COpenGLRenderer::COpenGLRenderer()
 	:m_textureManager(nullptr)
 {
+	glewInit();
 	glDepthFunc(GL_LESS);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glewInit();
-
+#ifdef _DEBUG
 	glDebugMessageCallback(ErrorCallback, nullptr);
+#endif
 
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
@@ -200,7 +201,7 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const
 	m_shaderManager.SetVertexAttribute(VERTEX_ATTRIB_NAME, 3, vertices.size(), (float*)vertices.data(), false);
 	m_shaderManager.SetVertexAttribute(NORMAL_ATTRIB_NAME, 3, normals.size(), normals.empty() ? nullptr : (float*)normals.data(), false);
 	m_shaderManager.SetVertexAttribute(TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
-	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
+	glDrawArrays(renderModeMap.at(mode), 0, static_cast<GLsizei>(vertices.size()));
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
@@ -215,7 +216,7 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const
 	m_shaderManager.SetVertexAttribute(VERTEX_ATTRIB_NAME, 2, vertices.size(), fvalues.data(), false);
 	m_shaderManager.SetVertexAttribute(NORMAL_ATTRIB_NAME, 3, 0, (float*)nullptr, false);
 	m_shaderManager.SetVertexAttribute(TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
-	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
+	glDrawArrays(renderModeMap.at(mode), 0, static_cast<GLsizei>(vertices.size()));
 }
 
 void COpenGLRenderer::PushMatrix()
@@ -520,7 +521,7 @@ COpenGLVertexBuffer::COpenGLVertexBuffer(CShaderManagerOpenGL & shaderMan, const
 
 void COpenGLVertexBuffer::CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName)
 {
-	m_buffers.push_back(m_shaderMan.CreateVertexAttribCache(components, size, data));
+	m_buffers.push_back(m_shaderMan.CreateVertexAttribCache(static_cast<int>(components), size, data));
 	m_shaderMan.SetVertexAttribute(attribName, *m_buffers.back());
 }
 
@@ -551,22 +552,22 @@ void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexes
 	glGenBuffers(1, &m_indexesBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void COpenGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
 {
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
+	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
 }
 
 void COpenGLVertexBuffer::DrawAll(size_t count)
 {
-	glDrawArrays(GL_TRIANGLES, 0, count);
+	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
 }
 
 void COpenGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
 {
-	glDrawArraysInstanced(GL_TRIANGLES, 0, size, instanceCount);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(size), static_cast<GLsizei>(instanceCount));
 }
 
 void COpenGLVertexBuffer::UnBind() const
@@ -720,10 +721,10 @@ void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * da
 	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
 		auto& mipmap = mipmaps[i];
-		glTexImage2D(GL_TEXTURE_2D, i + 1, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, mipmap.width, mipmap.height, 0, format, GL_UNSIGNED_BYTE, mipmap.data);
+		glTexImage2D(GL_TEXTURE_2D, i + 1, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, static_cast<GLsizei>(mipmap.width), static_cast<GLsizei>(mipmap.height), 0, format, GL_UNSIGNED_BYTE, mipmap.data);
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLsizei>(mipmaps.size()));
 }
 
 void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
@@ -747,15 +748,15 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned
 	};
 	GLenum format = compressionMap.at(flags & TEXTURE_COMPRESSION_MASK);
 
-	glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, size, data);
+	glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, static_cast<GLsizei>(size), data);
 
 	for (size_t i = 0; i < mipmaps.size(); i++)
 	{
 		auto& mipmap = mipmaps[i];
-		glCompressedTexImage2D(GL_TEXTURE_2D, i + 1, format, mipmap.width, mipmap.height, 0, mipmap.size, mipmap.data);
+		glCompressedTexImage2D(GL_TEXTURE_2D, i + 1, format, static_cast<GLsizei>(mipmap.width), static_cast<GLsizei>(mipmap.height), 0, static_cast<GLsizei>(mipmap.size), mipmap.data);
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLsizei>(mipmaps.size()));
 }
 
 bool COpenGLRenderer::Force32Bits() const
@@ -844,7 +845,7 @@ void COpenGLFrameBuffer::Bind() const
 
 void COpenGLFrameBuffer::UnBind() const
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, NULL);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureType type)

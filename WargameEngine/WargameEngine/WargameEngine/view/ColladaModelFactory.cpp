@@ -5,6 +5,7 @@
 #include <string>
 #include "../LogWriter.h"
 #include <algorithm>
+#include <limits.h>
 #include "../rapidxml/rapidxml.hpp"
 #include <sstream>
 #include <numeric>

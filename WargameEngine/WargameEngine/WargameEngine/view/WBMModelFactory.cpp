@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
-#include "..\Utils.h"
+#include "../Utils.h"
 
 std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::wstring const& /*filePath*/)
 {
