@@ -9,14 +9,14 @@
 
 using namespace DirectX;
 
-DirectX::XMFLOAT4X4 Store(DirectX::XMMATRIX const& matrix)
+inline DirectX::XMFLOAT4X4 Store(DirectX::XMMATRIX const& matrix)
 {
 	DirectX::XMFLOAT4X4 result;
 	XMStoreFloat4x4(&result, matrix);
 	return result;
 }
 
-DirectX::XMMATRIX Load(DirectX::XMFLOAT4X4 const& matrix)
+inline DirectX::XMMATRIX Load(DirectX::XMFLOAT4X4 const& matrix)
 {
 	return XMLoadFloat4x4(&matrix);
 }
@@ -250,7 +250,7 @@ public:
 		: m_renderer(renderer)
 	{
 		D3D11_QUERY_DESC desc;
-		desc.Query = D3D11_QUERY_OCCLUSION;
+		desc.Query = D3D11_QUERY_OCCLUSION_PREDICATE;
 		desc.MiscFlags = 0;
 		CComPtr<ID3D11Query> query;
 		dev->CreateQuery(&desc, &m_query);
@@ -265,9 +265,9 @@ public:
 
 	virtual bool IsVisible() const override
 	{
-		UINT64 result = 1;
-		m_renderer->GetContext()->GetData(m_query, &result, sizeof(UINT64), 0);
-		return result != 0;
+		BOOL result = 1;
+		m_renderer->GetContext()->GetData(m_query, &result, sizeof(BOOL), 0);
+		return result != FALSE;
 	}
 private:
 	CComPtr<ID3D11Query> m_query;
@@ -325,10 +325,6 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	m_shaderManager.SetDevice(m_dev);
 	m_shaderManager.DoOnProgramChange([this] {
 		UpdateMatrices();
-		for (size_t i = 0; i < m_lightSources.size(); ++i)
-		{
-			m_shaderManager.SetLight(i, m_lightSources[i]);
-		}
 	});
 
 	// get the address of the back buffer
@@ -381,7 +377,9 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	}
 	m_devcon->RSSetState(pRasterState);
 	
-	m_viewMatrices.push_back(Store(DirectX::XMMatrixIdentity()));
+	m_modelMatrices.push_back(Store(DirectX::XMMatrixIdentity()));
+	m_modelMatrix = &m_modelMatrices.back();
+	m_viewMatrix = Store(DirectX::XMMatrixIdentity());
 	float aspect = GetAspectRatio(m_hWnd);
 	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
 
@@ -495,47 +493,6 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 	m_devcon->Draw(vertices.size(), 0);
 }
 
-std::vector<float> ConvertVector3D(std::vector<CVector3d> const& vec)
-{
-	std::vector<float> result;
-	result.reserve(vec.size() * 3);
-	for (auto& item : vec)
-	{
-		result.push_back(static_cast<float>(item.x));
-		result.push_back(static_cast<float>(item.y));
-		result.push_back(static_cast<float>(item.z));
-	}
-	return std::move(result);
-}
-
-void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords)
-{
-	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
-	UINT offset[] = { 0, 0, 0 };
-
-	auto floatVertices = ConvertVector3D(vertices);
-	auto floatNormals = ConvertVector3D(normals);
-	std::vector<float> floatTexCoords;
-	floatTexCoords.reserve(texCoords.size() * 3);
-	for (auto& item : texCoords)
-	{
-		floatTexCoords.push_back(static_cast<float>(item.x));
-		floatTexCoords.push_back(static_cast<float>(item.y));
-	}
-
-	MakeSureBufferCanFitSize(vertices.size());
-	CopyDataToBuffer(m_vertexBuffer, floatVertices.data(), floatVertices.size() * sizeof(float));
-	CopyDataToBuffer(m_texCoordBuffer, floatTexCoords.data(), floatTexCoords.size() * sizeof(float));
-	CopyDataToBuffer(m_normalsBuffer, floatNormals.data(), floatNormals.size() * sizeof(float));
-
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, m_normalsBuffer };
-
-	m_shaderManager.SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
-	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
-	m_devcon->IASetPrimitiveTopology(renderModeMap.at(mode));
-	m_devcon->Draw(vertices.size(), 0);
-}
-
 void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
 	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
@@ -564,26 +521,28 @@ void CDirectXRenderer::SetColor(const float * color)
 	m_shaderManager.SetColor(color);
 }
 
-void CDirectXRenderer::SetColor(const int r, const int g, const int b)
+void CDirectXRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
-	float fcolor[4] = { static_cast<float>(INT_MAX) / r, static_cast<float>(INT_MAX) / g, static_cast<float>(INT_MAX) / b, 1.0f };
+	float fcolor[4] = { static_cast<float>(INT_MAX) / r, static_cast<float>(INT_MAX) / g, static_cast<float>(INT_MAX) / b, static_cast<float>(INT_MAX) / a };
 	m_shaderManager.SetColor(fcolor);
 }
 
-void CDirectXRenderer::SetColor(const float r, const float g, const float b)
+void CDirectXRenderer::SetColor(const float r, const float g, const float b, const float a)
 {
-	float fcolor[4] = { r, g, b, 1.0f };
+	float fcolor[4] = { r, g, b, a };
 	m_shaderManager.SetColor(fcolor);
 }
 
 void CDirectXRenderer::PushMatrix()
 {
-	m_viewMatrices.push_back(m_viewMatrices.back());
+	m_modelMatrices.push_back(*m_modelMatrix);
+	m_modelMatrix = &m_modelMatrices.back();
 }
 
 void CDirectXRenderer::PopMatrix()
 {
-	m_viewMatrices.pop_back();
+	m_modelMatrices.pop_back();
+	m_modelMatrix = &m_modelMatrices.back();
 	UpdateMatrices();
 }
 
@@ -600,7 +559,7 @@ void CDirectXRenderer::Translate(const double dx, const double dy, const double 
 void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
-	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(dx, dy, dz), Load(m_viewMatrices.back())));
+	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(dx, dy, dz), Load(*m_modelMatrix)));
 	UpdateMatrices();
 }
 
@@ -608,7 +567,7 @@ void CDirectXRenderer::Rotate(const double angle, const double x, const double y
 {
 	if (fabs(angle) < DBL_EPSILON) return;
 	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f);
-	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), Load(m_viewMatrices.back())));
+	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), Load(*m_modelMatrix)));
 	UpdateMatrices();
 }
 
@@ -616,18 +575,20 @@ void CDirectXRenderer::Scale(const double scale)
 {
 	if (fabs(scale - 1.0) < DBL_EPSILON) return;
 	float fscale = static_cast<float>(scale);
-	m_viewMatrices.back() = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), Load(m_viewMatrices.back())));
+	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), Load(*m_modelMatrix)));
 	UpdateMatrices();
 }
 
 void CDirectXRenderer::GetViewMatrix(float * matrix) const
 {
-	memcpy(matrix, *m_viewMatrices.back().m, sizeof(float) * 16);
+	auto m = Store(DirectX::XMMatrixMultiply(Load(*m_modelMatrix), Load(m_viewMatrix)));
+	memcpy(matrix, *m.m, sizeof(float) * 16);
 }
 
 void CDirectXRenderer::ResetViewMatrix()
 {
-	m_viewMatrices.back() = Store(DirectX::XMMatrixIdentity());
+	*m_modelMatrix = Store(DirectX::XMMatrixIdentity());
+	m_viewMatrix = Store(DirectX::XMMatrixIdentity());
 	UpdateMatrices();
 }
 
@@ -641,7 +602,8 @@ void CDirectXRenderer::LookAt(CVector3f const& position, CVector3f const& direct
 	XMVECTOR pos = Vec3ToXMVector(position);
 	XMVECTOR dir = Vec3ToXMVector(direction);
 	XMVECTOR upVec = Vec3ToXMVector(up);
-	m_viewMatrices.back() = Store(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
+	m_viewMatrix = Store(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
+	*m_modelMatrix = Store(DirectX::XMMatrixIdentity());
 	UpdateMatrices();
 }
 
@@ -673,6 +635,7 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 	m_devcon->OMGetRenderTargets(1, &oldRenderTargetView, &oldDepthStencilView);
 	m_devcon->RSGetViewports(&numViewports, &oldViewport);
 	auto oldProjectionMatrix = m_projectionMatrix;
+	auto oldViewMatrix = m_viewMatrix;
 	m_projectionMatrix = Store(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 0.0f, 1.0f));
 	PushMatrix();
 	ResetViewMatrix();
@@ -700,6 +663,7 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 	m_devcon->OMSetRenderTargets(1, &oldRenderTargetView.p, oldDepthStencilView);
 	m_devcon->RSSetViewports(numViewports, &oldViewport);
 	m_projectionMatrix = oldProjectionMatrix;
+	m_viewMatrix = oldViewMatrix;
 	PopMatrix();
 
 	return std::move(tex);
@@ -710,6 +674,11 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateTexture(const void * dat
 	auto tex = std::make_unique<CDirectXCachedTexture>(this);
 	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, type != CachedTextureType::ALPHA, 0, type);
 	return std::move(tex);
+}
+
+ICachedTexture* CDirectXRenderer::GetTexturePtr(std::wstring const& texture) const
+{
+	return m_textureManager->GetTexturePtr(texture);
 }
 
 void CDirectXRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
@@ -802,58 +771,26 @@ std::unique_ptr<IFrameBuffer> CDirectXRenderer::CreateFramebuffer() const
 	return std::make_unique<CDirectXFrameBuffer>(m_dev, const_cast<CDirectXRenderer*>(this));
 }
 
-void CDirectXRenderer::EnableLight(size_t index, bool enable)
+void CDirectXRenderer::SetNumberOfLights(size_t count)
 {
-	if (m_lightSources.size() <= index)
-	{
-		m_lightSources.resize(index + 1);
-	}
-	if ((m_lightSources[index].enabled != 0) != enable)
-	{
-		m_lightSources[index].enabled = enable ? 1 : 0;
-		m_shaderManager.SetLight(index, m_lightSources[index]);
-	}
+	static const std::string numberOfLightsKey = "lightsCount";
+	int number = static_cast<int>(count);
+	m_shaderManager.SetUniformValue(numberOfLightsKey, 1, 1, &number);
 }
 
-void CDirectXRenderer::SetLightColor(size_t index, LightningType type, float * values)
+void CDirectXRenderer::SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular)
 {
-	if (m_lightSources.size() <= index)
-	{
-		m_lightSources.resize(index + 1);
-	}
-	float * dest = m_lightSources[index].ambient;
-	if (type == LightningType::DIFFUSE) dest = m_lightSources[index].diffuse;
-	if (type == LightningType::SPECULAR) dest = m_lightSources[index].specular;
-	memcpy(dest, values, sizeof(float) * 3);
-	m_shaderManager.SetLight(index, m_lightSources[index]);
-}
-
-void CDirectXRenderer::SetLightPosition(size_t index, float* pos)
-{
-	if (m_lightSources.size() <= index)
-	{
-		m_lightSources.resize(index + 1);
-	}
-	if (memcmp(m_lightSources[index].pos, pos, sizeof(float) * 3))
-	{
-		memcpy(m_lightSources[index].pos, pos, sizeof(float) * 3);
-		m_shaderManager.SetLight(index, m_lightSources[index]);
-	}
+	sLightSource light;
+	memcpy(light.ambient, ambient, sizeof(float) * 4);
+	memcpy(light.diffuse, diffuse, sizeof(float) * 4);
+	memcpy(light.specular, specular, sizeof(float) * 4);
+	memcpy(light.pos, position.ptr(), sizeof(float) * 3);
+	m_shaderManager.SetLight(index, light);
 }
 
 float CDirectXRenderer::GetMaximumAnisotropyLevel() const
 {
 	return D3D11_REQ_MAXANISOTROPY;
-}
-
-void CDirectXRenderer::EnableVertexLightning(bool enable)
-{
-	static bool warningDisplayed = false;
-	if (enable && !warningDisplayed)
-	{
-		LogWriter::WriteLine("There is no built in vertex lightning in DirectX11");
-		warningDisplayed = true;
-	}
 }
 
 void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
@@ -922,9 +859,9 @@ void CDirectXRenderer::EnableBlending(bool enable)
 	m_devcon->OMSetBlendState(m_blendStates[index], NULL, 0xffffffff);
 }
 
-void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane /*= 1.0*/, double farPane /*= 1000.0*/)
+void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0*/, float farPane /*= 1000.0*/)
 {
-	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, static_cast<float>(nearPane), static_cast<float>(farPane)));
+	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, nearPane, farPane));
 	UpdateMatrices();
 }
 
@@ -1031,9 +968,22 @@ std::string CDirectXRenderer::GetName() const
 	return "DirectX11";
 }
 
+DirectX::XMFLOAT4X4 Transpose(DirectX::XMFLOAT4X4 const& m)
+{
+	return Store(DirectX::XMMatrixTranspose(Load(m)));
+}
+
 void CDirectXRenderer::UpdateMatrices()
 {
-	m_shaderManager.SetMatrices(*m_viewMatrices.back().m, *m_projectionMatrix.m);
+	static const std::string mvpMatrixKey = "mvp_matrix";
+	static const std::string viewMatrixKey = "view_matrix";
+	static const std::string modelMatrixKey = "model_matrix";
+	static const std::string projMatrixKey = "proj_matrix";
+	auto mvp_matrix = Store(DirectX::XMMatrixTranspose(DirectX::XMMatrixMultiply(DirectX::XMMatrixMultiply(Load(*m_modelMatrix), Load(m_viewMatrix)), Load(m_projectionMatrix))));
+	m_shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, *mvp_matrix.m);
+	m_shaderManager.SetUniformValue(viewMatrixKey, 16, 1, *Transpose(m_viewMatrix).m);
+	m_shaderManager.SetUniformValue(modelMatrixKey, 16, 1, *Transpose(*m_modelMatrix).m);
+	m_shaderManager.SetUniformValue(projMatrixKey, 16, 1, *Transpose(m_projectionMatrix).m);
 }
 
 void CDirectXRenderer::CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size)
@@ -1086,12 +1036,14 @@ void CDirectXRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	RECT rect;
 	GetClientRect(m_hWnd, &rect);
 	auto oldProjectionMatrix = m_projectionMatrix;
+	auto oldViewMatrix = m_viewMatrix;
 	m_projectionMatrix = Store(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(rect.left), static_cast<float>(rect.right),
 		static_cast<float>(rect.bottom), static_cast<float>(rect.top), 0.0f, 1.0f));
 	PushMatrix();
 	ResetViewMatrix();
 	drawHandler();
 	m_projectionMatrix = oldProjectionMatrix;
+	m_viewMatrix = oldViewMatrix;
 	PopMatrix();
 }
 

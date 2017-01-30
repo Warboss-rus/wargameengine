@@ -12,7 +12,7 @@ CLandscape::CLandscape()
 	m_deltaY = 5.0;
 }
 
-void CLandscape::Reset(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+void CLandscape::Reset(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
 	m_width = width;
 	m_depth = depth;
@@ -29,28 +29,19 @@ void CLandscape::Reset(double width, double depth, std::wstring const& texture, 
 	if (m_onUpdated) m_onUpdated();
 }
 
-void CLandscape::SetHeight(double x, double y, double value)
+void CLandscape::SetHeight(float x, float y, float value)
 {
 	m_heights[static_cast<size_t>(round((-m_width / 2 + x) * m_pointsPerWidth - m_depth / 2 + y))] = value;
 	if (m_onUpdated) m_onUpdated();
 }
 
-void CLandscape::SetHeight(unsigned int index, double value)
+float CLandscape::GetHeight(float x, float y) const
 {
-	m_heights[index] = value;
-}
-
-double CLandscape::GetHeight(double x, double y) const
-{
-	return m_heights[static_cast<size_t>((m_width / 2 + x) / (m_width / m_pointsPerWidth) + (m_depth / 2 + y) / (m_depth / m_pointsPerDepth))];
-}
-
-double CLandscape::GetHeight(unsigned int index) const
-{
+	size_t index = static_cast<size_t>((m_width / 2.0f + x) / (m_width / m_pointsPerWidth)) + static_cast<size_t>((m_depth / 2.0f + y) / m_depth);
 	return m_heights[index];
 }
 
-double CLandscape::GetWidth() const
+float CLandscape::GetWidth() const
 {
 	return m_width;
 }
@@ -82,12 +73,12 @@ bool CLandscape::isCoordsOnTable(double worldX, double worldY) const
 		&& worldY < m_depth / 2 && worldY > -m_depth / 2);
 }
 
-double CLandscape::GetDepth() const
+float CLandscape::GetDepth() const
 {
 	return m_depth;
 }
 
-double CLandscape::GetHorizontalTextureScale() const
+float CLandscape::GetHorizontalTextureScale() const
 {
 	if (m_stretchTexture)
 	{
@@ -99,7 +90,7 @@ double CLandscape::GetHorizontalTextureScale() const
 	}
 }
 
-double CLandscape::GetVerticalTextureScale() const
+float CLandscape::GetVerticalTextureScale() const
 {
 	if (m_stretchTexture)
 	{
@@ -132,7 +123,7 @@ size_t CLandscape::GetStaticObjectCount() const
 	return m_staticObjects.size();
 }
 
-CStaticObject const& CLandscape::GetStaticObject(size_t index) const
+CStaticObject & CLandscape::GetStaticObject(size_t index)
 {
 	return m_staticObjects[index];
 }

@@ -68,10 +68,8 @@ public:
 	void RemoveViewport(IViewport * viewport);
 
 	void ResizeWindow(int height, int width);
-	void EnableVertexLightning(bool enable);
 	void EnableGPUSkinning(bool enable);
 	void DisableShadowMap(IViewport& viewport);
-	void SetLightPosition(int index, float* pos);
 	void EnableMSAA(bool enable, int level = 1.0f);
 	float GetMaxAnisotropy() const;
 	void SetAnisotropyLevel(float level);
@@ -79,8 +77,6 @@ public:
 	void SetWindowTitle(std::wstring const& title);
 	void Preload(std::wstring const& image);
 	void LoadModule(std::wstring const& module);
-	void EnableLight(size_t index, bool enable = true);
-	void SetLightColor(size_t index, LightningType type, float * values);
 	bool EnableVRMode(bool enable, bool mirrorToScreen = true);
 	void AddParticleEffect(std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
 private:
@@ -120,9 +116,8 @@ private:
 	CTranslationManager m_translationManager;
 	std::function<std::unique_ptr<IScriptHandler>()> m_scriptHandlerFactory;
 	std::function<std::unique_ptr<INetSocket>()> m_socketFactory;
-	std::unique_ptr<IDrawingList> m_tableList;
-	std::unique_ptr<IDrawingList> m_tableListShadow;
-	bool m_vertexLightning;
+	std::unique_ptr<IVertexBuffer> m_tableBuffer;
+	size_t m_tableBufferSize;
 	IViewport * m_currentViewport;
 	long long m_lastFrameTime = 0;
 };

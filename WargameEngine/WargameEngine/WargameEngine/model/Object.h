@@ -32,6 +32,7 @@ public:
 	void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) override;
 	std::map<std::wstring, std::wstring> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
+	virtual IObject* GetFullObject() override;
 private:
 	std::vector<std::wstring> m_secondaryModels;
 	std::set<std::string> m_hiddenMeshes;

@@ -32,6 +32,7 @@ void CUIScrollBar::Draw() const
 	m_renderer->SetColor(0.75f, 0.75f, 0.75f);
 	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width -scrollWidth, scrollBegin + intPos),{ m_width, scrollBegin + intPos },
 	{ m_width - scrollWidth, scrollBegin + intPos + scrollSize },{ m_width, scrollBegin + intPos + scrollSize } }, {});
+	m_renderer->SetColor(0, 0, 0);
 	m_renderer->SetTexture(m_theme->texture, true);
 	float * themeTexCoords = (m_upButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
 	std::vector<CVector2f> texCoords = { CVector2f(themeTexCoords),{ themeTexCoords[2], themeTexCoords[1] },{ themeTexCoords[0], themeTexCoords[3] },{ themeTexCoords[2], themeTexCoords[3] } };

@@ -134,19 +134,40 @@ void CGameModel::RemoveParticleEffect(size_t index)
 	m_particleEffects.erase(m_particleEffects.begin() + index);
 }
 
-void CGameModel::ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+void CGameModel::ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
 {
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
 
-void CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
+void CGameModel::AddLight()
 {
-	m_onObjectCreation = handler;
+	CVector3f defaultPos;
+	m_lights.emplace_back(defaultPos);
 }
 
-void CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
+void CGameModel::RemoveLight(size_t index)
 {
-	m_onObjectRemove = handler;
+	m_lights.erase(m_lights.begin() + index);
+}
+
+CLight& CGameModel::GetLight(size_t index)
+{
+	return m_lights.at(index);
+}
+
+const std::vector<CLight>& CGameModel::GetLights() const
+{
+	return m_lights;
+}
+
+CSignalConnection<void, IObject*> CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
+{
+	return m_onObjectCreation.Connect(handler);
+}
+
+CSignalConnection<void, IObject*> CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
+{
+	return m_onObjectRemove.Connect(handler);
 }
 
 void CGameModel::Update(long long timeSinceLastUpdate)

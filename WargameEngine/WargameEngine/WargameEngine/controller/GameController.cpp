@@ -1,6 +1,7 @@
 #include "GameController.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <float.h>
 #include "ScriptRegisterFunctions.h"
 #include "../model/ObjectGroup.h"
 #include "../model/Object.h"
@@ -143,7 +144,7 @@ bool CGameController::OnRightMouseUp(CVector3f const& begin, CVector3f const& en
 	bool result = false;
 	if (m_rotationPosBegin && object)
 	{
-		float rotation = 90.0f + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180.0f / (float)M_PI);
+		float rotation = 90.0f + static_cast<float>(atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180.0f / (float)M_PI);
 		if (sqrt((point.x - m_rotationPosBegin->x) * (point.x - m_rotationPosBegin->x) + (point.y - m_rotationPosBegin->y) * (point.y - m_rotationPosBegin->y)) > 0.2)
 		{
 			object->Rotate(rotation - rot);
@@ -168,7 +169,7 @@ bool CGameController::OnMouseMove(CVector3f const& begin, CVector3f const& end, 
 	{
 		float rot = selected->GetRotation();
 		auto point = RayToPoint(begin, end);
-		float rotation = 90 + (atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180 / (float)M_PI);
+		float rotation = 90 + static_cast<float>(atan2(point.y - m_rotationPosBegin->y, point.x - m_rotationPosBegin->x) * 180.0f / (float)M_PI);
 		if (sqrt((point.x - m_rotationPosBegin->x) * (point.x - m_rotationPosBegin->x) + (point.y - m_rotationPosBegin->y) * (point.y - m_rotationPosBegin->y)) > 0.2)
 			m_model.GetSelectedObject()->Rotate(rotation - rot);
 	}
@@ -177,12 +178,14 @@ bool CGameController::OnMouseMove(CVector3f const& begin, CVector3f const& end, 
 
 bool CGameController::OnGamepadButtonStateChange(int gamepadIndex, int buttonIndex, bool newState)
 {
-	return m_onGamepadButton(gamepadIndex, buttonIndex, newState);
+	m_onGamepadButton(gamepadIndex, buttonIndex, newState);
+	return m_onGamepadButton;
 }
 
 bool CGameController::OnGamepadAxisChange(int gamepadIndex, int axisIndex, double horizontal, double vertical)
 {
-	return m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
+	m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
+	return m_onGamepadAxis;
 }
 
 void CGameController::SelectObjectGroup(double beginX, double beginY, double endX, double endY)
@@ -580,7 +583,7 @@ void CObjectDecorator::Update(long long timeSinceLastUpdate)
 	}
 	CVector3f dir = m_goTarget - m_object->GetCoords();
 	dir.Normalize();
-	m_object->SetRotation(atan2(dir.y, dir.x) * 180.0f / (float)M_PI);
+	m_object->SetRotation(static_cast<float>(atan2(dir.y, dir.x) * 180.0f / (float)M_PI));
 	dir = dir * static_cast<float>(timeSinceLastUpdate) / 1000.0f * m_goSpeed;
 	if (dir.GetLength() > (m_goTarget - m_object->GetCoords()).GetLength()) dir = (m_goTarget - m_object->GetCoords());
 	m_object->Move(dir.x, dir.y, dir.z);

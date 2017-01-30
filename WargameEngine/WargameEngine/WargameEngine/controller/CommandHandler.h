@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include "..\model\Animation.h"
+#include "../model/Animation.h"
 
 class ICommand;
 class IObject;

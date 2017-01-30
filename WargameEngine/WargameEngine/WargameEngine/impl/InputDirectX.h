@@ -1,5 +1,6 @@
 #pragma once
 #include "../view/InputBase.h"
+#include <vector>
 #include <Windows.h>
 #include <Xinput.h>
 

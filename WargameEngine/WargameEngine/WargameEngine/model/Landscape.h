@@ -9,26 +9,24 @@
 struct sDecal
 {
 	std::wstring texture;
-	double width;
-	double depth;
-	double rotation;
-	double x;
-	double y;
+	float width;
+	float depth;
+	float rotation;
+	float x;
+	float y;
 };
 
 class CLandscape
 {
 public:
 	CLandscape();
-	void Reset(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
-	void SetHeight(double x, double y, double value);
-	void SetHeight(unsigned int index, double value);
-	double GetHeight(double x, double y) const;
-	double GetHeight(unsigned int index) const;
-	double GetWidth() const;
-	double GetDepth() const;
-	double GetHorizontalTextureScale() const;
-	double GetVerticalTextureScale() const;
+	void Reset(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	void SetHeight(float x, float y, float value);
+	float GetHeight(float x, float y) const;
+	float GetWidth() const;
+	float GetDepth() const;
+	float GetHorizontalTextureScale() const;
+	float GetVerticalTextureScale() const;
 	std::wstring const& GetTexture() const;
 	unsigned int GetPointsPerWidth() const;
 	unsigned int GetPointsPerDepth() const;
@@ -38,21 +36,21 @@ public:
 	sDecal const& GetDecal(size_t index) const;
 	void AddStaticObject(CStaticObject const& object);
 	size_t GetStaticObjectCount() const;
-	CStaticObject const& GetStaticObject(size_t index) const;
+	CStaticObject & GetStaticObject(size_t index);
 	void DoOnUpdated(std::function<void()> const& onUpdated);
 private:
-	double m_width;
-	double m_depth;
-	double m_deltaX;
-	double m_deltaY;
+	float m_width;
+	float m_depth;
+	float m_deltaX;
+	float m_deltaY;
 	std::wstring m_texture;
 	unsigned int m_pointsPerWidth;
 	unsigned int m_pointsPerDepth;
-	std::vector<double> m_heights;
+	std::vector<float> m_heights;
 	std::vector<sDecal> m_decals;
 	bool m_stretchTexture;
-	double m_horizontalTextureScale;
-	double m_verticalTextureScale;
+	float m_horizontalTextureScale;
+	float m_verticalTextureScale;
 	std::vector<CStaticObject> m_staticObjects;
 	std::function<void()> m_onUpdated;
 };

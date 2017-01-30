@@ -117,6 +117,16 @@ void CTextureManager::RegisterImageReader(std::unique_ptr<IImageReader> && reade
 	m_imageReaders.push_back(std::move(reader));
 }
 
+ICachedTexture* CTextureManager::GetTexturePtr(std::wstring const& texture)
+{
+	auto pair = std::pair<std::wstring, std::vector<sTeamColor>>(texture, std::vector<sTeamColor>());
+	if (m_textures.find(pair) == m_textures.end())
+	{
+		m_textures[pair] = LoadTexture(texture, pair.second, false);
+	}
+	return m_textures[pair].get();
+}
+
 void CTextureManager::SetTexture(std::wstring const& path, TextureSlot slot, int flags)
 {
 	m_helper.ActivateTextureSlot(slot);

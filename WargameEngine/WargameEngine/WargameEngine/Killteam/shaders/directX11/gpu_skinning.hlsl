@@ -14,11 +14,10 @@ struct sMaterial
 	float Shininess;
 };
 #define NUMBEROFLIGHTS 1
-#define NUMBEROFBONES 128
+#define NUMBEROFBONES 512
 cbuffer Constant
 {
 	matrix joints[NUMBEROFBONES];
-	matrix invBindMatrices[NUMBEROFBONES];
 };
 cbuffer Fragment
 {
@@ -28,7 +27,7 @@ cbuffer Fragment
 };
 cbuffer Vertex
 {
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;
+	matrix mvp_matrix : WORLDVIEWPROJECTION;
 };
 struct PixelInputType
 {
@@ -49,10 +48,10 @@ PixelInputType VShader(float3 Pos : POSITION, float2 texCoords : TEXCOORD, float
 		for(int i = 0; i < 4; ++i)
 		{
 			int index = weightIndices[i];
-			finalPos += mul(mul(float4(Pos, 1.0f), invBindMatrices[index]), joints[index]) * weights[i];
+			finalPos += mul(float4(Pos, 1.0f), joints[index]) * weights[i];
 		}
 	}
-	result.position = mul(finalPos, WorldViewProjection);
+	result.position = mul(finalPos, mvp_matrix);
 	result.tex = texCoords;
 	return result;
 }

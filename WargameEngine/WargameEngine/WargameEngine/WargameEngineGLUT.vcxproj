@@ -55,18 +55,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

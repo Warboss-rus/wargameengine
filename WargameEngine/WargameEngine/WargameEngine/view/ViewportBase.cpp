@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "ICamera.h"
 #include "IViewHelper.h"
+#include "Matrix4.h"
 
 CViewportBase::CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer)
 	: m_x(x), m_y(y), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_renderer(renderer)
@@ -42,12 +43,12 @@ IOcclusionQuery & CViewportBase::GetOcclusionQuery(const IBaseObject* object)
 	return *it->second;
 }
 
-Matrix4F CViewportBase::GetProjectionMatrix() const
+const float* CViewportBase::GetProjectionMatrix() const
 {
 	return m_projectionMatrix;
 }
 
-Matrix4F CViewportBase::GetViewMatrix() const
+const float* CViewportBase::GetViewMatrix() const
 {
 	return m_viewMatrix;
 }
@@ -58,7 +59,7 @@ void CViewportBase::SetPolygonOffset(bool enable, float factor /*= 0.0f*/, float
 	m_polygonOffsetUnits = enable ? units : 0.0f;
 }
 
-void CViewportBase::SetClippingPlanes(double near /*= 1.0*/, double far /*= 1000.0*/)
+void CViewportBase::SetClippingPlanes(float near /*= 1.0f*/, float far /*= 1000.0f*/)
 {
 	m_nearPane = near;
 	m_farPane = far;

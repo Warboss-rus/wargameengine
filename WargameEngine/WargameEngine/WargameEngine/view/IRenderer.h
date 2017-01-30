@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <limits.h>
 #include "IShaderManager.h"
 #include "../model/TeamColor.h"
 
@@ -63,10 +64,9 @@ class IRenderer
 {
 public:
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) = 0;
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) = 0;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords) = 0;
-	virtual void SetColor(const float r, const float g, const float b) = 0;
-	virtual void SetColor(const int r, const int g, const int b) = 0;
+	virtual void SetColor(const float r, const float g, const float b, const float a = 1.0f) = 0;
+	virtual void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) = 0;
 	virtual void SetColor(const float * color) = 0;
 	virtual void SetColor(const int * color) = 0;
 
@@ -78,7 +78,6 @@ public:
 	virtual void Rotate(const double angle, const double x, const double y, const double z) = 0;
 	virtual void Scale(const double scale) = 0;
 	virtual void GetViewMatrix(float * matrix) const = 0;
-	virtual void ResetViewMatrix() = 0;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) = 0;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) = 0;
@@ -86,6 +85,7 @@ public:
 	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) = 0;
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void()> const& func, unsigned int width, unsigned int height) = 0;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) = 0;
+	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const = 0;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) = 0;
 

@@ -11,6 +11,8 @@
 #include "../view/IViewport.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "../view/Matrix4.h"
+#include "LegacyOpenGLRenderer.h"
 
 static CGameWindowGLFW* g_instance = nullptr;
 bool CGameWindowGLFW::m_visible = true;
@@ -157,14 +159,32 @@ CGameWindowGLFW::CGameWindowGLFW()
 	g_instance = this;
 
 	glfwInit();
-	glfwWindowHint(GLFW_SAMPLES, 16);
 #ifdef VULKAN_API
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 #endif
 
-	CreateNewWindow();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef _DEBUG
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+#endif
 
-	m_renderer = std::make_unique<COpenGLRenderer>();
+	CreateNewWindow();
+	try
+	{
+		m_renderer = std::make_unique<COpenGLRenderer>();
+		return;
+	}
+	catch (...)
+	{
+	}
+	//if we cannot create an OpenGL 3.3, try to create 2.0 context
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	CreateNewWindow();
+	m_renderer = std::make_unique<CLegacyGLRenderer>();
 }
 
 CGameWindowGLFW::~CGameWindowGLFW()
@@ -181,9 +201,7 @@ void CGameWindowGLFW::DoOnDrawScene(std::function<void()> const& handler)
 void CGameWindowGLFW::DoOnResize(std::function<void(int, int)> const& handler)
 {
 	m_onResize = handler;
-	int width, height;
-	glfwGetWindowSize(m_window, &width, &height);
-	OnReshape(m_window, width, height);
+	OnReshape(m_window, 600, 600);
 }
 
 void CGameWindowGLFW::DoOnShutdown(std::function<void()> const& handler)

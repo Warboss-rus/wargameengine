@@ -229,8 +229,8 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 		if(type == "usemtl")//apply material
 		{
 			iFile >> mesh.materialName;
-			mesh.polygonIndex = indexes.size();
-			if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
+			mesh.begin = indexes.size();
+			if(!meshes.empty() && mesh.begin == meshes.back().begin)
 			{
 				meshes.back() = mesh;
 			}
@@ -247,8 +247,8 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 			if(!name.empty())
 			{
 				mesh.name = name;
-				mesh.polygonIndex = indexes.size();
-				if(!meshes.empty() && mesh.polygonIndex == meshes.back().polygonIndex)
+				mesh.begin = indexes.size();
+				if(!meshes.empty() && mesh.begin == meshes.back().begin)
 				{
 					meshes.back() = mesh;
 				}

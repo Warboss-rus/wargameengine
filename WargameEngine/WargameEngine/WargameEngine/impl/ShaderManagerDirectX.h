@@ -39,7 +39,6 @@ public:
 	void SetDevice(ID3D11Device* dev);
 	void DoOnProgramChange(std::function<void()> const& handler);
 	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat) const;
-	void SetMatrices(float * modelView, float * projection);
 	void SetColor(const float * color);
 	void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess);
 	void SetLight(size_t index, sLightSource & lightSource);
@@ -86,6 +85,7 @@ private:
 	typedef std::tuple<std::wstring, std::wstring, std::wstring> ProgramCacheKey;
 	std::map<ProgramCacheKey, CDirectXShaderProgramImpl> m_programsCache;
 	mutable std::vector<CDirectXShaderProgramImpl*> m_programs;
+	mutable CDirectXShaderProgramImpl* m_activeProgram;
 
 	typedef std::vector<std::pair<LPCSTR, DXGI_FORMAT>> InputLayoutDesc;
 	mutable std::map<InputLayoutDesc, CComPtr<ID3D11InputLayout>> m_inputLayouts;

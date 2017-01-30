@@ -7,7 +7,7 @@ hunterGroupIndex = nil
 function Init()
 	--math.randomseed(os.time())
 	Viewport:CameraStrategy(30, 12, 5, 0.3)
-	EnableLight(1)
+	AddLight()
 	SetLightPosition(1, 0, 0, 50)
 	SetLightDiffuse(1, 1, 1, 1, 1)
 	SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
@@ -15,6 +15,10 @@ function Init()
 	Viewport:SetShadowMapViewport(Viewport:CreateShadowMapViewport(4096, 65, 0, 0, 50))
 	if(GetRendererName() == "DirectX11") then
 		SetShaders("directX11/per_pixel.hlsl", "directX11/per_pixel.hlsl")
+	elseif(GetRendererName() == "OpenGLES") then
+		SetShaders("GLES/per_pixel_shadow.vsh", "GLES/per_pixel_shadow.fsh")
+		UI:SetScale(2)
+		Viewport:EnableTouchMode()
 	else
 		SetShaders("openGL/per_pixel_shadow.vsh", "openGL/per_pixel_shadow.fsh")
 	end

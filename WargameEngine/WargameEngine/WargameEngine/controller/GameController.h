@@ -104,8 +104,8 @@ private:
 	std::function<void()> m_selectionCallback;
 	std::function<void()> m_updateCallback;
 	std::function<void()>m_singleCallback;
-	CSignal<int, int, bool> m_onGamepadButton;
-	CSignal<int, int, double, double> m_onGamepadAxis;
+	CExclusiveSignal<int, int, bool> m_onGamepadButton;
+	CExclusiveSignal<int, int, double, double> m_onGamepadAxis;
 	MouseButtonCallback m_lmbCallback;
 	MouseButtonCallback m_rmbCallback;
 	std::map<IObject*, std::shared_ptr<CObjectDecorator>> m_objectDecorators;

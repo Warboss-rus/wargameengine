@@ -1,6 +1,8 @@
 #include "ParticleModel.h"
 #include <fstream>
 #include <map>
+#include <limits.h>
+#include <string.h>
 #include "../rapidxml/rapidxml.hpp"
 #include "../Utils.h"
 #define _USE_MATH_DEFINES

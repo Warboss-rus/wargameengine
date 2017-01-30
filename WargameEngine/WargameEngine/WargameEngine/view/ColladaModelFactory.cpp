@@ -5,6 +5,7 @@
 #include <string>
 #include "../LogWriter.h"
 #include <algorithm>
+#include <limits.h>
 #include "../rapidxml/rapidxml.hpp"
 #include <sstream>
 #include <numeric>
@@ -624,7 +625,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 			if (triangles)
 			{
 				m.materialName = triangles->first_attribute("material")->value();
-				m.polygonIndex = indexes.size();
+				m.begin = indexes.size();
 				meshes.push_back(m);
 				xml_node<>* input = triangles->first_node("input");
 				unsigned int vertexOffset = 0;

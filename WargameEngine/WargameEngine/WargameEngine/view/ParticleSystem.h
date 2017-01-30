@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include "ParticleModel.h"
-#include "..\model\Particle.h"
+#include "../model/Particle.h"
 
 class IRenderer;
 class IShaderProgram;
@@ -16,7 +16,6 @@ public:
 	void Draw(CParticleEffect const& particleEffect);
 	IParticleUpdater* GetParticleUpdater(std::wstring const& path);
 private:
-	bool m_instanced = false;
 	std::map<std::wstring, CParticleModel> m_models;
 	IRenderer & m_renderer;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;

@@ -21,6 +21,7 @@ public:
 	void LoadTextureNow(std::wstring const& path, const std::vector<sTeamColor> * teamcolor = nullptr, int flags = 0);
 	void Reset();
 	void RegisterImageReader(std::unique_ptr<IImageReader> && reader);
+	ICachedTexture* GetTexturePtr(std::wstring const& texture);
 protected:
 	CTextureManager(CTextureManager const& other) = delete;
 private:

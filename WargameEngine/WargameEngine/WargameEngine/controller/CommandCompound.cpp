@@ -1,5 +1,5 @@
 #include "CommandCompound.h"
-#include "..\IMemoryStream.h"
+#include "../IMemoryStream.h"
 
 void CCommandCompound::Execute()
 {

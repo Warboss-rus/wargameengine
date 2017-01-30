@@ -1,26 +1,48 @@
 #pragma once
-#include <vector>
+#include <list>
 #include <functional>
 #include <algorithm>
 
-template<typename... Arguments>
+template<typename Result, typename... Arguments>
+class CSignal;
+
+template<typename Result, typename... Arguments>
+class CSignalConnection
+{
+	typedef CSignal<Result, Arguments...> Signal;
+	typedef typename std::list<typename Signal::sCallback>::iterator Iterator;
+public:
+	CSignalConnection(Iterator const& it, Signal & signal)
+		:m_it(it), m_signal(signal)
+	{}
+	CSignalConnection(CSignalConnection const& other) = default;
+	void Disconnect()
+	{
+		m_signal.RemoveByConnection(m_it);
+	}
+private:
+	Iterator m_it;
+	Signal& m_signal;
+};
+
+template<typename Result, typename... Arguments>
 class CSignal
 {
 public:
-	typedef std::function<bool(Arguments...)> Func;
-	void Connect(Func const& handler, int priority = 0, std::string const& tag = "")
+	typedef std::function<Result(Arguments...)> Func;
+	typedef CSignalConnection<Result, Arguments...> Connection;
+	Connection Connect(Func const& handler, int priority = 0, std::string const& tag = "")
 	{
 		for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
 		{
 			if (priority <= it->priority)
 			{
-				m_callbacks.insert(it, sCallback({ handler, priority, tag }));
-				return;
+				return Connection(m_callbacks.insert(it, sCallback({ handler, priority, tag })), *this);
 			}
 		}
-		m_callbacks.push_back({ handler, priority, tag });
+		return Connection(m_callbacks.insert(m_callbacks.end(), { handler, priority, tag }), *this);
 	}
-	bool operator() (Arguments... args)
+	virtual void operator() (Arguments... args)
 	{
 		for (auto callback : m_callbacks)
 		{
@@ -28,12 +50,12 @@ public:
 			{
 				continue;
 			}
-			if (callback.func(args...))
-			{
-				return true;
-			}
+			callback.func(args...);
 		}
-		return false;
+	}
+	operator bool() const 
+	{
+		return !m_callbacks.empty();
 	}
 	void RemoveByTag(std::string const& tag)
 	{
@@ -47,18 +69,41 @@ private:
 		int priority;
 		std::string tag;
 	};
-	std::vector<sCallback> m_callbacks;
+	void RemoveByConnection(typename std::list<sCallback>::iterator const& it)
+	{
+		m_callbacks.erase(it);
+	}
+	friend class CSignalConnection<Result, Arguments...>;
+protected:
+	std::list<sCallback> m_callbacks;
 };
 
-template<class... Args>
-class CScopedConnection
+template<class... Arguments>
+class CExclusiveSignal : public CSignal<bool, Arguments...>
 {
 public:
-	CScopedConnection(int id, CSignal<Args...> & signal)
-		:m_signal(signal), m_id(id)
+	void operator() (Arguments... args) override
+	{
+		for (auto& callback : this->m_callbacks)
+		{
+			if (!callback.func)
+			{
+				continue;
+			}
+			if (callback.func(args...))
+			{
+				return;
+			}
+		}
+	}
+};
+
+template<typename Result, typename... Arguments>
+class CScopedConnection : public CSignalConnection<Result, Arguments...>
+{
+public:
+	CScopedConnection(CSignalConnection<Result, Arguments...> const& connection)
+		: CSignalConnection<Result, Arguments...>(connection)
 	{}
-	~CScopedConnection() { m_signal.Remove(m_id); }
-private:
-	int m_id;
-	CSignal<Args...> & m_signal;
+	~CScopedConnection() { this->Disconnect(); }
 };

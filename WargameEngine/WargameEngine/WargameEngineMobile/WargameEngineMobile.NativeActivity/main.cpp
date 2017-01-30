@@ -70,6 +70,12 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 		*((struct saved_state*)engine->app->savedState) = engine->state;
 		engine->app->savedStateSize = sizeof(struct saved_state);
 		break;
+	case APP_CMD_RESUME:
+		if (engine->app->window)
+		{
+			engine->window->SetActive(true);
+		}
+		break;
 	case APP_CMD_INIT_WINDOW:
 		// The window is being shown, get it ready.
 		if (engine->app->window != NULL) {
@@ -80,6 +86,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 	case APP_CMD_TERM_WINDOW:
 		// The window is being hidden or closed, clean it up.
 		engine->window->Shutdown();
+		engine->app->window = nullptr;
 		break;
 	case APP_CMD_GAINED_FOCUS:
 		engine->window->SetActive(true);

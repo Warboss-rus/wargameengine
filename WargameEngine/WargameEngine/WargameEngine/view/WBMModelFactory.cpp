@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
-#include "..\Utils.h"
+#include "../Utils.h"
 
 std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::wstring const& /*filePath*/)
 {
@@ -55,7 +55,7 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 		mesh.materialName.resize(size);
 		memcpy(&mesh.materialName[0], &((char*)data)[position + 4], size);
 		position += size + 4;
-		memcpy(&mesh.polygonIndex, &((char*)data)[position], sizeof(unsigned int));
+		memcpy(&mesh.begin, &((char*)data)[position], sizeof(unsigned int));
 		position += 4;
 		meshes.push_back(mesh);
 	}

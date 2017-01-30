@@ -1,6 +1,6 @@
 #include "CommandDeleteObject.h"
-#include "..\model\IGameModel.h"
-#include "..\IMemoryStream.h"
+#include "../model/IGameModel.h"
+#include "../IMemoryStream.h"
 
 CCommandDeleteObject::CCommandDeleteObject(std::shared_ptr<IObject> object, IGameModel& model)
 	:m_pObject(object), m_model(model)

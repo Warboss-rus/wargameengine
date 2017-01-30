@@ -1,6 +1,6 @@
 #include "TranslationManager.h"
 #include <fstream>
-#include "..\Utils.h"
+#include "../Utils.h"
 
 void CTranslationManager::LoadFile(std::wstring const& path)
 {

@@ -8,6 +8,8 @@
 #include "TeamColor.h"
 #include "MovementLimiter.h"
 
+class IObject;
+
 class IBaseObject
 {
 public:
@@ -24,6 +26,7 @@ public:
 	virtual void SetRotation(float rotation) = 0;
 	virtual float GetRotation() const = 0;
 	virtual bool CastsShadow() const = 0;
+	virtual IObject* GetFullObject() = 0;
 };
 
 class IObject : public IBaseObject

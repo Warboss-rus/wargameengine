@@ -19,11 +19,11 @@ public:
 
 	virtual IOcclusionQuery & GetOcclusionQuery(const IBaseObject* object) override;
 
-	virtual Matrix4F GetProjectionMatrix() const override;
-	virtual Matrix4F GetViewMatrix() const override;
+	virtual const float* GetProjectionMatrix() const override;
+	virtual const float* GetViewMatrix() const override;
 
 	virtual void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
-	virtual void SetClippingPlanes(double near = 1.0, double far = 1000.0) override;
+	virtual void SetClippingPlanes(float near = 1.0, float far = 1000.0) override;
 
 	virtual bool PointIsInViewport(int x, int y) const override;
 
@@ -38,7 +38,6 @@ public:
 	virtual void SetUpShadowMap() const override;
 	virtual IViewport* GetShadowViewport() const override { return m_shadowMapViewport; }
 protected:
-
 	std::unique_ptr<ICamera> m_camera;
 	int m_x;
 	int m_y;
@@ -46,12 +45,12 @@ protected:
 	int m_height;
 	float m_fieldOfView;
 	IViewHelper & m_renderer;
-	Matrix4F m_projectionMatrix;
-	Matrix4F m_viewMatrix;
+	float m_projectionMatrix[16];
+	float m_viewMatrix[16];
 	float m_polygonOffsetFactor = 0.0f;
 	float m_polygonOffsetUnits = 0.0f;
-	double m_nearPane = 1.0;
-	double m_farPane = 1000.0;
+	float m_nearPane = 1.0f;
+	float m_farPane = 1000.0f;
 	IViewport* m_shadowMapViewport = nullptr;
 	std::map<const IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
 };

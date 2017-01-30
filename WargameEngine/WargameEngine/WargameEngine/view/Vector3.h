@@ -44,10 +44,23 @@ public:
 	{
 	}
 
+	CVector3& operator=(CVector3<T> const&) = default;
+
+	CVector3& operator=(T const* value)
+	{
+		*this = CVector3(value);
+		return *this;
+	}
+
 	/*
 	Получение адреса массива значений компонентов вектора
 	*/
 	operator T const*()const throw()
+	{
+		return &x;
+	}
+
+	T const* ptr() const throw()
 	{
 		return &x;
 	}

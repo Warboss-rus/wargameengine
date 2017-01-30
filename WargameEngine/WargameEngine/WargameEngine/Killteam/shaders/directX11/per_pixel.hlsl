@@ -1,10 +1,10 @@
 struct sLightSource
 {
-	bool enabled;
 	float3 pos;
 	float4 diffuse;
 	float4 ambient;
 	float4 specular;
+	bool enabled;
 };
 struct sMaterial
 {
@@ -22,8 +22,8 @@ cbuffer Constant
 };
 cbuffer Vertex
 {
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;
-	matrix WorldView : WORLDVIEW;
+	matrix mvp_matrix : WORLDVIEWPROJECTION;
+	matrix model_matrix : WORLDVIEW;
 };
 struct PixelInputType
 {
@@ -39,10 +39,10 @@ SamplerState SampleType;
 PixelInputType VShader(float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL)
 {
 	PixelInputType result;
-	result.position = mul(float4(Pos, 1.0f), WorldViewProjection);
+	result.position = mul(float4(Pos, 1.0f), mvp_matrix);
 	result.tex = texCoords;
-	result.normal = mul(float4(normal, 1.0f), WorldView).xyz;
-	result.worldPosition = mul(float4(Pos, 1.0f), WorldView).xyz;
+	result.normal = mul(float4(normal, 1.0f), model_matrix).xyz;
+	result.worldPosition = mul(float4(Pos, 1.0f), model_matrix).xyz;
 	return result;
 }
 
@@ -93,5 +93,5 @@ float4 PShader(PixelInputType input) : SV_TARGET
 	
 	float4 result = color * saturate(ambientComponent + diffuseComponent + saturate(specularComponent));
 	
-	return result + Color;
+	return result;
 }

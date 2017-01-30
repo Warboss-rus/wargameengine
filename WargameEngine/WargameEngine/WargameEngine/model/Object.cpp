@@ -167,3 +167,8 @@ bool CObject::IsGroup() const
 {
 	return false;
 }
+
+IObject* CObject::GetFullObject()
+{
+	return this;
+}

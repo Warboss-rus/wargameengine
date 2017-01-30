@@ -1,6 +1,6 @@
 #pragma once
 #include "IInput.h"
-#include "..\Signal.h"
+#include "../Signal.h"
 
 class CInputBase : public IInput
 {
@@ -34,17 +34,17 @@ protected:
 	void OnGamepadAxis(int gamepadIndex, int axisIndex, double horizontal, double vertical);
 	void OnHeadRotation(int deviceIndex, float x, float y, float z);
 private:
-	CSignal<int, int> m_onLMBDown;
-	CSignal<int, int> m_onLMBUp;
-	CSignal<int, int> m_onRMBDown;
-	CSignal<int, int> m_onRMBUp;
-	CSignal<> m_onWheelUp;
-	CSignal<> m_onWheelDown;
-	CSignal<int, int> m_onKeyDown;
-	CSignal<int, int> m_onKeyUp;
-	CSignal<wchar_t> m_onCharacter;
-	CSignal<int, int> m_onMouseMove;
-	CSignal<int, int, bool> m_onGamepadButton;
-	CSignal<int, int, double, double> m_onGamepadAxis;
-	CSignal<int, float, float, float> m_onHeadRotation;
+	CExclusiveSignal<int, int> m_onLMBDown;
+	CExclusiveSignal<int, int> m_onLMBUp;
+	CExclusiveSignal<int, int> m_onRMBDown;
+	CExclusiveSignal<int, int> m_onRMBUp;
+	CExclusiveSignal<> m_onWheelUp;
+	CExclusiveSignal<> m_onWheelDown;
+	CExclusiveSignal<int, int> m_onKeyDown;
+	CExclusiveSignal<int, int> m_onKeyUp;
+	CExclusiveSignal<wchar_t> m_onCharacter;
+	CExclusiveSignal<int, int> m_onMouseMove;
+	CExclusiveSignal<int, int, bool> m_onGamepadButton;
+	CExclusiveSignal<int, int, double, double> m_onGamepadAxis;
+	CExclusiveSignal<int, float, float, float> m_onHeadRotation;
 };

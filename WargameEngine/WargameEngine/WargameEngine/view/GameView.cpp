@@ -87,7 +87,6 @@ CGameView::CGameView(sGameViewContext * context)
 void CGameView::Init(sModule const& module)
 {
 	m_ui->ClearChildren();
-	m_vertexLightning = false;
 	m_viewports.clear();
 	int width, height;
 	m_window->GetWindowSize(width, height);
@@ -109,8 +108,7 @@ void CGameView::Init(sModule const& module)
 void CGameView::InitLandscape()
 {
 	m_gameModel->GetLandscape().DoOnUpdated([this]() {
-		m_tableList.reset();
-		m_tableListShadow.reset();
+		m_tableBuffer.reset();
 	});
 }
 
@@ -260,15 +258,35 @@ void DrawBBox(sBounding::sBox bbox, IBaseObject const& object, IRenderer & rende
 	renderer.PushMatrix();
 	renderer.Translate(object.GetX(), object.GetY(), object.GetZ());
 	renderer.Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
-	renderer.SetColor(0.0f, 0.0f, 255.0f);
 	CVector3f min = bbox.max;
 	CVector3f max = bbox.min;
-	RenderMode mode = wireframe ? RenderMode::LINE_LOOP : RenderMode::RECTANGLES;
-	renderer.RenderArrays(mode, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
-	renderer.RenderArrays(mode, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
-	renderer.RenderArrays(mode, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
-	renderer.RenderArrays(mode, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
-	renderer.SetColor(0, 0, 0);
+	if (wireframe)
+	{
+		renderer.SetColor(0.0f, 0.0f, 255.0f);
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
+		renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
+		renderer.SetColor(0, 0, 0);
+	}
+	else
+	{
+		std::vector<CVector3f> vertices = {
+			//left
+			min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] },
+			{ min[0], max[1], min[2] }, { min[0], max[1], max[2] },{ min[0], min[1], max[2] },
+			//back
+			min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] },
+			{ min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] },
+			//right
+			CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max,
+			{ max[0], max[1], min[2] }, max, { max[0], min[1], max[2] },
+			//front
+			CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
+			{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
+		};
+		renderer.RenderArrays(RenderMode::TRIANGLES, vertices, {}, {});
+	}
 	renderer.PopMatrix();
 }
 
@@ -350,51 +368,67 @@ void CGameView::DrawRuler()
 }
 void CGameView::DrawTable(bool shadowOnly)
 {
-	auto& tableList = shadowOnly ? m_tableListShadow : m_tableList;
-	tableList = m_renderer->CreateDrawingList([this, shadowOnly] {
+	if (!m_tableBuffer)
+	{
 		CLandscape const& landscape = m_gameModel->GetLandscape();
-		double x1 = -landscape.GetWidth() / 2.0;
-		double x2 = landscape.GetWidth() / 2.0;
-		double y1 = -landscape.GetDepth() / 2.0;
-		double y2 = landscape.GetDepth() / 2.0;
-		double xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
-		double ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
-		m_renderer->SetTexture(landscape.GetTexture());
-		unsigned int k = 0;
-		for (double x = x1; x <= x2 - xstep; x += xstep)
+		float x1 = -landscape.GetWidth() / 2.0f;
+		float x2 = landscape.GetWidth() / 2.0f;
+		float y1 = -landscape.GetDepth() / 2.0f;
+		float y2 = landscape.GetDepth() / 2.0f;
+		float xstep = landscape.GetWidth() / (landscape.GetPointsPerWidth() - 1);
+		float ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
+		vector<CVector3f> vertex;
+		vector<CVector2f> texCoord;
+		for (float x = x1; x <= x2 - xstep; x += xstep)
 		{
-			vector<CVector3d> vertex;
-			vector<CVector2d> texCoord;
-			for (double y = y1; y <= y2; y += ystep, k++)
+			for (float y = y1; y <= y2 - ystep; y += ystep)
 			{
 				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
-				vertex.push_back({ x, y, landscape.GetHeight(k) });
+				vertex.push_back({ x, y, landscape.GetHeight(x, y) });
+
 				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
-				vertex.push_back({ x + xstep, y, landscape.GetHeight(k + 1) });
+				vertex.push_back({ x + xstep, y, landscape.GetHeight(x + xstep, y) });
+
+				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x, y + ystep, landscape.GetHeight(x, y + ystep) });
+
+				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x + xstep, y, landscape.GetHeight(x + xstep, y) });
+
+				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x, y + ystep, landscape.GetHeight(x, y + ystep) });
+
+				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
+				vertex.push_back({ x + xstep, y + ystep, landscape.GetHeight(x + xstep, y + ystep) });
 			}
-			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, vertex, {}, texCoord);
 		}
-		m_renderer->SetTexture(L"");
-		if (!shadowOnly)//Don't draw decals because they don't cast shadows
+		m_tableBuffer = m_renderer->CreateVertexBuffer(vertex.data()->ptr(), nullptr, &texCoord.data()->x, vertex.size());
+		m_tableBufferSize = vertex.size();
+	}
+	CLandscape const& landscape = m_gameModel->GetLandscape();
+	if (!shadowOnly)m_renderer->SetTexture(landscape.GetTexture());
+	m_tableBuffer->Bind();
+	m_tableBuffer->DrawAll(m_tableBufferSize);
+	m_tableBuffer->UnBind();
+	if (!shadowOnly)//Don't draw decals because they don't cast shadows
+	{
+		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 		{
-			for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
-			{
-				sDecal const& decal = landscape.GetDecal(i);
-				m_renderer->SetTexture(decal.texture);
-				m_renderer->PushMatrix();
-				m_renderer->Translate(decal.x, decal.y, 0.0);
-				m_renderer->Rotate(decal.rotation, 0.0, 0.0, 1.0);
-				m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
-					CVector3d(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001),
-					{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001 },
-					{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001 },
-					{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001 }
-				}, {}, { CVector2d(0.0, 0.0), { 0.0, 1.0 }, { 1.0, 0.0 }, { 1.0, 1.0 } });
-				m_renderer->PopMatrix();
-			}
+			sDecal const& decal = landscape.GetDecal(i);
+			m_renderer->SetTexture(decal.texture);
+			m_renderer->PushMatrix();
+			m_renderer->Translate(decal.x, decal.y, 0.0f);
+			m_renderer->Rotate(decal.rotation, 0.0, 0.0, 1.0);
+			m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
+				CVector3f(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001f),
+				{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
+				{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001f },
+				{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001f }
+			}, {}, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
+			m_renderer->PopMatrix();
 		}
-		m_renderer->SetTexture(L"");
-	});
+	}
+	m_renderer->SetTexture(L"");
 }
 
 void CGameView::DrawObjects(bool shadowOnly)
@@ -404,15 +438,20 @@ void CGameView::DrawObjects(bool shadowOnly)
 	if (!shadowOnly)
 	{
 		if(m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
-		if (m_vertexLightning)
-		{
-			m_viewHelper->EnableVertexLightning(true);
-		}
 		m_currentViewport->SetUpShadowMap();
+		auto& lights = m_gameModel->GetLights();
+		size_t lightsCount = lights.size();
+		m_viewHelper->SetNumberOfLights(lightsCount);
+		for (size_t i = 0; i < lightsCount; ++i)
+		{
+			auto& light = lights[i];
+			m_viewHelper->SetUpLight(i, light.GetPosition(), light.GetAmbient(), light.GetDiffuse(), light.GetSpecular());
+		}
+		static const std::string eyePosKey = "viewPos";
+		CVector3f viewPos = m_currentViewport->GetCamera().GetPosition();
+		m_renderer->GetShaderManager().SetUniformValue(eyePosKey, 3, 1, viewPos.ptr());
 	}
-	auto& list = shadowOnly ? m_tableListShadow : m_tableList;
-	if (!list) DrawTable(shadowOnly);
-	list->Draw();
+	DrawTable(shadowOnly);
 	auto isVisibleInFrustum = [this](const IBaseObject* obj) {
 		int x(-1), y(-1);
 		m_viewHelper->WorldCoordsToWindowCoords(*m_currentViewport, obj->GetCoords(), x, y);
@@ -421,7 +460,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 	};
 	size_t countObjects = m_gameModel->GetObjectCount();
 	size_t staticObjectsCount = m_gameModel->GetLandscape().GetStaticObjectCount();
-	std::vector<const IBaseObject*> objects;
+	std::vector<IBaseObject*> objects;
 	objects.reserve(countObjects + staticObjectsCount);
 	for (size_t i = 0; i < countObjects; i++)
 	{
@@ -434,7 +473,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 
 	for (size_t i = 0; i < staticObjectsCount; i++)
 	{
-		auto& obj = m_gameModel->GetLandscape().GetStaticObject(i);
+		CStaticObject& obj = m_gameModel->GetLandscape().GetStaticObject(i);
 		if (isVisibleInFrustum(&obj))
 		{
 			objects.push_back(&obj);
@@ -455,7 +494,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 				m_renderer->PushMatrix();
 				m_renderer->Translate(object->GetX(), object->GetY(), object->GetCoords().z);
 				m_renderer->Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
-				IObject* fullObject = m_gameModel->Get3DObject(object).get();
+				IObject* fullObject = object->GetFullObject();
 				m_modelManager.DrawModel(object->GetPathToModel(), fullObject, shadowOnly);
 				if (fullObject)
 				{
@@ -474,7 +513,6 @@ void CGameView::DrawObjects(bool shadowOnly)
 		}, queryResult);
 	}
 	if(!shadowOnly && m_shaderProgram) shaderManager.PopProgram();
-	m_viewHelper->EnableVertexLightning(false);
 	if (!shadowOnly)
 	{
 		for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
@@ -548,11 +586,6 @@ void CGameView::ResizeWindow(int height, int width)
 	m_window->ResizeWindow(width, height);
 }
 
-void CGameView::EnableVertexLightning(bool enable)
-{ 
-	m_vertexLightning = enable;
-}
-
 IViewport& CGameView::CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition)
 {
 	m_viewports.push_back(std::make_unique<COffscreenViewport>(CachedTextureType::DEPTH, size, size, angle, *m_viewHelper, static_cast<int>(TextureSlot::eShadowMap)));
@@ -575,11 +608,6 @@ void CGameView::DisableShadowMap(IViewport& viewport)
 		}
 	}
 	viewport.SetShadowViewport(nullptr);
-}
-
-void CGameView::SetLightPosition(int index, float* pos)
-{
-	m_viewHelper->SetLightPosition(index, pos);
 }
 
 void CGameView::EnableMSAA(bool enable, int level)
@@ -605,8 +633,7 @@ void CGameView::ClearResources()
 	{
 		m_skybox->ResetList();
 	}
-	m_tableList.reset();
-	m_tableListShadow.reset();
+	m_tableBuffer.reset();
 }
 
 void CGameView::SetWindowTitle(wstring const& title)
@@ -707,16 +734,6 @@ void CGameView::DrawText3D(CVector3f const& pos, wstring const& text)
 		m_viewHelper->WorldCoordsToWindowCoords(*m_currentViewport, pos, x, y);
 		m_textWriter->PrintText(x, y, "times.ttf", 24, text);
 	});
-}
-
-void CGameView::EnableLight(size_t index, bool enable)
-{
-	m_viewHelper->EnableLight(index, enable);
-}
-
-void CGameView::SetLightColor(size_t index, LightningType type, float * values)
-{
-	m_viewHelper->SetLightColor(index, type, values);
 }
 
 bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)

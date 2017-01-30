@@ -11,13 +11,6 @@ public:
 	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) = 0;
 };
 
-enum class LightningType
-{
-	DIFFUSE,
-	AMBIENT,
-	SPECULAR
-};
-
 class CTextureManager;
 class IViewport;
 
@@ -27,15 +20,13 @@ public:
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const = 0;
 	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const = 0;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const = 0;
-	virtual void EnableLight(size_t index, bool enable) = 0;
-	virtual void SetLightColor(size_t index, LightningType type, float * values) = 0;
-	virtual void SetLightPosition(size_t index, float* pos) = 0;
+	virtual void SetNumberOfLights(size_t count) = 0;
+	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) = 0;
 	virtual float GetMaximumAnisotropyLevel() const = 0;
-	virtual void EnableVertexLightning(bool enable) = 0;
 	virtual void GetProjectionMatrix(float * matrix) const = 0;
 	virtual void EnableDepthTest(bool enable) = 0;
 	virtual void EnableBlending(bool enable) = 0;
-	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) = 0;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) = 0;
 	virtual void DrawIn2D(std::function<void()> const& drawHandler) = 0;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) = 0;
 	virtual void ClearBuffers(bool color = true, bool depth = true) = 0;

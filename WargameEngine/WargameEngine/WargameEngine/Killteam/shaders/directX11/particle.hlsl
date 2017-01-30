@@ -22,7 +22,7 @@ cbuffer Constant
 };
 cbuffer Vertex
 {
-	matrix WorldViewProjection : WORLDVIEWPROJECTION;
+	matrix mvp_matrix : WORLDVIEWPROJECTION;
 };
 struct PixelInputType
 {
@@ -36,7 +36,7 @@ SamplerState SampleType;
 PixelInputType VShader(float3 Pos : POSITION, float2 texCoords : TEXCOORD, float3 normal : NORMAL, float4 instancePosition : instancePosition, float2 instanceTexCoordPos : instanceTexCoordPos)
 {
 	PixelInputType result;
-	result.position = mul(float4(Pos * instancePosition.w + instancePosition.xyz, 1.0f), WorldViewProjection);
+	result.position = mul(float4(Pos * instancePosition.w + instancePosition.xyz, 1.0f), mvp_matrix);
 	result.tex = texCoords + instanceTexCoordPos;
 	return result;
 }

@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "..\view\Vector3.h"
+#include "../view/Vector3.h"
 
 struct sBounding
 {

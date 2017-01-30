@@ -3,11 +3,13 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "../Signal.h"
 #include "IGameModel.h"
 #include "ObjectInterface.h"
 #include "Projectile.h"
 #include "Particle.h"
 #include "Landscape.h"
+#include "Light.h"
 
 class CGameModel : public IGameModel
 {
@@ -36,10 +38,14 @@ public:
 	void Update(long long timeSinceLastUpdate);
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
-	void ResetLandscape(double width, double depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	void ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	void AddLight();
+	void RemoveLight(size_t index);
+	CLight& GetLight(size_t index);
+	const std::vector<CLight>& GetLights() const;
 
-	void DoOnObjectCreation(std::function<void(IObject*)> const& handler);
-	void DoOnObjectRemove(std::function<void(IObject*)> const& handler);
+	CSignalConnection<void, IObject*> DoOnObjectCreation(std::function<void(IObject*)> const& handler);
+	CSignalConnection<void, IObject*> DoOnObjectRemove(std::function<void(IObject*)> const& handler);
 private:
 	CGameModel(CGameModel const&) = delete;
 
@@ -49,6 +55,7 @@ private:
 	std::shared_ptr<IObject> m_selectedObject;
 	std::map<std::wstring, std::wstring> m_properties;
 	CLandscape m_landscape;
-	std::function<void(IObject *)> m_onObjectCreation;
-	std::function<void(IObject *)> m_onObjectRemove;
+	std::vector<CLight> m_lights;
+	CSignal<void, IObject *> m_onObjectCreation;
+	CSignal<void, IObject *> m_onObjectRemove;
 };

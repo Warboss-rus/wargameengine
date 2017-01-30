@@ -1,8 +1,16 @@
-uniform sampler2D texture;
+#version 330 core
+uniform sampler2D mainTexture;
+uniform vec4 color;
 
-in vec2 texCoord;
+in vec2 v_texCoord;
 
-void main()
+out vec4 fragColor;
+
+void main (void)
 {
-	gl_FragColor = texture2D(texture, texCoord);
+	vec4 tex = texture(mainTexture, v_texCoord);
+	float alpha = tex.w * color.w;
+	if(alpha <= 0.01)
+		discard;
+	fragColor = vec4(tex.xyz + color.xyz, alpha);
 }

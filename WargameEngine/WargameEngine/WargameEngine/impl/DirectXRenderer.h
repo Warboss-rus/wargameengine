@@ -8,11 +8,10 @@
 
 struct sLightSource
 {
-	float pos[3] = { 0.0f, 0.0f, 0.0f };
-	int enabled = 0;
 	float diffuse[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float ambient[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	float pos[3] = { 0.0f, 0.0f, 0.0f };
 };
 
 class CDirectXRenderer : public IViewHelper
@@ -22,11 +21,10 @@ public:
 	~CDirectXRenderer();
 
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector3d> const& vertices, std::vector<CVector3d> const& normals, std::vector<CVector2d> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords) override;
 
-	virtual void SetColor(const float r, const float g, const float b) override;
-	virtual void SetColor(const int r, const int g, const int b) override;
+	virtual void SetColor(const float r, const float g, const float b, const float a = 1.0f) override;
+	virtual void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) override;
 	virtual void SetColor(const float * color) override;
 	virtual void SetColor(const int * color) override;
 
@@ -38,7 +36,6 @@ public:
 	virtual void Rotate(const double angle, const double x, const double y, const double z) override;
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
-	virtual void ResetViewMatrix() override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
@@ -47,6 +44,7 @@ public:
 
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
+	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 
@@ -58,15 +56,13 @@ public:
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
 	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
-	virtual void EnableLight(size_t index, bool enable) override;
-	virtual void SetLightColor(size_t index, LightningType type, float * values) override;
-	virtual void SetLightPosition(size_t index, float* pos) override;
+	virtual void SetNumberOfLights(size_t count) override;
+	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
-	virtual void EnableVertexLightning(bool enable) override;
 	virtual void GetProjectionMatrix(float * matrix) const override;
 	virtual void EnableDepthTest(bool enable) override;
 	virtual void EnableBlending(bool enable) override;
-	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, double viewingAngle, double nearPane = 1.0, double farPane = 1000.0) override;
+	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
 	virtual void SetTextureManager(CTextureManager & textureManager) override;
@@ -100,6 +96,7 @@ private:
 	void UpdateMatrices();
 	void CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size);
 	void CreateDepthBuffer(unsigned int width, unsigned int height, ID3D11DepthStencilView ** buffer);
+	void ResetViewMatrix();
 
 	CComPtr<IDXGISwapChain> m_swapchain;// the pointer to the swap chain interface
 	CComPtr<ID3D11Device> m_dev;
@@ -117,8 +114,9 @@ private:
 	CComPtr<ID3D11Buffer> m_sharedIndexBuffer;
 	size_t m_buffersSize = 0;
 
-	std::vector<sLightSource> m_lightSources;
-	std::vector<DirectX::XMFLOAT4X4> m_viewMatrices;
+	std::vector<DirectX::XMFLOAT4X4> m_modelMatrices;
+	DirectX::XMFLOAT4X4* m_modelMatrix;
+	DirectX::XMFLOAT4X4 m_viewMatrix;
 	DirectX::XMFLOAT4X4 m_projectionMatrix;
 	float m_anisotropyLevel = 0.0f;
 };

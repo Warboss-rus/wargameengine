@@ -19,6 +19,7 @@ public:
 	virtual void Rotate(float rotation) final { m_rotation = fmodf(m_rotation + rotation + 360.0f, 360.0f); }
 	virtual void SetRotation(float rotation) final { m_rotation = rotation; }
 	virtual void Move(float dx, float dy, float dz) final { m_coords += {dx, dy, dz}; }
+	virtual IObject* GetFullObject() override { return nullptr; }
 protected:
 	CVector3f m_coords;
 	float m_rotation;

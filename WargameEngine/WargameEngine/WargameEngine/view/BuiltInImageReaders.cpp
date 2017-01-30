@@ -312,7 +312,7 @@ CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	if (params.convertBgra)
 	{
 		ConvertBgra(data, width * height, bpp / 8);
-		flags = 0;
+		flags &= ~TEXTURE_BGRA;
 	}
 	if (params.force32bit && bpp == 24)
 	{
@@ -347,10 +347,10 @@ CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	{
 		result = CImage(data + 18, width, height, bpp, flags);
 	}
-	if (params.convertBgra && bpp == 24)
+	if (params.convertBgra)
 	{
 		ConvertBgra(result.GetData(), result.GetWidth() * result.GetHeight(), result.GetBPP() / 8);
-		result.SetFlags(0);
+		result.SetFlags(flags & ~TEXTURE_BGRA);
 	}
 	if (params.flipBmp)
 	{
