@@ -29,17 +29,6 @@ static const std::string TEXCOORD_ATTRIB_NAME = "TexCoord";
 
 using namespace std;
 
-class COpenGLDrawingList : public IDrawingList
-{
-public:
-	COpenGLDrawingList(unsigned int id);
-	~COpenGLDrawingList();
-
-	virtual void Draw() const override;
-private:
-	unsigned int m_id;
-};
-
 class COpenGLVertexBuffer : public IVertexBuffer
 {
 public:
@@ -173,7 +162,10 @@ void ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*s
 COpenGLRenderer::COpenGLRenderer()
 	:m_textureManager(nullptr)
 {
-	glewInit();
+	if (glewInit() != GLEW_OK || !GLEW_VERSION_3_0)
+	{
+		throw std::runtime_error("failed to initialize GLEW");
+	}
 	glDepthFunc(GL_LESS);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -471,21 +463,6 @@ void COpenGlCachedTexture::UnBind() const
 COpenGlCachedTexture::operator unsigned int() const
 {
 	return m_id;
-}
-
-COpenGLDrawingList::COpenGLDrawingList(unsigned int id)
-	:m_id(id)
-{
-}
-
-COpenGLDrawingList::~COpenGLDrawingList()
-{
-	glDeleteLists(m_id, 1);
-}
-
-void COpenGLDrawingList::Draw() const
-{
-	glCallList(m_id);
 }
 
 COpenGLVertexBuffer::COpenGLVertexBuffer(CShaderManagerOpenGL & shaderMan, const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp, GLuint mainVAO)

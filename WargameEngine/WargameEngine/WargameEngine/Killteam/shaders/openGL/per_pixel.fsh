@@ -53,7 +53,7 @@ void main()
 	for(int i = 0; i < min(lightsCount, NUM_LIGHTS); ++i)
 	{
 		// calculate diffuse lighting
-		vec3 lightDir = normalize(lights[i].pos - v_pos);
+		vec3 lightDir = -normalize(lights[i].pos - v_pos);
 		
 		vec4 ambientColor = lights[i].ambient * material.ambient;
 		

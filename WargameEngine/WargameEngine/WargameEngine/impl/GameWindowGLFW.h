@@ -3,7 +3,7 @@
 #include <memory>
 #include "../view/IGameWindow.h"
 
-class COpenGLRenderer;
+class IOpenGLRenderer;
 class CInputGLFW;
 struct GLFWwindow;
 struct GLFWmonitor;
@@ -39,7 +39,7 @@ private:
 
 	GLFWwindow * m_window = NULL;
 	std::unique_ptr<CInputGLFW>m_input;
-	std::unique_ptr<COpenGLRenderer> m_renderer;
+	std::unique_ptr<IOpenGLRenderer> m_renderer;
 
 	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;

@@ -1,12 +1,12 @@
 #pragma once
-#include "../view/IViewHelper.h"
+#include "IOpenGLRenderer.h"
 #include "ShaderManagerOpenGL.h"
 #pragma warning(push)
 #pragma warning(disable: 4201)
 #include <glm/mat4x4.hpp>
 #pragma warning(pop)
 
-class COpenGLRenderer : public IViewHelper
+class COpenGLRenderer : public IOpenGLRenderer
 {
 public:
 	COpenGLRenderer();
@@ -77,7 +77,7 @@ public:
 	virtual bool SupportsFeature(Feature feature) const override;
 	virtual std::string GetName() const override;
 	
-	void EnableMultisampling(bool enable);
+	virtual void EnableMultisampling(bool enable) override;
 private:
 	void UpdateMatrices() const;
 	void UpdateColor() const;

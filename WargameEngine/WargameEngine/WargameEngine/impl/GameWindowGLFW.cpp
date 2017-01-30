@@ -12,6 +12,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "../view/Matrix4.h"
+#include "LegacyOpenGLRenderer.h"
 
 static CGameWindowGLFW* g_instance = nullptr;
 bool CGameWindowGLFW::m_visible = true;
@@ -170,7 +171,20 @@ CGameWindowGLFW::CGameWindowGLFW()
 #endif
 
 	CreateNewWindow();
-	m_renderer = std::make_unique<COpenGLRenderer>();
+	try
+	{
+		m_renderer = std::make_unique<COpenGLRenderer>();
+		return;
+	}
+	catch (...)
+	{
+	}
+	//if we cannot create an OpenGL 3.3, try to create 2.0 context
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	CreateNewWindow();
+	m_renderer = std::make_unique<CLegacyGLRenderer>();
 }
 
 CGameWindowGLFW::~CGameWindowGLFW()

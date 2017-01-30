@@ -41,6 +41,12 @@
     <ClCompile Include="impl\TextWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="impl\LegacyOpenGLRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\ShaderManagerLegacyGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\GameWindowGLFW.h">
@@ -68,6 +74,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\TextWriter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\LegacyOpenGLRenderer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ShaderManagerLegacyGL.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\IOpenGLRenderer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
