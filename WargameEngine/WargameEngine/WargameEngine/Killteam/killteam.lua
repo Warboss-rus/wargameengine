@@ -15,8 +15,12 @@ function Init()
 	Viewport:SetShadowMapViewport(Viewport:CreateShadowMapViewport(4096, 65, 0, 0, 50))
 	if(GetRendererName() == "DirectX11") then
 		SetShaders("directX11/per_pixel.hlsl", "directX11/per_pixel.hlsl")
+	elseif(GetRendererName() == "OpenGLES") then
+		SetShaders("GLES/per_pixel_shadow.vsh", "GLES/per_pixel_shadow.fsh")
+		UI:SetScale(2)
+		Viewport:EnableTouchMode()
 	else
-		SetShaders("openGL/per_pixel.vsh", "openGL/per_pixel.fsh")
+		SetShaders("openGL/per_pixel_shadow.vsh", "openGL/per_pixel_shadow.fsh")
 	end
 	SetSelectionCallback("OnSelection")
 	UI:NewButton("ButtonEndPhase", 10, 10, 30, 90, "End phase", "EndPhase")

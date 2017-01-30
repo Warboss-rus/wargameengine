@@ -352,14 +352,15 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 
 std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type)
 {
-	static const std::map<CachedTextureType, GLenum> typeMap = {
-		{ CachedTextureType::RGBA, GL_RGBA },
-		{ CachedTextureType::ALPHA, GL_RED },
-		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
+	//tuple<format, internalFormat, type>
+	static const std::map<CachedTextureType, std::tuple<GLenum, GLenum, GLenum>> formatMap = {
+		{ CachedTextureType::RGBA, {GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::ALPHA, {GL_RED, GL_R8, GL_UNSIGNED_BYTE} },
+		{ CachedTextureType::DEPTH, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};
 	auto texture = std::make_unique<COpenGlCachedTexture>();
 	texture->Bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, type == CachedTextureType::ALPHA ? GL_R8 : typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, std::get<1>(formatMap.at(type)), width, height, 0, std::get<0>(formatMap.at(type)), std::get<2>(formatMap.at(type)), data);
 	if (type == CachedTextureType::ALPHA)
 	{
 		GLint swizzleMask[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };

@@ -27,7 +27,7 @@ public:
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
 
-	operator unsigned int();
+	operator GLuint();
 private:
 	unsigned int m_id;
 };
@@ -320,14 +320,15 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 
 std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type)
 {
-	static const std::map<CachedTextureType, GLenum> typeMap = {
-		{ CachedTextureType::RGBA, GL_RGBA },
-		{ CachedTextureType::ALPHA, GL_ALPHA },
-		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
+	//tuple<format, internalFormat, type>
+	static const std::map<CachedTextureType, std::tuple<GLenum, GLenum, GLenum>> formatMap = {
+		{ CachedTextureType::RGBA, std::tuple<GLenum, GLenum, GLenum>{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::ALPHA, std::tuple<GLenum, GLenum, GLenum>{ GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::DEPTH, std::tuple<GLenum, GLenum, GLenum>{ GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};
 	auto texture = std::make_unique<COpenGLESCachedTexture>();
 	texture->Bind();
-	glTexImage2D(GL_TEXTURE_2D, 0, typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, std::get<1>(formatMap.at(type)), width, height, 0, std::get<0>(formatMap.at(type)), std::get<2>(formatMap.at(type)), data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -407,7 +408,7 @@ void COpenGLESCachedTexture::UnBind() const
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-COpenGLESCachedTexture::operator unsigned int()
+COpenGLESCachedTexture::operator GLuint()
 {
 	return m_id;
 }
@@ -800,7 +801,8 @@ void COpenGLESFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTexture
 	};
 	if (type == CachedTextureType::DEPTH)
 	{
-		glDrawBuffers(0, NULL);
+		GLenum buffers[] = { GL_NONE };
+		glDrawBuffers(1, buffers);
 		glReadBuffer(GL_NONE);
 	}
 	glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGLESCachedTexture&)texture, 0);

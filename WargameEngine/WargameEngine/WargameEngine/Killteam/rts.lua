@@ -16,6 +16,10 @@ function Init()
 	EnableMSAA()
 	if(GetRendererName() == "DirectX11") then
 		SetShaders("directX11/per_pixel.hlsl", "directX11/per_pixel.hlsl")
+	elseif(GetRendererName() == "OpenGLES") then
+		SetShaders("GLES/per_pixel_shadow.vsh", "GLES/per_pixel_shadow.fsh")
+		UI:SetScale(2)
+		Viewport:EnableTouchMode()
 	else
 		SetShaders("openGL/per_pixel_shadow.vsh", "openGL/per_pixel_shadow.fsh")
 	end

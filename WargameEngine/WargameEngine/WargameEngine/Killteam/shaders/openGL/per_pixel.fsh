@@ -26,6 +26,8 @@ in vec3 v_normal;
 in vec3 v_pos;
 in vec2 v_texcoord;
 
+out vec4 fragColor;
+
 vec4 CalculateDiffuseColor(vec3 normal,	vec3 light,	vec4 diffuseLight, vec4 diffuseMaterial, float attenuation)
 {
 	float diffuseFactor = max(dot(normal, light), 0.0) * attenuation;
@@ -37,7 +39,7 @@ vec4 CalculateSpecularColor(vec3 reflectedLight, vec3 eye, vec4 specularLight, v
 {
 	float specularFactor = max(dot(reflectedLight, eye), 0.0);	
 	float specularIntensity = pow(specularFactor, shininess) * attenuation;
-	if (dot(reflectedLight, eye) < 0)
+	if (dot(reflectedLight, eye) < 0.0)
 	{
 		 return vec4(0.4, 0.4, 0.4, 1.0);
 	}
@@ -53,7 +55,7 @@ void main()
 	for(int i = 0; i < min(lightsCount, NUM_LIGHTS); ++i)
 	{
 		// calculate diffuse lighting
-		vec3 lightDir = -normalize(lights[i].pos - v_pos);
+		vec3 lightDir = normalize(lights[i].pos - v_pos);
 		
 		vec4 ambientColor = lights[i].ambient * material.ambient;
 		
@@ -66,7 +68,7 @@ void main()
 		vec3 reflectedLight = reflect(-lightDir , normal);
 		vec4 specularColor = CalculateSpecularColor(
 			reflectedLight, 
-			normalize(viewPos - v_pos), 
+			normalize(viewPos + v_pos), 
 			lights[i].specular, 
 			material.specular, 
 			material.shininess,
@@ -75,5 +77,5 @@ void main()
 		lighting += (diffuseColor + ambientColor + clamp(specularColor, 0.0, 1.0)).xyz;
 	}
 
-	gl_FragColor = vec4(color.xyz * lighting, color.a);
+	fragColor = vec4(color.xyz * lighting, color.a);
 }

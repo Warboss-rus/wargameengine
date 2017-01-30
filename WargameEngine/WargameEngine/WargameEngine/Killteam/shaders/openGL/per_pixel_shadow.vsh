@@ -1,25 +1,28 @@
+#version 330 core
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec3 Normal;
+layout (location = 2) in vec2 TexCoord;
+
+uniform mat4 mvp_matrix;
+uniform mat4 model_matrix;
+uniform mat4 view_matrix;
 uniform mat4 lightMatrix;
 
-varying vec3 normal;
-varying vec3 eyeDir;	// eye direction
-varying vec3 lightDir;
-varying vec4 lpos;
+out vec3 v_normal;
+out vec4 v_lpos;
+out vec3 v_pos;
+out vec2 v_texcoord;
 
 void main()
 {
-	// Calculate vertex position
-	gl_Position = ftransform();
+	gl_Position = mvp_matrix * vec4(Position, 1.0);
 	
-	// calculate normal in eye space
-	normal = normalize(gl_NormalMatrix * gl_Normal);
+	v_pos = (model_matrix * view_matrix * vec4(Position, 1.0)).xyz;
 	
-	eyeDir = -(gl_ModelViewMatrix * gl_Vertex).xyz;
+	v_normal = mat3(transpose(inverse(model_matrix))) * Normal;
 	
-	lightDir = vec3(gl_LightSource[0].position) + eyeDir;
+	v_texcoord = TexCoord;
 	
-	// copy multi texture coordinates
-	gl_TexCoord[0] = gl_MultiTexCoord0;
-	
-	vec4 vpos = gl_ModelViewMatrix * gl_Vertex;
-	lpos = lightMatrix * vpos;
+	vec4 vpos = view_matrix * vec4(Position, 1.0);
+	v_lpos = lightMatrix * vpos;
 }
