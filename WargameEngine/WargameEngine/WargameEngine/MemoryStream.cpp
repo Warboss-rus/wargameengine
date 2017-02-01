@@ -16,6 +16,14 @@ unsigned char CReadMemoryStream::ReadByte()
 	return m_data[m_position++];
 }
 
+short CReadMemoryStream::ReadShort()
+{
+	int16_t result;
+	memcpy(&result, &m_data[m_position], sizeof(int16_t));
+	m_position += sizeof(int16_t);
+	return result;
+}
+
 int CReadMemoryStream::ReadInt()
 {
 	int32_t result;
@@ -24,12 +32,17 @@ int CReadMemoryStream::ReadInt()
 	return result;
 }
 
-size_t CReadMemoryStream::ReadSizeT()
+unsigned CReadMemoryStream::ReadUnsigned()
 {
 	uint32_t result;
 	memcpy(&result, &m_data[m_position], sizeof(uint32_t));
 	m_position += sizeof(uint32_t);
 	return result;
+}
+
+size_t CReadMemoryStream::ReadSizeT()
+{
+	return ReadUnsigned();
 }
 
 float CReadMemoryStream::ReadFloat()
@@ -50,7 +63,7 @@ double CReadMemoryStream::ReadDouble()
 
 std::string CReadMemoryStream::ReadString()
 {
-	size_t size = ReadSizeT();
+	size_t size = ReadUnsigned();
 	std::string result(&m_data[m_position], size);
 	m_position += size;
 	return result;
@@ -58,7 +71,7 @@ std::string CReadMemoryStream::ReadString()
 
 std::wstring CReadMemoryStream::ReadWString()
 {
-	size_t size = ReadSizeT();
+	size_t size = ReadUnsigned();
 	std::string result(&m_data[m_position], size);
 	m_position += size;
 	return Utf8ToWstring(result);
@@ -70,6 +83,17 @@ void* CReadMemoryStream::ReadPointer()
 	memcpy(&result, &m_data[m_position], sizeof(uint32_t));
 	m_position += sizeof(uint32_t);
 	return reinterpret_cast<void*>(result);
+}
+
+void CReadMemoryStream::ReadData(void* data, size_t size)
+{
+	memcpy(data, m_data + m_position, size);
+	m_position += size;
+}
+
+void CReadMemoryStream::Seek(size_t pos)
+{
+	m_position = pos;
 }
 
 void CWriteMemoryStream::WriteBool(bool value)
@@ -91,6 +115,11 @@ void CWriteMemoryStream::WriteInt(int value)
 }
 
 void CWriteMemoryStream::WriteSizeT(size_t value)
+{
+	WriteUnsigned(static_cast<unsigned>(value));
+}
+
+void CWriteMemoryStream::WriteUnsigned(unsigned value)
 {
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + sizeof(uint32_t));
@@ -114,7 +143,7 @@ void CWriteMemoryStream::WriteDouble(double value)
 
 void CWriteMemoryStream::WriteString(std::string const& value)
 {
-	WriteSizeT(value.size());
+	WriteUnsigned(value.size());
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + value.size());
 	memcpy(&m_data[oldSize], value.c_str(), value.size());

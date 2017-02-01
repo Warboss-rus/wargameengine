@@ -413,7 +413,7 @@ void CGameController::Load(std::wstring const& filename)
 	m_network->CallStateRecievedCallback();
 }
 
-void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3f const& pos)
+void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> const& object, CVector3f const& pos)
 {
 	if (!object)
 	{
@@ -495,12 +495,12 @@ bool CGameController::OnKeyPress(unsigned char key, bool shift, bool ctrl, bool 
 	return false;
 }
 
-void CGameController::MoveObject(std::shared_ptr<IObject> obj, float deltaX, float deltaY)
+void CGameController::MoveObject(std::shared_ptr<IObject> const& obj, float deltaX, float deltaY)
 {
 	m_commandHandler->AddNewMoveObject(obj, deltaX, deltaY);
 }
 
-void CGameController::RotateObject(std::shared_ptr<IObject> obj, float deltaRot)
+void CGameController::RotateObject(std::shared_ptr<IObject> const& obj, float deltaRot)
 {
 	m_commandHandler->AddNewRotateObject(obj, deltaRot);
 }
@@ -514,22 +514,22 @@ std::shared_ptr<IObject> CGameController::CreateObject(std::wstring const& model
 	return object;
 }
 
-void CGameController::DeleteObject(std::shared_ptr<IObject> obj)
+void CGameController::DeleteObject(std::shared_ptr<IObject> const& obj)
 {
 	m_commandHandler->AddNewDeleteObject(obj, m_model);
 }
 
-void CGameController::SetObjectProperty(std::shared_ptr<IObject> obj, std::wstring const& key, std::wstring const& value)
+void CGameController::SetObjectProperty(std::shared_ptr<IObject> const& obj, std::wstring const& key, std::wstring const& value)
 {
 	m_commandHandler->AddNewChangeProperty(obj, key, value);
 }
 
-void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed)
+void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, eAnimationLoopMode loopMode, float speed)
 {
 	m_commandHandler->AddNewPlayAnimation(object, animation, loopMode, speed);
 }
 
-void CGameController::ObjectGoTo(std::shared_ptr<IObject> object, float x, float y, float speed, std::string const& animation, float animationSpeed)
+void CGameController::ObjectGoTo(std::shared_ptr<IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed)
 {
 	m_commandHandler->AddNewGoTo(GetDecorator(object), x, y, speed, animation, animationSpeed);
 }
@@ -559,7 +559,7 @@ bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind 
 }
 
 CObjectDecorator::CObjectDecorator(std::shared_ptr<IObject> const& object)
-	:m_object(object)
+	:m_object(object), m_goSpeed(0.0f)
 {
 }
 

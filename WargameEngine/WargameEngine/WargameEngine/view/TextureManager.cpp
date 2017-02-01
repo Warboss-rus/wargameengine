@@ -3,6 +3,7 @@
 #include "../AsyncFileProvider.h"
 #include "IImageReader.h"
 #include "../Utils.h"
+#include "../MemoryStream.h"
 
 void CTextureManager::UseTexture(CImage const& img, ICachedTexture& texture, int additionalFlags)
 {
@@ -154,9 +155,11 @@ void ApplyTeamcolor(CImage & image, std::wstring const& maskFile, unsigned char 
 		LogWriter::WriteLine(L"Texture manager: Cannot open mask file " + path);
 		return;
 	}
-	int maskHeight = *(int*)&(maskData[0x12]);
-	int maskWidth = *(int*)&(maskData[0x16]);
-	short maskbpp = *(short*)&(maskData[0x1C]);
+	CReadMemoryStream stream(maskData.data());
+	stream.Seek(0x12);
+	int maskHeight = stream.ReadInt();
+	int maskWidth = stream.ReadInt();
+	short maskbpp = stream.ReadShort();
 	if (image.GetFlags() & TEXTURE_HAS_ALPHA)
 	{
 		std::swap(color[0], color[2]);
@@ -166,13 +169,13 @@ void ApplyTeamcolor(CImage & image, std::wstring const& maskFile, unsigned char 
 		LogWriter::WriteLine(L"Texture manager: Mask file is not greyscale " + maskFile);
 		return;
 	}
-	for (unsigned int x = 0; x < image.GetWidth(); ++x)
+	for (size_t x = 0; x < image.GetWidth(); ++x)
 	{
-		for (unsigned int y = 0; y < image.GetHeight(); ++y)
+		for (size_t y = 0; y < image.GetHeight(); ++y)
 		{
-			unsigned int pos = (x * image.GetHeight() + y) * image.GetBPP() / 8;
-			unsigned int maskPos = 54 + x * maskWidth / image.GetHeight() * maskHeight + y * maskHeight / image.GetHeight();
-			for (unsigned int i = 0; i < 3; ++i)
+			size_t pos = (x * image.GetHeight() + y) * image.GetBPP() / 8;
+			size_t maskPos = 54 + x * maskWidth / image.GetHeight() * maskHeight + y * maskHeight / image.GetHeight();
+			for (size_t i = 0; i < 3; ++i)
 			{
 				image.GetData()[pos + i] = static_cast<unsigned char>(image.GetData()[pos + i] * (1.0 - maskData[maskPos] / 255.0) + color[i] * (maskData[maskPos] / 255.0));
 			}

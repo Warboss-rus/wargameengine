@@ -2,7 +2,6 @@
 #include "../LogWriter.h"
 #include "../view/TextureManager.h"
 #include "../Utils.h"
-#include "../view/Matrix4.h"
 #include "../view/IViewport.h"
 #include <GLES2/gl2ext.h>//GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, GL_BGRA_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT
 #include <GLES3/gl3.h>
@@ -226,7 +225,7 @@ void COpenGLESRenderer::Rotate(double angle, double x, double y, double z)
 void COpenGLESRenderer::GetViewMatrix(float * matrix) const
 {
 	glm::mat4 modelView = m_viewMatrix * *m_modelMatrix;
-	memcpy(matrix, glm::value_ptr(modelView), sizeof(Matrix4F));
+	memcpy(matrix, glm::value_ptr(modelView), sizeof(float) * 16);
 }
 
 void COpenGLESRenderer::ResetViewMatrix()

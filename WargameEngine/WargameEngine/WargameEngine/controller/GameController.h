@@ -30,7 +30,7 @@ private:
 class CGameController : public IStateManager
 {
 public:
-	typedef std::function<bool(std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
+	typedef std::function<bool(std::shared_ptr<IObject> const& obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
 
 	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine);
 	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
@@ -59,10 +59,10 @@ public:
 	void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);
 	bool OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt);
 	std::shared_ptr<IObject> CreateObject(std::wstring const& model, float x, float y, float rotation);
-	void DeleteObject(std::shared_ptr<IObject> obj);
-	void SetObjectProperty(std::shared_ptr<IObject> obj, std::wstring const& key, std::wstring const& value);
-	void PlayObjectAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
-	void ObjectGoTo(std::shared_ptr<IObject> object, float x, float y, float speed, std::string const& animation, float animationSpeed);
+	void DeleteObject(std::shared_ptr<IObject> const& obj);
+	void SetObjectProperty(std::shared_ptr<IObject> const& obj, std::wstring const& key, std::wstring const& value);
+	void PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
+	void ObjectGoTo(std::shared_ptr<IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed);
 	CCommandHandler & GetCommandHandler();
 	CNetwork& GetNetwork();
 	std::shared_ptr<CObjectDecorator> GetDecorator(std::shared_ptr<IObject> const& object);
@@ -79,9 +79,9 @@ private:
 	std::shared_ptr<IObject> GetNearestObject(const float * start, const float * end);
 	void SelectObjectGroup(double beginX, double beginY, double endX, double endY);
 	void SelectObject(const float * begin, const float * end, bool add, bool noCallback = false);
-	void TryMoveSelectedObject(std::shared_ptr<IObject> object, CVector3f const& pos);
-	void MoveObject(std::shared_ptr<IObject> obj, float deltaX, float deltaY);
-	void RotateObject(std::shared_ptr<IObject> obj, float deltaRot);
+	void TryMoveSelectedObject(std::shared_ptr<IObject> const& object, CVector3f const& pos);
+	void MoveObject(std::shared_ptr<IObject> const& obj, float deltaX, float deltaY);
+	void RotateObject(std::shared_ptr<IObject> const& obj, float deltaRot);
 	size_t BBoxlos(CVector3f const& origin, sBounding * target, IObject * shooter, IObject * targetObject);
 	CVector3f RayToPoint(CVector3f const& begin, CVector3f const& end, float z = 0);
 	static void PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream);

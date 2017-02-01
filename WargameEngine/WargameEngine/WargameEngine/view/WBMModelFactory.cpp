@@ -6,6 +6,7 @@
 #include <cstring>
 #include <algorithm>
 #include "../Utils.h"
+#include "../MemoryStream.h"
 
 std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::wstring const& /*filePath*/)
 {
@@ -21,64 +22,39 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 	std::vector<sJoint> joints;
 	std::vector<sAnimation> animations;
 	
+	CReadMemoryStream stream(reinterpret_cast<char*>(data));
 	std::map<std::string, sMaterial> materials;
-	unsigned int count;
-	unsigned int size;
-	unsigned int version;
-	memcpy(&version, data, sizeof(unsigned int));
-	memcpy(&size, &((char*)data)[4], sizeof(unsigned int));
+	stream.ReadUnsigned();//version
+	unsigned int size = stream.ReadUnsigned();
 	vertices.resize(size / sizeof(CVector3f));
-	memcpy(&vertices[0], &((char*)data)[8], size);
-	unsigned int position = size + 8;
-	memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
+	stream.ReadData(vertices.data(), size);
+	size = stream.ReadUnsigned();
 	textureCoords.resize(size / sizeof(CVector2f));
-	memcpy(&textureCoords[0], &((char*)data)[position + 4], size);
-	position += size + 4;
-	memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
+	stream.ReadData(textureCoords.data(), size);
+	size = stream.ReadUnsigned();
 	normals.resize(size / sizeof(CVector3f));
-	memcpy(&normals[0], &((char*)data)[position + 4], size);
-	position += size + 4;
-	memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
+	stream.ReadData(normals.data(), size);
+	size = stream.ReadUnsigned();
 	indexes.resize(size / sizeof(unsigned int));
-	memcpy(&indexes[0], &((char*)data)[position + 4], size);
-	position += size + 4;
-	memcpy(&count, &((char*)data)[position], sizeof(unsigned int));
-	position += 4;
+	stream.ReadData(indexes.data(), size);
+	unsigned int count = stream.ReadUnsigned();
 	for(unsigned int i = 0; i < count; ++i)
 	{
 		sMesh mesh;
-		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
-		mesh.name.resize(size);
-		memcpy(&mesh.name[0], &((char*)data)[position + 4], size);
-		position += size + 4;
-		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
-		mesh.materialName.resize(size);
-		memcpy(&mesh.materialName[0], &((char*)data)[position + 4], size);
-		position += size + 4;
-		memcpy(&mesh.begin, &((char*)data)[position], sizeof(unsigned int));
-		position += 4;
+		mesh.name = stream.ReadString();
+		mesh.materialName = stream.ReadString();
+		mesh.begin = stream.ReadUnsigned();
 		meshes.push_back(mesh);
 	}
-	memcpy(&count, &((char*)data)[position], sizeof(unsigned int));
-	position += 4;
+	count = stream.ReadUnsigned();
 	for(unsigned int i = 0; i < count; ++i)
 	{
-		std::string key;
-		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
-		key.resize(size);
-		memcpy(&key[0], &((char*)data)[position + 4], size);
-		position += size + 4;
-		memcpy(&materials[key].ambient[0], &((char*)data)[position + 4], sizeof(float) * 3);
-		memcpy(&materials[key].diffuse[0], &((char*)data)[position + 4 + sizeof(float) * 3], sizeof(float) * 3);
-		memcpy(&materials[key].specular[0], &((char*)data)[position + 4 + sizeof(float) * 6], sizeof(float) * 3);
-		memcpy(&materials[key].shininess, &((char*)data)[position + 4 + sizeof(float) * 9], sizeof(float));
-		position += sizeof(float) * 10;
-		memcpy(&size, &((char*)data)[position], sizeof(unsigned int));
-		std::string texture;
-		texture.resize(size);
-		memcpy(&texture[0], &((char*)data)[position + 4], size);
-		materials[key].texture = Utf8ToWstring(texture);
-		position += size + 4;
+		std::string key = stream.ReadString();
+		stream.ReadData(materials[key].ambient, sizeof(float) * 3);
+		stream.ReadData(materials[key].diffuse, sizeof(float) * 3);
+		stream.ReadData(materials[key].specular, sizeof(float) * 3);
+		materials[key].shininess = stream.ReadFloat();
+		materials[key].texture = Utf8ToWstring(stream.ReadString());
 	}
 	materialManager =  CMaterialManager(materials);
 	auto result = std::make_unique<C3DModel>(dummyModel);

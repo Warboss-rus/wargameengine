@@ -9,13 +9,17 @@ public:
 
 	virtual bool ReadBool() override;
 	virtual unsigned char ReadByte() override;
+	virtual short ReadShort() override;
 	virtual int ReadInt() override;
+	virtual unsigned ReadUnsigned() override;
 	virtual size_t ReadSizeT() override;
 	virtual float ReadFloat() override;
 	virtual double ReadDouble() override;
 	virtual std::string ReadString() override;
 	virtual std::wstring ReadWString() override;
 	virtual void* ReadPointer() override;
+	virtual void ReadData(void* data, size_t size) override;
+	virtual void Seek(size_t pos) override;
 private:
 	const char* m_data;
 	size_t m_position;
@@ -27,6 +31,7 @@ public:
 	virtual void WriteBool(bool value) override;
 	virtual void WriteByte(unsigned char value) override;
 	virtual void WriteInt(int value) override;
+	virtual void WriteUnsigned(unsigned value) override;
 	virtual void WriteSizeT(size_t value) override;
 	virtual void WriteFloat(float value) override;
 	virtual void WriteDouble(double value) override;

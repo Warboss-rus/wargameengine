@@ -58,7 +58,7 @@ public:
 		}
 	}
 
-	void AddTask(std::shared_ptr<ITask> task)
+	void AddTask(std::shared_ptr<ITask> const& task)
 	{
 		std::lock_guard<std::mutex> lk(m_tasksMutex);
 		m_tasks.push_back(task);
@@ -249,7 +249,7 @@ public:
 	std::vector<std::shared_ptr<ITask>> m_storedTasks;
 	std::deque<sTimedCallback> m_timedCallbacks;
 	size_t m_nextTimedCallbackIndex = 0;
-	unsigned int m_maxThreads = std::thread::hardware_concurrency();
+	size_t m_maxThreads = std::thread::hardware_concurrency();
 	bool m_cancelled = false;
 	std::vector<std::thread> m_threads;
 	std::condition_variable m_conditional;

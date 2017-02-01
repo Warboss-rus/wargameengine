@@ -103,7 +103,7 @@ void CNetwork::Update()
 		}
 		else if (type == 2) //command
 		{
-			stream.ReadSizeT();//skip size
+			stream.ReadUnsigned();//skip size
 			char command = m_netData[5];//read without moving forward
 			switch (command)
 			{
@@ -111,9 +111,10 @@ void CNetwork::Update()
 			{
 				uint32_t address;
 				memcpy(&address, m_netData + 6, sizeof(uint32_t));
-				auto translated = m_translator.at(reinterpret_cast<void*>(address));
+				void * addressPtr = reinterpret_cast<void*>(address);
+				uint32_t translated = reinterpret_cast<uint32_t>(m_translator.at(addressPtr));
 				memcpy(m_netData + 6, &translated, sizeof(uint32_t));
-				m_translator.erase(reinterpret_cast<void*>(address));
+				m_translator.erase(addressPtr);
 				LogWriter::WriteLine("DeleteObject received");
 			}break;
 			case 2://MoveObject
@@ -124,7 +125,7 @@ void CNetwork::Update()
 			{//replace address
 				uint32_t address;
 				memcpy(&address, m_netData + 6, sizeof(uint32_t));
-				auto translated = m_translator.at(reinterpret_cast<void*>(address));
+				uint32_t translated = reinterpret_cast<uint32_t>(m_translator.at(reinterpret_cast<void*>(address)));
 				memcpy(m_netData + 6, &translated, sizeof(uint32_t));
 				LogWriter::WriteLine("Action received");
 			}break;

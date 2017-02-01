@@ -7,6 +7,9 @@
 CViewportBase::CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer)
 	: m_x(x), m_y(y), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_renderer(renderer)
 {
+	Matrix4F emptyMatrix;
+	memcpy(m_viewMatrix, emptyMatrix, sizeof(float) * 16);
+	memcpy(m_projectionMatrix, emptyMatrix, sizeof(float) * 16);
 }
 
 CViewportBase::~CViewportBase()

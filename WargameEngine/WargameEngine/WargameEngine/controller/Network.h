@@ -39,8 +39,8 @@ private:
 	std::unique_ptr<INetSocket> m_socket;
 	std::map<void*, void*> m_translator;
 	bool m_host;
-	int m_netRecievedSize;
-	int m_netTotalSize;
+	unsigned m_netRecievedSize;
+	unsigned m_netTotalSize;
 	char * m_netData;
 	OnStateRecievedHandler m_stateRecievedCallback;
 	OnStringReceivedHandler m_stringRecievedCallback;

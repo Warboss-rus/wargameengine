@@ -50,6 +50,7 @@ public:
 	C3DModel(double scale, double rotateX, double rotateY, double rotateZ);
 	~C3DModel();
 	C3DModel(C3DModel const& other);
+	C3DModel& operator=(C3DModel const& other) = default;
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
 		CMaterialManager & materials, std::vector<sMesh> & meshes);
 	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);

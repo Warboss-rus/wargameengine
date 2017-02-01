@@ -8,7 +8,7 @@
 #include <string>
 #include "../Utils.h"
 
-unsigned char* Convert24To32Bit(unsigned char * data, unsigned int width, unsigned int height, std::vector<unsigned char> & result)
+unsigned char* Convert24To32Bit(unsigned char * data, size_t width, size_t height, std::vector<unsigned char> & result)
 {
 	size_t oldSize = result.size();
 	result.reserve(oldSize + width * height * 4);
@@ -22,7 +22,7 @@ unsigned char* Convert24To32Bit(unsigned char * data, unsigned int width, unsign
 	return result.data() + oldSize + 1;
 }
 
-void ConvertTo32Bit(unsigned char* data, unsigned int width, unsigned int height, std::vector<unsigned char> & uncompressedData, TextureMipMaps * mipmaps = nullptr)
+void ConvertTo32Bit(unsigned char* data, size_t width, size_t height, std::vector<unsigned char> & uncompressedData, TextureMipMaps * mipmaps = nullptr)
 {
 	std::vector<unsigned char> result;
 	Convert24To32Bit(data, width, height, result);

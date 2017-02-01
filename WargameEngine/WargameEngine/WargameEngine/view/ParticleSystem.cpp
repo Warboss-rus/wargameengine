@@ -46,25 +46,27 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 	bool useTexCoordAttrib = model.HasDifferentTexCoords();
 	bool useColorAttrib = model.HasDifferentColors();
 	auto& shaderManager = m_renderer.GetShaderManager();
+	auto& particles = particleEffect.GetParticles();
+	size_t particlesCount = particles.size();
 
 	if (m_shaderProgram)
 	{
 		shaderManager.PushProgram(*m_shaderProgram);
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
 		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
-		auto buffer = m_renderer.CreateVertexBuffer(&vertex->x, nullptr, &texCoord->x, 6, true);
+		auto buffer = m_renderer.CreateVertexBuffer(reinterpret_cast<float*>(vertex), nullptr, reinterpret_cast<float*>(texCoord), 6, true);
 		buffer->Bind();
-		shaderManager.SetVertexAttribute("instancePosition", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetPositionCache().data(), true);
+		shaderManager.SetVertexAttribute("instancePosition", 4, particlesCount, particleEffect.GetPositionCache().data(), true);
 		if (useTexCoordAttrib)
 		{
-			shaderManager.SetVertexAttribute("instanceTexCoordPos", 2, particleEffect.GetParticles().size(), (float*)particleEffect.GetTexCoordCache().data(), true);
+			shaderManager.SetVertexAttribute("instanceTexCoordPos", 2, particlesCount, particleEffect.GetTexCoordCache().data(), true);
 		}
 		if (useColorAttrib)
 		{
-			shaderManager.SetVertexAttribute("instanceColor", 4, particleEffect.GetParticles().size(), (float*)particleEffect.GetColorCache().data(), true);
+			shaderManager.SetVertexAttribute("instanceColor", 4, particlesCount, particleEffect.GetColorCache().data(), true);
 		}
 
-		buffer->DrawInstanced(6, particleEffect.GetParticles().size());
+		buffer->DrawInstanced(6, particlesCount);
 		static float empty[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		shaderManager.DisableVertexAttribute("instanceColor", 4, empty);
 		shaderManager.DisableVertexAttribute("instancePosition", 4, empty);
@@ -74,11 +76,11 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 	}
 	else
 	{
-		m_vertexBuffer.resize(particleEffect.GetParticles().size() * 6);
-		m_texCoordBuffer2.resize(particleEffect.GetParticles().size() * 6);
-		if (useColorAttrib) m_colorBuffer.resize(particleEffect.GetParticles().size() * 4 * 6);
+		m_vertexBuffer.resize(particlesCount * 6);
+		m_texCoordBuffer2.resize(particlesCount * 6);
+		if (useColorAttrib) m_colorBuffer.resize(particlesCount * 4 * 6);
 		size_t arrIndex = 0;
-		for (auto& particle : particleEffect.GetParticles())
+		for (auto& particle : particles)
 		{
 			CVector3f pos(particle.m_position);
 			float scale = *particle.m_scale;
