@@ -3,6 +3,7 @@
 #define GLFW_INCLUDE_VULKAN
 #endif
 #include <GLFW/glfw3.h>
+#define VR_API_EXPORT
 #include <openvr.h>
 #include "InputGLFW.h"
 #include "OpenGLRenderer.h"
@@ -118,7 +119,7 @@ void CGameWindowGLFW::LaunchMainLoop()
 				for (int i = 0; i < 2; ++i)
 				{
 					unsigned int t = reinterpret_cast<const COpenGlCachedTexture&>(*m_eyeTextures[i]);
-					const vr::Texture_t tex = { reinterpret_cast<void*>(t), API_OpenGL, ColorSpace_Gamma };
+					const vr::Texture_t tex = { reinterpret_cast<void*>(t), TextureType_OpenGL, ColorSpace_Gamma };
 					 compositor->Submit(vr::EVREye(i), &tex);
 				}
 				compositor->PostPresentHandoff();

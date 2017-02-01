@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\openvr_api_public.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\jsoncpp.cpp">
+      <Filter>Src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vrcommon\dirtools_public.cpp">
+      <Filter>VRCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vrcommon\envvartools_public.cpp">
+      <Filter>VRCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vrcommon\pathtools_public.cpp">
+      <Filter>VRCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vrcommon\sharedlibtools_public.cpp">
+      <Filter>VRCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vrcommon\hmderrors_public.cpp">
+      <Filter>VRCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vrcommon\vrpathregistry_public.cpp">
+      <Filter>VRCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vrcommon\strtools_public.cpp">
+      <Filter>VRCommon</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Src">
+      <UniqueIdentifier>{8C0BDC52-9314-3DED-AE12-95F55302C98E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VRCommon">
+      <UniqueIdentifier>{3A7CBB8B-3A21-3CF9-92DA-1C650005F707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{03ccd50c-1e8e-470b-be21-c9d871f3ba04}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="headers\openvr.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\openvr_capi.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\openvr_driver.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

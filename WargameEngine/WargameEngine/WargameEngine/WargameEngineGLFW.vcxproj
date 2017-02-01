@@ -96,31 +96,31 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
-    <LibraryPath>..\..\FMod\lib;..\..\openvr\lib\win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -134,7 +134,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;openvr_api.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -148,7 +148,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;openvr_api.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -165,7 +165,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;openvr_api.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -182,7 +182,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;openvr_api.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -200,7 +200,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;openvr_api.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
@@ -216,7 +216,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;openvr_api.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -238,8 +238,11 @@
     <ProjectReference Include="..\..\glfw\glfw.vcxproj">
       <Project>{a1e46d6e-6f4c-4974-8fda-17203ff36f1e}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\LUA\LUA.vcxproj">
+    <ProjectReference Include="..\..\LUA\LUA.vcxproj">
       <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\openvr\openvr_api.vcxproj">
+      <Project>{ce6e0fb8-b46d-3437-8ba4-3f45e47732c4}</Project>
     </ProjectReference>
     <ProjectReference Include="WargameEngine.vcxproj">
       <Project>{525b45ef-5fb2-495e-8f33-27363e097e50}</Project>

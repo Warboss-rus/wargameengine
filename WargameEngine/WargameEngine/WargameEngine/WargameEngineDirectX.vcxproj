@@ -95,30 +95,30 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -231,7 +231,7 @@
     <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\LUA\LUA.vcxproj">
+    <ProjectReference Include="..\..\LUA\LUA.vcxproj">
       <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
     </ProjectReference>
     <ProjectReference Include="WargameEngine.vcxproj">
