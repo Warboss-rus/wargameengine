@@ -253,7 +253,7 @@ void CGameView::DrawUI()
 	});
 }
 
-void DrawBBox(sBounding::sBox bbox, IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
+void DrawBBox(sBounding::sBox const& bbox, IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
 {
 	renderer.PushMatrix();
 	renderer.Translate(object.GetX(), object.GetY(), object.GetZ());

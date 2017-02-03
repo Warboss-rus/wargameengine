@@ -165,19 +165,19 @@ void CShaderManagerLegacyGL::SetUniformValue(std::string const& uniform, int ele
 	switch (elementSize)
 	{
 	case 1:
-		glUniform1fv(unfrm, count, value);
+		glUniform1fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 2:
-		glUniform2fv(unfrm, count, value);
+		glUniform2fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 3:
-		glUniform3fv(unfrm, count, value);
+		glUniform3fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 4:
-		glUniform4fv(unfrm, count, value);
+		glUniform4fv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 16:
-		glUniformMatrix4fv(unfrm, count, false, value);
+		glUniformMatrix4fv(unfrm, static_cast<GLsizei>(count), false, value);
 		break;
 	default:
 		throw std::runtime_error("Unknown elementSize. 1, 2, 3, 4 or 16 expected");
@@ -190,16 +190,16 @@ void CShaderManagerLegacyGL::SetUniformValue(std::string const& uniform, int ele
 	switch (elementSize)
 	{
 	case 1:
-		glUniform1iv(unfrm, count, value);
+		glUniform1iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 2:
-		glUniform2iv(unfrm, count, value);
+		glUniform2iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 3:
-		glUniform3iv(unfrm, count, value);
+		glUniform3iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 4:
-		glUniform4iv(unfrm, count, value);
+		glUniform4iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	default:
 		throw std::runtime_error("Unknown elementSize. 1, 2, 3 or 4 expected");
@@ -212,16 +212,16 @@ void CShaderManagerLegacyGL::SetUniformValue(std::string const& uniform, int ele
 	switch (elementSize)
 	{
 	case 1:
-		glUniform1uiv(unfrm, count, value);
+		glUniform1uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 2:
-		glUniform2uiv(unfrm, count, value);
+		glUniform2uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 3:
-		glUniform3uiv(unfrm, count, value);
+		glUniform3uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 4:
-		glUniform4uiv(unfrm, count, value);
+		glUniform4uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	default:
 		throw std::runtime_error("Unknown elementSize. 1, 2, 3 or 4 expected");

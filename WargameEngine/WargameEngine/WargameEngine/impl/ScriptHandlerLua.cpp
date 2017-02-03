@@ -36,6 +36,11 @@ public:
 		return static_cast<int>(luaL_checkinteger(m_lua_state, index + m_diff));
 	}
 
+	virtual size_t GetSizeT(int index) const override
+	{
+		return static_cast<size_t>(luaL_checkinteger(m_lua_state, index + m_diff));
+	}
+
 	virtual double GetDbl(int index) const override
 	{
 		return static_cast<double>(luaL_checknumber(m_lua_state, index + m_diff));

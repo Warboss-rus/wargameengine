@@ -17,11 +17,11 @@ private:
 	void Reset();
 	void Translate(float transX, float transY);
 	void Rotate(float rotZ, float rotX);
-	float m_transX;
-	float m_transY;
-	float m_transZ;
-	float m_rotX;
-	float m_rotY;
-	float m_rotZ;
-	IInput* m_input;
+	float m_transX = 0.0f;
+	float m_transY = 0.0f;
+	float m_transZ = 0.0f;
+	float m_rotX = 0.0f;
+	float m_rotY = 0.0f;
+	float m_rotZ = 0.0f;
+	IInput* m_input = nullptr;
 };

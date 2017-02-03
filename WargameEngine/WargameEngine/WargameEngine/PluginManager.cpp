@@ -5,8 +5,8 @@
 void CPluginManager::LoadPlugin(std::wstring const& file)
 {
 	CPlugin plugin(file);
-	PluginGetTypeFunction typeFunc = (PluginGetTypeFunction)plugin.GetFunction("GetType");
-	PluginGetClassFunction instanceFunc = (PluginGetClassFunction)plugin.GetFunction("GetClass");
+	PluginGetTypeFunction typeFunc = reinterpret_cast<PluginGetTypeFunction>(plugin.GetFunction("GetType"));
+	PluginGetClassFunction instanceFunc = reinterpret_cast<PluginGetClassFunction>(plugin.GetFunction("GetClass"));
 	if (!typeFunc || !instanceFunc)
 	{
 		LogWriter::WriteLine(L"A plugin " + file + L" don't have a GetType and GetClass functions.");

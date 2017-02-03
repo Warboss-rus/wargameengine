@@ -63,7 +63,7 @@ double CReadMemoryStream::ReadDouble()
 
 std::string CReadMemoryStream::ReadString()
 {
-	size_t size = ReadUnsigned();
+	size_t size = ReadSizeT();
 	std::string result(&m_data[m_position], size);
 	m_position += size;
 	return result;
@@ -71,7 +71,7 @@ std::string CReadMemoryStream::ReadString()
 
 std::wstring CReadMemoryStream::ReadWString()
 {
-	size_t size = ReadUnsigned();
+	size_t size = ReadSizeT();
 	std::string result(&m_data[m_position], size);
 	m_position += size;
 	return Utf8ToWstring(result);
@@ -79,9 +79,9 @@ std::wstring CReadMemoryStream::ReadWString()
 
 void* CReadMemoryStream::ReadPointer()
 {
-	uint32_t result;
-	memcpy(&result, &m_data[m_position], sizeof(uint32_t));
-	m_position += sizeof(uint32_t);
+	uint64_t result;
+	memcpy(&result, &m_data[m_position], sizeof(uint64_t));
+	m_position += sizeof(uint64_t);
 	return reinterpret_cast<void*>(result);
 }
 
@@ -143,7 +143,7 @@ void CWriteMemoryStream::WriteDouble(double value)
 
 void CWriteMemoryStream::WriteString(std::string const& value)
 {
-	WriteUnsigned(value.size());
+	WriteSizeT(value.size());
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + value.size());
 	memcpy(&m_data[oldSize], value.c_str(), value.size());
@@ -157,8 +157,8 @@ void CWriteMemoryStream::WriteWString(std::wstring const& value)
 void CWriteMemoryStream::WritePointer(void* value)
 {
 	size_t oldSize = m_data.size();
-	m_data.resize(oldSize + sizeof(uint32_t));
-	memcpy(&m_data[oldSize], &value, sizeof(uint32_t));
+	m_data.resize(oldSize + sizeof(uint64_t));
+	memcpy(&m_data[oldSize], &value, sizeof(uint64_t));
 }
 
 char * CWriteMemoryStream::GetData()

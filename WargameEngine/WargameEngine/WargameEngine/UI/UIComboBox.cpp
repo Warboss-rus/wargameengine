@@ -223,7 +223,7 @@ void CUIComboBox::SetOnChangeCallback(std::function<void()> const& onChange)
 	m_onChange = onChange; 
 }
 
-void CUIComboBox::SetTheme(std::shared_ptr<CUITheme> theme) 
+void CUIComboBox::SetTheme(std::shared_ptr<CUITheme> const& theme)
 { 
 	m_theme = theme; 
 	m_scrollbar = CUIScrollBar(theme, m_renderer); 

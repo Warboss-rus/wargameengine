@@ -64,7 +64,7 @@ CUIElement::~CUIElement()
 {
 }
 
-void CUIElement::AddChild(std::string const& name, std::shared_ptr<IUIElement> element)
+void CUIElement::AddChild(std::string const& name, std::shared_ptr<IUIElement> const& element)
 {
 	m_children[name] = element;
 	element->SetTheme(m_theme);
@@ -295,7 +295,7 @@ bool CUIElement::IsFocused(const IUIElement * child) const
 	return true;
 }
 
-void CUIElement::SetTheme(std::shared_ptr<CUITheme> theme)
+void CUIElement::SetTheme(std::shared_ptr<CUITheme> const& theme)
 {
 	m_theme = theme;
 	Invalidate();

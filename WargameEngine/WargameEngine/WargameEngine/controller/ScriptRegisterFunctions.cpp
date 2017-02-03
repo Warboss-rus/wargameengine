@@ -70,8 +70,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(REMOVE_LIGHT, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
-		int i = args.GetInt(1) - 1;
-		if (i < 0) throw std::runtime_error("light index must be greater than 0");
+		size_t i = args.GetSizeT(1) - 1;
 		model.RemoveLight(i);
 		return nullptr;
 	});
@@ -79,8 +78,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(SET_LIGHT_SOURCE_POSITION, [&](IArguments const& args) {
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (index, x, y, z)");
-		int i = args.GetInt(1) - 1;
-		if (i < 0) throw std::runtime_error("light index must be greater than 0");
+		size_t i = args.GetSizeT(1) - 1;
 		float pos[3] = { 0.0f, 0.0f, 0.0f };
 		pos[0] = args.GetFloat(2);
 		pos[1] = args.GetFloat(3);
@@ -92,8 +90,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(SET_LIGHT_SOURCE_AMBIENT, [&](IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 argument expected (index, r, g, b, a)");
-		long i = args.GetLong(1) - 1;
-		if (i < 0) throw std::runtime_error("light index must be greater than 0");
+		size_t i = args.GetSizeT(1) - 1;
 		float color[4];
 		color[0] = args.GetFloat(2);
 		color[1] = args.GetFloat(3);
@@ -106,8 +103,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(SET_LIGHT_SOURCE_DIFFUSE, [&](IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 argument expected (index, r, g, b, a)");
-		long i = args.GetLong(1) - 1;
-		if (i < 0) throw std::runtime_error("light index must be greater than 0");
+		size_t i = args.GetSizeT(1) - 1;
 		float color[4];
 		color[0] = args.GetFloat(2);
 		color[1] = args.GetFloat(3);
@@ -120,8 +116,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(SET_LIGHT_SOURCE_SPECULAR, [&](IArguments const& args) {
 		if (args.GetCount() != 5)
 			throw std::runtime_error("5 argument expected (index, r, g, b, a)");
-		long i = args.GetLong(1) - 1;
-		if (i < 0) throw std::runtime_error("light index must be greater than 0");
+		size_t i = args.GetSizeT(1) - 1;
 		float color[4];
 		color[0] = args.GetFloat(2);
 		color[1] = args.GetFloat(3);
@@ -291,7 +286,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		size_t count = args.GetLong(2);
+		size_t count = args.GetSizeT(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -305,7 +300,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		size_t count = args.GetLong(2);
+		size_t count = args.GetSizeT(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 2) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -319,7 +314,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		size_t count = args.GetLong(2);
+		size_t count = args.GetSizeT(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 3) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -333,7 +328,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		size_t count = args.GetLong(2);
+		size_t count = args.GetSizeT(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 4) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -347,7 +342,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 arguments expected (uniform name, values count, values array)");
 		std::string name = args.GetStr(1);
-		size_t count = args.GetLong(2);
+		size_t count = args.GetSizeT(2);
 		std::vector<float> value = args.GetFloatArray(3);
 		if (value.size() < count * 16) throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
@@ -464,7 +459,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	handler.RegisterFunction(DELETE_TIMED_CALLBACK, [&](IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (ID)");
-		size_t id = args.GetLong(1);
+		size_t id = args.GetSizeT(1);
 		threadPool.RemoveTimedCallback(id);
 		return nullptr;
 	});

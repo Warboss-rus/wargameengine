@@ -8,7 +8,6 @@
 constexpr float PI = (float)M_PI;
 
 CCameraFirstPerson::CCameraFirstPerson()
-	:m_input(nullptr)
 {
 	Reset();
 }

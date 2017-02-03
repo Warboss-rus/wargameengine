@@ -16,6 +16,7 @@ CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandl
 {
 	m_model.DoOnObjectCreation(std::bind(&IPhysicsEngine::AddDynamicObject, &m_physicsEngine, std::placeholders::_1, 1.0));
 	m_model.DoOnObjectRemove(std::bind(&IPhysicsEngine::RemoveDynamicObject, &m_physicsEngine, std::placeholders::_1));
+	m_destroyThread = false;
 }
 
 void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath)
@@ -37,9 +38,25 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 	RegisterUI(*m_scriptHandler, view.GetUI(), view.GetTranslationManager());
 	RegisterObject(*m_scriptHandler, *this, m_model, view.GetModelManager());
 	RegisterViewport(*m_scriptHandler, view);
-	m_scriptHandler->RunScript(scriptPath);
+	{
+		auto lock = m_model.LockModel();
+		m_scriptHandler->RunScript(scriptPath);
+	}
 
 	m_lastUpdateTime = GetCurrentTimeLL();
+}
+
+void CGameController::InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath)
+{
+	m_controllerThread = std::thread([this, &view, socketFactory, scriptPath] {
+		Init(view, socketFactory, scriptPath);
+		auto lastUpdateTime = std::chrono::high_resolution_clock::now();
+		while (!m_destroyThread)
+		{
+			Update();
+			std::this_thread::sleep_until(lastUpdateTime + std::chrono::milliseconds(m_updatePeriod));
+		}
+	});
 }
 
 void CGameController::Update()

@@ -183,8 +183,8 @@ void LoadAnimations(xml_node<> * element, vector<sJoint> const& joints, vector<s
 						}
 					}
 					anims.push_back(anim);
-					if (parent != -1)
-						anims[parent].children.push_back(static_cast<unsigned>(anims.size() - 1));
+					if (parent > 0)
+						anims[static_cast<size_t>(parent)].children.push_back(anims.size() - 1);
 					break;
 				}
 			}
@@ -507,7 +507,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 				if (jointSource && invMatrices)//assign inv_bind_matricies
 				{
 					vector<float> inv = GetValues<float>(invMatrices);
-					unsigned int index = 0;
+					size_t index = 0;
 					stringstream sstream(jointSource->value());
 					while (sstream.good())
 					{
@@ -518,7 +518,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 						{
 							memcpy(it->invBindMatrix, &inv[index * 16], sizeof(float) * 16);
 						}
-						index++;
+						++index;
 					}
 				}
 				xml_node<> * vertex_weights = skin->first_node("vertex_weights");
@@ -538,8 +538,8 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 						}
 						input = input->next_sibling("input");
 					}
-					vector<unsigned int> vcount = GetValues<unsigned int>(vertex_weights->first_node("vcount"));
-					vector<unsigned int> v = GetValues<unsigned int>(vertex_weights->first_node("v"));
+					vector<unsigned int> vcount = GetValues<unsigned>(vertex_weights->first_node("vcount"));
+					vector<size_t> v = GetValues<size_t>(vertex_weights->first_node("v"));
 					vector<string> jointNames;
 					string sname = jointSource->first_node()->value();
 					replace(sname.begin(), sname.end(), '\0', ' ');
@@ -557,13 +557,13 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 					{
 						for (size_t k = 0; k < vcount[i]; k++)
 						{
-							unsigned int jointIndex = v[l + k * 2];
+							size_t jointIndex = v[l + k * 2];
 							if (jointIndex >= jointNames.size())
 							{
 								//LogWriter::WriteLine("Model loading warning. Error parsing joints information");
 								continue;
 							}
-							unsigned int weightIndex = v[l + k * 2 + 1];
+							size_t weightIndex = v[l + k * 2 + 1];
 							for (size_t m = 0; m < joints.size(); ++m)
 							{
 								if (joints[m].bone == jointNames[jointIndex])
@@ -628,9 +628,9 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 				m.begin = indexes.size();
 				meshes.push_back(m);
 				xml_node<>* input = triangles->first_node("input");
-				unsigned int vertexOffset = 0;
-				unsigned int normalOffset = 0;
-				unsigned int texcoordOffset = 0;
+				size_t vertexOffset = 0;
+				size_t normalOffset = 0;
+				size_t texcoordOffset = 0;
 				size_t maxOffset = 0;
 				vector<float> vert;
 				vector<float> normal;
@@ -706,7 +706,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 					vector<float>& weightPtr = tempWeights[meshId];
 					weights.insert(weights.end(), weightPtr.begin(), weightPtr.end());
 				}
-				vector<unsigned int> currentIndexes;
+				vector<size_t> currentIndexes;
 				xml_node<>* polygons = triangles->first_node("p");
 				while (polygons)
 				{
@@ -727,7 +727,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 						}
 						else
 						{
-							currentIndexes.push_back(static_cast<unsigned>(i));
+							currentIndexes.push_back(i);
 							if (currentIndexes.size() == maxOffset)
 							{
 								CVector3f vertex(&vert[currentIndexes[vertexOffset] * 3]);

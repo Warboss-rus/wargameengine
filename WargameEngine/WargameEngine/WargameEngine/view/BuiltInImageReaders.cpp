@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 #include "../Utils.h"
+#include "../MemoryStream.h"
 
 unsigned char* Convert24To32Bit(unsigned char * data, size_t width, size_t height, std::vector<unsigned char> & result)
 {
@@ -194,14 +195,13 @@ void FlipImage(unsigned char * data, unsigned int width, unsigned int height, un
 {
 	if (!compressed)
 	{
-		unsigned char * temp = new unsigned char[width * bpp];
+		std::vector<unsigned char> temp(width * bpp);
 		for (unsigned int y = 0; y < height; ++y)
 		{
-			memcpy(temp, &data[y * width * bpp], sizeof(unsigned char) * bpp * width);
+			memcpy(temp.data(), &data[y * width * bpp], sizeof(unsigned char) * bpp * width);
 			memcpy(&data[y * width * bpp], &data[(height - y - 1) * width * bpp], sizeof(unsigned char) * bpp * width);
-			memcpy(&data[(height - y - 1) * width * bpp], temp, sizeof(unsigned char) * bpp * width);
+			memcpy(&data[(height - y - 1) * width * bpp], temp.data(), sizeof(unsigned char) * bpp * width);
 		}
-		delete[] temp;
 	}
 	else
 	{
@@ -296,10 +296,14 @@ bool CBmpImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, st
 
 CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, sReaderParameters const& params)
 {
-	unsigned int headerSize = *(int*)&(data[0x0A]);     // Position in the file where the actual data begins
-	unsigned int width = *(int*)&(data[0x12]);
-	unsigned int height = *(int*)&(data[0x16]);
-	unsigned short bpp = *(short*)&(data[0x1C]);
+	CReadMemoryStream stream(reinterpret_cast<char*>(data));
+	stream.Seek(0x0A);
+	int headerSize = stream.ReadInt();
+	stream.ReadInt();//skip 4 bytes
+	int height = stream.ReadInt();
+	int width = stream.ReadInt();
+	stream.ReadShort();//skip 2 bytes
+	short bpp = stream.ReadShort();
 	int flags = TEXTURE_BGRA;
 	if (bpp != 24)flags |= TEXTURE_HAS_ALPHA;
 	if (headerSize == 0)  // Some BMP files are misformatted, guess missing information

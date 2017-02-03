@@ -50,7 +50,7 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 	handler.RegisterMethod(CLASS_VIEWPORT, GET_VIEWPORT, [&](void*, IArguments const& args) {
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
-		int index = args.GetInt(1);
+		size_t index = args.GetSizeT(1);
 		return FunctionArgument(&view.GetViewport(index), CLASS_VIEWPORT);
 	});
 

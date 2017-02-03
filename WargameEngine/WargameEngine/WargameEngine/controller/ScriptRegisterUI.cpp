@@ -192,7 +192,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		size_t index = static_cast<unsigned int>(args.GetLong(1));
+		size_t index = args.GetSizeT(1);
 		if(index < c->GetItemsCount())
 		{
 			c->DeleteItem(index);		
@@ -222,8 +222,8 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		long index = args.GetLong(1) - 1;
-		if (index >= 0 && index < static_cast<long>(c->GetItemsCount()))
+		size_t index = args.GetSizeT(1) - 1;
+		if (index < c->GetItemsCount())
 		{
 			return c->GetItem(index);
 		}
@@ -242,8 +242,8 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (index)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		long index = args.GetLong(1) - 1;
-		if (index >= 0 && index < static_cast<long>(c->GetItemsCount()))
+		size_t index = args.GetSizeT(1) - 1;
+		if (index < c->GetItemsCount())
 		{
 			c->SetSelected(index);
 		}

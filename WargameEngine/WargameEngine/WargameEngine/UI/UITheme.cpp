@@ -114,18 +114,16 @@ float atoff(const char * ch)
 	return static_cast<float>(atof(ch));
 }
 
-void GetValues(float * array, const char* data, unsigned int max = UINT_MAX)
+void GetValues(float * array, const char* data, size_t max = UINT_MAX)
 {
 	char * fl = strtok((char*)data, " \n\t");
-	unsigned int i = 0;
-	while (fl != NULL && i < max)
+	for(size_t i = 0; (i < max) && fl; ++i)
 	{
 		for (size_t j = 0; j < strlen(fl); ++j)
 		{
 			if (fl[j] == ',') fl[j] = '.';
 		}
 		array[i] = atoff(fl);
-		i++;
 		fl = strtok(NULL, " \n\t");
 	}
 }

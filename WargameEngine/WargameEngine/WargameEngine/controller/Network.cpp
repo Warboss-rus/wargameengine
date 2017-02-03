@@ -14,7 +14,6 @@ CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandle
 	, m_host(true)
 	, m_netRecievedSize(0)
 	, m_netTotalSize(0)
-	, m_netData(NULL)
 	, m_stateManager(stateManager)
 	, m_commandHandler(commandHandler)
 	, m_model(model)
@@ -50,7 +49,7 @@ void CNetwork::Stop()
 {
 	m_socket.reset();
 	m_host = true;
-	m_netData = NULL;
+	m_netData.clear();
 	m_netRecievedSize = 0;
 	m_netTotalSize = 0;
 }
@@ -59,9 +58,9 @@ void CNetwork::Update()
 {
 	if (!m_socket) return;
 	int result;
-	if (m_netData)
+	if (!m_netData.empty())
 	{
-		result = m_socket->RecieveData(m_netData + m_netRecievedSize, m_netTotalSize - m_netRecievedSize);
+		result = m_socket->RecieveData(m_netData.data() + m_netRecievedSize, m_netTotalSize - m_netRecievedSize);
 		m_netRecievedSize += result;
 	}
 	else
@@ -70,19 +69,19 @@ void CNetwork::Update()
 		result = m_socket->RecieveData(data, 128);
 		if (result > 0)
 		{
-			m_netTotalSize = *(unsigned int*)&data[1];
-			m_netData = new char[m_netTotalSize];
+			m_netTotalSize = CReadMemoryStream(data + 1).ReadSizeT();
+			m_netData.resize(m_netTotalSize);
 			m_netRecievedSize = result;
-			memcpy(m_netData, data, result);
+			memcpy(m_netData.data(), data, result);
 		}
 	}
 	if (result == 0)
 	{
 		m_socket.reset();
 	}
-	if (m_netData && m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
+	if (!m_netData.empty() && m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
 	{
-		CReadMemoryStream stream(m_netData);
+		CReadMemoryStream stream(m_netData.data());
 		unsigned char type = stream.ReadByte();
 		if (type == 0) //string
 		{
@@ -96,7 +95,7 @@ void CNetwork::Update()
 		else if (type == 1) //state
 		{
 			char state[30];
-			sprintf(state, "State Received. Size=%d.", m_netRecievedSize);
+			sprintf(state, "State Received. Size=%zu.", m_netRecievedSize);
 			LogWriter::WriteLine(state);
 			m_stateManager.LoadState(stream);
 			if (m_stateRecievedCallback) m_stateRecievedCallback();
@@ -109,11 +108,11 @@ void CNetwork::Update()
 			{
 			case 1://DeleteObject, remove from translator
 			{
-				uint32_t address;
-				memcpy(&address, m_netData + 6, sizeof(uint32_t));
+				uint64_t address;
+				memcpy(&address, m_netData.data() + 6, sizeof(uint64_t));
 				void * addressPtr = reinterpret_cast<void*>(address);
-				uint32_t translated = reinterpret_cast<uint32_t>(m_translator.at(addressPtr));
-				memcpy(m_netData + 6, &translated, sizeof(uint32_t));
+				uint64_t translated = reinterpret_cast<uint64_t>(m_translator.at(addressPtr));
+				memcpy(m_netData.data() + 6, &translated, sizeof(uint64_t));
 				m_translator.erase(addressPtr);
 				LogWriter::WriteLine("DeleteObject received");
 			}break;
@@ -123,10 +122,10 @@ void CNetwork::Update()
 			case 6://PlayAnimation
 			case 7://GoTo
 			{//replace address
-				uint32_t address;
-				memcpy(&address, m_netData + 6, sizeof(uint32_t));
-				uint32_t translated = reinterpret_cast<uint32_t>(m_translator.at(reinterpret_cast<void*>(address)));
-				memcpy(m_netData + 6, &translated, sizeof(uint32_t));
+				uint64_t address;
+				memcpy(&address, m_netData.data() + 6, sizeof(uint64_t));
+				uint64_t translated = reinterpret_cast<uint64_t>(m_translator.at(reinterpret_cast<void*>(address)));
+				memcpy(m_netData.data() + 6, &translated, sizeof(uint64_t));
 				LogWriter::WriteLine("Action received");
 			}break;
 			case 0://CreateObject
@@ -140,8 +139,8 @@ void CNetwork::Update()
 			m_commandHandler.ReadCommandFromStream(stream, m_model);
 			if (command == 0)//CreateObject, add to translator
 			{
-				uint32_t address;
-				memcpy(&address, m_netData + 6, sizeof(uint32_t));
+				uint64_t address;
+				memcpy(&address, m_netData.data() + 6, sizeof(uint64_t));
 				m_translator[reinterpret_cast<void*>(address)] = m_model.Get3DObject(m_model.GetObjectCount() - 1).get();
 				LogWriter::WriteLine("CreateObject received");
 			}
@@ -150,8 +149,7 @@ void CNetwork::Update()
 		{
 			LogWriter::WriteLine("Net error. Invalid data received.");
 		}
-		delete[] m_netData;
-		m_netData = NULL;
+		m_netData.clear();
 		m_netTotalSize = 0;
 		m_netRecievedSize = 0;
 	}
@@ -204,10 +202,10 @@ void CNetwork::SendAction(ICommand const& command)
 	command.Serialize(result);
 	if (result.GetData()[5] != 5 && result.GetData()[5] != 0)//it is delete, move, rotate or change object property action, so it contains an object addresses that needs to be translated
 	{
-		uint32_t addr;
-		memcpy(&addr, &result.GetData()[6], sizeof(uint32_t));
+		uint64_t addr;
+		memcpy(&addr, &result.GetData()[6], sizeof(uint64_t));
 		auto newAddr = GetAddress(reinterpret_cast<void*>(addr));
-		memcpy(&result.GetData()[6], &newAddr, sizeof(uint32_t));
+		memcpy(&result.GetData()[6], &newAddr, sizeof(uint64_t));
 	}
 	uint32_t size = static_cast<uint32_t>(result.GetSize());
 	memcpy(&result.GetData()[1], &size, sizeof(uint32_t));
@@ -232,12 +230,12 @@ void* CNetwork::GetAddress(void* object)
 	return 0;
 }
 
-void CNetwork::AddAddressLocal(std::shared_ptr<IObject> obj)
+void CNetwork::AddAddressLocal(std::shared_ptr<IObject> const& obj)
 {
 	m_translator[obj.get()] = obj.get();
 }
 
-void CNetwork::AddAddress(std::shared_ptr<IObject> obj, void* address)
+void CNetwork::AddAddress(std::shared_ptr<IObject> const& obj, void* address)
 {
 	m_translator[address] = obj.get();
 }

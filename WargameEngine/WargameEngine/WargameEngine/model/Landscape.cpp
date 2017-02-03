@@ -12,18 +12,14 @@ CLandscape::CLandscape()
 	m_deltaY = 5.0;
 }
 
-void CLandscape::Reset(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+void CLandscape::Reset(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth)
 {
 	m_width = width;
 	m_depth = depth;
 	m_texture = texture;
 	m_pointsPerWidth = pointsPerWidth;
 	m_pointsPerDepth = pointsPerDepth;
-	m_heights.resize(pointsPerWidth * pointsPerDepth);
-	for (size_t i = 0; i < pointsPerWidth * pointsPerDepth; ++i)
-	{
-		m_heights[i] = 0.0;
-	}
+	m_heights.resize(pointsPerWidth * pointsPerDepth, 0.0f);
 	m_deltaX = width / pointsPerWidth;
 	m_deltaY = depth / pointsPerDepth;
 	if (m_onUpdated) m_onUpdated();
@@ -57,12 +53,12 @@ size_t CLandscape::GetNumberOfDecals() const
 	return m_decals.size();
 }
 
-unsigned int CLandscape::GetPointsPerWidth() const
+size_t CLandscape::GetPointsPerWidth() const
 {
 	return m_pointsPerWidth;
 }
 
-unsigned int CLandscape::GetPointsPerDepth() const
+size_t CLandscape::GetPointsPerDepth() const
 {
 	return m_pointsPerDepth;
 }

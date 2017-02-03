@@ -119,7 +119,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>

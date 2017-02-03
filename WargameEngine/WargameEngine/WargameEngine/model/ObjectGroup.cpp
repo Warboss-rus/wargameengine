@@ -1,5 +1,6 @@
 #include "ObjectGroup.h"
 #include "IGameModel.h"
+#include <algorithm>
 
 CObjectGroup::CObjectGroup(IGameModel & model) :m_current(0), m_model(model)
 {
@@ -14,9 +15,9 @@ std::wstring CObjectGroup::GetPathToModel() const
 
 void CObjectGroup::Move(float dx, float dy, float dz)
 {
-	for(auto i = m_children.begin(); i != m_children.end(); ++i)
+	for(auto& child : m_children)
 	{
-		i->get()->Move(dx, dy, dz);
+		child->Move(dx, dy, dz);
 	}
 }
 
@@ -25,9 +26,9 @@ void CObjectGroup::SetCoords(float x, float y, float z)
 	x -= GetX();
 	y -= GetY();
 	z -= GetZ();
-	for(auto i = m_children.begin(); i != m_children.end(); ++i)
+	for(auto& child : m_children)
 	{
-		i->get()->Move(x, y, z);
+		child->Move(x, y, z);
 	}
 }
 
@@ -36,25 +37,25 @@ void CObjectGroup::SetCoords(CVector3f const& coords)
 	float x = coords.x - GetX();
 	float y = coords.y - GetY();
 	float z = coords.z - GetZ();
-	for (auto i = m_children.begin(); i != m_children.end(); ++i)
+	for (auto& child : m_children)
 	{
-		i->get()->Move(x, y, z);
+		child->Move(x, y, z);
 	}
 }
 
 void CObjectGroup::Rotate(float rotation)
 {
-	for(auto i = m_children.begin(); i != m_children.end(); ++i)
+	for(auto& child : m_children)
 	{
-		i->get()->Rotate(rotation);
+		child->Rotate(rotation);
 	}
 }
 
 void CObjectGroup::SetRotation(float rotation)
 {
-	for (auto i = m_children.begin(); i != m_children.end(); ++i)
+	for (auto& child : m_children)
 	{
-		i->get()->SetRotation(rotation);
+		child->SetRotation(rotation);
 	}
 }
 
@@ -120,7 +121,7 @@ void CObjectGroup::ShowMesh(std::string const& meshName)
 	}
 }
 
-void CObjectGroup::AddChildren(std::shared_ptr<IObject> object)
+void CObjectGroup::AddChildren(std::shared_ptr<IObject> const& object)
 {
 	if(object)
 	{
@@ -128,28 +129,17 @@ void CObjectGroup::AddChildren(std::shared_ptr<IObject> object)
 	}
 }
 
-void CObjectGroup::RemoveChildren(std::shared_ptr<IObject> object)
+void CObjectGroup::RemoveChildren(std::shared_ptr<IObject> const& object)
 {
 	if(object == m_children[m_current]) m_current = 0;
-	for(unsigned int i =0; i < m_children.size(); ++i)
-	{
-		if(m_children[i] == object)
-		{
-			m_children.erase(m_children.begin() + i);
-		}
-	}
+	auto it = std::find(m_children.begin(), m_children.end(), object);
+	m_children.erase(it, m_children.end());
 }
 
-bool CObjectGroup::ContainsChildren(std::shared_ptr<IObject> object) const
+bool CObjectGroup::ContainsChildren(std::shared_ptr<IObject> const& object) const
 {
-	for(unsigned int i =0; i < m_children.size(); ++i)
-	{
-		if(m_children[i] == object)
-		{
-			return true;
-		}
-	}
-	return false;
+	auto it = std::find(m_children.begin(), m_children.end(), object);
+	return it != m_children.end();
 }
 
 size_t CObjectGroup::GetCount() const
@@ -171,14 +161,12 @@ void CObjectGroup::DeleteAll()
 	m_children.clear();
 }
 
-void CObjectGroup::SetCurrent(std::shared_ptr<IObject> object)
+void CObjectGroup::SetCurrent(std::shared_ptr<IObject> const& object)
 {
-	for(unsigned int i =0; i < m_children.size(); ++i)
+	auto it = std::find(m_children.begin(), m_children.end(), object);
+	if (it != m_children.end())
 	{
-		if(m_children[i] == object)
-		{
-			m_current = i;
-		}
+		m_current = it - m_children.begin();
 	}
 }
 
@@ -189,9 +177,9 @@ std::shared_ptr<IObject> CObjectGroup::GetCurrent() const
 
 void CObjectGroup::SetProperty(std::wstring const& key, std::wstring const& value)
 { 
-	for(unsigned int i =0; i < m_children.size(); ++i)
+	for(auto& child : m_children)
 	{
-		m_children[i]->SetProperty(key, value);
+		child->SetProperty(key, value);
 	}
 }
 std::wstring const CObjectGroup::GetProperty(std::wstring const& key) const 
@@ -210,17 +198,17 @@ bool CObjectGroup::IsSelectable() const
 
 void CObjectGroup::SetSelectable(bool selectable)
 {
-	for(unsigned int i =0; i < m_children.size(); ++i)
+	for(auto& child : m_children)
 	{
-		m_children[i]->SetSelectable(selectable);
+		child->SetSelectable(selectable);
 	}
 }
 
 void CObjectGroup::SetMovementLimiter(IMoveLimiter * limiter)
 {
-	for(unsigned int i =0; i < m_children.size(); ++i)
+	for(auto& child : m_children)
 	{
-		m_children[i]->SetMovementLimiter(limiter);
+		child->SetMovementLimiter(limiter);
 	}
 }
 
@@ -237,9 +225,9 @@ bool CObjectGroup::CastsShadow() const
 
 void CObjectGroup::PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed)
 {
-	for (size_t i = 0; i < m_children.size(); ++i)
+	for (auto& child : m_children)
 	{
-		m_children[i]->PlayAnimation(animation, loop, speed);
+		child->PlayAnimation(animation, loop, speed);
 	}
 }
 
@@ -257,17 +245,17 @@ float CObjectGroup::GetAnimationTime() const
 
 void CObjectGroup::AddSecondaryModel(std::wstring const& model)
 {
-	for (size_t i = 0; i < m_children.size(); ++i)
+	for (auto& child : m_children)
 	{
-		m_children[i]->AddSecondaryModel(model);
+		child->AddSecondaryModel(model);
 	}
 }
 
 void CObjectGroup::RemoveSecondaryModel(std::wstring const& model)
 {
-	for (size_t i = 0; i < m_children.size(); ++i)
+	for (auto& child : m_children)
 	{
-		m_children[i]->RemoveSecondaryModel(model);
+		child->RemoveSecondaryModel(model);
 	}
 }
 
@@ -297,25 +285,25 @@ float CObjectGroup::GetAnimationSpeed() const
 
 void CObjectGroup::Update(long long timeSinceLastUpdate)
 {
-	for (size_t i = 0; i < m_children.size(); ++i)
+	for (auto& child : m_children)
 	{
-		m_children[i]->Update(timeSinceLastUpdate);
+		child->Update(timeSinceLastUpdate);
 	}
 }
 
 void CObjectGroup::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
-	for (size_t i = 0; i < m_children.size(); ++i)
+	for (auto& child : m_children)
 	{
-		m_children[i]->ApplyTeamColor(suffix, r, g, b);
+		child->ApplyTeamColor(suffix, r, g, b);
 	}
 }
 
 void CObjectGroup::ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture)
 {
-	for (size_t i = 0; i < m_children.size(); ++i)
+	for (auto& child : m_children)
 	{
-		m_children[i]->ReplaceTexture(oldTexture, newTexture);
+		child->ReplaceTexture(oldTexture, newTexture);
 	}
 }
 

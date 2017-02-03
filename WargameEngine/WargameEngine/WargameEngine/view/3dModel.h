@@ -39,8 +39,8 @@ struct sAnimation
 	std::string id;
 	std::vector<float> keyframes;
 	std::vector<float> matrices;
-	unsigned int boneIndex;
-	std::vector<unsigned int> children;
+	size_t boneIndex;
+	std::vector<size_t> children;
 	float duration;
 };
 

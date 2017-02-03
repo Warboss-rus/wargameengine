@@ -13,12 +13,12 @@
 
 struct FaceIndex
 {
-	unsigned int vertex;
-	unsigned int normal;
-	unsigned int textureCoord;
+	size_t vertex;
+	size_t normal;
+	size_t textureCoord;
 };
 
-unsigned int ParseStringUntilSlash(std::stringstream& indexStream, char ch = 0)
+size_t ParseStringUntilSlash(std::stringstream& indexStream, char ch = 0)
 {
 	std::string index;
 	if (ch == 0)
@@ -29,7 +29,7 @@ unsigned int ParseStringUntilSlash(std::stringstream& indexStream, char ch = 0)
 	{
 		std::getline(indexStream, index, ch);
 	}
-	return (!index.empty()) ? atoi(index.c_str()): 0;
+	return (!index.empty()) ? static_cast<size_t>(atol(index.c_str())) : 0u;
 }
 
 FaceIndex ParseFaceIndex(std::string const& str)

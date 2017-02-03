@@ -22,13 +22,13 @@ public:
 	std::set<std::string> const& GetHiddenMeshes() const override;
 	void HideMesh(std::string const& meshName) override;
 	void ShowMesh(std::string const& meshName) override;
-	void AddChildren(std::shared_ptr<IObject> object);
-	void RemoveChildren(std::shared_ptr<IObject> object);
-	bool ContainsChildren(std::shared_ptr<IObject> object) const;
+	void AddChildren(std::shared_ptr<IObject> const& object);
+	void RemoveChildren(std::shared_ptr<IObject> const& object);
+	bool ContainsChildren(std::shared_ptr<IObject> const& object) const;
 	size_t GetCount() const;
 	std::shared_ptr<IObject> GetChild(size_t index);
 	void DeleteAll();
-	void SetCurrent(std::shared_ptr<IObject> object);
+	void SetCurrent(std::shared_ptr<IObject> const& object);
 	std::shared_ptr<IObject> GetCurrent() const;
 	void SetProperty(std::wstring const& key, std::wstring const& value) override;
 	std::wstring const GetProperty(std::wstring const& key) const override;

@@ -35,13 +35,13 @@ std::shared_ptr<IObject> CGameModel::Get3DObject(const IBaseObject * object)
 	return nullptr;
 }
 
-void CGameModel::AddObject(std::shared_ptr<IObject> pObject)
+void CGameModel::AddObject(std::shared_ptr<IObject> const& pObject)
 {
 	m_objects.push_back(pObject);
 	m_onObjectCreation(pObject.get());
 }
 
-void CGameModel::SelectObject(std::shared_ptr<IObject> pObject)
+void CGameModel::SelectObject(std::shared_ptr<IObject> const& pObject)
 {
 	m_selectedObject = pObject;
 }
@@ -56,7 +56,7 @@ std::shared_ptr<IObject> CGameModel::GetSelectedObject()
 	return m_selectedObject;
 }
 
-void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> pObject)
+void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> const& pObject)
 {
 	if(pObject.get()->IsGroup())
 	{
@@ -134,7 +134,7 @@ void CGameModel::RemoveParticleEffect(size_t index)
 	m_particleEffects.erase(m_particleEffects.begin() + index);
 }
 
-void CGameModel::ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth)
+void CGameModel::ResetLandscape(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth)
 {
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
@@ -168,6 +168,11 @@ CSignalConnection<void, IObject*> CGameModel::DoOnObjectCreation(std::function<v
 CSignalConnection<void, IObject*> CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
 {
 	return m_onObjectRemove.Connect(handler);
+}
+
+std::unique_lock<std::mutex> CGameModel::LockModel()
+{
+	return std::unique_lock<std::mutex>(m_modelLock);
 }
 
 void CGameModel::Update(long long timeSinceLastUpdate)

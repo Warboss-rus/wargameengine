@@ -73,7 +73,7 @@ bool CUIList::LeftMouseButtonUp(int x, int y)
 	if(PointIsOnElement(x, y))
 	{
 		int index = (y - GetY()) / static_cast<int>(m_theme->list.elementSize * m_scale);
-		if(index >= 0 && static_cast<unsigned int>(index) < m_items.size()) m_selected = static_cast<size_t>(index);
+		if(index >= 0 && static_cast<size_t>(index) < m_items.size()) m_selected = static_cast<size_t>(index);
 		if(m_onChange) m_onChange();
 		SetFocus();
 		return true;
@@ -166,7 +166,7 @@ void CUIList::SetOnChangeCallback(std::function<void()> const& onChange)
 	m_onChange = onChange; 
 }
 
-void CUIList::SetTheme(std::shared_ptr<CUITheme> theme)
+void CUIList::SetTheme(std::shared_ptr<CUITheme> const& theme)
 { 
 	m_theme = theme; 
 	m_scrollbar = CUIScrollBar(theme, m_renderer); 

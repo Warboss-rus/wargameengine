@@ -170,7 +170,10 @@ COpenGLRenderer::COpenGLRenderer()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #ifdef _DEBUG
-	glDebugMessageCallback(ErrorCallback, nullptr);
+	if (GLEW_KHR_debug)
+	{
+		glDebugMessageCallback(ErrorCallback, nullptr);
+	}
 #endif
 
 	glGenVertexArrays(1, &m_vao);
@@ -683,7 +686,7 @@ void COpenGLRenderer::SetTextureAnisotropy(float value)
 	}
 }
 
-void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short, int flags, TextureMipMaps const& mipmaps)
+void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short, int flags, TextureMipMaps const& mipmaps)
 {
 	texture.Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
@@ -691,7 +694,7 @@ void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * da
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, GL_UNSIGNED_BYTE, data);
 	if (flags & TEXTURE_BUILD_MIPMAPS)
 	{
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -705,7 +708,7 @@ void COpenGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * da
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLsizei>(mipmaps.size()));
 }
 
-void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps)
+void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps)
 {
 	texture.Bind();
 	if (!GLEW_EXT_texture_compression_s3tc)

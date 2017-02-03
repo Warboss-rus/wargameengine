@@ -29,7 +29,7 @@ public:
 	virtual bool GetVisible() const override;
 	virtual void SetFocus(IUIElement * focus = nullptr) override;
 	virtual bool IsFocused(const IUIElement * child) const override;
-	virtual void SetTheme(std::shared_ptr<CUITheme> theme) override;
+	virtual void SetTheme(std::shared_ptr<CUITheme> const& theme) override;
 	virtual std::shared_ptr<CUITheme> GetTheme() const override;
 	virtual std::wstring const GetText() const override;
 	virtual void SetText(std::wstring const& text) override;
@@ -62,7 +62,7 @@ public:
 	virtual IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) override;
 protected:
 	CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
-	void AddChild(std::string const& name, std::shared_ptr<IUIElement> element) override;
+	void AddChild(std::string const& name, std::shared_ptr<IUIElement> const& element);
 	virtual bool PointIsOnElement(int x, int y) const;
 
 	std::map<std::string, std::shared_ptr<IUIElement>> m_children;

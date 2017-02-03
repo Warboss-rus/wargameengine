@@ -231,21 +231,21 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const
 {
-	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	GLint unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
-		glUniform1iv(unfrm, count, value);
+		glUniform1iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 2:
-		glUniform2iv(unfrm, count, value);
+		glUniform2iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 3:
-		glUniform3iv(unfrm, count, value);
+		glUniform3iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 4:
-		glUniform4iv(unfrm, count, value);
+		glUniform4iv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	default:
 		throw std::runtime_error("Unknown elementSize. 1, 2, 3 or 4 expected");
@@ -254,21 +254,21 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const
 {
-	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	GLint unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
 	case 1:
-		glUniform1uiv(unfrm, count, value);
+		glUniform1uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 2:
-		glUniform2uiv(unfrm, count, value);
+		glUniform2uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 3:
-		glUniform3uiv(unfrm, count, value);
+		glUniform3uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	case 4:
-		glUniform4uiv(unfrm, count, value);
+		glUniform4uiv(unfrm, static_cast<GLsizei>(count), value);
 		break;
 	default:
 		throw std::runtime_error("Unknown elementSize. 1, 2, 3 or 4 expected");

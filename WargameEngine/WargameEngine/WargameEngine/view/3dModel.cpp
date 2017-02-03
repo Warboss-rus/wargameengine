@@ -134,12 +134,11 @@ void C3DModel::CalculateGPUWeights(IRenderer & renderer)
 	std::vector<float> gpuWeight;
 	gpuWeightIndexes.reserve(m_weightsCount.size() * 4);
 	gpuWeight.reserve(m_weightsCount.size() * 4);
-	unsigned int k = 0;
 	for (size_t i = 0; i < m_weightsCount.size(); ++i)
 	{
 		unsigned int j = 0;
 		float sum = 0.0f;
-		for (; j < m_weightsCount[i]; ++j, ++k)
+		for (size_t k = 0; j < m_weightsCount[i]; ++j, ++k)
 		{
 			if (j < 4)
 			{
@@ -200,12 +199,13 @@ void MultiplyMatrices(float * a, float * b)
 	memcpy(a, c, sizeof(float) * 16);
 }
 
-void AddAllChildren(std::vector<sAnimation> const& anims, unsigned int current, std::vector<unsigned int> & set)
+void AddAllChildren(std::vector<sAnimation> const& anims, size_t current, std::vector<size_t> & set)
 {
 	set.push_back(current);
-	for (size_t i = 0; i < anims[current].children.size(); ++i)
+	auto& children = anims[current].children;
+	for (size_t i = 0; i < children.size(); ++i)
 	{
-		AddAllChildren(anims, anims[current].children[i], set);
+		AddAllChildren(anims, children[i], set);
 	}
 }
 
@@ -232,12 +232,12 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 	if (!animationToPlay.empty())
 	{
 		//get animations that are need to be played
-		std::vector<unsigned int> animsToPlay;
+		std::vector<size_t> animsToPlay;
 		for (size_t i = 0; i < animations.size(); ++i)
 		{
 			if (animations[i].id == animationToPlay)
 			{
-				AddAllChildren(animations, static_cast<unsigned>(i), animsToPlay);
+				AddAllChildren(animations, i, animsToPlay);
 				if (time > animations[i].duration)
 				{
 					if (loop == eAnimationLoopMode::LOOPING)
@@ -260,7 +260,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 		for (size_t i = 0; i < animsToPlay.size(); ++i)
 		{
 			const sAnimation * anim = &animations[animsToPlay[i]];
-			unsigned int k;
+			size_t k;
 			for (k = 0; k < anim->keyframes.size(); ++k)
 			{
 				if (time <= anim->keyframes[k] && (k == 0 || time > anim->keyframes[k - 1]))
@@ -323,7 +323,7 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 		std::vector<CVector3f> normals;
 		vertices.resize(m_vertices.size());
 		normals.resize(m_normals.size());
-		unsigned int k = 0;
+		size_t k = 0;
 		for (size_t i = 0; i < m_vertices.size(); ++i)
 		{
 			//recalculate vertex using bones

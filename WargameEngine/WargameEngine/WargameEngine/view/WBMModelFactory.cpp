@@ -25,29 +25,29 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 	CReadMemoryStream stream(reinterpret_cast<char*>(data));
 	std::map<std::string, sMaterial> materials;
 	stream.ReadUnsigned();//version
-	unsigned int size = stream.ReadUnsigned();
+	size_t size = stream.ReadSizeT();
 	vertices.resize(size / sizeof(CVector3f));
 	stream.ReadData(vertices.data(), size);
-	size = stream.ReadUnsigned();
+	size = stream.ReadSizeT();
 	textureCoords.resize(size / sizeof(CVector2f));
 	stream.ReadData(textureCoords.data(), size);
-	size = stream.ReadUnsigned();
+	size = stream.ReadSizeT();
 	normals.resize(size / sizeof(CVector3f));
 	stream.ReadData(normals.data(), size);
-	size = stream.ReadUnsigned();
+	size = stream.ReadSizeT();
 	indexes.resize(size / sizeof(unsigned int));
 	stream.ReadData(indexes.data(), size);
-	unsigned int count = stream.ReadUnsigned();
-	for(unsigned int i = 0; i < count; ++i)
+	size_t count = stream.ReadSizeT();
+	for(size_t i = 0; i < count; ++i)
 	{
 		sMesh mesh;
 		mesh.name = stream.ReadString();
 		mesh.materialName = stream.ReadString();
-		mesh.begin = stream.ReadUnsigned();
+		mesh.begin = stream.ReadSizeT();
 		meshes.push_back(mesh);
 	}
-	count = stream.ReadUnsigned();
-	for(unsigned int i = 0; i < count; ++i)
+	count = stream.ReadSizeT();
+	for(size_t i = 0; i < count; ++i)
 	{
 		std::string key = stream.ReadString();
 		stream.ReadData(materials[key].ambient, sizeof(float) * 3);

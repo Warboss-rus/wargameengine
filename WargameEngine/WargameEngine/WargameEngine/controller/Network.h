@@ -28,8 +28,8 @@ public:
 	void SendMessage(std::wstring const& message);
 	void SendAction(ICommand const& command);
 	bool IsConnected();
-	void AddAddressLocal(std::shared_ptr<IObject> obj);
-	void AddAddress(std::shared_ptr<IObject> obj, void* address);
+	void AddAddressLocal(std::shared_ptr<IObject> const& obj);
+	void AddAddress(std::shared_ptr<IObject> const& obj, void* address);
 	void SetStateRecievedCallback(OnStateRecievedHandler const& onStateRecieved);
 	void SetStringRecievedCallback(OnStringReceivedHandler const& onStringRecieved);
 	void CallStateRecievedCallback();
@@ -39,9 +39,9 @@ private:
 	std::unique_ptr<INetSocket> m_socket;
 	std::map<void*, void*> m_translator;
 	bool m_host;
-	unsigned m_netRecievedSize;
-	unsigned m_netTotalSize;
-	char * m_netData;
+	size_t m_netRecievedSize;
+	size_t m_netTotalSize;
+	std::vector<char> m_netData;
 	OnStateRecievedHandler m_stateRecievedCallback;
 	OnStringReceivedHandler m_stringRecievedCallback;
 	IStateManager & m_stateManager;

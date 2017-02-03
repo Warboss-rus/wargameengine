@@ -19,6 +19,7 @@ public:
 	virtual std::wstring GetWStr(int index) const = 0;
 	virtual int GetInt(int index) const = 0;
 	virtual long GetLong(int index) const = 0;
+	virtual size_t GetSizeT(int index) const = 0;
 	virtual double GetDbl(int index) const = 0;
 	virtual float GetFloat(int index) const = 0;
 	virtual void* GetClassInstance(int index) const = 0;

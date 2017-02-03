@@ -11,7 +11,6 @@ class IUIElement
 public:
 	virtual ~IUIElement() {}
 	virtual void Draw() const = 0;
-	virtual void AddChild(std::string const& name, std::shared_ptr<IUIElement> element) = 0;
 	virtual IUIElement* GetChildByName(std::string const& name) = 0;
 	virtual void DeleteChild(std::string const& name) = 0;
 	virtual void DeleteChild(IUIElement * element) = 0;
@@ -28,7 +27,7 @@ public:
 	virtual void SetVisible(bool visible) = 0;
 	virtual bool GetVisible() const = 0;
 	virtual bool IsFocused(const IUIElement * child) const = 0;
-	virtual void SetTheme(std::shared_ptr<CUITheme> theme) = 0;
+	virtual void SetTheme(std::shared_ptr<CUITheme> const&) = 0;
 	virtual std::shared_ptr<CUITheme> GetTheme() const = 0;
 	virtual std::wstring const GetText() const = 0;
 	virtual void SetText(std::wstring const& text) = 0;

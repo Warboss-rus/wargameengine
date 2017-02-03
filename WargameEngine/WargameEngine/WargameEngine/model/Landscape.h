@@ -20,7 +20,7 @@ class CLandscape
 {
 public:
 	CLandscape();
-	void Reset(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	void Reset(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth);
 	void SetHeight(float x, float y, float value);
 	float GetHeight(float x, float y) const;
 	float GetWidth() const;
@@ -28,8 +28,8 @@ public:
 	float GetHorizontalTextureScale() const;
 	float GetVerticalTextureScale() const;
 	std::wstring const& GetTexture() const;
-	unsigned int GetPointsPerWidth() const;
-	unsigned int GetPointsPerDepth() const;
+	size_t GetPointsPerWidth() const;
+	size_t GetPointsPerDepth() const;
 	bool isCoordsOnTable(double worldX, double worldY) const;
 	void AddNewDecal(sDecal const& decal);
 	size_t GetNumberOfDecals() const;
@@ -44,8 +44,8 @@ private:
 	float m_deltaX;
 	float m_deltaY;
 	std::wstring m_texture;
-	unsigned int m_pointsPerWidth;
-	unsigned int m_pointsPerDepth;
+	size_t m_pointsPerWidth;
+	size_t m_pointsPerDepth;
 	std::vector<float> m_heights;
 	std::vector<sDecal> m_decals;
 	bool m_stretchTexture;

@@ -10,6 +10,7 @@
 #include "Particle.h"
 #include "Landscape.h"
 #include "Light.h"
+#include <mutex>
 
 class CGameModel : public IGameModel
 {
@@ -20,9 +21,9 @@ public:
 	std::shared_ptr<const IObject> Get3DObject(size_t number) const;
 	virtual std::shared_ptr<IObject> Get3DObject(size_t number) override;
 	virtual std::shared_ptr<IObject> Get3DObject(const IBaseObject * obj) override;
-	virtual void AddObject(std::shared_ptr<IObject> pObject) override;
-	virtual void DeleteObjectByPtr(std::shared_ptr<IObject> pObject) override;
-	void SelectObject(std::shared_ptr<IObject> pObject);
+	virtual void AddObject(std::shared_ptr<IObject> const&) override;
+	virtual void DeleteObjectByPtr(std::shared_ptr<IObject> const& pObject) override;
+	void SelectObject(std::shared_ptr<IObject> const& pObject);
 	std::shared_ptr<const IObject> GetSelectedObject() const;
 	std::shared_ptr<IObject> GetSelectedObject();
 	virtual void SetProperty(std::wstring const& key, std::wstring const& value) override;
@@ -38,7 +39,7 @@ public:
 	void Update(long long timeSinceLastUpdate);
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
-	void ResetLandscape(float width, float depth, std::wstring const& texture, unsigned int pointsPerWidth, unsigned int pointsPerDepth);
+	void ResetLandscape(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth);
 	void AddLight();
 	void RemoveLight(size_t index);
 	CLight& GetLight(size_t index);
@@ -46,6 +47,7 @@ public:
 
 	CSignalConnection<void, IObject*> DoOnObjectCreation(std::function<void(IObject*)> const& handler);
 	CSignalConnection<void, IObject*> DoOnObjectRemove(std::function<void(IObject*)> const& handler);
+	std::unique_lock<std::mutex> LockModel();
 private:
 	CGameModel(CGameModel const&) = delete;
 
@@ -58,4 +60,5 @@ private:
 	std::vector<CLight> m_lights;
 	CSignal<void, IObject *> m_onObjectCreation;
 	CSignal<void, IObject *> m_onObjectRemove;
+	std::mutex m_modelLock;
 };

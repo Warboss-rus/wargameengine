@@ -11,6 +11,8 @@
 #include "Network.h"
 #include "../Signal.h"
 #include "../IPhysicsEngine.h"
+#include <thread>
+#include <atomic>
 
 class CGameView;
 
@@ -34,6 +36,7 @@ public:
 
 	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine);
 	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
+	void InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
 	void Update();
 
 	virtual void SerializeState(IWriteMemoryStream & stream, bool hasAdresses = false) const override;
@@ -109,6 +112,10 @@ private:
 	MouseButtonCallback m_lmbCallback;
 	MouseButtonCallback m_rmbCallback;
 	std::map<IObject*, std::shared_ptr<CObjectDecorator>> m_objectDecorators;
+
+	std::thread m_controllerThread;
+	std::atomic_bool m_destroyThread;
+	int m_updatePeriod = 0;
 
 	friend bool operator< (sKeyBind const& one, sKeyBind const& two);
 };
