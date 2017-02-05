@@ -336,3 +336,13 @@ IObject* CObjectGroup::GetFullObject()
 {
 	return nullptr;
 }
+
+CSignalConnection CObjectGroup::DoOnCoordsChange(CoordsSignal::Slot const& handler)
+{
+	return m_children[m_current]->DoOnCoordsChange(handler);
+}
+
+CSignalConnection CObjectGroup::DoOnRotationChange(RotationSignal::Slot const& handler)
+{
+	return m_children[m_current]->DoOnRotationChange(handler);
+}

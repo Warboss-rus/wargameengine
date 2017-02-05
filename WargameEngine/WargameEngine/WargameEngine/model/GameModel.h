@@ -45,8 +45,8 @@ public:
 	CLight& GetLight(size_t index);
 	const std::vector<CLight>& GetLights() const;
 
-	CSignalConnection<void, IObject*> DoOnObjectCreation(std::function<void(IObject*)> const& handler);
-	CSignalConnection<void, IObject*> DoOnObjectRemove(std::function<void(IObject*)> const& handler);
+	CSignalConnection DoOnObjectCreation(std::function<void(IObject*)> const& handler);
+	CSignalConnection DoOnObjectRemove(std::function<void(IObject*)> const& handler);
 	std::unique_lock<std::mutex> LockModel();
 private:
 	CGameModel(CGameModel const&) = delete;

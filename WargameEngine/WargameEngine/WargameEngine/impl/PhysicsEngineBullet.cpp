@@ -106,47 +106,10 @@ public:
 		}
 	}
 
-	static btTransform GetObjectTransform(IObject * object, CVector3f const& shapeOffset)
-	{
-		btTransform transform;
-		transform.setIdentity();
-		transform.setOrigin(ToBtVector3(object->GetCoords() + shapeOffset));
-		transform.setRotation(RotationToQuaternion(object->GetRotation()));
-		return transform;
-	}
-
 	void Update(long long timeDelta)
 	{
-		for (int i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
-		{
-			btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[i];
-			btRigidBody* body = btRigidBody::upcast(obj);
-			if (body)
-			{
-				IObject * object = reinterpret_cast<IObject*>(body->getUserPointer());
-				if (object)
-				{
-					btTransform transform = GetObjectTransform(object, m_shapeOffset[body->getCollisionShape()]);
-					body->setWorldTransform(transform);
-				}
-			}
-		}
-		double timeStep = static_cast<double>(timeDelta) / 1000;
+		double timeStep = static_cast<double>(timeDelta) / 1000.0;
 		m_dynamicsWorld->stepSimulation(static_cast<btScalar>(timeStep), 10);
-		for (int i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--)
-		{
-			btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[i];
-			btRigidBody* body = btRigidBody::upcast(obj);
-			if (body && body->getMotionState())
-			{
-				btTransform trans = body->getWorldTransform();
-				IObject * object = reinterpret_cast<IObject*>(body->getUserPointer());
-				if (object)
-				{
-					object->SetCoords(ToVector3f(trans.getOrigin()) - m_shapeOffset[body->getCollisionShape()]);
-				}
-			}
-		}
 	}
 
 	void Reset()
@@ -171,13 +134,16 @@ public:
 		if (isDynamic)
 			colShape->calculateLocalInertia(static_cast<btScalar>(mass), localInertia);
 
-		auto motionState = std::make_unique<btDefaultMotionState>(GetObjectTransform(object, m_shapeOffset[colShape]));
+		auto motionState = std::make_unique<CUpdateMotionState>(GetObjectTransform(object, m_shapeOffset[colShape]));
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(static_cast<btScalar>(mass), motionState.get(), colShape, localInertia);
 		auto body = std::make_unique<btRigidBody>(rbInfo);
 		m_dynamicsWorld->addRigidBody(body.get());
 		body->setUserPointer(object);
 		body->setAngularFactor(btVector3(0, 0, 0));
-		m_objects.push_back(Object{ std::move(body), std::move(motionState), object });
+		auto coordConnection(object->DoOnCoordsChange(std::bind(&Impl::UpdateBodyFromObject, this, object, body.get())));
+		auto rotationConnection(object->DoOnRotationChange(std::bind(&Impl::UpdateBodyFromObject, this, object, body.get())));
+		motionState->DoOnUpdate(std::bind(&Impl::UpdateObjectFromBody, this, object, body.get()));
+		m_objects.push_back({ std::move(body), std::move(motionState), object, coordConnection, rotationConnection });
 	}
 
 	void AddStaticObject(IBaseObject * staticObject)
@@ -363,11 +329,55 @@ public:
 		return sBounding::sBox{ ToVector3f(min) + offset, ToVector3f(max) + offset };
 	}
 private:
+	static btTransform GetObjectTransform(IBaseObject * object, CVector3f const& shapeOffset)
+	{
+		btTransform transform;
+		transform.setIdentity();
+		transform.setOrigin(ToBtVector3(object->GetCoords() + shapeOffset));
+		transform.setRotation(RotationToQuaternion(object->GetRotation()));
+		return transform;
+	}
+
+	void UpdateBodyFromObject(IBaseObject * object, btRigidBody * body)
+	{
+		btTransform transform = GetObjectTransform(object, m_shapeOffset[body->getCollisionShape()]);
+		body->setWorldTransform(transform);
+	}
+
+	void UpdateObjectFromBody(IBaseObject * object, btRigidBody * body)
+	{
+		btTransform trans = body->getWorldTransform();
+		object->SetCoords(ToVector3f(trans.getOrigin()) - m_shapeOffset[body->getCollisionShape()]);
+	}
+
+	class CUpdateMotionState : public btDefaultMotionState
+	{
+	public:
+		CUpdateMotionState(const btTransform& startTrans)
+			: btDefaultMotionState(startTrans)
+		{
+		}
+		virtual void setWorldTransform(const btTransform& centerOfMassWorldTrans) override
+		{
+			btDefaultMotionState::setWorldTransform(centerOfMassWorldTrans);
+			if(m_onUpdate) m_onUpdate();
+		}
+
+		void DoOnUpdate(std::function<void()> const& onUpdate)
+		{
+			m_onUpdate = onUpdate;
+		}
+	private:
+		std::function<void()> m_onUpdate;
+	};
+
 	struct Object
 	{
 		std::unique_ptr<btRigidBody> rigidBody;
 		std::unique_ptr<btMotionState> motionState;
 		IObject * object;
+		CScopedConnection coordsConnection;
+		CScopedConnection rotationConnection;
 	};
 	btDefaultCollisionConfiguration m_collisionConfiguration;
 	btCollisionDispatcher m_dispatcher;

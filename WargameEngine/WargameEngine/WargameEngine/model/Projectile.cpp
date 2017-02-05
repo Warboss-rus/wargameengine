@@ -7,13 +7,13 @@ CProjectile::CProjectile(CVector3f const& origin, CVector3f & target, float spee
 
 bool CProjectile::Update(long long timeSinceLastUpdate)
 {
-	CVector3f dir = m_target - m_coords;
+	CVector3f dir = m_target - GetCoords();
 	dir.Normalize();
 	dir = dir * static_cast<float>(timeSinceLastUpdate) / 1000.0f * m_speed;
-	if (dir.GetLength() > (m_target - m_coords).GetLength()) dir = (m_target - m_coords);
-	m_coords += dir;
+	if (dir.GetLength() > (m_target - GetCoords()).GetLength()) dir = (m_target - GetCoords());
+	SetCoords(GetCoords() + dir);
 	m_time += timeSinceLastUpdate;
-	if ((m_coords - m_target).GetLength() < 0.0001f)
+	if ((GetCoords() - m_target).GetLength() < 0.0001f)
 	{
 		m_speed = 0.0f;
 		if (m_onHit) m_onHit();

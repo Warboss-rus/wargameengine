@@ -19,6 +19,12 @@ CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandl
 	m_destroyThread = false;
 }
 
+CGameController::~CGameController()
+{
+	m_destroyThread = true;
+	if(m_controllerThread.get_id() != std::thread::id())m_controllerThread.join();
+}
+
 void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath)
 {
 	m_view = &view;
@@ -54,13 +60,24 @@ void CGameController::InitAsync(CGameView & view, std::function<std::unique_ptr<
 		while (!m_destroyThread)
 		{
 			Update();
-			std::this_thread::sleep_until(lastUpdateTime + std::chrono::milliseconds(m_updatePeriod));
+			std::this_thread::sleep_until(lastUpdateTime + m_updatePeriod);
 		}
 	});
 }
 
 void CGameController::Update()
 {
+	{
+		std::unique_lock<std::mutex> lk(m_taskMutex);
+		while (!m_tasks.empty())
+		{
+			auto task = m_tasks.front();
+			m_tasks.pop_front();
+			lk.unlock();
+			task();
+			lk.lock();
+		}
+	}
 	m_network->Update();
 	if (m_updateCallback) m_updateCallback();
 	if (m_singleCallback)
@@ -568,6 +585,12 @@ std::shared_ptr<CObjectDecorator> CGameController::GetDecorator(std::shared_ptr<
 		m_objectDecorators[object.get()] = std::make_shared<CObjectDecorator>(object);
 	}
 	return m_objectDecorators[object.get()];
+}
+
+void CGameController::QueueTask(std::function<void()> const& handler)
+{
+	std::unique_lock<std::mutex> lk(m_taskMutex);
+	m_tasks.push_back(handler);
 }
 
 bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind const& two)

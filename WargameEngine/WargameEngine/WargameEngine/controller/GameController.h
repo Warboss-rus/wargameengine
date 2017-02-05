@@ -13,6 +13,7 @@
 #include "../IPhysicsEngine.h"
 #include <thread>
 #include <atomic>
+#include <deque>
 
 class CGameView;
 
@@ -35,6 +36,7 @@ public:
 	typedef std::function<bool(std::shared_ptr<IObject> const& obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
 
 	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine);
+	~CGameController();
 	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
 	void InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
 	void Update();
@@ -69,6 +71,7 @@ public:
 	CCommandHandler & GetCommandHandler();
 	CNetwork& GetNetwork();
 	std::shared_ptr<CObjectDecorator> GetDecorator(std::shared_ptr<IObject> const& object);
+	void QueueTask(std::function<void()> const& handler);
 private:
 	struct sKeyBind
 	{
@@ -115,7 +118,9 @@ private:
 
 	std::thread m_controllerThread;
 	std::atomic_bool m_destroyThread;
-	int m_updatePeriod = 0;
+	std::chrono::milliseconds m_updatePeriod;
+	std::deque<std::function<void()>> m_tasks;
+	std::mutex m_taskMutex;
 
 	friend bool operator< (sKeyBind const& one, sKeyBind const& two);
 };

@@ -248,6 +248,7 @@ void CGameView::InitInput()
 
 void CGameView::DrawUI()
 {
+	m_renderer->SetColor(0.0f, 0.0f, 0.0f);
 	m_viewHelper->DrawIn2D([this] {
 		m_ui->Draw();
 	});

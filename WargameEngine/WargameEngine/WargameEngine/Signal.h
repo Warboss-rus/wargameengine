@@ -2,45 +2,37 @@
 #include <list>
 #include <functional>
 #include <algorithm>
+#include <memory>
 
-template<typename Result, typename... Arguments>
-class CSignal;
-
-template<typename Result, typename... Arguments>
 class CSignalConnection
 {
-	typedef CSignal<Result, Arguments...> Signal;
-	typedef typename std::list<typename Signal::sCallback>::iterator Iterator;
 public:
-	CSignalConnection(Iterator const& it, Signal & signal)
-		:m_it(it), m_signal(signal)
+	CSignalConnection(std::function<void()> const& onDisconnect = std::function<void()>())
+		: m_onDisconnect(onDisconnect)
 	{}
-	CSignalConnection(CSignalConnection const& other) = default;
 	void Disconnect()
 	{
-		m_signal.RemoveByConnection(m_it);
+		if (m_onDisconnect) m_onDisconnect();
 	}
 private:
-	Iterator m_it;
-	Signal& m_signal;
+	std::function<void()> m_onDisconnect;
 };
 
 template<typename Result, typename... Arguments>
 class CSignal
 {
 public:
-	typedef std::function<Result(Arguments...)> Func;
-	typedef CSignalConnection<Result, Arguments...> Connection;
-	Connection Connect(Func const& handler, int priority = 0, std::string const& tag = "")
+	typedef std::function<Result(Arguments...)> Slot;
+	CSignalConnection Connect(Slot const& handler, int priority = 0, std::string const& tag = "")
 	{
 		for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
 		{
 			if (priority <= it->priority)
 			{
-				return Connection(m_callbacks.insert(it, sCallback({ handler, priority, tag })), *this);
+				return CSignalConnection(std::bind(&CSignal::RemoveByConnection, this, m_callbacks.insert(it, sCallback({ handler, priority, tag }))));
 			}
 		}
-		return Connection(m_callbacks.insert(m_callbacks.end(), { handler, priority, tag }), *this);
+		return CSignalConnection(std::bind(&CSignal::RemoveByConnection, this, m_callbacks.insert(m_callbacks.end(), { handler, priority, tag })));
 	}
 	virtual void operator() (Arguments... args)
 	{
@@ -65,7 +57,7 @@ public:
 private:
 	struct sCallback
 	{
-		Func func;
+		Slot func;
 		int priority;
 		std::string tag;
 	};
@@ -73,7 +65,6 @@ private:
 	{
 		m_callbacks.erase(it);
 	}
-	friend class CSignalConnection<Result, Arguments...>;
 protected:
 	std::list<sCallback> m_callbacks;
 };
@@ -98,12 +89,28 @@ public:
 	}
 };
 
-template<typename Result, typename... Arguments>
-class CScopedConnection : public CSignalConnection<Result, Arguments...>
+class CScopedConnection
 {
 public:
-	CScopedConnection(CSignalConnection<Result, Arguments...> const& connection)
-		: CSignalConnection<Result, Arguments...>(connection)
+	CScopedConnection(CSignalConnection & connection)
+		: m_connection(std::make_shared<CScopedConnectionImpl>(connection))
 	{}
-	~CScopedConnection() { this->Disconnect(); }
+	CScopedConnection() = default;
+private:
+	class CScopedConnectionImpl
+	{
+	public:
+		CScopedConnectionImpl(CSignalConnection & connection)
+			:m_connection(connection)
+		{
+		}
+		~CScopedConnectionImpl()
+		{
+			m_connection.Disconnect();
+		}
+	private:
+		CSignalConnection m_connection;
+	};
+
+	std::shared_ptr<CScopedConnectionImpl> m_connection;
 };

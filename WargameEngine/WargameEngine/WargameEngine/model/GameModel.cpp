@@ -69,7 +69,7 @@ void CGameModel::DeleteObjectByPtr(std::shared_ptr<IObject> const& pObject)
 		if(i->get() == pObject.get())
 		{
 			m_objects.erase(i);
-			return;
+			break;
 		}
 	}
 	m_onObjectRemove(pObject.get());
@@ -160,12 +160,12 @@ const std::vector<CLight>& CGameModel::GetLights() const
 	return m_lights;
 }
 
-CSignalConnection<void, IObject*> CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
+CSignalConnection CGameModel::DoOnObjectCreation(std::function<void(IObject*)> const& handler)
 {
 	return m_onObjectCreation.Connect(handler);
 }
 
-CSignalConnection<void, IObject*> CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
+CSignalConnection CGameModel::DoOnObjectRemove(std::function<void(IObject*)> const& handler)
 {
 	return m_onObjectRemove.Connect(handler);
 }

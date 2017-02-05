@@ -7,13 +7,20 @@
 #include "Animation.h"
 #include "TeamColor.h"
 #include "MovementLimiter.h"
+#include "../Signal.h"
 
 class IObject;
 
 class IBaseObject
 {
 public:
-	~IBaseObject() {}
+	//CVector3f oldPosition, CVector3f newPosition
+	typedef CSignal<void, CVector3f const&, CVector3f const&> CoordsSignal;
+	//float oldRotation, float newRotation
+	typedef CSignal<void, float, float> RotationSignal;
+
+	virtual ~IBaseObject() {}
+
 	virtual std::wstring GetPathToModel() const = 0;
 	virtual void SetCoords(float x, float y, float z) = 0;
 	virtual void SetCoords(CVector3f const& coords) = 0;
@@ -27,6 +34,8 @@ public:
 	virtual float GetRotation() const = 0;
 	virtual bool CastsShadow() const = 0;
 	virtual IObject* GetFullObject() = 0;
+	virtual CSignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) = 0;
+	virtual CSignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) = 0;
 };
 
 class IObject : public IBaseObject

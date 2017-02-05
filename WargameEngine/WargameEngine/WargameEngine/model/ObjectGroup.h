@@ -53,6 +53,8 @@ public:
 	std::map<std::wstring, std::wstring> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
 	virtual IObject* GetFullObject() override;
+	virtual CSignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) override;
+	virtual CSignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) override;
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;

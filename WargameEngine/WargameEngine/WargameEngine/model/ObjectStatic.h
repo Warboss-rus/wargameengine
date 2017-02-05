@@ -1,5 +1,6 @@
 #pragma once
 #include "ObjectInterface.h"
+#include "..\Signal.h"
 
 template<class T>
 class CBaseObject : public T
@@ -14,18 +15,53 @@ public:
 	virtual CVector3f GetCoords() const final { return m_coords; }
 	virtual float GetRotation() const final { return m_rotation; }
 	virtual bool CastsShadow() const final { return m_castsShadow; }
-	virtual void SetCoords(float x, float y, float z) final { m_coords = { x, y, z }; }
-	virtual void SetCoords(CVector3f const& coords) final { m_coords = coords; }
-	virtual void Rotate(float rotation) final { m_rotation = fmodf(m_rotation + rotation + 360.0f, 360.0f); }
-	virtual void SetRotation(float rotation) final { m_rotation = rotation; }
-	virtual void Move(float dx, float dy, float dz) final { m_coords += {dx, dy, dz}; }
+	virtual void SetCoords(float x, float y, float z) final { SetCoords({ x, y, z }); }
+	virtual void SetCoords(CVector3f const& coords) final 
+	{ 
+		auto oldCoords = m_coords;
+		m_coords = coords;
+		if ((oldCoords - m_coords).GetLength() > FLT_EPSILON)
+		{
+			m_onCoordsChange(oldCoords, m_coords);
+		}
+	}
+	virtual void Rotate(float rotation) final 
+	{ 
+		auto oldRotation = m_rotation;  
+		m_rotation = fmodf(m_rotation + rotation + 360.0f, 360.0f);
+		if (abs(oldRotation - m_rotation) > FLT_EPSILON)
+		{
+			m_onRotationChange(oldRotation, m_rotation);
+		}
+	}
+	virtual void SetRotation(float rotation) final
+	{ 
+		auto oldRotation = m_rotation;
+		m_rotation = rotation;
+		if (abs(oldRotation - m_rotation) > FLT_EPSILON)
+		{
+			m_onRotationChange(oldRotation, m_rotation);
+		}
+	}
+	virtual void Move(float dx, float dy, float dz) final 
+	{ 
+		auto oldCoords = m_coords;
+		m_coords += {dx, dy, dz}; 
+		if ((oldCoords - m_coords).GetLength() > FLT_EPSILON)
+		{
+			m_onCoordsChange(oldCoords, m_coords);
+		}
+	}
 	virtual IObject* GetFullObject() override { return nullptr; }
-protected:
+	virtual typename CSignalConnection DoOnCoordsChange(typename T::CoordsSignal::Slot const& handler) override { return std::move(m_onCoordsChange.Connect(handler)); }
+	virtual typename CSignalConnection DoOnRotationChange(typename T::RotationSignal::Slot const& handler) override { return std::move(m_onRotationChange.Connect(handler)); }
+private:
 	CVector3f m_coords;
 	float m_rotation;
-private:
 	std::wstring m_model;
 	bool m_castsShadow;
+	typename T::CoordsSignal m_onCoordsChange;
+	typename T::RotationSignal m_onRotationChange;
 };
 
 typedef CBaseObject<IBaseObject> CStaticObject;
