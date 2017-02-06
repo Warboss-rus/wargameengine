@@ -205,7 +205,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(std::wstring co
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const
 {
-	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	int unfrm = GetUniformLocation(uniform);
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
@@ -231,7 +231,7 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const
 {
-	GLint unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	GLint unfrm = GetUniformLocation(uniform);
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
@@ -254,7 +254,7 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 
 void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const
 {
-	GLint unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	GLint unfrm = GetUniformLocation(uniform);
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
@@ -297,7 +297,14 @@ void CShaderManagerOpenGL::DoOnProgramChange(std::function<void()> const& handle
 
 void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
 {
-	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
+	auto& programCache = GetProgramCache();
+	auto indexIt = programCache.attribLocations.find(attribute);
+	if (indexIt == programCache.attribLocations.end())
+	{
+		programCache.attribLocations.emplace(std::make_pair(attribute, glGetAttribLocation(m_activeProgram, attribute.c_str())));
+		programCache.attribState.emplace(std::make_pair(attribute, false));
+	}
+	int index = programCache.attribLocations[attribute];
 	if (index == -1) return;
 	if (!values)
 	{
@@ -319,6 +326,27 @@ void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, 
 		glVertexAttribIPointer(index, elementSize, format, 0, NULL);
 	glEnableVertexAttribArray(index);
 	if (perInstance) glVertexAttribDivisorARB(index, 1);
+}
+
+CShaderManagerOpenGL::ShaderProgramCache& CShaderManagerOpenGL::GetProgramCache() const
+{
+	auto it = m_shaderProgramCache.find(m_activeProgram);
+	if (it == m_shaderProgramCache.end())
+	{
+		it = m_shaderProgramCache.emplace(std::make_pair(m_activeProgram, ShaderProgramCache())).first;
+	}
+	return it->second;
+}
+
+int CShaderManagerOpenGL::GetUniformLocation(std::string const& uniform) const
+{
+	auto& programCache = GetProgramCache();
+	auto it = programCache.uniformLocations.find(uniform);
+	if (it == programCache.uniformLocations.end())
+	{
+		it = programCache.uniformLocations.emplace(std::make_pair(uniform, glGetUniformLocation(m_activeProgram, uniform.c_str()))).first;
+	}
+	return it->second;
 }
 
 void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance) const

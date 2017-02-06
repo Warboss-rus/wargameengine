@@ -33,9 +33,21 @@ public:
 
 	void DoOnProgramChange(std::function<void()> const& handler);
 private:
+	struct ShaderProgramCache
+	{
+		std::map<std::string, int> attribLocations;
+		std::map<std::string, int> uniformLocations;
+		std::map<std::string, bool> attribState;
+	};
+
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
+	ShaderProgramCache& GetProgramCache() const;
+	int GetUniformLocation(std::string const& uniform) const;
+		
 	mutable std::vector<unsigned int> m_programs;
 	mutable unsigned int m_activeProgram;
 	std::function<void()> m_onProgramChange;
 	mutable std::map<std::string, unsigned> m_vertexAttribBuffers;
+	
+	mutable std::map<unsigned, ShaderProgramCache> m_shaderProgramCache;
 };

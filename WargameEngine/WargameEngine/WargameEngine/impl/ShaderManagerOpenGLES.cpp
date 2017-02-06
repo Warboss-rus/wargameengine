@@ -147,6 +147,8 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 	glUseProgram(program->program);
 	int unfrm = glGetUniformLocation(program->program, "mainTexture");
 	glUniform1i(unfrm, 0);
+	unfrm = glGetUniformLocation(program->program, "cubemapTexture");
+	glUniform1i(unfrm, 0);
 	unfrm = glGetUniformLocation(program->program, "shadowMap");
 	glUniform1i(unfrm, 1);
 	unfrm = glGetUniformLocation(program->program, "specular");
@@ -169,7 +171,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 
 void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const
 {
-	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	int unfrm = GetUniformLocation(uniform);
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
@@ -195,7 +197,7 @@ void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int ele
 
 void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const
 {
-	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	GLint unfrm = GetUniformLocation(uniform);
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
@@ -218,7 +220,7 @@ void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int ele
 
 void CShaderManagerOpenGLES::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const
 {
-	int unfrm = glGetUniformLocation(m_activeProgram, uniform.c_str());
+	GLint unfrm = GetUniformLocation(uniform);
 	if (unfrm == -1) return;
 	switch (elementSize)
 	{
@@ -261,7 +263,14 @@ void CShaderManagerOpenGLES::DoOnProgramChange(std::function<void()> const& hand
 
 void CShaderManagerOpenGLES::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
 {
-	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
+	auto& programCache = GetProgramCache();
+	auto indexIt = programCache.attribLocations.find(attribute);
+	if (indexIt == programCache.attribLocations.end())
+	{
+		programCache.attribLocations.emplace(std::make_pair(attribute, glGetAttribLocation(m_activeProgram, attribute.c_str())));
+		programCache.attribState.emplace(std::make_pair(attribute, false));
+	}
+	int index = programCache.attribLocations[attribute];
 	if (index == -1) return;
 	if (!values)
 	{
@@ -283,6 +292,27 @@ void CShaderManagerOpenGLES::SetVertexAttributeImpl(std::string const& attribute
 		glVertexAttribIPointer(index, elementSize, format, 0, NULL);
 	glEnableVertexAttribArray(index);
 	if (perInstance) glVertexAttribDivisor(index, 1);
+}
+
+CShaderManagerOpenGLES::ShaderProgramCache& CShaderManagerOpenGLES::GetProgramCache() const
+{
+	auto it = m_shaderProgramCache.find(m_activeProgram);
+	if (it == m_shaderProgramCache.end())
+	{
+		it = m_shaderProgramCache.emplace(std::make_pair(m_activeProgram, ShaderProgramCache())).first;
+	}
+	return it->second;
+}
+
+int CShaderManagerOpenGLES::GetUniformLocation(std::string const& uniform) const
+{
+	auto& programCache = GetProgramCache();
+	auto it = programCache.uniformLocations.find(uniform);
+	if (it == programCache.uniformLocations.end())
+	{
+		it = programCache.uniformLocations.emplace(std::make_pair(uniform, glGetUniformLocation(m_activeProgram, uniform.c_str()))).first;
+	}
+	return it->second;
 }
 
 void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance) const
