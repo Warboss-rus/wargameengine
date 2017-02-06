@@ -539,7 +539,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 
 void CGameView::CreateSkybox(float size, wstring const& textureFolder)
 {
-	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer));
+	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, *m_renderer, m_textureManager));
 }
 
 CModelManager& CGameView::GetModelManager()
@@ -630,10 +630,6 @@ void CGameView::ClearResources()
 {
 	m_modelManager.Reset();
 	m_textureManager.Reset();
-	if (m_skybox)
-	{
-		m_skybox->ResetList();
-	}
 	m_tableBuffer.reset();
 }
 
@@ -772,6 +768,11 @@ bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)
 void CGameView::AddParticleEffect(std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles /*= 1000u*/)
 {
 	m_gameModel->AddParticleEffect(m_particles.GetParticleUpdater(effectPath), effectPath, position, scale, maxParticles);
+}
+
+void CGameView::SetSkyboxShaders(std::wstring const& vertex, std::wstring const& fragment)
+{
+	m_skybox->SetShaders(vertex, fragment);
 }
 
 void CGameView::EnableGPUSkinning(bool enable)

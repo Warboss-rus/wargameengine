@@ -17,6 +17,7 @@ public:
 	void SetTexture(std::wstring const& path, const std::vector<sTeamColor> * teamcolor = nullptr, int flags = 0);
 	//doesn't set textureSize uniform
 	void SetTexture(std::wstring const& path, TextureSlot slot, int flags = 0);
+	std::unique_ptr<ICachedTexture> CreateCubemapTexture(std::wstring const& right, std::wstring const& left, std::wstring const& back, std::wstring const& front, std::wstring const& top, std::wstring const& bottom, int flags = 0);
 	void SetAnisotropyLevel(float level);
 	void LoadTextureNow(std::wstring const& path, const std::vector<sTeamColor> * teamcolor = nullptr, int flags = 0);
 	void Reset();

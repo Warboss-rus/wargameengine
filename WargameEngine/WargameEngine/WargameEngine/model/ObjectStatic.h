@@ -1,6 +1,7 @@
 #pragma once
 #include "ObjectInterface.h"
 #include "..\Signal.h"
+#include <float.h>
 
 template<class T>
 class CBaseObject : public T
@@ -29,7 +30,7 @@ public:
 	{ 
 		auto oldRotation = m_rotation;  
 		m_rotation = fmodf(m_rotation + rotation + 360.0f, 360.0f);
-		if (abs(oldRotation - m_rotation) > FLT_EPSILON)
+		if (fabsf(oldRotation - m_rotation) > FLT_EPSILON)
 		{
 			m_onRotationChange(oldRotation, m_rotation);
 		}
@@ -38,7 +39,7 @@ public:
 	{ 
 		auto oldRotation = m_rotation;
 		m_rotation = rotation;
-		if (abs(oldRotation - m_rotation) > FLT_EPSILON)
+		if (fabsf(oldRotation - m_rotation) > FLT_EPSILON)
 		{
 			m_onRotationChange(oldRotation, m_rotation);
 		}
@@ -53,8 +54,8 @@ public:
 		}
 	}
 	virtual IObject* GetFullObject() override { return nullptr; }
-	virtual typename CSignalConnection DoOnCoordsChange(typename T::CoordsSignal::Slot const& handler) override { return std::move(m_onCoordsChange.Connect(handler)); }
-	virtual typename CSignalConnection DoOnRotationChange(typename T::RotationSignal::Slot const& handler) override { return std::move(m_onRotationChange.Connect(handler)); }
+	virtual CSignalConnection DoOnCoordsChange(typename T::CoordsSignal::Slot const& handler) override { return std::move(m_onCoordsChange.Connect(handler)); }
+	virtual CSignalConnection DoOnRotationChange(typename T::RotationSignal::Slot const& handler) override { return std::move(m_onRotationChange.Connect(handler)); }
 private:
 	CVector3f m_coords;
 	float m_rotation;

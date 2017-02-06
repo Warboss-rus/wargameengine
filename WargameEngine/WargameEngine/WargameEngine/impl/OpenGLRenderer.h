@@ -67,10 +67,11 @@ public:
 
 	virtual void ActivateTextureSlot(TextureSlot slot) override;
 	virtual void UnbindTexture() override;
-	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture() override;
+	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
 	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	virtual void UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short bpp, int flags) override;
 	virtual bool Force32Bits() const override;
 	virtual bool ForceFlipBMP() const override;
 	virtual bool ConvertBgra() const override;
@@ -96,7 +97,7 @@ private:
 class COpenGlCachedTexture : public ICachedTexture
 {
 public:
-	COpenGlCachedTexture();
+	COpenGlCachedTexture(unsigned int type);
 	~COpenGlCachedTexture();
 
 	virtual void Bind() const override;
@@ -105,4 +106,5 @@ public:
 	operator unsigned int() const;
 private:
 	unsigned int m_id;
+	unsigned int m_type;
 };

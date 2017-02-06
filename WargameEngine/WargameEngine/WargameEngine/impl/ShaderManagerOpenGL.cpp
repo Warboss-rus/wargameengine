@@ -178,6 +178,8 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(std::wstring co
 	glUseProgram(program->program);
 	int unfrm = glGetUniformLocation(program->program, "mainTexture");
 	glUniform1i(unfrm, 0);
+	unfrm = glGetUniformLocation(program->program, "cubemapTexture");
+	glUniform1i(unfrm, 0);
 	unfrm = glGetUniformLocation(program->program, "shadowMap");
 	glUniform1i(unfrm, 1);
 	unfrm = glGetUniformLocation(program->program, "specular");

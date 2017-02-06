@@ -22,6 +22,7 @@ public:
 	static void OnKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void CharacterCallback(GLFWwindow* window, unsigned int key);
 	static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
+	static void JoystickCallback(int joy, int event);
 	void UpdateControllers();
 	void SetHeadRotation(int deviceIndex, float x, float y, float z);
 private:
@@ -35,4 +36,5 @@ private:
 	};
 	std::vector<sControllerState> m_gamepadStates;
 	int m_modifiers = 0;
+	std::vector<int> m_activeJoysticks;
 };

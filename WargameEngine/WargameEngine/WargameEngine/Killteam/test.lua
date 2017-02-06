@@ -181,6 +181,7 @@ end
 
 AddLight()
 SetLightPosition(1, 0, 0, 30)
+CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 --EnableShadowMap(1024, 53)
 EnableMSAA()
 SetAnisotropy(GetMaxAnisotropy())
@@ -190,18 +191,19 @@ if(GetRendererName() == "DirectX11") then
 elseif(GetRendererName() == "OpenGLES") then
 	SetShaders("GLES/gpu_skinning.vsh", "GLES/gpu_skinning.fsh")
 	SetParticleSystemShaders("GLES/particle.vsh", "GLES/particle.fsh")
+	SetSkyboxShaders("GLES/skybox.vsh", "GLES/skybox.fsh")
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
 else
 	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
 	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
+	SetSkyboxShaders("openGL/skybox.vsh", "openGL/skybox.fsh")
 end
 EnableGPUSkinning()
 --EnableVertexLightning()
-CreateSkybox(50, "skybox")--Creates a skybox (size in OpenGLUnits, path to texture folder (names are fixed))
 CreateTable(30, 15, "sand.dds")--Creates a table (width, height, texture)
 --Viewport:CameraStrategy(15, 6, 5, 0.5)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
---CameraFirstPerson()
+--Viewport:CameraFirstPerson()
 --UI:Get():ApplyTheme("uiTheme.xml")
 local list = UI:NewCombobox("ComboBoxModels", 10, 10, 30, 200)--Adds a new empty listbox tp UI (name, x, y, width, height)
 local files = GetFilesList("models", "*.wbm", false)--Find all models and add them into list

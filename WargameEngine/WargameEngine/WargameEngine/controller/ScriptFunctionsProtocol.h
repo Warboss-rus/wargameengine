@@ -80,6 +80,8 @@
 
 #define SET_SHADERS L"SetShaders"
 
+#define SET_SKYBOX_SHADERS L"SetSkyboxShaders"
+
 #define UNIFORM_1I L"Uniform1i"
 
 #define UNIFORM_1F L"Uniform1f"

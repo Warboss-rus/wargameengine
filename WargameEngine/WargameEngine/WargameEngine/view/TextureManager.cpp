@@ -4,6 +4,8 @@
 #include "IImageReader.h"
 #include "../Utils.h"
 #include "../MemoryStream.h"
+#include <algorithm>
+#include <iterator>
 
 void CTextureManager::UseTexture(CImage const& img, ICachedTexture& texture, int additionalFlags)
 {
@@ -86,6 +88,55 @@ void CTextureManager::SetTexture(std::wstring const& path, const std::vector<sTe
 		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
 	}
 	m_textures[pair]->Bind();
+}
+
+std::unique_ptr<ICachedTexture> CTextureManager::CreateCubemapTexture(std::wstring const& right, std::wstring const& left, std::wstring const& back, std::wstring const& front, std::wstring const& top, std::wstring const& bottom, int flags /*= 0*/)
+{
+	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
+	ICachedTexture& texRef = *tex;
+	sReaderParameters params;
+	params.flipBmp = m_helper.ForceFlipBMP();
+	params.force32bit = m_helper.Force32Bits();
+	params.convertBgra = m_helper.ConvertBgra();
+	const std::vector<std::wstring> imagePaths = { right, left, back, front, top, bottom };
+	std::shared_ptr<std::vector<CImage>> images = std::make_shared<std::vector<CImage>>(6);
+	std::shared_ptr<size_t> imagesReady = std::make_shared<size_t>(0);
+	for (size_t i = 0; i < imagePaths.size(); ++i)
+	{
+		std::wstring path = imagePaths[i];
+		m_asyncFileProvider.GetTextureAsync(path, [images, this, path, params, i](void* data, size_t size) {
+			unsigned char* charData = reinterpret_cast<unsigned char*>(data);
+			for (auto& reader : m_imageReaders)
+			{
+				if (reader->ImageIsSupported(charData, size, path))
+				{
+					try
+					{
+						images->at(i) = reader->ReadImage(charData, size, path, params);
+						images->at(i).StoreData();
+						return;
+					}
+					catch (std::exception const& e)
+					{
+						LogWriter::WriteLine(e.what());
+					}
+				}
+			}
+		}, [=, &texRef]() {
+			++(*imagesReady);
+			if (*imagesReady == images->size())
+			{
+				std::vector<sTextureMipMap> sides;
+				std::transform(images->begin(), images->end(), std::back_inserter(sides), [](CImage const& img) {
+					return sTextureMipMap{img.GetData(), static_cast<unsigned int>(img.GetWidth()), static_cast<unsigned int>(img.GetHeight()), 0};
+				});
+				m_helper.UploadCubemap(texRef, sides, images->front().GetBPP(), images->front().GetFlags() | flags);
+			}
+		}, [](std::exception const& e) {
+			LogWriter::WriteLine(e.what());
+		});
+	}
+	return tex;
 }
 
 void CTextureManager::SetAnisotropyLevel(float level)

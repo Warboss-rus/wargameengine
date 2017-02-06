@@ -46,10 +46,11 @@ public:
 
 	virtual void ActivateTextureSlot(TextureSlot slot) = 0;
 	virtual void UnbindTexture() = 0;
-	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture() = 0;
+	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) = 0;
 	virtual void SetTextureAnisotropy(float value = 1.0f) = 0;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) = 0;
 	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) = 0;
+	virtual void UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short bpp, int flags) = 0;
 
 	virtual bool Force32Bits() const = 0;
 	virtual bool ForceFlipBMP() const = 0;

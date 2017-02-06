@@ -21,7 +21,7 @@ static const std::string TEXCOORD_KEY = "TexCoord";
 class COpenGLESCachedTexture : public ICachedTexture
 {
 public:
-	COpenGLESCachedTexture();
+	COpenGLESCachedTexture(GLenum type = GL_TEXTURE_2D);
 	~COpenGLESCachedTexture();
 
 	virtual void Bind() const override;
@@ -30,6 +30,7 @@ public:
 	operator GLuint();
 private:
 	unsigned int m_id;
+	GLenum m_type;
 };
 
 class CMockDrawingList : public IDrawingList
@@ -388,7 +389,8 @@ void COpenGLESRenderer::SetMaterial(const float * ambient, const float * diffuse
 	m_shaderManager.SetUniformValue(shininessKey, 1, 1, &shininess);
 }
 
-COpenGLESCachedTexture::COpenGLESCachedTexture()
+COpenGLESCachedTexture::COpenGLESCachedTexture(GLenum type)
+	: m_type(type)
 {
 	glGenTextures(1, &m_id);
 }
@@ -400,12 +402,12 @@ COpenGLESCachedTexture::~COpenGLESCachedTexture()
 
 void COpenGLESCachedTexture::Bind() const
 {
-	glBindTexture(GL_TEXTURE_2D, m_id);
+	glBindTexture(m_type, m_id);
 }
 
 void COpenGLESCachedTexture::UnBind() const
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(m_type, 0);
 }
 
 COpenGLESCachedTexture::operator GLuint()
@@ -627,9 +629,9 @@ void COpenGLESRenderer::UnbindTexture()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateEmptyTexture()
+std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateEmptyTexture(bool cubemap)
 {
-	return std::make_unique<COpenGLESCachedTexture>();
+	return std::make_unique<COpenGLESCachedTexture>(cubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D);
 }
 
 void COpenGLESRenderer::SetTextureAnisotropy(float value)
@@ -684,6 +686,27 @@ void COpenGLESRenderer::UploadCompressedTexture(ICachedTexture & texture, unsign
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
+}
+
+void COpenGLESRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short, int flags)
+{
+	texture.Bind();
+	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGRA_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	for (size_t i = 0; i < sides.size(); ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, static_cast<GLsizei>(sides[i].width), static_cast<GLsizei>(sides[i].height), 0, format, GL_UNSIGNED_BYTE, sides[i].data);
+	}
+	flags &= ~TEXTURE_BUILD_MIPMAPS;
+	if (flags & TEXTURE_BUILD_MIPMAPS)
+	{
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	texture.UnBind();
 }
 
 bool COpenGLESRenderer::Force32Bits() const

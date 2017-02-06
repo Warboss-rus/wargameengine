@@ -903,7 +903,7 @@ void CDirectXRenderer::UnbindTexture()
 	SetTextureResource(NULL);
 }
 
-std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateEmptyTexture()
+std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateEmptyTexture(bool cubemap)
 {
 	return std::make_unique<CDirectXCachedTexture>(this);
 }
@@ -946,6 +946,11 @@ void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigne
 {
 	auto& dxtexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
 	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, size, CachedTextureType::RGBA, mipmaps);
+}
+
+void CDirectXRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short bpp, int flags)
+{
+	auto& dxtexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
 }
 
 bool CDirectXRenderer::Force32Bits() const
@@ -1137,6 +1142,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	}
 
 	auto hr = m_dev->CreateTexture2D(&desc, data ? texData : nullptr, texture);
+	delete[] texData;
 	if (FAILED(hr) || !*texture)
 	{
 		LogWriter::WriteLine("Cannot create texture: " + std::to_string(GetLastError()));

@@ -189,6 +189,10 @@ COpenGLRenderer::COpenGLRenderer()
 
 	m_defaultProgram = m_shaderManager.NewProgram();
 	m_shaderManager.PushProgram(*m_defaultProgram);
+	if (GLEW_ARB_seamless_cube_map)
+	{
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
@@ -309,7 +313,7 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 	//set up texture
 	GLint prevTexture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
-	auto texture = std::make_unique<COpenGlCachedTexture>();
+	auto texture = std::make_unique<COpenGlCachedTexture>(GL_TEXTURE_2D);
 	texture->Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -361,7 +365,7 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data
 		{ CachedTextureType::ALPHA, {GL_RED, GL_R8, GL_UNSIGNED_BYTE} },
 		{ CachedTextureType::DEPTH, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};
-	auto texture = std::make_unique<COpenGlCachedTexture>();
+	auto texture = std::make_unique<COpenGlCachedTexture>(GL_TEXTURE_2D);
 	texture->Bind();
 	glTexImage2D(GL_TEXTURE_2D, 0, std::get<1>(formatMap.at(type)), width, height, 0, std::get<0>(formatMap.at(type)), std::get<2>(formatMap.at(type)), data);
 	if (type == CachedTextureType::ALPHA)
@@ -444,7 +448,8 @@ void COpenGLRenderer::SetMaterial(const float * ambient, const float * diffuse, 
 	m_shaderManager.SetUniformValue(shininessKey, 1, 1, &shininess);
 }
 
-COpenGlCachedTexture::COpenGlCachedTexture()
+COpenGlCachedTexture::COpenGlCachedTexture(unsigned int type)
+	:m_type(type)
 {
 	glGenTextures(1, &m_id);
 }
@@ -456,12 +461,12 @@ COpenGlCachedTexture::~COpenGlCachedTexture()
 
 void COpenGlCachedTexture::Bind() const
 {
-	glBindTexture(GL_TEXTURE_2D, m_id);
+	glBindTexture(m_type, m_id);
 }
 
 void COpenGlCachedTexture::UnBind() const
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(m_type, 0);
 }
 
 COpenGlCachedTexture::operator unsigned int() const
@@ -673,9 +678,9 @@ void COpenGLRenderer::UnbindTexture()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateEmptyTexture()
+std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateEmptyTexture(bool cubemap)
 {
-	return std::make_unique<COpenGlCachedTexture>();
+	return std::make_unique<COpenGlCachedTexture>(cubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D);
 }
 
 void COpenGLRenderer::SetTextureAnisotropy(float value)
@@ -738,6 +743,27 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLsizei>(mipmaps.size()));
+}
+
+void COpenGLRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short, int flags)
+{
+	texture.Bind();
+	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	for (size_t i = 0; i < sides.size(); ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, static_cast<GLsizei>(sides[i].width), static_cast<GLsizei>(sides[i].height), 0, format, GL_UNSIGNED_BYTE, sides[i].data);
+	}
+	flags &= ~TEXTURE_BUILD_MIPMAPS;
+	if (flags & TEXTURE_BUILD_MIPMAPS)
+	{
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	texture.UnBind();
 }
 
 bool COpenGLRenderer::Force32Bits() const

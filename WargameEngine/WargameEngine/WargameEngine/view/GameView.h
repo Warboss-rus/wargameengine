@@ -79,6 +79,7 @@ public:
 	void LoadModule(std::wstring const& module);
 	bool EnableVRMode(bool enable, bool mirrorToScreen = true);
 	void AddParticleEffect(std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
+	void SetSkyboxShaders(std::wstring const& vertex, std::wstring const& fragment);
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();

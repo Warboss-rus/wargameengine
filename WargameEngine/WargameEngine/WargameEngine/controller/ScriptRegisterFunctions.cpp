@@ -258,6 +258,17 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		return nullptr;
 	});
 
+	handler.RegisterFunction(SET_SKYBOX_SHADERS, [&](IArguments const& args) {
+		int n = args.GetCount();
+		auto pathSource = view.GetAsyncFileProvider();
+		std::wstring vertex, fragment;
+		if (n > 0) vertex = pathSource.GetShaderAbsolutePath(args.GetWStr(1));
+		if (n > 1) fragment = pathSource.GetShaderAbsolutePath(args.GetWStr(2));
+		if (n > 3) throw std::runtime_error("up to 2 argument expected (vertex shader, fragment shader)");
+		view.SetSkyboxShaders(vertex, fragment);
+		return nullptr;
+	});
+
 	handler.RegisterFunction(UNIFORM_1I, [&](IArguments const& args) {
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 arguments expected (uniform name, value)");

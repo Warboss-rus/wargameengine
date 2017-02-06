@@ -61,14 +61,14 @@ private:
 	unsigned int m_id;
 };
 
-class COpenGLOcclusionQuery : public IOcclusionQuery
+class CLegacyGLOcclusionQuery : public IOcclusionQuery
 {
 public:
-	COpenGLOcclusionQuery()
+	CLegacyGLOcclusionQuery()
 	{
 		glGenQueries(1, &m_id);
 	}
-	~COpenGLOcclusionQuery()
+	~CLegacyGLOcclusionQuery()
 	{
 		glDeleteQueries(1, &m_id);
 	}
@@ -276,7 +276,7 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function
 	//set up texture
 	GLint prevTexture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
-	auto texture = std::make_unique<CLegacyGlCachedTexture>();
+	auto texture = std::make_unique<CLegacyGlCachedTexture>(GL_TEXTURE_2D);
 	texture->Bind();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -330,7 +330,7 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateTexture(const void * da
 		{ CachedTextureType::ALPHA, GL_ALPHA },
 		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
 	};
-	auto texture = std::make_unique<CLegacyGlCachedTexture>();
+	auto texture = std::make_unique<CLegacyGlCachedTexture>(GL_TEXTURE_2D);
 	texture->Bind();
 	glTexImage2D(GL_TEXTURE_2D, 0, typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -387,7 +387,8 @@ void CLegacyGLRenderer::SetMaterial(const float * ambient, const float * diffuse
 	glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }
 
-CLegacyGlCachedTexture::CLegacyGlCachedTexture()
+CLegacyGlCachedTexture::CLegacyGlCachedTexture(unsigned int type)
+	:m_type(type)
 {
 	glGenTextures(1, &m_id);
 }
@@ -399,12 +400,12 @@ CLegacyGlCachedTexture::~CLegacyGlCachedTexture()
 
 void CLegacyGlCachedTexture::Bind() const
 {
-	glBindTexture(GL_TEXTURE_2D, m_id);
+	glBindTexture(m_type, m_id);
 }
 
 void CLegacyGlCachedTexture::UnBind() const
 {
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(m_type, 0);
 }
 
 CLegacyGlCachedTexture::operator unsigned int() const
@@ -669,9 +670,9 @@ void CLegacyGLRenderer::UnbindTexture()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateEmptyTexture()
+std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateEmptyTexture(bool cubemap)
 {
-	return std::make_unique<CLegacyGlCachedTexture>();
+	return std::make_unique<CLegacyGlCachedTexture>(cubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D);
 }
 
 void CLegacyGLRenderer::SetTextureAnisotropy(float value)
@@ -739,6 +740,24 @@ void CLegacyGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsign
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps.size());
 }
 
+void CLegacyGLRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short, int flags)
+{
+	texture.Bind();
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
+	for (size_t i = 0; i < sides.size(); ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, static_cast<GLsizei>(sides[i].width), static_cast<GLsizei>(sides[i].height), 0, format, GL_UNSIGNED_BYTE, sides[i].data);
+	}
+	if (flags & TEXTURE_BUILD_MIPMAPS)
+	{
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
+}
+
 bool CLegacyGLRenderer::Force32Bits() const
 {
 	return false;
@@ -785,7 +804,7 @@ void CLegacyGLRenderer::EnableMultisampling(bool enable)
 
 std::unique_ptr<IOcclusionQuery> CLegacyGLRenderer::CreateOcclusionQuery()
 {
-	return std::make_unique<COpenGLOcclusionQuery>();
+	return std::make_unique<CLegacyGLOcclusionQuery>();
 }
 
 void CLegacyGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)

@@ -30,6 +30,16 @@ public:
 	const TextureMipMaps& GetMipmaps() const { return m_mipmaps; }
 	bool IsCompressed() const { return m_size != 0; }
 	size_t GetImageSize() const { return IsCompressed() ? m_size : m_width * m_height * m_bpp; }
+	void StoreData() 
+	{ 
+		unsigned char* data = GetData();
+		if (data != m_uncompressedData.data())
+		{
+			m_uncompressedData.resize(m_width * m_height * m_bpp / 8);
+			memcpy(m_uncompressedData.data(), data, m_width * m_height * m_bpp / 8);
+			m_data = m_uncompressedData.data();
+		}
+	}
 private:
 	size_t m_width;
 	size_t m_height;
