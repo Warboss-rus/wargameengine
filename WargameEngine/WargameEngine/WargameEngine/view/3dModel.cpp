@@ -134,11 +134,12 @@ void C3DModel::CalculateGPUWeights(IRenderer & renderer)
 	std::vector<float> gpuWeight;
 	gpuWeightIndexes.reserve(m_weightsCount.size() * 4);
 	gpuWeight.reserve(m_weightsCount.size() * 4);
+	size_t k = 0;
 	for (size_t i = 0; i < m_weightsCount.size(); ++i)
 	{
 		unsigned int j = 0;
 		float sum = 0.0f;
-		for (size_t k = 0; j < m_weightsCount[i]; ++j, ++k)
+		for (; j < m_weightsCount[i]; ++j, ++k)
 		{
 			if (j < 4)
 			{
