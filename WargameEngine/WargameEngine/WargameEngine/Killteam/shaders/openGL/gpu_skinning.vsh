@@ -7,7 +7,7 @@ layout (location = 4) in vec4 weights;
 
 uniform mat4 mvp_matrix;
 uniform mat4 model_matrix;
-uniform mat4 joints[256];
+uniform mat4 joints[250];
 
 out vec3 v_normal;
 out vec2 v_texCoord;

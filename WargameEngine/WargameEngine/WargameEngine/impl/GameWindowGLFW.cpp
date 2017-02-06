@@ -138,6 +138,10 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 		glfwDestroyWindow(m_window);
 	}
 	m_window = glfwCreateWindow(600, 600, "WargameEngine", monitor, NULL);
+	if (!m_window)
+	{
+		return;
+	}
 #ifdef VULKAN_API
 	VkSurfaceKHR surface;
 	VkResult err = glfwCreateWindowSurface(instance, window, NULL, &surface);
@@ -164,26 +168,42 @@ CGameWindowGLFW::CGameWindowGLFW()
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 #endif
 
+	//Try 3.3 core first
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef _DEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 #endif
-
-	CreateNewWindow();
 	try
 	{
+		CreateNewWindow();
 		m_renderer = std::make_unique<COpenGLRenderer>();
 		return;
 	}
 	catch (...)
 	{
 	}
-	//if we cannot create an OpenGL 3.3, try to create 2.0 context
+
+	//If it fails, try 3.1 any (3.1 is required for instanced rendering)
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+
+	try
+	{
+		CreateNewWindow();
+		m_renderer = std::make_unique<COpenGLRenderer>();
+		return;
+	}
+	catch (...)
+	{
+	}
+
+	//lastly create legacy 2.0 context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
 	CreateNewWindow();
 	m_renderer = std::make_unique<CLegacyGLRenderer>();
 }

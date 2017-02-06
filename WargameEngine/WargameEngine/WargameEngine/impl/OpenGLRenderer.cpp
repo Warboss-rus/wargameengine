@@ -790,7 +790,7 @@ bool COpenGLRenderer::SupportsFeature(Feature feature) const
 {
 	if (feature == Feature::INSTANSING)
 	{
-		return GLEW_ARB_draw_instanced && GLEW_ARB_instanced_arrays;
+		return GLEW_VERSION_3_1 != GL_FALSE;
 	}
 	return true;
 }

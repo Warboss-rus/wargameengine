@@ -163,8 +163,6 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(std::wstring co
 			geometryShader = CompileShaderFromFile(geometry, program->program, GL_GEOMETRY_SHADER);
 		}
 	}
-	glBindAttribLocation(program->program, 9, "weights");
-	glBindAttribLocation(program->program, 10, "weightIndices");
 	glLinkProgram(program->program);
 	GLint isLinked = 0;
 	glGetProgramiv(program->program, GL_LINK_STATUS, &isLinked);
