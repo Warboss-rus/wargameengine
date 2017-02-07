@@ -1,6 +1,8 @@
 #pragma once
 #include "IViewport.h"
 #include <map>
+#include <vector>
+#include "IViewHelper.h"
 
 class IViewHelper;
 class IOcclusionQuery;
@@ -9,35 +11,36 @@ class IObject;
 class CViewportBase : public IViewport
 {
 public:
-	CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer);
+	CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer, bool onScreen, bool resize);
 	~CViewportBase();
-	virtual ICamera& GetCamera() override;
-	virtual ICamera const& GetCamera() const override;
-	virtual void SetCamera(std::unique_ptr<ICamera> && camera) override;
 
-	virtual ICachedTexture const& GetTexture() const override;
+	//IViewport
+	const ICachedTexture & GetTexture(size_t index) const override;
+	const float* GetProjectionMatrix() const override;
+	const float* GetViewMatrix() const override;
+	int GetX() const override { return m_x; }
+	int GetY() const override { return m_y; }
+	int GetWidth() const override { return m_width; }
+	int GetHeight() const override { return m_height; }
 
-	virtual IOcclusionQuery & GetOcclusionQuery(const IBaseObject* object) override;
+	ICamera& GetCamera();
+	ICamera const& GetCamera() const;
+	void SetCamera(std::unique_ptr<ICamera> && camera);
+	void AttachNewTexture(CachedTextureType type, int textureIndex = -1);
+	void Bind();
+	void Unbind();
+	bool IsDepthOnly() const;
+	bool DrawUI() const;
+	IOcclusionQuery & GetOcclusionQuery(const IBaseObject* object);
+	void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f);
+	void SetClippingPlanes(float near = 1.0, float far = 1000.0);
+	bool PointIsInViewport(int x, int y) const;
+	void Resize(int width, int height);
+	void SetShadowViewport(IViewport* viewport) { m_shadowMapViewport = viewport; }
+	void SetUpShadowMap() const;
+	IViewport* GetShadowViewport() const { return m_shadowMapViewport; }
 
-	virtual const float* GetProjectionMatrix() const override;
-	virtual const float* GetViewMatrix() const override;
-
-	virtual void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
-	virtual void SetClippingPlanes(float near = 1.0, float far = 1000.0) override;
-
-	virtual bool PointIsInViewport(int x, int y) const override;
-
-	virtual void Resize(int width, int height) override;
-
-	virtual int GetX() const override { return m_x; }
-	virtual int GetY() const override { return m_y; }
-	virtual int GetWidth() const override { return m_width; }
-	virtual int GetHeight() const override { return m_height; }
-
-	virtual void SetShadowViewport(IViewport* viewport) override { m_shadowMapViewport = viewport; }
-	virtual void SetUpShadowMap() const override;
-	virtual IViewport* GetShadowViewport() const override { return m_shadowMapViewport; }
-protected:
+private:
 	std::unique_ptr<ICamera> m_camera;
 	int m_x;
 	int m_y;
@@ -53,4 +56,8 @@ protected:
 	float m_farPane = 1000.0f;
 	IViewport* m_shadowMapViewport = nullptr;
 	std::map<const IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
+	std::unique_ptr<IFrameBuffer> m_FBO;
+	std::vector<std::unique_ptr<ICachedTexture>> m_textures;
+	bool m_depthOnly;
+	bool m_resize;
 };

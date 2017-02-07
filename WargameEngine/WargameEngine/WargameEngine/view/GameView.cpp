@@ -13,8 +13,6 @@
 #include "IImageReader.h"
 #include "IModelReader.h"
 #include "../Utils.h"
-#include "Viewport.h"
-#include "OffscreenViewport.h"
 #include "CameraFirstPerson.h"
 #include "FixedCamera.h"
 #include "MirrorCamera.h"
@@ -44,6 +42,7 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_particles(*m_renderer)
 	, m_scriptHandlerFactory(context->scriptHandlerFactory)
 	, m_socketFactory(context->socketFactory)
+	, m_ui(*m_renderer, *m_textWriter)
 {
 	m_viewHelper->SetTextureManager(m_textureManager);
 	for (auto& reader : context->imageReaders)
@@ -57,8 +56,7 @@ CGameView::CGameView(sGameViewContext * context)
 	setlocale(LC_ALL, "");
 	setlocale(LC_NUMERIC, "english");
 
-	m_ui = make_unique<CUIElement>(*m_renderer, *m_textWriter);
-	m_ui->SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
+	m_ui.SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
 
 	Init(context->module);
 
@@ -67,7 +65,7 @@ CGameView::CGameView(sGameViewContext * context)
 		Update();
 	});
 	m_window->DoOnResize([this](int width, int height) {
-		m_ui->Resize(height, width);
+		m_ui.Resize(height, width);
 		for (auto& viewport : m_viewports)
 		{
 			viewport->Resize(width, height);
@@ -86,11 +84,11 @@ CGameView::CGameView(sGameViewContext * context)
 
 void CGameView::Init(sModule const& module)
 {
-	m_ui->ClearChildren();
+	m_ui.ClearChildren();
 	m_viewports.clear();
 	int width, height;
 	m_window->GetWindowSize(width, height);
-	m_viewports.push_back(std::make_unique<CViewport>(0, 0, width, height, 60.0f, *m_viewHelper, true));
+	m_viewports.emplace_back(make_unique<CViewportBase>(0, 0, width, height, 60.0f, *m_viewHelper, true, true));
 	m_viewports.front()->SetCamera(make_unique<CCameraStrategy>(100.0f, 100.0f, 2.8f, 0.5f));
 	m_gameController.reset();
 
@@ -139,19 +137,19 @@ void CGameView::InitInput()
 	m_viewports.front()->GetCamera().SetInput(*m_input);
 	//UI
 	m_input->DoOnLMBDown([this](int x, int y) {
-		return m_ui->LeftMouseButtonDown(x, y);
+		return m_ui.LeftMouseButtonDown(x, y);
 	}, 0);
 	m_input->DoOnLMBUp([this](int x, int y) {
-		return m_ui->LeftMouseButtonUp(x, y);
+		return m_ui.LeftMouseButtonUp(x, y);
 	}, 0);
 	m_input->DoOnCharacter([this](wchar_t key) {
-		return m_ui->OnCharacterInput(key);
+		return m_ui.OnCharacterInput(key);
 	}, 0);
 	m_input->DoOnKeyDown([this](int key, int modifiers) {
-		return m_ui->OnKeyPress(m_input->KeycodeToVirtualKey(key), modifiers);
+		return m_ui.OnKeyPress(m_input->KeycodeToVirtualKey(key), modifiers);
 	}, 0);
 	m_input->DoOnMouseMove([this](int x, int y) {
-		m_ui->OnMouseMove(x, y);
+		m_ui.OnMouseMove(x, y);
 		return false;
 	}, 9);
 	//Ruler
@@ -250,7 +248,7 @@ void CGameView::DrawUI()
 {
 	m_renderer->SetColor(0.0f, 0.0f, 0.0f);
 	m_viewHelper->DrawIn2D([this] {
-		m_ui->Draw();
+		m_ui.Draw();
 	});
 }
 
@@ -327,25 +325,25 @@ void CGameView::Update()
 	for (auto it = m_viewports.rbegin();  it != m_viewports.rend(); ++it)
 	{
 		m_currentViewport = it->get();
-		m_currentViewport->Draw([this](bool depthOnly, bool drawUI) {
-			m_viewHelper->EnableBlending(!depthOnly);
-			if (m_skybox && !depthOnly)
-			{
-				auto& camera = m_currentViewport->GetCamera();
-				m_skybox->Draw(-camera.GetDirection(), camera.GetScale());
-			}
-			DrawObjects(depthOnly);
-			if (!depthOnly)
-			{
-				DrawBoundingBox();
-				DrawRuler();
-				m_physicsEngine->Draw();
-			}
-			if (drawUI)
-			{
-				DrawUI();
-			}
-		});
+		m_currentViewport->Bind();
+		m_viewHelper->EnableBlending(!m_currentViewport->IsDepthOnly());
+		if (m_skybox && !m_currentViewport->IsDepthOnly())
+		{
+			auto& camera = m_currentViewport->GetCamera();
+			m_skybox->Draw(-camera.GetDirection(), camera.GetScale());
+		}
+		DrawObjects(m_currentViewport->IsDepthOnly());
+		if (!m_currentViewport->IsDepthOnly())
+		{
+			DrawBoundingBox();
+			DrawRuler();
+			m_physicsEngine->Draw();
+		}
+		if (m_currentViewport->DrawUI())
+		{
+			DrawUI();
+		}
+		m_currentViewport->Unbind();
 	}
 	m_currentViewport = nullptr;
 	long long currentTime = GetCurrentTimeLL();
@@ -547,9 +545,9 @@ CModelManager& CGameView::GetModelManager()
 	return m_modelManager;
 }
 
-IUIElement * CGameView::GetUI() const
+IUIElement * CGameView::GetUI()
 {
-	return m_ui.get();
+	return &m_ui;
 }
 
 ISoundPlayer& CGameView::GetSoundPlayer()
@@ -587,17 +585,18 @@ void CGameView::ResizeWindow(int height, int width)
 	m_window->ResizeWindow(width, height);
 }
 
-IViewport& CGameView::CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition)
+CViewportBase& CGameView::CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition)
 {
-	m_viewports.push_back(std::make_unique<COffscreenViewport>(CachedTextureType::DEPTH, size, size, angle, *m_viewHelper, static_cast<int>(TextureSlot::eShadowMap)));
+	m_viewports.emplace_back(make_unique<CViewportBase>(0, 0, size, size, angle, *m_viewHelper, false, false));
 	auto& shadowMapViewport = *m_viewports.back();
+	shadowMapViewport.AttachNewTexture(CachedTextureType::DEPTH, static_cast<int>(TextureSlot::eShadowMap));
 	shadowMapViewport.SetCamera(std::make_unique<CFixedCamera>(lightPosition, CVector3f({ 0.0f, 0.0f, 0.0f }), CVector3f({ 0.0f, 1.0f, 0.0f })));
 	shadowMapViewport.SetPolygonOffset(true, 2.0f, 500.0f);
 	shadowMapViewport.SetClippingPlanes(3.0, 300.0);
 	return shadowMapViewport;
 }
 
-void CGameView::DisableShadowMap(IViewport& viewport)
+void CGameView::DisableShadowMap(CViewportBase& viewport)
 {
 	auto shadowMapViewport = viewport.GetShadowViewport();
 	for (auto it = m_viewports.begin(); it != m_viewports.end(); ++it)
@@ -668,14 +667,14 @@ size_t CGameView::GetViewportCount() const
 	return m_viewports.size();
 }
 
-IViewport& CGameView::GetViewport(size_t index /*= 0*/)
+CViewportBase& CGameView::GetViewport(size_t index /*= 0*/)
 {
-	return *m_viewports.at(index);
+	return *m_viewports[index];
 }
 
-IViewport& CGameView::AddViewport(std::unique_ptr<IViewport> && viewport)
+CViewportBase& CGameView::AddViewport(std::unique_ptr<CViewportBase> && viewport)
 {
-	m_viewports.push_back(std::move(viewport));
+	m_viewports.emplace_back(std::move(viewport));
 	return *m_viewports.back();
 }
 
@@ -737,14 +736,16 @@ bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)
 {
 	ICamera * camera;
 	auto viewportFactory = [this, &camera](unsigned int width, unsigned int height) {
-		auto& first = AddViewport(std::make_unique<COffscreenViewport>(CachedTextureType::RGBA, width, height, 65.0f, *m_viewHelper));
-		auto& second = AddViewport(std::make_unique<COffscreenViewport>(CachedTextureType::RGBA, width, height, 65.0f, *m_viewHelper));
+		auto first = std::make_unique<CViewportBase>(0, 0, width, height, 65.0f, *m_viewHelper, false, false);
+		first->AttachNewTexture(CachedTextureType::RGBA);
+		auto second = std::make_unique<CViewportBase>(0, 0, width, height, 65.0f, *m_viewHelper, false, false);
+		second->AttachNewTexture(CachedTextureType::RGBA);
 		auto cameraPtr = std::make_unique<CCameraFirstPerson>();
 		camera = cameraPtr.get();
 		cameraPtr->AttachVR(*m_input);
-		first.SetCamera(std::move(cameraPtr));
-		second.SetCamera(std::make_unique<CCameraMirror>(camera, CVector3f{0, 0, 0}));
-		return std::pair<IViewport&, IViewport&>(first, second);
+		first->SetCamera(std::move(cameraPtr));
+		second->SetCamera(std::make_unique<CCameraMirror>(camera, CVector3f{0, 0, 0}));
+		return std::pair<IViewport&, IViewport&>(AddViewport(std::move(first)), AddViewport(std::move(second)));
 	};
 	bool result = m_window->EnableVRMode(enable, viewportFactory);
 	if (enable && result)

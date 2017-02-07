@@ -212,12 +212,6 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view\Viewport.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\OffscreenViewport.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="view\InputBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -240,7 +234,7 @@
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="view\ViewportBase.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -526,13 +520,7 @@
     <ClInclude Include="Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\Viewport.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\IViewport.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\OffscreenViewport.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\InputBase.h">

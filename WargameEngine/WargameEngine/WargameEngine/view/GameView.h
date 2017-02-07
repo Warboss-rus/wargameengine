@@ -3,7 +3,7 @@
 #include "IRenderer.h"
 #include "ISoundPlayer.h"
 #include "IInput.h"
-#include "../UI/IUI.h"
+#include "../UI/UIElement.h"
 #include "../controller/GameController.h"
 #include "../model/GameModel.h"
 #include "IGameWindow.h"
@@ -18,7 +18,7 @@
 #include "../ThreadPool.h"
 #include "../Module.h"
 #include "TextureManager.h"
-#include "IViewport.h"
+#include "ViewportBase.h"
 
 class IScriptHandler;
 class INetSocket;
@@ -47,7 +47,7 @@ public:
 	~CGameView();
 	void Init(sModule const& module);
 	void CreateSkybox(float size, std::wstring const& textureFolder);
-	IUIElement * GetUI() const;
+	IUIElement * GetUI();
 	CModelManager& GetModelManager();
 	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
@@ -62,14 +62,14 @@ public:
 	CParticleSystem& GetParticleSystem();
 
 	size_t GetViewportCount() const;
-	IViewport& GetViewport(size_t index = 0);
-	IViewport& AddViewport(std::unique_ptr<IViewport> && viewport);
-	IViewport& CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition);
+	CViewportBase& GetViewport(size_t index = 0);
+	CViewportBase& AddViewport(std::unique_ptr<CViewportBase> && viewport);
+	CViewportBase& CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition);
 	void RemoveViewport(IViewport * viewport);
 
 	void ResizeWindow(int height, int width);
 	void EnableGPUSkinning(bool enable);
-	void DisableShadowMap(IViewport& viewport);
+	void DisableShadowMap(CViewportBase& viewport);
 	void EnableMSAA(bool enable, int level = 1.0f);
 	float GetMaxAnisotropy() const;
 	void SetAnisotropyLevel(float level);
@@ -103,11 +103,11 @@ private:
 	std::unique_ptr<CGameController> m_gameController;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::unique_ptr<ISoundPlayer> m_soundPlayer;
-	std::vector<std::unique_ptr<IViewport>> m_viewports;
-	std::unique_ptr<CSkyBox> m_skybox;
-	std::unique_ptr<IUIElement> m_ui;
 	std::unique_ptr<ITextWriter> m_textWriter;
 	std::unique_ptr<IPhysicsEngine> m_physicsEngine;
+	std::vector<std::unique_ptr<CViewportBase>> m_viewports;
+	std::unique_ptr<CSkyBox> m_skybox;
+	CUIElement m_ui;
 	ThreadPool m_threadPool;
 	CAsyncFileProvider m_asyncFileProvider;
 	CModelManager m_modelManager;
@@ -119,6 +119,6 @@ private:
 	std::function<std::unique_ptr<INetSocket>()> m_socketFactory;
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;
 	size_t m_tableBufferSize;
-	IViewport * m_currentViewport;
+	CViewportBase * m_currentViewport;
 	long long m_lastFrameTime = 0;
 };
