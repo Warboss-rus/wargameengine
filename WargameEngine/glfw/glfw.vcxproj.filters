@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="include\GLFW\glfw3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -25,25 +22,22 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\internal.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\iokit_joystick.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\nsgl_context.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\wgl_context.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win32_joystick.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\win32_platform.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\win32_tls.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="src\egl_context.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\winmm_joystick.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="src\glfw_config.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -80,25 +74,14 @@
     <ClCompile Include="src\window.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\winmm_joystick.c">
+    <ClCompile Include="src\win32_joystick.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\glfw_config.h.in">
+    <ClCompile Include="src\vulkan.c">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="src\glfw3.pc.in">
+    </ClCompile>
+    <ClCompile Include="src\egl_context.c">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="src\glfw3Config.cmake.in">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="src\iokit_joystick.m">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="src\nsgl_context.m">
-      <Filter>Source Files</Filter>
-    </None>
+    </ClCompile>
   </ItemGroup>
 </Project>

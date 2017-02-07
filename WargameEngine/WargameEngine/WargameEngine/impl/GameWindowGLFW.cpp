@@ -280,8 +280,8 @@ bool CGameWindowGLFW::EnableVRMode(bool enable, VRViewportFactory const& viewpor
 				return false;
 			}
 			auto viewports = viewportFactory(width, height);
-			m_eyeTextures.push_back(&viewports.first.GetTexture());
-			m_eyeTextures.push_back(&viewports.second.GetTexture());
+			m_eyeTextures.push_back(&viewports.first.GetTexture(0));
+			m_eyeTextures.push_back(&viewports.second.GetTexture(0));
 		}
 		else
 		{
