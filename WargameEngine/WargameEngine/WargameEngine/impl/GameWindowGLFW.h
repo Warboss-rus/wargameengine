@@ -40,6 +40,7 @@ private:
 	GLFWwindow * m_window = NULL;
 	std::unique_ptr<CInputGLFW>m_input;
 	std::unique_ptr<IOpenGLRenderer> m_renderer;
+	bool m_vulkanRenderer = false;
 
 	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;

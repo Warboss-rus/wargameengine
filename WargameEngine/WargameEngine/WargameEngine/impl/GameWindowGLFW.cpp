@@ -1,7 +1,5 @@
 #include "GameWindowGLFW.h"
-#ifdef VULKAN_API
-#define GLFW_INCLUDE_VULKAN
-#endif
+#include "VulkanRenderer.h"
 #include <GLFW/glfw3.h>
 #define VR_API_EXPORT
 #include <openvr.h>
@@ -110,7 +108,15 @@ void CGameWindowGLFW::LaunchMainLoop()
 				}
 			}
 			g_instance->m_input->UpdateControllers();
-			if (g_instance->m_onDraw)
+			if (g_instance->m_vulkanRenderer)
+			{
+				auto* renderer = reinterpret_cast<CVulkanRenderer*>(m_renderer.get());
+				renderer->AcquireImage();
+				renderer->Record();
+				renderer->Submit();
+				renderer->Present();
+			}
+			else if (g_instance->m_onDraw)
 			{
 				g_instance->m_onDraw();
 			}
@@ -164,11 +170,35 @@ CGameWindowGLFW::CGameWindowGLFW()
 	g_instance = this;
 
 	glfwInit();
-#ifdef VULKAN_API
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-#endif
 
-	//Try 3.3 core first
+	//Try Vulkan first
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	try
+	{
+		if (!glfwVulkanSupported())
+		{
+			throw std::runtime_error("Vulkan is not supported");
+		}
+		auto renderer = std::make_unique<CVulkanRenderer>();
+		CreateNewWindow();
+		VkSurfaceKHR surface;
+		VkResult result = glfwCreateWindowSurface(renderer->GetInstance(), m_window, nullptr, &surface);
+		if (result)
+		{
+			throw std::runtime_error("Cannot get window surface");
+		}
+		renderer->SetSurface(surface);
+		throw std::exception();//throw for now
+		m_renderer = std::move(renderer);
+		m_vulkanRenderer = true;
+		return;
+	}
+	catch (...)
+	{
+	}
+
+	//Then try 3.3 core first
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);

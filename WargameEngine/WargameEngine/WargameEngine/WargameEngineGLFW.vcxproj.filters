@@ -47,6 +47,12 @@
     <ClCompile Include="impl\ShaderManagerLegacyGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="impl\VulkanRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\VulkanShaderManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\GameWindowGLFW.h">
@@ -83,6 +89,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\IOpenGLRenderer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\VulkanRenderer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\VulkanShaderManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
