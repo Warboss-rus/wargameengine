@@ -277,6 +277,7 @@
     <ClInclude Include="impl\OpenGLRenderer.h" />
     <ClInclude Include="impl\ShaderManagerOpenGL.h" />
     <ClInclude Include="impl\TextWriter.h" />
+    <ClInclude Include="impl\VulkanHelpers.h" />
     <ClInclude Include="impl\VulkanRenderer.h" />
     <ClInclude Include="impl\VulkanShaderManager.h" />
   </ItemGroup>

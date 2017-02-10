@@ -112,8 +112,11 @@ void CGameWindowGLFW::LaunchMainLoop()
 			{
 				auto* renderer = reinterpret_cast<CVulkanRenderer*>(m_renderer.get());
 				renderer->AcquireImage();
-				renderer->Record();
-				renderer->Submit();
+				int width, height;
+				glfwGetWindowSize(m_window, &width, &height);
+				renderer->SetUpViewport(0, 0, width, height, 65.0f);
+				renderer->ClearBuffers(true, false);
+				renderer->RenderArrays(RenderMode::TRIANGLES, { { -0.7f, 0.7f, 0.0f}, { 0.7f, 0.7f, 0.0f}, { 0.0f, -0.7f, 0.0f} }, {}, { {0.5f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} });
 				renderer->Present();
 			}
 			else if (g_instance->m_onDraw)
@@ -148,12 +151,7 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	{
 		return;
 	}
-#ifdef VULKAN_API
-	VkSurfaceKHR surface;
-	VkResult err = glfwCreateWindowSurface(instance, window, NULL, &surface);
-#else
 	glfwMakeContextCurrent(m_window);
-#endif
 
 	glfwSetWindowSizeCallback(m_window, &OnReshape);
 	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
@@ -188,7 +186,6 @@ CGameWindowGLFW::CGameWindowGLFW()
 			throw std::runtime_error("Cannot get window surface");
 		}
 		renderer->SetSurface(surface);
-		throw std::exception();//throw for now
 		m_renderer = std::move(renderer);
 		m_vulkanRenderer = true;
 		return;

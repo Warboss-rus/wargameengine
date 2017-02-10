@@ -2,27 +2,75 @@
 #include "IOpenGLRenderer.h"
 #include <vulkan/vulkan.h>
 #include "VulkanShaderManager.h"
+#include "VulkanHelpers.h"
 
-class CVulkanSemaphoreWrapper
+class CCommandBufferWrapper
 {
 public:
-	~CVulkanSemaphoreWrapper();
-	void Create(VkDevice device);
-	void Destroy();
-	operator VkSemaphore() const { return m_semaphore; }
-	const VkSemaphore* ptr() const { return &m_semaphore; }
+	CCommandBufferWrapper(VkCommandPool pool, VkDevice device);
+	~CCommandBufferWrapper();
+	operator VkCommandBuffer() const { return m_commandBuffer; }
+	void WaitFence();
+	VkFence GetFence() const { return m_fence; }
+	VkSemaphore GetImageAvailibleSemaphore() const { return m_imageAvailibleSemaphore; }
+	VkSemaphore GetRenderingFinishedSemaphore() const { return m_renderingFinishedSemaphore; }
 private:
-	VkDevice m_device = VK_NULL_HANDLE;
-	VkSemaphore m_semaphore = VK_NULL_HANDLE;
+	VkCommandBuffer m_commandBuffer;
+	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_imageAvailibleSemaphore;
+	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_renderingFinishedSemaphore;
+	CHandleWrapper<VkFence, vkDestroyFence> m_fence;
+	VkDevice m_device;
+	VkCommandPool m_pool;
 };
 
-class CVulkanFrameBuffer
+class CSwapchainWrapper
 {
 public:
-	CVulkanFrameBuffer(VkDevice device, VkImage image, VkFormat imageFormat, VkRenderPass renderPass, uint32_t width, uint32_t height);
+	void Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent2D extent, VkFormat format);
+	operator VkSwapchainKHR() const { return m_swapchain; }
+	void Destroy() { m_swapchain.Destroy(); m_imageViews.clear(); }
+	size_t GetImagesCount() const { return m_images.size(); }
+	const std::vector<VkImage>& GetImages() const { return m_images; }
+	VkExtent2D GetExtent() const { return m_extent; }
+	VkImageView GetImageView(size_t index) const { return m_imageViews[index]; }
+	VkFormat GetFormat() const { return m_format; }
 private:
-	VkFramebuffer m_buffer;
-	VkImageView m_imageView;
+	CHandleWrapper<VkSwapchainKHR, vkDestroySwapchainKHR> m_swapchain;
+	std::vector<VkImage> m_images;
+	std::vector<CHandleWrapper<VkImageView, vkDestroyImageView>> m_imageViews;
+	VkExtent2D m_extent;
+	VkFormat m_format;
+};
+
+class CPipelineHelper
+{
+public:
+	void SetShaderProgram(CVulkanShaderProgram const& program);
+	void ResetVertexAttributes();
+	void AddVertexAttribute(uint32_t pos, uint32_t size, VkFormat format, bool perInstance);
+	void Destroy();
+	void CreatePipeline(VkDevice device, VkRenderPass pass);
+	VkPipeline GetPipeline() const { return m_pipeline; }
+private:
+	std::vector<VkDynamicState> dynamic_states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, };
+	VkPipelineViewportStateCreateInfo viewport_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO, nullptr, 0, 1, nullptr, 1, nullptr };
+	std::vector<VkVertexInputBindingDescription> vertex_binding_descriptions;
+	std::vector<VkVertexInputAttributeDescription> vertex_attribute_descriptions;
+	VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO, nullptr, 0, 0, nullptr, 0, nullptr };
+	VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO, nullptr, 0, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE };
+	VkPipelineRasterizationStateCreateInfo rasterization_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_FALSE, 
+		VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f };
+	VkPipelineMultisampleStateCreateInfo multisample_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO, nullptr, 0, VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 1.0f, nullptr, VK_FALSE, VK_FALSE };
+	VkPipelineColorBlendAttachmentState color_blend_attachment_state = { VK_FALSE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, 
+		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
+	VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_LOGIC_OP_COPY, 1, &color_blend_attachment_state, { 0.0f, 0.0f, 0.0f, 0.0f } };
+	VkPipelineLayoutCreateInfo layout_create_info = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO, nullptr, 0, 0, nullptr, 0, nullptr };
+	VkPipelineDynamicStateCreateInfo dynamic_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO, nullptr, 0, static_cast<uint32_t>(dynamic_states.size()), dynamic_states.data() };
+	VkGraphicsPipelineCreateInfo pipeline_create_info = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO, nullptr, 0, 0/*static_cast<uint32_t>(shader_stage_create_infos.size())*/, nullptr/*shader_stage_create_infos.data()*/, 
+		&vertex_input_state_create_info, &input_assembly_state_create_info, nullptr, &viewport_state_create_info, &rasterization_state_create_info, &multisample_state_create_info, nullptr, &color_blend_state_create_info, 
+		&dynamic_state_create_info, m_pipelineLayout, VK_NULL_HANDLE/*m_renderPass*/, 0, VK_NULL_HANDLE, -1 };
+	CHandleWrapper<VkPipelineLayout, vkDestroyPipelineLayout> m_pipelineLayout;
+	CHandleWrapper<VkPipeline, vkDestroyPipeline> m_pipeline;
 };
 
 class CVulkanRenderer : public IOpenGLRenderer
@@ -35,9 +83,7 @@ public:
 	void SetSurface(VkSurfaceKHR surface);
 
 	void AcquireImage();
-	void Submit();
 	void Present();
-	void Record();
 	
 	virtual void EnableMultisampling(bool enable) override;
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
@@ -97,7 +143,8 @@ private:
 	void CreateDeviceAndQueues();
 	void CreateSwapchain();
 	void CreateCommandBuffers();
-	void CreateInternalFramebuffer();
+	void CreateRenderPass();
+	void InitFramebuffer();
 
 	VkInstance m_instance = VK_NULL_HANDLE;
 	VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
@@ -105,14 +152,20 @@ private:
 	VkQueue m_graphicsQueue = VK_NULL_HANDLE;
 	VkQueue m_presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR m_surface = VK_NULL_HANDLE;
-	VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
-	VkCommandPool m_commandPool = VK_NULL_HANDLE;
-	std::vector<VkCommandBuffer> m_commandBuffers;
-	std::vector<CVulkanFrameBuffer> m_framebuffers;
+	CSwapchainWrapper m_swapchain;
+	CHandleWrapper<VkCommandPool, vkDestroyCommandPool> m_commandPool;
+	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;
+	std::vector<CCommandBufferWrapper> m_commandBuffers;
+	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_frameBuffer;
 	VkImage m_currentImage;
-	CVulkanSemaphoreWrapper m_imageAvailibleSemaphore;
-	CVulkanSemaphoreWrapper m_renderingFinishedSemaphore;
 	uint32_t m_currentImageIndex = 0;
+	uint32_t m_graphicsQueueFamilyIndex = 0;
 	uint32_t m_presentQueueFamilyIndex = 0;
+	size_t m_currentCommandBufferIndex = 0;
 	CVulkanShaderManager m_shaderManager;
+	CPipelineHelper m_pipelineHelper;
+	std::unique_ptr<IShaderProgram> m_defaultProgram;
+	std::unique_ptr<CVulkanVertexBuffer> m_vertexBuffer;
+	std::unique_ptr<CVulkanVertexBuffer> m_normalsBuffer;
+	std::unique_ptr<CVulkanVertexBuffer> m_texCoordBuffer;
 };

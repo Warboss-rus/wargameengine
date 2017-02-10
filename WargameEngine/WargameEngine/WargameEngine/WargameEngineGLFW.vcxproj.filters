@@ -97,5 +97,8 @@
     <ClInclude Include="impl\VulkanShaderManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="impl\VulkanHelpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
