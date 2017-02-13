@@ -41,12 +41,11 @@ private:
 	std::unique_ptr<CInputGLFW>m_input;
 	std::unique_ptr<IOpenGLRenderer> m_renderer;
 	bool m_vulkanRenderer = false;
+	bool m_visible = true;
 
 	std::function<void()> m_onDraw;
 	std::function<void(int, int)> m_onResize;
 	std::function<void()> m_onShutdown;
-
-	static bool m_visible;
 
 	vr::IVRSystem* m_vrSystem = NULL;
 	std::vector<const ICachedTexture *> m_eyeTextures;

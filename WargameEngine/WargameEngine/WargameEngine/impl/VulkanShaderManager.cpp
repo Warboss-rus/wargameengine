@@ -10,10 +10,7 @@ VkShaderModule CompileShader(std::wstring const& filename, VkDevice device)
 	VkShaderModuleCreateInfo shaderModuleCreateInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, 0, code.size(), reinterpret_cast<const uint32_t*>(code.data()) };
 	VkShaderModule shaderModule;
 	VkResult result = vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &shaderModule);
-	if (result)
-	{
-		LogWriter::WriteLine(L"Cannot create shader module for " + filename);
-	}
+	LOG_VK_RESULT(result, L"Cannot create shader module for " + filename);
 	return shaderModule;
 }
 
@@ -61,7 +58,7 @@ void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int 
 {
 }
 
-void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset /*= 0*/) const
 {
 }
 
@@ -124,17 +121,20 @@ CVulkanShaderProgram::~CVulkanShaderProgram()
 	}
 }
 
-CVulkanVertexBuffer::CVulkanVertexBuffer(size_t size, VkDevice device, VkPhysicalDevice physicalDevice, const void * data)
+CVulkanVertexAttribCache::CVulkanVertexAttribCache(size_t size, BufferType type, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties, const void * data)
 	:m_device(device), m_size(size)
 {
 	m_buffer.SetDevice(device);
 	m_memory.SetDevice(device);
-	VkBufferCreateInfo buffer_create_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr };
+	if (size == 0) return;
+	const std::map<BufferType, VkBufferUsageFlagBits> typeMap = {
+		{ BufferType::VERTEX, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT },
+		{ BufferType::INDEX, VK_BUFFER_USAGE_INDEX_BUFFER_BIT },
+		{ BufferType::UNIFORM, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT },
+	};
+	VkBufferCreateInfo buffer_create_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size, typeMap.at(type) | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr };
 	VkResult result = vkCreateBuffer(m_device, &buffer_create_info, nullptr, &m_buffer);
-	if (result)
-	{
-		LogWriter::WriteLine("Cannot create buffer");
-	}
+	LOG_VK_RESULT(result, "Cannot create buffer");
 
 	VkMemoryRequirements buffer_memory_requirements; 
 	vkGetBufferMemoryRequirements(m_device, m_buffer, &buffer_memory_requirements);
@@ -142,16 +142,13 @@ CVulkanVertexBuffer::CVulkanVertexBuffer(size_t size, VkDevice device, VkPhysica
 	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memory_properties);
 	for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)
 	{
-		if ((buffer_memory_requirements.memoryTypeBits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT))
+		if ((buffer_memory_requirements.memoryTypeBits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & properties))
 		{
 			VkMemoryAllocateInfo memory_allocate_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, nullptr, buffer_memory_requirements.size, i };
 			if (vkAllocateMemory(m_device, &memory_allocate_info, nullptr, &m_memory) == VK_SUCCESS)
 			{
 				result = vkBindBufferMemory(m_device, m_buffer, m_memory, 0);
-				if (result)
-				{
-					LogWriter::WriteLine("Cannot bind memory");
-				}
+				LOG_VK_RESULT(result, "Cannot bind memory");
 				if (data)
 				{
 					Upload(data, size);
@@ -163,25 +160,36 @@ CVulkanVertexBuffer::CVulkanVertexBuffer(size_t size, VkDevice device, VkPhysica
 	LogWriter::WriteLine("Cannot allocate device memory");
 }
 
-void CVulkanVertexBuffer::Upload(const void* data, size_t size)
+void CVulkanVertexAttribCache::Upload(const void* data, size_t size)
 {
 	void *vertex_buffer_memory_pointer;
 	VkResult result = vkMapMemory(m_device, m_memory, 0, size, 0, &vertex_buffer_memory_pointer);
-	if (result)
-	{
-		LogWriter::WriteLine("Cannot map memory");
-	}
+	LOG_VK_RESULT(result, "Cannot map memory");
 	memcpy(vertex_buffer_memory_pointer, data, size);
 	VkMappedMemoryRange flush_range = { VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, nullptr, m_memory, 0, VK_WHOLE_SIZE };
 	result = vkFlushMappedMemoryRanges(m_device, 1, &flush_range);
-	if (result)
-	{
-		LogWriter::WriteLine("Cannot flush memory");
-	}
+	LOG_VK_RESULT(result, "Cannot flush memory");
 	vkUnmapMemory(m_device, m_memory);
 }
 
-size_t CVulkanVertexBuffer::GetSize() const
+size_t CVulkanVertexAttribCache::GetSize() const
 {
 	return m_size;
+}
+
+CStagedVulkanVertexAttribCache::CStagedVulkanVertexAttribCache(size_t size, CVulkanVertexAttribCache::BufferType type, VkDevice device, VkPhysicalDevice physicalDevice, const void * data /*= nullptr*/)
+	: m_deviceBuffer(size, type, device, physicalDevice, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+	, m_stageBuffer(size, type, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+{
+}
+
+void CStagedVulkanVertexAttribCache::Upload(const void* data, size_t size, VkCommandBuffer commandBuffer)
+{
+	m_stageBuffer.Upload(data, size);
+	VkBufferCopy buffer_copy_info = { 0, 0, size };
+	vkCmdCopyBuffer(commandBuffer, m_stageBuffer, m_deviceBuffer, 1, &buffer_copy_info);
+
+	VkBufferMemoryBarrier buffer_memory_barrier = { VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER, nullptr, VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, VK_QUEUE_FAMILY_IGNORED,
+		VK_QUEUE_FAMILY_IGNORED, m_deviceBuffer, 0, VK_WHOLE_SIZE };
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &buffer_memory_barrier, 0, nullptr);
 }

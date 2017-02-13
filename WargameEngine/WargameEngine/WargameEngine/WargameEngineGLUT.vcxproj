@@ -143,6 +143,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="impl\MatrixManagerGLM.cpp" />
     <ClCompile Include="impl\NetSocket.cpp" />
     <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\MatrixManagerGLM.h" />
     <ClInclude Include="impl\NetSocket.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />
     <ClInclude Include="impl\ScriptHandlerLua.h" />

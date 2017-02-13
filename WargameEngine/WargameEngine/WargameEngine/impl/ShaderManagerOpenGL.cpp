@@ -364,12 +364,7 @@ void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, int 
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const double* values, bool perInstance) const
-{
-	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_DOUBLE);
-}
-
-void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset/* = 0*/) const
 {
 	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
 	glCache.Bind();
@@ -377,9 +372,9 @@ void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVer
 	if (index != -1)
 	{
 		if (glCache.GetFormat() == GL_FLOAT)
-			glVertexAttribPointer(index, glCache.GetElementSize(), glCache.GetFormat(), GL_FALSE, 0, NULL);
+			glVertexAttribPointer(index, glCache.GetElementSize(), glCache.GetFormat(), GL_FALSE, 0, (void*)offset);
 		else
-			glVertexAttribIPointer(index, glCache.GetElementSize(), glCache.GetFormat(), 0, NULL);
+			glVertexAttribIPointer(index, glCache.GetElementSize(), glCache.GetFormat(), 0, (void*)offset);
 		glEnableVertexAttribArray(index);
 		if (perInstance) glVertexAttribDivisorARB(index, 1);
 	}

@@ -34,7 +34,7 @@ public:
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const int* value) const override;
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const override;
 
-	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false, size_t offset = 0) const override;
 
 	void SetDevice(ID3D11Device* dev);
 	void DoOnProgramChange(std::function<void()> const& handler);

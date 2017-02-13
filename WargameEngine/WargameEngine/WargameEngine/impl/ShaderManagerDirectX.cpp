@@ -352,7 +352,7 @@ void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int
 	SetVertexAttributeImpl(attribute, elementSize, count, format[elementSize - 1], perInstance, values);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset /*= 0*/) const
 {
 	auto& dxCache = reinterpret_cast<CVertexAttribCacheDirectX const&>(cache);
 	auto descIt = m_activeProgram->m_vertexAttributeDescriptions.find(attribute);
@@ -366,9 +366,9 @@ void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVe
 			desc.InstanceDataStepRate = 1;
 		}
 		unsigned int stride = sizeof(float) * dxCache.GetElementSize();
-		unsigned int offset = 0;
+		UINT uintOffset = static_cast<UINT>(offset);
 		auto buffer = dxCache.GetBuffer();
-		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer, &stride, &offset);
+		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer, &stride, &uintOffset);
 	}
 }
 

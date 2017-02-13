@@ -3,6 +3,9 @@
 #include <vulkan/vulkan.h>
 #include "VulkanShaderManager.h"
 #include "VulkanHelpers.h"
+#include "MatrixManagerGLM.h"
+
+class CVulkanRenderer;
 
 class CCommandBufferWrapper
 {
@@ -48,6 +51,7 @@ public:
 	void SetShaderProgram(CVulkanShaderProgram const& program);
 	void ResetVertexAttributes();
 	void AddVertexAttribute(uint32_t pos, uint32_t size, VkFormat format, bool perInstance);
+	void SetDescriptorLayout(VkDescriptorSetLayout * layouts, uint32_t count = 1);
 	void Destroy();
 	void CreatePipeline(VkDevice device, VkRenderPass pass);
 	VkPipeline GetPipeline() const { return m_pipeline; }
@@ -73,6 +77,53 @@ private:
 	CHandleWrapper<VkPipeline, vkDestroyPipeline> m_pipeline;
 };
 
+class CVulkanCachedTexture : public ICachedTexture
+{
+public:
+	CVulkanCachedTexture(VkDevice device, VkDescriptorSet descriptorSet);
+	void Init(uint32_t width, uint32_t height, VkPhysicalDevice physicalDevice);
+	void Upload(const void * data, VkCommandBuffer commandBuffer);
+
+	virtual void Bind() const override;
+	virtual void UnBind() const override;
+private:
+	CHandleWrapper<VkImage, vkDestroyImage> m_image;
+	CHandleWrapper<VkDeviceMemory, vkFreeMemory> m_memory;
+	CHandleWrapper<VkImageView, vkDestroyImageView> m_imageView;
+	CHandleWrapper<VkSampler, vkDestroySampler> m_sampler;
+	VkDeviceSize m_size;
+	VkExtent3D m_extent;
+	VkDevice m_device;
+	VkDescriptorSet m_descriptorSet;
+};
+
+class CVulkanVertexBuffer : public IVertexBuffer
+{
+public:
+	CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0);
+	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
+	virtual void Bind() const override;
+	virtual void DrawIndexes(size_t begin, size_t count) override;
+	virtual void DrawAll(size_t count) override;
+	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
+	virtual void UnBind() const override;
+	void DoBeforeDraw(std::function<void()> const& handler);
+private:
+	CStagedVulkanVertexAttribCache m_vertexCache;
+	CStagedVulkanVertexAttribCache m_normalsCache;
+	CStagedVulkanVertexAttribCache m_texcoordCache;
+	std::unique_ptr<CStagedVulkanVertexAttribCache> m_indexCache;
+	CVulkanRenderer * m_renderer;
+	std::function<void()> m_beforeDraw;
+};
+
+class CVulkanOcclusionQuery : public IOcclusionQuery
+{
+public:
+	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override { handler(); }
+	virtual bool IsVisible() const override { return true; }
+};
+
 class CVulkanRenderer : public IOpenGLRenderer
 {
 public:
@@ -80,10 +131,15 @@ public:
 	~CVulkanRenderer();
 
 	VkInstance GetInstance() const;
+	VkDevice GetDevice() const { return m_device; }
+	VkPhysicalDevice GetPhysicalDevice() const { return m_physicalDevice; }
+	VkCommandBuffer GetServiceCommandBuffer() { m_serviceCommandBuffer->WaitFence(); return *m_serviceCommandBuffer; }
+	void SubmitServiceCommandBuffer();
 	void SetSurface(VkSurfaceKHR surface);
 
 	void AcquireImage();
 	void Present();
+	VkCommandBuffer GetCommandBuffer() const { return m_commandBuffers[m_currentCommandBufferIndex]; }
 	
 	virtual void EnableMultisampling(bool enable) override;
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
@@ -145,6 +201,7 @@ private:
 	void CreateCommandBuffers();
 	void CreateRenderPass();
 	void InitFramebuffer();
+	void CreateDescriptors();
 
 	VkInstance m_instance = VK_NULL_HANDLE;
 	VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
@@ -157,6 +214,10 @@ private:
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
 	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_frameBuffer;
+	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
+	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_descriptorSetLayout;
+	CHandleWrapper<VkDescriptorPool, vkDestroyDescriptorPool> m_desciptorPool;
+	VkDescriptorSet m_descriptorSet;
 	VkImage m_currentImage;
 	uint32_t m_currentImageIndex = 0;
 	uint32_t m_graphicsQueueFamilyIndex = 0;
@@ -165,7 +226,9 @@ private:
 	CVulkanShaderManager m_shaderManager;
 	CPipelineHelper m_pipelineHelper;
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
-	std::unique_ptr<CVulkanVertexBuffer> m_vertexBuffer;
-	std::unique_ptr<CVulkanVertexBuffer> m_normalsBuffer;
-	std::unique_ptr<CVulkanVertexBuffer> m_texCoordBuffer;
+	std::unique_ptr<CVulkanVertexAttribCache> m_vertexBuffer;
+	std::unique_ptr<CVulkanVertexAttribCache> m_normalsBuffer;
+	std::unique_ptr<CVulkanVertexAttribCache> m_texCoordBuffer;
+	CTextureManager * m_textureManager = nullptr;
+	CMatrixManagerGLM m_matrixManager;
 };

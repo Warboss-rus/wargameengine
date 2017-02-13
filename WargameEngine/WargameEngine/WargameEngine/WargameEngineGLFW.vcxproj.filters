@@ -53,6 +53,9 @@
     <ClCompile Include="impl\VulkanShaderManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="impl\MatrixManagerGLM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\GameWindowGLFW.h">
@@ -98,6 +101,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\VulkanHelpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\MatrixManagerGLM.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

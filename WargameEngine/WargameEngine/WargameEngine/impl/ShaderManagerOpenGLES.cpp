@@ -330,7 +330,7 @@ void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, in
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset) const
 {
 	auto& glCache = reinterpret_cast<COpenGLESVertexAttribCache const&>(cache);
 	glCache.Bind();
@@ -338,9 +338,9 @@ void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IV
 	if (index != -1)
 	{
 		if (glCache.GetFormat() == GL_FLOAT)
-			glVertexAttribPointer(index, glCache.GetElementSize(), glCache.GetFormat(), GL_FALSE, 0, NULL);
+			glVertexAttribPointer(index, glCache.GetElementSize(), glCache.GetFormat(), GL_FALSE, 0, (void*)offset);
 		else
-			glVertexAttribIPointer(index, glCache.GetElementSize(), glCache.GetFormat(), 0, NULL);
+			glVertexAttribIPointer(index, glCache.GetElementSize(), glCache.GetFormat(), 0, (void*)offset);
 		glEnableVertexAttribArray(index);
 		if (perInstance) glVertexAttribDivisor(index, 1);
 	}

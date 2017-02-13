@@ -1,10 +1,7 @@
 #pragma once
 #include "IOpenGLRenderer.h"
 #include "ShaderManagerOpenGL.h"
-#pragma warning(push)
-#pragma warning(disable: 4201)
-#include <glm/mat4x4.hpp>
-#pragma warning(pop)
+#include "MatrixManagerGLM.h"
 
 class COpenGLRenderer : public IOpenGLRenderer
 {
@@ -80,18 +77,13 @@ public:
 	
 	virtual void EnableMultisampling(bool enable) override;
 private:
-	void UpdateMatrices() const;
 	void UpdateColor() const;
-	void ResetModelView();
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGL m_shaderManager;
-	std::vector<glm::mat4> m_modelMatrices;
-	glm::mat4* m_modelMatrix;
-	glm::mat4 m_viewMatrix;
-	glm::mat4 m_projectionMatrix;
 	float m_color[4];
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
 	unsigned int m_vao;
+	CMatrixManagerGLM m_matrixManager;
 };
 
 class COpenGlCachedTexture : public ICachedTexture

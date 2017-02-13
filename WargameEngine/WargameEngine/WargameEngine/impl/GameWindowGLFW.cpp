@@ -1,5 +1,7 @@
 #include "GameWindowGLFW.h"
+#ifndef RENDERER_NO_VULKAN
 #include "VulkanRenderer.h"
+#endif
 #include <GLFW/glfw3.h>
 #define VR_API_EXPORT
 #include <openvr.h>
@@ -11,10 +13,9 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "../view/Matrix4.h"
+#ifndef RENDERER_NO_LEGACY
 #include "LegacyOpenGLRenderer.h"
-
-static CGameWindowGLFW* g_instance = nullptr;
-bool CGameWindowGLFW::m_visible = true;
+#endif
 
 using namespace vr;
 
@@ -26,27 +27,30 @@ void LogVRError(HmdError result, std::string const& prefix = "OVR error. ")
 	}
 }
 
-void CGameWindowGLFW::OnChangeState(GLFWwindow * /*window*/, int state)
+void CGameWindowGLFW::OnChangeState(GLFWwindow * window, int state)
 {
-	m_visible = (state == GLFW_VISIBLE);
+	auto instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window));
+	instance->m_visible = (state == GLFW_VISIBLE);
 }
 
-void CGameWindowGLFW::OnReshape(GLFWwindow * /*window*/, int width, int height)
+void CGameWindowGLFW::OnReshape(GLFWwindow * window, int width, int height)
 {
-	if (g_instance->m_onResize)
+	auto instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window));
+	if (instance->m_onResize)
 	{
-		g_instance->m_onResize(width, height);
+		instance->m_onResize(width, height);
 	}
 }
 
 void CGameWindowGLFW::OnShutdown(GLFWwindow * window)
 {
-	if (g_instance->m_onShutdown)
+	auto instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window));
+	if (instance->m_onShutdown)
 	{
-		g_instance->m_onShutdown();
+		instance->m_onShutdown();
 	}
 	glfwDestroyWindow(window);
-	g_instance->m_window = nullptr;
+	instance->m_window = nullptr;
 }
 
 Matrix4F ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
@@ -107,21 +111,20 @@ void CGameWindowGLFW::LaunchMainLoop()
 					}
 				}
 			}
-			g_instance->m_input->UpdateControllers();
-			if (g_instance->m_vulkanRenderer)
+			m_input->UpdateControllers();
+#ifndef RENDERER_NO_VULKAN
+			if (m_vulkanRenderer)
 			{
 				auto* renderer = reinterpret_cast<CVulkanRenderer*>(m_renderer.get());
 				renderer->AcquireImage();
-				int width, height;
-				glfwGetWindowSize(m_window, &width, &height);
-				renderer->SetUpViewport(0, 0, width, height, 65.0f);
-				renderer->ClearBuffers(true, false);
-				renderer->RenderArrays(RenderMode::TRIANGLES, { { -0.7f, 0.7f, 0.0f}, { 0.7f, 0.7f, 0.0f}, { 0.0f, -0.7f, 0.0f} }, {}, { {0.5f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f} });
+				m_onDraw();
 				renderer->Present();
 			}
-			else if (g_instance->m_onDraw)
+			else 
+#endif
+			if (m_onDraw)
 			{
-				g_instance->m_onDraw();
+				m_onDraw();
 			}
 			if (compositor)
 			{
@@ -133,7 +136,7 @@ void CGameWindowGLFW::LaunchMainLoop()
 				}
 				compositor->PostPresentHandoff();
 			}
-			glfwSwapBuffers(g_instance->m_window);
+			glfwSwapBuffers(m_window);
 		}
 		glfwPollEvents();
 	}
@@ -152,6 +155,7 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 		return;
 	}
 	glfwMakeContextCurrent(m_window);
+	glfwSetWindowUserPointer(m_window, this);
 
 	glfwSetWindowSizeCallback(m_window, &OnReshape);
 	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
@@ -165,10 +169,9 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 
 CGameWindowGLFW::CGameWindowGLFW()
 {
-	g_instance = this;
-
 	glfwInit();
 
+#ifndef RENDERER_NO_VULKAN
 	//Try Vulkan first
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	try
@@ -193,7 +196,7 @@ CGameWindowGLFW::CGameWindowGLFW()
 	catch (...)
 	{
 	}
-
+#endif
 	//Then try 3.3 core first
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -214,6 +217,7 @@ CGameWindowGLFW::CGameWindowGLFW()
 
 	//If it fails, try 3.1 any (3.1 is required for instanced rendering)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
 
 	try
@@ -225,14 +229,13 @@ CGameWindowGLFW::CGameWindowGLFW()
 	catch (...)
 	{
 	}
-
+#ifndef RENDERER_NO_LEGACY
 	//lastly create legacy 2.0 context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
 	CreateNewWindow();
 	m_renderer = std::make_unique<CLegacyGLRenderer>();
+#endif
 }
 
 CGameWindowGLFW::~CGameWindowGLFW()

@@ -10,15 +10,7 @@
 #endif
 #include "../LogWriter.h"
 #include "../view/TextureManager.h"
-#include "../view/Matrix4.h"
 #include "../view/IViewport.h"
-#include <glm/gtc/matrix_transform.hpp>
-#pragma warning(push)
-#pragma warning(disable: 4201)
-#include <glm/gtc/type_ptr.hpp>
-#pragma warning(pop)
-#define _USE_MATH_DEFINES
-#include <math.h>
 
 namespace
 {
@@ -40,6 +32,7 @@ public:
 	virtual void DrawAll(size_t count) override;
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
+	void DoBeforeDraw(std::function<void()> const& beforeDraw);
 private:
 	void CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName);
 	CShaderManagerOpenGL & m_shaderMan;
@@ -51,6 +44,7 @@ private:
 	const float * m_normals;
 	const float * m_texCoords;
 	size_t m_vertexCount;
+	std::function<void()> m_beforeDraw;
 };
 
 class COpenGLFrameBuffer : public IFrameBuffer
@@ -179,11 +173,9 @@ COpenGLRenderer::COpenGLRenderer()
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
 
-	m_modelMatrices.push_back(glm::mat4());
-	m_modelMatrix = &m_modelMatrices.back();
 	m_color[3] = 1.0f;
 	m_shaderManager.DoOnProgramChange([this]() {
-		UpdateMatrices();
+		m_matrixManager.InvalidateMatrices();
 		UpdateColor();
 	});
 
@@ -197,6 +189,7 @@ COpenGLRenderer::COpenGLRenderer()
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
+	m_matrixManager.UpdateMatrices(m_shaderManager);
 	m_shaderManager.SetVertexAttribute(VERTEX_ATTRIB_NAME, 3, vertices.size(), (float*)vertices.data(), false);
 	m_shaderManager.SetVertexAttribute(NORMAL_ATTRIB_NAME, 3, normals.size(), normals.empty() ? nullptr : (float*)normals.data(), false);
 	m_shaderManager.SetVertexAttribute(TEXCOORD_ATTRIB_NAME, 2, texCoords.size(), texCoords.empty() ? nullptr : (float*)texCoords.data(), false);
@@ -205,6 +198,7 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
+	m_matrixManager.UpdateMatrices(m_shaderManager);
 	std::vector<float> fvalues;
 	fvalues.reserve(vertices.size() * 2);
 	for (auto& v : vertices)
@@ -220,15 +214,12 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const
 
 void COpenGLRenderer::PushMatrix()
 {
-	m_modelMatrices.push_back(m_modelMatrices.back());
-	m_modelMatrix = &m_modelMatrices.back();
+	m_matrixManager.PushMatrix();
 }
 
 void COpenGLRenderer::PopMatrix()
 {
-	m_modelMatrices.pop_back();
-	m_modelMatrix = &m_modelMatrices.back();
-	UpdateMatrices();
+	m_matrixManager.PopMatrix();
 }
 
 void COpenGLRenderer::Translate(const int dx, const int dy, const int dz)
@@ -243,44 +234,27 @@ void COpenGLRenderer::Translate(const double dx, const double dy, const double d
 
 void COpenGLRenderer::Translate(const float dx, const float dy, const float dz)
 {
-	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
-	*m_modelMatrix = glm::translate(*m_modelMatrix, glm::vec3(dx, dy, dz));
-	UpdateMatrices();
+	m_matrixManager.Translate(dx, dy, dz);
 }
 
 void COpenGLRenderer::Scale(double scale)
 {
-	if (fabs(scale - 1.0) < DBL_EPSILON) return;
-	float fscale = static_cast<float>(scale);
-	*m_modelMatrix = glm::scale(*m_modelMatrix, glm::vec3(fscale, fscale, fscale));
-	UpdateMatrices();
+	m_matrixManager.Scale(static_cast<float>(scale));
 }
 
 void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
 {
-	if (fabs(angle) < DBL_EPSILON) return;
-	*m_modelMatrix = glm::rotate(*m_modelMatrix, static_cast<float>(angle * M_PI / 180), glm::vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
-	UpdateMatrices();
+	m_matrixManager.Rotate(angle, static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 }
 
 void COpenGLRenderer::GetViewMatrix(float * matrix) const
 {
-	glm::mat4 modelView = m_viewMatrix * *m_modelMatrix;
-	memcpy(matrix, glm::value_ptr(modelView), sizeof(Matrix4F));
-}
-
-void COpenGLRenderer::ResetModelView()
-{
-	*m_modelMatrix = glm::mat4();
-	m_viewMatrix = glm::mat4();
-	UpdateMatrices();
+	m_matrixManager.GetModelViewMatrix(matrix);
 }
 
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
-	*m_modelMatrix = glm::mat4();
-	UpdateMatrices();
+	m_matrixManager.LookAt(position, direction, up);
 }
 
 void COpenGLRenderer::SetColor(const float r, const float g, const float b, const float a)
@@ -337,18 +311,14 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::RenderToTexture(std::function<v
 	GLint oldViewport[4];
 	glGetIntegerv(GL_VIEWPORT, oldViewport);
 	glViewport(0, 0, width, height);
-	glm::mat4 oldProjectionMatrix = m_projectionMatrix;
-	auto oldView = m_viewMatrix;
-	m_projectionMatrix = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
-	PushMatrix();
-	ResetModelView();
+	m_matrixManager.SaveMatrices();
+	m_matrixManager.SetOrthographicProjection(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
+	m_matrixManager.ResetModelView();
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	func();
 
-	m_projectionMatrix = oldProjectionMatrix;
-	m_viewMatrix = oldView;
-	PopMatrix();
+	m_matrixManager.RestoreMatrices();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
@@ -418,7 +388,9 @@ std::unique_ptr<IDrawingList> COpenGLRenderer::CreateDrawingList(std::function<v
 
 std::unique_ptr<IVertexBuffer> COpenGLRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
-	return std::make_unique<COpenGLVertexBuffer>(m_shaderManager, vertex, normals, texcoords, size, temp, m_vao);
+	auto buf = std::make_unique<COpenGLVertexBuffer>(m_shaderManager, vertex, normals, texcoords, size, temp, m_vao);
+	buf->DoBeforeDraw(std::bind(&CMatrixManagerGLM::UpdateMatrices, &m_matrixManager, std::ref(m_shaderManager)));
+	return std::move(buf);
 }
 
 std::unique_ptr<IFrameBuffer> COpenGLRenderer::CreateFramebuffer() const
@@ -543,16 +515,19 @@ void COpenGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexes
 
 void COpenGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
 {
+	if (m_beforeDraw) m_beforeDraw();
 	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
 }
 
 void COpenGLVertexBuffer::DrawAll(size_t count)
 {
+	if (m_beforeDraw) m_beforeDraw();
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
 }
 
 void COpenGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
 {
+	if (m_beforeDraw) m_beforeDraw();
 	glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(size), static_cast<GLsizei>(instanceCount));
 }
 
@@ -572,27 +547,19 @@ void COpenGLVertexBuffer::UnBind() const
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void COpenGLVertexBuffer::DoBeforeDraw(std::function<void()> const& beforeDraw)
+{
+	m_beforeDraw = beforeDraw;
+}
+
 void COpenGLRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const
 {
-	glm::vec4 viewportData((float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight());
-	//Set OpenGL Windows coordinates
-	float winX = (float)x;
-	float winY = viewportData[3] - (float)y;
-
-	auto ToVector3f = [](glm::vec3 const& v)->CVector3f { return { v.x, v.y, v.z }; };
-	//Cast a ray from eye to mouse cursor;
-	glm::mat4 proj = glm::make_mat4(viewport.GetProjectionMatrix());
-	glm::mat4 view = glm::make_mat4(viewport.GetViewMatrix());
-	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), view, proj, viewportData));
-	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), view, proj, viewportData));
+	m_matrixManager.WindowCoordsToWorldVector(x, y, (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight(), viewport.GetViewMatrix(), viewport.GetProjectionMatrix(), start, end);
 }
 
 void COpenGLRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
-	glm::vec4 viewportData( (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight() );
-	auto windowPos = glm::project(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewport.GetViewMatrix()), glm::make_mat4(viewport.GetProjectionMatrix()), viewportData);
-	x = static_cast<int>(windowPos.x);
-	y = static_cast<int>(viewportData[3] - windowPos.y);
+	m_matrixManager.WorldCoordsToWindowCoords(worldCoords, (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight(), viewport.GetViewMatrix(), viewport.GetProjectionMatrix(), x, y);
 }
 
 void COpenGLRenderer::SetNumberOfLights(size_t count)
@@ -621,7 +588,7 @@ float COpenGLRenderer::GetMaximumAnisotropyLevel() const
 
 void COpenGLRenderer::GetProjectionMatrix(float * matrix) const
 {
-	memcpy(matrix, glm::value_ptr(m_projectionMatrix), sizeof(float) * 16);
+	m_matrixManager.GetProjectionMatrix(matrix);
 }
 
 void COpenGLRenderer::EnableDepthTest(bool enable)
@@ -642,7 +609,7 @@ void COpenGLRenderer::EnableBlending(bool enable)
 
 void COpenGLRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
-	m_projectionMatrix = glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
+	m_matrixManager.SetUpViewport(viewportWidth, viewportHeight, viewingAngle, nearPane, farPane);
 	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
 }
 
@@ -820,17 +787,14 @@ void COpenGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glEnable(GL_BLEND);
-	glm::mat4 oldProjection = m_projectionMatrix;
-	glm::mat4 oldView = m_viewMatrix;
-	m_projectionMatrix = glm::ortho(static_cast<float>(viewport[0]), static_cast<float>(viewport[2]), static_cast<float>(viewport[3]), static_cast<float>(viewport[1]));
-	PushMatrix();
-	ResetModelView();
+	m_matrixManager.SaveMatrices();
+	m_matrixManager.SetOrthographicProjection(static_cast<float>(viewport[0]), static_cast<float>(viewport[2]), static_cast<float>(viewport[3]), static_cast<float>(viewport[1]));
+	m_matrixManager.ResetModelView();
 
 	drawHandler();
 
-	m_projectionMatrix = oldProjection;
-	m_viewMatrix = oldView;
-	PopMatrix();
+	m_matrixManager.RestoreMatrices();
+	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 COpenGLFrameBuffer::COpenGLFrameBuffer()
@@ -882,19 +846,6 @@ void COpenGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureTy
 	{
 		throw std::runtime_error("Error creating framebuffer");
 	}
-}
-
-void COpenGLRenderer::UpdateMatrices() const
-{
-	glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
-	static const std::string mvpMatrixKey = "mvp_matrix";
-	static const std::string view_matrix_key = "view_matrix";
-	static const std::string model_matrix_key = "model_matrix";
-	static const std::string proj_matrix_key = "proj_matrix";
-	m_shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
-	m_shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
-	m_shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
-	m_shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
 }
 
 void COpenGLRenderer::UpdateColor() const

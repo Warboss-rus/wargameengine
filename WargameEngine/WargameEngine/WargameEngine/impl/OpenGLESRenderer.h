@@ -1,8 +1,8 @@
 #pragma once
 #include "../view/IViewHelper.h"
-#include <glm/mat4x4.hpp>
 #include <vector>
 #include "ShaderManagerOpenGLES.h"
+#include "MatrixManagerGLM.h"
 
 class CShaderManagerOpenGLES;
 
@@ -82,15 +82,10 @@ public:
 	void Init(int width, int height);
 
 private:
-	void UpdateUniforms() const;
-	void ResetViewMatrix();
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;
 	int m_version;
-	std::vector<glm::mat4> m_modelMatrices;
-	glm::mat4 * m_modelMatrix;
-	glm::mat4 m_viewMatrix;
-	glm::mat4 m_projectionMatrix;
+	CMatrixManagerGLM m_matrixManager;
 	float m_color[4];
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
 	unsigned int m_vao;

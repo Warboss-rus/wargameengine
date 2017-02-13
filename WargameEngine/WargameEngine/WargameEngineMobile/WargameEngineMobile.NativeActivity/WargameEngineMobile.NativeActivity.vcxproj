@@ -279,6 +279,7 @@
     <ClInclude Include="..\..\WargameEngine\controller\ScriptUIProtocol.h" />
     <ClInclude Include="..\..\WargameEngine\controller\ScriptViewportProtocol.h" />
     <ClInclude Include="..\..\WargameEngine\IMemoryStream.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\MatrixManagerGLM.h" />
     <ClInclude Include="..\..\WargameEngine\ITask.h" />
     <ClInclude Include="..\..\WargameEngine\LogWriter.h" />
     <ClInclude Include="..\..\WargameEngine\MemoryStream.h" />
@@ -358,7 +359,6 @@
     <ClInclude Include="..\..\WargameEngine\view\MirrorCamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\ModelManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\OBJModelFactory.h" />
-    <ClInclude Include="..\..\WargameEngine\view\OffscreenViewport.h" />
     <ClInclude Include="..\..\WargameEngine\impl\OpenGLESRenderer.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleModel.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleSystem.h" />
@@ -369,7 +369,6 @@
     <ClInclude Include="..\..\WargameEngine\view\TranslationManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\Vector2.h" />
     <ClInclude Include="..\..\WargameEngine\view\Vector3.h" />
-    <ClInclude Include="..\..\WargameEngine\view\Viewport.h" />
     <ClInclude Include="..\..\WargameEngine\view\ViewportBase.h" />
     <ClInclude Include="..\..\WargameEngine\view\WBMModelFactory.h" />
     <ClInclude Include="android_native_app_glue.h" />
@@ -392,6 +391,7 @@
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterUI.cpp" />
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterViewport.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\MatrixManagerGLM.cpp" />
     <ClCompile Include="..\..\WargameEngine\LogWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\MemoryStream.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\GameModel.cpp" />
@@ -439,7 +439,6 @@
     <ClCompile Include="..\..\WargameEngine\view\MirrorCamera.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ModelManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\OBJModelFactory.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\OffscreenViewport.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\OpenGLESRenderer.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleModel.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleSystem.cpp" />
@@ -448,7 +447,6 @@
     <ClCompile Include="..\..\WargameEngine\view\TextureManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\TranslationManager.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\Viewport.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ViewportBase.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp" />
     <ClCompile Include="android_native_app_glue.c" />

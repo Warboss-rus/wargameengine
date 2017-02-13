@@ -120,4 +120,5 @@ private:
 	DirectX::XMFLOAT4X4 m_viewMatrix;
 	DirectX::XMFLOAT4X4 m_projectionMatrix;
 	float m_anisotropyLevel = 0.0f;
+	bool m_matricesChanged = true;
 };

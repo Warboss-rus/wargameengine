@@ -290,13 +290,7 @@
     <ClInclude Include="..\..\WargameEngine\view\InputBase.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\Viewport.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\IViewport.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\OffscreenViewport.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\controller\ScriptViewportProtocol.h">
@@ -332,6 +326,7 @@
     <ClInclude Include="..\..\WargameEngine\model\Light.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\impl\MatrixManagerGLM.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c" />
@@ -510,12 +505,6 @@
     <ClCompile Include="..\..\WargameEngine\view\InputBase.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\Viewport.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\OffscreenViewport.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterViewport.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
@@ -546,6 +535,7 @@
     <ClCompile Include="..\..\WargameEngine\view\ViewportBase.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\impl\MatrixManagerGLM.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

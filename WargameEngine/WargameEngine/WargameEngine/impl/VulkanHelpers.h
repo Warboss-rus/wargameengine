@@ -28,3 +28,6 @@ private:
 	T m_data = VK_NULL_HANDLE;
 	VkDevice m_device = VK_NULL_HANDLE;
 };
+
+#define CHECK_VK_RESULT(result, message) if(result) throw std::runtime_error(message)
+#define LOG_VK_RESULT(result, message) if(result) LogWriter::WriteLine(message)

@@ -113,12 +113,14 @@ public:
 
 	virtual void DrawIndexes(size_t begin, size_t count) override
 	{		
+		if (m_beforeDraw) m_beforeDraw();
 		m_renderer->GetContext()->DrawIndexed(count, begin, 0);
 	}
 
 	virtual void DrawAll(size_t count) override
 	{
-		m_renderer->GetContext()->Draw(0, count);
+		if (m_beforeDraw) m_beforeDraw();
+		m_renderer->GetContext()->Draw(count, 0);
 	}
 
 	virtual void UnBind() const override
@@ -171,7 +173,13 @@ public:
 
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override
 	{
+		if (m_beforeDraw) m_beforeDraw();
 		m_renderer->GetContext()->DrawInstanced(size, instanceCount, 0, 0);
+	}
+
+	void DoBeforeDraw(std::function<void()> const& handler)
+	{
+		m_beforeDraw = handler;
 	}
 
 private:
@@ -183,6 +191,7 @@ private:
 	ID3D11Device* m_dev;
 	size_t m_indexBufferSize = 0;
 	bool m_sharedIndexBuffer = false;
+	std::function<void()> m_beforeDraw;
 };
 
 class CDirectXFrameBuffer : public IFrameBuffer
@@ -324,7 +333,7 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	}
 	m_shaderManager.SetDevice(m_dev);
 	m_shaderManager.DoOnProgramChange([this] {
-		UpdateMatrices();
+		m_matricesChanged = true;
 	});
 
 	// get the address of the back buffer
@@ -467,6 +476,7 @@ void FlipRectangleTopology(float * vertices, float * texcoords, float * normals,
 
 void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
 {
+	UpdateMatrices();
 	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), sizeof(CVector3f) };
 	UINT offset[] = { 0, 0, 0 };
 	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, NULL };
@@ -495,6 +505,7 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 
 void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
+	UpdateMatrices();
 	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
 	UINT offset[] = { 0, 0, 0 };
 	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, normals.empty() ? nullptr : m_normalsBuffer };
@@ -543,7 +554,7 @@ void CDirectXRenderer::PopMatrix()
 {
 	m_modelMatrices.pop_back();
 	m_modelMatrix = &m_modelMatrices.back();
-	UpdateMatrices();
+	m_matricesChanged = true;
 }
 
 void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
@@ -560,7 +571,7 @@ void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
 {
 	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
 	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(dx, dy, dz), Load(*m_modelMatrix)));
-	UpdateMatrices();
+	m_matricesChanged = false;
 }
 
 void CDirectXRenderer::Rotate(const double angle, const double x, const double y, const double z)
@@ -568,7 +579,7 @@ void CDirectXRenderer::Rotate(const double angle, const double x, const double y
 	if (fabs(angle) < DBL_EPSILON) return;
 	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f);
 	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), Load(*m_modelMatrix)));
-	UpdateMatrices();
+	m_matricesChanged = true;
 }
 
 void CDirectXRenderer::Scale(const double scale)
@@ -576,7 +587,7 @@ void CDirectXRenderer::Scale(const double scale)
 	if (fabs(scale - 1.0) < DBL_EPSILON) return;
 	float fscale = static_cast<float>(scale);
 	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), Load(*m_modelMatrix)));
-	UpdateMatrices();
+	m_matricesChanged = true;
 }
 
 void CDirectXRenderer::GetViewMatrix(float * matrix) const
@@ -589,7 +600,7 @@ void CDirectXRenderer::ResetViewMatrix()
 {
 	*m_modelMatrix = Store(DirectX::XMMatrixIdentity());
 	m_viewMatrix = Store(DirectX::XMMatrixIdentity());
-	UpdateMatrices();
+	m_matricesChanged = true;
 }
 
 XMVECTOR Vec3ToXMVector(CVector3f const& vec)
@@ -604,7 +615,7 @@ void CDirectXRenderer::LookAt(CVector3f const& position, CVector3f const& direct
 	XMVECTOR upVec = Vec3ToXMVector(up);
 	m_viewMatrix = Store(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
 	*m_modelMatrix = Store(DirectX::XMMatrixIdentity());
-	UpdateMatrices();
+	m_matricesChanged = true;
 }
 
 void CDirectXRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
@@ -724,6 +735,7 @@ std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float 
 	{
 		buffer->SetIndexBufferPtr(m_sharedIndexBuffer);
 	}
+	buffer->DoBeforeDraw(std::bind(&CDirectXRenderer::UpdateMatrices, this));
 
 	return std::move(buffer);
 }
@@ -862,7 +874,7 @@ void CDirectXRenderer::EnableBlending(bool enable)
 void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0*/, float farPane /*= 1000.0*/)
 {
 	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth) / viewportHeight, nearPane, farPane));
-	UpdateMatrices();
+	m_matricesChanged = true;
 }
 
 void CDirectXRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
@@ -980,6 +992,7 @@ DirectX::XMFLOAT4X4 Transpose(DirectX::XMFLOAT4X4 const& m)
 
 void CDirectXRenderer::UpdateMatrices()
 {
+	if (!m_matricesChanged) return;
 	static const std::string mvpMatrixKey = "mvp_matrix";
 	static const std::string viewMatrixKey = "view_matrix";
 	static const std::string modelMatrixKey = "model_matrix";
@@ -989,6 +1002,7 @@ void CDirectXRenderer::UpdateMatrices()
 	m_shaderManager.SetUniformValue(viewMatrixKey, 16, 1, *Transpose(m_viewMatrix).m);
 	m_shaderManager.SetUniformValue(modelMatrixKey, 16, 1, *Transpose(*m_modelMatrix).m);
 	m_shaderManager.SetUniformValue(projMatrixKey, 16, 1, *Transpose(m_projectionMatrix).m);
+	m_matricesChanged = false;
 }
 
 void CDirectXRenderer::CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size)
@@ -1057,7 +1071,6 @@ void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 	ID3D11ShaderResourceView* views[] = { view };
 	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
 	float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	if (view) m_shaderManager.SetColor(color);
 }
 
 void CDirectXRenderer::OnResize(unsigned int width, unsigned int height)

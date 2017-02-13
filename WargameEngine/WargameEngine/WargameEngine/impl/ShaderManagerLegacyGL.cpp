@@ -269,11 +269,11 @@ void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, in
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset/* = 0*/) const
 {
 	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
 	glCache.Bind();
-	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, NULL, perInstance, glCache.GetFormat());
+	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, (void*)offset, perInstance, glCache.GetFormat());
 	glCache.UnBind();
 }
 

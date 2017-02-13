@@ -20,8 +20,7 @@ public:
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance = false) const override;
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance = false) const override;
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance = false) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false) const override;
-	void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const double* values, bool perInstance = false) const;
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false, size_t offset = 0) const override;
 
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const float* defaultValue) const override;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const override;

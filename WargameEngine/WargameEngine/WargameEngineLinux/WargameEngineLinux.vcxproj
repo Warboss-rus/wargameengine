@@ -147,13 +147,11 @@
     <ClCompile Include="..\WargameEngine\view\MirrorCamera.cpp" />
     <ClCompile Include="..\WargameEngine\view\ModelManager.cpp" />
     <ClCompile Include="..\WargameEngine\view\OBJModelFactory.cpp" />
-    <ClCompile Include="..\WargameEngine\view\OffscreenViewport.cpp" />
     <ClCompile Include="..\WargameEngine\view\ParticleModel.cpp" />
     <ClCompile Include="..\WargameEngine\view\ParticleSystem.cpp" />
     <ClCompile Include="..\WargameEngine\view\SkyBox.cpp" />
     <ClCompile Include="..\WargameEngine\view\TextureManager.cpp" />
     <ClCompile Include="..\WargameEngine\view\TranslationManager.cpp" />
-    <ClCompile Include="..\WargameEngine\view\Viewport.cpp" />
     <ClCompile Include="..\WargameEngine\view\ViewportBase.cpp" />
     <ClCompile Include="..\WargameEngine\view\WBMModelFactory.cpp" />
   </ItemGroup>
@@ -263,7 +261,6 @@
     <ClInclude Include="..\WargameEngine\view\MirrorCamera.h" />
     <ClInclude Include="..\WargameEngine\view\ModelManager.h" />
     <ClInclude Include="..\WargameEngine\view\OBJModelFactory.h" />
-    <ClInclude Include="..\WargameEngine\view\OffscreenViewport.h" />
     <ClInclude Include="..\WargameEngine\view\ParticleModel.h" />
     <ClInclude Include="..\WargameEngine\view\ParticleSystem.h" />
     <ClInclude Include="..\WargameEngine\view\SkyBox.h" />
@@ -271,7 +268,6 @@
     <ClInclude Include="..\WargameEngine\view\TranslationManager.h" />
     <ClInclude Include="..\WargameEngine\view\Vector2.h" />
     <ClInclude Include="..\WargameEngine\view\Vector3.h" />
-    <ClInclude Include="..\WargameEngine\view\Viewport.h" />
     <ClInclude Include="..\WargameEngine\view\ViewportBase.h" />
     <ClInclude Include="..\WargameEngine\view\WBMModelFactory.h" />
   </ItemGroup>
