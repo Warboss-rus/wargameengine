@@ -1,5 +1,8 @@
 #include "GameWindowGLFW.h"
 #ifndef RENDERER_NO_VULKAN
+#ifdef _WIN32
+#define VK_USE_PLATFORM_WIN32_KHR
+#endif
 #include "VulkanRenderer.h"
 #endif
 #include <GLFW/glfw3.h>
@@ -117,7 +120,20 @@ void CGameWindowGLFW::LaunchMainLoop()
 			{
 				auto* renderer = reinterpret_cast<CVulkanRenderer*>(m_renderer.get());
 				renderer->AcquireImage();
-				m_onDraw();
+				renderer->ClearBuffers();
+				renderer->SetUpViewport(0, 0, 600, 600, 65.0f);
+				renderer->DrawIn2D([&renderer] {
+					renderer->SetTexture(L"..\\Killteam\\texture\\sand.bmp", true);
+					renderer->RenderArrays(RenderMode::TRIANGLES, {
+						{0.0f, 0.0f, 0.0f},
+						{300.0f, 0.0f, 0.0f},
+						{0.0f, 300.0f, 0.0f}
+					}, {}, {
+						{0.0f, 0.0f},
+						{1.0f, 0.0f},
+						{0.0f, 1.0f}
+					});
+				});
 				renderer->Present();
 			}
 			else 
@@ -180,7 +196,13 @@ CGameWindowGLFW::CGameWindowGLFW()
 		{
 			throw std::runtime_error("Vulkan is not supported");
 		}
-		auto renderer = std::make_unique<CVulkanRenderer>();
+		const std::vector<char*> instanceExtensions = {
+			VK_KHR_SURFACE_EXTENSION_NAME,
+#ifdef _WIN32
+			VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+#endif
+		};
+		auto renderer = std::make_unique<CVulkanRenderer>(instanceExtensions);
 		CreateNewWindow();
 		VkSurfaceKHR surface;
 		VkResult result = glfwCreateWindowSurface(renderer->GetInstance(), m_window, nullptr, &surface);

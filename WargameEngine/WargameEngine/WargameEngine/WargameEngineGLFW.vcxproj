@@ -96,31 +96,31 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
     <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -243,6 +243,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\openvr\openvr_api.vcxproj">
       <Project>{ce6e0fb8-b46d-3437-8ba4-3f45e47732c4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\SPIRV-Cross\msvc\SPIRV-Cross.vcxproj">
+      <Project>{977e3701-1a21-4425-b7e5-6bdf5ea062cd}</Project>
     </ProjectReference>
     <ProjectReference Include="WargameEngine.vcxproj">
       <Project>{525b45ef-5fb2-495e-8f33-27363e097e50}</Project>

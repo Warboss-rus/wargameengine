@@ -2,21 +2,8 @@
 #include "..\view\IShaderManager.h"
 #include <vulkan\vulkan.h>
 #include <vector>
+#include <functional>
 #include "VulkanHelpers.h"
-
-class CVulkanShaderProgram : public IShaderProgram
-{
-public:
-	CVulkanShaderProgram(VkDevice device);
-	~CVulkanShaderProgram();
-
-	void AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag);
-	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderInfo() const;
-private:
-	VkDevice m_device;
-	std::vector<VkShaderModule> m_modules;
-	std::vector<VkPipelineShaderStageCreateInfo> m_shaderStageCreateInfos;
-};
 
 class CVulkanVertexAttribCache : public IVertexAttribCache
 {
@@ -50,6 +37,49 @@ private:
 	CVulkanVertexAttribCache m_stageBuffer;
 };
 
+struct ShaderReflection
+{
+	struct UniformDescription
+	{
+		std::string name;
+		std::string bufferName;
+		size_t offset;
+		size_t size;
+	};
+	std::vector<UniformDescription> uniforms;
+	std::vector<std::string> attributes;
+	size_t bufferSize;
+};
+
+struct UniformBufferWrapper
+{
+	std::unique_ptr<CVulkanVertexAttribCache> buffer;
+	mutable std::vector<char> cache;
+	ShaderReflection reflection;
+};
+
+class CVulkanShaderProgram : public IShaderProgram
+{
+public:
+	CVulkanShaderProgram(VkDevice device);
+	~CVulkanShaderProgram();
+
+	void AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection, VkPhysicalDevice physicalDevice);
+	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderInfo() const;
+	VkBuffer GetVertexAttribBuffer() const { return *m_uniformBuffers[0].buffer; }
+	VkBuffer GetFragmentAttribBuffer() const { return *m_uniformBuffers[1].buffer; }
+	size_t GetVertexAttribBufferSize() const { return m_uniformBuffers[0].cache.size(); }
+	size_t GetFragmentAttribBufferSize() const { return m_uniformBuffers[1].cache.size(); }
+	void SetUniformValue(std::string const& name, const void * data, size_t size) const;
+private:
+	VkDevice m_device;
+	std::vector<VkShaderModule> m_modules;
+	std::vector<VkPipelineShaderStageCreateInfo> m_shaderStageCreateInfos;
+	std::vector<UniformBufferWrapper> m_uniformBuffers;
+	
+	std::vector<char> m_fragmentAttribCache;
+};
+
 class CVulkanShaderManager : public IShaderManager
 {
 public:
@@ -74,8 +104,12 @@ public:
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const int* value) const override;
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const override;
 
-	void SetDevice(VkDevice device);
+	void SetDevice(VkDevice device, VkPhysicalDevice physicalDevice);
+	void DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler);
 private:
 	VkDevice m_device;
+	VkPhysicalDevice m_physicalDevice;
 	std::unique_ptr<CVulkanShaderProgram> m_defaultProgram;
+	std::function<void(const CVulkanShaderProgram&)> m_onProgramChange;
+	mutable std::vector<const CVulkanShaderProgram*> m_programsStack;
 };

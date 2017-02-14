@@ -55,6 +55,7 @@ public:
 	void Destroy();
 	void CreatePipeline(VkDevice device, VkRenderPass pass);
 	VkPipeline GetPipeline() const { return m_pipeline; }
+	VkPipelineLayout GetLayout() const { return m_pipelineLayout; }
 private:
 	std::vector<VkDynamicState> dynamic_states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, };
 	VkPipelineViewportStateCreateInfo viewport_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO, nullptr, 0, 1, nullptr, 1, nullptr };
@@ -127,7 +128,7 @@ public:
 class CVulkanRenderer : public IOpenGLRenderer
 {
 public:
-	CVulkanRenderer();
+	CVulkanRenderer(const std::vector<char*> & instanceExtensions);
 	~CVulkanRenderer();
 
 	VkInstance GetInstance() const;
@@ -229,6 +230,7 @@ private:
 	std::unique_ptr<CVulkanVertexAttribCache> m_vertexBuffer;
 	std::unique_ptr<CVulkanVertexAttribCache> m_normalsBuffer;
 	std::unique_ptr<CVulkanVertexAttribCache> m_texCoordBuffer;
+	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;
 	CMatrixManagerGLM m_matrixManager;
 };

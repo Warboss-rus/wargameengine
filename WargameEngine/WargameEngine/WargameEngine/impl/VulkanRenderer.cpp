@@ -1,6 +1,3 @@
-#ifdef _WIN32
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
 #include "VulkanRenderer.h"
 #include "..\LogWriter.h"
 #include <iterator>
@@ -104,15 +101,9 @@ void UpdateBuffer(std::unique_ptr<CVulkanVertexAttribCache> & buffer, VkDevice d
 }
 }
 
-CVulkanRenderer::CVulkanRenderer()
+CVulkanRenderer::CVulkanRenderer(const std::vector<char*> & instanceExtensions)
 {
 	VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO, nullptr, "WargameEngine", VK_MAKE_VERSION(1, 0, 0), "WargameEngine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0 };
-	const std::vector<char*> instanceExtensions = {
-		VK_KHR_SURFACE_EXTENSION_NAME,
-#ifdef _WIN32
-		VK_KHR_WIN32_SURFACE_EXTENSION_NAME
-#endif
-	};
 	VkInstanceCreateInfo instanceInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, nullptr, 0, &appInfo, 0, nullptr, static_cast<uint32_t>(instanceExtensions.size()), instanceExtensions.data() };
 	VkResult result = vkCreateInstance(&instanceInfo, nullptr, &m_instance);
 	CHECK_VK_RESULT(result, "Cannot create vulkan instance");
@@ -121,9 +112,15 @@ CVulkanRenderer::CVulkanRenderer()
 	
 	m_commandPool.SetDevice(m_device);
 	m_renderPass.SetDevice(m_device);
-	m_shaderManager.SetDevice(m_device);
+	m_shaderManager.SetDevice(m_device, m_physicalDevice);
 
 	CreateDescriptors();
+
+	m_shaderManager.DoOnProgramChange([this](const CVulkanShaderProgram & program) {
+		VkDescriptorBufferInfo bufferInfo = { program.GetVertexAttribBuffer(), 0, program.GetVertexAttribBufferSize() };
+		VkWriteDescriptorSet descriptorWrite = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, m_descriptorSet, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &bufferInfo, nullptr };
+		vkUpdateDescriptorSets(m_device, 1, &descriptorWrite, 0, nullptr);
+	});
 }
 
 CVulkanRenderer::~CVulkanRenderer()
@@ -171,6 +168,7 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	CreateRenderPass();
 	SetUpViewport(0, 0, 600, 600, 65.0f);
 	m_defaultProgram = m_shaderManager.NewProgram(L"Killteam/shaders/Vulkan/vert.spv", L"Killteam/shaders/Vulkan/frag.spv");
+	m_shaderManager.PushProgram(*m_defaultProgram);
 	m_pipelineHelper.SetShaderProgram(*reinterpret_cast<CVulkanShaderProgram*>(m_defaultProgram.get()));
 	m_pipelineHelper.ResetVertexAttributes();
 	m_pipelineHelper.AddVertexAttribute(0, sizeof(float) * 3, VK_FORMAT_R32G32B32_SFLOAT, false);
@@ -214,6 +212,8 @@ void CVulkanRenderer::AcquireImage()
 	vkCmdBeginRenderPass(commandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetPipeline());
+
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetLayout(), 0, 1, &m_descriptorSet, 0, nullptr);
 }
 
 void CVulkanRenderer::Present()
@@ -305,16 +305,20 @@ void CVulkanRenderer::EnableBlending(bool enable)
 
 void CVulkanRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0f*/, float farPane /*= 1000.0f*/)
 {
-	VkViewport viewport = { static_cast<float>(viewportX), static_cast<float>(viewportY), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane };
+	m_viewport = { static_cast<float>(viewportX), static_cast<float>(viewportY), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane };
 	VkRect2D scissor = { {viewportX, viewportY}, {viewportWidth, viewportHeight} };
-	vkCmdSetViewport(m_commandBuffers[m_currentCommandBufferIndex], 0, 1, &viewport);
+	vkCmdSetViewport(m_commandBuffers[m_currentCommandBufferIndex], 0, 1, &m_viewport);
 	vkCmdSetScissor(m_commandBuffers[m_currentCommandBufferIndex], 0, 1, &scissor);
 	m_matrixManager.SetUpViewport(viewportWidth, viewportHeight, viewingAngle, nearPane, farPane);
 }
 
 void CVulkanRenderer::DrawIn2D(std::function<void() > const& drawHandler)
 {
+	m_matrixManager.SaveMatrices();
+	m_matrixManager.SetOrthographicProjection(m_viewport.x, m_viewport.x + m_viewport.width, m_viewport.y, m_viewport.y + m_viewport.height);
+	m_matrixManager.ResetModelView();
 	drawHandler();
+	m_matrixManager.RestoreMatrices();
 }
 
 void CVulkanRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
@@ -373,7 +377,7 @@ void CVulkanRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps con
 
 bool CVulkanRenderer::Force32Bits() const
 {
-	return false;
+	return true;
 }
 
 bool CVulkanRenderer::ForceFlipBMP() const
@@ -850,7 +854,7 @@ CVulkanCachedTexture::CVulkanCachedTexture(VkDevice device, VkDescriptorSet desc
 void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, VkPhysicalDevice physicalDevice)
 {
 	VkImageCreateInfo image_create_info = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,  nullptr, 0, VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM,{ width, height, 1 }, 1, 1, VK_SAMPLE_COUNT_1_BIT,
-		VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_IMAGE_LAYOUT_PREINITIALIZED };
+		VK_IMAGE_TILING_LINEAR, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_IMAGE_LAYOUT_PREINITIALIZED };
 	VkResult result = vkCreateImage(m_device, &image_create_info, nullptr, &m_image);
 	m_image.SetDevice(m_device);
 
@@ -921,22 +925,7 @@ void CVulkanCachedTexture::Upload(const void * data, VkCommandBuffer commandBuff
 			memcpy((void*)&dstBytes[y * stagingImageLayout.rowPitch], (void*)&srcBytes[y * m_extent.width * 4], m_extent.width * 4);
 		}
 	}
-	//VkMappedMemoryRange flush_range = { VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, nullptr, m_memory, 0, m_size };
-	//result = vkFlushMappedMemoryRanges(m_device, 1, &flush_range);
 	vkUnmapMemory(m_device, m_memory);
-
-	/*VkCommandBufferBeginInfo command_buffer_begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
-	result = vkBeginCommandBuffer(commandBuffer, &command_buffer_begin_info);
-	VkImageSubresourceRange image_subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	VkImageMemoryBarrier image_memory_barrier_from_undefined_to_transfer_dst = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED,                          // VkImageLayout                          oldLayout
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image, image_subresource_range };
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier_from_undefined_to_transfer_dst);
-	VkBufferImageCopy buffer_image_copy_info = {0, 0, 0, { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 }, { 0, 0, 0 }, m_extent };
-	vkCmdCopyBufferToImage(commandBuffer, m_memory, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy_info);
-	VkImageMemoryBarrier image_memory_barrier_from_transfer_to_shader_read = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, m_image, image_subresource_range };
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier_from_transfer_to_shader_read);
-	result = vkEndCommandBuffer(commandBuffer);*/
 }
 
 void CVulkanCachedTexture::Bind() const

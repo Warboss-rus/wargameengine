@@ -794,7 +794,6 @@ void COpenGLRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	drawHandler();
 
 	m_matrixManager.RestoreMatrices();
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
 COpenGLFrameBuffer::COpenGLFrameBuffer()
