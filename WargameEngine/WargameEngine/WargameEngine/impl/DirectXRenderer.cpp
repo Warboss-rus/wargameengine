@@ -1030,12 +1030,13 @@ bool CDirectXRenderer::SupportsFeature(Feature) const
 
 void CDirectXRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 {
-	RECT rect;
-	GetClientRect(m_hWnd, &rect);
+	D3D11_VIEWPORT viewport;
+	UINT numViewports = 1;
+	m_devcon->RSGetViewports(&numViewports, &viewport);
 	auto oldProjectionMatrix = m_projectionMatrix;
 	auto oldViewMatrix = m_viewMatrix;
-	m_projectionMatrix = Store(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(rect.left), static_cast<float>(rect.right),
-		static_cast<float>(rect.bottom), static_cast<float>(rect.top), 0.0f, 1.0f));
+	m_projectionMatrix = Store(DirectX::XMMatrixOrthographicOffCenterLH(static_cast<float>(viewport.TopLeftX), static_cast<float>(viewport.TopLeftX + viewport.Width),
+		static_cast<float>(viewport.TopLeftY + viewport.Height), static_cast<float>(viewport.TopLeftY), 0.0f, 1.0f));
 	PushMatrix();
 	ResetViewMatrix();
 	drawHandler();

@@ -721,7 +721,6 @@ void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glEnable(GL_BLEND);
 	m_matrixManager.SaveMatrices();
 	m_matrixManager.SetOrthographicProjection(viewport[0], viewport[2], viewport[3], viewport[1]);
 	m_matrixManager.ResetModelView();

@@ -1,6 +1,28 @@
 #version 450
 
-layout(set=0, binding=0) uniform sampler2D u_Texture;
+struct Material {
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+	float shininess;
+};
+struct Light {
+	vec4 diffuse;
+	vec4 ambient;
+	vec4 specular;
+	vec3 pos;
+	float distance;
+};
+#define NUM_LIGHTS 1
+
+layout(binding = 1) uniform UniformBufferObject2 {
+	vec4 color;
+	Material material;
+	Light lights[NUM_LIGHTS];
+	int lightsCount;
+} ubo2;
+
+layout(binding = 2) uniform sampler2D u_Texture;
 
 layout(location = 0) in vec2 v_TexCoord;
 
@@ -8,5 +30,5 @@ layout(location = 0) out vec4 out_Color;
 
 void main() 
 {
-	out_Color = vec4(1.0, 0.0, 0.0, 1.0);//texture( u_Texture, v_TexCoord );
+	out_Color = texture( u_Texture, v_TexCoord ) + ubo2.color;
 }

@@ -99,14 +99,34 @@ void UpdateBuffer(std::unique_ptr<CVulkanVertexAttribCache> & buffer, VkDevice d
 		buffer->Upload(data, size);
 	}
 }
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) 
+{
+	LogWriter::WriteLine(msg);
+	return VK_FALSE;
+}
 }
 
-CVulkanRenderer::CVulkanRenderer(const std::vector<char*> & instanceExtensions)
+CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtensions)
 {
 	VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO, nullptr, "WargameEngine", VK_MAKE_VERSION(1, 0, 0), "WargameEngine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0 };
-	VkInstanceCreateInfo instanceInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, nullptr, 0, &appInfo, 0, nullptr, static_cast<uint32_t>(instanceExtensions.size()), instanceExtensions.data() };
+	const std::vector<const char*> validationLayers = {
+#ifdef _DEBUG
+		"VK_LAYER_LUNARG_standard_validation"
+#endif
+	};
+	VkInstanceCreateInfo instanceInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, nullptr, 0, &appInfo, validationLayers.size(), validationLayers.data(), static_cast<uint32_t>(instanceExtensions.size()), instanceExtensions.data() };
 	VkResult result = vkCreateInstance(&instanceInfo, nullptr, &m_instance);
 	CHECK_VK_RESULT(result, "Cannot create vulkan instance");
+#ifdef _DEBUG
+	VkDebugReportCallbackCreateInfoEXT createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+	createInfo.pfnCallback = DebugCallback;
+	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
+	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT");
+	result = CreateDebugReportCallback(m_instance, &createInfo, nullptr, &m_debugCallback);
+#endif
 
 	CreateDeviceAndQueues();
 	
@@ -116,10 +136,21 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<char*> & instanceExtensions)
 
 	CreateDescriptors();
 
+	m_emptyTexture = std::make_unique<CVulkanCachedTexture>(m_device, m_descriptorSet);
+	m_emptyTexture->Init(1, 1, m_physicalDevice);
+	m_emptyTexture->Bind();
+
 	m_shaderManager.DoOnProgramChange([this](const CVulkanShaderProgram & program) {
-		VkDescriptorBufferInfo bufferInfo = { program.GetVertexAttribBuffer(), 0, program.GetVertexAttribBufferSize() };
-		VkWriteDescriptorSet descriptorWrite = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, m_descriptorSet, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &bufferInfo, nullptr };
-		vkUpdateDescriptorSets(m_device, 1, &descriptorWrite, 0, nullptr);
+		VkDescriptorBufferInfo bufferInfos[] = {
+			{ program.GetVertexAttribBuffer(), 0, program.GetVertexAttribBufferSize() },
+			{ program.GetFragmentAttribBuffer(), 0, program.GetFragmentAttribBufferSize() },
+		};
+		VkDescriptorImageInfo image_info = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		VkWriteDescriptorSet descriptorWrites[] = {
+			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, m_descriptorSet, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &bufferInfos[0], nullptr },
+			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, m_descriptorSet, 1, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &bufferInfos[1], nullptr },
+		};
+		vkUpdateDescriptorSets(m_device, sizeof(descriptorWrites) / sizeof(descriptorWrites[0]), descriptorWrites, 0, nullptr);
 	});
 }
 
@@ -128,8 +159,8 @@ CVulkanRenderer::~CVulkanRenderer()
 	if (m_device)
 	{
 		vkDeviceWaitIdle(m_device);
-
 		m_commandBuffers.clear();
+		m_emptyTexture.reset();
 		m_serviceCommandBuffer.reset();
 		m_vertexBuffer.reset();
 		m_normalsBuffer.reset();
@@ -151,6 +182,12 @@ CVulkanRenderer::~CVulkanRenderer()
 		{
 			vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
 		}
+		if (m_debugCallback)
+		{
+			PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback = VK_NULL_HANDLE;
+			DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT");
+			DestroyDebugReportCallback(m_instance, m_debugCallback, nullptr);
+		}
 		vkDestroyInstance(m_instance, nullptr);
 	}
 }
@@ -166,7 +203,6 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	CreateSwapchain();
 	CreateCommandBuffers();
 	CreateRenderPass();
-	SetUpViewport(0, 0, 600, 600, 65.0f);
 	m_defaultProgram = m_shaderManager.NewProgram(L"Killteam/shaders/Vulkan/vert.spv", L"Killteam/shaders/Vulkan/frag.spv");
 	m_shaderManager.PushProgram(*m_defaultProgram);
 	m_pipelineHelper.SetShaderProgram(*reinterpret_cast<CVulkanShaderProgram*>(m_defaultProgram.get()));
@@ -306,7 +342,7 @@ void CVulkanRenderer::EnableBlending(bool enable)
 void CVulkanRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0f*/, float farPane /*= 1000.0f*/)
 {
 	m_viewport = { static_cast<float>(viewportX), static_cast<float>(viewportY), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane };
-	VkRect2D scissor = { {viewportX, viewportY}, {viewportWidth, viewportHeight} };
+	VkRect2D scissor = { {static_cast<int32_t>(viewportX), static_cast<int32_t>(viewportY)}, {viewportWidth, viewportHeight} };
 	vkCmdSetViewport(m_commandBuffers[m_currentCommandBufferIndex], 0, 1, &m_viewport);
 	vkCmdSetScissor(m_commandBuffers[m_currentCommandBufferIndex], 0, 1, &scissor);
 	m_matrixManager.SetUpViewport(viewportWidth, viewportHeight, viewingAngle, nearPane, farPane);
@@ -343,9 +379,7 @@ void CVulkanRenderer::ActivateTextureSlot(TextureSlot slot)
 
 void CVulkanRenderer::UnbindTexture()
 {
-	VkBuffer buffers[] = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
-	VkDeviceSize offsets[] = { 0, 0, 0 };
-	vkCmdBindVertexBuffers(m_commandBuffers[m_currentCommandBufferIndex], 0, 3, buffers, offsets);
+	m_emptyTexture->Bind();
 }
 
 std::unique_ptr<ICachedTexture> CVulkanRenderer::CreateEmptyTexture(bool cubemap /*= false*/)
@@ -387,7 +421,7 @@ bool CVulkanRenderer::ForceFlipBMP() const
 
 bool CVulkanRenderer::ConvertBgra() const
 {
-	return false;
+	return true;
 }
 
 
@@ -398,7 +432,7 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const
 	if (!normals.empty()) UpdateBuffer(m_normalsBuffer, m_device, m_physicalDevice, normals.size() * sizeof(CVector3f), normals.data());
 	if (!texCoords.empty()) UpdateBuffer(m_texCoordBuffer, m_device, m_physicalDevice, texCoords.size() * sizeof(CVector2f), texCoords.data());
 
-	VkBuffer buffers[] = { vertices.empty() ? VK_NULL_HANDLE : *m_vertexBuffer, (normals.empty() ? VK_NULL_HANDLE : *m_normalsBuffer), texCoords.empty() ? VK_NULL_HANDLE : *m_texCoordBuffer };
+	VkBuffer buffers[] = { (vertices.empty() ? VK_NULL_HANDLE : *m_vertexBuffer), (normals.empty() ? VK_NULL_HANDLE : *m_normalsBuffer), (texCoords.empty() ? VK_NULL_HANDLE : *m_texCoordBuffer) };
 	VkDeviceSize offsets[] = { 0, 0, 0 };
 	vkCmdBindVertexBuffers(m_commandBuffers[m_currentCommandBufferIndex], 0, 3, buffers, offsets);
 
@@ -416,18 +450,26 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const
 
 void CVulkanRenderer::SetColor(const float r, const float g, const float b, const float a /*= 1.0f*/)
 {
+	const float color[] = { r, g, b, a };
+	SetColor(color);
 }
 
 void CVulkanRenderer::SetColor(const int r, const int g, const int b, const int a /*= UCHAR_MAX*/)
 {
+	const int color[] = { r, g, b, a };
+	SetColor(color);
 }
 
 void CVulkanRenderer::SetColor(const float * color)
 {
+	m_shaderManager.SetUniformValue("color", 4, 1, color);
 }
 
 void CVulkanRenderer::SetColor(const int * color)
 {
+	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
+	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), charToFloat(color[3]) };
+	SetColor(fcolor);
 }
 
 void CVulkanRenderer::PushMatrix()
@@ -516,6 +558,14 @@ ICachedTexture* CVulkanRenderer::GetTexturePtr(std::wstring const& texture) cons
 
 void CVulkanRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
 {
+	static const std::string ambientKey = "material.ambient";
+	static const std::string diffuseKey = "material.diffuse";
+	static const std::string specularKey = "material.specular";
+	static const std::string shininessKey = "material.shininess";
+	m_shaderManager.SetUniformValue(ambientKey, 4, 1, ambient);
+	m_shaderManager.SetUniformValue(diffuseKey, 4, 1, diffuse);
+	m_shaderManager.SetUniformValue(specularKey, 4, 1, specular);
+	m_shaderManager.SetUniformValue(shininessKey, 1, 1, &shininess);
 }
 
 class CMockDrawingList : public IDrawingList
@@ -606,8 +656,13 @@ void CVulkanRenderer::CreateDeviceAndQueues()
 
 void CVulkanRenderer::CreateSwapchain()
 {
+	VkBool32 supported = VK_FALSE;
+	VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, m_presentQueueFamilyIndex, m_surface, &supported);
+	CHECK_VK_RESULT(result, "Cannot check surface support");
+	if (!supported) throw std::runtime_error("Surface is not supported");
+
 	VkSurfaceCapabilitiesKHR surfaceCapabilities;
-	VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &surfaceCapabilities);
+	result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &surfaceCapabilities);
 	CHECK_VK_RESULT(result, "Cannot get surface capabilities");
 
 	uint32_t count;
@@ -697,9 +752,9 @@ void CVulkanRenderer::InitFramebuffer()
 void CVulkanRenderer::CreateDescriptors()
 {
 	VkDescriptorSetLayoutBinding layout_bindings[] = {
-		{ 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
 		{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
-		{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
+		{ 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
+		{ 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
 	};
 	VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO, nullptr, 0, sizeof(layout_bindings) / sizeof(layout_bindings[0]), layout_bindings };
 	VkResult result = vkCreateDescriptorSetLayout(m_device, &descriptor_set_layout_create_info, nullptr, &m_descriptorSetLayout);
@@ -707,9 +762,9 @@ void CVulkanRenderer::CreateDescriptors()
 	m_descriptorSetLayout.SetDevice(m_device);
 
 	VkDescriptorPoolSize pool_sizes[] = {
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
 		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 },
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
 	};
 	VkDescriptorPoolCreateInfo descriptor_pool_create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0, 1, sizeof(pool_sizes) / sizeof(pool_sizes[0]), pool_sizes };
 	result = vkCreateDescriptorPool(m_device, &descriptor_pool_create_info, nullptr, &m_desciptorPool);
@@ -913,14 +968,14 @@ void CVulkanCachedTexture::Upload(const void * data, VkCommandBuffer commandBuff
 	vkGetImageSubresourceLayout(m_device, m_image, &subresource, &stagingImageLayout);
 	if (stagingImageLayout.rowPitch == m_extent.width * 4)
 	{
-		memcpy(staging_buffer_memory_pointer, data, m_size);
+		memcpy(staging_buffer_memory_pointer, data, static_cast<size_t>(m_size));
 	}
 	else
 	{
 		const uint8_t* dstBytes = reinterpret_cast<const uint8_t*>(staging_buffer_memory_pointer);
 		const uint8_t* srcBytes = reinterpret_cast<const uint8_t*>(data);
 
-		for (int y = 0; y < m_extent.height; y++) 
+		for (uint32_t y = 0; y < m_extent.height; y++) 
 		{
 			memcpy((void*)&dstBytes[y * stagingImageLayout.rowPitch], (void*)&srcBytes[y * m_extent.width * 4], m_extent.width * 4);
 		}
@@ -930,19 +985,14 @@ void CVulkanCachedTexture::Upload(const void * data, VkCommandBuffer commandBuff
 
 void CVulkanCachedTexture::Bind() const
 {
+	if (!m_image) return;
 	VkDescriptorImageInfo image_info = { m_sampler, m_imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	VkWriteDescriptorSet descriptor_writes[] = {
-		{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, m_descriptorSet, 0, 0, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &image_info, nullptr, nullptr }
-	};
-	vkUpdateDescriptorSets(m_device, sizeof(descriptor_writes) / sizeof(descriptor_writes[0]), descriptor_writes, 0, nullptr);
+	VkWriteDescriptorSet descriptor_writes = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, m_descriptorSet, 2, 0, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &image_info, nullptr, nullptr };
+	vkUpdateDescriptorSets(m_device, 1, &descriptor_writes, 0, nullptr);
 }
 
 void CVulkanCachedTexture::UnBind() const
 {
-	VkWriteDescriptorSet descriptor_writes[] = {
-		{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, m_descriptorSet, 0, 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, nullptr, nullptr, nullptr }
-	};
-	vkUpdateDescriptorSets(m_device, sizeof(descriptor_writes) / sizeof(descriptor_writes[0]), descriptor_writes, 0, nullptr);
 }
 
 CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)

@@ -128,7 +128,7 @@ public:
 class CVulkanRenderer : public IOpenGLRenderer
 {
 public:
-	CVulkanRenderer(const std::vector<char*> & instanceExtensions);
+	CVulkanRenderer(const std::vector<const char*> & instanceExtensions);
 	~CVulkanRenderer();
 
 	VkInstance GetInstance() const;
@@ -219,6 +219,8 @@ private:
 	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_descriptorSetLayout;
 	CHandleWrapper<VkDescriptorPool, vkDestroyDescriptorPool> m_desciptorPool;
 	VkDescriptorSet m_descriptorSet;
+	VkDebugReportCallbackEXT m_debugCallback;
+	std::unique_ptr<CVulkanCachedTexture> m_emptyTexture;
 	VkImage m_currentImage;
 	uint32_t m_currentImageIndex = 0;
 	uint32_t m_graphicsQueueFamilyIndex = 0;

@@ -1,10 +1,5 @@
 #include "GameWindowGLFW.h"
-#define RENDERER_NO_VULKAN
-#define RENDERER_NO_LEGACY
 #ifndef RENDERER_NO_VULKAN
-#ifdef _WIN32
-#define VK_USE_PLATFORM_WIN32_KHR
-#endif
 #include "VulkanRenderer.h"
 #endif
 #include <GLFW/glfw3.h>
@@ -122,18 +117,32 @@ void CGameWindowGLFW::LaunchMainLoop()
 			{
 				auto* renderer = reinterpret_cast<CVulkanRenderer*>(m_renderer.get());
 				renderer->AcquireImage();
-				renderer->ClearBuffers();
+				renderer->ClearBuffers(true, false);
 				renderer->SetUpViewport(0, 0, 600, 600, 65.0f);
+				renderer->SetColor(0.0f, 0.0f, 0.0f, 0.0f);
 				renderer->DrawIn2D([&renderer] {
 					renderer->SetTexture(L"..\\Killteam\\texture\\sand.bmp", true);
 					renderer->RenderArrays(RenderMode::TRIANGLES, {
 						{0.0f, 0.0f, 0.0f},
-						{300.0f, 0.0f, 0.0f},
-						{0.0f, 300.0f, 0.0f}
-					}, {}, {
+						{600.0f, 0.0f, 0.0f},
+						{0.0f, 600.0f, 0.0f},
+						{ 600.0f, 0.0f, 0.0f },
+						{ 0.0f, 600.0f, 0.0f },
+						{ 600.0f, 600.0f, 0.0f },
+					}, {
+						{ 0.0f, 0.0f, 0.0f },
+						{ 0.0f, 0.0f, 0.0f },
+						{ 0.0f, 0.0f, 0.0f },
+						{ 0.0f, 0.0f, 0.0f },
+						{ 0.0f, 0.0f, 0.0f },
+						{ 0.0f, 0.0f, 0.0f },
+					}, {
 						{0.0f, 0.0f},
 						{1.0f, 0.0f},
-						{0.0f, 1.0f}
+						{0.0f, 1.0f},
+						{ 1.0f, 0.0f },
+						{ 0.0f, 1.0f },
+						{ 1.0f, 1.0f },
 					});
 				});
 				renderer->Present();
@@ -198,12 +207,17 @@ CGameWindowGLFW::CGameWindowGLFW()
 		{
 			throw std::runtime_error("Vulkan is not supported");
 		}
-		const std::vector<char*> instanceExtensions = {
-			VK_KHR_SURFACE_EXTENSION_NAME,
-#ifdef _WIN32
-			VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+		std::vector<const char*> instanceExtensions = {
+#ifdef _DEBUG
+			VK_EXT_DEBUG_REPORT_EXTENSION_NAME
 #endif
 		};
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		for (uint32_t i = 0; i < glfwExtensionCount; ++i)
+		{
+			instanceExtensions.push_back(glfwExtensions[i]);
+		}
 		auto renderer = std::make_unique<CVulkanRenderer>(instanceExtensions);
 		CreateNewWindow();
 		VkSurfaceKHR surface;
