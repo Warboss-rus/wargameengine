@@ -188,6 +188,7 @@ SetAnisotropy(GetMaxAnisotropy())
 if(GetRendererName() == "DirectX11") then
 	SetShaders("directX11/gpu_skinning.hlsl", "directX11/gpu_skinning.hlsl")
 	SetParticleSystemShaders("directX11/particle.hlsl", "directX11/particle.hlsl")
+	--SetSkyboxShaders("directX11/skybox.hlsl", "directX11/skybox.hlsl")
 elseif(GetRendererName() == "OpenGLES") then
 	SetShaders("GLES/gpu_skinning.vsh", "GLES/gpu_skinning.fsh")
 	SetParticleSystemShaders("GLES/particle.vsh", "GLES/particle.fsh")

@@ -269,6 +269,7 @@
     <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\gl.h" />
     <ClInclude Include="impl\IOpenGLRenderer.h" />
     <ClInclude Include="impl\LegacyOpenGLRenderer.h" />
     <ClInclude Include="impl\MatrixManagerGLM.h" />

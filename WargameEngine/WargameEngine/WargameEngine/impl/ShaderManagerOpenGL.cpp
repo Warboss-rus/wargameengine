@@ -1,14 +1,7 @@
 #include "ShaderManagerOpenGL.h"
 #include <map>
 #include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#ifdef _WINDOWS
-#include <Windows.h>
-#endif
-#include <GL/gl.h>
-#endif
+#include "gl.h"
 #include <fstream>
 #include "../LogWriter.h"
 #include "../Module.h"
@@ -50,13 +43,11 @@ public:
 class COpenGLVertexAttribCache : public IVertexAttribCache
 {
 public:
-	COpenGLVertexAttribCache(int elementSize, size_t count, const void* data, GLenum format)
-		:m_elementSize(elementSize)
-		,m_format(format)
+	COpenGLVertexAttribCache(size_t size, const void* data)
 	{
 		glGenBuffers(1, &m_cache);
 		glBindBuffer(GL_ARRAY_BUFFER, m_cache);
-		glBufferData(GL_ARRAY_BUFFER, count * elementSize * sizeof(float), data, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 	}
 	~COpenGLVertexAttribCache()
 	{
@@ -70,12 +61,8 @@ public:
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
-	int GetElementSize() const { return m_elementSize; }
-	GLenum GetFormat() const { return m_format; }
 private:
 	GLuint m_cache;
-	const int m_elementSize;
-	const GLenum m_format;
 };
 
 CShaderManagerOpenGL::CShaderManagerOpenGL()
@@ -275,19 +262,9 @@ void CShaderManagerOpenGL::SetUniformValue(std::string const& uniform, int eleme
 	}
 }
 
-std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGL::CreateVertexAttribCache(int elementSize, size_t count, const float* value) const
+std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGL::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_FLOAT);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGL::CreateVertexAttribCache(int elementSize, size_t count, const int* value) const
-{
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_INT);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerOpenGL::CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const
-{
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_UNSIGNED_INT);
+	return std::make_unique<COpenGLVertexAttribCache>(size, value);
 }
 
 void CShaderManagerOpenGL::DoOnProgramChange(std::function<void()> const& handler)
@@ -318,7 +295,7 @@ void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, 
 		m_vertexAttribBuffers.emplace(std::make_pair(attribute, buffer));
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexAttribBuffers.at(attribute));
-	glBufferData(GL_ARRAY_BUFFER, elementSize * count * sizeof(float), values, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, elementSize * count * sizeof(float), values, GL_STREAM_DRAW);
 
 	if(format == GL_FLOAT)
 		glVertexAttribPointer(index, elementSize, format, GL_FALSE, 0, NULL);
@@ -364,17 +341,17 @@ void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, int 
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset/* = 0*/) const
+void CShaderManagerOpenGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t /*count*/, TYPE type, bool perInstance /*= false*/, size_t offset/* = 0*/) const
 {
 	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
 	glCache.Bind();
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index != -1)
 	{
-		if (glCache.GetFormat() == GL_FLOAT)
-			glVertexAttribPointer(index, glCache.GetElementSize(), glCache.GetFormat(), GL_FALSE, 0, (void*)offset);
+		if (type == IShaderManager::TYPE::FLOAT32)
+			glVertexAttribPointer(index, elementSize, GL_FLOAT, GL_FALSE, 0, (void*)offset);
 		else
-			glVertexAttribIPointer(index, glCache.GetElementSize(), glCache.GetFormat(), 0, (void*)offset);
+			glVertexAttribIPointer(index, elementSize, type == IShaderManager::TYPE::SINT32 ? GL_INT : GL_UNSIGNED_INT, 0, (void*)offset);
 		glEnableVertexAttribArray(index);
 		if (perInstance) glVertexAttribDivisorARB(index, 1);
 	}

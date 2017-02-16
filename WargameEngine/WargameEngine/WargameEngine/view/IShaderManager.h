@@ -27,7 +27,7 @@ public:
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const = 0;
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const unsigned int* value) const = 0;
 
-	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance = false) const= 0;
+	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance = false) const = 0;
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance = false) const = 0;
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance = false) const = 0;
 
@@ -35,9 +35,13 @@ public:
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const = 0;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const = 0;
 
-	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const float* value) const = 0;
-	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const int* value) const = 0;
-	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const = 0;
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const = 0;
 
-	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false, size_t offset = 0) const = 0;
+	enum class TYPE
+	{
+		FLOAT32,
+		SINT32,
+		UINT32
+	};
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const = 0;
 };

@@ -30,11 +30,9 @@ public:
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const override;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const override;
 
-	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const float* value) const override;
-	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const int* value) const override;
-	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const override;
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
-	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance = false, size_t offset = 0) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const override;
 
 	void SetDevice(ID3D11Device* dev);
 	void DoOnProgramChange(std::function<void()> const& handler);
@@ -89,5 +87,5 @@ private:
 
 	typedef std::vector<std::pair<LPCSTR, DXGI_FORMAT>> InputLayoutDesc;
 	mutable std::map<InputLayoutDesc, CComPtr<ID3D11InputLayout>> m_inputLayouts;
-	mutable InputLayoutDesc m_lastInputLayout;
+	mutable std::tuple<DXGI_FORMAT, DXGI_FORMAT, DXGI_FORMAT> m_lastInputLayout;
 };

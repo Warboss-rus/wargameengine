@@ -86,8 +86,8 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	vertexBuffer.Bind();
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
-		shaderManager.SetVertexAttribute("weights", *m_weightsCache);
-		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache);
+		shaderManager.SetVertexAttribute("weights", *m_weightsCache, 4, m_weightsCount.size() * 4, IShaderManager::TYPE::FLOAT32);
+		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache, 4, m_weightsCount.size() * 4, IShaderManager::TYPE::FLOAT32);
 	}
 	renderer.PushMatrix();
 	renderer.Rotate(m_rotation.x, 1.0, 0.0, 0.0);//causes transparent models
@@ -158,8 +158,8 @@ void C3DModel::CalculateGPUWeights(IRenderer & renderer)
 			gpuWeight[i * 4 + j] /= sum;
 		}
 	}
-	m_weightsCache = renderer.GetShaderManager().CreateVertexAttribCache(4, gpuWeight.size() / 4, gpuWeight.data());
-	m_weightIndiciesCache = renderer.GetShaderManager().CreateVertexAttribCache(4, gpuWeightIndexes.size() / 4, gpuWeightIndexes.data());
+	m_weightsCache = renderer.GetShaderManager().CreateVertexAttribCache(gpuWeight.size() * sizeof(float), gpuWeight.data());
+	m_weightIndiciesCache = renderer.GetShaderManager().CreateVertexAttribCache(gpuWeightIndexes.size() * sizeof(int), gpuWeightIndexes.data());
 }
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)

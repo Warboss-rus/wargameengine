@@ -101,7 +101,7 @@ void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int 
 {
 }
 
-void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset /*= 0*/) const
+void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance /*= false*/, size_t offset /*= 0*/) const
 {
 }
 
@@ -117,19 +117,9 @@ void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, 
 {
 }
 
-std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(int elementSize, size_t count, const float* value) const
+std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	return std::make_unique<CStagedVulkanVertexAttribCache>(elementSize * count * sizeof(float), CVulkanVertexAttribCache::BufferType::VERTEX, m_device, m_physicalDevice, value);
-}
-
-std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(int elementSize, size_t count, const int* value) const
-{
-	return std::make_unique<CStagedVulkanVertexAttribCache>(elementSize * count * sizeof(int), CVulkanVertexAttribCache::BufferType::VERTEX, m_device, m_physicalDevice, value);
-}
-
-std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const
-{
-	return std::make_unique<CStagedVulkanVertexAttribCache>(elementSize * count * sizeof(unsigned), CVulkanVertexAttribCache::BufferType::VERTEX, m_device, m_physicalDevice, value);
+	return std::make_unique<CStagedVulkanVertexAttribCache>(size, CVulkanVertexAttribCache::BufferType::VERTEX, m_device, m_physicalDevice, value);
 }
 
 void CVulkanShaderManager::SetDevice(VkDevice device, VkPhysicalDevice physicalDevice)

@@ -1,14 +1,7 @@
 #include "ShaderManagerLegacyGL.h"
 #include <map>
 #include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#ifdef _WINDOWS
-#include <Windows.h>
-#endif
-#include <GL/gl.h>
-#endif
+#include "gl.h"
 #include <fstream>
 #include "../LogWriter.h"
 #include "../Module.h"
@@ -19,18 +12,16 @@ public:
 	unsigned int program;
 };
 
-class COpenGLVertexAttribCache : public IVertexAttribCache
+class CLegacyGLVertexAttribCache : public IVertexAttribCache
 {
 public:
-	COpenGLVertexAttribCache(int elementSize, size_t count, const void* data, GLenum format)
-		:m_elementSize(elementSize)
-		,m_format(format)
+	CLegacyGLVertexAttribCache(size_t size, const void* data)
 	{
 		glGenBuffers(1, &m_cache);
 		glBindBuffer(GL_ARRAY_BUFFER, m_cache);
-		glBufferData(GL_ARRAY_BUFFER, count * elementSize * sizeof(float), data, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 	}
-	~COpenGLVertexAttribCache()
+	~CLegacyGLVertexAttribCache()
 	{
 		glDeleteBuffers(1, &m_cache);
 	}
@@ -42,12 +33,8 @@ public:
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
-	int GetElementSize() const { return m_elementSize; }
-	GLenum GetFormat() const { return m_format; }
 private:
 	GLuint m_cache;
-	const int m_elementSize;
-	const GLenum m_format;
 };
 
 CShaderManagerLegacyGL::CShaderManagerLegacyGL()
@@ -228,19 +215,9 @@ void CShaderManagerLegacyGL::SetUniformValue(std::string const& uniform, int ele
 	}
 }
 
-std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(int elementSize, size_t count, const float* value) const
+std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_FLOAT);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(int elementSize, size_t count, const int* value) const
-{
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_INT);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const
-{
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_UNSIGNED_INT);
+	return std::make_unique<CLegacyGLVertexAttribCache>(size, value);
 }
 
 void CShaderManagerLegacyGL::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t /*count*/, const void* values, bool perInstance, unsigned int format) const
@@ -269,11 +246,16 @@ void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, in
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/, size_t offset/* = 0*/) const
+void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance /*= false*/, size_t offset/* = 0*/) const
 {
-	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
+	auto& glCache = reinterpret_cast<CLegacyGLVertexAttribCache const&>(cache);
 	glCache.Bind();
-	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, (void*)offset, perInstance, glCache.GetFormat());
+	std::map<TYPE, GLenum> typeMap = {
+		{ TYPE::FLOAT32, GL_FLOAT },
+		{ TYPE::SINT32, GL_INT },
+		{ TYPE::UINT32, GL_UNSIGNED_INT },
+	};
+	SetVertexAttributeImpl(attribute, elementSize, count, (void*)offset, perInstance, typeMap.at(type));
 	glCache.UnBind();
 }
 

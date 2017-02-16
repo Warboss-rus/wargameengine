@@ -156,6 +156,7 @@
     <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\gl.h" />
     <ClInclude Include="impl\MatrixManagerGLM.h" />
     <ClInclude Include="impl\NetSocket.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />

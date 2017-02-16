@@ -1,4 +1,6 @@
 #include "GameWindowGLFW.h"
+#define RENDERER_NO_VULKAN
+#define RENDERER_NO_LEGACY
 #ifndef RENDERER_NO_VULKAN
 #ifdef _WIN32
 #define VK_USE_PLATFORM_WIN32_KHR

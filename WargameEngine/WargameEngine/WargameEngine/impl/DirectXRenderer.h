@@ -93,7 +93,7 @@ private:
 	void MakeSureBufferCanFitSize(size_t size);
 	void CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elementSize);
 	void CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, 
-		bool renderTarget = false, size_t size = 0, CachedTextureType type = CachedTextureType::RGBA, TextureMipMaps const& mipmaps = TextureMipMaps());
+		bool renderTarget = false, size_t size = 0, CachedTextureType type = CachedTextureType::RGBA, TextureMipMaps const& mipmaps = TextureMipMaps(), bool cubemap = false);
 	void UpdateMatrices();
 	void CopyDataToBuffer(ID3D11Buffer * buffer, const void* data, size_t size);
 	void CreateDepthBuffer(unsigned int width, unsigned int height, ID3D11DepthStencilView ** buffer);
@@ -110,10 +110,8 @@ private:
 	CComPtr<ID3D11BlendState> m_blendStates[2];
 
 	CComPtr<ID3D11Buffer> m_vertexBuffer;
-	CComPtr<ID3D11Buffer> m_normalsBuffer;
-	CComPtr<ID3D11Buffer> m_texCoordBuffer;
 	CComPtr<ID3D11Buffer> m_sharedIndexBuffer;
-	size_t m_buffersSize = 0;
+	std::vector<char> m_vertexCache;
 
 	std::vector<DirectX::XMFLOAT4X4> m_modelMatrices;
 	DirectX::XMFLOAT4X4* m_modelMatrix;

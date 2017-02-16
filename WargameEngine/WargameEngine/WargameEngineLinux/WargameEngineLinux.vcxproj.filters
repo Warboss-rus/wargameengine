@@ -608,5 +608,8 @@
     <ClInclude Include="..\WargameEngine\impl\TextWriter.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
+    <ClInclude Include="..\WargameEngine\impl\gl.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

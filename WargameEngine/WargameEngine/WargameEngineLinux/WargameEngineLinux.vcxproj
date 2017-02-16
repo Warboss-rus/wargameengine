@@ -180,6 +180,7 @@
     <ClInclude Include="..\WargameEngine\controller\ScriptViewportProtocol.h" />
     <ClInclude Include="..\WargameEngine\IMemoryStream.h" />
     <ClInclude Include="..\WargameEngine\impl\GameWindowGLFW.h" />
+    <ClInclude Include="..\WargameEngine\impl\gl.h" />
     <ClInclude Include="..\WargameEngine\impl\InputGLFW.h" />
     <ClInclude Include="..\WargameEngine\impl\NetSocket.h" />
     <ClInclude Include="..\WargameEngine\impl\OpenGLRenderer.h" />

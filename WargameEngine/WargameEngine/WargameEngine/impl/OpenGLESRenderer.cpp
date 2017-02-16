@@ -53,12 +53,11 @@ public:
 	virtual void UnBind() const override;
 	void DoBeforeDraw(std::function<void()> const& beforeDraw);
 private:
-	void CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName);
 	CShaderManagerOpenGLES & m_shaderMan;
 	GLuint m_vao = 0;
 	GLuint m_mainVAO = 0;
 	GLuint m_indexesBuffer = 0;
-	std::vector<std::unique_ptr<IVertexAttribCache>> m_buffers;
+	std::unique_ptr<IVertexAttribCache> m_buffer;
 	const float * m_vertex;
 	const float * m_normals;
 	const float * m_texCoords;
@@ -415,26 +414,18 @@ COpenGLESVertexBuffer::COpenGLESVertexBuffer(CShaderManagerOpenGLES & shaderMan,
 	{
 		glGenVertexArrays(1, &m_vao);
 		glBindVertexArray(m_vao);
-		if (vertex)
-		{
-			CreateVBO(size, 3, vertex, POSITION_KEY);
-		}
-		if (normals)
-		{
-			CreateVBO(size, 3, normals, NORMAL_KEY);
-		}
-		if (texcoords)
-		{
-			CreateVBO(size, 2, texcoords, TEXCOORD_KEY);
-		}
+		std::vector<float> data(size * ((vertex ? 3 : 0) + (normals ? 3 : 0) + (texcoords ? 2 : 0)));
+		size_t normalOffset = (vertex ? size * 3 : 0);
+		size_t texCoordOffset = normalOffset + (normals ? size * 3 : 0);
+		if (vertex) memcpy(data.data(), vertex, size * 3 * sizeof(float));
+		if (normals) memcpy(data.data() + normalOffset, normals, size * 3 * sizeof(float));
+		if (texcoords) memcpy(data.data() + texCoordOffset, texcoords, size * 2 * sizeof(float));
+		m_buffer = m_shaderMan.CreateVertexAttribCache(data.size() * sizeof(float), data.data());
+		if (vertex) m_shaderMan.SetVertexAttribute(POSITION_KEY, *m_buffer, 3, size, IShaderManager::TYPE::FLOAT32, false, 0u);
+		if (normals) m_shaderMan.SetVertexAttribute(NORMAL_KEY, *m_buffer, 3, size, IShaderManager::TYPE::FLOAT32, false, normalOffset * sizeof(float));
+		if (texcoords) m_shaderMan.SetVertexAttribute(TEXCOORD_KEY, *m_buffer, 2, size, IShaderManager::TYPE::FLOAT32, false, texCoordOffset * sizeof(float));
 		UnBind();
 	}
-}
-
-void COpenGLESVertexBuffer::CreateVBO(size_t size, size_t components, const float* data, const std::string& attribName)
-{
-	m_buffers.push_back(m_shaderMan.CreateVertexAttribCache(components, size, data));
-	m_shaderMan.SetVertexAttribute(attribName, *m_buffers.back());
 }
 
 COpenGLESVertexBuffer::~COpenGLESVertexBuffer()

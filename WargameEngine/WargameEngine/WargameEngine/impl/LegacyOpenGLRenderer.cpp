@@ -1,13 +1,6 @@
 #include "LegacyOpenGLRenderer.h"
 #include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#ifdef _WINDOWS
-#include <Windows.h>
-#endif
-#include <GL/gl.h>
-#endif
+#include "gl.h"
 #include "../LogWriter.h"
 #include "../view/TextureManager.h"
 #include "ShaderManagerOpenGL.h"

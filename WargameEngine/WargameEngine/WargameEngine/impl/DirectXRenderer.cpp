@@ -70,9 +70,9 @@ public:
 
 	virtual void Bind() const override
 	{
-		UINT stride[] = { sizeof(float) * 3, sizeof(float) * 2, sizeof(float) * 3 };
-		UINT offset[] = { 0, 0, 0 };
-		ID3D11Buffer* buffers[] = { m_pVertexBuffer, m_pTexCoordBuffer, m_pNormalBuffer };
+		const UINT stride[] = { sizeof(float) * 3, sizeof(float) * 2, sizeof(float) * 3 };
+		const UINT offset[] = { 0, m_texCoordOffset, m_normalOffset };
+		ID3D11Buffer* const buffers[] = { m_pVertexBuffer, m_pVertexBuffer, m_pVertexBuffer };
 		auto context = m_renderer->GetContext();
 		context->IASetVertexBuffers(0, 3, buffers, stride, offset);
 		context->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -129,34 +129,14 @@ public:
 		m_renderer->GetContext()->IASetIndexBuffer(0, DXGI_FORMAT_UNKNOWN, 0);
 	}
 
-	ID3D11Buffer ** GetVertexBufferPtr()
+	ID3D11Buffer ** operator&()
 	{
 		return &m_pVertexBuffer;
 	}
 
-	ID3D11Buffer ** GetNormalBufferPtr()
-	{
-		return &m_pNormalBuffer;
-	}
-
-	ID3D11Buffer ** GetTexCoordBufferPtr()
-	{
-		return &m_pTexCoordBuffer;
-	}
-
-	ID3D11Buffer * GetVertexBuffer()
+	operator ID3D11Buffer *() const
 	{
 		return m_pVertexBuffer;
-	}
-
-	ID3D11Buffer * GetNormalBuffer()
-	{
-		return m_pNormalBuffer;
-	}
-
-	ID3D11Buffer * GetTexCoordBuffer()
-	{
-		return m_pTexCoordBuffer;
 	}
 
 	void SetIndexBufferPtr(ID3D11Buffer* indexBuffer)
@@ -182,14 +162,20 @@ public:
 		m_beforeDraw = handler;
 	}
 
+	void SetOffsets(UINT normalOffset, UINT texCoordOffset)
+	{
+		m_normalOffset = normalOffset;
+		m_texCoordOffset = texCoordOffset;
+	}
+
 private:
 	CComPtr<ID3D11Buffer> m_pVertexBuffer;
-	CComPtr<ID3D11Buffer> m_pTexCoordBuffer;
-	CComPtr<ID3D11Buffer> m_pNormalBuffer;
 	CComPtr<ID3D11Buffer> m_pIndexBuffer;
 	CDirectXRenderer * m_renderer;
 	ID3D11Device* m_dev;
 	size_t m_indexBufferSize = 0;
+	UINT m_normalOffset = 0;
+	UINT m_texCoordOffset = 0;
 	bool m_sharedIndexBuffer = false;
 	std::function<void()> m_beforeDraw;
 };
@@ -392,22 +378,18 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	float aspect = GetAspectRatio(m_hWnd);
 	m_projectionMatrix = Store(DirectX::XMMatrixPerspectiveFovLH(1.05f, aspect, 0.05f, 1000.0f));
 
-	MakeSureBufferCanFitSize(10000);
+	MakeSureBufferCanFitSize(1000 * sizeof(float));
 
 	SetTextureAnisotropy(1.0f);
 }
 
 void CDirectXRenderer::MakeSureBufferCanFitSize(size_t size)
 {
-	if (size > m_buffersSize || !m_vertexBuffer)
+	if (size > m_vertexCache.size() || !m_vertexBuffer)
 	{
-		m_buffersSize = size;
+		m_vertexCache.resize(size);
 		m_vertexBuffer = nullptr;
-		m_normalsBuffer = nullptr;
-		m_texCoordBuffer = nullptr;
-		CreateBuffer(&m_vertexBuffer, sizeof(CVector3f) * size);
-		CreateBuffer(&m_normalsBuffer, sizeof(CVector3f) * size);
-		CreateBuffer(&m_texCoordBuffer, sizeof(CVector2f) * size);
+		CreateBuffer(&m_vertexBuffer, size);
 	}
 }
 
@@ -478,8 +460,8 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 {
 	UpdateMatrices();
 	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), sizeof(CVector3f) };
-	UINT offset[] = { 0, 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, NULL };
+	UINT offset[] = { 0, vertices.size() * sizeof(CVector2f), 0 };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, texCoords.empty() ? NULL : m_vertexBuffer, NULL };
 
 	std::vector<float> floatVertices;
 	floatVertices.reserve(vertices.size() * 2);
@@ -493,9 +475,11 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 		FlipRectangleTopology(floatVertices.data(), !texCoords.empty() ? const_cast<float*>(&texCoords[0].x) : NULL, NULL, 2, vertices.size());
 	}
 
-	MakeSureBufferCanFitSize(vertices.size());
-	CopyDataToBuffer(m_vertexBuffer, floatVertices.data(), floatVertices.size() * sizeof(float));
-	CopyDataToBuffer(m_texCoordBuffer, texCoords.data(), texCoords.size() * sizeof(CVector2f));
+	size_t bufferSize = floatVertices.size() * sizeof(float) + texCoords.size() * sizeof(CVector2f);
+	MakeSureBufferCanFitSize(bufferSize);
+	memcpy(m_vertexCache.data() + offset[0], floatVertices.data(), floatVertices.size() * sizeof(float));
+	memcpy(m_vertexCache.data() + offset[1], texCoords.data(), texCoords.size() * sizeof(CVector2f));
+	CopyDataToBuffer(m_vertexBuffer, m_vertexCache.data(), bufferSize);
 
 	m_shaderManager.SetInputLayout(DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
@@ -507,13 +491,15 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> cons
 {
 	UpdateMatrices();
 	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
-	UINT offset[] = { 0, 0, 0 };
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_texCoordBuffer, normals.empty() ? nullptr : m_normalsBuffer };
+	UINT offset[] = { 0, vertices.size() * sizeof(CVector3f), vertices.size() * sizeof(CVector3f) + texCoords.size() * sizeof(CVector2f) };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, texCoords.empty() ? nullptr : m_vertexBuffer, normals.empty() ? nullptr : m_vertexBuffer };
 
-	MakeSureBufferCanFitSize(vertices.size());
-	CopyDataToBuffer(m_vertexBuffer, vertices.data(), vertices.size() * sizeof(CVector3f));
-	CopyDataToBuffer(m_texCoordBuffer, texCoords.data(), texCoords.size() * sizeof(CVector2f));
-	if(!normals.empty()) CopyDataToBuffer(m_normalsBuffer, normals.data(), normals.size() * sizeof(CVector3f));
+	size_t bufferSize = vertices.size() * sizeof(CVector3f) + normals.size() * sizeof(CVector3f) + texCoords.size() * sizeof(CVector2f);
+	MakeSureBufferCanFitSize(bufferSize);
+	memcpy(m_vertexCache.data() + offset[0], vertices.data(), vertices.size() * sizeof(CVector3f));
+	memcpy(m_vertexCache.data() + offset[1], texCoords.data(), texCoords.size() * sizeof(CVector2f));
+	memcpy(m_vertexCache.data() + offset[2], normals.data(), normals.size() * sizeof(CVector3f));
+	CopyDataToBuffer(m_vertexBuffer, m_vertexCache.data(), bufferSize);
 
 	m_shaderManager.SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	m_devcon->IASetVertexBuffers(0, 3, buffers, stride, offset);
@@ -705,37 +691,26 @@ std::unique_ptr<IDrawingList> CDirectXRenderer::CreateDrawingList(std::function<
 std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
 {
 	auto buffer = std::make_unique<CDirectXVertexBuffer>(m_dev, this);
-
-	if(temp) MakeSureBufferCanFitSize(size);
-	if (vertex)
-	{
-		if (temp)
-			*buffer->GetVertexBufferPtr() = m_vertexBuffer;
-		else
-			CreateBuffer(buffer->GetVertexBufferPtr(), size * 3 * sizeof(float));
-		CopyDataToBuffer(buffer->GetVertexBuffer(), vertex, sizeof(float) * size * 3);
-	}
-	if (normals)
-	{
-		if(temp)
-			*buffer->GetNormalBufferPtr() = m_normalsBuffer;
-		else
-			CreateBuffer(buffer->GetNormalBufferPtr(), size * 3 * sizeof(float));
-		CopyDataToBuffer(buffer->GetNormalBuffer(), normals, sizeof(float) * size * 3);
-	}
-	if (texcoords)
-	{
-		if(temp)
-			*buffer->GetTexCoordBufferPtr() = m_texCoordBuffer;
-		else
-			CreateBuffer(buffer->GetTexCoordBufferPtr(), size * 2 * sizeof(float));
-		CopyDataToBuffer(buffer->GetTexCoordBuffer(), texcoords, sizeof(float) * size * 2);
-	}
+	size_t bufferSize = ((vertex ? 3 : 0) + (normals ? 3 : 0) + (texcoords ? 2 : 0)) * size * sizeof(float);
+	if (bufferSize == 0) return std::move(buffer);
+	UINT texCoordOffset = (vertex ? 3 : 0) * size * sizeof(float);
+	UINT normalsOffset = texCoordOffset + (texcoords ? 2 : 0) * size * sizeof(float);
+	MakeSureBufferCanFitSize(bufferSize);
+	memcpy(m_vertexCache.data(), vertex, normalsOffset);
+	memcpy(m_vertexCache.data() + texCoordOffset, texcoords, normalsOffset - texCoordOffset);
+	memcpy(m_vertexCache.data() + normalsOffset, normals, bufferSize - normalsOffset);
 	if (temp)
 	{
+		*&*buffer = m_vertexBuffer;
 		buffer->SetIndexBufferPtr(m_sharedIndexBuffer);
 	}
+	else
+	{
+		CreateBuffer(&*buffer, bufferSize);
+	}
+	CopyDataToBuffer(*buffer, m_vertexCache.data(), bufferSize);
 	buffer->DoBeforeDraw(std::bind(&CDirectXRenderer::UpdateMatrices, this));
+	buffer->SetOffsets(normalsOffset, texCoordOffset);
 
 	return std::move(buffer);
 }
@@ -963,6 +938,9 @@ void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigne
 void CDirectXRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short bpp, int flags)
 {
 	auto& dxtexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
+	const sTextureMipMap& first = sides[0];
+	TextureMipMaps mipmaps(sides.begin() + 1, sides.end());
+	CreateTexture(first.width, first.height, flags, first.data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, 0, CachedTextureType::RGBA, mipmaps, true);
 }
 
 bool CDirectXRenderer::Force32Bits() const
@@ -1070,7 +1048,6 @@ void CDirectXRenderer::SetTextureResource(ID3D11ShaderResourceView * view)
 {
 	ID3D11ShaderResourceView* views[] = { view };
 	m_devcon->PSSetShaderResources(m_activeTextureSlot, 1, views);
-	float color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 }
 
 void CDirectXRenderer::OnResize(unsigned int width, unsigned int height)
@@ -1106,14 +1083,14 @@ ID3D11DeviceContext * CDirectXRenderer::GetContext()
 }
 
 void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, 
-	bool renderTarget, size_t size, CachedTextureType type, TextureMipMaps const& mipmaps)
+	bool renderTarget, size_t size, CachedTextureType type, TextureMipMaps const& mipmaps, bool cubemap)
 {
 	if (width == 0 || height == 0) return;
 	D3D11_TEXTURE2D_DESC desc;
 	desc.Width = width;
 	desc.Height = height;
-	desc.MipLevels = mipmaps.size() + 1;
-	desc.ArraySize = 1;
+	desc.MipLevels = cubemap ? 1 : mipmaps.size() + 1;
+	desc.ArraySize = cubemap ? 6 : 1;
 	DXGI_FORMAT format = flags & TEXTURE_BGRA ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
 	if (type == CachedTextureType::DEPTH) format = DXGI_FORMAT_R32_TYPELESS;
 	if (type == CachedTextureType::ALPHA) format = DXGI_FORMAT_A8_UNORM;
@@ -1139,7 +1116,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 		desc.BindFlags &= ~D3D11_BIND_RENDER_TARGET;
 	}
 	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
+	desc.MiscFlags = (flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0) | (cubemap ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0);
 
 	int bpp = (type == CachedTextureType::ALPHA) ? 1 : 4;
 
@@ -1165,7 +1142,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	D3D11_SHADER_RESOURCE_VIEW_DESC rDesc;
 	ZeroMemory(&rDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
 	rDesc.Format = (type == CachedTextureType::DEPTH) ? DXGI_FORMAT_R32_FLOAT : format;
-	rDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	rDesc.ViewDimension = cubemap ? D3D11_SRV_DIMENSION_TEXTURECUBE : D3D11_SRV_DIMENSION_TEXTURE2D;
 	rDesc.Texture2D.MostDetailedMip = 0;
 	rDesc.Texture2D.MipLevels = desc.MipLevels;
 
