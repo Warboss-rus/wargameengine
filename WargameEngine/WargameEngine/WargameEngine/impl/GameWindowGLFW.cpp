@@ -122,29 +122,19 @@ void CGameWindowGLFW::LaunchMainLoop()
 				renderer->SetColor(0.0f, 0.0f, 0.0f, 0.0f);
 				renderer->DrawIn2D([&renderer] {
 					renderer->SetTexture(L"..\\Killteam\\texture\\sand.bmp", true);
-					renderer->RenderArrays(RenderMode::TRIANGLES, {
+					renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
 						{0.0f, 0.0f, 0.0f},
 						{600.0f, 0.0f, 0.0f},
 						{0.0f, 600.0f, 0.0f},
-						{ 600.0f, 0.0f, 0.0f },
-						{ 0.0f, 600.0f, 0.0f },
-						{ 600.0f, 600.0f, 0.0f },
-					}, {
-						{ 0.0f, 0.0f, 0.0f },
-						{ 0.0f, 0.0f, 0.0f },
-						{ 0.0f, 0.0f, 0.0f },
-						{ 0.0f, 0.0f, 0.0f },
-						{ 0.0f, 0.0f, 0.0f },
-						{ 0.0f, 0.0f, 0.0f },
-					}, {
+						{600.0f,600.0f, 0.0f},
+					}, {}, {
 						{0.0f, 0.0f},
 						{1.0f, 0.0f},
 						{0.0f, 1.0f},
-						{ 1.0f, 0.0f },
-						{ 0.0f, 1.0f },
-						{ 1.0f, 1.0f },
+						{1.0f, 1.0f},
 					});
 				});
+				//m_onDraw();
 				renderer->Present();
 			}
 			else 

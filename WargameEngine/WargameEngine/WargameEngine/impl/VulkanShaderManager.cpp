@@ -119,7 +119,7 @@ void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, 
 
 std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	return std::make_unique<CStagedVulkanVertexAttribCache>(size, CVulkanVertexAttribCache::BufferType::VERTEX, m_device, m_physicalDevice, value);
+	return std::make_unique<CStagedVulkanVertexAttribCache>(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, m_device, m_physicalDevice, value);
 }
 
 void CVulkanShaderManager::SetDevice(VkDevice device, VkPhysicalDevice physicalDevice)
@@ -146,7 +146,7 @@ void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageF
 		m_shaderStageCreateInfos.push_back({ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, nullptr, 0, flag, module, "main", nullptr });
 		m_uniformBuffers.emplace_back();
 		m_uniformBuffers.back().cache.resize(reflection.bufferSize);
-		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize, CVulkanVertexAttribCache::BufferType::UNIFORM, m_device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		m_uniformBuffers.back().reflection = reflection;
 	}
 }
@@ -178,18 +178,13 @@ CVulkanShaderProgram::~CVulkanShaderProgram()
 	}
 }
 
-CVulkanVertexAttribCache::CVulkanVertexAttribCache(size_t size, BufferType type, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties, const void * data)
+CVulkanVertexAttribCache::CVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties, const void * data)
 	:m_device(device), m_size(size)
 {
 	m_buffer.SetDevice(device);
 	m_memory.SetDevice(device);
 	if (size == 0) return;
-	const std::map<BufferType, VkFlags> typeMap = {
-		{ BufferType::VERTEX, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT },
-		{ BufferType::INDEX, VK_BUFFER_USAGE_INDEX_BUFFER_BIT },
-		{ BufferType::UNIFORM, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT },
-	};
-	VkBufferCreateInfo buffer_create_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size, typeMap.at(type) | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr };
+	VkBufferCreateInfo buffer_create_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size, flags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr };
 	VkResult result = vkCreateBuffer(m_device, &buffer_create_info, nullptr, &m_buffer);
 	LOG_VK_RESULT(result, "Cannot create buffer");
 
@@ -234,9 +229,9 @@ size_t CVulkanVertexAttribCache::GetSize() const
 	return m_size;
 }
 
-CStagedVulkanVertexAttribCache::CStagedVulkanVertexAttribCache(size_t size, CVulkanVertexAttribCache::BufferType type, VkDevice device, VkPhysicalDevice physicalDevice, const void * data /*= nullptr*/)
-	: m_deviceBuffer(size, type, device, physicalDevice, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-	, m_stageBuffer(size, type, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+CStagedVulkanVertexAttribCache::CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, const void * data /*= nullptr*/)
+	: m_deviceBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_DST_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+	, m_stageBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
 {
 }
 

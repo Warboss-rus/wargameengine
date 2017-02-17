@@ -92,7 +92,7 @@ void UpdateBuffer(std::unique_ptr<CVulkanVertexAttribCache> & buffer, VkDevice d
 {
 	if (!buffer || buffer->GetSize() < size)
 	{
-		buffer.reset(new CVulkanVertexAttribCache(size, CVulkanVertexAttribCache::BufferType::VERTEX, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, data));
+		buffer.reset(new CVulkanVertexAttribCache(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, data));
 	}
 	else
 	{
@@ -145,6 +145,9 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 	m_emptyTexture->Init(1, 1, m_physicalDevice);
 	m_emptyTexture->Bind();
 
+	float zero = 0.0f;
+	m_emptyBuffer = std::make_unique<CVulkanVertexAttribCache>(sizeof(float), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, m_physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &zero);
+
 	m_shaderManager.DoOnProgramChange([this](const CVulkanShaderProgram & program) {
 		VkDescriptorBufferInfo bufferInfos[] = {
 			{ program.GetVertexAttribBuffer(), 0, program.GetVertexAttribBufferSize() },
@@ -182,12 +185,13 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	m_defaultProgram = m_shaderManager.NewProgram(L"Killteam/shaders/Vulkan/vert.spv", L"Killteam/shaders/Vulkan/frag.spv");
 	m_shaderManager.PushProgram(*m_defaultProgram);
 	m_pipelineHelper.SetShaderProgram(*reinterpret_cast<CVulkanShaderProgram*>(m_defaultProgram.get()));
-	m_pipelineHelper.ResetVertexAttributes();
-	m_pipelineHelper.AddVertexAttribute(0, sizeof(float) * 3, VK_FORMAT_R32G32B32_SFLOAT, false);
-	m_pipelineHelper.AddVertexAttribute(1, sizeof(float) * 3, VK_FORMAT_R32G32B32_SFLOAT, false);
-	m_pipelineHelper.AddVertexAttribute(2, sizeof(float) * 2, VK_FORMAT_R32G32_SFLOAT, false);
+	m_pipelineHelper.SetVertexAttributes({
+	{ 0, sizeof(float) * 3, VK_FORMAT_R32G32B32_SFLOAT, false },
+	{ 1, sizeof(float) * 3, VK_FORMAT_R32G32B32_SFLOAT, false },
+	{ 2, sizeof(float) * 2, VK_FORMAT_R32G32_SFLOAT, false },
+	});
 	m_pipelineHelper.SetDescriptorLayout(&m_descriptorSetLayout, 1);
-	m_pipelineHelper.CreatePipeline(m_device, m_renderPass);
+	m_pipelineHelper.Init(m_device, m_renderPass);
 }
 
 void CVulkanRenderer::AcquireImage()
@@ -337,7 +341,7 @@ void CVulkanRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/)
 	auto& commandBuffer = m_commandBuffers[m_currentCommandBufferIndex];
 	vkCmdClearColorImage(commandBuffer, m_currentImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &imageRange);
 
-	VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_renderPass, m_frameBuffer,{ { 0, 0 }, m_swapchain.GetExtent() }, 0, nullptr };
+	VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_renderPass, m_frameBuffers[m_currentCommandBufferIndex],{ { 0, 0 }, m_swapchain.GetExtent() }, 0, nullptr };
 	vkCmdBeginRenderPass(commandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetPipeline());
@@ -401,15 +405,23 @@ bool CVulkanRenderer::ConvertBgra() const
 	return true;
 }
 
-
 void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 	if (!vertices.empty()) UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, vertices.size() * sizeof(CVector3f), vertices.data()->ptr());
 	if (!normals.empty()) UpdateBuffer(m_normalsBuffer, m_device, m_physicalDevice, normals.size() * sizeof(CVector3f), normals.data());
 	if (!texCoords.empty()) UpdateBuffer(m_texCoordBuffer, m_device, m_physicalDevice, texCoords.size() * sizeof(CVector2f), texCoords.data());
+	static const std::map<RenderMode, VkPrimitiveTopology> topologyMap = {
+		{ RenderMode::LINE_LOOP, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP },
+		{ RenderMode::LINES, VK_PRIMITIVE_TOPOLOGY_LINE_LIST },
+		{ RenderMode::RECTANGLES, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP },//deprecated
+		{ RenderMode::TRIANGLE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP },
+		{ RenderMode::TRIANGLES, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST },
+	};
+	m_pipelineHelper.SetTopology(topologyMap.at(mode));
+	m_pipelineHelper.Bind(m_commandBuffers[m_currentCommandBufferIndex]);
 
-	VkBuffer buffers[] = { (vertices.empty() ? VK_NULL_HANDLE : *m_vertexBuffer), (normals.empty() ? VK_NULL_HANDLE : *m_normalsBuffer), (texCoords.empty() ? VK_NULL_HANDLE : *m_texCoordBuffer) };
+	VkBuffer buffers[] = { (vertices.empty() ? *m_emptyBuffer : *m_vertexBuffer), (normals.empty() ? *m_emptyBuffer : *m_normalsBuffer), (texCoords.empty() ? *m_emptyBuffer : *m_texCoordBuffer) };
 	VkDeviceSize offsets[] = { 0, 0, 0 };
 	vkCmdBindVertexBuffers(m_commandBuffers[m_currentCommandBufferIndex], 0, 3, buffers, offsets);
 
@@ -695,6 +707,7 @@ void CVulkanRenderer::CreateCommandBuffers()
 	{
 		m_commandBuffers.emplace_back(m_commandPool, m_device);
 	}
+	m_frameBuffers.resize(COMMAND_BUFFERS_COUNT);
 	m_serviceCommandBuffer.reset(new CCommandBufferWrapper(m_commandPool, m_device));
 }
 
@@ -715,13 +728,13 @@ void CVulkanRenderer::CreateRenderPass()
 
 void CVulkanRenderer::InitFramebuffer()
 {
-	m_frameBuffer.Destroy();
+	m_frameBuffers[m_currentCommandBufferIndex].Destroy();
 	VkImageView view = m_swapchain.GetImageView(m_currentImageIndex);
 	VkExtent2D size = m_swapchain.GetExtent();
 	VkFramebufferCreateInfo framebuffer_create_info = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, m_renderPass, 1, &view, size.width, size.height, 1 };
-	VkResult result = vkCreateFramebuffer(m_device, &framebuffer_create_info, nullptr, &m_frameBuffer);
+	VkResult result = vkCreateFramebuffer(m_device, &framebuffer_create_info, nullptr, &m_frameBuffers[m_currentCommandBufferIndex]);
 	LOG_VK_RESULT(result, "Failed to create framebuffer");
-	m_frameBuffer.SetDevice(m_device);
+	m_frameBuffers[m_currentCommandBufferIndex].SetDevice(m_device);
 }
 
 void CVulkanRenderer::CreateDescriptors()
@@ -759,7 +772,7 @@ void CVulkanRenderer::SubmitServiceCommandBuffer()
 	LOG_VK_RESULT(result, "Cannot submit service command buffer to queue");
 }
 
-void CPipelineHelper::CreatePipeline(VkDevice device, VkRenderPass pass)
+void CPipelineHelper::Init(VkDevice device, VkRenderPass pass)
 {
 	m_pipelineLayout.Destroy();
 	VkResult result = vkCreatePipelineLayout(device, &layout_create_info, nullptr, &m_pipelineLayout);
@@ -767,47 +780,77 @@ void CPipelineHelper::CreatePipeline(VkDevice device, VkRenderPass pass)
 	pipeline_create_info.layout = m_pipelineLayout;
 	CHECK_VK_RESULT(result, "Cannot create pipeline layout");
 	pipeline_create_info.renderPass = pass;
-	m_pipeline.Destroy();
-	result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &m_pipeline);
-	m_pipeline.SetDevice(device);
-	CHECK_VK_RESULT(result, "Cannot create pipeline");
+	m_device = device;
+}
+
+
+VkPipeline CPipelineHelper::GetPipeline()
+{
+	auto it = m_pipelines.find(m_currentKey);
+	if (it == m_pipelines.end())
+	{
+		VkPipeline pipeline;
+		VkResult result = vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline);
+		CHECK_VK_RESULT(result, "Cannot create pipeline");
+		it = m_pipelines.emplace(std::make_pair(m_currentKey, pipeline)).first;
+	}
+	return it->second;
+}
+
+
+void CPipelineHelper::Bind(VkCommandBuffer commandBuffer)
+{
+	VkPipeline newPipeline = GetPipeline();
+	if (newPipeline != m_currentLayout)
+	{
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, newPipeline);
+	}
 }
 
 void CPipelineHelper::SetShaderProgram(CVulkanShaderProgram const& program)
 {
 	pipeline_create_info.stageCount = program.GetShaderInfo().size();
 	pipeline_create_info.pStages = program.GetShaderInfo().data();
+	m_currentKey.program = &program;
 }
 
-void CPipelineHelper::ResetVertexAttributes()
+void CPipelineHelper::SetVertexAttributes(std::vector<VertexAttrib> const& attribs)
 {
 	vertex_binding_descriptions.clear();
 	vertex_attribute_descriptions.clear();
-	vertex_input_state_create_info.vertexBindingDescriptionCount = 0;
-	vertex_input_state_create_info.pVertexBindingDescriptions = nullptr;
-	vertex_input_state_create_info.vertexAttributeDescriptionCount = 0;
-	vertex_input_state_create_info.pVertexAttributeDescriptions = nullptr;
-}
-
-void CPipelineHelper::AddVertexAttribute(uint32_t pos, uint32_t size, VkFormat format, bool perInstance)
-{
-	vertex_binding_descriptions.push_back({ vertex_binding_descriptions.size(), size, perInstance ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX });
-	vertex_attribute_descriptions.push_back({ pos, vertex_binding_descriptions.back().binding, format, 0 });
+	for (auto& attrib : attribs)
+	{
+		vertex_binding_descriptions.push_back({ vertex_binding_descriptions.size(), attrib.size, attrib.perInstance ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX });
+		vertex_attribute_descriptions.push_back({ attrib.pos, vertex_binding_descriptions.back().binding, attrib.format, 0 });
+	}
 	vertex_input_state_create_info.vertexBindingDescriptionCount = vertex_binding_descriptions.size();
 	vertex_input_state_create_info.pVertexBindingDescriptions = vertex_binding_descriptions.data();
 	vertex_input_state_create_info.vertexAttributeDescriptionCount = vertex_attribute_descriptions.size();
 	vertex_input_state_create_info.pVertexAttributeDescriptions = vertex_attribute_descriptions.data();
+	m_currentKey.attribs = attribs;
 }
 
 void CPipelineHelper::SetDescriptorLayout(VkDescriptorSetLayout * layouts, uint32_t count)
 {
 	layout_create_info.setLayoutCount = count;
 	layout_create_info.pSetLayouts = layouts;
+	m_currentKey.descriptors = layouts[0];
+}
+
+
+void CPipelineHelper::SetTopology(VkPrimitiveTopology topology)
+{
+	input_assembly_state_create_info.topology = topology;
+	m_currentKey.topology = topology;
 }
 
 void CPipelineHelper::Destroy()
 {
-	m_pipeline.Destroy();
+	for (auto& pair : m_pipelines)
+	{
+		vkDestroyPipeline(m_device, pair.second, nullptr);
+	}
+	m_pipelines.clear();
 	m_pipelineLayout.Destroy();
 }
 
@@ -971,9 +1014,9 @@ void CVulkanCachedTexture::UnBind() const
 }
 
 CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)
-	: m_vertexCache(size * 3 * sizeof(float), CVulkanVertexAttribCache::BufferType::VERTEX, device, physicalDevice)
-	, m_normalsCache(normals ? size * 3 * sizeof(float) : 0, CVulkanVertexAttribCache::BufferType::VERTEX, device, physicalDevice)
-	, m_texcoordCache(texcoords ? size * 2 * sizeof(float) : 0, CVulkanVertexAttribCache::BufferType::VERTEX, device, physicalDevice)
+	: m_vertexCache(size * 3 * sizeof(float), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, device, physicalDevice)
+	, m_normalsCache(normals ? size * 3 * sizeof(float) : 0, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, device, physicalDevice)
+	, m_texcoordCache(texcoords ? size * 2 * sizeof(float) : 0, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, device, physicalDevice)
 	, m_renderer(renderer)
 {
 	VkCommandBufferBeginInfo command_buffer_begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
@@ -986,7 +1029,7 @@ CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice de
 
 void CVulkanVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
 {
-	m_indexCache = std::make_unique<CStagedVulkanVertexAttribCache>(indexesSize, CVulkanVertexAttribCache::BufferType::INDEX, m_renderer->GetDevice(), m_renderer->GetPhysicalDevice());
+	m_indexCache = std::make_unique<CStagedVulkanVertexAttribCache>(indexesSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, m_renderer->GetDevice(), m_renderer->GetPhysicalDevice());
 	VkCommandBufferBeginInfo command_buffer_begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
 	VkCommandBuffer commandBuffer = m_renderer->GetServiceCommandBuffer();
 	vkBeginCommandBuffer(commandBuffer, &command_buffer_begin_info);
@@ -997,7 +1040,12 @@ void CVulkanVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexes
 
 void CVulkanVertexBuffer::Bind() const
 {
-	VkBuffer buffers[] = { m_vertexCache, m_normalsCache.GetSize() > 0 ? m_normalsCache : VK_NULL_HANDLE, m_texcoordCache.GetSize() > 0 ? m_texcoordCache : VK_NULL_HANDLE };
+	std::vector<CPipelineHelper::VertexAttrib> attribs;
+	auto& pipelineHelper = m_renderer->GetPipelineHelper();
+	pipelineHelper.SetTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+	pipelineHelper.Bind(m_renderer->GetCommandBuffer());
+
+	VkBuffer buffers[] = { m_vertexCache.GetSize() > 0 ? m_vertexCache : m_renderer->GetEmptyBuffer(), m_normalsCache.GetSize() > 0 ? m_normalsCache : m_renderer->GetEmptyBuffer(), m_texcoordCache.GetSize() > 0 ? m_texcoordCache : m_renderer->GetEmptyBuffer() };
 	VkDeviceSize offsets[] = { 0, 0, 0 };
 	vkCmdBindVertexBuffers(m_renderer->GetCommandBuffer(), 0, 3, buffers, offsets);
 	if (m_indexCache)
@@ -1026,9 +1074,6 @@ void CVulkanVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
 
 void CVulkanVertexBuffer::UnBind() const
 {
-	VkBuffer buffers[] = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
-	VkDeviceSize offsets[] = { 0, 0, 0 };
-	vkCmdBindVertexBuffers(m_renderer->GetCommandBuffer(), 0, 3, buffers, offsets);
 }
 
 void CVulkanVertexBuffer::DoBeforeDraw(std::function<void()> const& handler)

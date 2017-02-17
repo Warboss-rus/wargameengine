@@ -8,13 +8,7 @@
 class CVulkanVertexAttribCache : public IVertexAttribCache
 {
 public:
-	enum class BufferType
-	{
-		VERTEX,
-		INDEX,
-		UNIFORM
-	};
-	CVulkanVertexAttribCache(size_t size, BufferType type, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties, const void * data = nullptr);
+	CVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties, const void * data = nullptr);
 	void Upload(const void* data, size_t size);
 	size_t GetSize() const;
 	operator VkBuffer() const { return m_buffer; }
@@ -28,7 +22,7 @@ private:
 class CStagedVulkanVertexAttribCache : public IVertexAttribCache
 {
 public:
-	CStagedVulkanVertexAttribCache(size_t size, CVulkanVertexAttribCache::BufferType type, VkDevice device, VkPhysicalDevice physicalDevice, const void * data = nullptr);
+	CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, const void * data = nullptr);
 	void Upload(const void* data, size_t size, VkCommandBuffer commandBuffer);
 	size_t GetSize() const { return m_stageBuffer.GetSize(); }
 	operator VkBuffer() const { return m_deviceBuffer; }

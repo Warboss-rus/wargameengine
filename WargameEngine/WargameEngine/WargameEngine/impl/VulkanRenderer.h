@@ -4,6 +4,7 @@
 #include "VulkanShaderManager.h"
 #include "VulkanHelpers.h"
 #include "MatrixManagerGLM.h"
+#include <map>
 
 class CVulkanRenderer;
 
@@ -48,14 +49,24 @@ private:
 class CPipelineHelper
 {
 public:
+	~CPipelineHelper() { Destroy(); }
 	void SetShaderProgram(CVulkanShaderProgram const& program);
-	void ResetVertexAttributes();
-	void AddVertexAttribute(uint32_t pos, uint32_t size, VkFormat format, bool perInstance);
+	struct VertexAttrib
+	{
+		uint32_t pos;
+		uint32_t size; 
+		VkFormat format;
+		bool perInstance;
+		bool operator < (VertexAttrib const& other) const { return std::tie(pos, size, format, perInstance) < std::tie(other.pos, other.size, other.format, other.perInstance); }
+	};
+	void SetVertexAttributes(std::vector<VertexAttrib> const& attribs);
 	void SetDescriptorLayout(VkDescriptorSetLayout * layouts, uint32_t count = 1);
+	void SetTopology(VkPrimitiveTopology topology);
 	void Destroy();
-	void CreatePipeline(VkDevice device, VkRenderPass pass);
-	VkPipeline GetPipeline() const { return m_pipeline; }
+	void Init(VkDevice device, VkRenderPass pass);
+	VkPipeline GetPipeline();
 	VkPipelineLayout GetLayout() const { return m_pipelineLayout; }
+	void Bind(VkCommandBuffer commandBuffer);
 private:
 	std::vector<VkDynamicState> dynamic_states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, };
 	VkPipelineViewportStateCreateInfo viewport_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO, nullptr, 0, 1, nullptr, 1, nullptr };
@@ -74,8 +85,20 @@ private:
 	VkGraphicsPipelineCreateInfo pipeline_create_info = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO, nullptr, 0, 0/*static_cast<uint32_t>(shader_stage_create_infos.size())*/, nullptr/*shader_stage_create_infos.data()*/, 
 		&vertex_input_state_create_info, &input_assembly_state_create_info, nullptr, &viewport_state_create_info, &rasterization_state_create_info, &multisample_state_create_info, nullptr, &color_blend_state_create_info, 
 		&dynamic_state_create_info, m_pipelineLayout, VK_NULL_HANDLE/*m_renderPass*/, 0, VK_NULL_HANDLE, -1 };
+
+	VkDevice m_device;
+	struct Key
+	{
+		const CVulkanShaderProgram * program;
+		VkDescriptorSetLayout descriptors;
+		VkPrimitiveTopology topology;
+		std::vector<VertexAttrib> attribs;
+		bool operator < (Key const& other) const { return std::tie(program, descriptors, topology, attribs) < std::tie(other.program, other.descriptors, other.topology, other.attribs); }
+	};
+	Key m_currentKey;
+	std::map<Key, VkPipeline> m_pipelines;
 	CHandleWrapper<VkPipelineLayout, vkDestroyPipelineLayout> m_pipelineLayout;
-	CHandleWrapper<VkPipeline, vkDestroyPipeline> m_pipeline;
+	VkPipelineLayout m_currentLayout = VK_NULL_HANDLE;
 };
 
 class CVulkanCachedTexture : public ICachedTexture
@@ -141,6 +164,8 @@ public:
 	void AcquireImage();
 	void Present();
 	VkCommandBuffer GetCommandBuffer() const { return m_commandBuffers[m_currentCommandBufferIndex]; }
+	CPipelineHelper& GetPipelineHelper() { return m_pipelineHelper; }
+	VkBuffer GetEmptyBuffer() const { return *m_emptyBuffer; }
 	
 	virtual void EnableMultisampling(bool enable) override;
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
@@ -216,7 +241,7 @@ private:
 	CHandleWrapper<VkCommandPool, vkDestroyCommandPool> m_commandPool;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
-	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_frameBuffer;
+	std::vector<CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer>> m_frameBuffers;
 	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
 	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_descriptorSetLayout;
 	CHandleWrapper<VkDescriptorPool, vkDestroyDescriptorPool> m_desciptorPool;
@@ -234,6 +259,7 @@ private:
 	std::unique_ptr<CVulkanVertexAttribCache> m_vertexBuffer;
 	std::unique_ptr<CVulkanVertexAttribCache> m_normalsBuffer;
 	std::unique_ptr<CVulkanVertexAttribCache> m_texCoordBuffer;
+	std::unique_ptr<CVulkanVertexAttribCache> m_emptyBuffer;
 	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;
 	CMatrixManagerGLM m_matrixManager;
