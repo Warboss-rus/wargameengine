@@ -204,12 +204,14 @@ private:
 	void InitFramebuffer();
 	void CreateDescriptors();
 
-	VkInstance m_instance = VK_NULL_HANDLE;
+	CInstanceWrapper<VkInstance, vkDestroyInstance> m_instance;
+	CDestructor m_debugCallbackDestructor;
 	VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
-	VkDevice m_device = VK_NULL_HANDLE;
+	CInstanceWrapper<VkDevice, vkDestroyDevice> m_device;
 	VkQueue m_graphicsQueue = VK_NULL_HANDLE;
 	VkQueue m_presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR m_surface = VK_NULL_HANDLE;
+	CDestructor m_surfaceDestructor;
 	CSwapchainWrapper m_swapchain;
 	CHandleWrapper<VkCommandPool, vkDestroyCommandPool> m_commandPool;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;

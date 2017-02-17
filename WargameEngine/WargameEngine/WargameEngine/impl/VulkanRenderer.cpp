@@ -126,6 +126,11 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
 	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT");
 	result = CreateDebugReportCallback(m_instance, &createInfo, nullptr, &m_debugCallback);
+	m_debugCallbackDestructor.SetDestructorFunction([this] {
+		PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback = VK_NULL_HANDLE;
+		DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT");
+		DestroyDebugReportCallback(m_instance, m_debugCallback, nullptr);
+	});
 #endif
 
 	CreateDeviceAndQueues();
@@ -159,36 +164,6 @@ CVulkanRenderer::~CVulkanRenderer()
 	if (m_device)
 	{
 		vkDeviceWaitIdle(m_device);
-		m_commandBuffers.clear();
-		m_emptyTexture.reset();
-		m_serviceCommandBuffer.reset();
-		m_vertexBuffer.reset();
-		m_normalsBuffer.reset();
-		m_texCoordBuffer.reset();
-		m_renderPass.Destroy();
-		m_frameBuffer.Destroy();
-		m_descriptorSetLayout.Destroy();
-		vkFreeDescriptorSets(m_device, m_desciptorPool, 1, &m_descriptorSet);
-		m_desciptorPool.Destroy();
-		m_swapchain.Destroy();
-		m_defaultProgram.reset();
-		m_pipelineHelper.Destroy();
-		m_commandPool.Destroy();
-		vkDestroyDevice(m_device, nullptr);
-	}
-	if (m_instance)
-	{
-		if (m_surface)
-		{
-			vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-		}
-		if (m_debugCallback)
-		{
-			PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback = VK_NULL_HANDLE;
-			DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT");
-			DestroyDebugReportCallback(m_instance, m_debugCallback, nullptr);
-		}
-		vkDestroyInstance(m_instance, nullptr);
 	}
 }
 
@@ -200,6 +175,7 @@ VkInstance CVulkanRenderer::GetInstance() const
 void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 {
 	m_surface = surface;
+	m_surfaceDestructor.SetDestructorFunction([this] {vkDestroySurfaceKHR(m_instance, m_surface, nullptr); });
 	CreateSwapchain();
 	CreateCommandBuffers();
 	CreateRenderPass();
@@ -239,17 +215,10 @@ void CVulkanRenderer::AcquireImage()
 	if (m_presentQueue != m_graphicsQueue)
 	{
 		const VkImageSubresourceRange imageSubresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		VkImageMemoryBarrier barrierFromPresentToDraw = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+		VkImageMemoryBarrier barrierFromPresentToDraw = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, m_presentQueueFamilyIndex, m_graphicsQueueFamilyIndex, m_currentImage, imageSubresourceRange };
 		vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierFromPresentToDraw);
 	}
-
-	VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_renderPass, m_frameBuffer, { {0, 0}, m_swapchain.GetExtent()}, 0, nullptr };
-	vkCmdBeginRenderPass(commandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetPipeline());
-
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetLayout(), 0, 1, &m_descriptorSet, 0, nullptr);
 }
 
 void CVulkanRenderer::Present()
@@ -365,7 +334,15 @@ void CVulkanRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/)
 {
 	const VkImageSubresourceRange imageRange = { static_cast<VkFlags>((color ? VK_IMAGE_ASPECT_COLOR_BIT : 0) | (depth ? VK_IMAGE_ASPECT_DEPTH_BIT : 0)), 0, 1, 0, 1 };
 	VkClearColorValue clearColor = { { 0.0f, 0.0f, 0.0f, 1.0f } };
-	vkCmdClearColorImage(m_commandBuffers[m_currentCommandBufferIndex], m_currentImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &imageRange);
+	auto& commandBuffer = m_commandBuffers[m_currentCommandBufferIndex];
+	vkCmdClearColorImage(commandBuffer, m_currentImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &imageRange);
+
+	VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_renderPass, m_frameBuffer,{ { 0, 0 }, m_swapchain.GetExtent() }, 0, nullptr };
+	vkCmdBeginRenderPass(commandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetPipeline());
+
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetLayout(), 0, 1, &m_descriptorSet, 0, nullptr);
 }
 
 void CVulkanRenderer::SetTextureManager(CTextureManager & textureManager)
@@ -398,7 +375,7 @@ void CVulkanRenderer::UploadTexture(ICachedTexture & texture, unsigned char * da
 	vulkanTexture.Init(width, height, m_physicalDevice);
 	vulkanTexture.Upload(data, *m_serviceCommandBuffer);
 
-	SubmitServiceCommandBuffer();
+	//SubmitServiceCommandBuffer();
 }
 
 void CVulkanRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
@@ -692,9 +669,7 @@ void CVulkanRenderer::CreateSwapchain()
 	}
 	auto surfaceFormat = GetSurfaceFormat(surface_formats);
 	VkExtent2D extent = GetSurfaceExtent(surfaceCapabilities);
-	VkImageUsageFlags imageUsageFlags = (surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT) 
-		? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT
-		: static_cast<VkImageUsageFlags>(-1);
+	VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	VkSurfaceTransformFlagBitsKHR transformFlags = (surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) 
 		? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR 
 		: surfaceCapabilities.currentTransform;
