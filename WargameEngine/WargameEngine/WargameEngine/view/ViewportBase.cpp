@@ -3,6 +3,7 @@
 #include "ICamera.h"
 #include "IViewHelper.h"
 #include "Matrix4.h"
+#include "IShaderManager.h"
 
 CViewportBase::CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer, bool onScreen, bool resize)
 	: m_x(x), m_y(y), m_width(width), m_height(height), m_fieldOfView(fieldOfView), m_renderer(renderer), m_depthOnly(!onScreen), m_resize(resize)
@@ -46,12 +47,7 @@ void CViewportBase::AttachNewTexture(CachedTextureType type, int textureIndex /*
 	m_FBO->Bind();
 	m_FBO->AssignTexture(*texture, type);
 	m_FBO->UnBind();
-	if (textureIndex != -1)
-	{
-		m_renderer.ActivateTextureSlot(static_cast<TextureSlot>(textureIndex));
-	}
-	texture->Bind();
-	m_renderer.ActivateTextureSlot(TextureSlot::eDiffuse);
+	m_renderer.SetTexture(*texture, static_cast<TextureSlot>(textureIndex));
 	m_textures.push_back(std::move(texture));
 }
 

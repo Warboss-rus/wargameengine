@@ -4,6 +4,7 @@
 #include <float.h>
 #include "Matrix4.h"
 #include <algorithm>
+#include "IShaderManager.h"
 
 C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
 
@@ -64,7 +65,7 @@ void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<s
 		{
 			mat.texturePtr = renderer.GetTexturePtr(mat.texture);
 		}
-		mat.texturePtr->Bind();
+		renderer.SetTexture(*mat.texturePtr);
 	}
 	else 
 	{

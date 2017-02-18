@@ -19,11 +19,11 @@ void CUIStaticText::Draw() const
 			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->text, m_scale);
 		}, GetWidth(), GetHeight());
 	}
-	m_cache->Bind();
+	m_renderer.SetTexture(*m_cache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	m_renderer.SetTexture(L"");
+	m_renderer.UnbindTexture();
 	CUIElement::Draw();
 	m_renderer.PopMatrix();
 }

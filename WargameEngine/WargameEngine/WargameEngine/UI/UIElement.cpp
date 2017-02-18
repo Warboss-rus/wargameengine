@@ -17,7 +17,7 @@ void CUIElement::Draw() const
 		return;
 	if (!m_childrenCache)
 	{
-		m_childrenCache = m_renderer.RenderToTexture([this] {
+		//m_childrenCache = m_renderer.RenderToTexture([this] {
 			for (auto i = m_children.begin(); i != m_children.end(); ++i)
 			{
 				if (i->second && i->second.get() != m_focused)
@@ -29,13 +29,13 @@ void CUIElement::Draw() const
 			{
 				m_focused->Draw();
 			}
-		}, GetWidth(), GetHeight());
+		//}, GetWidth(), GetHeight());
 	}
-	m_childrenCache->Bind();
+/*	m_renderer.SetTexture(*m_childrenCache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0,GetHeight() },{ GetWidth(), GetHeight() } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	m_childrenCache->UnBind();
+	m_renderer.UnbindTexture();*/
 }
 
 void CUIElement::SetVisible(bool visible)

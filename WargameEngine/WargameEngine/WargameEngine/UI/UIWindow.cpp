@@ -32,7 +32,7 @@ void CUIWindow::Draw() const
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(right, 0),{ right, buttonSize },{ GetWidth(), 0 },{ GetWidth(), buttonSize } },
 			{ CVector2f(texCoord[0], texCoord[1]), { texCoord[0], texCoord[3] },{ texCoord[2], texCoord[1] }, { texCoord[2], texCoord[3] } });
-			m_renderer.SetTexture(L"");
+			m_renderer.UnbindTexture();
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(0, headerHeight),{ GetWidth(), headerHeight },{ 0, GetHeight() },{ GetWidth(), GetHeight() }, }, {});
@@ -40,7 +40,7 @@ void CUIWindow::Draw() const
 
 		}, GetWidth(), GetHeight());
 	}
-	m_cache->Bind();
+	m_renderer.SetTexture(*m_cache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });

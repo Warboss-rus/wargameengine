@@ -1,14 +1,8 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include "IRenderer.h"
 
-enum class TextureSlot
-{
-	eDiffuse = 0,
-	eShadowMap = 1,
-	eSpecular = 2,
-	eBump = 3,
-};
 enum TextureFlags
 {
 	TEXTURE_NO_WRAP = 1,
@@ -22,14 +16,6 @@ enum TextureFlags
 	TEXTURE_COMPRESSION_MASK = 48,
 };
 
-class ICachedTexture
-{
-public:
-	virtual void Bind() const = 0;
-	virtual void UnBind() const = 0;
-	virtual ~ICachedTexture() {}
-};
-
 struct sTextureMipMap
 {
 	unsigned char * data;
@@ -39,13 +25,11 @@ struct sTextureMipMap
 };
 typedef std::vector<sTextureMipMap> TextureMipMaps;
 
-class ITextureHelper
+class ITextureHelper : public IRenderer
 {
 public:
 	virtual ~ITextureHelper() {}
 
-	virtual void ActivateTextureSlot(TextureSlot slot) = 0;
-	virtual void UnbindTexture() = 0;
 	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) = 0;
 	virtual void SetTextureAnisotropy(float value = 1.0f) = 0;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) = 0;

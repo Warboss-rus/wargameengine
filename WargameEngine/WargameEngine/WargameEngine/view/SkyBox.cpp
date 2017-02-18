@@ -46,11 +46,11 @@ void CSkyBox::Draw(CVector3f const& pos, float scale)
 		float z = -pos.z;
 		m_renderer.Translate(x, y, z);
 		m_renderer.Scale(1.0f / scale);
-		m_texture->Bind();
+		m_renderer.SetTexture(*m_texture);
 		m_buffer->Bind();
 		m_buffer->DrawAll(skyboxVertices);
 		m_buffer->UnBind();
-		m_texture->UnBind();
+		m_renderer.UnbindTexture();
 		m_renderer.PopMatrix();
 		m_renderer.GetShaderManager().PopProgram();
 	}

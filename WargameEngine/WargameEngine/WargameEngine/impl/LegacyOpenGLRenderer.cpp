@@ -9,17 +9,6 @@
 
 using namespace std;
 
-class COpenGLDrawingList : public IDrawingList
-{
-public:
-	COpenGLDrawingList(unsigned int id);
-	~COpenGLDrawingList();
-
-	virtual void Draw() const override;
-private:
-	unsigned int m_id;
-};
-
 class CLegacyGLVertexBuffer : public IVertexBuffer
 {
 public:
@@ -108,23 +97,44 @@ private:
 	GLuint m_id = 0;
 };
 
+class CLegacyGlCachedTexture : public ICachedTexture
+{
+public:
+	CLegacyGlCachedTexture(unsigned int type);
+	~CLegacyGlCachedTexture();
+
+	operator unsigned int() const { return m_id; }
+	unsigned GetType() const { return m_type; }
+private:
+	unsigned int m_id;
+	unsigned int m_type;
+};
+
 void CLegacyGLRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
 {
 	if (forceLoadNow)
 	{
 		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
-	m_textureManager->SetTexture(texture, nullptr, flags);
+	m_textureManager->SetTexture(texture, flags);
 }
 
 void CLegacyGLRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
 {
-	m_textureManager->SetTexture(texture, slot, flags);
+	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
 void CLegacyGLRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
-	m_textureManager->SetTexture(texture, teamcolor, flags);
+	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
+}
+
+void CLegacyGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)
+{
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
+	auto& glTexture = reinterpret_cast<CLegacyGlCachedTexture const&>(texture);
+	glBindTexture(glTexture.GetType(), glTexture);
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
@@ -270,7 +280,7 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function
 	GLint prevTexture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
 	auto texture = std::make_unique<CLegacyGlCachedTexture>(GL_TEXTURE_2D);
-	texture->Bind();
+	SetTexture(*texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
@@ -324,7 +334,7 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateTexture(const void * da
 		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
 	};
 	auto texture = std::make_unique<CLegacyGlCachedTexture>(GL_TEXTURE_2D);
-	texture->Bind();
+	SetTexture(*texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -341,15 +351,6 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateTexture(const void * da
 ICachedTexture* CLegacyGLRenderer::GetTexturePtr(std::wstring const& texture) const
 {
 	return m_textureManager->GetTexturePtr(texture);
-}
-
-std::unique_ptr<IDrawingList> CLegacyGLRenderer::CreateDrawingList(std::function<void() > const& func)
-{
-	unsigned int list = glGenLists(1);
-	glNewList(list, GL_COMPILE);
-	func();
-	glEndList();
-	return std::make_unique<COpenGLDrawingList>(list);
 }
 
 std::unique_ptr<IVertexBuffer> CLegacyGLRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
@@ -389,36 +390,6 @@ CLegacyGlCachedTexture::CLegacyGlCachedTexture(unsigned int type)
 CLegacyGlCachedTexture::~CLegacyGlCachedTexture()
 {
 	glDeleteTextures(1, &m_id);
-}
-
-void CLegacyGlCachedTexture::Bind() const
-{
-	glBindTexture(m_type, m_id);
-}
-
-void CLegacyGlCachedTexture::UnBind() const
-{
-	glBindTexture(m_type, 0);
-}
-
-CLegacyGlCachedTexture::operator unsigned int() const
-{
-	return m_id;
-}
-
-COpenGLDrawingList::COpenGLDrawingList(unsigned int id)
-	:m_id(id)
-{
-}
-
-COpenGLDrawingList::~COpenGLDrawingList()
-{
-	glDeleteLists(m_id, 1);
-}
-
-void COpenGLDrawingList::Draw() const
-{
-	glCallList(m_id);
 }
 
 CLegacyGLVertexBuffer::CLegacyGLVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
@@ -652,15 +623,12 @@ void CLegacyGLRenderer::ClearBuffers(bool color, bool depth)
 	glClear(mask);
 }
 
-void CLegacyGLRenderer::ActivateTextureSlot(TextureSlot slot)
-{
-	glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
-	glEnable(GL_TEXTURE_2D);
-}
 
-void CLegacyGLRenderer::UnbindTexture()
+void CLegacyGLRenderer::UnbindTexture(TextureSlot slot)
 {
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
 	glBindTexture(GL_TEXTURE_2D, 0);
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0);
 }
 
 std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateEmptyTexture(bool cubemap)
@@ -678,7 +646,7 @@ void CLegacyGLRenderer::SetTextureAnisotropy(float value)
 
 void CLegacyGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
 {
-	texture.Bind();
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -703,7 +671,7 @@ void CLegacyGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * 
 
 void CLegacyGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps)
 {
-	texture.Bind();
+	SetTexture(texture);
 	if (!GLEW_EXT_texture_compression_s3tc)
 	{
 		LogWriter::WriteLine("Compressed textures are not supported");
@@ -735,7 +703,7 @@ void CLegacyGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsign
 
 void CLegacyGLRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short, int flags)
 {
-	texture.Bind();
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

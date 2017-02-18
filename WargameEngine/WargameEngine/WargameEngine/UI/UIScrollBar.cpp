@@ -26,7 +26,7 @@ void CUIScrollBar::Draw() const
 	int intPos = static_cast<int>(m_position);
 	int scrollWidth = static_cast<int>(theme.width * m_scale);
 	int buttonSize = scrollBegin;
-	m_renderer->SetTexture(L"");
+	m_renderer->UnbindTexture();
 	m_renderer->SetColor(0.5f, 0.5f, 0.5f);
 	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
 	m_renderer->SetColor(0.75f, 0.75f, 0.75f);

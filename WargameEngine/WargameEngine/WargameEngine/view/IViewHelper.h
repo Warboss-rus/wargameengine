@@ -14,7 +14,7 @@ public:
 class CTextureManager;
 class IViewport;
 
-class IViewHelper : public ITextureHelper, public IRenderer
+class IViewHelper : public ITextureHelper
 {
 public:
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const = 0;

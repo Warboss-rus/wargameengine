@@ -4,8 +4,6 @@
 #pragma warning(disable: 4201)
 #include <glm/gtc/type_ptr.hpp>
 #pragma warning(pop)
-#define _USE_MATH_DEFINES
-#include <math.h>
 #include "../view/IShaderManager.h"
 #include <float.h>
 
@@ -47,10 +45,10 @@ void CMatrixManagerGLM::Scale(float scale)
 	m_matricesChanged = true;
 }
 
-void CMatrixManagerGLM::Rotate(double angle, float x, float y, float z)
+void CMatrixManagerGLM::Rotate(float angle, float x, float y, float z)
 {
-	if (fabs(angle) < DBL_EPSILON) return;
-	*m_modelMatrix = glm::rotate(*m_modelMatrix, static_cast<float>(angle * M_PI / 180), glm::vec3(x, y, z));
+	if (fabs(angle) < FLT_EPSILON) return;
+	*m_modelMatrix = glm::rotate(*m_modelMatrix, glm::radians(angle), glm::vec3(x, y, z));
 	m_matricesChanged = true;
 }
 
@@ -104,7 +102,7 @@ void CMatrixManagerGLM::WorldCoordsToWindowCoords(CVector3f const& worldCoords, 
 
 void CMatrixManagerGLM::SetUpViewport(unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
-	m_projectionMatrix = glm::perspectiveFov<float>(static_cast<float>(viewingAngle * 180.0 / M_PI), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
+	m_projectionMatrix = glm::perspectiveFov<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
 	m_matricesChanged = true;
 }
 

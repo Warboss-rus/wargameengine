@@ -1,5 +1,6 @@
 #include "ParticleSystem.h"
 #include "IRenderer.h"
+#include "IShaderManager.h"
 
 using namespace std;
 

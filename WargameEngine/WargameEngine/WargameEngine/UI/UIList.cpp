@@ -41,11 +41,11 @@ void CUIList::Draw() const
 			m_scrollbar.Draw();
 		}, GetWidth(), GetHeight());
 	}
-	m_cache->Bind();
+	m_renderer.SetTexture(*m_cache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	m_renderer.SetTexture(L"");
+	m_renderer.UnbindTexture();
 	CUIElement::Draw();
 	m_renderer.PopMatrix();
 }

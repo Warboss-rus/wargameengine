@@ -25,18 +25,16 @@ public:
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
-
 	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
-
 	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
+	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
 	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
-
-	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void() > const& func) override;
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 
@@ -61,8 +59,6 @@ public:
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
 	virtual void DrawIn2D(std::function<void()> const& drawHandler) override;
 
-	virtual void ActivateTextureSlot(TextureSlot slot) override;
-	virtual void UnbindTexture() override;
 	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
@@ -79,19 +75,4 @@ private:
 	void ResetViewMatrix();
 	CTextureManager* m_textureManager;
 	CShaderManagerLegacyGL m_shaderManager;
-};
-
-class CLegacyGlCachedTexture : public ICachedTexture
-{
-public:
-	CLegacyGlCachedTexture(unsigned int type);
-	~CLegacyGlCachedTexture();
-
-	virtual void Bind() const override;
-	virtual void UnBind() const override;
-
-	operator unsigned int() const;
-private:
-	unsigned int m_id;
-	unsigned int m_type;
 };

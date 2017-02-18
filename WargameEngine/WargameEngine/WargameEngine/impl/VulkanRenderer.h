@@ -104,12 +104,12 @@ private:
 class CVulkanCachedTexture : public ICachedTexture
 {
 public:
-	CVulkanCachedTexture(VkDevice device, VkDescriptorSet descriptorSet);
-	void Init(uint32_t width, uint32_t height, VkPhysicalDevice physicalDevice);
+	CVulkanCachedTexture(VkDevice device);
+	void Init(uint32_t width, uint32_t height, VkPhysicalDevice physicalDevice, CachedTextureType type = CachedTextureType::RGBA, int flags = 0, VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT);
 	void Upload(const void * data, VkCommandBuffer commandBuffer);
-
-	virtual void Bind() const override;
-	virtual void UnBind() const override;
+	operator VkImage() const { return m_image; }
+	VkImageView GetImageView() const { return m_imageView; }
+	VkSampler GetSampler() const { return m_sampler; }
 private:
 	CHandleWrapper<VkImage, vkDestroyImage> m_image;
 	CHandleWrapper<VkDeviceMemory, vkFreeMemory> m_memory;
@@ -118,7 +118,7 @@ private:
 	VkDeviceSize m_size;
 	VkExtent3D m_extent;
 	VkDevice m_device;
-	VkDescriptorSet m_descriptorSet;
+	uint32_t m_components;
 };
 
 class CVulkanVertexBuffer : public IVertexBuffer
@@ -148,6 +148,26 @@ public:
 	virtual bool IsVisible() const override { return true; }
 };
 
+class CVulkanDescriptorSetManager
+{
+public:
+	void Init(VkDevice device, uint32_t poolSize);
+	VkDescriptorSet GetDescriptorSet();
+	void BindDescriptorSet(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
+	void SetShaderProgram(const CVulkanShaderProgram * program) { m_currentKey.first = program; }
+	void SetTexture(const CVulkanCachedTexture * texture) { m_currentKey.second = texture; }
+	VkDescriptorSetLayout GetLayout() const { return m_descriptorSetLayout; }
+private:
+	void CreatePool(uint32_t poolSize);
+	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_descriptorSetLayout;
+	CHandleWrapper<VkDescriptorPool, vkDestroyDescriptorPool> m_desciptorPool;
+	typedef std::pair<const CVulkanShaderProgram*, const CVulkanCachedTexture*> Key;
+	std::map<Key, VkDescriptorSet> m_descriptorSet;
+	Key m_currentKey;
+	VkDevice m_device;
+	uint32_t m_poolSize;
+};
+
 class CVulkanRenderer : public IOpenGLRenderer
 {
 public:
@@ -163,9 +183,10 @@ public:
 
 	void AcquireImage();
 	void Present();
-	VkCommandBuffer GetCommandBuffer() const { return m_commandBuffers[m_currentCommandBufferIndex]; }
+	VkCommandBuffer GetCommandBuffer() const { return m_activeCommandBuffer; }
 	CPipelineHelper& GetPipelineHelper() { return m_pipelineHelper; }
 	VkBuffer GetEmptyBuffer() const { return *m_emptyBuffer; }
+	void BeforeDraw();
 	
 	virtual void EnableMultisampling(bool enable) override;
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
@@ -182,8 +203,7 @@ public:
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	virtual void ClearBuffers(bool color = true, bool depth = true) override;
 	virtual void SetTextureManager(CTextureManager & textureManager) override;
-	virtual void ActivateTextureSlot(TextureSlot slot) override;
-	virtual void UnbindTexture() override;
+	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
@@ -210,11 +230,11 @@ public:
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
 	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
 	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
 	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
-	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void() > const& func) override;
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
 	virtual std::string GetName() const override;
@@ -225,9 +245,8 @@ private:
 	void CreateDeviceAndQueues();
 	void CreateSwapchain();
 	void CreateCommandBuffers();
-	void CreateRenderPass();
+	CHandleWrapper<VkRenderPass, vkDestroyRenderPass>&& CreateRenderPass(VkFormat format);
 	void InitFramebuffer();
-	void CreateDescriptors();
 
 	CInstanceWrapper<VkInstance, vkDestroyInstance> m_instance;
 	CDestructor m_debugCallbackDestructor;
@@ -240,12 +259,13 @@ private:
 	CSwapchainWrapper m_swapchain;
 	CHandleWrapper<VkCommandPool, vkDestroyCommandPool> m_commandPool;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;
+	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_serviceRenderPass;
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
 	std::vector<CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer>> m_frameBuffers;
+	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_serviceFramebuffer;
 	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
-	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_descriptorSetLayout;
-	CHandleWrapper<VkDescriptorPool, vkDestroyDescriptorPool> m_desciptorPool;
-	VkDescriptorSet m_descriptorSet;
+	VkCommandBuffer m_activeCommandBuffer;
+	CVulkanDescriptorSetManager m_descriptorSetManager;
 	VkDebugReportCallbackEXT m_debugCallback;
 	std::unique_ptr<CVulkanCachedTexture> m_emptyTexture;
 	VkImage m_currentImage;

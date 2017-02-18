@@ -75,19 +75,19 @@ CTextureManager::~CTextureManager()
 {
 }
 
-void CTextureManager::SetTexture(std::wstring const& path, const std::vector<sTeamColor> * teamcolor, int flags)
+void CTextureManager::SetTexture(std::wstring const& path, int flags)
 {
 	if(path.empty()) 
 	{
 		m_helper.UnbindTexture();
 		return;	
 	}
-	auto pair = std::pair<std::wstring, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
+	auto pair = std::make_pair(path, std::vector<sTeamColor>());
 	if(m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
 	}
-	m_textures[pair]->Bind();
+	m_helper.SetTexture(*m_textures[pair]);
 }
 
 std::unique_ptr<ICachedTexture> CTextureManager::CreateCubemapTexture(std::wstring const& right, std::wstring const& left, std::wstring const& back, std::wstring const& front, std::wstring const& top, std::wstring const& bottom, int flags /*= 0*/)
@@ -143,7 +143,7 @@ void CTextureManager::SetAnisotropyLevel(float level)
 {
 	for (auto i = m_textures.begin(); i != m_textures.end(); ++i)
 	{
-		i->second->Bind();
+		m_helper.SetTexture(*i->second);
 		m_helper.SetTextureAnisotropy(level);
 	}
 	m_helper.UnbindTexture();
@@ -179,22 +179,19 @@ ICachedTexture* CTextureManager::GetTexturePtr(std::wstring const& texture)
 	return m_textures[pair].get();
 }
 
-void CTextureManager::SetTexture(std::wstring const& path, TextureSlot slot, int flags)
+void CTextureManager::SetTexture(std::wstring const& path, TextureSlot slot, const std::vector<sTeamColor> * teamcolor, int flags)
 {
-	m_helper.ActivateTextureSlot(slot);
 	if (path.empty())
 	{
-		m_helper.UnbindTexture();
-		m_helper.ActivateTextureSlot(TextureSlot::eDiffuse);
+		m_helper.UnbindTexture(slot);
 		return;
 	}
-	auto pair = std::pair<std::wstring, std::vector<sTeamColor>>(path, std::vector<sTeamColor>());
+	auto pair = std::make_pair(path, teamcolor ? *teamcolor : std::vector<sTeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
 	}
-	m_textures[pair]->Bind();
-	m_helper.ActivateTextureSlot(TextureSlot::eDiffuse);
+	m_helper.SetTexture(*m_textures[pair], slot);
 }
 
 void ApplyTeamcolor(CImage & image, std::wstring const& maskFile, unsigned char * color, std::wstring const& fileName)

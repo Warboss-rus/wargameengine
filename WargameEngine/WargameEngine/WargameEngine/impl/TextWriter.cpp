@@ -125,7 +125,7 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 				newx += glyph.advancex;
 				continue;
 			}
-			glyph.texture->Bind();
+			m_renderer.SetTexture(*glyph.texture);
 			DrawBitmap(newx, y, glyph);
 			newx += glyph.advancex;
 		}
@@ -152,7 +152,7 @@ void CTextWriter::PrintText(int x, int y, std::string const& font, unsigned int 
 				newx += glyph.advancex;
 				continue;
 			}
-			glyph.texture->Bind();
+			m_renderer.SetTexture(*glyph.texture);
 			DrawBitmap(newx, y, glyph);
 			newx += glyph.advancex;
 		}

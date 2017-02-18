@@ -45,11 +45,11 @@ void CUIEdit::Draw() const
 			PrintText(m_renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme, m_scale);
 		}, GetWidth(), GetHeight());
 	}
-	m_cache->Bind();
+	m_renderer.SetTexture(*m_cache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	m_renderer.SetTexture(L"");
+	m_renderer.UnbindTexture();
 
 	CUIElement::Draw();
 	m_renderer.PopMatrix();

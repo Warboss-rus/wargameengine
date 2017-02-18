@@ -117,24 +117,7 @@ void CGameWindowGLFW::LaunchMainLoop()
 			{
 				auto* renderer = reinterpret_cast<CVulkanRenderer*>(m_renderer.get());
 				renderer->AcquireImage();
-				renderer->ClearBuffers(true, false);
-				renderer->SetUpViewport(0, 0, 600, 600, 65.0f);
-				renderer->SetColor(0.0f, 0.0f, 0.0f, 0.0f);
-				renderer->DrawIn2D([&renderer] {
-					renderer->SetTexture(L"..\\Killteam\\texture\\sand.bmp", true);
-					renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
-						{0.0f, 0.0f, 0.0f},
-						{600.0f, 0.0f, 0.0f},
-						{0.0f, 600.0f, 0.0f},
-						{600.0f,600.0f, 0.0f},
-					}, {}, {
-						{0.0f, 0.0f},
-						{1.0f, 0.0f},
-						{0.0f, 1.0f},
-						{1.0f, 1.0f},
-					});
-				});
-				//m_onDraw();
+				m_onDraw();
 				renderer->Present();
 			}
 			else 

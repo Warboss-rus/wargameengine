@@ -11,7 +11,6 @@
 
 class IObject;
 class IShaderManager;
-class IDrawingList;
 class IRenderer;
 class IVertexBuffer;
 class IVertexAttribCache;

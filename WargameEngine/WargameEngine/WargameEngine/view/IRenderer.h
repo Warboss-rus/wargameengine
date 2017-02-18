@@ -1,13 +1,13 @@
 #pragma once
 #include "Vector3.h"
-#include "ITextureHelper.h"
 #include <string>
 #include <vector>
 #include <memory>
 #include <functional>
 #include <limits.h>
-#include "IShaderManager.h"
 #include "../model/TeamColor.h"
+
+class IShaderManager;
 
 enum class RenderMode
 {
@@ -30,12 +30,18 @@ enum class Feature
 	INSTANSING,
 };
 
-class IDrawingList
+enum class TextureSlot
+{
+	eDiffuse = 0,
+	eShadowMap = 1,
+	eSpecular = 2,
+	eBump = 3,
+};
+
+class ICachedTexture
 {
 public:
-	virtual void Draw() const = 0;
-
-	virtual ~IDrawingList() {}
+	virtual ~ICachedTexture() {}
 };
 
 class IVertexBuffer
@@ -83,13 +89,13 @@ public:
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) = 0;
 	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) = 0;
+	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) = 0;
+	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) = 0;
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void()> const& func, unsigned int width, unsigned int height) = 0;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) = 0;
 	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const = 0;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) = 0;
-
-	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void()> const& func) = 0;
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) = 0;
 

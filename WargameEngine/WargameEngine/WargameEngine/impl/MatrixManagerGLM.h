@@ -18,7 +18,7 @@ public:
 	void PopMatrix();
 	void Translate(float dx, float dy, float dz);
 	void Scale(float scale);
-	void Rotate(double angle, float x, float y, float z);
+	void Rotate(float angle, float x, float y, float z);
 	void GetModelViewMatrix(float * matrix) const;
 	void GetProjectionMatrix(float * matrix) const;
 	void ResetModelView();

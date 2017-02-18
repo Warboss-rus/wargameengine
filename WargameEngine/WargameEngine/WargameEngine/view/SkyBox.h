@@ -2,6 +2,7 @@
 #include <string>
 #include "IRenderer.h"
 #include "Vector3.h"
+#include "IShaderManager.h"
 
 class CTextureManager;
 
