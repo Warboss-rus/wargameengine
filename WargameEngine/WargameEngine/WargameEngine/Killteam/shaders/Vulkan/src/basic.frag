@@ -15,14 +15,14 @@ struct Light {
 };
 #define NUM_LIGHTS 1
 
-layout(binding = 1) uniform UniformBufferObject2 {
+layout(set = 0, binding = 1) uniform UniformBufferObject2 {
 	vec4 color;
 	Material material;
 	Light lights[NUM_LIGHTS];
 	int lightsCount;
 } ubo2;
 
-layout(binding = 2) uniform sampler2D u_Texture;
+layout(set = 1, binding = 2) uniform sampler2D u_Texture;
 
 layout(location = 0) in vec2 v_TexCoord;
 

@@ -140,7 +140,6 @@ void CLegacyGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot sl
 static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::TRIANGLES, GL_TRIANGLES },
 	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::RECTANGLES, GL_QUADS },
 	{ RenderMode::LINES, GL_LINES },
 	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
 };

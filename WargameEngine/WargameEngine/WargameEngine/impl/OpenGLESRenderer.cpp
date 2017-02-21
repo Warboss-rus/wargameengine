@@ -21,23 +21,11 @@ public:
 	COpenGLESCachedTexture(GLenum type = GL_TEXTURE_2D);
 	~COpenGLESCachedTexture();
 
-	virtual void Bind() const override;
-	virtual void UnBind() const override;
-
-	operator GLuint();
+	operator GLuint() const { return m_id; }
+	GLenum GetType() const { return m_type; }
 private:
 	unsigned int m_id;
 	GLenum m_type;
-};
-
-class CMockDrawingList : public IDrawingList
-{
-public:
-	CMockDrawingList(std::function<void()> const& onDraw);
-
-	virtual void Draw() const override;
-private:
-	std::function<void()> m_onDraw;
 };
 
 class COpenGLESVertexBuffer : public IVertexBuffer
@@ -130,23 +118,30 @@ void COpenGLESRenderer::SetTexture(std::wstring const& texture, bool forceLoadNo
 	{
 		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
-	m_textureManager->SetTexture(texture, nullptr, flags);
+	m_textureManager->SetTexture(texture, flags);
 }
 
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
 {
-	m_textureManager->SetTexture(texture, slot, flags);
+	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
 void COpenGLESRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
-	m_textureManager->SetTexture(texture, teamcolor, flags);
+	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
+}
+
+void COpenGLESRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)
+{
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
+	auto& glTexture = reinterpret_cast<COpenGLESCachedTexture const&>(texture);
+	glBindTexture(glTexture.GetType(), glTexture);
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0);
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::TRIANGLES, GL_TRIANGLES },
 	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::RECTANGLES, GL_TRIANGLE_STRIP },//deprecated
 	{ RenderMode::LINES, GL_LINES },
 	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
 };
@@ -252,7 +247,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::RenderToTexture(std::function
 	GLint prevTexture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
 	auto texture = std::make_unique<COpenGLESCachedTexture>();
-	texture->Bind();
+	SetTexture(*texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -300,7 +295,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * da
 		{ CachedTextureType::DEPTH, std::tuple<GLenum, GLenum, GLenum>{ GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};
 	auto texture = std::make_unique<COpenGLESCachedTexture>();
-	texture->Bind();
+	SetTexture(*texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, std::get<1>(formatMap.at(type)), width, height, 0, std::get<0>(formatMap.at(type)), std::get<2>(formatMap.at(type)), data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -317,11 +312,6 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * da
 ICachedTexture* COpenGLESRenderer::GetTexturePtr(std::wstring const& texture) const
 {
 	return m_textureManager->GetTexturePtr(texture);
-}
-
-std::unique_ptr<IDrawingList> COpenGLESRenderer::CreateDrawingList(std::function<void() > const& func)
-{
-	return std::make_unique<CMockDrawingList>(func);
 }
 
 std::unique_ptr<IVertexBuffer> COpenGLESRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
@@ -372,31 +362,6 @@ COpenGLESCachedTexture::COpenGLESCachedTexture(GLenum type)
 COpenGLESCachedTexture::~COpenGLESCachedTexture()
 {
 	glDeleteTextures(1, &m_id);
-}
-
-void COpenGLESCachedTexture::Bind() const
-{
-	glBindTexture(m_type, m_id);
-}
-
-void COpenGLESCachedTexture::UnBind() const
-{
-	glBindTexture(m_type, 0);
-}
-
-COpenGLESCachedTexture::operator GLuint()
-{
-	return m_id;
-}
-
-CMockDrawingList::CMockDrawingList(std::function<void()> const& onDraw)
-	:m_onDraw(onDraw)
-{
-}
-
-void CMockDrawingList::Draw() const
-{
-	m_onDraw();
 }
 
 COpenGLESVertexBuffer::COpenGLESVertexBuffer(CShaderManagerOpenGLES & shaderMan, const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp, GLuint mainVAO)
@@ -579,15 +544,11 @@ void COpenGLESRenderer::ClearBuffers(bool color, bool depth)
 	glClear(mask);
 }
 
-void COpenGLESRenderer::ActivateTextureSlot(TextureSlot slot)
+void COpenGLESRenderer::UnbindTexture(TextureSlot slot)
 {
-	glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
-	glEnable(GL_TEXTURE_2D);
-}
-
-void COpenGLESRenderer::UnbindTexture()
-{
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
 	glBindTexture(GL_TEXTURE_2D, 0);
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0);
 }
 
 std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateEmptyTexture(bool cubemap)
@@ -602,7 +563,7 @@ void COpenGLESRenderer::SetTextureAnisotropy(float value)
 
 void COpenGLESRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short /*bpp*/, int flags, TextureMipMaps const& mipmaps)
 {
-	texture.Bind();
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -624,7 +585,7 @@ void COpenGLESRenderer::UploadTexture(ICachedTexture & texture, unsigned char * 
 
 void COpenGLESRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps)
 {
-	texture.Bind();
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -651,7 +612,7 @@ void COpenGLESRenderer::UploadCompressedTexture(ICachedTexture & texture, unsign
 
 void COpenGLESRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short, int flags)
 {
-	texture.Bind();
+	SetTexture(texture);
 	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA_EXT : GL_BGRA_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
 	for (size_t i = 0; i < sides.size(); ++i)
 	{
@@ -667,7 +628,7 @@ void COpenGLESRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps c
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-	texture.UnBind();
+	UnbindTexture();
 }
 
 bool COpenGLESRenderer::Force32Bits() const

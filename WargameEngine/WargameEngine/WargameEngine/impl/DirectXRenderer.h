@@ -41,6 +41,8 @@ public:
 	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
 	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
 	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
+	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 
 	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
@@ -48,7 +50,6 @@ public:
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 
-	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void() > const& func) override;
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
 	virtual IShaderManager& GetShaderManager() override;
@@ -68,8 +69,6 @@ public:
 	virtual void SetTextureManager(CTextureManager & textureManager) override;
 	virtual void DrawIn2D(std::function<void()> const& drawHandler) override;
 
-	virtual void ActivateTextureSlot(TextureSlot slot) override;
-	virtual void UnbindTexture() override;
 	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap) override;
 	virtual void SetTextureAnisotropy(float value = 1.0f) override;
 	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
@@ -81,7 +80,6 @@ public:
 	virtual bool SupportsFeature(Feature feature) const override;
 	virtual std::string GetName() const override;
 
-	void SetTextureResource(ID3D11ShaderResourceView * view);
 	void OnResize(unsigned int width, unsigned int height);
 	ID3D11DeviceContext * GetContext();
 	void SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat);
@@ -105,7 +103,6 @@ private:
 	HWND m_hWnd;
 	CTextureManager * m_textureManager;
 	CShaderManagerDirectX m_shaderManager;
-	unsigned int m_activeTextureSlot;
 	CComPtr<ID3D11DepthStencilState> m_depthState[2];
 	CComPtr<ID3D11BlendState> m_blendStates[2];
 

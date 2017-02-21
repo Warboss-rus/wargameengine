@@ -1,12 +1,12 @@
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_LEFT_HANDED
+#include <glm/gtc/matrix_transform.hpp>
 #include "VulkanRenderer.h"
 #include "../LogWriter.h"
 #include <iterator>
 #include <algorithm>
 #include "../view/TextureManager.h"
 #include "../view/IViewport.h"
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_FORCE_LEFT_HANDED
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace
 {
@@ -146,13 +146,13 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 
 	m_emptyTexture = std::make_unique<CVulkanCachedTexture>(m_device);
 	m_emptyTexture->Init(1, 1, m_physicalDevice, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA);
-	SetTexture(*m_emptyTexture);
+	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, 1000 * sizeof(float), NULL);
 
 	float zero = 0.0f;
 	m_emptyBuffer = std::make_unique<CVulkanVertexAttribCache>(sizeof(float), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, m_physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &zero);
 
 	m_shaderManager.DoOnProgramChange([this](const CVulkanShaderProgram & program) {
-		m_descriptorSetManager.SetShaderProgram(&program);
+		m_descriptorSetManager.SetShaderProgram(&program, m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 	});
 }
 
@@ -185,9 +185,10 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 		{ 1, sizeof(float) * 3, VK_FORMAT_R32G32B32_SFLOAT, false },
 		{ 2, sizeof(float) * 2, VK_FORMAT_R32G32_SFLOAT, false },
 	});
-	VkDescriptorSetLayout layout = m_descriptorSetManager.GetLayout();
-	m_pipelineHelper.SetDescriptorLayout(&layout, 1);
+	VkDescriptorSetLayout layouts[] = { m_descriptorSetManager.GetProgramLayout(), m_descriptorSetManager.GetTextureLayout() };
+	m_pipelineHelper.SetDescriptorLayout(layouts, 2);
 	m_pipelineHelper.Init(m_device, m_renderPass);
+	UnbindTexture();
 }
 
 void CVulkanRenderer::AcquireImage()
@@ -204,7 +205,7 @@ void CVulkanRenderer::AcquireImage()
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
 	{
-		LogWriter::WriteLine("Cannot acqure image");
+		LogWriter::WriteLine("Cannot acquire image");
 	}
 
 	m_currentImage = m_swapchain.GetImages()[m_currentImageIndex];
@@ -217,10 +218,14 @@ void CVulkanRenderer::AcquireImage()
 	VkImageMemoryBarrier barrierFromPresentToDraw = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_GENERAL, m_presentQueueFamilyIndex, m_graphicsQueueFamilyIndex, m_currentImage, imageSubresourceRange };
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierFromPresentToDraw);
+	m_descriptorSetManager.BindAll(m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 }
 
 void CVulkanRenderer::Present()
 {
+	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, m_vertexCache.size(), m_vertexCache.data());
+	m_vertexCache.clear();
+	m_shaderManager.FrameEnd();
 	auto& commandBuffer = m_commandBuffers[m_currentCommandBufferIndex];
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -257,7 +262,8 @@ void CVulkanRenderer::Present()
 void CVulkanRenderer::BeforeDraw()
 {
 	m_matrixManager.UpdateMatrices(m_shaderManager);
-	m_descriptorSetManager.BindDescriptorSet(m_activeCommandBuffer, m_pipelineHelper.GetLayout());
+	m_shaderManager.CommitUniforms();
+	m_descriptorSetManager.SetShaderProgram(m_shaderManager.GetActiveProgram(), m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 }
 
 void CVulkanRenderer::EnableMultisampling(bool enable)
@@ -405,21 +411,23 @@ bool CVulkanRenderer::ConvertBgra() const
 void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
 	BeforeDraw();
-	if (!vertices.empty()) UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, vertices.size() * sizeof(CVector3f), vertices.data()->ptr());
-	if (!normals.empty()) UpdateBuffer(m_normalsBuffer, m_device, m_physicalDevice, normals.size() * sizeof(CVector3f), normals.data());
-	if (!texCoords.empty()) UpdateBuffer(m_texCoordBuffer, m_device, m_physicalDevice, texCoords.size() * sizeof(CVector2f), texCoords.data());
+	size_t dataSize = vertices.size() * sizeof(CVector3f) + normals.size() * sizeof(CVector3f) + texCoords.size() * sizeof(CVector2f);
+	VkDeviceSize offsets[] = { m_vertexCache.size(), m_vertexCache.size() + normals.empty() ? 0 : vertices.size() * sizeof(CVector3f), texCoords.empty() ? 0 : m_vertexCache.size() + vertices.size() * sizeof(CVector3f) + normals.size() * sizeof(CVector3f) };
+	m_vertexCache.resize(m_vertexCache.size() + dataSize);
+	memcpy(m_vertexCache.data() + offsets[0], vertices.data(), vertices.size() * sizeof(CVector3f));
+	memcpy(m_vertexCache.data() + offsets[1], normals.data(), normals.size() * sizeof(CVector3f));
+	memcpy(m_vertexCache.data() + offsets[2], texCoords.data(), texCoords.size() * sizeof(CVector2f));
 	static const std::map<RenderMode, VkPrimitiveTopology> topologyMap = {
 		{ RenderMode::LINE_LOOP, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP },
 		{ RenderMode::LINES, VK_PRIMITIVE_TOPOLOGY_LINE_LIST },
-		{ RenderMode::RECTANGLES, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP },//deprecated
 		{ RenderMode::TRIANGLE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP },
 		{ RenderMode::TRIANGLES, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST },
 	};
 	m_pipelineHelper.SetTopology(topologyMap.at(mode));
 	m_pipelineHelper.Bind(m_activeCommandBuffer);
 
-	VkBuffer buffers[] = { (vertices.empty() ? *m_emptyBuffer : *m_vertexBuffer), (normals.empty() ? *m_emptyBuffer : *m_normalsBuffer), (texCoords.empty() ? *m_emptyBuffer : *m_texCoordBuffer) };
-	VkDeviceSize offsets[] = { 0, 0, 0 };
+	VkBuffer buffers[] = { (vertices.empty() ? *m_emptyBuffer : *m_vertexBuffer), (normals.empty() ? *m_emptyBuffer : *m_vertexBuffer), (texCoords.empty() ? *m_emptyBuffer : *m_vertexBuffer) };
+	
 	vkCmdBindVertexBuffers(m_activeCommandBuffer, 0, 3, buffers, offsets);
 
 	vkCmdDraw(m_activeCommandBuffer, vertices.size(), 1, 0, 0);
@@ -527,7 +535,7 @@ void CVulkanRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot
 {
 	auto& vulkanTexture = reinterpret_cast<CVulkanCachedTexture const&>(texture);
 	if (!vulkanTexture) return;
-	m_descriptorSetManager.SetTexture(&vulkanTexture);
+	m_descriptorSetManager.SetTexture(&vulkanTexture, m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 }
 
 std::unique_ptr<ICachedTexture> CVulkanRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
@@ -556,9 +564,10 @@ std::unique_ptr<ICachedTexture> CVulkanRenderer::RenderToTexture(std::function<v
 	vkCmdSetViewport(m_activeCommandBuffer, 0, 1, &viewport);
 	VkRect2D scissor = { {0.0f, 0.0f}, {width, height} };
 	vkCmdSetScissor(m_activeCommandBuffer, 0, 1, &scissor);
-	m_descriptorSetManager.BindDescriptorSet(m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 	m_pipelineHelper.Bind(m_activeCommandBuffer);
+	m_descriptorSetManager.BindAll(m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 	func();
+	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, m_vertexCache.size(), m_vertexCache.data());
 	vkCmdEndRenderPass(m_activeCommandBuffer);
 	vkEndCommandBuffer(m_activeCommandBuffer);
 	SubmitServiceCommandBuffer();
@@ -595,7 +604,6 @@ std::unique_ptr<IVertexBuffer> CVulkanRenderer::CreateVertexBuffer(const float *
 {
 	m_serviceCommandBuffer->WaitFence();
 	auto buffer = std::make_unique<CVulkanVertexBuffer>(this, m_device, m_physicalDevice, *m_serviceCommandBuffer, vertex, normals, texcoords, size * sizeof(float));
-	buffer->DoBeforeDraw(std::bind(&CVulkanRenderer::BeforeDraw, this));
 	SubmitServiceCommandBuffer();
 	return std::move(buffer);
 }
@@ -1000,16 +1008,19 @@ void CVulkanCachedTexture::Upload(const void * data, VkCommandBuffer commandBuff
 }
 
 CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)
-	: m_vertexCache(size * 3 * sizeof(float), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, device, physicalDevice)
-	, m_normalsCache(normals ? size * 3 * sizeof(float) : 0, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, device, physicalDevice)
-	, m_texcoordCache(texcoords ? size * 2 * sizeof(float) : 0, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, device, physicalDevice)
+	: m_vertexCache((vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) + (texcoords ? size * 2 * sizeof(float) : 0), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, device, physicalDevice)
 	, m_renderer(renderer)
 {
+	m_offsets[0] = 0;
+	m_offsets[1] = normals ? (vertex ? size * 3 * sizeof(float) : 0) : 0;
+	m_offsets[2] = texcoords ? (vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) : 0;
+	std::vector<char> data(m_vertexCache.GetSize());
+	if (vertex) memcpy(data.data() + m_offsets[0], vertex, size * 3 * sizeof(float));
+	if (normals) memcpy(data.data() + m_offsets[1], normals, size * 3 * sizeof(float));
+	if (texcoords) memcpy(data.data() + m_offsets[2], texcoords, size * 2 * sizeof(float));
 	VkCommandBufferBeginInfo command_buffer_begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
 	vkBeginCommandBuffer(commandBuffer, &command_buffer_begin_info);
-	m_vertexCache.Upload(vertex, size * 3 * sizeof(float), commandBuffer);
-	if(normals) m_normalsCache.Upload(normals, size * 3 * sizeof(float), commandBuffer);
-	if(texcoords) m_texcoordCache.Upload(texcoords, size * 2 * sizeof(float), commandBuffer);
+	m_vertexCache.Upload(data.data(), data.size(), commandBuffer);
 	vkEndCommandBuffer(commandBuffer);
 }
 
@@ -1030,10 +1041,8 @@ void CVulkanVertexBuffer::Bind() const
 	auto& pipelineHelper = m_renderer->GetPipelineHelper();
 	pipelineHelper.SetTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 	pipelineHelper.Bind(m_renderer->GetCommandBuffer());
-
-	VkBuffer buffers[] = { m_vertexCache.GetSize() > 0 ? m_vertexCache : m_renderer->GetEmptyBuffer(), m_normalsCache.GetSize() > 0 ? m_normalsCache : m_renderer->GetEmptyBuffer(), m_texcoordCache.GetSize() > 0 ? m_texcoordCache : m_renderer->GetEmptyBuffer() };
-	VkDeviceSize offsets[] = { 0, 0, 0 };
-	vkCmdBindVertexBuffers(m_renderer->GetCommandBuffer(), 0, 3, buffers, offsets);
+	VkBuffer buffers[] = { m_vertexCache, m_offsets[1] != 0 ? m_vertexCache : m_renderer->GetEmptyBuffer(), m_offsets[2] != 0 ? m_vertexCache : m_renderer->GetEmptyBuffer() };
+	vkCmdBindVertexBuffers(m_renderer->GetCommandBuffer(), 0, 3, buffers, m_offsets);
 	if (m_indexCache)
 	{
 		vkCmdBindIndexBuffer(m_renderer->GetCommandBuffer(), *m_indexCache, 0, VK_INDEX_TYPE_UINT32);
@@ -1042,19 +1051,19 @@ void CVulkanVertexBuffer::Bind() const
 
 void CVulkanVertexBuffer::DrawIndexes(size_t begin, size_t count)
 {
-	if (m_beforeDraw) m_beforeDraw();
+	m_renderer->BeforeDraw();
 	vkCmdDrawIndexed(m_renderer->GetCommandBuffer(), count, 1, begin, 0, 0);
 }
 
 void CVulkanVertexBuffer::DrawAll(size_t count)
 {
-	if (m_beforeDraw) m_beforeDraw();
+	m_renderer->BeforeDraw();
 	vkCmdDraw(m_renderer->GetCommandBuffer(), count, 1, 0, 0);
 }
 
 void CVulkanVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
 {
-	if (m_beforeDraw) m_beforeDraw();
+	m_renderer->BeforeDraw();
 	vkCmdDraw(m_renderer->GetCommandBuffer(), size, instanceCount, 0, 0);
 }
 
@@ -1062,33 +1071,33 @@ void CVulkanVertexBuffer::UnBind() const
 {
 }
 
-void CVulkanVertexBuffer::DoBeforeDraw(std::function<void()> const& handler)
-{
-	m_beforeDraw = handler;
-}
-
 void CVulkanDescriptorSetManager::Init(VkDevice device, uint32_t poolSize)
 {
 	m_device = device;
 
 	VkDescriptorSetLayoutBinding layout_bindings[] = {
-		{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
-		{ 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
+		{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr },
+		{ 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
 		{ 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr },
 	};
-	VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO, nullptr, 0, sizeof(layout_bindings) / sizeof(layout_bindings[0]), layout_bindings };
-	VkResult result = vkCreateDescriptorSetLayout(m_device, &descriptor_set_layout_create_info, nullptr, &m_descriptorSetLayout);
+	VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO, nullptr, 0, 2, layout_bindings };
+	VkResult result = vkCreateDescriptorSetLayout(m_device, &descriptor_set_layout_create_info, nullptr, &m_programDescriptorSetLayout);
 	CHECK_VK_RESULT(result, "cannot create descriptor set layout");
-	m_descriptorSetLayout.SetDevice(m_device);
+	m_programDescriptorSetLayout.SetDevice(m_device);
+	descriptor_set_layout_create_info.bindingCount = 1;
+	descriptor_set_layout_create_info.pBindings = &layout_bindings[2];
+	result = vkCreateDescriptorSetLayout(m_device, &descriptor_set_layout_create_info, nullptr, &m_textureDescriptorSetLayout);
+	CHECK_VK_RESULT(result, "cannot create descriptor set layout");
+	m_textureDescriptorSetLayout.SetDevice(m_device);
 	CreatePool(poolSize);
 }
 
-VkDescriptorSet CVulkanDescriptorSetManager::GetDescriptorSet()
+void CVulkanDescriptorSetManager::SetShaderProgram(const CVulkanShaderProgram * program, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
 {
-	auto it = m_descriptorSet.find(m_currentKey);
-	if (it == m_descriptorSet.end())
+	auto it = m_programDescriptorSets.find(program);
+	if (it == m_programDescriptorSets.end())
 	{
-		VkDescriptorSetAllocateInfo descriptor_set_allocate_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr, m_desciptorPool, 1, &m_descriptorSetLayout };
+		VkDescriptorSetAllocateInfo descriptor_set_allocate_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr, m_desciptorPool, 1, &m_programDescriptorSetLayout };
 		VkDescriptorSet descriptorSet;
 		VkResult result = vkAllocateDescriptorSets(m_device, &descriptor_set_allocate_info, &descriptorSet);
 		if (result != VK_SUCCESS)
@@ -1098,34 +1107,65 @@ VkDescriptorSet CVulkanDescriptorSetManager::GetDescriptorSet()
 		}
 		CHECK_VK_RESULT(result, "Cannot allocate descriptor set");
 		VkDescriptorBufferInfo bufferInfos[] = {
-			{ m_currentKey.first->GetVertexAttribBuffer(), 0, m_currentKey.first->GetVertexAttribBufferSize() },
-			{ m_currentKey.first->GetFragmentAttribBuffer(), 0, m_currentKey.first->GetFragmentAttribBufferSize() },
+			{ program->GetVertexAttribBuffer(), 0, program->GetVertexBufferRange() },
+			{ program->GetFragmentAttribBuffer(), 0, program->GetFragmentBufferRange() },
 		};
-		VkDescriptorImageInfo image_info = { m_currentKey.second->GetSampler(), m_currentKey.second->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 		VkWriteDescriptorSet descriptorWrites[] = {
-			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptorSet, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &bufferInfos[0], nullptr },
-			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptorSet, 1, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nullptr, &bufferInfos[1], nullptr },
+			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptorSet, 0, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, nullptr, &bufferInfos[0], nullptr },
+			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptorSet, 1, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, nullptr, &bufferInfos[1], nullptr },
+		};
+		vkUpdateDescriptorSets(m_device, sizeof(descriptorWrites) / sizeof(descriptorWrites[0]), descriptorWrites, 0, nullptr);
+		it = m_programDescriptorSets.emplace(std::make_pair(program, descriptorSet)).first;
+	}
+	m_currentProgramDescriptorSet = it->second;
+	if (commandBuffer)
+	{
+		uint32_t offsets[] = { program->GetVertexAttribOffset(), program->GetFragmentAttribOffset() };
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &m_currentProgramDescriptorSet, sizeof(offsets) / sizeof(offsets[0]), offsets);
+	}
+}
+
+void CVulkanDescriptorSetManager::SetTexture(const CVulkanCachedTexture * texture, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
+{
+	auto it = m_textureSets.find(texture);
+	if (it == m_textureSets.end())
+	{
+		VkDescriptorSetAllocateInfo descriptor_set_allocate_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr, m_desciptorPool, 1, &m_textureDescriptorSetLayout };
+		VkDescriptorSet descriptorSet;
+		VkResult result = vkAllocateDescriptorSets(m_device, &descriptor_set_allocate_info, &descriptorSet);
+		if (result != VK_SUCCESS)
+		{
+			CreatePool(m_poolSize * 2);
+			result = vkAllocateDescriptorSets(m_device, &descriptor_set_allocate_info, &descriptorSet);
+		}
+		CHECK_VK_RESULT(result, "Cannot allocate descriptor set");
+		VkDescriptorImageInfo image_info = { texture->GetSampler(), texture->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		VkWriteDescriptorSet descriptorWrites[] = {
 			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptorSet, 2, 0, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, &image_info, nullptr, nullptr },
 		};
 		vkUpdateDescriptorSets(m_device, sizeof(descriptorWrites) / sizeof(descriptorWrites[0]), descriptorWrites, 0, nullptr);
-		it = m_descriptorSet.emplace(std::make_pair(m_currentKey, descriptorSet)).first;
+		it = m_textureSets.emplace(std::make_pair(texture, descriptorSet)).first;
 	}
-	return it->second;
+	m_currentTextureDescriptorSet = it->second;
+	if (commandBuffer)
+	{
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 1, 1, &m_currentTextureDescriptorSet, 0, nullptr);
+	}
 }
 
-
-void CVulkanDescriptorSetManager::BindDescriptorSet(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
+void CVulkanDescriptorSetManager::BindAll(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
 {
-	VkDescriptorSet set = GetDescriptorSet();
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &set, 0, nullptr);
+	VkDescriptorSet sets[] = { m_currentProgramDescriptorSet, m_currentTextureDescriptorSet };
+	uint32_t offsets[] = { 0, 0 };
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, sizeof(sets) / sizeof(sets[0]), sets, sizeof(offsets) / sizeof(offsets[0]), offsets);
 }
 
 void CVulkanDescriptorSetManager::CreatePool(uint32_t poolSize)
 {
 	m_poolSize = poolSize;
 	VkDescriptorPoolSize pool_sizes[] = {
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, poolSize },
-		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, poolSize },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, poolSize },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, poolSize },
 		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolSize },
 	};
 	VkDescriptorPoolCreateInfo descriptor_pool_create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0, poolSize, sizeof(pool_sizes) / sizeof(pool_sizes[0]), pool_sizes };

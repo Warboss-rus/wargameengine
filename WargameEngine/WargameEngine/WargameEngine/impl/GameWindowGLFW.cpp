@@ -165,6 +165,7 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	glfwSetScrollCallback(m_window, &CInputGLFW::OnScroll);
 	glfwSetWindowCloseCallback(m_window, &CGameWindowGLFW::OnShutdown);
 	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
+	glfwSetJoystickCallback(&CInputGLFW::JoystickCallback);
 }
 
 CGameWindowGLFW::CGameWindowGLFW()

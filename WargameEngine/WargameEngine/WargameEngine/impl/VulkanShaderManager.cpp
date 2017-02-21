@@ -133,6 +133,16 @@ void CVulkanShaderManager::DoOnProgramChange(std::function<void(const CVulkanSha
 	m_onProgramChange = handler;
 }
 
+void CVulkanShaderManager::CommitUniforms()
+{
+	m_programsStack.back()->Commit();
+}
+
+void CVulkanShaderManager::FrameEnd()
+{
+	m_programsStack.back()->FrameEnd();
+}
+
 CVulkanShaderProgram::CVulkanShaderProgram(VkDevice device)
 	:m_device(device)
 {
@@ -145,8 +155,8 @@ void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageF
 		m_modules.push_back(module);
 		m_shaderStageCreateInfos.push_back({ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, nullptr, 0, flag, module, "main", nullptr });
 		m_uniformBuffers.emplace_back();
-		m_uniformBuffers.back().cache.resize(reflection.bufferSize);
-		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		m_uniformBuffers.back().cache.resize(reflection.bufferSize * 100);
+		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize * 100, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		m_uniformBuffers.back().reflection = reflection;
 	}
 }
@@ -164,9 +174,32 @@ void CVulkanShaderProgram::SetUniformValue(std::string const& name, const void *
 		auto it = std::find_if(uniforms.begin(), uniforms.end(), [&name](ShaderReflection::UniformDescription const& description) { return description.name == name; });
 		if (it != uniforms.end())
 		{
-			memcpy(buffer.cache.data() + it->offset, data, size);
-			buffer.buffer->Upload(buffer.cache.data(), buffer.cache.size() * sizeof(char));
+			memcpy(buffer.cache.data() + buffer.offset + it->offset, data, size);
+			buffer.changed = true;
 		}
+	}
+}
+
+void CVulkanShaderProgram::Commit() const
+{
+	for (auto& buffer : m_uniformBuffers)
+	{
+		if (buffer.changed)
+		{
+			memcpy(buffer.cache.data() + buffer.offset + buffer.reflection.bufferSize, buffer.cache.data() + buffer.offset, buffer.reflection.bufferSize);
+			buffer.offset += buffer.reflection.bufferSize;
+			buffer.changed = false;
+		}
+	}
+}
+
+void CVulkanShaderProgram::FrameEnd() const
+{
+	for (auto& buffer : m_uniformBuffers)
+	{
+		buffer.buffer->Upload(buffer.cache.data(), buffer.offset);
+		buffer.offset = 0;
+		buffer.changed = false;
 	}
 }
 

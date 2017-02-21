@@ -13,7 +13,6 @@ enum class RenderMode
 {
 	TRIANGLES,
 	TRIANGLE_STRIP,
-	RECTANGLES,
 	LINES,
 	LINE_LOOP
 };

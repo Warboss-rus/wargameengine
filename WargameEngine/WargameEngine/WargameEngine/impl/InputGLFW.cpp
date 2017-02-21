@@ -1,12 +1,10 @@
 #include "InputGLFW.h"
 #include <map>
 #include "../Signal.h"
+#include "GameWindowGLFW.h"
 
-CInputGLFW* CInputGLFW::m_instance = nullptr;
 static const int SCROLL_UP = 3;
 static const int SCROLL_DOWN = 4;
-static int g_prevX;
-static int g_prevY;
 
 static const std::map<int, IInput::Modifiers> modifiersMap = {
 	{ GLFW_MOD_ALT, IInput::MODIFIER_ALT },
@@ -16,6 +14,7 @@ static const std::map<int, IInput::Modifiers> modifiersMap = {
 
 void CInputGLFW::OnMouse(GLFWwindow* window, int button, int action, int /*mods*/)
 {
+	auto& instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window))->Input();
 	double x, y;
 	glfwGetCursorPos(window, &x, &y);
 	int ix = static_cast<int>(x);
@@ -25,59 +24,61 @@ void CInputGLFW::OnMouse(GLFWwindow* window, int button, int action, int /*mods*
 	case GLFW_MOUSE_BUTTON_LEFT:
 		if (action == GLFW_PRESS)
 		{
-			m_instance->OnLMBDown(ix, iy);
+			instance.OnLMBDown(ix, iy);
 		}
 		else
 		{
-			m_instance->OnLMBUp(ix, iy);
+			instance.OnLMBUp(ix, iy);
 		}break;
 	case GLFW_MOUSE_BUTTON_RIGHT:
 		if (action == GLFW_PRESS)
 		{
-			m_instance->OnRMBDown(ix, iy);
+			instance.OnRMBDown(ix, iy);
 		}
 		else
 		{
-			m_instance->OnRMBUp(ix, iy);
+			instance.OnRMBUp(ix, iy);
 		}break;
 	}
 }
 
-void CInputGLFW::OnScroll(GLFWwindow* /*window*/, double /*xoffset*/, double yoffset)
+void CInputGLFW::OnScroll(GLFWwindow* window, double /*xoffset*/, double yoffset)
 {
+	auto& instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window))->Input();
 	static const double offsetthreshold = 0.1;
 	if (yoffset < -offsetthreshold)
 	{
-		m_instance->OnMouseWheelDown();
+		instance.OnMouseWheelDown();
 	}
 	if (yoffset > offsetthreshold)
 	{
-		m_instance->OnMouseWheelUp();
+		instance.OnMouseWheelUp();
 	}
 }
 
-void CInputGLFW::OnKeyboard(GLFWwindow* /*window*/, int key, int /*scancode*/, int action, int mods)
+void CInputGLFW::OnKeyboard(GLFWwindow* window, int key, int /*scancode*/, int action, int mods)
 {
+	auto& instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window))->Input();
 	if (action == GLFW_RELEASE)
 	{
-		m_instance->OnKeyUp(key, mods);
+		instance.OnKeyUp(key, mods);
 	}
 	else
 	{
-		m_instance->OnKeyDown(key, mods);
+		instance.OnKeyDown(key, mods);
 	}
-	m_instance->m_modifiers = mods;
+	instance.m_modifiers = mods;
 }
 
-void CInputGLFW::CharacterCallback(GLFWwindow* /*window*/, unsigned int key)
+void CInputGLFW::CharacterCallback(GLFWwindow* window, unsigned int key)
 {
-	m_instance->OnCharacter(static_cast<wchar_t>(key));
+	auto& instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window))->Input();
+	instance.OnCharacter(static_cast<wchar_t>(key));
 }
 
 CInputGLFW::CInputGLFW(GLFWwindow * window)
 	: m_window(window)
 {
-	m_instance = this;
 }
 
 static int screenCenterX = 320;
@@ -95,8 +96,8 @@ void CInputGLFW::EnableCursor(bool enable /*= true*/)
 	}
 	else
 	{
-		g_prevX = g_lastMouseX;
-		g_prevY = g_lastMouseY;
+		m_prevX = g_lastMouseX;
+		m_prevY = g_lastMouseY;
 		int width, height;
 		glfwGetWindowSize(m_window, &width, &height);
 		screenCenterX = width / 2;
@@ -109,13 +110,14 @@ void CInputGLFW::EnableCursor(bool enable /*= true*/)
 
 void CInputGLFW::MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 {
-	m_instance->OnMouseMove(static_cast<int>(xpos), static_cast<int>(ypos));
-	if (!m_instance->m_cursorEnabled)
+	auto& instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window))->Input();
+	instance.OnMouseMove(static_cast<int>(xpos), static_cast<int>(ypos));
+	if (!instance.m_cursorEnabled)
 	{
-		if (g_prevX == 0 && g_prevY)
+		if (instance.m_prevX == 0 && instance.m_prevY)
 		{
-			g_prevX = static_cast<int>(xpos);
-			g_prevY = static_cast<int>(ypos);
+			instance.m_prevX = static_cast<int>(xpos);
+			instance.m_prevY = static_cast<int>(ypos);
 		}
 		glfwSetCursorPos(window, screenCenterX, screenCenterY);
 	}
@@ -128,13 +130,14 @@ void CInputGLFW::MouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 
 void CInputGLFW::JoystickCallback(int joy, int event)
 {
+	auto& instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(glfwGetCurrentContext()))->Input();
 	if (event == GLFW_CONNECTED)
 	{
-		m_instance->m_activeJoysticks.push_back(joy);
+		instance.m_activeJoysticks.push_back(joy);
 	}
 	else if (event == GLFW_DISCONNECTED)
 	{
-		m_instance->m_activeJoysticks.erase(std::find(m_instance->m_activeJoysticks.begin(), m_instance->m_activeJoysticks.end(), joy));
+		instance.m_activeJoysticks.erase(std::find(instance.m_activeJoysticks.begin(), instance.m_activeJoysticks.end(), joy));
 	}
 }
 
@@ -160,7 +163,7 @@ void CInputGLFW::UpdateControllers()
 
 			if (buttons[j] != oldState.buttons[j])
 			{
-				m_instance->OnGamepadButton(joy, j, buttons[j] == GL_TRUE);
+				OnGamepadButton(joy, j, buttons[j] == GL_TRUE);
 			}
 		}
 		const float* axes = glfwGetJoystickAxes(joy, &count);
@@ -173,7 +176,7 @@ void CInputGLFW::UpdateControllers()
 		{
 			if (axes[j] != oldState.axes[j] || (count > j + 1 && axes[j + 1] != oldState.axes[j + 1]))
 			{
-				m_instance->OnGamepadAxis(joy, j / 2, axes[j], axes[j + 1]);
+				OnGamepadAxis(joy, j / 2, axes[j], axes[j + 1]);
 			}
 		}
 		m_gamepadStates[joy] = state;
@@ -214,8 +217,8 @@ VirtualKey CInputGLFW::KeycodeToVirtualKey(int key) const
 int CInputGLFW::GetModifiers() const
 {
 	int result = 0;
-	if (m_instance->m_modifiers & GLFW_MOD_ALT) result |= MODIFIER_ALT;
-	if (m_instance->m_modifiers & GLFW_MOD_SHIFT) result |= MODIFIER_SHIFT;
-	if (m_instance->m_modifiers & GLFW_MOD_CONTROL) result |= MODIFIER_CTRL;
+	if (m_modifiers & GLFW_MOD_ALT) result |= MODIFIER_ALT;
+	if (m_modifiers & GLFW_MOD_SHIFT) result |= MODIFIER_SHIFT;
+	if (m_modifiers & GLFW_MOD_CONTROL) result |= MODIFIER_CTRL;
 	return result;
 }

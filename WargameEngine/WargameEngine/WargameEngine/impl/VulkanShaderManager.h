@@ -48,8 +48,10 @@ struct ShaderReflection
 struct UniformBufferWrapper
 {
 	std::unique_ptr<CVulkanVertexAttribCache> buffer;
-	mutable std::vector<char> cache;
 	ShaderReflection reflection;
+	mutable std::vector<char> cache;
+	mutable size_t offset = 0;
+	mutable bool changed = false;
 };
 
 class CVulkanShaderProgram : public IShaderProgram
@@ -64,7 +66,13 @@ public:
 	VkBuffer GetFragmentAttribBuffer() const { return *m_uniformBuffers[1].buffer; }
 	size_t GetVertexAttribBufferSize() const { return m_uniformBuffers[0].cache.size(); }
 	size_t GetFragmentAttribBufferSize() const { return m_uniformBuffers[1].cache.size(); }
+	size_t GetVertexAttribOffset() const { return m_uniformBuffers[0].offset == 0 ? m_uniformBuffers[0].offset : m_uniformBuffers[0].offset - m_uniformBuffers[0].reflection.bufferSize; }
+	size_t GetFragmentAttribOffset() const { return m_uniformBuffers[1].offset == 0 ? m_uniformBuffers[1].offset : m_uniformBuffers[1].offset - m_uniformBuffers[1].reflection.bufferSize; }
+	size_t GetVertexBufferRange() const { return m_uniformBuffers[0].reflection.bufferSize; }
+	size_t GetFragmentBufferRange() const { return m_uniformBuffers[1].reflection.bufferSize; }
 	void SetUniformValue(std::string const& name, const void * data, size_t size) const;
+	void Commit() const;
+	void FrameEnd() const;
 private:
 	VkDevice m_device;
 	std::vector<VkShaderModule> m_modules;
@@ -98,6 +106,9 @@ public:
 
 	void SetDevice(VkDevice device, VkPhysicalDevice physicalDevice);
 	void DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler);
+	void CommitUniforms();
+	void FrameEnd();
+	const CVulkanShaderProgram* GetActiveProgram() const { return m_programsStack.back(); }
 private:
 	VkDevice m_device;
 	VkPhysicalDevice m_physicalDevice;

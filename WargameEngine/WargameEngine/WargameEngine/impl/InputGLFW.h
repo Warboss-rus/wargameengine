@@ -27,7 +27,7 @@ public:
 	void SetHeadRotation(int deviceIndex, float x, float y, float z);
 private:
 	GLFWwindow * m_window;
-	static CInputGLFW * m_instance;
+
 	bool m_cursorEnabled = true;
 	struct sControllerState
 	{
@@ -37,4 +37,6 @@ private:
 	std::vector<sControllerState> m_gamepadStates;
 	int m_modifiers = 0;
 	std::vector<int> m_activeJoysticks;
+	int m_prevX;
+	int m_prevY;
 };

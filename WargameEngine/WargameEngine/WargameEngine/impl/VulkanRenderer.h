@@ -131,14 +131,11 @@ public:
 	virtual void DrawAll(size_t count) override;
 	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
 	virtual void UnBind() const override;
-	void DoBeforeDraw(std::function<void()> const& handler);
 private:
 	CStagedVulkanVertexAttribCache m_vertexCache;
-	CStagedVulkanVertexAttribCache m_normalsCache;
-	CStagedVulkanVertexAttribCache m_texcoordCache;
 	std::unique_ptr<CStagedVulkanVertexAttribCache> m_indexCache;
 	CVulkanRenderer * m_renderer;
-	std::function<void()> m_beforeDraw;
+	VkDeviceSize m_offsets[3];
 };
 
 class CVulkanOcclusionQuery : public IOcclusionQuery
@@ -152,20 +149,22 @@ class CVulkanDescriptorSetManager
 {
 public:
 	void Init(VkDevice device, uint32_t poolSize);
-	VkDescriptorSet GetDescriptorSet();
-	void BindDescriptorSet(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
-	void SetShaderProgram(const CVulkanShaderProgram * program) { m_currentKey.first = program; }
-	void SetTexture(const CVulkanCachedTexture * texture) { m_currentKey.second = texture; }
-	VkDescriptorSetLayout GetLayout() const { return m_descriptorSetLayout; }
+	void SetShaderProgram(const CVulkanShaderProgram * program, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
+	void SetTexture(const CVulkanCachedTexture * texture, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
+	void BindAll(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
+	VkDescriptorSetLayout GetProgramLayout() { return m_programDescriptorSetLayout; }
+	VkDescriptorSetLayout GetTextureLayout() { return m_textureDescriptorSetLayout; }
 private:
 	void CreatePool(uint32_t poolSize);
-	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_descriptorSetLayout;
+	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_programDescriptorSetLayout;
+	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_textureDescriptorSetLayout;
 	CHandleWrapper<VkDescriptorPool, vkDestroyDescriptorPool> m_desciptorPool;
-	typedef std::pair<const CVulkanShaderProgram*, const CVulkanCachedTexture*> Key;
-	std::map<Key, VkDescriptorSet> m_descriptorSet;
-	Key m_currentKey;
+	std::map<const CVulkanShaderProgram *, VkDescriptorSet> m_programDescriptorSets;
+	std::map<const CVulkanCachedTexture*, VkDescriptorSet> m_textureSets;
 	VkDevice m_device;
 	uint32_t m_poolSize;
+	VkDescriptorSet m_currentProgramDescriptorSet;
+	VkDescriptorSet m_currentTextureDescriptorSet;
 };
 
 class CVulkanRenderer : public IOpenGLRenderer
@@ -264,7 +263,7 @@ private:
 	std::vector<CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer>> m_frameBuffers;
 	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_serviceFramebuffer;
 	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
-	VkCommandBuffer m_activeCommandBuffer;
+	VkCommandBuffer m_activeCommandBuffer = VK_NULL_HANDLE;
 	CVulkanDescriptorSetManager m_descriptorSetManager;
 	VkDebugReportCallbackEXT m_debugCallback;
 	std::unique_ptr<CVulkanCachedTexture> m_emptyTexture;
@@ -277,8 +276,7 @@ private:
 	CPipelineHelper m_pipelineHelper;
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
 	std::unique_ptr<CVulkanVertexAttribCache> m_vertexBuffer;
-	std::unique_ptr<CVulkanVertexAttribCache> m_normalsBuffer;
-	std::unique_ptr<CVulkanVertexAttribCache> m_texCoordBuffer;
+	std::vector<char> m_vertexCache;
 	std::unique_ptr<CVulkanVertexAttribCache> m_emptyBuffer;
 	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;

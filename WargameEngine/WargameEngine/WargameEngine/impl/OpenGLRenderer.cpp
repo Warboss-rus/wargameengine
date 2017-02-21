@@ -138,7 +138,6 @@ void COpenGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot
 static const map<RenderMode, GLenum> renderModeMap = {
 	{ RenderMode::TRIANGLES, GL_TRIANGLES },
 	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::RECTANGLES, GL_QUADS },//deprecated
 	{ RenderMode::LINES, GL_LINES },
 	{ RenderMode::LINE_LOOP, GL_LINE_LOOP } //
 };
@@ -244,7 +243,7 @@ void COpenGLRenderer::Scale(double scale)
 
 void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
 {
-	m_matrixManager.Rotate(angle, static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+	m_matrixManager.Rotate(static_cast<float>(angle), static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 }
 
 void COpenGLRenderer::GetViewMatrix(float * matrix) const
