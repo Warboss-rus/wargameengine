@@ -249,18 +249,6 @@ void CGameView::DrawUI()
 	m_renderer->SetColor(0.0f, 0.0f, 0.0f, 0.0f);
 	m_viewHelper->DrawIn2D([this] {
 		m_ui.Draw();
-		m_renderer->SetTexture(L"..\\Killteam\\texture\\sand.bmp");
-		m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
-			{ 0.0f, 0.0f, 0.0f },
-			{ 600.0f, 0.0f, 0.0f },
-			{ 0.0f, 600.0f, 0.0f },
-			{ 600.0f,600.0f, 0.0f },
-		}, {}, {
-			{ 0.0f, 0.0f },
-			{ 1.0f, 0.0f },
-			{ 0.0f, 1.0f },
-			{ 1.0f, 1.0f },
-		});
 	});
 }
 
@@ -362,19 +350,6 @@ void CGameView::Update()
 	auto fps = 1000ll / std::max(currentTime - m_lastFrameTime, 1ll);
 	m_lastFrameTime = currentTime;
 	m_viewHelper->DrawIn2D([this, fps] {
-		m_renderer->SetTexture(L"..\\Killteam\\texture\\asphalt.bmp");
-		m_renderer->Translate(200, 200, 0);
-		m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, {
-			{ 0.0f, 0.0f, 0.0f },
-			{ 200.0f, 0.0f, 0.0f },
-			{ 0.0f, 200.0f, 0.0f },
-			{ 200.0f, 200.0f, 0.0f },
-		}, {}, {
-			{ 0.0f, 0.0f },
-			{ 1.0f, 0.0f },
-			{ 0.0f, 1.0f },
-			{ 1.0f, 1.0f },
-		});
 		m_textWriter->PrintText(1, 10, "times.ttf", 12, std::to_wstring(fps));
 	});
 }

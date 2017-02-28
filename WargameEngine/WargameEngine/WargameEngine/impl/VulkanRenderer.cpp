@@ -146,7 +146,7 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 
 	m_emptyTexture = std::make_unique<CVulkanCachedTexture>(m_device);
 	m_emptyTexture->Init(1, 1, m_physicalDevice, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA);
-	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, 1000 * sizeof(float), NULL);
+	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, 10000 * sizeof(float), NULL);
 
 	float zero = 0.0f;
 	m_emptyBuffer = std::make_unique<CVulkanVertexAttribCache>(sizeof(float), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, m_physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &zero);

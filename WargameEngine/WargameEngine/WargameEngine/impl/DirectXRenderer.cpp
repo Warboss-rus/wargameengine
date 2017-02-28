@@ -595,6 +595,8 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 	D3D11_VIEWPORT viewport = {0.0f, 0.0f, static_cast<FLOAT>(width), static_cast<FLOAT>(height), 0.0f, 1.0f};
 	m_devcon->RSSetViewports(numViewports, &viewport);
 
+	ClearBuffers(true, false);
+
 	func();
 
 	m_devcon->OMSetRenderTargets(1, &oldRenderTargetView.p, oldDepthStencilView);
