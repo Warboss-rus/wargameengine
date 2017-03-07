@@ -244,7 +244,7 @@ private:
 	void CreateDeviceAndQueues();
 	void CreateSwapchain();
 	void CreateCommandBuffers();
-	CHandleWrapper<VkRenderPass, vkDestroyRenderPass>&& CreateRenderPass(VkFormat format);
+	VkRenderPass CreateRenderPass(VkFormat format);
 	void InitFramebuffer();
 
 	CInstanceWrapper<VkInstance, vkDestroyInstance> m_instance;
@@ -275,8 +275,7 @@ private:
 	CVulkanShaderManager m_shaderManager;
 	CPipelineHelper m_pipelineHelper;
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
-	std::unique_ptr<CVulkanVertexAttribCache> m_vertexBuffer;
-	std::vector<char> m_vertexCache;
+	std::unique_ptr<CVulkanSmartBuffer> m_vertexBuffer;
 	std::unique_ptr<CVulkanVertexAttribCache> m_emptyBuffer;
 	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;

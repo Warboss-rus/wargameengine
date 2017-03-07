@@ -4,32 +4,7 @@
 #include <vector>
 #include <functional>
 #include "VulkanHelpers.h"
-
-class CVulkanVertexAttribCache : public IVertexAttribCache
-{
-public:
-	CVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties, const void * data = nullptr);
-	void Upload(const void* data, size_t size);
-	size_t GetSize() const;
-	operator VkBuffer() const { return m_buffer; }
-private:
-	VkDevice m_device;
-	CHandleWrapper<VkBuffer, vkDestroyBuffer> m_buffer;
-	CHandleWrapper<VkDeviceMemory, vkFreeMemory> m_memory;
-	size_t m_size;
-};
-
-class CStagedVulkanVertexAttribCache : public IVertexAttribCache
-{
-public:
-	CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, const void * data = nullptr);
-	void Upload(const void* data, size_t size, VkCommandBuffer commandBuffer);
-	size_t GetSize() const { return m_stageBuffer.GetSize(); }
-	operator VkBuffer() const { return m_deviceBuffer; }
-private:
-	CVulkanVertexAttribCache m_deviceBuffer;
-	CVulkanVertexAttribCache m_stageBuffer;
-};
+#include "VulkanMemory.h"
 
 struct ShaderReflection
 {

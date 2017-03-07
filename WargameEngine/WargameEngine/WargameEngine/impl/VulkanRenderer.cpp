@@ -91,18 +91,6 @@ VkPresentModeKHR SelectPresentMode(const std::vector<VkPresentModeKHR> & support
 	return supportedPresentModes.front();
 }
 
-void UpdateBuffer(std::unique_ptr<CVulkanVertexAttribCache> & buffer, VkDevice device, VkPhysicalDevice physicalDevice, size_t size, const void * data)
-{
-	if (!buffer || buffer->GetSize() < size)
-	{
-		buffer.reset(new CVulkanVertexAttribCache(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, data));
-	}
-	else
-	{
-		buffer->Upload(data, size);
-	}
-}
-
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) 
 {
 	LogWriter::WriteLine(msg);
@@ -146,7 +134,7 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 
 	m_emptyTexture = std::make_unique<CVulkanCachedTexture>(m_device);
 	m_emptyTexture->Init(1, 1, m_physicalDevice, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA);
-	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, 10000 * sizeof(float), NULL);
+	m_vertexBuffer = std::make_unique<CVulkanSmartBuffer>(sizeof(float) * 1000, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, m_physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
 	float zero = 0.0f;
 	m_emptyBuffer = std::make_unique<CVulkanVertexAttribCache>(sizeof(float), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, m_physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, &zero);
@@ -175,7 +163,7 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	m_surfaceDestructor.SetDestructorFunction([this] {vkDestroySurfaceKHR(m_instance, m_surface, nullptr); });
 	CreateSwapchain();
 	CreateCommandBuffers();
-	m_renderPass = std::move(CreateRenderPass(m_swapchain.GetFormat()));
+	m_renderPass = CreateRenderPass(m_swapchain.GetFormat());
 	m_renderPass.SetDevice(m_device);
 	m_defaultProgram = m_shaderManager.NewProgram(L"Killteam/shaders/Vulkan/vert.spv", L"Killteam/shaders/Vulkan/frag.spv");
 	m_shaderManager.PushProgram(*m_defaultProgram);
@@ -223,8 +211,7 @@ void CVulkanRenderer::AcquireImage()
 
 void CVulkanRenderer::Present()
 {
-	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, m_vertexCache.size(), m_vertexCache.data());
-	m_vertexCache.clear();
+	m_vertexBuffer->Commit();
 	m_shaderManager.FrameEnd();
 	auto& commandBuffer = m_commandBuffers[m_currentCommandBufferIndex];
 	vkCmdEndRenderPass(commandBuffer);
@@ -411,12 +398,13 @@ bool CVulkanRenderer::ConvertBgra() const
 void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
 {
 	BeforeDraw();
-	size_t dataSize = vertices.size() * sizeof(CVector3f) + normals.size() * sizeof(CVector3f) + texCoords.size() * sizeof(CVector2f);
-	VkDeviceSize offsets[] = { m_vertexCache.size(), m_vertexCache.size() + normals.empty() ? 0 : vertices.size() * sizeof(CVector3f), texCoords.empty() ? 0 : m_vertexCache.size() + vertices.size() * sizeof(CVector3f) + normals.size() * sizeof(CVector3f) };
-	m_vertexCache.resize(m_vertexCache.size() + dataSize);
-	memcpy(m_vertexCache.data() + offsets[0], vertices.data(), vertices.size() * sizeof(CVector3f));
-	memcpy(m_vertexCache.data() + offsets[1], normals.data(), normals.size() * sizeof(CVector3f));
-	memcpy(m_vertexCache.data() + offsets[2], texCoords.data(), texCoords.size() * sizeof(CVector2f));
+	std::tuple<VkBuffer, size_t, void*> empty(*m_emptyBuffer, 0, nullptr);
+	const auto vertexInfo = vertices.empty() ? empty : m_vertexBuffer->Allocate(vertices.size() * sizeof(CVector3f));
+	const auto normalsInfo = normals.empty() ? empty : m_vertexBuffer->Allocate(normals.size() * sizeof(CVector3f));
+	const auto texCoordInfo = texCoords.empty() ? empty : m_vertexBuffer->Allocate(texCoords.size() * sizeof(CVector2f));
+	memcpy(std::get<void*>(vertexInfo), vertices.data(), vertices.size() * sizeof(CVector3f));
+	memcpy(std::get<void*>(normalsInfo), normals.data(), normals.size() * sizeof(CVector3f));
+	memcpy(std::get<void*>(texCoordInfo), texCoords.data(), texCoords.size() * sizeof(CVector2f));
 	static const std::map<RenderMode, VkPrimitiveTopology> topologyMap = {
 		{ RenderMode::LINE_LOOP, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP },
 		{ RenderMode::LINES, VK_PRIMITIVE_TOPOLOGY_LINE_LIST },
@@ -426,7 +414,8 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const
 	m_pipelineHelper.SetTopology(topologyMap.at(mode));
 	m_pipelineHelper.Bind(m_activeCommandBuffer);
 
-	VkBuffer buffers[] = { (vertices.empty() ? *m_emptyBuffer : *m_vertexBuffer), (normals.empty() ? *m_emptyBuffer : *m_vertexBuffer), (texCoords.empty() ? *m_emptyBuffer : *m_vertexBuffer) };
+	const VkBuffer buffers[] = { std::get<VkBuffer>(vertexInfo),  std::get<VkBuffer>(normalsInfo),  std::get<VkBuffer>(texCoordInfo) };
+	const VkDeviceSize offsets[] = { std::get<size_t>(vertexInfo),  std::get<size_t>(normalsInfo),  std::get<size_t>(texCoordInfo) };
 	
 	vkCmdBindVertexBuffers(m_activeCommandBuffer, 0, 3, buffers, offsets);
 
@@ -567,7 +556,7 @@ std::unique_ptr<ICachedTexture> CVulkanRenderer::RenderToTexture(std::function<v
 	m_pipelineHelper.Bind(m_activeCommandBuffer);
 	m_descriptorSetManager.BindAll(m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 	func();
-	UpdateBuffer(m_vertexBuffer, m_device, m_physicalDevice, m_vertexCache.size(), m_vertexCache.data());
+	m_vertexBuffer->Commit(false);
 	vkCmdEndRenderPass(m_activeCommandBuffer);
 	vkEndCommandBuffer(m_activeCommandBuffer);
 	SubmitServiceCommandBuffer();
@@ -732,7 +721,7 @@ void CVulkanRenderer::CreateCommandBuffers()
 	m_serviceCommandBuffer.reset(new CCommandBufferWrapper(m_commandPool, m_device));
 }
 
-CHandleWrapper<VkRenderPass, vkDestroyRenderPass>&& CVulkanRenderer::CreateRenderPass(VkFormat format)
+VkRenderPass CVulkanRenderer::CreateRenderPass(VkFormat format)
 {
 	VkAttachmentDescription attachmentDescriptions[] = { 0, format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
@@ -743,10 +732,10 @@ CHandleWrapper<VkRenderPass, vkDestroyRenderPass>&& CVulkanRenderer::CreateRende
 		{ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT },
 	};
 	VkRenderPassCreateInfo renderPassCreateInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, 1, attachmentDescriptions, 1, subpass_descriptions, static_cast<uint32_t>(dependencies.size()), dependencies.data() };
-	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> renderPass;
+	VkRenderPass renderPass;
 	VkResult result = vkCreateRenderPass(m_device, &renderPassCreateInfo, nullptr, &renderPass);
 	CHECK_VK_RESULT(result, "cannot create render pass");
-	return std::move(renderPass);
+	return renderPass;
 }
 
 void CVulkanRenderer::InitFramebuffer()

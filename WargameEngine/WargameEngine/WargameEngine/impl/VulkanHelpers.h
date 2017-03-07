@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 template <class T, VKAPI_ATTR void (VKAPI_CALL*Deleter)(VkDevice, T, const VkAllocationCallbacks *)>
 class CHandleWrapper
@@ -11,6 +12,7 @@ public:
 	operator T () { return m_data; }
 	operator const T() const { return m_data; }
 	T* operator & () { return &m_data; }
+	CHandleWrapper& operator =(T const& data) { m_data = data; return *this; }
 	void SetDevice(VkDevice device)
 	{
 		m_device = device;
