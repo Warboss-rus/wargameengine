@@ -11,13 +11,19 @@ class CVulkanRenderer;
 class CCommandBufferWrapper
 {
 public:
-	CCommandBufferWrapper(VkCommandPool pool, VkDevice device);
+	CCommandBufferWrapper(VkCommandPool pool, VkDevice device, VkPhysicalDevice physicalDevice);
+	CCommandBufferWrapper(const CCommandBufferWrapper & other) = delete;
+	CCommandBufferWrapper(CCommandBufferWrapper && other) = default;
 	~CCommandBufferWrapper();
 	operator VkCommandBuffer() const { return m_commandBuffer; }
 	void WaitFence();
 	VkFence GetFence() const { return m_fence; }
 	VkSemaphore GetImageAvailibleSemaphore() const { return m_imageAvailibleSemaphore; }
 	VkSemaphore GetRenderingFinishedSemaphore() const { return m_renderingFinishedSemaphore; }
+	VkFramebuffer GetFrameBuffer() const { return m_frameBuffer; }
+	void SetFrameBuffer(VkFramebuffer buffer) { m_frameBuffer = buffer; }
+	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler, VkDeviceMemory memory);
+	CVulkanSmartBuffer& GetVertexBuffer() { return m_vertexBuffer; }
 private:
 	VkCommandBuffer m_commandBuffer;
 	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_imageAvailibleSemaphore;
@@ -25,6 +31,12 @@ private:
 	CHandleWrapper<VkFence, vkDestroyFence> m_fence;
 	VkDevice m_device;
 	VkCommandPool m_pool;
+	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_frameBuffer;
+	CVulkanSmartBuffer m_vertexBuffer;
+	std::vector<VkImage> m_imagesToDestroy;
+	std::vector<VkImageView> m_imageViewsToDestroy;
+	std::vector<VkSampler> m_samplersToDestroy;
+	std::vector<VkDeviceMemory> m_memoryToFree;
 };
 
 class CSwapchainWrapper
@@ -98,27 +110,30 @@ private:
 	Key m_currentKey;
 	std::map<Key, VkPipeline> m_pipelines;
 	CHandleWrapper<VkPipelineLayout, vkDestroyPipelineLayout> m_pipelineLayout;
-	VkPipelineLayout m_currentLayout = VK_NULL_HANDLE;
+	VkPipeline m_currentPipeline = VK_NULL_HANDLE;
+	VkCommandBuffer m_currentBuffer = VK_NULL_HANDLE;
 };
 
 class CVulkanCachedTexture : public ICachedTexture
 {
 public:
-	CVulkanCachedTexture(VkDevice device);
+	CVulkanCachedTexture(CVulkanRenderer & renderer);
+	~CVulkanCachedTexture();
 	void Init(uint32_t width, uint32_t height, VkPhysicalDevice physicalDevice, CachedTextureType type = CachedTextureType::RGBA, int flags = 0, VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT);
 	void Upload(const void * data, VkCommandBuffer commandBuffer);
 	operator VkImage() const { return m_image; }
 	VkImageView GetImageView() const { return m_imageView; }
 	VkSampler GetSampler() const { return m_sampler; }
 private:
-	CHandleWrapper<VkImage, vkDestroyImage> m_image;
-	CHandleWrapper<VkDeviceMemory, vkFreeMemory> m_memory;
-	CHandleWrapper<VkImageView, vkDestroyImageView> m_imageView;
-	CHandleWrapper<VkSampler, vkDestroySampler> m_sampler;
+	VkImage m_image;
+	VkDeviceMemory m_memory;
+	VkImageView m_imageView;
+	VkSampler m_sampler;
 	VkDeviceSize m_size;
 	VkExtent3D m_extent;
 	VkDevice m_device;
 	uint32_t m_components;
+	CVulkanRenderer * m_renderer;
 };
 
 class CVulkanVertexBuffer : public IVertexBuffer
@@ -186,6 +201,7 @@ public:
 	CPipelineHelper& GetPipelineHelper() { return m_pipelineHelper; }
 	VkBuffer GetEmptyBuffer() const { return *m_emptyBuffer; }
 	void BeforeDraw();
+	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler, VkDeviceMemory memory);
 	
 	virtual void EnableMultisampling(bool enable) override;
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
@@ -260,7 +276,6 @@ private:
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_serviceRenderPass;
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
-	std::vector<CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer>> m_frameBuffers;
 	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_serviceFramebuffer;
 	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
 	VkCommandBuffer m_activeCommandBuffer = VK_NULL_HANDLE;
@@ -275,7 +290,6 @@ private:
 	CVulkanShaderManager m_shaderManager;
 	CPipelineHelper m_pipelineHelper;
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
-	std::unique_ptr<CVulkanSmartBuffer> m_vertexBuffer;
 	std::unique_ptr<CVulkanVertexAttribCache> m_emptyBuffer;
 	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;

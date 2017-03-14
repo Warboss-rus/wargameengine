@@ -35,9 +35,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{846e7101-abaa-4b20-b659-91be261a3bc9}</ProjectGuid>
+    <ProjectGuid>{1bef9338-8c31-4a20-bf56-bcf022a909c3}</ProjectGuid>
     <Keyword>Android</Keyword>
-    <RootNamespace>WargameEngineMobile</RootNamespace>
+    <RootNamespace>WargameEngineMobileVulkan</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <ApplicationType>Android</ApplicationType>
@@ -48,45 +48,49 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
-    <AndroidAPILevel>android-21</AndroidAPILevel>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
-    <AndroidAPILevel>android-21</AndroidAPILevel>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
-    <UseOfStl>gnustl_static</UseOfStl>
-    <AndroidAPILevel>android-21</AndroidAPILevel>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>Clang_3_8</PlatformToolset>
-    <UseOfStl>gnustl_static</UseOfStl>
-    <AndroidAPILevel>android-21</AndroidAPILevel>
+    <AndroidAPILevel>android-24</AndroidAPILevel>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -119,41 +123,40 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -161,13 +164,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -175,13 +177,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -189,14 +190,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <DebugInformationFormat>None</DebugInformationFormat>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -204,13 +203,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -218,13 +216,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -232,13 +229,12 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
@@ -246,41 +242,43 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CompileAs>CompileAsCpp</CompileAs>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>TO_STRING_HACK;RENDERER_VULKAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);OpenSLES;m;vulkan</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.h" />
     <ClInclude Include="..\..\WargameEngine\impl\MatrixManagerGLM.h" />
     <ClInclude Include="..\..\WargameEngine\impl\NetSocket.h" />
     <ClInclude Include="..\..\WargameEngine\impl\PhysicsEngineBullet.h" />
     <ClInclude Include="..\..\WargameEngine\impl\ScriptHandlerLua.h" />
     <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.h" />
-    <ClInclude Include="..\..\WargameEngine\impl\GameWindowAndroid.h" />
     <ClInclude Include="..\..\WargameEngine\impl\InputAndroid.h" />
-    <ClInclude Include="..\..\WargameEngine\impl\OpenGLESRenderer.h" />
-    <ClInclude Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.h" />
     <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h" />
-    <ClInclude Include="android_native_app_glue.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\VulkanHelpers.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\VulkanMemory.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\VulkanRenderer.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\VulkanShaderManager.h" />
+    <ClInclude Include="..\WargameEngineMobile.NativeActivity\android_native_app_glue.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\MatrixManagerGLM.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\NetSocket.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.cpp" />
-    <ClCompile Include="..\..\WargameEngine\impl\GameWindowAndroid.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\InputAndroid.cpp" />
-    <ClCompile Include="..\..\WargameEngine\impl\OpenGLESRenderer.cpp" />
-    <ClCompile Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp" />
-    <ClCompile Include="android_native_app_glue.c" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\VulkanMemory.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\VulkanRenderer.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\VulkanShaderManager.cpp" />
+    <ClCompile Include="..\WargameEngineMobile.NativeActivity\android_native_app_glue.c" />
+    <ClCompile Include="..\WargameEngineMobile.NativeActivity\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BulletMobile\BulletMobile.vcxproj">
@@ -291,6 +289,9 @@
     </ProjectReference>
     <ProjectReference Include="..\LuaMobile\LuaMobile.vcxproj">
       <Project>{0a0ab951-a98a-469c-a800-b132e0610a89}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SPIRV-CrossMobile\SPIRV-CrossMobile.vcxproj">
+      <Project>{4efa8913-9c50-4dc8-b6c6-64d6c1be38a2}</Project>
     </ProjectReference>
     <ProjectReference Include="..\WargameEngineMobile\WargameEngineMobile.vcxproj">
       <Project>{9022827a-40ba-407a-9bf2-7ceabd2fd3d0}</Project>

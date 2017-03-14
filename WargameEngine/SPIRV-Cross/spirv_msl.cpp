@@ -1228,7 +1228,7 @@ string CompilerMSL::to_component_argument(uint32_t id)
 {
 	if (ids[id].get_type() != TypeConstant)
 	{
-		SPIRV_CROSS_THROW("ID " + to_string(id) + " is not an OpConstant.");
+		SPIRV_CROSS_THROW("ID " + convert_to_string(id) + " is not an OpConstant.");
 		return "component::x";
 	}
 
@@ -1245,7 +1245,7 @@ string CompilerMSL::to_component_argument(uint32_t id)
 		return "component::w";
 
 	default:
-		SPIRV_CROSS_THROW("The value (" + to_string(component_index) + ") of OpConstant ID " + to_string(id) +
+		SPIRV_CROSS_THROW("The value (" + convert_to_string(component_index) + ") of OpConstant ID " + convert_to_string(id) +
 		                  " is not a valid Component index, which must be one of 0, 1, 2, or 3.");
 		return "component::x";
 	}

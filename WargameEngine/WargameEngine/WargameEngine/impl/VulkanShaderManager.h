@@ -90,4 +90,5 @@ private:
 	std::unique_ptr<CVulkanShaderProgram> m_defaultProgram;
 	std::function<void(const CVulkanShaderProgram&)> m_onProgramChange;
 	mutable std::vector<const CVulkanShaderProgram*> m_programsStack;
+	
 };

@@ -22,7 +22,7 @@ private:
 class CStagedVulkanVertexAttribCache : public IVertexAttribCache
 {
 public:
-	CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, const void * data = nullptr);
+	CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice);
 	void Upload(const void* data, size_t size, VkCommandBuffer commandBuffer);
 	size_t GetSize() const { return m_stageBuffer.GetSize(); }
 	operator VkBuffer() const { return m_deviceBuffer; }
@@ -35,15 +35,20 @@ class CVulkanSmartBuffer
 {
 public:
 	CVulkanSmartBuffer(size_t chunkSize, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties);
+	CVulkanSmartBuffer(const CVulkanSmartBuffer & other) = delete;
+	CVulkanSmartBuffer(CVulkanSmartBuffer && other) = default;
 	std::tuple<VkBuffer, size_t, void*> Allocate(size_t size);
 	void Commit(bool clear = true);
 private:
 	struct Buffer
 	{
 		Buffer(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties)
-			: buffer(std::make_unique<CVulkanVertexAttribCache>(size, flags, device, physicalDevice, properties))
+			: buffer(size, flags, device, physicalDevice, properties)
 		{}
-		std::unique_ptr<CVulkanVertexAttribCache> buffer;
+		Buffer(const Buffer & other) = delete;
+		Buffer(Buffer && other) = default;
+		~Buffer() = default;
+		CVulkanVertexAttribCache buffer;
 		std::vector<char> cache;
 	};
 	std::vector<Buffer> m_chunks;

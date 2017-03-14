@@ -212,9 +212,6 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view\InputBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="controller\ScriptRegisterViewport.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
@@ -234,6 +231,9 @@
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="view\ViewportBase.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\InputBase.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>

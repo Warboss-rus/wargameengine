@@ -53,7 +53,7 @@ size_t CVulkanVertexAttribCache::GetSize() const
 	return m_size;
 }
 
-CStagedVulkanVertexAttribCache::CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, const void * data /*= nullptr*/)
+CStagedVulkanVertexAttribCache::CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice)
 	: m_deviceBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_DST_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	, m_stageBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
 {
@@ -83,7 +83,7 @@ std::tuple<VkBuffer, size_t, void*> CVulkanSmartBuffer::Allocate(size_t size)
 		if (oldSize + size < m_chunkSize)
 		{
 			chunk.cache.resize(oldSize + size);
-			return std::make_tuple(static_cast<VkBuffer>(*chunk.buffer), oldSize, chunk.cache.data() + oldSize);
+			return std::make_tuple(static_cast<VkBuffer>(chunk.buffer), oldSize, chunk.cache.data() + oldSize);
 		}
 	}
 	//allocate new chunk
@@ -91,7 +91,7 @@ std::tuple<VkBuffer, size_t, void*> CVulkanSmartBuffer::Allocate(size_t size)
 	auto& newChunk = m_chunks.back();
 	newChunk.cache.reserve(std::max(m_chunkSize, size));
 	newChunk.cache.resize(size);
-	return std::make_tuple(static_cast<VkBuffer>(*newChunk.buffer), 0, newChunk.cache.data());
+	return std::make_tuple(static_cast<VkBuffer>(newChunk.buffer), 0, newChunk.cache.data());
 }
 
 void CVulkanSmartBuffer::Commit(bool clear)
@@ -100,7 +100,7 @@ void CVulkanSmartBuffer::Commit(bool clear)
 	{
 		if (!chunk.cache.empty())
 		{
-			chunk.buffer->Upload(chunk.cache.data(), chunk.cache.size());
+			chunk.buffer.Upload(chunk.cache.data(), chunk.cache.size());
 			if (clear) chunk.cache.clear();
 		}
 	}

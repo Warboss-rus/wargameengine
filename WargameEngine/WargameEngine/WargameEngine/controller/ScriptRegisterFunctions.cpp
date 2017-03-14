@@ -376,7 +376,7 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		return nullptr;
 	});
 
-	handler.RegisterFunction(NEW_PARTICLE_TRACER, [&](IArguments const& args) {
+	/*handler.RegisterFunction(NEW_PARTICLE_TRACER, [&](IArguments const& args) {
 		if (args.GetCount() != 10)
 			throw std::runtime_error("10 arguments expected (effect file, begin coordinates, end coordinates, rotation, scale, speed)");
 		std::wstring file = view.GetAsyncFileProvider().GetAbsolutePath(args.GetWStr(1));
@@ -390,9 +390,9 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 		double rot = args.GetDbl(8);
 		double scale = args.GetDbl(9);
 		float speed = args.GetFloat(10);
-		//view.GetParticleSystem().AddTracer(file, begin, end, rot, scale, speed);
+		view.GetParticleSystem().AddTracer(file, begin, end, rot, scale, speed);
 		return nullptr;
-	});
+	});*/
 
 	handler.RegisterFunction(PLAY_SOUND, [&](IArguments const& args) {
 		if (args.GetCount() < 2 || args.GetCount() > 3)

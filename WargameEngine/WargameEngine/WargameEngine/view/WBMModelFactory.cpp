@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
+#include <cwctype>
 #include "../Utils.h"
 #include "../MemoryStream.h"
 
@@ -67,6 +68,6 @@ bool CWBMModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
 	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
 	return extension == L"wbm";
 }

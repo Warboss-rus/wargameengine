@@ -9,6 +9,7 @@
 #include "../rapidxml/rapidxml.hpp"
 #include <sstream>
 #include <numeric>
+#include <cwctype>
 #include "../Utils.h"
 
 using namespace std;
@@ -769,6 +770,6 @@ bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*s
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
 	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
-	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
 	return extension == L"dae";
 }

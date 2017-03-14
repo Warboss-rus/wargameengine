@@ -1,11 +1,12 @@
 #include "BuiltInImageReaders.h"
 #pragma warning (push)
-#pragma warning (disable: 4244)
+#pragma warning (disable: 4244 4100)
 #define STB_IMAGE_IMPLEMENTATION
 #include "../stb_image.h"
 #pragma warning (pop)
 #include <algorithm>
 #include <string>
+#include <cwctype>
 #include "../Utils.h"
 #include "../MemoryStream.h"
 
@@ -331,7 +332,7 @@ CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 bool CTgaImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& filePath) const
 {
 	std::wstring extension = filePath.substr(filePath.find_last_of('.') + 1);
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
+	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
 	return extension == L"tga" && (data[2] == 2 || data[2] == 10);//non-rgb texture
 }
 

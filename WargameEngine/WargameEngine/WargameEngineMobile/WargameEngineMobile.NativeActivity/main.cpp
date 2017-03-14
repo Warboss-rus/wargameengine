@@ -12,6 +12,13 @@
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
 #include "..\..\WargameEngine\impl\GameWindowAndroid.h"
 #include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
+#ifdef RENDERER_VULKAN
+#include "..\..\WargameEngine\impl\GameWindowAndroidVulkan.h"
+#define WINDOW_CLASS CGameWindowAndroidVulkan
+#else
+#include "..\..\WargameEngine\impl\GameWindowAndroid.h"
+#define WINDOW_CLASS CGameWindowAndroid
+#endif
 /*
 * Copyright (C) 2010 The Android Open Source Project
 *
@@ -46,7 +53,7 @@ struct engine {
 	struct android_app* app;
 
 	struct saved_state state;
-	CGameWindowAndroid * window;
+	WINDOW_CLASS * window;
 };
 
 /**
@@ -115,7 +122,14 @@ void android_main(struct android_app* state) {
 		context.module.models = L"models/";
 		context.module.folder = L"/sdcard/WargameEngine/";
 	}
-	context.window = std::make_unique<CGameWindowAndroid>(state);
+	try
+	{
+		context.window = std::make_unique<WINDOW_CLASS>(state);
+	}
+	catch (std::exception const& e)
+	{
+		LOGW((std::string("Cannot create vulkan renderer: ") + e.what()).c_str());
+	}
 	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
@@ -137,7 +151,7 @@ void android_main(struct android_app* state) {
 	state->userData = &engine;
 	state->onAppCmd = engine_handle_cmd;
 	state->onInputEvent = engine_handle_input;
-	engine.window = reinterpret_cast<CGameWindowAndroid*>(context.window.get());
+	engine.window = reinterpret_cast<WINDOW_CLASS*>(context.window.get());
 	engine.app = state;
 
 	if (state->savedState != NULL) {

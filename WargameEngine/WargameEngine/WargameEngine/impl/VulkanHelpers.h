@@ -9,10 +9,27 @@ public:
 		:m_device(device)
 	{}
 	~CHandleWrapper() { Destroy(); }
+	CHandleWrapper(const CHandleWrapper & other) = delete;
+	CHandleWrapper(CHandleWrapper && other) 
+		: m_data(other.m_data), m_device(other.m_device)
+	{
+		other.m_data = VK_NULL_HANDLE;
+	}
 	operator T () { return m_data; }
 	operator const T() const { return m_data; }
 	T* operator & () { return &m_data; }
-	CHandleWrapper& operator =(T const& data) { m_data = data; return *this; }
+	CHandleWrapper& operator =(T const& data) 
+	{ 
+		Destroy();
+		m_data = data;
+		return *this; 
+	}
+	T Detach() 
+	{ 
+		T result;
+		m_data = VK_NULL_HANDLE;
+		return result;
+	}
 	void SetDevice(VkDevice device)
 	{
 		m_device = device;
@@ -22,7 +39,6 @@ public:
 		if (m_device && m_data)
 		{
 			Deleter(m_device, m_data, nullptr);
-			m_device = VK_NULL_HANDLE;
 			m_data = VK_NULL_HANDLE;
 		}
 	}

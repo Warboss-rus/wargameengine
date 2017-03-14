@@ -95,7 +95,13 @@ inline std::string merge(const std::vector<std::string> &list)
 template <typename T>
 inline std::string convert_to_string(T &&t)
 {
+#ifndef TO_STRING_HACK
 	return std::to_string(std::forward<T>(t));
+#else
+	std::stringstream sstream;
+	sstream << t;
+	return sstream.str();
+#endif
 }
 
 // Allow implementations to set a convenient standard precision

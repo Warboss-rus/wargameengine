@@ -7,19 +7,19 @@ class CReadMemoryStream : public IReadMemoryStream
 public:
 	CReadMemoryStream(const char* data);
 
-	virtual bool ReadBool() override;
-	virtual unsigned char ReadByte() override;
-	virtual short ReadShort() override;
-	virtual int ReadInt() override;
-	virtual unsigned ReadUnsigned() override;
-	virtual size_t ReadSizeT() override;
-	virtual float ReadFloat() override;
-	virtual double ReadDouble() override;
-	virtual std::string ReadString() override;
-	virtual std::wstring ReadWString() override;
-	virtual void* ReadPointer() override;
-	virtual void ReadData(void* data, size_t size) override;
-	virtual void Seek(size_t pos) override;
+	bool ReadBool() override;
+	unsigned char ReadByte() override;
+	short ReadShort() override;
+	int ReadInt() override;
+	unsigned ReadUnsigned() override;
+	size_t ReadSizeT() override;
+	float ReadFloat() override;
+	double ReadDouble() override;
+	std::string ReadString() override;
+	std::wstring ReadWString() override;
+	void* ReadPointer() override;
+	void ReadData(void* data, size_t size) override;
+	void Seek(size_t pos) override;
 private:
 	const char* m_data;
 	size_t m_position;
@@ -28,16 +28,16 @@ private:
 class CWriteMemoryStream : public IWriteMemoryStream
 {
 public:
-	virtual void WriteBool(bool value) override;
-	virtual void WriteByte(unsigned char value) override;
-	virtual void WriteInt(int value) override;
-	virtual void WriteUnsigned(unsigned value) override;
-	virtual void WriteSizeT(size_t value) override;
-	virtual void WriteFloat(float value) override;
-	virtual void WriteDouble(double value) override;
-	virtual void WriteString(std::string const& value) override;
-	virtual void WriteWString(std::wstring const& value) override;
-	virtual void WritePointer(void* value) override;
+	void WriteBool(bool value) override;
+	void WriteByte(unsigned char value) override;
+	void WriteInt(int value) override;
+	void WriteUnsigned(unsigned value) override;
+	void WriteSizeT(size_t value) override;
+	void WriteFloat(float value) override;
+	void WriteDouble(double value) override;
+	void WriteString(std::string const& value) override;
+	void WriteWString(std::wstring const& value) override;
+	void WritePointer(void* value) override;
 
 	const char * GetData() const;
 	char * GetData();
