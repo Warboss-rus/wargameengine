@@ -17,7 +17,11 @@ void CUIComboBox::Draw() const
 	if (m_expanded) realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight());
+	}
+	if(m_invalidated)
+	{
+		m_renderer.RenderToTexture([this]() {
 			auto& theme = m_theme->combobox;
 			int elementSize = static_cast<int>(theme.elementSize * m_scale);
 			m_renderer.SetColor(m_theme->defaultColor);
@@ -64,7 +68,7 @@ void CUIComboBox::Draw() const
 				m_renderer.PopMatrix();
 			}
 			m_renderer.SetColor(0, 0, 0);
-		}, GetWidth(), realHeight);
+		}, *m_cache, GetWidth(), realHeight);
 	}
 
 	m_renderer.SetTexture(*m_cache);

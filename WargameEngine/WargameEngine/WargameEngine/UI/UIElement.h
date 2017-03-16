@@ -46,7 +46,7 @@ public:
 	virtual void SetBackgroundImage(std::string const& image) override;
 	virtual void SetState(bool state) override;
 	virtual bool GetState() const override;
-	virtual void Invalidate() const override;
+	virtual void Invalidate(bool resetTexture = false) const override;
 	virtual void InvalidateChildren() const override;
 	virtual void SetTargetSize(int width, int height) override;
 	virtual void SetScale(float scale) override;
@@ -70,14 +70,15 @@ protected:
 	int m_y;
 	int m_height;
 	int m_width;
-	int m_windowHeight;
-	int m_windowWidth;
+	int m_windowHeight = 640;
+	int m_windowWidth = 640;
 	int m_uiWidth = 600;
 	int m_uiHeight = 600;
 	float m_scale = 1.0f;
-	bool m_visible;
+	bool m_visible = true;
+	mutable bool m_invalidated = true;
 	IUIElement * m_parent;
-	IUIElement * m_focused;
+	IUIElement * m_focused = nullptr;
 	std::shared_ptr<CUITheme> m_theme;
 	IRenderer & m_renderer;
 	ITextWriter & m_textWriter;

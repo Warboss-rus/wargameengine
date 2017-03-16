@@ -97,6 +97,7 @@ VkPresentModeKHR SelectPresentMode(const std::vector<VkPresentModeKHR> & support
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) 
 {
+	(void)flags; (void)objType; (void)obj; (void)location; (void)code; (void)layerPrefix; (void)userData;
 	LogWriter::WriteLine(msg);
 	return VK_FALSE;
 }
@@ -134,10 +135,12 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 	m_renderPass.SetDevice(m_device);
 	m_shaderManager.SetDevice(m_device, m_physicalDevice);
 
+	m_memoryManager = std::make_unique<CVulkanMemoryManager>(8 * 1024 * 1024, m_device, m_physicalDevice);//8MB pieces
+
 	m_descriptorSetManager.Init(m_device, 100);
 
 	m_emptyTexture = std::make_unique<CVulkanCachedTexture>(*this);
-	m_emptyTexture->Init(1, 1, m_physicalDevice, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA);
+	m_emptyTexture->Init(1, 1, *m_memoryManager, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA);
 
 	std::vector<float> zero(1000, 0.0f);
 	m_emptyBuffer = std::make_unique<CVulkanVertexAttribCache>(sizeof(float) * zero.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, m_physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, zero.data());
@@ -256,9 +259,9 @@ void CVulkanRenderer::BeforeDraw()
 	m_descriptorSetManager.SetShaderProgram(m_shaderManager.GetActiveProgram(), m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 }
 
-void CVulkanRenderer::DestroyImage(VkImage image, VkImageView view, VkSampler sampler, VkDeviceMemory memory)
+void CVulkanRenderer::DestroyImage(VkImage image, VkImageView view, VkSampler sampler)
 {
-	m_commandBuffers[m_currentCommandBufferIndex].DestroyImage(image, view, sampler, memory);
+	m_commandBuffers[m_currentCommandBufferIndex].DestroyImage(image, view, sampler);
 }
 
 void CVulkanRenderer::EnableMultisampling(bool enable)
@@ -374,7 +377,7 @@ void CVulkanRenderer::UploadTexture(ICachedTexture & texture, unsigned char * da
 {
 	//m_serviceCommandBuffer->WaitFence();
 	auto& vulkanTexture = reinterpret_cast<CVulkanCachedTexture&>(texture);
-	vulkanTexture.Init(width, height, m_physicalDevice, CachedTextureType::RGBA, flags);
+	vulkanTexture.Init(width, height, *m_memoryManager, CachedTextureType::RGBA, flags);
 	vulkanTexture.Upload(data, *m_serviceCommandBuffer);
 
 	//SubmitServiceCommandBuffer();
@@ -491,7 +494,7 @@ void CVulkanRenderer::Translate(const int dx, const int dy, const int dz)
 
 void CVulkanRenderer::Rotate(const double angle, const double x, const double y, const double z)
 {
-	m_matrixManager.Rotate(angle, static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+	m_matrixManager.Rotate(static_cast<float>(angle), static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
 }
 
 void CVulkanRenderer::Scale(const double scale)
@@ -536,10 +539,9 @@ void CVulkanRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot
 	m_descriptorSetManager.SetTexture(&vulkanTexture, m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 }
 
-std::unique_ptr<ICachedTexture> CVulkanRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
+void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICachedTexture & tex, unsigned int width, unsigned int height)
 {
-	auto texture = std::make_unique<CVulkanCachedTexture>(*this);
-	texture->Init(width, height, m_physicalDevice, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+	auto& texture = reinterpret_cast<CVulkanCachedTexture&>(tex);
 	if (!m_serviceRenderPass)
 	{
 		m_serviceRenderPass = CreateRenderPass(VK_FORMAT_R8G8B8A8_UNORM);
@@ -547,7 +549,7 @@ std::unique_ptr<ICachedTexture> CVulkanRenderer::RenderToTexture(std::function<v
 	}
 	m_serviceCommandBuffer->WaitFence();
 	m_serviceFramebuffer.Destroy();
-	VkImageView view = texture->GetImageView();
+	VkImageView view = texture.GetImageView();
 	VkFramebufferCreateInfo framebuffer_create_info = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, m_serviceRenderPass, 1, &view, width, height, 1 };
 	VkResult result = vkCreateFramebuffer(m_device, &framebuffer_create_info, nullptr, &m_serviceFramebuffer);
 	LOG_VK_RESULT(result, "Failed to create framebuffer");
@@ -570,14 +572,13 @@ std::unique_ptr<ICachedTexture> CVulkanRenderer::RenderToTexture(std::function<v
 	vkEndCommandBuffer(m_activeCommandBuffer);
 	SubmitServiceCommandBuffer();
 	m_activeCommandBuffer = oldCommandBuffer;
-	return std::move(texture);
 }
 
 std::unique_ptr<ICachedTexture> CVulkanRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type /*= CachedTextureType::RGBA*/)
 {
 	auto texture = std::make_unique<CVulkanCachedTexture>(*this);
-	texture->Init(width, height, m_physicalDevice, type, TEXTURE_HAS_ALPHA);
-	texture->Upload(data, *m_serviceCommandBuffer);
+	texture->Init(width, height, *m_memoryManager, type, TEXTURE_HAS_ALPHA, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+	if(data) texture->Upload(data, *m_serviceCommandBuffer);
 	return std::move(texture);
 }
 
@@ -616,7 +617,7 @@ std::string CVulkanRenderer::GetName() const
 	return "Vulkan";
 }
 
-bool CVulkanRenderer::SupportsFeature(Feature feature) const
+bool CVulkanRenderer::SupportsFeature(Feature) const
 {
 	return true;
 }
@@ -887,7 +888,7 @@ void CCommandBufferWrapper::WaitFence()
 	LOG_VK_RESULT(result, "Waiting on fence takes too long");
 	vkResetFences(m_device, 1, &m_fence);
 
-	if (!m_memoryToFree.empty()) vkDeviceWaitIdle(m_device);
+	if (!m_imagesToDestroy.empty()) vkDeviceWaitIdle(m_device);
 
 	//clean up unused resources
 	for (VkImage image : m_imagesToDestroy)
@@ -899,17 +900,13 @@ void CCommandBufferWrapper::WaitFence()
 	for (VkSampler sampler : m_samplersToDestroy)
 		vkDestroySampler(m_device, sampler, nullptr);
 	m_samplersToDestroy.clear();
-	for (VkDeviceMemory memory : m_memoryToFree)
-		vkFreeMemory(m_device, memory, nullptr);
-	m_memoryToFree.clear();
 }
 
-void CCommandBufferWrapper::DestroyImage(VkImage image, VkImageView view, VkSampler sampler, VkDeviceMemory memory)
+void CCommandBufferWrapper::DestroyImage(VkImage image, VkImageView view, VkSampler sampler)
 {
 	m_imagesToDestroy.push_back(image);
 	m_imageViewsToDestroy.push_back(view);
 	m_samplersToDestroy.push_back(sampler);
-	m_memoryToFree.push_back(memory);
 }
 
 void CSwapchainWrapper::Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent2D extent, VkFormat format)
@@ -947,7 +944,7 @@ CVulkanCachedTexture::CVulkanCachedTexture(CVulkanRenderer & renderer)
 
 CVulkanCachedTexture::~CVulkanCachedTexture()
 {
-	m_renderer->DestroyImage(m_image, m_imageView, m_sampler, m_memory);
+	m_renderer->DestroyImage(m_image, m_imageView, m_sampler);
 }
 
 inline VkFormat GetTextureFormat(int flags)
@@ -955,7 +952,7 @@ inline VkFormat GetTextureFormat(int flags)
 	return (flags & TEXTURE_HAS_ALPHA) ? (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_R8G8B8A8_UNORM) : (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8_UNORM : VK_FORMAT_R8G8B8_UNORM);
 }
 
-void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, VkPhysicalDevice physicalDevice, CachedTextureType type, int flags, VkImageUsageFlags usageFlags)
+void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type, int flags, VkImageUsageFlags usageFlags)
 {
 	VkFormat format = (type == CachedTextureType::RGBA ? GetTextureFormat(flags) : (type == CachedTextureType::DEPTH ? VK_FORMAT_D32_SFLOAT : VK_FORMAT_R8_UNORM));
 	VkImageCreateInfo image_create_info = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,  nullptr, 0, VK_IMAGE_TYPE_2D, format, { width, height, 1 }, 1, 1, VK_SAMPLE_COUNT_1_BIT,
@@ -964,25 +961,13 @@ void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, VkPhysicalDevic
 
 	VkMemoryRequirements image_memory_requirements;
 	vkGetImageMemoryRequirements(m_device, m_image, &image_memory_requirements);
-	VkPhysicalDeviceMemoryProperties memory_properties;
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memory_properties);
-	uint32_t property = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-	for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)
-	{
-		if ((image_memory_requirements.memoryTypeBits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & property))
-		{
-			VkMemoryAllocateInfo memory_allocate_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, nullptr, image_memory_requirements.size, i };
-			if (vkAllocateMemory(m_device, &memory_allocate_info, nullptr, &m_memory) == VK_SUCCESS)
-			{
-				break;
-			}
-		}
-	}
+
+	m_memory = memoryManager.Allocate(image_memory_requirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	if (!m_memory)
 	{
 		LogWriter::WriteLine("Cannot allocate memory for image");
 	}
-	result = vkBindImageMemory(m_device, m_image, m_memory, 0);
+	result = vkBindImageMemory(m_device, m_image, *m_memory, m_memory->GetOffset());
 	LOG_VK_RESULT(result, "Cannot bind memory to an image");
 
 	bool isAlpha = type == CachedTextureType::ALPHA;
@@ -1006,7 +991,7 @@ void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, VkPhysicalDevic
 void CVulkanCachedTexture::Upload(const void * data, VkCommandBuffer commandBuffer)
 {
 	void *staging_buffer_memory_pointer;
-	VkResult result = vkMapMemory(m_device, m_memory, 0, m_size, 0, &staging_buffer_memory_pointer);
+	VkResult result = vkMapMemory(m_device, *m_memory, m_memory->GetOffset(), m_size, 0, &staging_buffer_memory_pointer);
 	LOG_VK_RESULT(result, "Cannot map memory for image");
 
 	VkImageSubresource subresource = {};
@@ -1030,7 +1015,7 @@ void CVulkanCachedTexture::Upload(const void * data, VkCommandBuffer commandBuff
 			memcpy((void*)&dstBytes[y * stagingImageLayout.rowPitch], (void*)&srcBytes[y * m_extent.width * m_components], m_extent.width * m_components);
 		}
 	}
-	vkUnmapMemory(m_device, m_memory);
+	vkUnmapMemory(m_device, *m_memory);
 }
 
 CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)

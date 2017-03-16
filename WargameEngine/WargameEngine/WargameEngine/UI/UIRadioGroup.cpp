@@ -15,7 +15,11 @@ void CUIRadioGroup::Draw() const
 	m_renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight());
+	}
+	if (m_invalidated)
+	{
+		m_renderer.RenderToTexture([this]() {
 			for (size_t i = 0; i < m_items.size(); ++i)
 			{
 				m_renderer.SetTexture(m_theme->texture, true);
@@ -29,7 +33,7 @@ void CUIRadioGroup::Draw() const
 				int intSize = static_cast<int>(theme.elementSize);
 				PrintText(m_renderer, m_textWriter, static_cast<int>(buttonSize) + 1, intSize * static_cast<int>(i), GetWidth(), intSize, m_items[i], m_theme->text, m_scale);
 			}
-		}, GetWidth(), GetHeight());
+		}, *m_cache, GetWidth(), GetHeight());
 	}
 	m_renderer.SetTexture(*m_cache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

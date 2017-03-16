@@ -18,7 +18,11 @@ void CUIEdit::Draw() const
 	m_renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight());
+	}
+	if(m_invalidated)
+	{
+		m_renderer.RenderToTexture([this]() {
 			m_renderer.SetColor(m_theme->defaultColor);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, GetHeight() },{ GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 			m_renderer.SetColor(m_theme->textfieldColor);
@@ -43,7 +47,7 @@ void CUIEdit::Draw() const
 				{ borderSize + selectionBegin, fonty - fontHeight },{ borderSize + selectionEnd, fonty }, {borderSize + selectionEnd, fonty - fontHeight } }, {});
 			}
 			PrintText(m_renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme, m_scale);
-		}, GetWidth(), GetHeight());
+		}, *m_cache, GetWidth(), GetHeight());
 	}
 	m_renderer.SetTexture(*m_cache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

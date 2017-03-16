@@ -15,9 +15,13 @@ void CUIStaticText::Draw() const
 	m_renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.RenderToTexture([this]() {
+		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight());
+	}
+	if (m_invalidated)
+	{
+		m_renderer.RenderToTexture([this]() {
 			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->text, m_scale);
-		}, GetWidth(), GetHeight());
+		}, *m_cache, GetWidth(), GetHeight());
 	}
 	m_renderer.SetTexture(*m_cache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,

@@ -22,7 +22,7 @@ public:
 	VkSemaphore GetRenderingFinishedSemaphore() const { return m_renderingFinishedSemaphore; }
 	VkFramebuffer GetFrameBuffer() const { return m_frameBuffer; }
 	void SetFrameBuffer(VkFramebuffer buffer) { m_frameBuffer = buffer; }
-	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler, VkDeviceMemory memory);
+	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler);
 	CVulkanSmartBuffer& GetVertexBuffer() { return m_vertexBuffer; }
 private:
 	VkCommandBuffer m_commandBuffer;
@@ -36,7 +36,6 @@ private:
 	std::vector<VkImage> m_imagesToDestroy;
 	std::vector<VkImageView> m_imageViewsToDestroy;
 	std::vector<VkSampler> m_samplersToDestroy;
-	std::vector<VkDeviceMemory> m_memoryToFree;
 };
 
 class CSwapchainWrapper
@@ -119,21 +118,21 @@ class CVulkanCachedTexture : public ICachedTexture
 public:
 	CVulkanCachedTexture(CVulkanRenderer & renderer);
 	~CVulkanCachedTexture();
-	void Init(uint32_t width, uint32_t height, VkPhysicalDevice physicalDevice, CachedTextureType type = CachedTextureType::RGBA, int flags = 0, VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT);
+	void Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type = CachedTextureType::RGBA, int flags = 0, VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT);
 	void Upload(const void * data, VkCommandBuffer commandBuffer);
 	operator VkImage() const { return m_image; }
 	VkImageView GetImageView() const { return m_imageView; }
 	VkSampler GetSampler() const { return m_sampler; }
 private:
-	VkImage m_image;
-	VkDeviceMemory m_memory;
-	VkImageView m_imageView;
-	VkSampler m_sampler;
-	VkDeviceSize m_size;
-	VkExtent3D m_extent;
+	VkImage m_image = VK_NULL_HANDLE;
+	std::unique_ptr<CVulkanMemory> m_memory;
+	VkImageView m_imageView = VK_NULL_HANDLE;
+	VkSampler m_sampler = VK_NULL_HANDLE;
+	VkDeviceSize m_size = 0;
+	VkExtent3D m_extent = {0, 0, 0};
 	VkDevice m_device;
-	uint32_t m_components;
-	CVulkanRenderer * m_renderer;
+	uint32_t m_components = 0;
+	CVulkanRenderer * m_renderer = nullptr;
 };
 
 class CVulkanVertexBuffer : public IVertexBuffer
@@ -191,6 +190,7 @@ public:
 	VkInstance GetInstance() const;
 	VkDevice GetDevice() const { return m_device; }
 	VkPhysicalDevice GetPhysicalDevice() const { return m_physicalDevice; }
+	CVulkanMemoryManager& GetMemoryManager() { return *m_memoryManager; }
 	VkCommandBuffer GetServiceCommandBuffer() { m_serviceCommandBuffer->WaitFence(); return *m_serviceCommandBuffer; }
 	void SubmitServiceCommandBuffer();
 	void SetSurface(VkSurfaceKHR surface);
@@ -201,7 +201,7 @@ public:
 	CPipelineHelper& GetPipelineHelper() { return m_pipelineHelper; }
 	VkBuffer GetEmptyBuffer() const { return *m_emptyBuffer; }
 	void BeforeDraw();
-	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler, VkDeviceMemory memory);
+	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler);
 	
 	virtual void EnableMultisampling(bool enable) override;
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
@@ -246,7 +246,7 @@ public:
 	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
 	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
 	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
-	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
+	virtual void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
 	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
@@ -275,6 +275,7 @@ private:
 	CHandleWrapper<VkCommandPool, vkDestroyCommandPool> m_commandPool;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_serviceRenderPass;
+	std::unique_ptr<CVulkanMemoryManager> m_memoryManager;
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
 	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_serviceFramebuffer;
 	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;

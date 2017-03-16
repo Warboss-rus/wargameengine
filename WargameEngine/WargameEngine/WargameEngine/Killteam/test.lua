@@ -195,6 +195,8 @@ elseif(GetRendererName() == "OpenGLES") then
 	SetSkyboxShaders("GLES/skybox.vsh", "GLES/skybox.fsh")
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
+elseif(GetRendererName() == "Vulkan") then
+	--do nothing
 else
 	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
 	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
@@ -202,7 +204,7 @@ else
 end
 EnableGPUSkinning()
 --EnableVertexLightning()
-CreateTable(30, 15, "sand.dds")--Creates a table (width, height, texture)
+CreateTable(30, 15, "sand.bmp")--Creates a table (width, height, texture)
 --Viewport:CameraStrategy(15, 6, 5, 0.5)--Changes camera limitations (max translation in X axis, max translation in Y axis, max scale, min scale)
 --Viewport:CameraFirstPerson()
 --UI:Get():ApplyTheme("uiTheme.xml")

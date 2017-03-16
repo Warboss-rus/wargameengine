@@ -105,3 +105,91 @@ void CVulkanSmartBuffer::Commit(bool clear)
 		}
 	}
 }
+
+CVulkanMemoryManager::CVulkanMemoryManager(VkDeviceSize chunkSize, VkDevice device, VkPhysicalDevice physicalDevice)
+	: m_device(device), m_chunkSize(chunkSize)
+{
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &m_memory_properties);
+}
+
+CVulkanMemoryManager::~CVulkanMemoryManager()
+{
+	for (auto& chunk : m_ñhunks)
+	{
+		vkFreeMemory(m_device, chunk.memory, nullptr);
+	}
+}
+
+void CVulkanMemoryManager::FreeMemory(CVulkanMemory * memory)
+{
+	//find a chunk that contains this memory block
+	auto it = std::find_if(m_ñhunks.begin(), m_ñhunks.end(), [memory](MemoryChunk const& chunk) {
+		return chunk.memory == *memory;
+	});
+	if (it == m_ñhunks.end()) return;
+	//Add memory block to the list of free blocks
+	auto insertedIt = it->freeMemory.insert({memory->GetOffset(), memory->GetSize()}).first;
+	//merge blocks if necessary
+	auto mergeIt = it->freeMemory.find(memory->GetOffset() + memory->GetSize());
+	if (mergeIt != it->freeMemory.end())
+	{
+		insertedIt->second += mergeIt->second;
+		it->freeMemory.erase(mergeIt);
+	}
+	mergeIt = std::find_if(it->freeMemory.begin(), it->freeMemory.end(), [memory](std::pair<VkDeviceSize, VkDeviceSize> const& pair) {
+		return (pair.first + pair.second) == memory->GetOffset();
+	});
+	if (mergeIt != it->freeMemory.end())
+	{
+		it->freeMemory.erase(insertedIt);
+		mergeIt->second += memory->GetSize();
+	}
+}
+
+std::unique_ptr<CVulkanMemory> CVulkanMemoryManager::Allocate(VkMemoryRequirements requirements, VkMemoryPropertyFlags usageProperties)
+{
+	for (auto& chunk : m_ñhunks)
+	{
+		if ((chunk.memoryTypeBits & requirements.memoryTypeBits) && (chunk.usageFlags & usageProperties))
+		{
+			for (auto& block : chunk.freeMemory)
+			{
+				if (block.second >= requirements.size)
+				{
+					auto memory = std::make_unique<CVulkanMemory>(*this, chunk.memory, block.first + block.second - requirements.size, requirements.size);
+					block.second -= requirements.size;
+					return std::move(memory);
+				}
+			}
+		}
+	}
+	//allocate a new chunk
+	for (uint32_t i = 0; i < m_memory_properties.memoryTypeCount; ++i)
+	{
+		if ((requirements.memoryTypeBits & (1 << i)) && (m_memory_properties.memoryTypes[i].propertyFlags & usageProperties))
+		{
+			VkMemoryAllocateInfo memory_allocate_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, nullptr, std::max(requirements.size, m_chunkSize), i };
+			VkDeviceMemory memory;
+			if (vkAllocateMemory(m_device, &memory_allocate_info, nullptr, &memory) == VK_SUCCESS)
+			{
+				uint32_t memoryTypeBits = 1u << i;
+				if (requirements.size < m_chunkSize)
+				{
+					m_ñhunks.push_back({ memory, {{ requirements.size, m_chunkSize - requirements.size }}, memoryTypeBits, m_memory_properties.memoryTypes[i].propertyFlags });
+				}
+				return std::make_unique<CVulkanMemory>(*this, memory, 0, requirements.size);
+			}
+		}
+	}
+	return nullptr;
+}
+
+CVulkanMemory::CVulkanMemory(CVulkanMemoryManager & manager, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size)
+	:m_manager(manager), m_memory(memory), m_offset(offset), m_size(size)
+{
+}
+
+CVulkanMemory::~CVulkanMemory()
+{
+	m_manager.FreeMemory(this);
+}

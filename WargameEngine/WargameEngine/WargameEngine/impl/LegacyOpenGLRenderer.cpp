@@ -273,13 +273,13 @@ void CLegacyGLRenderer::SetColor(const int * color)
 	glColor3iv(color);
 }
 
-std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
+void CLegacyGLRenderer::RenderToTexture(std::function<void() > const& func, ICachedTexture & tex, unsigned int width, unsigned int height)
 {
 	//set up texture
 	GLint prevTexture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
-	auto texture = std::make_unique<CLegacyGlCachedTexture>(GL_TEXTURE_2D);
-	SetTexture(*texture);
+	auto texture = reinterpret_cast<CLegacyGlCachedTexture&>(tex);
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
@@ -293,7 +293,7 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function
 	GLuint framebuffer = 0;
 	glGenFramebuffers(1, &framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -322,7 +322,6 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
 	glBindTexture(GL_TEXTURE_2D, prevTexture);
 	glDeleteFramebuffers(1, &framebuffer);
-	return move(texture);
 }
 
 std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type)

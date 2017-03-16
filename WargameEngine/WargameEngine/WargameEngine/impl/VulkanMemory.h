@@ -2,8 +2,51 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <tuple>
+#include <map>
 #include "../view/IShaderManager.h"
 #include "VulkanHelpers.h"
+
+class CVulkanMemoryManager;
+
+class CVulkanMemory
+{
+public:
+	CVulkanMemory(CVulkanMemoryManager & manager, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size);
+	CVulkanMemory(CVulkanMemory const& other) = delete;
+	CVulkanMemory& operator=(CVulkanMemory const& other) = delete;
+	CVulkanMemory& operator=(CVulkanMemory && other) = default;
+	~CVulkanMemory();
+
+	operator VkDeviceMemory() const { return m_memory; }
+	VkDeviceSize GetOffset() const { return m_offset; }
+	VkDeviceSize GetSize() const { return m_size; }
+private:
+	CVulkanMemoryManager & m_manager;
+	VkDeviceMemory m_memory;
+	VkDeviceSize m_offset;
+	VkDeviceSize m_size;
+};
+
+class CVulkanMemoryManager
+{
+public:
+	CVulkanMemoryManager(VkDeviceSize chunkSize, VkDevice device, VkPhysicalDevice physicalDevice);
+	~CVulkanMemoryManager();
+	void FreeMemory(CVulkanMemory * memory);
+	std::unique_ptr<CVulkanMemory> Allocate(VkMemoryRequirements requirements, VkMemoryPropertyFlags usageProperties);
+private:
+	VkDevice m_device;
+	VkPhysicalDeviceMemoryProperties m_memory_properties;
+	struct MemoryChunk
+	{
+		VkDeviceMemory memory;
+		std::map<VkDeviceSize, VkDeviceSize> freeMemory;
+		uint32_t memoryTypeBits;
+		VkMemoryPropertyFlags usageFlags;
+	};
+	std::vector<MemoryChunk> m_ñhunks;
+	VkDeviceSize m_chunkSize;
+};
 
 class CVulkanVertexAttribCache : public IVertexAttribCache
 {

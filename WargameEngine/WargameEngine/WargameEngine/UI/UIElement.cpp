@@ -13,6 +13,7 @@
 
 void CUIElement::Draw() const
 {
+	m_invalidated = false;
 	if(!m_visible || m_children.empty())
 		return;
 	if (!m_childrenCache)
@@ -48,14 +49,14 @@ bool CUIElement::GetVisible() const
 	return m_visible;
 }
 
-CUIElement::CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) : m_x(x), m_y(y), m_height(height), m_width(width),
-m_windowHeight(640), m_windowWidth(640), m_visible(true), m_parent(parent), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter)
+CUIElement::CUIElement(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter) 
+	: m_x(x), m_y(y), m_height(height), m_width(width), m_parent(parent), m_renderer(renderer), m_textWriter(textWriter)
 {
 
 }
 
 CUIElement::CUIElement(IRenderer & renderer, ITextWriter & textWriter) 
-	:m_x(0), m_y(0), m_height(640), m_width(640), m_windowHeight(640), m_windowWidth(640), m_visible(true), m_parent(nullptr), m_focused(nullptr), m_renderer(renderer), m_textWriter(textWriter)
+	: m_x(0), m_y(0), m_height(640), m_width(640), m_parent(nullptr), m_renderer(renderer), m_textWriter(textWriter)
 {
 
 }
@@ -106,9 +107,10 @@ bool CUIElement::PointIsOnElement(int x, int y) const
 	return false;
 }
 
-void CUIElement::Invalidate() const
+void CUIElement::Invalidate(bool resetTexture) const
 {
-	m_cache.reset();
+	m_invalidated = true;
+	if(resetTexture) m_cache.reset();
 	if (m_parent) m_parent->InvalidateChildren();
 }
 
@@ -386,7 +388,7 @@ void CUIElement::Resize(int windowHeight, int windowWidth)
 	{
 		i->second->Resize(windowHeight, windowWidth);
 	}
-	Invalidate();
+	Invalidate(true);
 }
 
 void CUIElement::SetOnChangeCallback(std::function<void()> const&)

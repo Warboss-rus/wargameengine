@@ -34,7 +34,7 @@ public:
 	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 
-	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
+	virtual void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
 	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 

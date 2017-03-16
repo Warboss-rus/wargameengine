@@ -44,7 +44,7 @@ public:
 	virtual void SetBackgroundImage(std::string const& image) = 0;
 	virtual void SetState(bool state) = 0;
 	virtual bool GetState() const = 0;
-	virtual void Invalidate() const = 0;
+	virtual void Invalidate(bool resetTexture = false) const = 0;
 	virtual void InvalidateChildren() const = 0;
 	virtual void SetTargetSize(int width, int height) = 0;
 	virtual void SetScale(float scale) = 0;
