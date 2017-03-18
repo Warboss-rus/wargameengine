@@ -1,61 +1,55 @@
 #include "VulkanMemory.h"
 #include "../LogWriter.h"
 #include <algorithm>
+#include "VulkanRenderer.h"
 
-CVulkanVertexAttribCache::CVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties, const void * data)
-	:m_device(device), m_size(size)
+CVulkanVertexAttribCache::CVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, CVulkanRenderer & renderer, VkFlags properties, const void * data)
+	: m_renderer(&renderer)
 {
-	m_buffer.SetDevice(device);
-	m_memory.SetDevice(device);
 	if (size == 0) return;
+	VkDevice device = renderer.GetDevice();
 	VkBufferCreateInfo buffer_create_info = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO, nullptr, 0, size, flags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr };
-	VkResult result = vkCreateBuffer(m_device, &buffer_create_info, nullptr, &m_buffer);
+	VkResult result = vkCreateBuffer(device, &buffer_create_info, nullptr, &m_buffer);
 	LOG_VK_RESULT(result, "Cannot create buffer");
 
 	VkMemoryRequirements buffer_memory_requirements;
-	vkGetBufferMemoryRequirements(m_device, m_buffer, &buffer_memory_requirements);
-	VkPhysicalDeviceMemoryProperties memory_properties;
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memory_properties);
-	for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)
+	vkGetBufferMemoryRequirements(device, m_buffer, &buffer_memory_requirements);
+	m_memory = renderer.GetMemoryManager().Allocate(buffer_memory_requirements, properties);
+	if (!m_memory)
 	{
-		if ((buffer_memory_requirements.memoryTypeBits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & properties))
-		{
-			VkMemoryAllocateInfo memory_allocate_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, nullptr, buffer_memory_requirements.size, i };
-			if (vkAllocateMemory(m_device, &memory_allocate_info, nullptr, &m_memory) == VK_SUCCESS)
-			{
-				result = vkBindBufferMemory(m_device, m_buffer, m_memory, 0);
-				LOG_VK_RESULT(result, "Cannot bind memory");
-				if (data)
-				{
-					Upload(data, size);
-				}
-				return;
-			}
-		}
+		LogWriter::WriteLine("Cannot allocate device memory");
+		return;
 	}
-	LogWriter::WriteLine("Cannot allocate device memory");
+	result = vkBindBufferMemory(device, m_buffer, *m_memory, m_memory->GetOffset());
+	LOG_VK_RESULT(result, "Cannot bind memory");
+	if (data)
+	{
+		Upload(data, size);
+	}
+}
+
+CVulkanVertexAttribCache::~CVulkanVertexAttribCache()
+{
+	m_renderer->DestroyBuffer(m_buffer);
 }
 
 void CVulkanVertexAttribCache::Upload(const void* data, size_t size)
 {
+	VkDevice device = m_renderer->GetDevice();
 	void *vertex_buffer_memory_pointer;
-	VkResult result = vkMapMemory(m_device, m_memory, 0, size, 0, &vertex_buffer_memory_pointer);
+	VkResult result = vkMapMemory(device, *m_memory, m_memory->GetOffset(), size, 0, &vertex_buffer_memory_pointer);
 	LOG_VK_RESULT(result, "Cannot map memory");
 	memcpy(vertex_buffer_memory_pointer, data, size);
-	VkMappedMemoryRange flush_range = { VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, nullptr, m_memory, 0, VK_WHOLE_SIZE };
-	result = vkFlushMappedMemoryRanges(m_device, 1, &flush_range);
+	VkMappedMemoryRange flush_range = { VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE, nullptr, *m_memory, m_memory->GetOffset(), size };
+	result = vkFlushMappedMemoryRanges(device, 1, &flush_range);
 	LOG_VK_RESULT(result, "Cannot flush memory");
-	vkUnmapMemory(m_device, m_memory);
+	vkUnmapMemory(device, *m_memory);
 }
 
-size_t CVulkanVertexAttribCache::GetSize() const
-{
-	return m_size;
-}
-
-CStagedVulkanVertexAttribCache::CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice)
-	: m_deviceBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_DST_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-	, m_stageBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+CStagedVulkanVertexAttribCache::CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, CVulkanRenderer & renderer)
+	: m_deviceBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_DST_BIT, renderer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+	, m_stageBuffer(size, flags | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+	, m_size(size)
 {
 }
 
@@ -70,8 +64,8 @@ void CStagedVulkanVertexAttribCache::Upload(const void* data, size_t size, VkCom
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &buffer_memory_barrier, 0, nullptr);
 }
 
-CVulkanSmartBuffer::CVulkanSmartBuffer(size_t chunkSize, VkBufferUsageFlags flags, VkDevice device, VkPhysicalDevice physicalDevice, VkFlags properties)
-	:m_chunkSize(chunkSize), m_usageflags(flags), m_properties(properties), m_device(device), m_physicalDevice(physicalDevice)
+CVulkanSmartBuffer::CVulkanSmartBuffer(size_t chunkSize, VkBufferUsageFlags flags, CVulkanRenderer & renderer, VkFlags properties)
+	:m_chunkSize(chunkSize), m_usageflags(flags), m_properties(properties), m_renderer(renderer)
 {
 }
 
@@ -83,15 +77,15 @@ std::tuple<VkBuffer, size_t, void*> CVulkanSmartBuffer::Allocate(size_t size)
 		if (oldSize + size < m_chunkSize)
 		{
 			chunk.cache.resize(oldSize + size);
-			return std::make_tuple(static_cast<VkBuffer>(chunk.buffer), oldSize, chunk.cache.data() + oldSize);
+			return std::make_tuple(static_cast<VkBuffer>(*chunk.buffer), oldSize, chunk.cache.data() + oldSize);
 		}
 	}
 	//allocate new chunk
-	m_chunks.emplace_back(std::max(m_chunkSize, size), m_usageflags, m_device, m_physicalDevice, m_properties);
+	m_chunks.emplace_back(std::max(m_chunkSize, size), m_usageflags, m_renderer, m_properties);
 	auto& newChunk = m_chunks.back();
 	newChunk.cache.reserve(std::max(m_chunkSize, size));
 	newChunk.cache.resize(size);
-	return std::make_tuple(static_cast<VkBuffer>(newChunk.buffer), 0, newChunk.cache.data());
+	return std::make_tuple(static_cast<VkBuffer>(*newChunk.buffer), 0, newChunk.cache.data());
 }
 
 void CVulkanSmartBuffer::Commit(bool clear)
@@ -100,7 +94,7 @@ void CVulkanSmartBuffer::Commit(bool clear)
 	{
 		if (!chunk.cache.empty())
 		{
-			chunk.buffer.Upload(chunk.cache.data(), chunk.cache.size());
+			chunk.buffer->Upload(chunk.cache.data(), chunk.cache.size());
 			if (clear) chunk.cache.clear();
 		}
 	}
@@ -122,28 +116,17 @@ CVulkanMemoryManager::~CVulkanMemoryManager()
 
 void CVulkanMemoryManager::FreeMemory(CVulkanMemory * memory)
 {
-	//find a chunk that contains this memory block
-	auto it = std::find_if(m_ñhunks.begin(), m_ñhunks.end(), [memory](MemoryChunk const& chunk) {
-		return chunk.memory == *memory;
-	});
-	if (it == m_ñhunks.end()) return;
-	//Add memory block to the list of free blocks
-	auto insertedIt = it->freeMemory.insert({memory->GetOffset(), memory->GetSize()}).first;
-	//merge blocks if necessary
-	auto mergeIt = it->freeMemory.find(memory->GetOffset() + memory->GetSize());
-	if (mergeIt != it->freeMemory.end())
-	{
-		insertedIt->second += mergeIt->second;
-		it->freeMemory.erase(mergeIt);
-	}
-	mergeIt = std::find_if(it->freeMemory.begin(), it->freeMemory.end(), [memory](std::pair<VkDeviceSize, VkDeviceSize> const& pair) {
-		return (pair.first + pair.second) == memory->GetOffset();
-	});
-	if (mergeIt != it->freeMemory.end())
-	{
-		it->freeMemory.erase(insertedIt);
-		mergeIt->second += memory->GetSize();
-	}
+	FreeMemoryImpl(*memory, memory->GetOffset(), memory->GetSize());
+}
+
+void CVulkanMemoryManager::FreeMemoryDelayed(CVulkanMemory * memory)
+{
+	m_delayedFreeMemory.push_back(std::make_tuple((VkDeviceMemory)*memory, memory->GetOffset(), memory->GetSize(), 1000));
+}
+
+VkDeviceSize AlignDown(VkDeviceSize value, VkDeviceSize alignment)
+{
+	return value / alignment * alignment;
 }
 
 std::unique_ptr<CVulkanMemory> CVulkanMemoryManager::Allocate(VkMemoryRequirements requirements, VkMemoryPropertyFlags usageProperties)
@@ -156,8 +139,11 @@ std::unique_ptr<CVulkanMemory> CVulkanMemoryManager::Allocate(VkMemoryRequiremen
 			{
 				if (block.second >= requirements.size)
 				{
-					auto memory = std::make_unique<CVulkanMemory>(*this, chunk.memory, block.first + block.second - requirements.size, requirements.size);
-					block.second -= requirements.size;
+					VkDeviceSize begin = block.first + block.second - requirements.size;
+					VkDeviceSize beginAligned = AlignDown(begin, requirements.alignment);
+					VkDeviceSize alignedSize = begin - beginAligned + requirements.size;
+					auto memory = std::make_unique<CVulkanMemory>(*this, chunk.memory, beginAligned, alignedSize);
+					block.second -= alignedSize;
 					return std::move(memory);
 				}
 			}
@@ -166,13 +152,13 @@ std::unique_ptr<CVulkanMemory> CVulkanMemoryManager::Allocate(VkMemoryRequiremen
 	//allocate a new chunk
 	for (uint32_t i = 0; i < m_memory_properties.memoryTypeCount; ++i)
 	{
-		if ((requirements.memoryTypeBits & (1 << i)) && (m_memory_properties.memoryTypes[i].propertyFlags & usageProperties))
+		uint32_t memoryTypeBits = 1u << i;
+		if ((requirements.memoryTypeBits & memoryTypeBits) && (m_memory_properties.memoryTypes[i].propertyFlags & usageProperties))
 		{
 			VkMemoryAllocateInfo memory_allocate_info = { VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO, nullptr, std::max(requirements.size, m_chunkSize), i };
 			VkDeviceMemory memory;
 			if (vkAllocateMemory(m_device, &memory_allocate_info, nullptr, &memory) == VK_SUCCESS)
 			{
-				uint32_t memoryTypeBits = 1u << i;
 				if (requirements.size < m_chunkSize)
 				{
 					m_ñhunks.push_back({ memory, {{ requirements.size, m_chunkSize - requirements.size }}, memoryTypeBits, m_memory_properties.memoryTypes[i].propertyFlags });
@@ -182,6 +168,46 @@ std::unique_ptr<CVulkanMemory> CVulkanMemoryManager::Allocate(VkMemoryRequiremen
 		}
 	}
 	return nullptr;
+}
+
+void CVulkanMemoryManager::FreeResources()
+{
+	for (auto& mem : m_delayedFreeMemory)
+	{
+		--std::get<3>(mem);
+	}
+	while(!m_delayedFreeMemory.empty() && (std::get<3>(m_delayedFreeMemory.front()) == 0))
+	{
+		auto& tuple = m_delayedFreeMemory.front();
+		FreeMemoryImpl(std::get<0>(tuple), std::get<1>(tuple), std::get<2>(tuple));
+		m_delayedFreeMemory.pop_front();
+	}
+}
+
+void CVulkanMemoryManager::FreeMemoryImpl(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size)
+{
+	//find a chunk that contains this memory block
+	auto it = std::find_if(m_ñhunks.begin(), m_ñhunks.end(), [memory](MemoryChunk const& chunk) {
+		return chunk.memory == memory;
+	});
+	if (it == m_ñhunks.end()) return;
+	//Add memory block to the list of free blocks
+	auto insertedIt = it->freeMemory.insert({ offset, size }).first;
+	//merge blocks if necessary
+	auto mergeIt = it->freeMemory.find(offset + size);
+	if (mergeIt != it->freeMemory.end())
+	{
+		insertedIt->second += mergeIt->second;
+		it->freeMemory.erase(mergeIt);
+	}
+	mergeIt = std::find_if(it->freeMemory.begin(), it->freeMemory.end(), [offset](std::pair<VkDeviceSize, VkDeviceSize> const& pair) {
+		return (pair.first + pair.second) == offset;
+	});
+	if (mergeIt != it->freeMemory.end())
+	{
+		it->freeMemory.erase(insertedIt);
+		mergeIt->second += size;
+	}
 }
 
 CVulkanMemory::CVulkanMemory(CVulkanMemoryManager & manager, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size)

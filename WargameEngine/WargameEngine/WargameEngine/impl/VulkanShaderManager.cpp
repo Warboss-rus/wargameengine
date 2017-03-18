@@ -3,6 +3,7 @@
 #include "../LogWriter.h"
 #include <spirv_glsl.hpp>
 #include <algorithm>
+#include "VulkanRenderer.h"
 
 ShaderReflection ReflectShader(const std::vector<char> & code)
 {
@@ -45,16 +46,22 @@ VkShaderModule CompileShader(std::wstring const& filename, VkDevice device, Shad
 	return shaderModule;
 }
 
+CVulkanShaderManager::CVulkanShaderManager(CVulkanRenderer & renderer)
+	:m_renderer(renderer)
+{
+}
+
 std::unique_ptr<IShaderProgram> CVulkanShaderManager::NewProgram(std::wstring const& vertex /*= L""*/, std::wstring const& fragment /*= L""*/, std::wstring const& geometry /*= L""*/)
 {
+	VkDevice device = m_renderer.GetDevice();
 	ShaderReflection vertexReflection, fragmentReflection, geometryReflection;
-	VkShaderModule vertexShader = CompileShader(vertex, m_device, &vertexReflection);
-	VkShaderModule fragmentShader = CompileShader(fragment, m_device, &fragmentReflection);
-	VkShaderModule geometryShader = CompileShader(geometry, m_device, &geometryReflection);
-	auto program = std::make_unique<CVulkanShaderProgram>(m_device);
-	program->AddShaderModule(vertexShader, VK_SHADER_STAGE_VERTEX_BIT, vertexReflection, m_physicalDevice);
-	program->AddShaderModule(fragmentShader, VK_SHADER_STAGE_FRAGMENT_BIT, fragmentReflection, m_physicalDevice);
-	program->AddShaderModule(geometryShader, VK_SHADER_STAGE_GEOMETRY_BIT, geometryReflection, m_physicalDevice);
+	VkShaderModule vertexShader = CompileShader(vertex, device, &vertexReflection);
+	VkShaderModule fragmentShader = CompileShader(fragment, device, &fragmentReflection);
+	VkShaderModule geometryShader = CompileShader(geometry, device, &geometryReflection);
+	auto program = std::make_unique<CVulkanShaderProgram>(device);
+	program->AddShaderModule(vertexShader, VK_SHADER_STAGE_VERTEX_BIT, vertexReflection, m_renderer);
+	program->AddShaderModule(fragmentShader, VK_SHADER_STAGE_FRAGMENT_BIT, fragmentReflection, m_renderer);
+	program->AddShaderModule(geometryShader, VK_SHADER_STAGE_GEOMETRY_BIT, geometryReflection, m_renderer);
 
 	VkDescriptorBufferInfo bufferInfo = {};
 
@@ -119,15 +126,9 @@ void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, 
 
 std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	auto result = std::make_unique<CStagedVulkanVertexAttribCache>(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, m_device, m_physicalDevice);
+	auto result = std::make_unique<CStagedVulkanVertexAttribCache>(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, m_renderer);
 	result->Upload(value, size, VK_NULL_HANDLE);
 	return std::move(result);
-}
-
-void CVulkanShaderManager::SetDevice(VkDevice device, VkPhysicalDevice physicalDevice)
-{
-	m_device = device;
-	m_physicalDevice = physicalDevice;
 }
 
 void CVulkanShaderManager::DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler)
@@ -150,7 +151,7 @@ CVulkanShaderProgram::CVulkanShaderProgram(VkDevice device)
 {
 }
 
-void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection, VkPhysicalDevice physicalDevice)
+void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection, CVulkanRenderer & renderer)
 {
 	if (module)
 	{
@@ -158,7 +159,7 @@ void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageF
 		m_shaderStageCreateInfos.push_back({ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, nullptr, 0, flag, module, "main", nullptr });
 		m_uniformBuffers.emplace_back();
 		m_uniformBuffers.back().cache.resize(reflection.bufferSize * 100);
-		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize * 100, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_device, physicalDevice, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize * 100, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		m_uniformBuffers.back().reflection = reflection;
 	}
 }

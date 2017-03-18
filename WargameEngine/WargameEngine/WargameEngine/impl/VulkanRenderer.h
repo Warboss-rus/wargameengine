@@ -5,13 +5,15 @@
 #include "VulkanHelpers.h"
 #include "MatrixManagerGLM.h"
 #include <map>
+#include <deque>
+#include <chrono>
 
 class CVulkanRenderer;
 
 class CCommandBufferWrapper
 {
 public:
-	CCommandBufferWrapper(VkCommandPool pool, VkDevice device, VkPhysicalDevice physicalDevice);
+	CCommandBufferWrapper(VkCommandPool pool, CVulkanRenderer & renderer);
 	CCommandBufferWrapper(const CCommandBufferWrapper & other) = delete;
 	CCommandBufferWrapper(CCommandBufferWrapper && other) = default;
 	~CCommandBufferWrapper();
@@ -22,7 +24,6 @@ public:
 	VkSemaphore GetRenderingFinishedSemaphore() const { return m_renderingFinishedSemaphore; }
 	VkFramebuffer GetFrameBuffer() const { return m_frameBuffer; }
 	void SetFrameBuffer(VkFramebuffer buffer) { m_frameBuffer = buffer; }
-	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler);
 	CVulkanSmartBuffer& GetVertexBuffer() { return m_vertexBuffer; }
 private:
 	VkCommandBuffer m_commandBuffer;
@@ -33,15 +34,13 @@ private:
 	VkCommandPool m_pool;
 	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_frameBuffer;
 	CVulkanSmartBuffer m_vertexBuffer;
-	std::vector<VkImage> m_imagesToDestroy;
-	std::vector<VkImageView> m_imageViewsToDestroy;
-	std::vector<VkSampler> m_samplersToDestroy;
 };
 
 class CSwapchainWrapper
 {
 public:
-	void Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent2D extent, VkFormat format);
+	void Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent2D extent, VkFormat format, CVulkanRenderer * renderer);
+	~CSwapchainWrapper();
 	operator VkSwapchainKHR() const { return m_swapchain; }
 	void Destroy() { m_swapchain.Destroy(); m_imageViews.clear(); }
 	size_t GetImagesCount() const { return m_images.size(); }
@@ -52,9 +51,10 @@ public:
 private:
 	CHandleWrapper<VkSwapchainKHR, vkDestroySwapchainKHR> m_swapchain;
 	std::vector<VkImage> m_images;
-	std::vector<CHandleWrapper<VkImageView, vkDestroyImageView>> m_imageViews;
+	std::vector<VkImageView> m_imageViews;
 	VkExtent2D m_extent;
 	VkFormat m_format;
+	CVulkanRenderer * m_renderer;
 };
 
 class CPipelineHelper
@@ -194,14 +194,15 @@ public:
 	VkCommandBuffer GetServiceCommandBuffer() { m_serviceCommandBuffer->WaitFence(); return *m_serviceCommandBuffer; }
 	void SubmitServiceCommandBuffer();
 	void SetSurface(VkSurfaceKHR surface);
-
+	void Resize();
 	void AcquireImage();
 	void Present();
-	VkCommandBuffer GetCommandBuffer() const { return m_activeCommandBuffer; }
+	VkCommandBuffer GetCommandBuffer() const { return *m_activeCommandBuffer; }
 	CPipelineHelper& GetPipelineHelper() { return m_pipelineHelper; }
 	VkBuffer GetEmptyBuffer() const { return *m_emptyBuffer; }
 	void BeforeDraw();
 	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler);
+	void DestroyBuffer(VkBuffer buffer);
 	
 	virtual void EnableMultisampling(bool enable) override;
 	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
@@ -262,6 +263,7 @@ private:
 	void CreateCommandBuffers();
 	VkRenderPass CreateRenderPass(VkFormat format);
 	void InitFramebuffer();
+	void FreeResources(bool force);
 
 	CInstanceWrapper<VkInstance, vkDestroyInstance> m_instance;
 	CDestructor m_debugCallbackDestructor;
@@ -279,7 +281,7 @@ private:
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
 	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_serviceFramebuffer;
 	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
-	VkCommandBuffer m_activeCommandBuffer = VK_NULL_HANDLE;
+	CCommandBufferWrapper * m_activeCommandBuffer = nullptr;
 	CVulkanDescriptorSetManager m_descriptorSetManager;
 	VkDebugReportCallbackEXT m_debugCallback;
 	std::unique_ptr<CVulkanCachedTexture> m_emptyTexture;
@@ -295,4 +297,8 @@ private:
 	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;
 	CMatrixManagerGLM m_matrixManager;
+	std::deque<std::pair<VkImage, std::chrono::high_resolution_clock::time_point>> m_imagesToDestroy;
+	std::deque<std::pair<VkImageView, std::chrono::high_resolution_clock::time_point>> m_imageViewsToDestroy;
+	std::deque<std::pair<VkSampler, std::chrono::high_resolution_clock::time_point>> m_samplersToDestroy;
+	std::deque<std::pair<VkBuffer, std::chrono::high_resolution_clock::time_point>> m_buffersToDestroy;
 };

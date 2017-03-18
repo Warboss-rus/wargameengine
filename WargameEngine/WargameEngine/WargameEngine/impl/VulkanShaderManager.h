@@ -35,7 +35,7 @@ public:
 	CVulkanShaderProgram(VkDevice device);
 	~CVulkanShaderProgram();
 
-	void AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection, VkPhysicalDevice physicalDevice);
+	void AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection, CVulkanRenderer & renderer);
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderInfo() const;
 	VkBuffer GetVertexAttribBuffer() const { return *m_uniformBuffers[0].buffer; }
 	VkBuffer GetFragmentAttribBuffer() const { return *m_uniformBuffers[1].buffer; }
@@ -60,6 +60,7 @@ private:
 class CVulkanShaderManager : public IShaderManager
 {
 public:
+	CVulkanShaderManager(CVulkanRenderer & renderer);
 	virtual std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
 	virtual void PushProgram(IShaderProgram const& program) const override;
 	virtual void PopProgram() const override;
@@ -79,14 +80,12 @@ public:
 
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
-	void SetDevice(VkDevice device, VkPhysicalDevice physicalDevice);
 	void DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler);
 	void CommitUniforms();
 	void FrameEnd();
 	const CVulkanShaderProgram* GetActiveProgram() const { return m_programsStack.back(); }
 private:
-	VkDevice m_device;
-	VkPhysicalDevice m_physicalDevice;
+	CVulkanRenderer & m_renderer;
 	std::unique_ptr<CVulkanShaderProgram> m_defaultProgram;
 	std::function<void(const CVulkanShaderProgram&)> m_onProgramChange;
 	mutable std::vector<const CVulkanShaderProgram*> m_programsStack;

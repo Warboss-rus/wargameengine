@@ -40,6 +40,10 @@ void CGameWindowGLFW::OnReshape(GLFWwindow * window, int width, int height)
 	{
 		instance->m_onResize(width, height);
 	}
+	if (instance->m_vulkanRenderer)
+	{
+		reinterpret_cast<CVulkanRenderer&>(*instance->m_renderer).Resize();
+	}
 }
 
 void CGameWindowGLFW::OnShutdown(GLFWwindow * window)
