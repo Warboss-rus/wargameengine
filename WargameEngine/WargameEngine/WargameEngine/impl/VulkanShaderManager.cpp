@@ -58,10 +58,10 @@ std::unique_ptr<IShaderProgram> CVulkanShaderManager::NewProgram(std::wstring co
 	VkShaderModule vertexShader = CompileShader(vertex, device, &vertexReflection);
 	VkShaderModule fragmentShader = CompileShader(fragment, device, &fragmentReflection);
 	VkShaderModule geometryShader = CompileShader(geometry, device, &geometryReflection);
-	auto program = std::make_unique<CVulkanShaderProgram>(device);
-	program->AddShaderModule(vertexShader, VK_SHADER_STAGE_VERTEX_BIT, vertexReflection, m_renderer);
-	program->AddShaderModule(fragmentShader, VK_SHADER_STAGE_FRAGMENT_BIT, fragmentReflection, m_renderer);
-	program->AddShaderModule(geometryShader, VK_SHADER_STAGE_GEOMETRY_BIT, geometryReflection, m_renderer);
+	auto program = std::make_unique<CVulkanShaderProgram>(m_renderer);
+	program->AddShaderModule(vertexShader, VK_SHADER_STAGE_VERTEX_BIT, vertexReflection);
+	program->AddShaderModule(fragmentShader, VK_SHADER_STAGE_FRAGMENT_BIT, fragmentReflection);
+	program->AddShaderModule(geometryShader, VK_SHADER_STAGE_GEOMETRY_BIT, geometryReflection);
 
 	VkDescriptorBufferInfo bufferInfo = {};
 
@@ -141,17 +141,17 @@ void CVulkanShaderManager::CommitUniforms()
 	m_programsStack.back()->Commit();
 }
 
-void CVulkanShaderManager::FrameEnd()
+void CVulkanShaderManager::FrameEnd() const
 {
 	m_programsStack.back()->FrameEnd();
 }
 
-CVulkanShaderProgram::CVulkanShaderProgram(VkDevice device)
-	:m_device(device)
+CVulkanShaderProgram::CVulkanShaderProgram(CVulkanRenderer & renderer)
+	:m_renderer(renderer)
 {
 }
 
-void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection, CVulkanRenderer & renderer)
+void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection)
 {
 	if (module)
 	{
@@ -159,7 +159,7 @@ void CVulkanShaderProgram::AddShaderModule(VkShaderModule module, VkShaderStageF
 		m_shaderStageCreateInfos.push_back({ VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO, nullptr, 0, flag, module, "main", nullptr });
 		m_uniformBuffers.emplace_back();
 		m_uniformBuffers.back().cache.resize(reflection.bufferSize * 100);
-		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize * 100, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		m_uniformBuffers.back().buffer = std::make_unique<CVulkanVertexAttribCache>(reflection.bufferSize * 100, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		m_uniformBuffers.back().reflection = reflection;
 	}
 }
@@ -200,9 +200,14 @@ void CVulkanShaderProgram::FrameEnd() const
 {
 	for (auto& buffer : m_uniformBuffers)
 	{
-		buffer.buffer->Upload(buffer.cache.data(), buffer.offset);
+		buffer.buffer->Upload(buffer.cache.data(), std::min(buffer.offset, buffer.cache.size()));
 		buffer.offset = 0;
 		buffer.changed = false;
+		if (buffer.offset > buffer.cache.size())
+		{
+			buffer.cache.resize(buffer.offset);
+			buffer.buffer = std::make_unique<CVulkanVertexAttribCache>(buffer.offset * 2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+		}
 	}
 }
 
@@ -210,6 +215,6 @@ CVulkanShaderProgram::~CVulkanShaderProgram()
 {
 	for (VkShaderModule module : m_modules)
 	{
-		vkDestroyShaderModule(m_device, module, nullptr);
+		vkDestroyShaderModule(m_renderer.GetDevice(), module, nullptr);
 	}
 }

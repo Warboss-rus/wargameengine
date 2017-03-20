@@ -70,9 +70,16 @@ void CMatrixManagerGLM::ResetModelView()
 	m_matricesChanged = true;
 }
 
-void CMatrixManagerGLM::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
+void CMatrixManagerGLM::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up, bool leftHanded)
 {
-	m_viewMatrix = glm::lookAt(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	if (leftHanded)
+	{
+		m_viewMatrix = glm::lookAtLH(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	}
+	else
+	{
+		m_viewMatrix = glm::lookAtRH(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
+	}
 	*m_modelMatrix = glm::mat4();
 	m_matricesChanged = true;
 }
@@ -138,5 +145,11 @@ void CMatrixManagerGLM::RestoreMatrices()
 void CMatrixManagerGLM::SetOrthographicProjection(float left, float right, float bottom, float top)
 {
 	m_projectionMatrix = glm::ortho(left, right, bottom, top);
+	m_matricesChanged = true;
+}
+
+void CMatrixManagerGLM::SetProjectionMatrix(const float * matrix)
+{
+	m_projectionMatrix = glm::make_mat4(matrix);
 	m_matricesChanged = true;
 }

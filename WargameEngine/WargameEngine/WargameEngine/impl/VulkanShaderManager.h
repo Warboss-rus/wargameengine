@@ -22,7 +22,7 @@ struct ShaderReflection
 
 struct UniformBufferWrapper
 {
-	std::unique_ptr<CVulkanVertexAttribCache> buffer;
+	mutable std::unique_ptr<CVulkanVertexAttribCache> buffer;
 	ShaderReflection reflection;
 	mutable std::vector<char> cache;
 	mutable size_t offset = 0;
@@ -32,10 +32,10 @@ struct UniformBufferWrapper
 class CVulkanShaderProgram : public IShaderProgram
 {
 public:
-	CVulkanShaderProgram(VkDevice device);
+	CVulkanShaderProgram(CVulkanRenderer & renderer);
 	~CVulkanShaderProgram();
 
-	void AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection, CVulkanRenderer & renderer);
+	void AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection);
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderInfo() const;
 	VkBuffer GetVertexAttribBuffer() const { return *m_uniformBuffers[0].buffer; }
 	VkBuffer GetFragmentAttribBuffer() const { return *m_uniformBuffers[1].buffer; }
@@ -49,7 +49,7 @@ public:
 	void Commit() const;
 	void FrameEnd() const;
 private:
-	VkDevice m_device;
+	CVulkanRenderer & m_renderer;
 	std::vector<VkShaderModule> m_modules;
 	std::vector<VkPipelineShaderStageCreateInfo> m_shaderStageCreateInfos;
 	std::vector<UniformBufferWrapper> m_uniformBuffers;
@@ -82,7 +82,7 @@ public:
 
 	void DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler);
 	void CommitUniforms();
-	void FrameEnd();
+	void FrameEnd() const;
 	const CVulkanShaderProgram* GetActiveProgram() const { return m_programsStack.back(); }
 private:
 	CVulkanRenderer & m_renderer;

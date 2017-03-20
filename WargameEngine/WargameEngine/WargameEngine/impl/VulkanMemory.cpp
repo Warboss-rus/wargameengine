@@ -200,8 +200,8 @@ void CVulkanMemoryManager::FreeMemoryImpl(VkDeviceMemory memory, VkDeviceSize of
 	});
 	if (mergeIt != it->freeMemory.end())
 	{
-		it->freeMemory.erase(insertedIt);
 		mergeIt->second += size;
+		it->freeMemory.erase(insertedIt);
 	}
 }
 

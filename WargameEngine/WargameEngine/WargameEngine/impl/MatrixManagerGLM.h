@@ -22,7 +22,7 @@ public:
 	void GetModelViewMatrix(float * matrix) const;
 	void GetProjectionMatrix(float * matrix) const;
 	void ResetModelView();
-	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up);
+	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up, bool leftHanded = false);
 	void WindowCoordsToWorldVector(int x, int y, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, CVector3f & start, CVector3f & end) const;
 	void WorldCoordsToWindowCoords(CVector3f const& worldCoords, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, int& x, int& y) const;
 	void SetUpViewport(unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane);
@@ -30,6 +30,7 @@ public:
 	void SaveMatrices();
 	void RestoreMatrices();
 	void SetOrthographicProjection(float left, float right, float bottom, float top);
+	void SetProjectionMatrix(const float * matrix);
 private:
 	std::vector<glm::mat4> m_modelMatrices;
 	glm::mat4* m_modelMatrix;

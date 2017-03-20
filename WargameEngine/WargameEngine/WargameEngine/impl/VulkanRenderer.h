@@ -18,15 +18,21 @@ public:
 	CCommandBufferWrapper(CCommandBufferWrapper && other) = default;
 	~CCommandBufferWrapper();
 	operator VkCommandBuffer() const { return m_commandBuffer; }
+
 	void WaitFence();
+	void Begin();
+	void End();
+
 	VkFence GetFence() const { return m_fence; }
 	VkSemaphore GetImageAvailibleSemaphore() const { return m_imageAvailibleSemaphore; }
 	VkSemaphore GetRenderingFinishedSemaphore() const { return m_renderingFinishedSemaphore; }
 	VkFramebuffer GetFrameBuffer() const { return m_frameBuffer; }
 	void SetFrameBuffer(VkFramebuffer buffer) { m_frameBuffer = buffer; }
 	CVulkanSmartBuffer& GetVertexBuffer() { return m_vertexBuffer; }
+	VkCommandBuffer GetServiceCommandBuffer() const { return m_serviceCommandBuffer; }
 private:
 	VkCommandBuffer m_commandBuffer;
+	VkCommandBuffer m_serviceCommandBuffer;
 	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_imageAvailibleSemaphore;
 	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_renderingFinishedSemaphore;
 	CHandleWrapper<VkFence, vkDestroyFence> m_fence;
@@ -119,7 +125,7 @@ public:
 	CVulkanCachedTexture(CVulkanRenderer & renderer);
 	~CVulkanCachedTexture();
 	void Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type = CachedTextureType::RGBA, int flags = 0, VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT);
-	void Upload(const void * data, VkCommandBuffer commandBuffer);
+	void Upload(const void * data);
 	operator VkImage() const { return m_image; }
 	VkImageView GetImageView() const { return m_imageView; }
 	VkSampler GetSampler() const { return m_sampler; }
@@ -192,8 +198,6 @@ public:
 	VkDevice GetDevice() const { return m_device; }
 	VkPhysicalDevice GetPhysicalDevice() const { return m_physicalDevice; }
 	CVulkanMemoryManager& GetMemoryManager() { return *m_memoryManager; }
-	VkCommandBuffer GetServiceCommandBuffer() { m_serviceCommandBuffer->WaitFence(); return *m_serviceCommandBuffer; }
-	void SubmitServiceCommandBuffer();
 	void SetSurface(VkSurfaceKHR surface);
 	void Resize();
 	void AcquireImage();
@@ -280,8 +284,6 @@ private:
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_serviceRenderPass;
 	std::unique_ptr<CVulkanMemoryManager> m_memoryManager;
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
-	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_serviceFramebuffer;
-	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
 	CCommandBufferWrapper * m_activeCommandBuffer = nullptr;
 	CVulkanDescriptorSetManager m_descriptorSetManager;
 	VkDebugReportCallbackEXT m_debugCallback;
@@ -298,8 +300,10 @@ private:
 	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;
 	CMatrixManagerGLM m_matrixManager;
-	std::deque<std::pair<VkImage, std::chrono::high_resolution_clock::time_point>> m_imagesToDestroy;
-	std::deque<std::pair<VkImageView, std::chrono::high_resolution_clock::time_point>> m_imageViewsToDestroy;
-	std::deque<std::pair<VkSampler, std::chrono::high_resolution_clock::time_point>> m_samplersToDestroy;
-	std::deque<std::pair<VkBuffer, std::chrono::high_resolution_clock::time_point>> m_buffersToDestroy;
+	using time_point = std::chrono::high_resolution_clock::time_point;
+	std::deque<std::pair<VkImage, time_point>> m_imagesToDestroy;
+	std::deque<std::pair<VkImageView, time_point>> m_imageViewsToDestroy;
+	std::deque<std::pair<VkSampler, time_point>> m_samplersToDestroy;
+	std::deque<std::pair<VkBuffer, time_point>> m_buffersToDestroy;
+	std::deque<std::pair<std::unique_ptr<CCommandBufferWrapper>, time_point>> m_commandBuffersToDestroy;
 };

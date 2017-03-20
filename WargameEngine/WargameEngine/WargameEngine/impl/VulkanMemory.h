@@ -67,7 +67,7 @@ public:
 	operator VkBuffer() const { return m_buffer; }
 private:
 	CVulkanRenderer * m_renderer;
-	VkBuffer m_buffer;
+	VkBuffer m_buffer = VK_NULL_HANDLE;
 	std::unique_ptr<CVulkanMemory> m_memory;
 	VkBufferUsageFlags m_flags;
 };
