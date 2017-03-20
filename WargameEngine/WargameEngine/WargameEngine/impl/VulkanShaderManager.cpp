@@ -200,7 +200,7 @@ void CVulkanShaderProgram::FrameEnd() const
 {
 	for (auto& buffer : m_uniformBuffers)
 	{
-		buffer.buffer->Upload(buffer.cache.data(), std::min(buffer.offset, buffer.cache.size()));
+		buffer.buffer->Upload(buffer.cache.data(), std::min(std::max(buffer.offset, buffer.reflection.bufferSize), buffer.cache.size()));
 		buffer.offset = 0;
 		buffer.changed = false;
 		if (buffer.offset > buffer.cache.size())

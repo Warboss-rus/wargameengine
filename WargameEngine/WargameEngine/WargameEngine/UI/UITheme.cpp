@@ -22,7 +22,7 @@ CUITheme::CUITheme()
 	}
 	defaultColor[3] = 1.0f;
 	textfieldColor[3] = 1.0f;
-	text.color[3] = 0.0f;
+	text.color[3] = 1.0f;
 	//text
 	text.font = "times.ttf";
 	text.fontSize = 18;
