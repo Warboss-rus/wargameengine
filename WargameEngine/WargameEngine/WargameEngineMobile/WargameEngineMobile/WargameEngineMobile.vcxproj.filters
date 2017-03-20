@@ -323,9 +323,6 @@
     <ClInclude Include="..\..\WargameEngine\view\3dModel.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\FixedCamera.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\GameView.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -345,9 +342,6 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\InputBase.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\IParticleEffect.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\IRenderer.h">
@@ -547,6 +541,12 @@
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp">
       <Filter>Source Files\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\IPhysicsEngine.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\FixedCamera.h">
+      <Filter>Source Files\view\Cameras</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

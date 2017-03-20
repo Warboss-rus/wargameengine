@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <android/log.h>
+#include <dlfcn.h>
 #include "android_native_app_glue.h"
 #include "..\..\WargameEngine\view\GameView.h"
 #include "..\..\WargameEngine\impl\SoundPlayerOpenSLES.h"
@@ -124,11 +125,15 @@ void android_main(struct android_app* state) {
 	}
 	try
 	{
+#ifdef RENDERER_VULKAN
+		dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
+#endif
 		context.window = std::make_unique<WINDOW_CLASS>(state);
 	}
 	catch (std::exception const& e)
 	{
-		LOGW((std::string("Cannot create vulkan renderer: ") + e.what()).c_str());
+		std::string ex = e.what();
+		LOGW(("Cannot create vulkan renderer: " + ex).c_str());
 	}
 	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());

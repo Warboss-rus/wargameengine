@@ -125,6 +125,7 @@
     <ClInclude Include="..\..\WargameEngine\controller\ScriptUIProtocol.h" />
     <ClInclude Include="..\..\WargameEngine\controller\ScriptViewportProtocol.h" />
     <ClInclude Include="..\..\WargameEngine\IMemoryStream.h" />
+    <ClInclude Include="..\..\WargameEngine\IPhysicsEngine.h" />
     <ClInclude Include="..\..\WargameEngine\ITask.h" />
     <ClInclude Include="..\..\WargameEngine\LogWriter.h" />
     <ClInclude Include="..\..\WargameEngine\MemoryStream.h" />
@@ -183,7 +184,6 @@
     <ClInclude Include="..\..\WargameEngine\view\IInput.h" />
     <ClInclude Include="..\..\WargameEngine\view\IModelReader.h" />
     <ClInclude Include="..\..\WargameEngine\view\InputBase.h" />
-    <ClInclude Include="..\..\WargameEngine\view\IParticleEffect.h" />
     <ClInclude Include="..\..\WargameEngine\view\IRenderer.h" />
     <ClInclude Include="..\..\WargameEngine\view\IShaderManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\ISoundPlayer.h" />

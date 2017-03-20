@@ -49,7 +49,7 @@ private:
 		uint32_t memoryTypeBits;
 		VkMemoryPropertyFlags usageFlags;
 	};
-	std::vector<MemoryChunk> m_ñhunks;
+	std::vector<MemoryChunk> m_chunks;
 	VkDeviceSize m_chunkSize;
 	std::deque<std::tuple<VkDeviceMemory, VkDeviceSize, VkDeviceSize, int>> m_delayedFreeMemory;
 };
@@ -57,30 +57,19 @@ private:
 class CVulkanVertexAttribCache : public IVertexAttribCache
 {
 public:
-	CVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, CVulkanRenderer & renderer, VkFlags properties, const void * data = nullptr);
+	CVulkanVertexAttribCache(VkDeviceSize size, VkBufferUsageFlags flags, CVulkanRenderer & renderer, VkMemoryPropertyFlags properties, const void * data = nullptr);
 	CVulkanVertexAttribCache(const CVulkanVertexAttribCache & other) = delete;
 	CVulkanVertexAttribCache(CVulkanVertexAttribCache && other) = default;
 	CVulkanVertexAttribCache& operator=(CVulkanVertexAttribCache const& other) = delete;
 	~CVulkanVertexAttribCache();
-	void Upload(const void* data, size_t size);
+	void Upload(const void* data, VkDeviceSize size);
+	void UploadStaged(const void* data, VkDeviceSize size, VkCommandBuffer commandBuffer);
 	operator VkBuffer() const { return m_buffer; }
 private:
 	CVulkanRenderer * m_renderer;
 	VkBuffer m_buffer;
 	std::unique_ptr<CVulkanMemory> m_memory;
-};
-
-class CStagedVulkanVertexAttribCache : public IVertexAttribCache
-{
-public:
-	CStagedVulkanVertexAttribCache(size_t size, VkBufferUsageFlags flags, CVulkanRenderer & renderer);
-	void Upload(const void* data, size_t size, VkCommandBuffer commandBuffer);
-	size_t GetSize() const { return m_size; }
-	operator VkBuffer() const { return m_deviceBuffer; }
-private:
-	CVulkanVertexAttribCache m_deviceBuffer;
-	CVulkanVertexAttribCache m_stageBuffer;
-	size_t m_size;
+	VkBufferUsageFlags m_flags;
 };
 
 class CVulkanSmartBuffer

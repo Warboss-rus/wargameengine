@@ -18,7 +18,7 @@ void CGameWindowAndroidVulkan::Init(ANativeWindow * window)
 
 void CGameWindowAndroidVulkan::DrawFrame()
 {
-	if (m_active)
+	if (m_active && m_app->window)
 	{
 		m_renderer.AcquireImage();
 		m_onDraw();
@@ -132,6 +132,14 @@ void CGameWindowAndroidVulkan::EnableMultisampling(bool enable, int level /*= 1.
 
 void CGameWindowAndroidVulkan::GetWindowSize(int& width, int& height)
 {
-	width = ANativeWindow_getWidth(m_app->window);
-	height = ANativeWindow_getHeight(m_app->window);
+	if (m_app->window)
+	{
+		width = ANativeWindow_getWidth(m_app->window);
+		height = ANativeWindow_getHeight(m_app->window);
+	}
+	else
+	{
+		width = 1920;
+		height = 1080;
+	}
 }

@@ -109,14 +109,15 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 {
 	VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO, nullptr, "WargameEngine", VK_MAKE_VERSION(1, 0, 0), "WargameEngine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0 };
 	const std::vector<const char*> validationLayers = {
-#ifndef NDEBUG
+#ifdef _DEBUG
 		"VK_LAYER_LUNARG_standard_validation"
 #endif
 	};
+
 	VkInstanceCreateInfo instanceInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, nullptr, 0, &appInfo, static_cast<uint32_t>(validationLayers.size()), validationLayers.data(), static_cast<uint32_t>(instanceExtensions.size()), instanceExtensions.data() };
 	VkResult result = vkCreateInstance(&instanceInfo, nullptr, &m_instance);
 	CHECK_VK_RESULT(result, "Cannot create vulkan instance");
-#ifndef NDEBUG
+#ifdef _DEBUG
 	VkDebugReportCallbackCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
@@ -173,7 +174,12 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	CreateCommandBuffers();
 	m_renderPass = CreateRenderPass(m_swapchain.GetFormat());
 	m_renderPass.SetDevice(m_device);
-	m_defaultProgram = m_shaderManager.NewProgram(L"Killteam/shaders/Vulkan/vert.spv", L"Killteam/shaders/Vulkan/frag.spv");
+#ifdef TO_STRING_HACK
+	std::wstring shaderLocation = L"/sdcard/WargameEngine/Killteam/shaders/Vulkan/";
+#else
+	std::wstring shaderLocation = L"Killteam/shaders/Vulkan/";
+#endif
+	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation + L"vert.spv", shaderLocation + L"frag.spv");
 	m_shaderManager.PushProgram(*m_defaultProgram);
 	m_pipelineHelper.SetShaderProgram(*reinterpret_cast<CVulkanShaderProgram*>(m_defaultProgram.get()));
 	m_pipelineHelper.SetVertexAttributes({
@@ -580,7 +586,12 @@ void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICache
 	vkCmdSetScissor(*m_activeCommandBuffer, 0, 1, &scissor);
 	m_pipelineHelper.Bind(*m_activeCommandBuffer);
 	m_descriptorSetManager.BindAll(*m_activeCommandBuffer, m_pipelineHelper.GetLayout());
+	m_matrixManager.SaveMatrices();
+	m_matrixManager.SetOrthographicProjection(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
+	m_matrixManager.ResetModelView();
+	//ClearBuffers(true, false);
 	func();
+	m_matrixManager.RestoreMatrices();
 	m_activeCommandBuffer->GetVertexBuffer().Commit(false);
 	vkCmdEndRenderPass(*m_activeCommandBuffer);
 	vkEndCommandBuffer(*m_activeCommandBuffer);
@@ -665,7 +676,7 @@ void CVulkanRenderer::CreateDeviceAndQueues()
 	{
 		throw std::runtime_error("Cannot find compatible physical device");
 	}
-	std::vector<char*> deviceExtensions = {
+	std::vector<const char*> deviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 	std::vector<float> queue_priorities = { 1.0f };
@@ -1041,30 +1052,32 @@ void CVulkanCachedTexture::Upload(const void * data, VkCommandBuffer commandBuff
 }
 
 CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)
-	: m_vertexCache((vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) + (texcoords ? size * 2 * sizeof(float) : 0), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, *renderer)
+	: m_size((vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) + (texcoords ? size * 2 * sizeof(float) : 0))
+	, m_vertexCache(m_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *renderer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	, m_renderer(renderer)
 {
-	if (size == 0) return;
-	m_offsets[0] = 0;
-	m_offsets[1] = normals ? (vertex ? size * 3 * sizeof(float) : 0) : 0;
-	m_offsets[2] = texcoords ? (vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) : 0;
-	std::vector<char> data(m_vertexCache.GetSize());
+	m_offsets[0] = vertex ? 0 : -1;
+	m_offsets[1] = normals ? (vertex ? size * 3 * sizeof(float) : 0) : -1;
+	m_offsets[2] = texcoords ? (vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) : -1;
+	if (m_size == 0) return;
+	std::vector<char> data(static_cast<size_t>(m_size));
 	if (vertex) memcpy(data.data() + m_offsets[0], vertex, size * 3 * sizeof(float));
 	if (normals) memcpy(data.data() + m_offsets[1], normals, size * 3 * sizeof(float));
 	if (texcoords) memcpy(data.data() + m_offsets[2], texcoords, size * 2 * sizeof(float));
 	VkCommandBufferBeginInfo command_buffer_begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
 	vkBeginCommandBuffer(commandBuffer, &command_buffer_begin_info);
-	m_vertexCache.Upload(data.data(), data.size(), commandBuffer);
+	m_vertexCache.UploadStaged(data.data(), data.size(), commandBuffer);
 	vkEndCommandBuffer(commandBuffer);
 }
 
 void CVulkanVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
 {
-	m_indexCache = std::make_unique<CStagedVulkanVertexAttribCache>(indexesSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, *m_renderer);
+	if (!indexPtr || indexesSize == 0) return;
+	m_indexCache = std::make_unique<CVulkanVertexAttribCache>(indexesSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *m_renderer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	VkCommandBufferBeginInfo command_buffer_begin_info = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
 	VkCommandBuffer commandBuffer = m_renderer->GetServiceCommandBuffer();
 	vkBeginCommandBuffer(commandBuffer, &command_buffer_begin_info);
-	m_indexCache->Upload(indexPtr, indexesSize * sizeof(float), commandBuffer);
+	m_indexCache->UploadStaged(indexPtr, indexesSize * sizeof(float), commandBuffer);
 	vkEndCommandBuffer(commandBuffer);
 	m_renderer->SubmitServiceCommandBuffer();
 }
@@ -1075,7 +1088,11 @@ void CVulkanVertexBuffer::Bind() const
 	auto& pipelineHelper = m_renderer->GetPipelineHelper();
 	pipelineHelper.SetTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 	pipelineHelper.Bind(m_renderer->GetCommandBuffer());
-	VkBuffer buffers[] = { m_vertexCache, m_offsets[1] != 0 ? m_vertexCache : m_renderer->GetEmptyBuffer(), m_offsets[2] != 0 ? m_vertexCache : m_renderer->GetEmptyBuffer() };
+	VkBuffer buffers[3];
+	for (size_t i = 0; i < sizeof(buffers) / sizeof(buffers[0]); ++i)
+	{
+		buffers[i] = (m_offsets[i] != -1) ? m_vertexCache : m_renderer->GetEmptyBuffer();
+	}
 	vkCmdBindVertexBuffers(m_renderer->GetCommandBuffer(), 0, 3, buffers, m_offsets);
 	if (m_indexCache)
 	{

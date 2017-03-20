@@ -126,8 +126,8 @@ void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, 
 
 std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	auto result = std::make_unique<CStagedVulkanVertexAttribCache>(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, m_renderer);
-	result->Upload(value, size, VK_NULL_HANDLE);
+	auto result = std::make_unique<CVulkanVertexAttribCache>(size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, m_renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	result->Upload(value, size);
 	return std::move(result);
 }
 
