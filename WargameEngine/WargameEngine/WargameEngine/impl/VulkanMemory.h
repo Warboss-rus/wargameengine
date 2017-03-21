@@ -22,11 +22,13 @@ public:
 	operator VkDeviceMemory() const { return m_memory; }
 	VkDeviceSize GetOffset() const { return m_offset; }
 	VkDeviceSize GetSize() const { return m_size; }
+	void SetDelayedFree(bool delayed) { m_delayedFree = delayed; }
 private:
 	CVulkanMemoryManager & m_manager;
 	VkDeviceMemory m_memory;
 	VkDeviceSize m_offset;
 	VkDeviceSize m_size;
+	bool m_delayedFree = false;
 };
 
 class CVulkanMemoryManager

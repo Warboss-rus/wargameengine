@@ -6,7 +6,6 @@
 #include "MatrixManagerGLM.h"
 #include <map>
 #include <deque>
-#include <chrono>
 
 class CVulkanRenderer;
 
@@ -29,10 +28,8 @@ public:
 	VkFramebuffer GetFrameBuffer() const { return m_frameBuffer; }
 	void SetFrameBuffer(VkFramebuffer buffer) { m_frameBuffer = buffer; }
 	CVulkanSmartBuffer& GetVertexBuffer() { return m_vertexBuffer; }
-	VkCommandBuffer GetServiceCommandBuffer() const { return m_serviceCommandBuffer; }
 private:
 	VkCommandBuffer m_commandBuffer;
-	VkCommandBuffer m_serviceCommandBuffer;
 	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_imageAvailibleSemaphore;
 	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_renderingFinishedSemaphore;
 	CHandleWrapper<VkFence, vkDestroyFence> m_fence;
@@ -125,20 +122,23 @@ public:
 	CVulkanCachedTexture(CVulkanRenderer & renderer);
 	~CVulkanCachedTexture();
 	void Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type = CachedTextureType::RGBA, int flags = 0, VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT);
-	void Upload(const void * data);
+	void Upload(const void * data, CVulkanMemoryManager & memoryManager, VkCommandBuffer commandBuffer);
 	operator VkImage() const { return m_image; }
 	VkImageView GetImageView() const { return m_imageView; }
 	VkSampler GetSampler() const { return m_sampler; }
 private:
+	static void TransferImageLayout(VkImage stageImage, VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout);
+	std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CreateTexture(bool deviceLocal);
 	VkImage m_image = VK_NULL_HANDLE;
 	std::unique_ptr<CVulkanMemory> m_memory;
 	VkImageView m_imageView = VK_NULL_HANDLE;
 	VkSampler m_sampler = VK_NULL_HANDLE;
-	VkDeviceSize m_size = 0;
 	VkExtent3D m_extent = {0, 0, 0};
 	VkDevice m_device;
 	uint32_t m_components = 0;
 	CVulkanRenderer * m_renderer = nullptr;
+	VkFormat m_format;
+	VkImageUsageFlags m_usageFlags;
 };
 
 class CVulkanVertexBuffer : public IVertexBuffer
@@ -269,11 +269,13 @@ private:
 	VkRenderPass CreateRenderPass(VkFormat format);
 	void InitFramebuffer();
 	void FreeResources(bool force);
+	void BeginServiceCommandBuffer();
 
 	CInstanceWrapper<VkInstance, vkDestroyInstance> m_instance;
 	CDestructor m_debugCallbackDestructor;
 	VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
 	CInstanceWrapper<VkDevice, vkDestroyDevice> m_device;
+	std::unique_ptr<CVulkanMemoryManager> m_memoryManager;
 	VkQueue m_graphicsQueue = VK_NULL_HANDLE;
 	VkQueue m_presentQueue = VK_NULL_HANDLE;
 	VkSurfaceKHR m_surface = VK_NULL_HANDLE;
@@ -282,8 +284,9 @@ private:
 	CHandleWrapper<VkCommandPool, vkDestroyCommandPool> m_commandPool;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_renderPass;
 	CHandleWrapper<VkRenderPass, vkDestroyRenderPass> m_serviceRenderPass;
-	std::unique_ptr<CVulkanMemoryManager> m_memoryManager;
 	std::vector<CCommandBufferWrapper> m_commandBuffers;
+	std::unique_ptr<CCommandBufferWrapper> m_serviceCommandBuffer;
+	bool m_serviceBufferIsActive = false;
 	CCommandBufferWrapper * m_activeCommandBuffer = nullptr;
 	CVulkanDescriptorSetManager m_descriptorSetManager;
 	VkDebugReportCallbackEXT m_debugCallback;
@@ -300,10 +303,9 @@ private:
 	VkViewport m_viewport;
 	CTextureManager * m_textureManager = nullptr;
 	CMatrixManagerGLM m_matrixManager;
-	using time_point = std::chrono::high_resolution_clock::time_point;
-	std::deque<std::pair<VkImage, time_point>> m_imagesToDestroy;
-	std::deque<std::pair<VkImageView, time_point>> m_imageViewsToDestroy;
-	std::deque<std::pair<VkSampler, time_point>> m_samplersToDestroy;
-	std::deque<std::pair<VkBuffer, time_point>> m_buffersToDestroy;
-	std::deque<std::pair<std::unique_ptr<CCommandBufferWrapper>, time_point>> m_commandBuffersToDestroy;
+	std::deque<std::pair<VkImage, int>> m_imagesToDestroy;
+	std::deque<std::pair<VkImageView, int>> m_imageViewsToDestroy;
+	std::deque<std::pair<VkSampler, int>> m_samplersToDestroy;
+	std::deque<std::pair<VkBuffer, int>> m_buffersToDestroy;
+	std::deque<std::pair<std::unique_ptr<CCommandBufferWrapper>, int>> m_commandBuffersToDestroy;
 };

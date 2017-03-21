@@ -3,7 +3,13 @@
 #include <dlfcn.h>
 #include "android_native_app_glue.h"
 #include "..\..\WargameEngine\view\GameView.h"
+#ifdef SOUND_FMOD
+#include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
+#define SOUND_PLAYER_CLASS CSoundPlayerFMod
+#else
 #include "..\..\WargameEngine\impl\SoundPlayerOpenSLES.h"
+#define SOUND_PLAYER_CLASS CSoundPlayerOpenSLES
+#endif
 #include "..\..\WargameEngine\impl\TextWriter.h"
 #include "..\..\WargameEngine\impl\ScriptHandlerLua.h"
 #include "..\..\WargameEngine\impl\NetSocket.h"
@@ -135,7 +141,11 @@ void android_main(struct android_app* state) {
 		std::string ex = e.what();
 		LOGW(("Cannot create vulkan renderer: " + ex).c_str());
 	}
-	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
+#ifdef SOUND_FMOD
+	void* lib = dlopen("libfmod.so", RTLD_NOW | RTLD_LOCAL);
+	lib = dlopen("libfmodL.so", RTLD_NOW | RTLD_LOCAL);
+#endif
+	context.soundPlayer = std::make_unique<SOUND_PLAYER_CLASS>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");

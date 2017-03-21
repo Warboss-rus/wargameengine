@@ -1,6 +1,7 @@
 #include "SoundPlayerFMod.h"
 #include <stdlib.h>
 #include "../Utils.h"
+#include "../LogWriter.h"
 
 void CSoundPlayerFMod::Init()
 {
@@ -8,7 +9,11 @@ void CSoundPlayerFMod::Init()
 	{
 		return;
 	}
-	m_system->init(512, FMOD_INIT_NORMAL, NULL);
+	FMOD_RESULT result = m_system->init(512, FMOD_INIT_NORMAL, NULL);
+	if (result != FMOD_OK)
+	{
+		LogWriter::WriteLine("Cannot init fmod: " + std::to_string(result));
+	}
 }
 
 void CSoundPlayerFMod::Play(std::wstring const& channelName, std::wstring const& file, float volume /*= 1.0f*/)
@@ -78,7 +83,8 @@ void CSoundPlayerFMod::PlaySoundPlaylist(std::wstring const& name, std::vector<s
 {
 	StopChannel(name);
 	sPlaylist playlist;
-	m_system->createChannelGroup(WStringToUtf8(name).c_str(), &playlist.group);
+	std::string nameStr = WStringToUtf8(name);
+	m_system->createChannelGroup(nameStr.c_str(), &playlist.group);
 	playlist.group->setVolume(volume);
 	playlist.repeat = repeat;
 	playlist.shuffle = shuffle;
