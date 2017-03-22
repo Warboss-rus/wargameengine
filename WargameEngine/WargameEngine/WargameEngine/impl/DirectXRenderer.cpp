@@ -190,7 +190,7 @@ public:
 			m_renderTargetView = nullptr;
 
 			D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-			renderTargetViewDesc.Format = type == CachedTextureType::RGBA ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_A8_UNORM;
+			renderTargetViewDesc.Format = (type == CachedTextureType::RGBA || type == CachedTextureType::RENDER_TARGET) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_A8_UNORM;
 			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			renderTargetViewDesc.Texture2D.MipSlice = 0;
 
@@ -393,7 +393,7 @@ std::map<RenderMode, D3D11_PRIMITIVE_TOPOLOGY> renderModeMap = {
 	{ RenderMode::TRIANGLE_STRIP, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP },
 };
 
-void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
+void CDirectXRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
 {
 	UpdateMatrices();
 	UINT stride[] = { sizeof(CVector2f), sizeof(CVector2f), sizeof(CVector3f) };
@@ -420,7 +420,7 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> cons
 	m_devcon->Draw(vertices.size(), 0);
 }
 
-void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
+void CDirectXRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	UpdateMatrices();
 	UINT stride[] = { sizeof(CVector3f), sizeof(CVector2f), sizeof(CVector3f) };
@@ -442,8 +442,9 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> cons
 
 void CDirectXRenderer::SetColor(const int * color)
 {
-	float fcolor[4] = { static_cast<float>(INT_MAX) / color[0], static_cast<float>(INT_MAX) / color[1], static_cast<float>(INT_MAX) / color[2], 1.0f };
-	m_shaderManager.SetColor(fcolor);
+	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
+	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), charToFloat(color[3]) };
+	SetColor(fcolor);
 }
 
 void CDirectXRenderer::SetColor(const float * color)
@@ -453,14 +454,14 @@ void CDirectXRenderer::SetColor(const float * color)
 
 void CDirectXRenderer::SetColor(const int r, const int g, const int b, const int a)
 {
-	float fcolor[4] = { static_cast<float>(INT_MAX) / r, static_cast<float>(INT_MAX) / g, static_cast<float>(INT_MAX) / b, static_cast<float>(INT_MAX) / a };
-	m_shaderManager.SetColor(fcolor);
+	const int color[] = { r, g, b, a };
+	SetColor(color);
 }
 
 void CDirectXRenderer::SetColor(const float r, const float g, const float b, const float a)
 {
-	float fcolor[4] = { r, g, b, a };
-	m_shaderManager.SetColor(fcolor);
+	const float color[] = { r, g, b, a };
+	SetColor(color);
 }
 
 void CDirectXRenderer::PushMatrix()
@@ -563,7 +564,7 @@ void CDirectXRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slo
 	m_devcon->PSSetShaderResources(static_cast<UINT>(slot), 1, views);
 }
 
-std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
+void CDirectXRenderer::RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height)
 {
 	CComPtr<ID3D11RenderTargetView> oldRenderTargetView;
 	CComPtr<ID3D11DepthStencilView> oldDepthStencilView;
@@ -577,15 +578,14 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 	PushMatrix();
 	ResetViewMatrix();
 
-	auto tex = std::make_unique<CDirectXCachedTexture>();
-	CreateTexture(width, height, TEXTURE_HAS_ALPHA, NULL, &tex->m_texture, &tex->m_resourceView, true);
+	auto& tex = reinterpret_cast<CDirectXCachedTexture&>(texture);
 
 	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
 	renderTargetViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	renderTargetViewDesc.Texture2D.MipSlice = 0;
 	CComPtr<ID3D11RenderTargetView> renderTargetView;
-	HRESULT hr = m_dev->CreateRenderTargetView(tex->m_texture, &renderTargetViewDesc, &renderTargetView);
+	HRESULT hr = m_dev->CreateRenderTargetView(tex.m_texture, &renderTargetViewDesc, &renderTargetView);
 	if (FAILED(hr))
 	{
 		LogWriter::WriteLine("DirectX error: Cannot create render target view for texture rendering");
@@ -604,14 +604,12 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::RenderToTexture(std::function<
 	m_projectionMatrix = oldProjectionMatrix;
 	m_viewMatrix = oldViewMatrix;
 	PopMatrix();
-
-	return std::move(tex);
 }
 
 std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type /*= CachedTextureType::RGBA*/)
 {
 	auto tex = std::make_unique<CDirectXCachedTexture>();
-	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, type != CachedTextureType::ALPHA, 0, type);
+	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, 0, type);
 	return std::move(tex);
 }
 
@@ -858,14 +856,14 @@ void CDirectXRenderer::UploadTexture(ICachedTexture & texture, unsigned char * d
 	assert(bpp == 32);
 	bpp;
 	auto& dxtexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
-	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, 0, CachedTextureType::RGBA, mipmaps);
+	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, 0, CachedTextureType::RGBA, mipmaps);
 
 }
 
 void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, unsigned int width, unsigned int height, size_t size, int flags, TextureMipMaps const& mipmaps /*= TextureMipMaps()*/)
 {
 	auto& dxtexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
-	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, size, CachedTextureType::RGBA, mipmaps);
+	CreateTexture(width, height, flags, data, &dxtexture.m_texture, &dxtexture.m_resourceView, size, CachedTextureType::RGBA, mipmaps);
 }
 
 void CDirectXRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short bpp, int flags)
@@ -873,7 +871,7 @@ void CDirectXRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps co
 	auto& dxtexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
 	const sTextureMipMap& first = sides[0];
 	TextureMipMaps mipmaps(sides.begin() + 1, sides.end());
-	CreateTexture(first.width, first.height, flags, first.data, &dxtexture.m_texture, &dxtexture.m_resourceView, false, 0, CachedTextureType::RGBA, mipmaps, true);
+	CreateTexture(first.width, first.height, flags, first.data, &dxtexture.m_texture, &dxtexture.m_resourceView, 0, CachedTextureType::RGBA, mipmaps, true);
 }
 
 bool CDirectXRenderer::Force32Bits() const
@@ -1011,7 +1009,7 @@ ID3D11DeviceContext * CDirectXRenderer::GetContext()
 }
 
 void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, int flags, const void * data, ID3D11Texture2D ** texture, ID3D11ShaderResourceView ** resourceView, 
-	bool renderTarget, size_t size, CachedTextureType type, TextureMipMaps const& mipmaps, bool cubemap)
+	size_t size, CachedTextureType type, TextureMipMaps const& mipmaps, bool cubemap)
 {
 	if (width == 0 || height == 0) return;
 	D3D11_TEXTURE2D_DESC desc;
@@ -1037,7 +1035,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	if (renderTarget || flags & TEXTURE_BUILD_MIPMAPS) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	if (type == CachedTextureType::RENDER_TARGET || flags & TEXTURE_BUILD_MIPMAPS) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 	if (type == CachedTextureType::DEPTH)
 	{
 		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;

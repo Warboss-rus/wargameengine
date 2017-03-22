@@ -18,12 +18,8 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		std::wstring text = args.GetWStr(6);
-		std::wstring callback = args.GetWStr(7);
-		auto onClick = [callback, &handler]()
-		{ 
-			handler.CallFunction(callback);
-		};
-		IUIElement * button = c->AddNewButton(name, x, y, height, width, transMan.GetTranslation(text), onClick);
+		auto callback = args.GetFunction(7);
+		IUIElement * button = c->AddNewButton(name, x, y, height, width, transMan.GetTranslation(text), std::bind(callback, FunctionArguments()));
 		return FunctionArgument(button, L"UI");
 	});
 

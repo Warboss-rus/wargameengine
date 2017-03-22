@@ -299,6 +299,7 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="array_view.h" />
     <ClInclude Include="AsyncFileProvider.h" />
     <ClInclude Include="controller\INetSocket.h" />
     <ClInclude Include="controller\IScriptHandler.h" />

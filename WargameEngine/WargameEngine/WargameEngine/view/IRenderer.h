@@ -1,11 +1,11 @@
 #pragma once
 #include "Vector3.h"
 #include <string>
-#include <vector>
 #include <memory>
 #include <functional>
 #include <limits.h>
 #include "../model/TeamColor.h"
+#include "../array_view.h"
 
 class IShaderManager;
 
@@ -21,7 +21,8 @@ enum class CachedTextureType
 {
 	RGBA,
 	ALPHA,
-	DEPTH
+	DEPTH,
+	RENDER_TARGET
 };
 
 enum class Feature
@@ -68,8 +69,8 @@ public:
 class IRenderer
 {
 public:
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) = 0;
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords) = 0;
+	virtual void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) = 0;
+	virtual void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) = 0;
 	virtual void SetColor(const float r, const float g, const float b, const float a = 1.0f) = 0;
 	virtual void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) = 0;
 	virtual void SetColor(const float * color) = 0;

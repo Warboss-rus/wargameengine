@@ -448,23 +448,6 @@ void RegisterViewFunctions(IScriptHandler & handler, CGameView & view)
 	});
 }
 
-auto GetCallbackFunction (IScriptHandler & handler, IArguments const& args, int index = 1)
-{
-	std::function<void()> function;
-	if (args.IsStr(index))
-	{
-		std::wstring func = args.GetWStr(1);
-		if (!func.empty())
-		{
-			function = [func, &handler]()
-			{
-				handler.CallFunction(func);
-			};
-		}
-	}
-	return function;
-};
-
 void RegisterControllerFunctions(IScriptHandler & handler, CGameController & controller, CAsyncFileProvider & fileProvider, ThreadPool & threadPool)
 {
 	handler.RegisterFunction(DELETE_TIMED_CALLBACK, [&](IArguments const& args) {
@@ -507,7 +490,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
-		std::function<void()> function = GetCallbackFunction(handler, args, 1);
+		std::function<void()> function = std::bind(args.GetFunction(1), FunctionArguments());
 		controller.SetSelectionCallback(function);
 		return nullptr;
 	});
@@ -516,7 +499,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
-		std::function<void()> function = GetCallbackFunction(handler, args, 1);
+		std::function<void()> function = std::bind(args.GetFunction(1), FunctionArguments());
 		controller.SetUpdateCallback(function);
 		return nullptr;
 	});
@@ -525,7 +508,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
-		std::function<void()> function = GetCallbackFunction(handler, args, 1);
+		std::function<void()> function = std::bind(args.GetFunction(1), FunctionArguments());
 		controller.GetNetwork().SetStateRecievedCallback(function);
 		return nullptr;
 	});
@@ -534,16 +517,8 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
-		std::wstring func = args.GetWStr(1);
-		std::function<void(std::wstring const&)> function;
-		if (!func.empty())
-		{
-			function = [func, &handler](const std::wstring param)
-			{
-				handler.CallFunction(func, { param });
-			};
-		}
-		controller.GetNetwork().SetStringRecievedCallback(function);
+		auto func = args.GetFunction(1);
+		controller.GetNetwork().SetStringRecievedCallback([func](std::wstring const& param) { func({ param }); });
 		return nullptr;
 	});
 
@@ -551,10 +526,10 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 3)
 			throw std::runtime_error("3 argument expected (funcName, time, repeat)");
-		std::wstring func = args.GetWStr(1);
+		auto func = std::bind(args.GetFunction(1), FunctionArguments());
 		unsigned int time = args.GetLong(2);
 		bool repeat = args.GetBool(3);
-		size_t index = threadPool.AddTimedCallback([=, &handler]() {handler.CallFunction(func);}, time, repeat);
+		size_t index = threadPool.AddTimedCallback(func, time, repeat);
 		return (int)index;
 	});
 
@@ -562,11 +537,11 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 argument expected (function name, disable default behavior)");
-		std::wstring func = args.GetWStr(1);
+		auto func = args.GetFunction(1);
 		bool disable = args.GetBool(2);
-		auto callback = [=, &handler](std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z) {
+		auto callback = [=](std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z) {
 			FunctionArgument instance(obj.get(), L"Object");
-			handler.CallFunction(func, { instance, type, x, y, z });
+			func({ instance, type, x, y, z });
 			return disable;
 		};
 		controller.SetLMBCallback(callback);
@@ -577,11 +552,11 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	{
 		if (args.GetCount() != 2)
 			throw std::runtime_error("2 argument expected (function name, disable default behavior)");
-		std::wstring func = args.GetWStr(1);
+		auto func = args.GetFunction(1);
 		bool disable = args.GetBool(2);
-		auto callback = [=, &handler](std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z) {
+		auto callback = [=](std::shared_ptr<IObject> obj, std::wstring const& type, double x, double y, double z) {
 			FunctionArgument instance(nullptr/*obj.get()*/, type);
-			handler.CallFunction(func, { instance, x, y, z });
+			func({ instance, x, y, z });
 			return disable;
 		};
 		controller.SetRMBCallback(callback);
@@ -596,7 +571,7 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 		bool shift = args.GetBool(2);
 		bool ctrl = args.GetBool(3);
 		bool alt = args.GetBool(4);
-		std::function<void()> function = GetCallbackFunction(handler, args, 1);
+		std::function<void()> function = std::bind(args.GetFunction(5), FunctionArguments());
 		controller.BindKey(key, shift, ctrl, alt, function);
 		return nullptr;
 	});
@@ -699,17 +674,17 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	handler.RegisterFunction(SET_GAMEPAD_BUTTONS_CALLBACK, [&](IArguments const& args) {
 		if (args.GetCount() < 1)
 			throw std::runtime_error("at least 1 arguments expected (function name, gamepadIndex, buttonIndex)");
-		std::wstring functionName = args.GetWStr(1);
+		auto func = args.GetFunction(1);
 		int filterGamepadIndex = -1;
 		int filterButtonIndex = -1;
 		if (args.GetCount() > 1)
 			filterGamepadIndex = args.GetInt(2);
 		if (args.GetCount() > 2)
 			filterButtonIndex = args.GetInt(3);
-		controller.SetGamepadButtonCallback([=, &handler](int gamepadIndex, int buttonIndex, bool state) {
+		controller.SetGamepadButtonCallback([=](int gamepadIndex, int buttonIndex, bool state) {
 			if (filterGamepadIndex != -1 && gamepadIndex + 1 != filterGamepadIndex) return false;
 			if (filterButtonIndex != -1 && buttonIndex + 1 != filterButtonIndex) return false;
-			handler.CallFunction(functionName, {gamepadIndex + 1, buttonIndex + 1, state});
+			func({gamepadIndex + 1, buttonIndex + 1, state});
 			return true;
 		});
 		return nullptr;
@@ -718,17 +693,17 @@ void RegisterControllerFunctions(IScriptHandler & handler, CGameController & con
 	handler.RegisterFunction(SET_GAMEPAD_AXIS_CALLBACK, [&](IArguments const& args) {
 		if (args.GetCount() < 1)
 			throw std::runtime_error("at least 1 arguments expected (function name, gamepadIndex, axisIndex)");
-		std::wstring functionName = args.GetWStr(1);
+		auto func = args.GetFunction(1);
 		int filterGamepadIndex = -1;
 		int filterAxisIndex = -1;
 		if (args.GetCount() > 1)
 			filterGamepadIndex = args.GetInt(2);
 		if (args.GetCount() > 2)
 			filterAxisIndex = args.GetInt(3);
-		controller.SetGamepadAxisCallback([=, &handler](int gamepadIndex, int axisIndex, double horizontal, double vertical) {
+		controller.SetGamepadAxisCallback([=](int gamepadIndex, int axisIndex, double horizontal, double vertical) {
 			if (filterGamepadIndex != -1 && gamepadIndex + 1 != filterGamepadIndex) return false;
 			if (filterAxisIndex != -1 && axisIndex + 1 != filterAxisIndex) return false;
-			handler.CallFunction(functionName, { gamepadIndex + 1, axisIndex + 1, horizontal, vertical });
+			func({ gamepadIndex + 1, axisIndex + 1, horizontal, vertical });
 			return true;
 		});
 		return nullptr;

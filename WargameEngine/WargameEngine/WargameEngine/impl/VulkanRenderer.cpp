@@ -438,7 +438,7 @@ bool CVulkanRenderer::ConvertBgra() const
 	return true;
 }
 
-void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
+void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	BeforeDraw();
 	std::tuple<VkBuffer, size_t, void*> empty(*m_emptyBuffer, 0, nullptr);
@@ -466,7 +466,7 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const
 	vkCmdDraw(*m_activeCommandBuffer, vertices.size(), 1, 0, 0);
 }
 
-void CVulkanRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
+void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
 {
 	std::vector<CVector3f> position;
 	std::transform(vertices.begin(), vertices.end(), std::back_inserter(position), [](CVector2i const& vec) {
@@ -623,7 +623,11 @@ void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICache
 std::unique_ptr<ICachedTexture> CVulkanRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type /*= CachedTextureType::RGBA*/)
 {
 	auto texture = std::make_unique<CVulkanCachedTexture>(*this);
-	texture->Init(width, height, *m_memoryManager, type, TEXTURE_HAS_ALPHA, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+	VkImageUsageFlags flags = 
+		(type == CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | 
+		(type == CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : 0) | 
+		VK_IMAGE_USAGE_SAMPLED_BIT;
+	texture->Init(width, height, *m_memoryManager, type, TEXTURE_HAS_ALPHA, flags);
 	BeginServiceCommandBuffer();
 	if(data) texture->Upload(data, *m_memoryManager, *m_serviceCommandBuffer);
 	return std::move(texture);
@@ -1057,7 +1061,7 @@ std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateT
 void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type, int flags, VkImageUsageFlags usageFlags)
 {
 	if (width == 0 || height == 0) return;
-	m_format = (type == CachedTextureType::RGBA ? GetTextureFormat(flags) : (type == CachedTextureType::DEPTH ? VK_FORMAT_D32_SFLOAT : VK_FORMAT_R8_UNORM));
+	m_format = ((type == CachedTextureType::RGBA || type == CachedTextureType::RENDER_TARGET) ? GetTextureFormat(flags) : (type == CachedTextureType::DEPTH ? VK_FORMAT_D32_SFLOAT : VK_FORMAT_R8_UNORM));
 	m_extent = { width, height, 1 };
 	m_components = type == CachedTextureType::ALPHA ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
 	m_usageFlags = usageFlags;

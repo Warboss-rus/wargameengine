@@ -57,7 +57,7 @@ PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, floa
 float4 PShader( PixelInputType input) : SV_TARGET\
 {\
 	float4 tex = shaderTexture.Sample(SampleType, input.tex);\
-	return tex + Color;\
+	return float4(tex.xyz + Color.xyz, tex.a + Color.a);\
 }";
 
 class CShaderManagerDirectX::CDirectXShaderProgram : public IShaderProgram

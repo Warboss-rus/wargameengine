@@ -186,7 +186,7 @@ COpenGLRenderer::COpenGLRenderer()
 	}
 }
 
-void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
+void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 	m_shaderManager.SetVertexAttribute(VERTEX_ATTRIB_NAME, 3, vertices.size(), (float*)vertices.data(), false);
@@ -195,7 +195,7 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const
 	glDrawArrays(renderModeMap.at(mode), 0, static_cast<GLsizei>(vertices.size()));
 }
 
-void COpenGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
+void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
 {
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 	std::vector<float> fvalues;
@@ -330,6 +330,7 @@ std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void * data
 	//tuple<format, internalFormat, type>
 	static const std::map<CachedTextureType, std::tuple<GLenum, GLenum, GLenum>> formatMap = {
 		{ CachedTextureType::RGBA, {GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::RENDER_TARGET,{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
 		{ CachedTextureType::ALPHA, {GL_RED, GL_R8, GL_UNSIGNED_BYTE} },
 		{ CachedTextureType::DEPTH, {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};

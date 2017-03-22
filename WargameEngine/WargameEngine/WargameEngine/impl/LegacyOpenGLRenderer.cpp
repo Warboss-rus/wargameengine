@@ -182,14 +182,14 @@ CLegacyGLRenderer::CLegacyGLRenderer()
 	glewInit();
 }
 
-void CLegacyGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
+void CLegacyGLRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	Bind(vertices.data(), normals.data(), texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 3);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 	Unbind();
 }
 
-void CLegacyGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
+void CLegacyGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
 {
 	/*Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
@@ -328,6 +328,7 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateTexture(const void * da
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_RGBA },
+		{ CachedTextureType::RENDER_TARGET, GL_RGBA },
 		{ CachedTextureType::ALPHA, GL_ALPHA },
 		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
 	};
@@ -817,11 +818,13 @@ void CLegacyGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTexture
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
+		{ CachedTextureType::RENDER_TARGET, GL_COLOR_ATTACHMENT0 },
 		{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
 		{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
 	};
 	const std::map<CachedTextureType, pair<GLboolean, string>> extensionMap = {
 		{ CachedTextureType::RGBA, {GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" }},
+		{ CachedTextureType::RENDER_TARGET,{ GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" } },
 		{ CachedTextureType::ALPHA, {GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" }},
 		{ CachedTextureType::DEPTH, {GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" }}
 	};

@@ -151,7 +151,7 @@ COpenGLESRenderer::COpenGLESRenderer()
 {
 }
 
-void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
+void COpenGLESRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 	m_shaderManager.SetVertexAttribute(POSITION_KEY, 3, vertices.size(), (float*)&vertices[0].x);
@@ -160,7 +160,7 @@ void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> con
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
 }
 
-void COpenGLESRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
+void COpenGLESRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
 {
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 	m_shaderManager.SetVertexAttribute(POSITION_KEY, 2, vertices.size(), (int*)&vertices[0].x);
@@ -290,6 +290,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * da
 	//tuple<format, internalFormat, type>
 	static const std::map<CachedTextureType, std::tuple<GLenum, GLenum, GLenum>> formatMap = {
 		{ CachedTextureType::RGBA, std::tuple<GLenum, GLenum, GLenum>{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::RENDER_TARGET, std::tuple<GLenum, GLenum, GLenum>{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
 		{ CachedTextureType::ALPHA, std::tuple<GLenum, GLenum, GLenum>{ GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE } },
 		{ CachedTextureType::DEPTH, std::tuple<GLenum, GLenum, GLenum>{ GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};
@@ -716,6 +717,7 @@ void COpenGLESFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTexture
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
+		{ CachedTextureType::RENDER_TARGET, GL_COLOR_ATTACHMENT0 },
 		{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
 		{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
 	};

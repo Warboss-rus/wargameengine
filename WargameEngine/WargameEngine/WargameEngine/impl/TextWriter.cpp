@@ -101,7 +101,7 @@ void CTextWriter::DrawBitmap(int x, int y, sGlyph const& symbol)
     int y2 = y - symbol.bitmap_top;
     int w = symbol.width;
     int h = symbol.rows;
-	static const std::vector<CVector2f> tex = {	{0.0f, 0.0f},{1.0f, 0.0f},{0.0f, 1.0f}, {1.0f, 1.0f } };
+	static const std::array<CVector2f, 4> tex = {CVector2f{0.0f, 0.0f},{1.0f, 0.0f},{0.0f, 1.0f}, {1.0f, 1.0f } };
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,	{ CVector2i(x2, y2), { x2 + w, y2 }, { x2, y2 + h }, { x2 + w, y2 + h } }, tex);
 }
 

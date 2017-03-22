@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <iterator>
 
+struct FunctionArgument;
+typedef std::vector<FunctionArgument> FunctionArguments;
+
 class IArguments
 {
 public:
@@ -23,6 +26,7 @@ public:
 	virtual double GetDbl(int index) const = 0;
 	virtual float GetFloat(int index) const = 0;
 	virtual void* GetClassInstance(int index) const = 0;
+	virtual std::function<void(FunctionArguments const& arguments)> GetFunction(int index) const = 0;
 	virtual std::vector<int> GetIntArray(int index) const = 0;
 	virtual std::vector<float> GetFloatArray(int index) const = 0;
 	virtual std::vector<std::wstring> GetStrArray(int index) const = 0;
@@ -96,7 +100,6 @@ struct FunctionArgument
 	};
 	std::shared_ptr<void> data;
 };
-typedef std::vector<FunctionArgument> FunctionArguments;
 template<class T>
 std::vector<FunctionArgument> TransformVector(std::vector<T> const& src)
 {

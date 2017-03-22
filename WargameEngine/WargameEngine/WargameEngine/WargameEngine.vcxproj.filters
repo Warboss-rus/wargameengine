@@ -553,5 +553,8 @@
     <ClInclude Include="model\Light.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
+    <ClInclude Include="array_view.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

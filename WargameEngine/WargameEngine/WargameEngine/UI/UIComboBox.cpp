@@ -17,7 +17,7 @@ void CUIComboBox::Draw() const
 	if (m_expanded) realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight());
+		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
 	}
 	if(m_invalidated)
 	{

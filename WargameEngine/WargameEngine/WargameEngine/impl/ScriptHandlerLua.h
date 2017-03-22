@@ -17,6 +17,7 @@ public:
 	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) override;
 	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, GetterHandler const& getterHandler) override;
 	static void* GetUserData(lua_State *L, int index);
+	static void CallFunctionImpl(FunctionArguments const &arguments, lua_State* lua_state);
 private:
 	static int FunctionCallee(lua_State* L);
 	static int MethodCallee(lua_State* L);

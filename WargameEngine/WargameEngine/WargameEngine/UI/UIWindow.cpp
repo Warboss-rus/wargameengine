@@ -19,7 +19,7 @@ void CUIWindow::Draw() const
 	auto& theme = m_theme->window;
 	if (!m_cache)
 	{
-		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight());
+		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
 	}
 	if (m_invalidated)
 	{

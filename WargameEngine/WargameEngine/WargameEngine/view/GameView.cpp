@@ -270,7 +270,7 @@ void DrawBBox(sBounding::sBox const& bbox, IBaseObject const& object, IRenderer 
 	}
 	else
 	{
-		std::vector<CVector3f> vertices = {
+		std::array<CVector3f, 24> vertices = {
 			//left
 			min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] },
 			{ min[0], max[1], min[2] }, { min[0], max[1], max[2] },{ min[0], min[1], max[2] },

@@ -3,6 +3,27 @@
 #include "../LogWriter.h"
 #include "../Utils.h"
 
+class CLuaRegistryValue
+{
+public:
+	CLuaRegistryValue(lua_State* lua_state)
+		:m_lua_state(lua_state)
+	{
+		m_index = luaL_ref(m_lua_state, LUA_REGISTRYINDEX);
+	}
+	~CLuaRegistryValue()
+	{
+		luaL_unref(m_lua_state, LUA_REGISTRYINDEX, m_index);
+	}
+	void GetValue()
+	{
+		lua_rawgeti(m_lua_state, LUA_REGISTRYINDEX, m_index);
+	}
+private:
+	lua_State* m_lua_state;
+	int m_index;
+};
+
 class CLuaArguments : public IArguments
 {
 public:
@@ -59,6 +80,28 @@ public:
 	virtual void* GetClassInstance(int index) const override
 	{
 		return CScriptHandlerLua::GetUserData(m_lua_state, index + m_diff);
+	}
+
+	virtual std::function<void(FunctionArguments const& arguments)> GetFunction(int index) const override
+	{
+		lua_State* lua_state = m_lua_state;
+		if (lua_isfunction(m_lua_state, index + m_diff))
+		{
+			lua_pushvalue(m_lua_state, index + m_diff);
+			std::shared_ptr<CLuaRegistryValue> storedValue = std::make_shared<CLuaRegistryValue>(lua_state);
+			return [lua_state, storedValue](FunctionArguments const& arguments) {
+				storedValue->GetValue();
+				CScriptHandlerLua::CallFunctionImpl(arguments, lua_state);
+			};
+		}
+		else 
+		{
+			std::string funcName = GetStr(index);
+			return [lua_state, funcName](FunctionArguments const& arguments) {
+				lua_getglobal(lua_state, funcName.c_str());
+				CScriptHandlerLua::CallFunctionImpl(arguments, lua_state);
+			};
+		}
 	}
 
 	virtual std::vector<int> GetIntArray(int index) const override
@@ -250,19 +293,26 @@ void CScriptHandlerLua::RunScript(std::wstring const& path)
 	}
 }
 
+
+void CScriptHandlerLua::CallFunctionImpl(FunctionArguments const &arguments, lua_State* lua_state)
+{
+	for (auto& arg : arguments)
+	{
+		PushReturnValue(lua_state, arg);
+	}
+	int result = lua_pcall(lua_state, static_cast<int>(arguments.size()), 0, 0);
+	if (result && lua_isstring(lua_state, -1))
+	{
+		const char *err = lua_tostring(lua_state, -1);
+		LogWriter::WriteLine(std::string("LUA Error: ") + err);
+	}
+}
+
 void CScriptHandlerLua::CallFunction(std::wstring const& funcName, FunctionArguments const& arguments)
 {
 	lua_getglobal(m_lua_state, WStringToUtf8(funcName).c_str());
-	for (auto& arg : arguments)
-	{
-		PushReturnValue(m_lua_state, arg);
-	}
-	int result = lua_pcall(m_lua_state, static_cast<int>(arguments.size()), 0, 0);
-	if (result && lua_isstring(m_lua_state, -1))
-	{
-		const char *err = lua_tostring(m_lua_state, -1);
-		LogWriter::WriteLine(std::string("LUA Error: ") + err);
-	}
+	CallFunctionImpl(arguments, m_lua_state);
+
 }
 
 void CScriptHandlerLua::RegisterConstant(std::wstring const& name, FunctionArgument const& value)
