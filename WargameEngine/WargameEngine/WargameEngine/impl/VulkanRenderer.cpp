@@ -15,7 +15,8 @@
 namespace
 {
 constexpr uint32_t COMMAND_BUFFERS_COUNT = 3;
-constexpr int RESOURCE_DELAY_FRAMES = COMMAND_BUFFERS_COUNT * 20;
+constexpr int BUFFER_DELAY_FRAMES = COMMAND_BUFFERS_COUNT + 1;
+constexpr int RESOURCE_DELAY_FRAMES = COMMAND_BUFFERS_COUNT * 2;
 #ifndef clamp
 #define clamp(value, minV, maxV) value = std::min(std::max(value, minV), maxV)
 #endif
@@ -134,6 +135,7 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 	m_renderPass.SetDevice(m_device);
 
 	m_memoryManager = std::make_unique<CVulkanMemoryManager>(8 * 1024 * 1024, m_device, m_physicalDevice);//8MB pieces
+	m_memoryManager->SetResourceFreeDelay(RESOURCE_DELAY_FRAMES + 1);
 
 	m_descriptorSetManager.Init(m_device, 100);
 
@@ -276,16 +278,23 @@ void CVulkanRenderer::BeforeDraw()
 	m_descriptorSetManager.SetShaderProgram(m_shaderManager.GetActiveProgram(), *m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 }
 
-void CVulkanRenderer::DestroyImage(VkImage image, VkImageView view, VkSampler sampler)
+void CVulkanRenderer::DestroyImage(CVulkanCachedTexture * texture, VkImage image, VkImageView view)
 {
-	if(image) m_imagesToDestroy.push_back(std::make_pair(image, RESOURCE_DELAY_FRAMES));
+	if (texture)
+	{
+		if (*texture) m_imagesToDestroy.push_back(std::make_pair((VkImage)*texture, RESOURCE_DELAY_FRAMES));
+		if (texture->GetImageView()) m_imageViewsToDestroy.push_back(std::make_pair(texture->GetImageView(), RESOURCE_DELAY_FRAMES));
+		if (texture->GetSampler()) m_samplersToDestroy.push_back(std::make_pair(texture->GetSampler(), RESOURCE_DELAY_FRAMES));
+		VkDescriptorSet set = m_descriptorSetManager.GetTextureDescriptor(texture);
+		if (set) m_descriptorsToDestroy.push_back(std::make_pair(set, RESOURCE_DELAY_FRAMES));
+	}
+	if (image) m_imagesToDestroy.push_back(std::make_pair(image, RESOURCE_DELAY_FRAMES));
 	if(view) m_imageViewsToDestroy.push_back(std::make_pair(view, RESOURCE_DELAY_FRAMES));
-	if(sampler) m_samplersToDestroy.push_back(std::make_pair(sampler, RESOURCE_DELAY_FRAMES));
 }
 
 void CVulkanRenderer::DestroyBuffer(VkBuffer buffer)
 {
-	if(buffer) m_buffersToDestroy.push_back(std::make_pair(buffer, RESOURCE_DELAY_FRAMES));
+	if(buffer) m_buffersToDestroy.push_back(std::make_pair(buffer, BUFFER_DELAY_FRAMES));
 }
 
 void CVulkanRenderer::EnableMultisampling(bool enable)
@@ -822,9 +831,15 @@ void CVulkanRenderer::FreeResources(bool force)
 	{
 		m_commandBuffersToDestroy.pop_front();
 	}
-	FreeResourceType(m_imagesToDestroy, m_device, vkDestroyImage, force);
-	FreeResourceType(m_imageViewsToDestroy, m_device, vkDestroyImageView, force);
+	for (auto& descriptor : m_descriptorsToDestroy) --descriptor.second;
+	while (!m_descriptorsToDestroy.empty() && ((m_descriptorsToDestroy.front().second == 0) || force))
+	{
+		m_descriptorSetManager.DeleteSet(m_descriptorsToDestroy.front().first);
+		m_descriptorsToDestroy.pop_front();
+	}
 	FreeResourceType(m_samplersToDestroy, m_device, vkDestroySampler, force);
+	FreeResourceType(m_imageViewsToDestroy, m_device, vkDestroyImageView, force);
+	FreeResourceType(m_imagesToDestroy, m_device, vkDestroyImage, force);
 	FreeResourceType(m_buffersToDestroy, m_device, vkDestroyBuffer, force);
 	m_memoryManager->FreeResources();
 }
@@ -969,7 +984,7 @@ void CSwapchainWrapper::Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent
 {
 	m_renderer = renderer;
 	m_swapchain.Destroy();
-	for (auto view : m_imageViews) renderer->DestroyImage(VK_NULL_HANDLE, view, VK_NULL_HANDLE);
+	for (auto view : m_imageViews) renderer->DestroyImage(nullptr, VK_NULL_HANDLE, view);
 	m_imageViews.clear();
 	m_images.clear();
 	m_swapchain = swapchain;
@@ -996,7 +1011,7 @@ void CSwapchainWrapper::Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent
 
 CSwapchainWrapper::~CSwapchainWrapper()
 {
-	if(m_renderer) for (auto view : m_imageViews) m_renderer->DestroyImage(VK_NULL_HANDLE, view, VK_NULL_HANDLE);
+	if(m_renderer) for (auto view : m_imageViews) m_renderer->DestroyImage(nullptr, VK_NULL_HANDLE, view);
 }
 
 CVulkanCachedTexture::CVulkanCachedTexture(CVulkanRenderer & renderer)
@@ -1006,7 +1021,7 @@ CVulkanCachedTexture::CVulkanCachedTexture(CVulkanRenderer & renderer)
 
 CVulkanCachedTexture::~CVulkanCachedTexture()
 {
-	m_renderer->DestroyImage(m_image, m_imageView, m_sampler);
+	m_renderer->DestroyImage(this);
 }
 
 inline VkFormat GetTextureFormat(int flags)
@@ -1088,7 +1103,6 @@ void CVulkanCachedTexture::Upload(const void * data, CVulkanMemoryManager & memo
 	VkImage stageImage;
 	std::unique_ptr<CVulkanMemory> stageMemory;
 	std::tie(stageImage, stageMemory) = CreateTexture(false);
-	stageMemory->SetDelayedFree(true);
 		
 	void *staging_buffer_memory_pointer;
 	VkResult result = vkMapMemory(m_device, *stageMemory, stageMemory->GetOffset(), stageMemory->GetSize(), 0, &staging_buffer_memory_pointer);
@@ -1123,7 +1137,7 @@ void CVulkanCachedTexture::Upload(const void * data, CVulkanMemoryManager & memo
 	VkImageSubresourceLayers layers = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
 	VkImageCopy imageCopy = { layers, VkOffset3D{0, 0, 0}, layers, VkOffset3D{0, 0, 0}, m_extent };
 	vkCmdCopyImage(commandBuffer, stageImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
-	m_renderer->DestroyImage(stageImage, VK_NULL_HANDLE, VK_NULL_HANDLE);
+	m_renderer->DestroyImage(nullptr, stageImage);
 	TransferImageLayout(m_image, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
@@ -1282,6 +1296,21 @@ void CVulkanDescriptorSetManager::BindAll(VkCommandBuffer commandBuffer, VkPipel
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, sizeof(sets) / sizeof(sets[0]), sets, sizeof(offsets) / sizeof(offsets[0]), offsets);
 }
 
+VkDescriptorSet CVulkanDescriptorSetManager::GetTextureDescriptor(const CVulkanCachedTexture * texture)
+{
+	auto it = m_textureSets.find(texture);
+	return it == m_textureSets.end() ? VK_NULL_HANDLE : it->second;
+}
+
+void CVulkanDescriptorSetManager::DeleteSet(VkDescriptorSet set)
+{
+	vkFreeDescriptorSets(m_device, m_desciptorPool, 1, &set);
+	auto it = std::find_if(m_textureSets.begin(), m_textureSets.end(), [set](std::pair<const CVulkanCachedTexture*, VkDescriptorSet> const& pair) {return pair.second == set; });
+	if (it != m_textureSets.end()) m_textureSets.erase(it);
+	auto it2 = std::find_if(m_programDescriptorSets.begin(), m_programDescriptorSets.end(), [set](std::pair<const CVulkanShaderProgram*, VkDescriptorSet> const& pair) {return pair.second == set; });
+	if (it2 != m_programDescriptorSets.end()) m_programDescriptorSets.erase(it2);
+}
+
 void CVulkanDescriptorSetManager::CreatePool(uint32_t poolSize)
 {
 	m_poolSize = poolSize;
@@ -1290,7 +1319,7 @@ void CVulkanDescriptorSetManager::CreatePool(uint32_t poolSize)
 		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, poolSize },
 		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolSize },
 	};
-	VkDescriptorPoolCreateInfo descriptor_pool_create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0, poolSize, sizeof(pool_sizes) / sizeof(pool_sizes[0]), pool_sizes };
+	VkDescriptorPoolCreateInfo descriptor_pool_create_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT, poolSize, sizeof(pool_sizes) / sizeof(pool_sizes[0]), pool_sizes };
 	VkResult result = vkCreateDescriptorPool(m_device, &descriptor_pool_create_info, nullptr, &m_desciptorPool);
 	CHECK_VK_RESULT(result, "cannot create descriptor pool");
 	m_desciptorPool.SetDevice(m_device);

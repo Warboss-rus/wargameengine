@@ -22,13 +22,11 @@ public:
 	operator VkDeviceMemory() const { return m_memory; }
 	VkDeviceSize GetOffset() const { return m_offset; }
 	VkDeviceSize GetSize() const { return m_size; }
-	void SetDelayedFree(bool delayed) { m_delayedFree = delayed; }
 private:
 	CVulkanMemoryManager & m_manager;
 	VkDeviceMemory m_memory;
 	VkDeviceSize m_offset;
 	VkDeviceSize m_size;
-	bool m_delayedFree = false;
 };
 
 class CVulkanMemoryManager
@@ -40,6 +38,7 @@ public:
 	void FreeMemoryDelayed(CVulkanMemory * memory);
 	std::unique_ptr<CVulkanMemory> Allocate(VkMemoryRequirements requirements, VkMemoryPropertyFlags usageProperties);
 	void FreeResources();
+	void SetResourceFreeDelay(int delay) { m_resourceFreeDelay = delay; }
 private:
 	void FreeMemoryImpl(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size);
 	VkDevice m_device;
@@ -54,6 +53,7 @@ private:
 	std::vector<MemoryChunk> m_chunks;
 	VkDeviceSize m_chunkSize;
 	std::deque<std::tuple<VkDeviceMemory, VkDeviceSize, VkDeviceSize, int>> m_delayedFreeMemory;
+	int m_resourceFreeDelay = 1000;
 };
 
 class CVulkanVertexAttribCache : public IVertexAttribCache

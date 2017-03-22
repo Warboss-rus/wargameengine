@@ -175,6 +175,8 @@ public:
 	void BindAll(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
 	VkDescriptorSetLayout GetProgramLayout() { return m_programDescriptorSetLayout; }
 	VkDescriptorSetLayout GetTextureLayout() { return m_textureDescriptorSetLayout; }
+	VkDescriptorSet GetTextureDescriptor(const CVulkanCachedTexture * texture);
+	void DeleteSet(VkDescriptorSet set);
 private:
 	void CreatePool(uint32_t poolSize);
 	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_programDescriptorSetLayout;
@@ -206,7 +208,7 @@ public:
 	CPipelineHelper& GetPipelineHelper() { return m_pipelineHelper; }
 	VkBuffer GetEmptyBuffer() const { return *m_emptyBuffer; }
 	void BeforeDraw();
-	void DestroyImage(VkImage image, VkImageView view, VkSampler sampler);
+	void DestroyImage(CVulkanCachedTexture * texture, VkImage image = VK_NULL_HANDLE, VkImageView view = VK_NULL_HANDLE);
 	void DestroyBuffer(VkBuffer buffer);
 	
 	virtual void EnableMultisampling(bool enable) override;
@@ -306,6 +308,7 @@ private:
 	std::deque<std::pair<VkImage, int>> m_imagesToDestroy;
 	std::deque<std::pair<VkImageView, int>> m_imageViewsToDestroy;
 	std::deque<std::pair<VkSampler, int>> m_samplersToDestroy;
+	std::deque<std::pair<VkDescriptorSet, int>> m_descriptorsToDestroy;
 	std::deque<std::pair<VkBuffer, int>> m_buffersToDestroy;
 	std::deque<std::pair<std::unique_ptr<CCommandBufferWrapper>, int>> m_commandBuffersToDestroy;
 };

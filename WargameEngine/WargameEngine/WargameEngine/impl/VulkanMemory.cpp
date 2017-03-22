@@ -212,5 +212,5 @@ CVulkanMemory::CVulkanMemory(CVulkanMemoryManager & manager, VkDeviceMemory memo
 
 CVulkanMemory::~CVulkanMemory()
 {
-	m_delayedFree ? m_manager.FreeMemoryDelayed(this) : m_manager.FreeMemory(this);
+	m_manager.FreeMemoryDelayed(this);
 }
