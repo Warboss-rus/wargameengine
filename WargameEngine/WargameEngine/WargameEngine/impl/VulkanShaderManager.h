@@ -27,7 +27,7 @@ struct ShaderReflection
 
 struct UniformBufferWrapper
 {
-	mutable std::unique_ptr<CVulkanVertexAttribCache> buffer;
+	VkBuffer buffer = VK_NULL_HANDLE;
 	ShaderReflection reflection;
 	std::vector<char> cache;
 	size_t offset = 0;
@@ -42,17 +42,14 @@ public:
 
 	void AddShaderModule(VkShaderModule module, VkShaderStageFlagBits flag, ShaderReflection const& reflection);
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderInfo() const;
-	VkBuffer GetVertexAttribBuffer() const { return *m_uniformBuffers[0].buffer; }
-	VkBuffer GetFragmentAttribBuffer() const { return *m_uniformBuffers[1].buffer; }
-	size_t GetVertexAttribBufferSize() const { return m_uniformBuffers[0].cache.size(); }
-	size_t GetFragmentAttribBufferSize() const { return m_uniformBuffers[1].cache.size(); }
-	size_t GetVertexAttribOffset() const { return m_uniformBuffers[0].offset == 0 ? m_uniformBuffers[0].offset : m_uniformBuffers[0].offset - m_uniformBuffers[0].reflection.bufferSize; }
-	size_t GetFragmentAttribOffset() const { return m_uniformBuffers[1].offset == 0 ? m_uniformBuffers[1].offset : m_uniformBuffers[1].offset - m_uniformBuffers[1].reflection.bufferSize; }
-	size_t GetVertexBufferRange() const { return m_uniformBuffers[0].reflection.bufferSize; }
-	size_t GetFragmentBufferRange() const { return m_uniformBuffers[1].reflection.bufferSize; }
+	VkBuffer GetVertexAttribBuffer() const { return m_uniformBuffers[0].buffer; }
+	VkBuffer GetFragmentAttribBuffer() const { return m_uniformBuffers[1].buffer; }
+	uint32_t GetVertexAttribOffset() const { return m_uniformBuffers[0].offset; }
+	uint32_t GetFragmentAttribOffset() const { return m_uniformBuffers[1].offset; }
+	VkDeviceSize GetVertexBufferRange() const { return m_uniformBuffers[0].reflection.bufferSize; }
+	VkDeviceSize GetFragmentBufferRange() const { return m_uniformBuffers[1].reflection.bufferSize; }
 	void SetUniformValue(std::string const& name, const void * data, size_t size) const;
-	void Commit() const;
-	void FrameEnd() const;
+	void Commit(CVulkanSmartBuffer & buffer, bool force) const;
 	uint32_t GetVertexAttributeLocation(std::string const& name) const;
 private:
 	CVulkanRenderer & m_renderer;
@@ -86,8 +83,7 @@ public:
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
 	void DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler);
-	void CommitUniforms();
-	void FrameEnd() const;
+	void CommitUniforms(CVulkanSmartBuffer & buffer, bool force);
 	const CVulkanShaderProgram* GetActiveProgram() const { return m_programsStack.back(); }
 private:
 	CVulkanRenderer & m_renderer;

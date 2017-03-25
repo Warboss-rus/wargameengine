@@ -78,7 +78,7 @@ private:
 	VkPipelineRasterizationStateCreateInfo rasterization_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_FALSE, 
 		VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f };
 	VkPipelineMultisampleStateCreateInfo multisample_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO, nullptr, 0, VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 1.0f, nullptr, VK_FALSE, VK_FALSE };
-	VkPipelineColorBlendAttachmentState color_blend_attachment_state = { VK_FALSE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+	VkPipelineColorBlendAttachmentState color_blend_attachment_state = { VK_FALSE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_DST_ALPHA, VK_BLEND_OP_ADD,
 		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
 	VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_LOGIC_OP_COPY, 1, &color_blend_attachment_state, { 0.0f, 0.0f, 0.0f, 0.0f } };
 	VkPipelineDepthStencilStateCreateInfo depthStencil = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1.0f };
@@ -176,12 +176,20 @@ public:
 	VkDescriptorSetLayout GetTextureLayout() { return m_textureDescriptorSetLayout; }
 	VkDescriptorSet GetTextureDescriptor(const CVulkanCachedTexture * texture);
 	void DeleteSet(VkDescriptorSet set);
+	std::vector<VkDescriptorSet> GetSetsWithUniformBuffer(VkBuffer buffer) const;
 private:
 	void CreatePool(uint32_t poolSize);
 	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_programDescriptorSetLayout;
 	CHandleWrapper<VkDescriptorSetLayout, vkDestroyDescriptorSetLayout> m_textureDescriptorSetLayout;
 	CHandleWrapper<VkDescriptorPool, vkDestroyDescriptorPool> m_desciptorPool;
-	std::map<const CVulkanShaderProgram *, VkDescriptorSet> m_programDescriptorSets;
+	struct ProgramDescriptorSetKey
+	{
+		const CVulkanShaderProgram * program;
+		VkBuffer vertexBuffer;
+		VkBuffer fragmentBuffer;
+		bool operator < (const ProgramDescriptorSetKey & other) const { return std::tie(program, vertexBuffer, fragmentBuffer) < std::tie(other.program, other.vertexBuffer, other.fragmentBuffer); }
+	};
+	std::map<ProgramDescriptorSetKey, VkDescriptorSet> m_programDescriptorSets;
 	std::map<const CVulkanCachedTexture*, VkDescriptorSet> m_textureSets;
 	VkDevice m_device;
 	uint32_t m_poolSize;

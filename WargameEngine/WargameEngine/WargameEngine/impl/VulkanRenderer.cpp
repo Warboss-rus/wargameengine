@@ -16,7 +16,7 @@ namespace
 {
 constexpr uint32_t COMMAND_BUFFERS_COUNT = 3;
 constexpr int BUFFER_DELAY_FRAMES = COMMAND_BUFFERS_COUNT + 1;
-constexpr int RESOURCE_DELAY_FRAMES = COMMAND_BUFFERS_COUNT * 2;
+constexpr int RESOURCE_DELAY_FRAMES = COMMAND_BUFFERS_COUNT * 20;
 #ifndef clamp
 #define clamp(value, minV, maxV) value = std::min(std::max(value, minV), maxV)
 #endif
@@ -150,7 +150,7 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 	m_memoryManager = std::make_unique<CVulkanMemoryManager>(8 * 1024 * 1024, m_device, m_physicalDevice);//8MB pieces
 	m_memoryManager->SetResourceFreeDelay(RESOURCE_DELAY_FRAMES + 1);
 
-	m_descriptorSetManager.Init(m_device, 100);
+	m_descriptorSetManager.Init(m_device, 10000);
 
 	m_emptyTexture = std::make_unique<CVulkanCachedTexture>(*this);
 	m_emptyTexture->Init(1, 1, *m_memoryManager, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA);
@@ -160,6 +160,7 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 	m_emptyBuffer = std::make_unique<CVulkanVertexAttribCache>(sizeof(float) * zero.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *this, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, zero.data());
 
 	m_shaderManager.DoOnProgramChange([this](const CVulkanShaderProgram & program) {
+		program.Commit(m_activeCommandBuffer ? m_activeCommandBuffer->GetUniformBuffer() : m_serviceCommandBuffer->GetUniformBuffer(), true);
 		m_descriptorSetManager.SetShaderProgram(&program, (m_activeCommandBuffer ? *m_activeCommandBuffer : (VkCommandBuffer)VK_NULL_HANDLE), m_pipelineHelper.GetLayout());
 	});
 }
@@ -242,7 +243,6 @@ void CVulkanRenderer::AcquireImage()
 
 void CVulkanRenderer::Present()
 {
-	m_shaderManager.FrameEnd();
 	vkCmdEndRenderPass(*m_activeCommandBuffer);
 
 	if (m_graphicsQueue != m_presentQueue)
@@ -290,7 +290,7 @@ void CVulkanRenderer::Present()
 void CVulkanRenderer::BeforeDraw()
 {
 	m_matrixManager.UpdateMatrices(m_shaderManager);
-	m_shaderManager.CommitUniforms();
+	m_shaderManager.CommitUniforms(m_activeCommandBuffer->GetUniformBuffer(), false);
 	m_descriptorSetManager.SetShaderProgram(m_shaderManager.GetActiveProgram(), *m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 }
 
@@ -641,6 +641,8 @@ void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICache
 	vkCmdSetScissor(*m_activeCommandBuffer, 0, 1, &scissor);
 	m_pipelineHelper.SetRenderPass(m_serviceRenderPass);
 	m_pipelineHelper.Bind(*m_activeCommandBuffer);
+	m_shaderManager.CommitUniforms(commandBuffer->GetUniformBuffer(), true);
+	m_descriptorSetManager.SetShaderProgram(m_shaderManager.GetActiveProgram(), *commandBuffer, m_pipelineHelper.GetLayout());
 	m_descriptorSetManager.BindAll(*m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 	m_matrixManager.SaveMatrices();
 	m_matrixManager.SetOrthographicProjection(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
@@ -657,7 +659,18 @@ void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICache
 	result = vkQueueSubmit(m_graphicsQueue, 1, &submit_info, m_activeCommandBuffer->GetFence());
 	LOG_VK_RESULT(result, "Cannot submit service command buffer to queue");
 
-	m_commandBuffersToDestroy.push_back(std::make_pair(std::move(commandBuffer), RESOURCE_DELAY_FRAMES));
+	auto& smartBuffer = commandBuffer->GetUniformBuffer();
+	auto buffers = smartBuffer.GetAllBuffers();
+	for (auto buffer : buffers)
+	{
+		auto sets = m_descriptorSetManager.GetSetsWithUniformBuffer(buffer);
+		for (auto set : sets)
+		{
+			m_descriptorsToDestroy.push_back(std::make_pair(set, RESOURCE_DELAY_FRAMES));
+		}
+	}
+
+	m_commandBuffersToDestroy.push_back(std::make_pair(std::move(commandBuffer), BUFFER_DELAY_FRAMES));
 	m_activeCommandBuffer = oldCommandBuffer;
 	m_currentImage = oldImage;
 	m_pipelineHelper.SetRenderPass(m_renderPass);
@@ -1075,6 +1088,7 @@ void CCommandBufferWrapper::Begin()
 void CCommandBufferWrapper::End()
 {
 	m_vertexBuffer.Commit();
+	m_uniformBuffer.Commit();
 	const VkResult result = vkEndCommandBuffer(m_commandBuffer);
 	LOG_VK_RESULT(result, L"cannot end command buffer");
 }
@@ -1344,7 +1358,8 @@ void CVulkanDescriptorSetManager::Init(VkDevice device, uint32_t poolSize)
 
 void CVulkanDescriptorSetManager::SetShaderProgram(const CVulkanShaderProgram * program, VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
 {
-	auto it = m_programDescriptorSets.find(program);
+	ProgramDescriptorSetKey key = { program, program->GetVertexAttribBuffer(), program->GetFragmentAttribBuffer() };
+	auto it = m_programDescriptorSets.find(key);
 	if (it == m_programDescriptorSets.end())
 	{
 		VkDescriptorSetAllocateInfo descriptor_set_allocate_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr, m_desciptorPool, 1, &m_programDescriptorSetLayout };
@@ -1365,12 +1380,12 @@ void CVulkanDescriptorSetManager::SetShaderProgram(const CVulkanShaderProgram * 
 			{ VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET, nullptr, descriptorSet, 1, 0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, nullptr, &bufferInfos[1], nullptr },
 		};
 		vkUpdateDescriptorSets(m_device, sizeof(descriptorWrites) / sizeof(descriptorWrites[0]), descriptorWrites, 0, nullptr);
-		it = m_programDescriptorSets.emplace(std::make_pair(program, descriptorSet)).first;
+		it = m_programDescriptorSets.emplace(std::make_pair(key, descriptorSet)).first;
 	}
 	m_currentProgramDescriptorSet = it->second;
 	if (commandBuffer)
 	{
-		uint32_t offsets[] = { static_cast<uint32_t>(program->GetVertexAttribOffset()), static_cast<uint32_t>(program->GetFragmentAttribOffset()) };
+		uint32_t offsets[] = { program->GetVertexAttribOffset(), program->GetFragmentAttribOffset() };
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &m_currentProgramDescriptorSet, sizeof(offsets) / sizeof(offsets[0]), offsets);
 	}
 }
@@ -1421,8 +1436,21 @@ void CVulkanDescriptorSetManager::DeleteSet(VkDescriptorSet set)
 	vkFreeDescriptorSets(m_device, m_desciptorPool, 1, &set);
 	auto it = std::find_if(m_textureSets.begin(), m_textureSets.end(), [set](std::pair<const CVulkanCachedTexture*, VkDescriptorSet> const& pair) {return pair.second == set; });
 	if (it != m_textureSets.end()) m_textureSets.erase(it);
-	auto it2 = std::find_if(m_programDescriptorSets.begin(), m_programDescriptorSets.end(), [set](std::pair<const CVulkanShaderProgram*, VkDescriptorSet> const& pair) {return pair.second == set; });
+	auto it2 = std::find_if(m_programDescriptorSets.begin(), m_programDescriptorSets.end(), [set](std::pair<ProgramDescriptorSetKey, VkDescriptorSet> const& pair) {return pair.second == set; });
 	if (it2 != m_programDescriptorSets.end()) m_programDescriptorSets.erase(it2);
+}
+
+std::vector<VkDescriptorSet> CVulkanDescriptorSetManager::GetSetsWithUniformBuffer(VkBuffer buffer) const
+{
+	std::vector<VkDescriptorSet> result;
+	for (auto& set : m_programDescriptorSets)
+	{
+		if (set.first.vertexBuffer == buffer || set.first.fragmentBuffer == buffer)
+		{
+			result.push_back(set.second);
+		}
+	}
+	return result;
 }
 
 void CVulkanDescriptorSetManager::CreatePool(uint32_t poolSize)

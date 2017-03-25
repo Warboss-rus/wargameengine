@@ -82,6 +82,7 @@ public:
 	CVulkanSmartBuffer(CVulkanSmartBuffer && other) = default;
 	std::tuple<VkBuffer, size_t, void*> Allocate(size_t size);
 	void Commit();
+	std::vector<VkBuffer> GetAllBuffers() const;
 private:
 	struct Buffer
 	{

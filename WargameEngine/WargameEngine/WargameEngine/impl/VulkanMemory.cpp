@@ -95,6 +95,15 @@ void CVulkanSmartBuffer::Commit()
 	}
 }
 
+std::vector<VkBuffer> CVulkanSmartBuffer::GetAllBuffers() const
+{
+	std::vector<VkBuffer> result;
+	std::transform(m_chunks.begin(), m_chunks.end(), std::back_inserter(result), [](Buffer const& buffer) {
+		return (VkBuffer)*buffer.buffer;
+	});
+	return result;
+}
+
 CVulkanMemoryManager::CVulkanMemoryManager(VkDeviceSize chunkSize, VkDevice device, VkPhysicalDevice physicalDevice)
 	: m_device(device), m_chunkSize(chunkSize)
 {
