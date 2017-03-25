@@ -125,25 +125,47 @@ void CVulkanShaderManager::SetUniformValue(std::string const& uniform, int eleme
 void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance /*= false*/) const
 {
 	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
-	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(float) * elementSize), GetFormat(TYPE::FLOAT32, elementSize), perInstance });
+	size_t index = m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(float) * elementSize), GetFormat(TYPE::FLOAT32, elementSize), perInstance });
+	size_t allocationSize = elementSize * count * sizeof(float);
+	auto allocation = m_renderer.GetVertexBuffer().Allocate(allocationSize);
+	memcpy(std::get<void*>(allocation), values, allocationSize);
+	VkBuffer buffer = std::get<VkBuffer>(allocation);
+	VkDeviceSize offset = std::get<size_t>(allocation);
+	vkCmdBindVertexBuffers(m_renderer.GetCommandBuffer(), index, 1, &buffer, &offset);
 }
 
 void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance /*= false*/) const
 {
 	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
-	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(int) * elementSize), GetFormat(TYPE::SINT32, elementSize), perInstance });
+	size_t index = m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(int) * elementSize), GetFormat(TYPE::SINT32, elementSize), perInstance });
+	size_t allocationSize = elementSize * count * sizeof(int);
+	auto allocation = m_renderer.GetVertexBuffer().Allocate(allocationSize);
+	memcpy(std::get<void*>(allocation), values, allocationSize);
+	VkBuffer buffer = std::get<VkBuffer>(allocation);
+	VkDeviceSize offset = std::get<size_t>(allocation);
+	vkCmdBindVertexBuffers(m_renderer.GetCommandBuffer(), index, 1, &buffer, &offset);
 }
 
 void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance /*= false*/) const
 {
 	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
-	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(unsigned int) * elementSize), GetFormat(TYPE::UINT32, elementSize), perInstance });
+	size_t index = m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(unsigned int) * elementSize), GetFormat(TYPE::UINT32, elementSize), perInstance });
+	size_t allocationSize = elementSize * count * sizeof(float);
+	auto allocation = m_renderer.GetVertexBuffer().Allocate(allocationSize);
+	memcpy(std::get<void*>(allocation), values, allocationSize);
+	VkBuffer buffer = std::get<VkBuffer>(allocation);
+	VkDeviceSize offset = std::get<size_t>(allocation);
+	vkCmdBindVertexBuffers(m_renderer.GetCommandBuffer(), index, 1, &buffer, &offset);
 }
 
-void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance /*= false*/, size_t offset /*= 0*/) const
+void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t /*count*/, TYPE type, bool perInstance /*= false*/, size_t offset /*= 0*/) const
 {
 	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
-	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(unsigned int) * elementSize), GetFormat(type, elementSize), perInstance });
+	size_t index = m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(unsigned int) * elementSize), GetFormat(type, elementSize), perInstance });
+	auto& vulkanCache = reinterpret_cast<const CVulkanVertexAttribCache&>(cache);
+	VkBuffer buffer = vulkanCache;
+	VkDeviceSize deviceOffset = offset;
+	vkCmdBindVertexBuffers(m_renderer.GetCommandBuffer(), index, 1, &buffer, &deviceOffset);
 }
 
 void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* /*defaultValue*/) const

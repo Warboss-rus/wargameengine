@@ -33,7 +33,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags,
 bool CheckPhysicalDevice(VkPhysicalDevice device, uint32_t & queue_family_index)
 {
 	VkPhysicalDeviceProperties properties;
-	VkPhysicalDeviceFeatures   features;
+	VkPhysicalDeviceFeatures features;
 	vkGetPhysicalDeviceProperties(device, &properties);
 	vkGetPhysicalDeviceFeatures(device, &features);
 	const uint32_t major_version = VK_VERSION_MAJOR(properties.apiVersion);
@@ -956,11 +956,22 @@ void CPipelineHelper::SetVertexAttributes(std::vector<VertexAttrib> const& attri
 	m_currentKey.attribs = attribs;
 }
 
-void CPipelineHelper::AddVertexAttribute(VertexAttrib attrib)
+size_t CPipelineHelper::AddVertexAttribute(VertexAttrib attrib)
 {
 	auto attribs = m_currentKey.attribs;
-	attribs.push_back(attrib);
-	SetVertexAttributes(attribs);
+	auto it = std::find_if(attribs.begin(), attribs.end(), [&attrib](const VertexAttrib & attr) {
+		return (attr.pos == attrib.pos) && (attr.perInstance == attrib.perInstance);
+	});
+	if (it != attribs.end())
+	{
+		return it - attribs.begin();
+	}
+	else
+	{
+		attribs.push_back(attrib);
+		SetVertexAttributes(attribs);
+		return attribs.size() - 1;
+	}
 }
 
 void CPipelineHelper::RemoveVertexAttribute(uint32_t pos)
@@ -1246,7 +1257,7 @@ void CVulkanCachedTexture::Upload(const void * data, CVulkanMemoryManager & memo
 
 CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)
 	: m_size((vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) + (texcoords ? size * 2 * sizeof(float) : 0))
-	, m_vertexCache(m_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+	, m_vertexCache(m_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *renderer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	, m_renderer(renderer)
 {
 	m_offsets[0] = 0;
@@ -1257,7 +1268,7 @@ CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkCommandBu
 	if (vertex) memcpy(data.data() + m_offsets[0], vertex, size * 3 * sizeof(float));
 	if (normals) memcpy(data.data() + m_offsets[1], normals, size * 3 * sizeof(float));
 	if (texcoords) memcpy(data.data() + m_offsets[2], texcoords, size * 2 * sizeof(float));
-	m_vertexCache.Upload(data.data(), data.size());
+	m_vertexCache.UploadStaged(data.data(), data.size(), commandBuffer);
 }
 
 void CVulkanVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)

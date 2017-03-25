@@ -55,7 +55,7 @@ public:
 		bool operator < (VertexAttrib const& other) const { return std::tie(pos, size, format, perInstance) < std::tie(other.pos, other.size, other.format, other.perInstance); }
 	};
 	void SetVertexAttributes(std::vector<VertexAttrib> const& attribs);
-	void AddVertexAttribute(VertexAttrib attrib);
+	size_t AddVertexAttribute(VertexAttrib attrib);
 	void RemoveVertexAttribute(uint32_t pos);
 	void SetDescriptorLayout(const VkDescriptorSetLayout * layouts, uint32_t count = 1);
 	void SetTopology(VkPrimitiveTopology topology);
@@ -206,6 +206,7 @@ public:
 	VkCommandBuffer GetCommandBuffer() const { return *m_activeCommandBuffer; }
 	CPipelineHelper& GetPipelineHelper() { return m_pipelineHelper; }
 	VkBuffer GetEmptyBuffer() const { return *m_emptyBuffer; }
+	CVulkanSmartBuffer& GetVertexBuffer() const { return m_activeCommandBuffer->GetVertexBuffer(); }
 	void BeforeDraw();
 	void DestroyImage(CVulkanCachedTexture * texture, VkImage image = VK_NULL_HANDLE, VkImageView view = VK_NULL_HANDLE);
 	void DestroyBuffer(VkBuffer buffer);
