@@ -36,7 +36,7 @@ bool CheckPhysicalDevice(VkPhysicalDevice device, uint32_t & queue_family_index)
 	VkPhysicalDeviceFeatures   features;
 	vkGetPhysicalDeviceProperties(device, &properties);
 	vkGetPhysicalDeviceFeatures(device, &features);
-	uint32_t major_version = VK_VERSION_MAJOR(properties.apiVersion);
+	const uint32_t major_version = VK_VERSION_MAJOR(properties.apiVersion);
 	if ((major_version < 1) && (properties.limits.maxImageDimension2D < 4096))
 	{
 		return false;
@@ -90,7 +90,7 @@ VkSurfaceFormatKHR GetSurfaceFormat(const std::vector<VkSurfaceFormatKHR> & form
 
 VkPresentModeKHR SelectPresentMode(const std::vector<VkPresentModeKHR> & supportedPresentModes, const std::vector<VkPresentModeKHR> & desiredPresentModes)
 {
-	for (VkPresentModeKHR desiredMode : desiredPresentModes)
+	for (const VkPresentModeKHR desiredMode : desiredPresentModes)
 	{
 		if (std::find(supportedPresentModes.begin(), supportedPresentModes.end(), desiredMode) != supportedPresentModes.end())
 		{
@@ -99,32 +99,45 @@ VkPresentModeKHR SelectPresentMode(const std::vector<VkPresentModeKHR> & support
 	}
 	return supportedPresentModes.front();
 }
+
+class CVulkanVertexBuffer : public IVertexBuffer
+{
+public:
+	CVulkanVertexBuffer(CVulkanRenderer * renderer, VkCommandBuffer commandBuffer, const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0);
+	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
+	virtual void Bind() const override;
+	virtual void DrawIndexes(size_t begin, size_t count) override;
+	virtual void DrawAll(size_t count) override;
+	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
+	virtual void UnBind() const override;
+private:
+	VkDeviceSize m_size;
+	CVulkanVertexAttribCache m_vertexCache;
+	std::unique_ptr<CVulkanVertexAttribCache> m_indexCache;
+	CVulkanRenderer * m_renderer;
+	VkDeviceSize m_offsets[3];
+};
 }
 
 CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtensions)
 	:m_shaderManager(*this)
 {
-	VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO, nullptr, "WargameEngine", VK_MAKE_VERSION(1, 0, 0), "WargameEngine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0 };
+	const VkApplicationInfo appInfo = { VK_STRUCTURE_TYPE_APPLICATION_INFO, nullptr, "WargameEngine", VK_MAKE_VERSION(1, 0, 0), "WargameEngine", VK_MAKE_VERSION(1, 0, 0), VK_API_VERSION_1_0 };
 	const std::vector<const char*> validationLayers = {
 #ifdef _DEBUG
 		"VK_LAYER_LUNARG_standard_validation"
 #endif
 	};
 
-	VkInstanceCreateInfo instanceInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, nullptr, 0, &appInfo, static_cast<uint32_t>(validationLayers.size()), validationLayers.data(), static_cast<uint32_t>(instanceExtensions.size()), instanceExtensions.data() };
+	const VkInstanceCreateInfo instanceInfo = { VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO, nullptr, 0, &appInfo, static_cast<uint32_t>(validationLayers.size()), validationLayers.data(), static_cast<uint32_t>(instanceExtensions.size()), instanceExtensions.data() };
 	VkResult result = vkCreateInstance(&instanceInfo, nullptr, &m_instance);
 	CHECK_VK_RESULT(result, "Cannot create vulkan instance");
 #ifdef _DEBUG
-	VkDebugReportCallbackCreateInfoEXT createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-	createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-	createInfo.pfnCallback = DebugCallback;
-	PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
-	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT");
+	const VkDebugReportCallbackCreateInfoEXT createInfo = { VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT, nullptr, VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT, DebugCallback, this };
+	const auto CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT");
 	result = CreateDebugReportCallback(m_instance, &createInfo, nullptr, &m_debugCallback);
 	m_debugCallbackDestructor.SetDestructorFunction([this] {
-		PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback = VK_NULL_HANDLE;
-		DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT");
+		const auto DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT");
 		DestroyDebugReportCallback(m_instance, m_debugCallback, nullptr);
 	});
 #endif
@@ -142,7 +155,8 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 	m_emptyTexture = std::make_unique<CVulkanCachedTexture>(*this);
 	m_emptyTexture->Init(1, 1, *m_memoryManager, CachedTextureType::RGBA, TEXTURE_HAS_ALPHA);
 
-	std::vector<float> zero(1000, 0.0f);
+	std::array<float, 1000> zero;
+	zero.fill(0.0f);
 	m_emptyBuffer = std::make_unique<CVulkanVertexAttribCache>(sizeof(float) * zero.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *this, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, zero.data());
 
 	m_shaderManager.DoOnProgramChange([this](const CVulkanShaderProgram & program) {
@@ -152,6 +166,7 @@ CVulkanRenderer::CVulkanRenderer(const std::vector<const char*> & instanceExtens
 
 CVulkanRenderer::~CVulkanRenderer()
 {
+	m_swapchain.DestroyDepthTexture();
 	if (m_device)
 	{
 		vkDeviceWaitIdle(m_device);
@@ -170,12 +185,12 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	m_surfaceDestructor.SetDestructorFunction([this] {vkDestroySurfaceKHR(m_instance, m_surface, nullptr); });
 	CreateSwapchain();
 	CreateCommandBuffers();
-	m_renderPass = CreateRenderPass(m_swapchain.GetFormat());
+	m_renderPass = CreateRenderPass(m_swapchain.GetFormat(), m_swapchain.GetDepthTexture().GetFormat());
 	m_renderPass.SetDevice(m_device);
 #ifdef TO_STRING_HACK
-	std::wstring shaderLocation = L"/sdcard/WargameEngine/Killteam/shaders/Vulkan/";
+	const std::wstring shaderLocation = L"/sdcard/WargameEngine/Killteam/shaders/Vulkan/";
 #else
-	std::wstring shaderLocation = L"Killteam/shaders/Vulkan/";
+	const std::wstring shaderLocation = L"Killteam/shaders/Vulkan/";
 #endif
 	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation + L"vert.spv", shaderLocation + L"frag.spv");
 	m_shaderManager.PushProgram(*m_defaultProgram);
@@ -185,9 +200,10 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 		{ 1, sizeof(float) * 3, VK_FORMAT_R32G32B32_SFLOAT, false },
 		{ 2, sizeof(float) * 2, VK_FORMAT_R32G32_SFLOAT, false },
 	});
-	VkDescriptorSetLayout layouts[] = { m_descriptorSetManager.GetProgramLayout(), m_descriptorSetManager.GetTextureLayout() };
+	const VkDescriptorSetLayout layouts[] = { m_descriptorSetManager.GetProgramLayout(), m_descriptorSetManager.GetTextureLayout() };
 	m_pipelineHelper.SetDescriptorLayout(layouts, 2);
-	m_pipelineHelper.Init(m_device, m_renderPass);
+	m_pipelineHelper.Init(m_device);
+	m_pipelineHelper.SetRenderPass(m_renderPass);
 	UnbindTexture();
 }
 
@@ -203,7 +219,7 @@ void CVulkanRenderer::AcquireImage()
 	m_activeCommandBuffer->WaitFence();
 	FreeResources(false);
 	
-	VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_activeCommandBuffer->GetImageAvailibleSemaphore(), VK_NULL_HANDLE, &m_currentImageIndex);
+	const VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX, m_activeCommandBuffer->GetImageAvailibleSemaphore(), VK_NULL_HANDLE, &m_currentImageIndex);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
 		return CreateSwapchain();
@@ -214,11 +230,11 @@ void CVulkanRenderer::AcquireImage()
 	}
 
 	m_currentImage = m_swapchain.GetImages()[m_currentImageIndex];
-	InitFramebuffer();
+	InitFramebuffer(true);
 	m_activeCommandBuffer->Begin();
 
 	const VkImageSubresourceRange imageSubresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	VkImageMemoryBarrier barrierFromPresentToDraw = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+	const VkImageMemoryBarrier barrierFromPresentToDraw = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, 0, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
 		VK_IMAGE_LAYOUT_GENERAL, m_presentQueueFamilyIndex, m_graphicsQueueFamilyIndex, m_currentImage, imageSubresourceRange };
 	vkCmdPipelineBarrier(*m_activeCommandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierFromPresentToDraw);
 	m_descriptorSetManager.BindAll(*m_activeCommandBuffer, m_pipelineHelper.GetLayout());
@@ -232,18 +248,18 @@ void CVulkanRenderer::Present()
 	if (m_graphicsQueue != m_presentQueue)
 	{
 		const VkImageSubresourceRange imageSubresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		VkImageMemoryBarrier barrierFromDrawToPresent = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+		const VkImageMemoryBarrier barrierFromDrawToPresent = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, nullptr, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 			VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, m_graphicsQueueFamilyIndex, m_presentQueueFamilyIndex, m_currentImage, imageSubresourceRange };
 		vkCmdPipelineBarrier(*m_activeCommandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrierFromDrawToPresent);
 	}
-	VkPipelineStageFlags mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	const VkPipelineStageFlags mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	if (m_serviceBufferIsActive)
 	{
 		m_serviceCommandBuffer->End();
 
 		const VkCommandBuffer bufferHandle = *m_serviceCommandBuffer;
-		VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 0, nullptr, &mask, 1, &bufferHandle, 0, nullptr };
-		VkResult result = vkQueueSubmit(m_presentQueue, 1, &submit_info, m_serviceCommandBuffer->GetFence());
+		const VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 0, nullptr, &mask, 1, &bufferHandle, 0, nullptr };
+		const VkResult result = vkQueueSubmit(m_presentQueue, 1, &submit_info, m_serviceCommandBuffer->GetFence());
 		LOG_VK_RESULT(result, "Cannot submit service buffer");
 
 		m_serviceCommandBuffer->WaitFence();
@@ -252,15 +268,15 @@ void CVulkanRenderer::Present()
 
 	m_activeCommandBuffer->End();
 
-	VkCommandBuffer bufferHandle = *m_activeCommandBuffer;
-	VkSemaphore imageAvailibleSemaphore = m_activeCommandBuffer->GetImageAvailibleSemaphore();
-	VkSemaphore renderingFinishedSemaphore = m_activeCommandBuffer->GetRenderingFinishedSemaphore();
-	VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 1, &imageAvailibleSemaphore, &mask, 1, &bufferHandle, 1, &renderingFinishedSemaphore };
+	const VkCommandBuffer bufferHandle = *m_activeCommandBuffer;
+	const VkSemaphore imageAvailibleSemaphore = m_activeCommandBuffer->GetImageAvailibleSemaphore();
+	const VkSemaphore renderingFinishedSemaphore = m_activeCommandBuffer->GetRenderingFinishedSemaphore();
+	const VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 1, &imageAvailibleSemaphore, &mask, 1, &bufferHandle, 1, &renderingFinishedSemaphore };
 	VkResult result = vkQueueSubmit(m_presentQueue, 1, &submit_info, m_activeCommandBuffer->GetFence());
 	LOG_VK_RESULT(result, "Cannot submit buffer");
 
-	VkSwapchainKHR swapchain = m_swapchain;
-	VkPresentInfoKHR presentInfo = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1, &renderingFinishedSemaphore, 1, &swapchain, &m_currentImageIndex, nullptr };
+	const VkSwapchainKHR swapchain = m_swapchain;
+	const VkPresentInfoKHR presentInfo = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, nullptr, 1, &renderingFinishedSemaphore, 1, &swapchain, &m_currentImageIndex, nullptr };
 	result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
@@ -285,7 +301,7 @@ void CVulkanRenderer::DestroyImage(CVulkanCachedTexture * texture, VkImage image
 		if (*texture) m_imagesToDestroy.push_back(std::make_pair((VkImage)*texture, RESOURCE_DELAY_FRAMES));
 		if (texture->GetImageView()) m_imageViewsToDestroy.push_back(std::make_pair(texture->GetImageView(), RESOURCE_DELAY_FRAMES));
 		if (texture->GetSampler()) m_samplersToDestroy.push_back(std::make_pair(texture->GetSampler(), RESOURCE_DELAY_FRAMES));
-		VkDescriptorSet set = m_descriptorSetManager.GetTextureDescriptor(texture);
+		const VkDescriptorSet set = m_descriptorSetManager.GetTextureDescriptor(texture);
 		if (set) m_descriptorsToDestroy.push_back(std::make_pair(set, RESOURCE_DELAY_FRAMES));
 	}
 	if (image) m_imagesToDestroy.push_back(std::make_pair(image, RESOURCE_DELAY_FRAMES));
@@ -294,7 +310,10 @@ void CVulkanRenderer::DestroyImage(CVulkanCachedTexture * texture, VkImage image
 
 void CVulkanRenderer::DestroyBuffer(VkBuffer buffer)
 {
-	if(buffer) m_buffersToDestroy.push_back(std::make_pair(buffer, BUFFER_DELAY_FRAMES));
+	if (buffer)
+	{
+		m_buffersToDestroy.push_back(std::make_pair(buffer, BUFFER_DELAY_FRAMES));
+	}
 }
 
 void CVulkanRenderer::EnableMultisampling(bool enable)
@@ -303,12 +322,33 @@ void CVulkanRenderer::EnableMultisampling(bool enable)
 
 void CVulkanRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const
 {
-	m_matrixManager.WindowCoordsToWorldVector(x, y, (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight(), viewport.GetViewMatrix(), viewport.GetProjectionMatrix(), start, end);
+	glm::vec4 viewportData(viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight());
+	//Set OpenGL Windows coordinates
+	float winX = (float)x;
+	float winY = viewportData[3] - (float)y;
+
+	auto ToVector3f = [](glm::vec3 const& v)->CVector3f { return{ v.x, v.y, v.z }; };
+	float projectionMatrix[16];
+	float viewMatrix[16];
+	m_matrixManager.GetProjectionMatrix(projectionMatrix);
+	m_matrixManager.GetViewMatrix(viewMatrix);
+	//Cast a ray from eye to mouse cursor;
+	glm::mat4 proj = glm::make_mat4(projectionMatrix);
+	glm::mat4 view = glm::make_mat4(viewMatrix);
+	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), view, proj, viewportData));
+	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), view, proj, viewportData));
 }
 
 void CVulkanRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
-	m_matrixManager.WorldCoordsToWindowCoords(worldCoords, (float)viewport.GetX(), (float)viewport.GetY(), (float)viewport.GetWidth(), (float)viewport.GetHeight(), viewport.GetViewMatrix(), viewport.GetProjectionMatrix(), x, y);
+	glm::vec4 viewportData(viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight());
+	float projectionMatrix[16];
+	float viewMatrix[16];
+	m_matrixManager.GetProjectionMatrix(projectionMatrix);
+	m_matrixManager.GetViewMatrix(viewMatrix);
+	auto windowPos = glm::project(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewMatrix), glm::make_mat4(projectionMatrix), viewportData);
+	x = static_cast<int>(windowPos.x);
+	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
 
 std::unique_ptr<IFrameBuffer> CVulkanRenderer::CreateFramebuffer() const
@@ -344,19 +384,21 @@ void CVulkanRenderer::GetProjectionMatrix(float * matrix) const
 
 void CVulkanRenderer::EnableDepthTest(bool enable)
 {
+	//m_pipelineHelper.SetDepthParams(enable, enable);
 }
 
 void CVulkanRenderer::EnableBlending(bool enable)
 {
+	//m_pipelineHelper.SetBlending(enable);
 }
 
 void CVulkanRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0f*/, float farPane /*= 1000.0f*/)
 {
 	m_viewport = { static_cast<float>(viewportX), static_cast<float>(viewportY), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane };
-	VkRect2D scissor = { {static_cast<int32_t>(viewportX), static_cast<int32_t>(viewportY)}, {viewportWidth, viewportHeight} };
+	const VkRect2D scissor = { {static_cast<int32_t>(viewportX), static_cast<int32_t>(viewportY)}, {viewportWidth, viewportHeight} };
 	vkCmdSetViewport(*m_activeCommandBuffer, 0, 1, &m_viewport);
 	vkCmdSetScissor(*m_activeCommandBuffer, 0, 1, &scissor);
-	auto projectionMatrix = glm::perspectiveFov<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
+	const auto projectionMatrix = glm::perspectiveFov<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
 	m_matrixManager.SetProjectionMatrix(glm::value_ptr(projectionMatrix));
 }
 
@@ -373,16 +415,13 @@ void CVulkanRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, 
 {
 }
 
-void CVulkanRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/)
+void CVulkanRenderer::ClearBuffers(bool /*color = true*/, bool depth /*= true*/)
 {
-	if (color)
-	{
-		const VkImageSubresourceRange imageRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		VkClearColorValue clearColor = { { 0.0f, 0.0f, 0.0f, 1.0f } };
-		vkCmdClearColorImage(*m_activeCommandBuffer, m_currentImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageRange);
-	}
+	VkClearValue clearValues[2];
+	clearValues[0].color = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
+	clearValues[1].depthStencil = VkClearDepthStencilValue{ 1.0f, 0u };
 
-	VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_renderPass, m_activeCommandBuffer->GetFrameBuffer() ,{ { 0, 0 }, m_swapchain.GetExtent() }, 0, nullptr };
+	const VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_renderPass, m_activeCommandBuffer->GetFrameBuffer() ,{ { 0, 0 }, m_swapchain.GetExtent() }, depth ? 2u : 1u, clearValues };
 	vkCmdBeginRenderPass(*m_activeCommandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
 	vkCmdBindPipeline(*m_activeCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetPipeline());
@@ -441,7 +480,7 @@ bool CVulkanRenderer::ConvertBgra() const
 void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	BeforeDraw();
-	std::tuple<VkBuffer, size_t, void*> empty(*m_emptyBuffer, 0, nullptr);
+	const std::tuple<VkBuffer, size_t, void*> empty(*m_emptyBuffer, 0, nullptr);
 	CVulkanSmartBuffer& vertexBuffer = m_activeCommandBuffer->GetVertexBuffer();
 	const auto vertexInfo = vertices.empty() ? empty : vertexBuffer.Allocate(vertices.size() * sizeof(CVector3f));
 	const auto normalsInfo = normals.empty() ? empty : vertexBuffer.Allocate(normals.size() * sizeof(CVector3f));
@@ -581,23 +620,26 @@ void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICache
 	}
 	std::unique_ptr<CCommandBufferWrapper> commandBuffer = std::make_unique<CCommandBufferWrapper>(m_commandPool, *this);
 	commandBuffer->WaitFence();
-	VkImageView view = texture.GetImageView();
+	const VkImageView view = texture.GetImageView();
 	VkFramebuffer frameBuffer;
-	VkFramebufferCreateInfo framebuffer_create_info = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, m_serviceRenderPass, 1, &view, width, height, 1 };
+	const VkFramebufferCreateInfo framebuffer_create_info = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, m_serviceRenderPass, 1, &view, width, height, 1 };
 	VkResult result = vkCreateFramebuffer(m_device, &framebuffer_create_info, nullptr, &frameBuffer);
 	LOG_VK_RESULT(result, "Failed to create framebuffer");
 	commandBuffer->SetFrameBuffer(frameBuffer);
 	CCommandBufferWrapper* oldCommandBuffer = m_activeCommandBuffer;
-	VkImage oldImage = m_currentImage;
+	const VkImage oldImage = m_currentImage;
 	m_currentImage = texture;
 	m_activeCommandBuffer = commandBuffer.get();
 	m_activeCommandBuffer->Begin();
-	VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_serviceRenderPass, frameBuffer,{ { 0, 0 }, {width, height} }, 0, nullptr };
+	VkClearValue clearValue;
+	clearValue.color = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
+	const VkRenderPassBeginInfo render_pass_begin_info = { VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO, nullptr, m_serviceRenderPass, frameBuffer,{ { 0, 0 }, {width, height} }, 1, &clearValue };
 	vkCmdBeginRenderPass(*m_activeCommandBuffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
-	VkViewport viewport = { 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f };
+	const VkViewport viewport = { 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f };
 	vkCmdSetViewport(*m_activeCommandBuffer, 0, 1, &viewport);
-	VkRect2D scissor = { { 0, 0 }, { width, height } };
+	const VkRect2D scissor = { { 0, 0 }, { width, height } };
 	vkCmdSetScissor(*m_activeCommandBuffer, 0, 1, &scissor);
+	m_pipelineHelper.SetRenderPass(m_serviceRenderPass);
 	m_pipelineHelper.Bind(*m_activeCommandBuffer);
 	m_descriptorSetManager.BindAll(*m_activeCommandBuffer, m_pipelineHelper.GetLayout());
 	m_matrixManager.SaveMatrices();
@@ -605,31 +647,31 @@ void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICache
 	m_matrixManager.ResetModelView();
 	func();
 	m_matrixManager.RestoreMatrices();
-	m_activeCommandBuffer->GetVertexBuffer().Commit(true);
+	m_activeCommandBuffer->GetVertexBuffer().Commit();
 	vkCmdEndRenderPass(*m_activeCommandBuffer);
 	m_activeCommandBuffer->End();
 
-	VkCommandBuffer buffer = *m_activeCommandBuffer;
-	VkPipelineStageFlags mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 0, nullptr, &mask, 1, &buffer, 0, nullptr };
+	const VkCommandBuffer buffer = *m_activeCommandBuffer;
+	const VkPipelineStageFlags mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	const VkSubmitInfo submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO, nullptr, 0, nullptr, &mask, 1, &buffer, 0, nullptr };
 	result = vkQueueSubmit(m_graphicsQueue, 1, &submit_info, m_activeCommandBuffer->GetFence());
 	LOG_VK_RESULT(result, "Cannot submit service command buffer to queue");
 
 	m_commandBuffersToDestroy.push_back(std::make_pair(std::move(commandBuffer), RESOURCE_DELAY_FRAMES));
 	m_activeCommandBuffer = oldCommandBuffer;
 	m_currentImage = oldImage;
+	m_pipelineHelper.SetRenderPass(m_renderPass);
 }
 
 std::unique_ptr<ICachedTexture> CVulkanRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type /*= CachedTextureType::RGBA*/)
 {
 	auto texture = std::make_unique<CVulkanCachedTexture>(*this);
-	VkImageUsageFlags flags = 
-		(type == CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | 
-		(type == CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : 0) | 
-		VK_IMAGE_USAGE_SAMPLED_BIT;
-	texture->Init(width, height, *m_memoryManager, type, TEXTURE_HAS_ALPHA, flags);
-	BeginServiceCommandBuffer();
-	if(data) texture->Upload(data, *m_memoryManager, *m_serviceCommandBuffer);
+	texture->Init(width, height, *m_memoryManager, type, TEXTURE_HAS_ALPHA);
+	if (data)
+	{
+		BeginServiceCommandBuffer();
+		texture->Upload(data, *m_memoryManager, *m_serviceCommandBuffer);
+	}
 	return std::move(texture);
 }
 
@@ -653,7 +695,7 @@ void CVulkanRenderer::SetMaterial(const float * ambient, const float * diffuse, 
 std::unique_ptr<IVertexBuffer> CVulkanRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t size /*= 0*/, bool temp /*= false*/)
 {
 	BeginServiceCommandBuffer();
-	return std::move(std::make_unique<CVulkanVertexBuffer>(this, m_device, m_physicalDevice, *m_serviceCommandBuffer, vertex, normals, texcoords, size));
+	return std::move(std::make_unique<CVulkanVertexBuffer>(this, *m_serviceCommandBuffer, vertex, normals, texcoords, size));
 }
 
 void CVulkanRenderer::BeginServiceCommandBuffer()
@@ -709,12 +751,12 @@ void CVulkanRenderer::CreateDeviceAndQueues()
 	{
 		throw std::runtime_error("Cannot find compatible physical device");
 	}
-	std::vector<const char*> deviceExtensions = {
+	constexpr std::array<const char*, 1> deviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
 	std::vector<float> queue_priorities = { 1.0f };
-	VkDeviceQueueCreateInfo queue_create_info = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, nullptr, 0, m_graphicsQueueFamilyIndex, static_cast<uint32_t>(queue_priorities.size()), queue_priorities.data() };
-	VkDeviceCreateInfo device_create_info = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, nullptr, 0, 1, &queue_create_info, 0, nullptr, static_cast<uint32_t>(deviceExtensions.size()), deviceExtensions.data(), nullptr };
+	const VkDeviceQueueCreateInfo queue_create_info = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, nullptr, 0, m_graphicsQueueFamilyIndex, static_cast<uint32_t>(queue_priorities.size()), queue_priorities.data() };
+	const VkDeviceCreateInfo device_create_info = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, nullptr, 0, 1, &queue_create_info, 0, nullptr, static_cast<uint32_t>(deviceExtensions.size()), deviceExtensions.data(), nullptr };
 	result = vkCreateDevice(m_physicalDevice, &device_create_info, nullptr, &m_device);
 	CHECK_VK_RESULT(result, "Cannot create virtual device");
 	vkGetDeviceQueue(m_device, m_graphicsQueueFamilyIndex, 0, &m_graphicsQueue);
@@ -758,14 +800,14 @@ void CVulkanRenderer::CreateSwapchain()
 		image_count = surfaceCapabilities.maxImageCount;
 	}
 	auto surfaceFormat = GetSurfaceFormat(surface_formats);
-	VkExtent2D extent = GetSurfaceExtent(surfaceCapabilities);
-	VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	VkSurfaceTransformFlagBitsKHR transformFlags = (surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) 
+	const VkExtent2D extent = GetSurfaceExtent(surfaceCapabilities);
+	const VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	const VkSurfaceTransformFlagBitsKHR transformFlags = (surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) 
 		? VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR 
 		: surfaceCapabilities.currentTransform;
 	auto presentMode = SelectPresentMode(present_modes, { VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_FIFO_KHR });
 
-	VkSwapchainCreateInfoKHR swap_chain_create_info = { VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, nullptr, 0, m_surface, image_count, surfaceFormat.format, surfaceFormat.colorSpace,
+	const VkSwapchainCreateInfoKHR swap_chain_create_info = { VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR, nullptr, 0, m_surface, image_count, surfaceFormat.format, surfaceFormat.colorSpace,
 		extent, 1, imageUsageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, transformFlags, VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR, presentMode, VK_TRUE, m_swapchain };
 
 	VkSwapchainKHR swapchain;
@@ -776,8 +818,8 @@ void CVulkanRenderer::CreateSwapchain()
 
 void CVulkanRenderer::CreateCommandBuffers()
 {
-	VkCommandPoolCreateInfo commandPoolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, m_graphicsQueueFamilyIndex };
-	VkResult result = vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_commandPool);
+	const VkCommandPoolCreateInfo commandPoolInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO, nullptr, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, m_graphicsQueueFamilyIndex };
+	const VkResult result = vkCreateCommandPool(m_device, &commandPoolInfo, nullptr, &m_commandPool);
 	CHECK_VK_RESULT(result, "Cannot create command pool");
 
 	m_commandBuffers.reserve(COMMAND_BUFFERS_COUNT);
@@ -789,30 +831,37 @@ void CVulkanRenderer::CreateCommandBuffers()
 	m_serviceCommandBuffer->WaitFence();
 }
 
-VkRenderPass CVulkanRenderer::CreateRenderPass(VkFormat format)
+VkRenderPass CVulkanRenderer::CreateRenderPass(VkFormat format, VkFormat depthFormat)
 {
-	VkAttachmentDescription attachmentDescriptions[] = { 0, format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR };
-	VkAttachmentReference color_attachment_references[] = { { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL } };
-	VkSubpassDescription subpass_descriptions[] = { { 0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, color_attachment_references, nullptr, nullptr, 0, nullptr } };
-	std::vector<VkSubpassDependency> dependencies = {
+	const VkAttachmentDescription attachmentDescriptions[] = {
+		{ 0, format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR },
+		{ 0, depthFormat, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL }
+	};
+	const VkAttachmentReference color_attachment_references[] = { { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL } };
+	const VkAttachmentReference depth_attachment_references[] = { { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL } };
+	const uint32_t count = depthFormat ? 2 : 1;
+	const VkSubpassDescription subpass_descriptions[] = { { 0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, color_attachment_references, nullptr, (count == 2 ? depth_attachment_references : nullptr), 0, nullptr } };
+	const std::vector<VkSubpassDependency> dependencies = {
 		{ VK_SUBPASS_EXTERNAL, 0, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_DEPENDENCY_BY_REGION_BIT },
 		{ 0, VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, VK_DEPENDENCY_BY_REGION_BIT },
 	};
-	VkRenderPassCreateInfo renderPassCreateInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, 1, attachmentDescriptions, 1, subpass_descriptions, static_cast<uint32_t>(dependencies.size()), dependencies.data() };
+	
+	const VkRenderPassCreateInfo renderPassCreateInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, nullptr, 0, count, attachmentDescriptions, 1, subpass_descriptions, static_cast<uint32_t>(dependencies.size()), dependencies.data() };
 	VkRenderPass renderPass;
-	VkResult result = vkCreateRenderPass(m_device, &renderPassCreateInfo, nullptr, &renderPass);
+	const VkResult result = vkCreateRenderPass(m_device, &renderPassCreateInfo, nullptr, &renderPass);
 	CHECK_VK_RESULT(result, "cannot create render pass");
 	return renderPass;
 }
 
-void CVulkanRenderer::InitFramebuffer()
+void CVulkanRenderer::InitFramebuffer(bool useDepth)
 {
 	VkFramebuffer buffer;
-	VkImageView view = m_swapchain.GetImageView(m_currentImageIndex);
-	VkExtent2D size = m_swapchain.GetExtent();
-	VkFramebufferCreateInfo framebuffer_create_info = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, m_renderPass, 1, &view, size.width, size.height, 1 };
-	VkResult result = vkCreateFramebuffer(m_device, &framebuffer_create_info, nullptr, &buffer);
+	const VkImageView views[] = { m_swapchain.GetImageView(m_currentImageIndex), m_swapchain.GetDepthTexture().GetImageView() };
+	const VkExtent2D size = m_swapchain.GetExtent();
+	const VkFramebufferCreateInfo framebuffer_create_info = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO, nullptr, 0, m_renderPass, useDepth ? 2u : 1u, views, size.width, size.height, 1 };
+	const VkResult result = vkCreateFramebuffer(m_device, &framebuffer_create_info, nullptr, &buffer);
 	LOG_VK_RESULT(result, "Failed to create framebuffer");
 	m_activeCommandBuffer->SetFrameBuffer(buffer);
 }
@@ -848,14 +897,13 @@ void CVulkanRenderer::FreeResources(bool force)
 	m_memoryManager->FreeResources();
 }
 
-void CPipelineHelper::Init(VkDevice device, VkRenderPass pass)
+void CPipelineHelper::Init(VkDevice device)
 {
 	m_pipelineLayout.Destroy();
-	VkResult result = vkCreatePipelineLayout(device, &layout_create_info, nullptr, &m_pipelineLayout);
+	const VkResult result = vkCreatePipelineLayout(device, &layout_create_info, nullptr, &m_pipelineLayout);
 	m_pipelineLayout.SetDevice(device);
 	pipeline_create_info.layout = m_pipelineLayout;
 	CHECK_VK_RESULT(result, "Cannot create pipeline layout");
-	pipeline_create_info.renderPass = pass;
 	m_device = device;
 }
 
@@ -866,7 +914,7 @@ VkPipeline CPipelineHelper::GetPipeline()
 	if (it == m_pipelines.end())
 	{
 		VkPipeline pipeline;
-		VkResult result = vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline);
+		const VkResult result = vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipeline_create_info, nullptr, &pipeline);
 		CHECK_VK_RESULT(result, "Cannot create pipeline");
 		it = m_pipelines.emplace(std::make_pair(m_currentKey, pipeline)).first;
 	}
@@ -876,7 +924,7 @@ VkPipeline CPipelineHelper::GetPipeline()
 
 void CPipelineHelper::Bind(VkCommandBuffer commandBuffer)
 {
-	VkPipeline newPipeline = GetPipeline();
+	const VkPipeline newPipeline = GetPipeline();
 	if (newPipeline != m_currentPipeline || commandBuffer != m_currentBuffer)
 	{
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, newPipeline);
@@ -908,7 +956,21 @@ void CPipelineHelper::SetVertexAttributes(std::vector<VertexAttrib> const& attri
 	m_currentKey.attribs = attribs;
 }
 
-void CPipelineHelper::SetDescriptorLayout(VkDescriptorSetLayout * layouts, uint32_t count)
+void CPipelineHelper::AddVertexAttribute(VertexAttrib attrib)
+{
+	auto attribs = m_currentKey.attribs;
+	attribs.push_back(attrib);
+	SetVertexAttributes(attribs);
+}
+
+void CPipelineHelper::RemoveVertexAttribute(uint32_t pos)
+{
+	auto attribs = m_currentKey.attribs;
+	attribs.erase(std::remove_if(attribs.begin(), attribs.end(), [pos](const VertexAttrib & attrib) { return attrib.pos == pos; }), attribs.end());
+	SetVertexAttributes(attribs);
+}
+
+void CPipelineHelper::SetDescriptorLayout(const VkDescriptorSetLayout * layouts, uint32_t count)
 {
 	layout_create_info.setLayoutCount = count;
 	layout_create_info.pSetLayouts = layouts;
@@ -922,6 +984,26 @@ void CPipelineHelper::SetTopology(VkPrimitiveTopology topology)
 	m_currentKey.topology = topology;
 }
 
+void CPipelineHelper::SetBlending(bool enable)
+{
+	color_blend_attachment_state.blendEnable = enable ? VK_TRUE : VK_FALSE;
+	m_currentKey.blending = enable;
+}
+
+void CPipelineHelper::SetDepthParams(bool test, bool write)
+{
+	depthStencil.depthTestEnable = test ? VK_TRUE : VK_FALSE;
+	depthStencil.depthWriteEnable = write ? VK_TRUE : VK_FALSE;
+	m_currentKey.depthTest = test;
+	m_currentKey.depthWrite = test;
+}
+
+void CPipelineHelper::SetRenderPass(VkRenderPass pass)
+{
+	pipeline_create_info.renderPass = pass;
+	m_currentKey.renderPass = pass;
+}
+
 void CPipelineHelper::Destroy()
 {
 	for (auto& pair : m_pipelines)
@@ -933,7 +1015,9 @@ void CPipelineHelper::Destroy()
 }
 
 CCommandBufferWrapper::CCommandBufferWrapper(VkCommandPool pool, CVulkanRenderer & renderer)
-	: m_device(renderer.GetDevice()), m_pool(pool), m_vertexBuffer(sizeof(float) * 1000, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+	: m_device(renderer.GetDevice()), m_pool(pool)
+	, m_vertexBuffer(sizeof(float) * 1000, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+	, m_uniformBuffer(sizeof(float) * 1000, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
 {
 	m_imageAvailibleSemaphore.SetDevice(m_device);
 	m_renderingFinishedSemaphore.SetDevice(m_device);
@@ -965,22 +1049,22 @@ CCommandBufferWrapper::~CCommandBufferWrapper()
 
 void CCommandBufferWrapper::WaitFence()
 {
-	VkResult result = vkWaitForFences(m_device, 1, &m_fence, VK_FALSE, UINT64_MAX);
+	const VkResult result = vkWaitForFences(m_device, 1, &m_fence, VK_FALSE, UINT64_MAX);
 	LOG_VK_RESULT(result, "Waiting on fence takes too long");
 	vkResetFences(m_device, 1, &m_fence);
 }
 
 void CCommandBufferWrapper::Begin()
 {
-	VkCommandBufferBeginInfo beginBufferInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
-	VkResult result = vkBeginCommandBuffer(m_commandBuffer, &beginBufferInfo);
+	const VkCommandBufferBeginInfo beginBufferInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr };
+	const VkResult result = vkBeginCommandBuffer(m_commandBuffer, &beginBufferInfo);
 	LOG_VK_RESULT(result, L"cannot begin command buffer");
 }
 
 void CCommandBufferWrapper::End()
 {
 	m_vertexBuffer.Commit();
-	VkResult result = vkEndCommandBuffer(m_commandBuffer);
+	const VkResult result = vkEndCommandBuffer(m_commandBuffer);
 	LOG_VK_RESULT(result, L"cannot end command buffer");
 }
 
@@ -1011,11 +1095,20 @@ void CSwapchainWrapper::Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent
 	}
 	m_extent = extent;
 	m_format = format;
+
+	m_depthTexture = std::make_unique<CVulkanCachedTexture>(*renderer);
+	m_depthTexture->Init(m_extent.width, m_extent.height, renderer->GetMemoryManager(), CachedTextureType::DEPTH);
 }
 
 CSwapchainWrapper::~CSwapchainWrapper()
 {
-	if(m_renderer) for (auto view : m_imageViews) m_renderer->DestroyImage(nullptr, VK_NULL_HANDLE, view);
+	if (m_renderer)
+	{
+		for (auto view : m_imageViews)
+		{
+			m_renderer->DestroyImage(nullptr, VK_NULL_HANDLE, view);
+		}
+	}
 }
 
 CVulkanCachedTexture::CVulkanCachedTexture(CVulkanRenderer & renderer)
@@ -1034,20 +1127,19 @@ inline VkFormat GetTextureFormat(int flags)
 }
 
 
-std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateTexture(bool deviceLocal)
+std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateTexture(bool deviceLocal, CVulkanMemoryManager & memoryManager)
 {
 	VkImage image;
-	std::unique_ptr<CVulkanMemory> memory;
-	VkImageUsageFlags usageFlags = m_usageFlags | (deviceLocal ? VK_IMAGE_USAGE_TRANSFER_DST_BIT : VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-	VkImageCreateInfo image_create_info = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,  nullptr, 0, VK_IMAGE_TYPE_2D, m_format, m_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT,
-		VK_IMAGE_TILING_LINEAR, usageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_IMAGE_LAYOUT_PREINITIALIZED };
+	const VkImageUsageFlags usageFlags = m_usageFlags | (deviceLocal ? VK_IMAGE_USAGE_TRANSFER_DST_BIT : VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+	const VkImageCreateInfo image_create_info = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,  nullptr, 0, VK_IMAGE_TYPE_2D, m_format, m_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT,
+		m_format == VK_FORMAT_D32_SFLOAT ? VK_IMAGE_TILING_OPTIMAL : VK_IMAGE_TILING_LINEAR, usageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_IMAGE_LAYOUT_PREINITIALIZED };
 	VkResult result = vkCreateImage(m_device, &image_create_info, nullptr, &image);
 
 	VkMemoryRequirements image_memory_requirements;
 	vkGetImageMemoryRequirements(m_device, image, &image_memory_requirements);
 
-	VkMemoryPropertyFlags memoryProperties = deviceLocal ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	memory = m_renderer->GetMemoryManager().Allocate(image_memory_requirements, memoryProperties);
+	const VkMemoryPropertyFlags memoryProperties = deviceLocal ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	std::unique_ptr<CVulkanMemory> memory = memoryManager.Allocate(image_memory_requirements, memoryProperties);
 	if (!memory)
 	{
 		LogWriter::WriteLine("Cannot allocate memory for image");
@@ -1058,24 +1150,26 @@ std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateT
 	return std::make_pair(image, std::move(memory));
 }
 
-void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type, int flags, VkImageUsageFlags usageFlags)
+void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type, int flags)
 {
 	if (width == 0 || height == 0) return;
 	m_format = ((type == CachedTextureType::RGBA || type == CachedTextureType::RENDER_TARGET) ? GetTextureFormat(flags) : (type == CachedTextureType::DEPTH ? VK_FORMAT_D32_SFLOAT : VK_FORMAT_R8_UNORM));
 	m_extent = { width, height, 1 };
 	m_components = type == CachedTextureType::ALPHA ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
-	m_usageFlags = usageFlags;
-	std::tie(m_image, m_memory) = CreateTexture(true);
+	m_usageFlags = type == CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : ((type == CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | VK_IMAGE_USAGE_SAMPLED_BIT);
+	m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	std::tie(m_image, m_memory) = CreateTexture(true, memoryManager);
 
-	bool isAlpha = type == CachedTextureType::ALPHA;
-	VkComponentMapping mapping = { isAlpha ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY, isAlpha ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY, isAlpha ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY, isAlpha ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_IDENTITY };
-	VkImageViewCreateInfo image_view_create_info = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, m_image, VK_IMAGE_VIEW_TYPE_2D, m_format,
-	mapping, { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 } };
+	const VkComponentSwizzle swizzle = type == CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY;
+	const VkComponentMapping mapping = { swizzle, swizzle, swizzle, type == CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_IDENTITY };
+	const VkImageAspectFlags aspectFlags = type == CachedTextureType::DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	const VkImageViewCreateInfo image_view_create_info = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, m_image, VK_IMAGE_VIEW_TYPE_2D, m_format,
+	mapping, { aspectFlags, 0, 1, 0, 1 } };
 	VkResult result = vkCreateImageView(m_device, &image_view_create_info, nullptr, &m_imageView);
 	LOG_VK_RESULT(result, "Cannot create imageView");
 
-	VkSamplerAddressMode wrapMode = flags & TEXTURE_NO_WRAP ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	VkSamplerCreateInfo sampler_create_info = { VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO, nullptr, 0, VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, wrapMode,
+	const VkSamplerAddressMode wrapMode = flags & TEXTURE_NO_WRAP ? VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE : VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	const VkSamplerCreateInfo sampler_create_info = { VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO, nullptr, 0, VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST, wrapMode,
 		wrapMode, wrapMode, 0.0f, VK_FALSE, 1.0f, VK_FALSE, VK_COMPARE_OP_ALWAYS, 0.0f,  0.0f, VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK, VK_FALSE };
 	result = vkCreateSampler(m_device, &sampler_create_info, nullptr, &m_sampler);
 	LOG_VK_RESULT(result, "Cannot create sampler");
@@ -1099,6 +1193,11 @@ void CVulkanCachedTexture::TransferImageLayout(VkImage stageImage, VkCommandBuff
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	}
+	else if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;;
+	}
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
@@ -1106,7 +1205,7 @@ void CVulkanCachedTexture::Upload(const void * data, CVulkanMemoryManager & memo
 {
 	VkImage stageImage;
 	std::unique_ptr<CVulkanMemory> stageMemory;
-	std::tie(stageImage, stageMemory) = CreateTexture(false);
+	std::tie(stageImage, stageMemory) = CreateTexture(false, memoryManager);
 		
 	void *staging_buffer_memory_pointer;
 	VkResult result = vkMapMemory(m_device, *stageMemory, stageMemory->GetOffset(), stageMemory->GetSize(), 0, &staging_buffer_memory_pointer);
@@ -1145,7 +1244,7 @@ void CVulkanCachedTexture::Upload(const void * data, CVulkanMemoryManager & memo
 	TransferImageLayout(m_image, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)
+CVulkanVertexBuffer::CVulkanVertexBuffer(CVulkanRenderer * renderer, VkCommandBuffer commandBuffer, const float * vertex, const float * normals, const float * texcoords, size_t size)
 	: m_size((vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) + (texcoords ? size * 2 * sizeof(float) : 0))
 	, m_vertexCache(m_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
 	, m_renderer(renderer)

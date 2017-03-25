@@ -81,7 +81,7 @@ public:
 	CVulkanSmartBuffer(const CVulkanSmartBuffer & other) = delete;
 	CVulkanSmartBuffer(CVulkanSmartBuffer && other) = default;
 	std::tuple<VkBuffer, size_t, void*> Allocate(size_t size);
-	void Commit(bool clear = true);
+	void Commit();
 private:
 	struct Buffer
 	{

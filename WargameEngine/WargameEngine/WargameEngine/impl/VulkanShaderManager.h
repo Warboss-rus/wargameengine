@@ -15,8 +15,13 @@ struct ShaderReflection
 		size_t offset;
 		size_t size;
 	};
+	struct AttributeDescription
+	{
+		std::string name;
+		uint32_t location;
+	};
 	std::vector<UniformDescription> uniforms;
-	std::vector<std::string> attributes;
+	std::vector<AttributeDescription> attributes;
 	size_t bufferSize;
 };
 
@@ -24,9 +29,9 @@ struct UniformBufferWrapper
 {
 	mutable std::unique_ptr<CVulkanVertexAttribCache> buffer;
 	ShaderReflection reflection;
-	mutable std::vector<char> cache;
-	mutable size_t offset = 0;
-	mutable bool changed = false;
+	std::vector<char> cache;
+	size_t offset = 0;
+	bool changed = false;
 };
 
 class CVulkanShaderProgram : public IShaderProgram
@@ -48,12 +53,12 @@ public:
 	void SetUniformValue(std::string const& name, const void * data, size_t size) const;
 	void Commit() const;
 	void FrameEnd() const;
+	uint32_t GetVertexAttributeLocation(std::string const& name) const;
 private:
 	CVulkanRenderer & m_renderer;
 	std::vector<VkShaderModule> m_modules;
 	std::vector<VkPipelineShaderStageCreateInfo> m_shaderStageCreateInfos;
-	std::vector<UniformBufferWrapper> m_uniformBuffers;
-	
+	mutable std::vector<UniformBufferWrapper> m_uniformBuffers;
 	std::vector<char> m_fragmentAttribCache;
 };
 

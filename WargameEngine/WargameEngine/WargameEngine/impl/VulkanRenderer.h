@@ -28,6 +28,7 @@ public:
 	VkFramebuffer GetFrameBuffer() const { return m_frameBuffer; }
 	void SetFrameBuffer(VkFramebuffer buffer) { m_frameBuffer = buffer; }
 	CVulkanSmartBuffer& GetVertexBuffer() { return m_vertexBuffer; }
+	CVulkanSmartBuffer& GetUniformBuffer() { return m_uniformBuffer; }
 private:
 	VkCommandBuffer m_commandBuffer;
 	CHandleWrapper<VkSemaphore, vkDestroySemaphore> m_imageAvailibleSemaphore;
@@ -37,27 +38,7 @@ private:
 	VkCommandPool m_pool;
 	CHandleWrapper<VkFramebuffer, vkDestroyFramebuffer> m_frameBuffer;
 	CVulkanSmartBuffer m_vertexBuffer;
-};
-
-class CSwapchainWrapper
-{
-public:
-	void Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent2D extent, VkFormat format, CVulkanRenderer * renderer);
-	~CSwapchainWrapper();
-	operator VkSwapchainKHR() const { return m_swapchain; }
-	void Destroy() { m_swapchain.Destroy(); m_imageViews.clear(); }
-	size_t GetImagesCount() const { return m_images.size(); }
-	const std::vector<VkImage>& GetImages() const { return m_images; }
-	VkExtent2D GetExtent() const { return m_extent; }
-	VkImageView GetImageView(size_t index) const { return m_imageViews[index]; }
-	VkFormat GetFormat() const { return m_format; }
-private:
-	CHandleWrapper<VkSwapchainKHR, vkDestroySwapchainKHR> m_swapchain;
-	std::vector<VkImage> m_images;
-	std::vector<VkImageView> m_imageViews;
-	VkExtent2D m_extent;
-	VkFormat m_format;
-	CVulkanRenderer * m_renderer;
+	CVulkanSmartBuffer m_uniformBuffer;
 };
 
 class CPipelineHelper
@@ -74,10 +55,15 @@ public:
 		bool operator < (VertexAttrib const& other) const { return std::tie(pos, size, format, perInstance) < std::tie(other.pos, other.size, other.format, other.perInstance); }
 	};
 	void SetVertexAttributes(std::vector<VertexAttrib> const& attribs);
-	void SetDescriptorLayout(VkDescriptorSetLayout * layouts, uint32_t count = 1);
+	void AddVertexAttribute(VertexAttrib attrib);
+	void RemoveVertexAttribute(uint32_t pos);
+	void SetDescriptorLayout(const VkDescriptorSetLayout * layouts, uint32_t count = 1);
 	void SetTopology(VkPrimitiveTopology topology);
+	void SetBlending(bool enable);
+	void SetDepthParams(bool test, bool write);
+	void SetRenderPass(VkRenderPass pass);
 	void Destroy();
-	void Init(VkDevice device, VkRenderPass pass);
+	void Init(VkDevice device);
 	VkPipeline GetPipeline();
 	VkPipelineLayout GetLayout() const { return m_pipelineLayout; }
 	void Bind(VkCommandBuffer commandBuffer);
@@ -92,13 +78,14 @@ private:
 	VkPipelineRasterizationStateCreateInfo rasterization_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_FALSE, 
 		VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE, VK_FALSE, 0.0f, 0.0f, 0.0f, 1.0f };
 	VkPipelineMultisampleStateCreateInfo multisample_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO, nullptr, 0, VK_SAMPLE_COUNT_1_BIT, VK_FALSE, 1.0f, nullptr, VK_FALSE, VK_FALSE };
-	VkPipelineColorBlendAttachmentState color_blend_attachment_state = { VK_FALSE, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, 
+	VkPipelineColorBlendAttachmentState color_blend_attachment_state = { VK_FALSE, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
 		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT };
 	VkPipelineColorBlendStateCreateInfo color_blend_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_LOGIC_OP_COPY, 1, &color_blend_attachment_state, { 0.0f, 0.0f, 0.0f, 0.0f } };
+	VkPipelineDepthStencilStateCreateInfo depthStencil = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO, nullptr, 0, VK_FALSE, VK_FALSE, VK_COMPARE_OP_LESS, VK_FALSE, VK_FALSE, {}, {}, 0.0f, 1.0f };
 	VkPipelineLayoutCreateInfo layout_create_info = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO, nullptr, 0, 0, nullptr, 0, nullptr };
 	VkPipelineDynamicStateCreateInfo dynamic_state_create_info = { VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO, nullptr, 0, static_cast<uint32_t>(dynamic_states.size()), dynamic_states.data() };
 	VkGraphicsPipelineCreateInfo pipeline_create_info = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO, nullptr, 0, 0/*static_cast<uint32_t>(shader_stage_create_infos.size())*/, nullptr/*shader_stage_create_infos.data()*/, 
-		&vertex_input_state_create_info, &input_assembly_state_create_info, nullptr, &viewport_state_create_info, &rasterization_state_create_info, &multisample_state_create_info, nullptr, &color_blend_state_create_info, 
+		&vertex_input_state_create_info, &input_assembly_state_create_info, nullptr, &viewport_state_create_info, &rasterization_state_create_info, &multisample_state_create_info, &depthStencil, &color_blend_state_create_info, 
 		&dynamic_state_create_info, m_pipelineLayout, VK_NULL_HANDLE/*m_renderPass*/, 0, VK_NULL_HANDLE, -1 };
 
 	VkDevice m_device;
@@ -106,9 +93,14 @@ private:
 	{
 		const CVulkanShaderProgram * program;
 		VkDescriptorSetLayout descriptors;
+		VkRenderPass renderPass;
 		VkPrimitiveTopology topology;
 		std::vector<VertexAttrib> attribs;
-		bool operator < (Key const& other) const { return std::tie(program, descriptors, topology, attribs) < std::tie(other.program, other.descriptors, other.topology, other.attribs); }
+		bool blending = false;
+		bool depthTest = false;
+		bool depthWrite = false;
+		bool operator < (Key const& other) const { return std::tie(program, descriptors, renderPass, topology, attribs, blending, depthTest, depthWrite) < 
+			std::tie(other.program, other.descriptors, other.renderPass, other.topology, other.attribs, other.blending, other.depthTest, other.depthWrite); }
 	};
 	Key m_currentKey;
 	std::map<Key, VkPipeline> m_pipelines;
@@ -121,14 +113,16 @@ class CVulkanCachedTexture : public ICachedTexture
 public:
 	CVulkanCachedTexture(CVulkanRenderer & renderer);
 	~CVulkanCachedTexture();
-	void Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type = CachedTextureType::RGBA, int flags = 0, VkImageUsageFlags usageFlags = VK_IMAGE_USAGE_SAMPLED_BIT);
+	void Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type = CachedTextureType::RGBA, int flags = 0);
 	void Upload(const void * data, CVulkanMemoryManager & memoryManager, VkCommandBuffer commandBuffer);
 	operator VkImage() const { return m_image; }
 	VkImageView GetImageView() const { return m_imageView; }
 	VkSampler GetSampler() const { return m_sampler; }
+	VkFormat GetFormat() const { return m_format; }
+	void TransferTo(VkImageLayout newLayout, VkCommandBuffer commandBuffer) { TransferImageLayout(m_image, commandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, newLayout); }
 private:
 	static void TransferImageLayout(VkImage stageImage, VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout);
-	std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CreateTexture(bool deviceLocal);
+	std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CreateTexture(bool deviceLocal, CVulkanMemoryManager & memoryManager);
 	VkImage m_image = VK_NULL_HANDLE;
 	std::unique_ptr<CVulkanMemory> m_memory;
 	VkImageView m_imageView = VK_NULL_HANDLE;
@@ -141,28 +135,33 @@ private:
 	VkImageUsageFlags m_usageFlags;
 };
 
-class CVulkanVertexBuffer : public IVertexBuffer
+class CSwapchainWrapper
 {
 public:
-	CVulkanVertexBuffer(CVulkanRenderer * renderer, VkDevice device, VkPhysicalDevice physicalDevice, VkCommandBuffer commandBuffer, const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0);
-	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
-	virtual void Bind() const override;
-	virtual void DrawIndexes(size_t begin, size_t count) override;
-	virtual void DrawAll(size_t count) override;
-	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
-	virtual void UnBind() const override;
+	void Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent2D extent, VkFormat format, CVulkanRenderer * renderer);
+	~CSwapchainWrapper();
+	operator VkSwapchainKHR() const { return m_swapchain; }
+	size_t GetImagesCount() const { return m_images.size(); }
+	const std::vector<VkImage>& GetImages() const { return m_images; }
+	VkExtent2D GetExtent() const { return m_extent; }
+	VkImageView GetImageView(size_t index) const { return m_imageViews[index]; }
+	VkFormat GetFormat() const { return m_format; }
+	CVulkanCachedTexture& GetDepthTexture() const { return *m_depthTexture; }
+	void DestroyDepthTexture() { m_depthTexture.reset(); }
 private:
-	VkDeviceSize m_size;
-	CVulkanVertexAttribCache m_vertexCache;
-	std::unique_ptr<CVulkanVertexAttribCache> m_indexCache;
+	CHandleWrapper<VkSwapchainKHR, vkDestroySwapchainKHR> m_swapchain;
+	std::vector<VkImage> m_images;
+	std::vector<VkImageView> m_imageViews;
+	std::unique_ptr<CVulkanCachedTexture> m_depthTexture;
+	VkExtent2D m_extent;
+	VkFormat m_format;
 	CVulkanRenderer * m_renderer;
-	VkDeviceSize m_offsets[3];
 };
 
 class CVulkanOcclusionQuery : public IOcclusionQuery
 {
 public:
-	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override { handler(); }
+	virtual void Query(std::function<void() > const& handler, bool /*renderToScreen*/) override { handler(); }
 	virtual bool IsVisible() const override { return true; }
 };
 
@@ -268,8 +267,8 @@ private:
 	void CreateDeviceAndQueues();
 	void CreateSwapchain();
 	void CreateCommandBuffers();
-	VkRenderPass CreateRenderPass(VkFormat format);
-	void InitFramebuffer();
+	VkRenderPass CreateRenderPass(VkFormat format, VkFormat depthFormat = VK_FORMAT_UNDEFINED);
+	void InitFramebuffer(bool useDepth);
 	void FreeResources(bool force);
 	void BeginServiceCommandBuffer();
 

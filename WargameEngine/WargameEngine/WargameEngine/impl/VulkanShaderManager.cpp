@@ -5,6 +5,8 @@
 #include <algorithm>
 #include "VulkanRenderer.h"
 
+namespace
+{
 ShaderReflection ReflectShader(const std::vector<char> & code)
 {
 	std::vector<uint32_t> codeUint(code.size() * sizeof(char) / (sizeof(uint32_t)));
@@ -19,13 +21,14 @@ ShaderReflection ReflectShader(const std::vector<char> & code)
 		for (auto& range : ranges)
 		{
 			std::string name = glsl.get_member_name(uniformBuffer.base_type_id, range.index);
-			reflection.uniforms.push_back({name, uniformBuffer.name, range.offset, range.range});
+			reflection.uniforms.push_back({ name, uniformBuffer.name, range.offset, range.range });
 			reflection.bufferSize += range.range;
 		}
 	}
 	for (auto& input : resources.stage_inputs)
 	{
-		reflection.attributes.push_back(input.name);
+		size_t location = glsl.get_decoration(input.id, spv::DecorationLocation);
+		reflection.attributes.push_back({ input.name, location });
 	}
 	return reflection;
 }
@@ -46,6 +49,31 @@ VkShaderModule CompileShader(std::wstring const& filename, VkDevice device, Shad
 	return shaderModule;
 }
 
+VkFormat GetFormat(IShaderManager::TYPE type, int elementSize)
+{
+	switch (type)
+	{
+	case IShaderManager::TYPE::FLOAT32:
+	{
+		constexpr VkFormat formats[] = { VK_FORMAT_R32_SFLOAT, VK_FORMAT_R32G32_SFLOAT, VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT };
+		return formats[elementSize - 1];
+	}
+	case IShaderManager::TYPE::SINT32:
+	{
+		constexpr VkFormat formats[] = { VK_FORMAT_R32_SINT, VK_FORMAT_R32G32_SINT, VK_FORMAT_R32G32B32_SINT, VK_FORMAT_R32G32B32A32_SINT };
+		return formats[elementSize - 1];
+	}
+	case IShaderManager::TYPE::UINT32:
+	{
+		constexpr VkFormat formats[] = { VK_FORMAT_R32_UINT, VK_FORMAT_R32G32_UINT, VK_FORMAT_R32G32B32_UINT, VK_FORMAT_R32G32B32A32_UINT };
+		return formats[elementSize - 1];
+	}
+	default:
+		return VK_FORMAT_UNDEFINED;
+	}
+}
+}
+
 CVulkanShaderManager::CVulkanShaderManager(CVulkanRenderer & renderer)
 	:m_renderer(renderer)
 {
@@ -62,8 +90,6 @@ std::unique_ptr<IShaderProgram> CVulkanShaderManager::NewProgram(std::wstring co
 	program->AddShaderModule(vertexShader, VK_SHADER_STAGE_VERTEX_BIT, vertexReflection);
 	program->AddShaderModule(fragmentShader, VK_SHADER_STAGE_FRAGMENT_BIT, fragmentReflection);
 	program->AddShaderModule(geometryShader, VK_SHADER_STAGE_GEOMETRY_BIT, geometryReflection);
-
-	VkDescriptorBufferInfo bufferInfo = {};
 
 	return std::move(program);
 }
@@ -98,30 +124,44 @@ void CVulkanShaderManager::SetUniformValue(std::string const& uniform, int eleme
 
 void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance /*= false*/) const
 {
+	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
+	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(float) * elementSize), GetFormat(TYPE::FLOAT32, elementSize), perInstance });
 }
 
 void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance /*= false*/) const
 {
+	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
+	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(int) * elementSize), GetFormat(TYPE::SINT32, elementSize), perInstance });
 }
 
 void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance /*= false*/) const
 {
+	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
+	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(unsigned int) * elementSize), GetFormat(TYPE::UINT32, elementSize), perInstance });
 }
 
 void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance /*= false*/, size_t offset /*= 0*/) const
 {
+	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
+	m_renderer.GetPipelineHelper().AddVertexAttribute({ location, static_cast<uint32_t>(sizeof(unsigned int) * elementSize), GetFormat(type, elementSize), perInstance });
 }
 
-void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, int size, const float* defaultValue) const
+void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* /*defaultValue*/) const
 {
+	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
+	m_renderer.GetPipelineHelper().RemoveVertexAttribute(location);
 }
 
-void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const
+void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, int /*size*/, const int* /*defaultValue*/) const
 {
+	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
+	m_renderer.GetPipelineHelper().RemoveVertexAttribute(location);
 }
 
-void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const
+void CVulkanShaderManager::DisableVertexAttribute(std::string const& attribute, int /*size*/, const unsigned int* /*defaultValue*/) const
 {
+	uint32_t location = m_programsStack.back()->GetVertexAttributeLocation(attribute);
+	m_renderer.GetPipelineHelper().RemoveVertexAttribute(location);
 }
 
 std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCache(size_t size, const void* value) const
@@ -209,6 +249,21 @@ void CVulkanShaderProgram::FrameEnd() const
 			buffer.buffer = std::make_unique<CVulkanVertexAttribCache>(buffer.offset * 2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, m_renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 		}
 	}
+}
+
+uint32_t CVulkanShaderProgram::GetVertexAttributeLocation(std::string const& name) const
+{
+	for (auto& mod : m_uniformBuffers)
+	{
+		for (auto& attrib : mod.reflection.attributes)
+		{
+			if (attrib.name == name)
+			{
+				return attrib.location;
+			}
+		}
+	}
+	return static_cast<uint32_t>(-1);
 }
 
 CVulkanShaderProgram::~CVulkanShaderProgram()

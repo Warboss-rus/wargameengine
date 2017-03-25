@@ -63,6 +63,12 @@ void CMatrixManagerGLM::GetProjectionMatrix(float * matrix) const
 	memcpy(matrix, glm::value_ptr(m_projectionMatrix), sizeof(float) * 16);
 }
 
+
+void CMatrixManagerGLM::GetViewMatrix(float * matrix) const
+{
+	memcpy(matrix, glm::value_ptr(m_viewMatrix), sizeof(float) * 16);
+}
+
 void CMatrixManagerGLM::ResetModelView()
 {
 	*m_modelMatrix = glm::mat4();

@@ -21,6 +21,7 @@ public:
 	void Rotate(float angle, float x, float y, float z);
 	void GetModelViewMatrix(float * matrix) const;
 	void GetProjectionMatrix(float * matrix) const;
+	void GetViewMatrix(float * matrix) const;
 	void ResetModelView();
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up, bool leftHanded = false);
 	void WindowCoordsToWorldVector(int x, int y, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, CVector3f & start, CVector3f & end) const;

@@ -83,14 +83,14 @@ std::tuple<VkBuffer, size_t, void*> CVulkanSmartBuffer::Allocate(size_t size)
 	return std::make_tuple(static_cast<VkBuffer>(*newChunk.buffer), 0, newChunk.cache.data());
 }
 
-void CVulkanSmartBuffer::Commit(bool clear)
+void CVulkanSmartBuffer::Commit()
 {
 	for (auto& chunk : m_chunks)
 	{
 		if (!chunk.cache.empty())
 		{
 			chunk.buffer->Upload(chunk.cache.data(), chunk.cache.size());
-			if (clear) chunk.cache.clear();
+			chunk.cache.clear();
 		}
 	}
 }
