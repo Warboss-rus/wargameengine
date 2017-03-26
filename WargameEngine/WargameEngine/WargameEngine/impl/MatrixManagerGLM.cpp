@@ -113,9 +113,16 @@ void CMatrixManagerGLM::WorldCoordsToWindowCoords(CVector3f const& worldCoords, 
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
 
-void CMatrixManagerGLM::SetUpViewport(unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
+void CMatrixManagerGLM::SetUpViewport(unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane, bool leftHanded)
 {
-	m_projectionMatrix = glm::perspectiveFov<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
+	if (leftHanded)
+	{
+		m_projectionMatrix = glm::perspectiveFovLH<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
+	}
+	else
+	{
+		m_projectionMatrix = glm::perspectiveFovRH<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
+	}
 	m_matricesChanged = true;
 }
 

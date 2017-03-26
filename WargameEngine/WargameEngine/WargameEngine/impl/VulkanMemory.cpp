@@ -64,14 +64,14 @@ CVulkanSmartBuffer::CVulkanSmartBuffer(size_t chunkSize, VkBufferUsageFlags flag
 {
 }
 
-std::tuple<VkBuffer, size_t, void*> CVulkanSmartBuffer::Allocate(size_t size)
+std::tuple<VkBuffer, VkDeviceSize, void*> CVulkanSmartBuffer::Allocate(size_t size)
 {
 	for (auto& chunk : m_chunks)
 	{
-		size_t oldSize = chunk.cache.size();
-		if (oldSize + size < m_chunkSize)
+		VkDeviceSize oldSize = chunk.cache.size();
+		if (oldSize + size <= chunk.size)
 		{
-			chunk.cache.resize(oldSize + size);
+			chunk.cache.resize(static_cast<size_t>(oldSize) + size);
 			return std::make_tuple(static_cast<VkBuffer>(*chunk.buffer), oldSize, chunk.cache.data() + oldSize);
 		}
 	}
@@ -80,7 +80,7 @@ std::tuple<VkBuffer, size_t, void*> CVulkanSmartBuffer::Allocate(size_t size)
 	auto& newChunk = m_chunks.back();
 	newChunk.cache.reserve(std::max(m_chunkSize, size));
 	newChunk.cache.resize(size);
-	return std::make_tuple(static_cast<VkBuffer>(*newChunk.buffer), 0, newChunk.cache.data());
+	return std::tuple<VkBuffer, VkDeviceSize, void*>(*newChunk.buffer, 0, newChunk.cache.data());
 }
 
 void CVulkanSmartBuffer::Commit()

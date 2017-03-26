@@ -80,14 +80,14 @@ public:
 	CVulkanSmartBuffer(size_t chunkSize, VkBufferUsageFlags flags, CVulkanRenderer & renderer, VkFlags properties);
 	CVulkanSmartBuffer(const CVulkanSmartBuffer & other) = delete;
 	CVulkanSmartBuffer(CVulkanSmartBuffer && other) = default;
-	std::tuple<VkBuffer, size_t, void*> Allocate(size_t size);
+	std::tuple<VkBuffer, VkDeviceSize, void*> Allocate(size_t size);
 	void Commit();
 	std::vector<VkBuffer> GetAllBuffers() const;
 private:
 	struct Buffer
 	{
 		Buffer(size_t size, VkBufferUsageFlags flags, CVulkanRenderer & renderer, VkFlags properties)
-			: buffer(std::make_unique<CVulkanVertexAttribCache>(size, flags, renderer, properties))
+			: buffer(std::make_unique<CVulkanVertexAttribCache>(size, flags, renderer, properties)), size(size)
 		{}
 		Buffer(const Buffer & other) = delete;
 		Buffer(Buffer && other) = default;
@@ -95,6 +95,7 @@ private:
 		~Buffer() = default;
 		std::unique_ptr<CVulkanVertexAttribCache> buffer;
 		std::vector<char> cache;
+		size_t size;
 	};
 	std::vector<Buffer> m_chunks;
 	size_t m_chunkSize;

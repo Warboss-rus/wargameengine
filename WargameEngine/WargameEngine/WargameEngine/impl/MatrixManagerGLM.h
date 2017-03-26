@@ -26,7 +26,7 @@ public:
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up, bool leftHanded = false);
 	void WindowCoordsToWorldVector(int x, int y, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, CVector3f & start, CVector3f & end) const;
 	void WorldCoordsToWindowCoords(CVector3f const& worldCoords, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, int& x, int& y) const;
-	void SetUpViewport(unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane);
+	void SetUpViewport(unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane, bool leftHanded = false);
 	void UpdateMatrices(IShaderManager & shaderManager) const;
 	void SaveMatrices();
 	void RestoreMatrices();

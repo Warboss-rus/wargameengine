@@ -129,8 +129,8 @@ void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int 
 	size_t allocationSize = elementSize * count * sizeof(float);
 	auto allocation = m_renderer.GetVertexBuffer().Allocate(allocationSize);
 	memcpy(std::get<void*>(allocation), values, allocationSize);
-	VkBuffer buffer = std::get<VkBuffer>(allocation);
-	VkDeviceSize offset = std::get<size_t>(allocation);
+	VkBuffer buffer = std::get<0>(allocation);
+	VkDeviceSize offset = std::get<1>(allocation);
 	vkCmdBindVertexBuffers(m_renderer.GetCommandBuffer(), index, 1, &buffer, &offset);
 }
 
@@ -141,8 +141,8 @@ void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int 
 	size_t allocationSize = elementSize * count * sizeof(int);
 	auto allocation = m_renderer.GetVertexBuffer().Allocate(allocationSize);
 	memcpy(std::get<void*>(allocation), values, allocationSize);
-	VkBuffer buffer = std::get<VkBuffer>(allocation);
-	VkDeviceSize offset = std::get<size_t>(allocation);
+	VkBuffer buffer = std::get<0>(allocation);
+	VkDeviceSize offset = std::get<1>(allocation);
 	vkCmdBindVertexBuffers(m_renderer.GetCommandBuffer(), index, 1, &buffer, &offset);
 }
 
@@ -153,8 +153,8 @@ void CVulkanShaderManager::SetVertexAttribute(std::string const& attribute, int 
 	size_t allocationSize = elementSize * count * sizeof(float);
 	auto allocation = m_renderer.GetVertexBuffer().Allocate(allocationSize);
 	memcpy(std::get<void*>(allocation), values, allocationSize);
-	VkBuffer buffer = std::get<VkBuffer>(allocation);
-	VkDeviceSize offset = std::get<size_t>(allocation);
+	VkBuffer buffer = std::get<0>(allocation);
+	VkDeviceSize offset = std::get<1>(allocation);
 	vkCmdBindVertexBuffers(m_renderer.GetCommandBuffer(), index, 1, &buffer, &offset);
 }
 

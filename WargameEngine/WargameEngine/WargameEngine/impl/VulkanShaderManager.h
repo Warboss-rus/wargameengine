@@ -30,7 +30,7 @@ struct UniformBufferWrapper
 	VkBuffer buffer = VK_NULL_HANDLE;
 	ShaderReflection reflection;
 	std::vector<char> cache;
-	size_t offset = 0;
+	VkDeviceSize offset = 0;
 	bool changed = false;
 };
 
@@ -44,8 +44,8 @@ public:
 	const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderInfo() const;
 	VkBuffer GetVertexAttribBuffer() const { return m_uniformBuffers[0].buffer; }
 	VkBuffer GetFragmentAttribBuffer() const { return m_uniformBuffers[1].buffer; }
-	uint32_t GetVertexAttribOffset() const { return m_uniformBuffers[0].offset; }
-	uint32_t GetFragmentAttribOffset() const { return m_uniformBuffers[1].offset; }
+	uint32_t GetVertexAttribOffset() const { return static_cast<uint32_t>(m_uniformBuffers[0].offset); }
+	uint32_t GetFragmentAttribOffset() const { return static_cast<uint32_t>(m_uniformBuffers[1].offset); }
 	VkDeviceSize GetVertexBufferRange() const { return m_uniformBuffers[0].reflection.bufferSize; }
 	VkDeviceSize GetFragmentBufferRange() const { return m_uniformBuffers[1].reflection.bufferSize; }
 	void SetUniformValue(std::string const& name, const void * data, size_t size) const;

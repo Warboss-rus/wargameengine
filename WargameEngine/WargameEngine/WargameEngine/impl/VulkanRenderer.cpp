@@ -1,9 +1,77 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #pragma warning(push)
 #pragma warning(disable: 4201)
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #pragma warning(pop)
+namespace glm
+{
+template <typename T>
+GLM_FUNC_QUALIFIER tmat4x4<T, defaultp> perspectiveFovLHZeroToOne(T fov, T width, T height, T zNear, T zFar)
+{
+	assert(width > static_cast<T>(0));
+	assert(height > static_cast<T>(0));
+	assert(fov > static_cast<T>(0));
+
+	T const rad = fov;
+	T const h = glm::cos(static_cast<T>(0.5) * rad) / glm::sin(static_cast<T>(0.5) * rad);
+	T const w = h * height / width; ///todo max(width , Height) / min(width , Height)?
+
+	tmat4x4<T, defaultp> Result(static_cast<T>(0));
+	Result[0][0] = w;
+	Result[1][1] = h;
+	Result[2][3] = static_cast<T>(1);
+
+#if GLM_DEPTH_CLIP_SPACE == GLM_DEPTH_ZERO_TO_ONE
+	Result[2][2] = zFar / (zFar - zNear);
+	Result[3][2] = -(zFar * zNear) / (zFar - zNear);
+#		else
+	Result[2][2] = (zFar + zNear) / (zFar - zNear);
+	Result[3][2] = -(static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
+#		endif
+
+	return Result;
+}
+
+template <typename T, typename U, precision P>
+GLM_FUNC_QUALIFIER tvec3<T, P> unProjectZeroToOne(tvec3<T, P> const & win, tmat4x4<T, P> const & model, tmat4x4<T, P> const & proj, tvec4<U, P> const & viewport)
+{
+	tmat4x4<T, P> Inverse = inverse(proj * model);
+
+	tvec4<T, P> tmp = tvec4<T, P>(win, T(1));
+	tmp.x = (tmp.x - T(viewport[0])) / T(viewport[2]);
+	tmp.y = (tmp.y - T(viewport[1])) / T(viewport[3]);
+#		if GLM_DEPTH_CLIP_SPACE == GLM_DEPTH_ZERO_TO_ONE
+	tmp.x = tmp.x * static_cast<T>(2) - static_cast<T>(1);
+	tmp.y = tmp.y * static_cast<T>(2) - static_cast<T>(1);
+#		else
+	tmp = tmp * static_cast<T>(2) - static_cast<T>(1);
+#		endif
+
+	tvec4<T, P> obj = Inverse * tmp;
+	obj /= obj.w;
+
+	return tvec3<T, P>(obj);
+}
+template <typename T, typename U, precision P>
+GLM_FUNC_QUALIFIER tvec3<T, P> projectZeroToOne(tvec3<T, P> const & obj, tmat4x4<T, P> const & model, tmat4x4<T, P> const & proj, tvec4<U, P> const & viewport)
+{
+	tvec4<T, P> tmp = tvec4<T, P>(obj, static_cast<T>(1));
+	tmp = model * tmp;
+	tmp = proj * tmp;
+
+	tmp /= tmp.w;
+#		if GLM_DEPTH_CLIP_SPACE == GLM_DEPTH_ZERO_TO_ONE
+	tmp.x = tmp.x * static_cast<T>(0.5) + static_cast<T>(0.5);
+	tmp.y = tmp.y * static_cast<T>(0.5) + static_cast<T>(0.5);
+#		else
+	tmp = tmp * static_cast<T>(0.5) + static_cast<T>(0.5);
+#		endif
+	tmp[0] = tmp[0] * T(viewport[2]) + T(viewport[0]);
+	tmp[1] = tmp[1] * T(viewport[3]) + T(viewport[1]);
+
+	return tvec3<T, P>(tmp);
+}
+}
 #include "VulkanRenderer.h"
 #include "../LogWriter.h"
 #include <iterator>
@@ -116,6 +184,76 @@ private:
 	std::unique_ptr<CVulkanVertexAttribCache> m_indexCache;
 	CVulkanRenderer * m_renderer;
 	VkDeviceSize m_offsets[3];
+};
+
+class CTempVulkanVertexBuffer : public IVertexBuffer
+{
+public:
+	CTempVulkanVertexBuffer(CVulkanRenderer * renderer, const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0)
+		: m_renderer(renderer), m_buffers{ renderer->GetEmptyBuffer(), renderer->GetEmptyBuffer(), renderer->GetEmptyBuffer() }
+	{
+		void* data;
+		auto& smartBuffer = renderer->GetVertexBuffer();
+		if (vertex)
+		{
+			std::tie(m_buffers[0], m_offsets[0], data) = smartBuffer.Allocate(size * 3 * sizeof(float));
+			memcpy(data, vertex, size * 3 * sizeof(float));
+		}
+		if (normals)
+		{
+			std::tie(m_buffers[1], m_offsets[1], data) = smartBuffer.Allocate(size * 3 * sizeof(float));
+			memcpy(data, normals, size * 3 * sizeof(float));
+		}
+		if (texcoords)
+		{
+			std::tie(m_buffers[2], m_offsets[2], data) = smartBuffer.Allocate(size * 2 * sizeof(float));
+			memcpy(data, texcoords, size * 2 * sizeof(float));
+		}
+		
+	}
+	void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override
+	{
+		throw std::runtime_error("no support for temp indexes yet");
+	}
+	void Bind() const override
+	{
+		auto& pipelineHelper = m_renderer->GetPipelineHelper();
+		pipelineHelper.SetTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+		pipelineHelper.Bind(m_renderer->GetCommandBuffer());
+		vkCmdBindVertexBuffers(m_renderer->GetCommandBuffer(), 0, 3, m_buffers, m_offsets);
+		if (m_indexBuffer)
+		{
+			vkCmdBindIndexBuffer(m_renderer->GetCommandBuffer(), m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		}
+	}
+	void DrawIndexes(size_t begin, size_t count) override
+	{
+		if (count == 0) return;
+		m_renderer->BeforeDraw();
+		vkCmdDrawIndexed(m_renderer->GetCommandBuffer(), count, 1, begin, 0, 0);
+	}
+
+	void DrawAll(size_t count) override
+	{
+		if (count == 0) return;
+		m_renderer->BeforeDraw();
+		vkCmdDraw(m_renderer->GetCommandBuffer(), count, 1, 0, 0);
+	}
+
+	void DrawInstanced(size_t size, size_t instanceCount) override
+	{
+		if (size == 0 || instanceCount == 0) return;
+		m_renderer->BeforeDraw();
+		vkCmdDraw(m_renderer->GetCommandBuffer(), size, instanceCount, 0, 0);
+	}
+
+	void UnBind() const override {}
+private:
+	CVulkanRenderer * m_renderer;
+	VkBuffer m_buffers[3];
+	VkDeviceSize m_offsets[3] = { 0, 0, 0 };
+	VkBuffer m_indexBuffer = VK_NULL_HANDLE;
+	VkDeviceSize m_indexOffset = 0;
 };
 }
 
@@ -325,7 +463,7 @@ void CVulkanRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int
 	glm::vec4 viewportData(viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight());
 	//Set OpenGL Windows coordinates
 	float winX = (float)x;
-	float winY = viewportData[3] - (float)y;
+	float winY = (float)y;
 
 	auto ToVector3f = [](glm::vec3 const& v)->CVector3f { return{ v.x, v.y, v.z }; };
 	float projectionMatrix[16];
@@ -335,8 +473,8 @@ void CVulkanRenderer::WindowCoordsToWorldVector(IViewport & viewport, int x, int
 	//Cast a ray from eye to mouse cursor;
 	glm::mat4 proj = glm::make_mat4(projectionMatrix);
 	glm::mat4 view = glm::make_mat4(viewMatrix);
-	start = ToVector3f(glm::unProject(glm::vec3(winX, winY, 0.0f), view, proj, viewportData));
-	end = ToVector3f(glm::unProject(glm::vec3(winX, winY, 1.0f), view, proj, viewportData));
+	start = ToVector3f(glm::unProjectZeroToOne(glm::vec3(winX, winY, 0.0f), view, proj, viewportData));
+	end = ToVector3f(glm::unProjectZeroToOne(glm::vec3(winX, winY, 1.0f), view, proj, viewportData));
 }
 
 void CVulkanRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const
@@ -346,7 +484,7 @@ void CVulkanRenderer::WorldCoordsToWindowCoords(IViewport & viewport, CVector3f 
 	float viewMatrix[16];
 	m_matrixManager.GetProjectionMatrix(projectionMatrix);
 	m_matrixManager.GetViewMatrix(viewMatrix);
-	auto windowPos = glm::project(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewMatrix), glm::make_mat4(projectionMatrix), viewportData);
+	auto windowPos = glm::projectZeroToOne(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewMatrix), glm::make_mat4(projectionMatrix), viewportData);
 	x = static_cast<int>(windowPos.x);
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
@@ -398,8 +536,8 @@ void CVulkanRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewpor
 	const VkRect2D scissor = { {static_cast<int32_t>(viewportX), static_cast<int32_t>(viewportY)}, {viewportWidth, viewportHeight} };
 	vkCmdSetViewport(*m_activeCommandBuffer, 0, 1, &m_viewport);
 	vkCmdSetScissor(*m_activeCommandBuffer, 0, 1, &scissor);
-	const auto projectionMatrix = glm::perspectiveFov<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
-	m_matrixManager.SetProjectionMatrix(glm::value_ptr(projectionMatrix));
+	glm::mat4 mat = glm::perspectiveFovLHZeroToOne(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
+	m_matrixManager.SetProjectionMatrix(glm::value_ptr(mat));
 }
 
 void CVulkanRenderer::DrawIn2D(std::function<void() > const& drawHandler)
@@ -480,7 +618,7 @@ bool CVulkanRenderer::ConvertBgra() const
 void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	BeforeDraw();
-	const std::tuple<VkBuffer, size_t, void*> empty(*m_emptyBuffer, 0, nullptr);
+	const std::tuple<VkBuffer, VkDeviceSize, void*> empty(*m_emptyBuffer, 0, nullptr);
 	CVulkanSmartBuffer& vertexBuffer = m_activeCommandBuffer->GetVertexBuffer();
 	const auto vertexInfo = vertices.empty() ? empty : vertexBuffer.Allocate(vertices.size() * sizeof(CVector3f));
 	const auto normalsInfo = normals.empty() ? empty : vertexBuffer.Allocate(normals.size() * sizeof(CVector3f));
@@ -497,8 +635,8 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const&
 	m_pipelineHelper.SetTopology(topologyMap.at(mode));
 	m_pipelineHelper.Bind(*m_activeCommandBuffer);
 
-	const VkBuffer buffers[] = { std::get<VkBuffer>(vertexInfo),  std::get<VkBuffer>(normalsInfo),  std::get<VkBuffer>(texCoordInfo) };
-	const VkDeviceSize offsets[] = { std::get<size_t>(vertexInfo),  std::get<size_t>(normalsInfo),  std::get<size_t>(texCoordInfo) };
+	const VkBuffer buffers[] = { std::get<0>(vertexInfo),  std::get<0>(normalsInfo),  std::get<0>(texCoordInfo) };
+	const VkDeviceSize offsets[] = { std::get<1>(vertexInfo),  std::get<1>(normalsInfo),  std::get<1>(texCoordInfo) };
 	
 	vkCmdBindVertexBuffers(*m_activeCommandBuffer, 0, 3, buffers, offsets);
 
@@ -580,7 +718,7 @@ void CVulkanRenderer::GetViewMatrix(float * matrix) const
 
 void CVulkanRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
-	m_matrixManager.LookAt(position, direction, -up, false);
+	m_matrixManager.LookAt(position, direction, -up, true);
 }
 
 void CVulkanRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
@@ -661,12 +799,15 @@ void CVulkanRenderer::RenderToTexture(std::function<void() > const& func, ICache
 
 	auto& smartBuffer = commandBuffer->GetUniformBuffer();
 	auto buffers = smartBuffer.GetAllBuffers();
-	for (auto buffer : buffers)
+	for (VkBuffer uniformBuffer : buffers)
 	{
-		auto sets = m_descriptorSetManager.GetSetsWithUniformBuffer(buffer);
+		auto sets = m_descriptorSetManager.GetSetsWithUniformBuffer(uniformBuffer);
 		for (auto set : sets)
 		{
-			m_descriptorsToDestroy.push_back(std::make_pair(set, RESOURCE_DELAY_FRAMES));
+			if (std::find_if(m_descriptorsToDestroy.begin(), m_descriptorsToDestroy.end(), [set](std::pair<VkDescriptorSet, int> const& p) { return p.first == set; }) == m_descriptorsToDestroy.end())
+			{
+				m_descriptorsToDestroy.push_back(std::make_pair(set, RESOURCE_DELAY_FRAMES));
+			}
 		}
 	}
 
@@ -707,8 +848,15 @@ void CVulkanRenderer::SetMaterial(const float * ambient, const float * diffuse, 
 
 std::unique_ptr<IVertexBuffer> CVulkanRenderer::CreateVertexBuffer(const float * vertex /*= nullptr*/, const float * normals /*= nullptr*/, const float * texcoords /*= nullptr*/, size_t size /*= 0*/, bool temp /*= false*/)
 {
-	BeginServiceCommandBuffer();
-	return std::move(std::make_unique<CVulkanVertexBuffer>(this, *m_serviceCommandBuffer, vertex, normals, texcoords, size));
+	if (temp)
+	{
+		return std::make_unique<CTempVulkanVertexBuffer>(this, vertex, normals, texcoords, size);
+	}
+	else
+	{
+		BeginServiceCommandBuffer();
+		return std::make_unique<CVulkanVertexBuffer>(this, *m_serviceCommandBuffer, vertex, normals, texcoords, size);
+	}
 }
 
 void CVulkanRenderer::BeginServiceCommandBuffer()
@@ -1294,7 +1442,6 @@ void CVulkanVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexes
 
 void CVulkanVertexBuffer::Bind() const
 {
-	std::vector<CPipelineHelper::VertexAttrib> attribs;
 	auto& pipelineHelper = m_renderer->GetPipelineHelper();
 	pipelineHelper.SetTopology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 	pipelineHelper.Bind(m_renderer->GetCommandBuffer());
