@@ -14,6 +14,7 @@ void CGameWindowAndroidVulkan::Init(ANativeWindow * window)
 	VkSurfaceKHR surface;
 	vkCreateAndroidSurfaceKHR(m_renderer.GetInstance(), &createInfo, nullptr, &surface);
 	m_renderer.SetSurface(surface);
+	m_onResize(ANativeWindow_getWidth(window), ANativeWindow_getHeight(window));
 }
 
 void CGameWindowAndroidVulkan::DrawFrame()

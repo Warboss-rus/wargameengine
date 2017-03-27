@@ -168,6 +168,25 @@ VkPresentModeKHR SelectPresentMode(const std::vector<VkPresentModeKHR> & support
 	return supportedPresentModes.front();
 }
 
+VkFormat GetTextureFormat(CachedTextureType type, int flags)
+{
+	switch (type)
+	{
+	case CachedTextureType::ALPHA:
+		return VK_FORMAT_R8_UNORM;
+	case CachedTextureType::DEPTH:
+		return VK_FORMAT_D32_SFLOAT;
+	case CachedTextureType::RENDER_TARGET:
+		return VK_FORMAT_R8G8B8A8_UNORM;
+	case CachedTextureType::RGBA:
+		return (flags & TEXTURE_HAS_ALPHA)
+			? (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_R8G8B8A8_UNORM)
+			: (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8_UNORM : VK_FORMAT_R8G8B8_UNORM);
+	default:
+		return VK_FORMAT_R8G8B8A8_UNORM;
+	}
+}
+
 class CVulkanVertexBuffer : public IVertexBuffer
 {
 public:
@@ -343,6 +362,11 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	m_pipelineHelper.SetDescriptorLayout(layouts, 2);
 	m_pipelineHelper.Init(m_device);
 	m_pipelineHelper.SetRenderPass(m_renderPass);
+
+	BeginServiceCommandBuffer();
+	std::array<unsigned char, 4> emptyTextureData = { 0, 0, 0, 255 };
+	m_emptyTexture->Upload(emptyTextureData.data(), *m_memoryManager, *m_serviceCommandBuffer);
+
 	UnbindTexture();
 }
 
@@ -527,7 +551,7 @@ void CVulkanRenderer::EnableDepthTest(bool enable)
 
 void CVulkanRenderer::EnableBlending(bool enable)
 {
-	//m_pipelineHelper.SetBlending(enable);
+	m_pipelineHelper.SetBlending(enable);
 }
 
 void CVulkanRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0f*/, float farPane /*= 1000.0f*/)
@@ -612,7 +636,7 @@ bool CVulkanRenderer::ForceFlipBMP() const
 
 bool CVulkanRenderer::ConvertBgra() const
 {
-	return true;
+	return false;
 }
 
 void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
@@ -1294,12 +1318,6 @@ CVulkanCachedTexture::~CVulkanCachedTexture()
 	m_renderer->DestroyImage(this);
 }
 
-inline VkFormat GetTextureFormat(int flags)
-{
-	return (flags & TEXTURE_HAS_ALPHA) ? (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_R8G8B8A8_UNORM) : (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8_UNORM : VK_FORMAT_R8G8B8_UNORM);
-}
-
-
 std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateTexture(bool deviceLocal, CVulkanMemoryManager & memoryManager)
 {
 	VkImage image;
@@ -1326,7 +1344,7 @@ std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateT
 void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryManager & memoryManager, CachedTextureType type, int flags)
 {
 	if (width == 0 || height == 0) return;
-	m_format = ((type == CachedTextureType::RGBA || type == CachedTextureType::RENDER_TARGET) ? GetTextureFormat(flags) : (type == CachedTextureType::DEPTH ? VK_FORMAT_D32_SFLOAT : VK_FORMAT_R8_UNORM));
+	m_format = GetTextureFormat(type, flags);
 	m_extent = { width, height, 1 };
 	m_components = type == CachedTextureType::ALPHA ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
 	m_usageFlags = type == CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : ((type == CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | VK_IMAGE_USAGE_SAMPLED_BIT);
