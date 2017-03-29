@@ -1,0 +1,73 @@
+#include "GvrAudioPlayer.h"
+#include "../Utils.h"
+
+CGvrAudioPlayer::CGvrAudioPlayer(std::unique_ptr<gvr::AudioApi> gvr_audio_api)
+	: m_gvr_audio_api(std::move(gvr_audio_api))
+{
+
+}
+
+void CGvrAudioPlayer::Init()
+{
+}
+
+void CGvrAudioPlayer::Play(std::wstring const& channel, std::wstring const& file, float volume /*= 1.0f*/)
+{
+	StopChannel(channel);
+	m_gvr_audio_api->PreloadSoundfile(WStringToUtf8(file));
+	auto sound = m_gvr_audio_api->CreateSoundObject(WStringToUtf8(file));
+	m_gvr_audio_api->PauseSound(sound);
+	m_gvr_audio_api->SetSoundVolume(sound, volume);
+	m_channels.emplace(std::make_pair(channel, sound));
+}
+
+void CGvrAudioPlayer::PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3f const& position, float volume /*= 1.0f*/)
+{
+	StopChannel(channel);
+	m_gvr_audio_api->PreloadSoundfile(WStringToUtf8(file));
+	auto sound = m_gvr_audio_api->CreateSoundObject(WStringToUtf8(file));
+	m_gvr_audio_api->PauseSound(sound);
+	m_gvr_audio_api->SetSoundVolume(sound, volume);
+	m_gvr_audio_api->SetSoundObjectPosition(sound, position.x, position.y, position.z);
+	m_channels.emplace(std::make_pair(channel, sound));
+}
+
+void CGvrAudioPlayer::PlaySoundPlaylist(std::wstring const& channel, std::vector<std::wstring> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
+{
+	Play(channel, files.front(), volume);
+}
+
+void CGvrAudioPlayer::SetListenerPosition(CVector3f const& position, CVector3f const& center)
+{
+}
+
+void CGvrAudioPlayer::PauseChannel(std::wstring const& name, bool pause)
+{
+	auto it = m_channels.find(name);
+	if (it != m_channels.end())
+	{
+		if (pause)
+		{
+			m_gvr_audio_api->PauseSound(it->second);
+		}
+		else
+		{
+			m_gvr_audio_api->ResumeSound(it->second);
+		}
+	}
+}
+
+void CGvrAudioPlayer::StopChannel(std::wstring const& name)
+{
+	auto it = m_channels.find(name);
+	if (it != m_channels.end())
+	{
+		m_gvr_audio_api->StopSound(it->second);
+		m_channels.erase(it);
+	}
+}
+
+void CGvrAudioPlayer::Update()
+{
+	m_gvr_audio_api->Update();
+}

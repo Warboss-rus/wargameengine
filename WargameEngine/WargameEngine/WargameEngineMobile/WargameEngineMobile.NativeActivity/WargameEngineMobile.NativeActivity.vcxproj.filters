@@ -28,10 +28,16 @@
     <ClInclude Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h">
+    <ClInclude Include="..\..\WargameEngine\impl\GvrAudioPlayer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\impl\GvrGameWindow.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -66,10 +72,19 @@
     <ClCompile Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="native_app_jni.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp">
+    <ClCompile Include="..\..\WargameEngine\impl\GvrAudioPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\impl\GvrGameWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

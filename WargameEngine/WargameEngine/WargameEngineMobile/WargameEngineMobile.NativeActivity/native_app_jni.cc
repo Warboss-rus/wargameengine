@@ -1,0 +1,111 @@
+#include <android/log.h>
+#include <jni.h>
+#include <dlfcn.h>
+#include "..\..\WargameEngine\view\GameView.h"
+#include "..\..\WargameEngine\impl\TextWriter.h"
+#include "..\..\WargameEngine\impl\ScriptHandlerLua.h"
+#include "..\..\WargameEngine\impl\NetSocket.h"
+#include "..\..\WargameEngine\view\BuiltInImageReaders.h"
+#include "..\..\WargameEngine\view\OBJModelFactory.h"
+#include "..\..\WargameEngine\view\ColladaModelFactory.h"
+#include "..\..\WargameEngine\view\WBMModelFactory.h"
+#include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
+#include "..\..\WargameEngine\impl\GvrGameWindow.h"
+#include "..\..\WargameEngine\impl\GvrAudioPlayer.h"
+
+#define JNI_METHOD(return_type, method_name) \
+  JNIEXPORT return_type JNICALL              \
+      Java_com_google_vr_ndk_samples_treasurehunt_MainActivity_##method_name
+
+namespace {
+struct NativeAppJni
+{
+	sGameViewContext context;
+	std::unique_ptr<CGameView> gameView;
+	CGvrGameWindow * window;
+	NativeAppJni(gvr_context* gvr_context, std::unique_ptr<gvr::AudioApi> gvr_audio_api)
+	{
+		if (context.module.name.empty())
+		{
+			context.module.script = L"main.lua";
+			context.module.textures = L"texture/";
+			context.module.models = L"models/";
+			context.module.folder = L"/sdcard/WargameEngine/";
+		}
+		window = new CGvrGameWindow(gvr_context);
+		context.window.reset(window);
+		context.soundPlayer = std::make_unique<CGvrAudioPlayer>(std::move(gvr_audio_api));
+		context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+		context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
+		static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");
+		context.scriptHandlerFactory = []() {
+			return std::make_unique<CScriptHandlerLua>();
+		};
+		context.socketFactory = []() {
+			return std::make_unique<CNetSocket>();
+		};
+		context.imageReaders.push_back(std::make_unique<CBmpImageReader>());
+		context.imageReaders.push_back(std::make_unique<CTgaImageReader>());
+		context.imageReaders.push_back(std::make_unique<CDdsImageReader>());
+		context.imageReaders.push_back(std::make_unique<CStbImageReader>());
+		context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
+		context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
+		context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
+
+		gameView = std::make_unique<CGameView>(&context);
+	}
+};
+
+inline jlong jptr(NativeAppJni *native_treasure_hunt) 
+{
+  return reinterpret_cast<intptr_t>(native_treasure_hunt);
+}
+
+inline NativeAppJni *native(jlong ptr) 
+{
+  return reinterpret_cast<NativeAppJni *>(ptr);
+}
+}  // anonymous namespace
+
+extern "C" {
+
+JNI_METHOD(jlong, nativeCreateRenderer)(JNIEnv *env, jclass clazz, jobject class_loader, jobject android_context, jlong native_gvr_api) 
+{
+  std::unique_ptr<gvr::AudioApi> audio_context(new gvr::AudioApi);
+  audio_context->Init(env, android_context, class_loader,
+                      GVR_AUDIO_RENDERING_BINAURAL_HIGH_QUALITY);
+
+  return jptr(new NativeAppJni(reinterpret_cast<gvr_context *>(native_gvr_api), std::move(audio_context)));
+}
+
+JNI_METHOD(void, nativeDestroyRenderer)(JNIEnv *env, jclass clazz, jlong native_treasure_hunt) 
+{
+  delete native(native_treasure_hunt);
+}
+
+JNI_METHOD(void, nativeInitializeGl)(JNIEnv *env, jobject obj, jlong native_treasure_hunt) 
+{
+  native(native_treasure_hunt)->window->Init();
+}
+
+JNI_METHOD(void, nativeDrawFrame)(JNIEnv *env, jobject obj, jlong native_treasure_hunt) 
+{
+  native(native_treasure_hunt)->window->Draw();
+}
+
+JNI_METHOD(void, nativeOnTriggerEvent)(JNIEnv *env, jobject obj, jlong native_treasure_hunt) 
+{
+  native(native_treasure_hunt)->window->TriggerEvent();
+}
+
+JNI_METHOD(void, nativeOnPause)(JNIEnv *env, jobject obj, jlong native_treasure_hunt) 
+{
+  native(native_treasure_hunt)->window->Pause();
+}
+
+JNI_METHOD(void, nativeOnResume)(JNIEnv *env, jobject obj, jlong native_treasure_hunt) 
+{
+  native(native_treasure_hunt)->window->Resume();
+}
+
+}  // extern "C"
