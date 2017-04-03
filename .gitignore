@@ -25,3 +25,5 @@ Thumbs.db
 /WargameEngine/bullet/bin
 /WargameEngine/bullet/build3/vs2010/obj
 *.db
+/WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/app/build
+.workspace

@@ -15,7 +15,7 @@
 
 #define JNI_METHOD(return_type, method_name) \
   JNIEXPORT return_type JNICALL              \
-      Java_com_google_vr_ndk_samples_treasurehunt_MainActivity_##method_name
+      Java_com_WargameEngineMobileGoogleVR_WargameEngineMobileGoogleVR_##method_name
 
 namespace {
 struct NativeAppJni
@@ -69,7 +69,7 @@ inline NativeAppJni *native(jlong ptr)
 
 extern "C" {
 
-JNI_METHOD(jlong, nativeCreateRenderer)(JNIEnv *env, jclass clazz, jobject class_loader, jobject android_context, jlong native_gvr_api) 
+JNI_METHOD(jlong, nativeCreateRenderer)(JNIEnv *env, jclass clazz, jobject class_loader, jobject android_context, jlong native_gvr_api)
 {
   std::unique_ptr<gvr::AudioApi> audio_context(new gvr::AudioApi);
   audio_context->Init(env, android_context, class_loader,

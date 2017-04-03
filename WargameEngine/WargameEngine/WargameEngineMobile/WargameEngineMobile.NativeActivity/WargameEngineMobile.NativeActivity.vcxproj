@@ -122,7 +122,7 @@
     <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\FMod\inc;..\..\..\gvr-android-sdk\libraries\headers</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA</IncludePath>
+    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\FMod\inc;..\..\..\gvr-android-sdk\libraries\headers</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\FMod\inc;..\..\..\gvr-android-sdk\libraries\headers</IncludePath>

@@ -1,4 +1,3 @@
-
 package com.WargameEngineMobileGoogleVR;
 
 import android.app.Activity;
@@ -66,11 +65,6 @@ public class WargameEngineMobileGoogleVR extends Activity
 
     // Initialize GvrLayout and the native renderer.
     gvrLayout = new GvrLayout(this);
-    nativeApp =
-        nativeCreateRenderer(
-            getClass().getClassLoader(),
-            this.getApplicationContext(),
-            gvrLayout.getGvrApi().getNativeGvrContext());
 
     // Add the GLSurfaceView to the GvrLayout.
     surfaceView = new GLSurfaceView(this);
@@ -98,7 +92,6 @@ public class WargameEngineMobileGoogleVR extends Activity
           public boolean onTouch(View v, MotionEvent event) {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
               // Give user feedback and signal a trigger event.
-              ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
               surfaceView.queueEvent(
                   new Runnable() {
                     @Override
@@ -126,6 +119,12 @@ public class WargameEngineMobileGoogleVR extends Activity
 
     // Enable VR Mode.
     AndroidCompat.setVrModeEnabled(this, true);
+
+	nativeApp =
+        nativeCreateRenderer(
+            getClass().getClassLoader(),
+            this.getApplicationContext(),
+            gvrLayout.getGvrApi().getNativeGvrContext());
   }
 
   @Override
@@ -151,7 +150,7 @@ public class WargameEngineMobileGoogleVR extends Activity
     // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
     // native resources from the UI thread.
     gvrLayout.shutdown();
-    nativeDestroyRenderer(nativeApp);
+	nativeDestroyRenderer(nativeApp);
     nativeApp = 0;
   }
 

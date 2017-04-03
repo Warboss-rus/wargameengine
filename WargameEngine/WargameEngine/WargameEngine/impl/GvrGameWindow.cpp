@@ -29,7 +29,6 @@ void CGvrGameWindow::Init()
 	specs.emplace_back(m_gvr_api->CreateBufferSpec());
 	m_swapchain = m_gvr_api->CreateSwapChain(specs);
 	m_viewport_list = m_gvr_api->CreateEmptyBufferViewportList();
-	gvr::BufferViewport scratch_viewport = m_gvr_api->CreateBufferViewport();
 }
 
 void CGvrGameWindow::Draw()
@@ -41,10 +40,9 @@ void CGvrGameWindow::Draw()
 	gvr::Mat4f right_eye_matrix = MatrixMul(m_gvr_api->GetEyeFromHeadMatrix(GVR_RIGHT_EYE), head_matrix);
 
 	frame.BindBuffer(0);
-	gvr::BufferViewport viewport;
-	m_viewport_list.GetBufferViewport(GVR_LEFT_EYE, &viewport);
+	m_viewport_list.GetBufferViewport(GVR_LEFT_EYE, &m_viewport_left);
 	m_onDraw();
-	m_viewport_list.GetBufferViewport(GVR_RIGHT_EYE, &viewport);
+	m_viewport_list.GetBufferViewport(GVR_RIGHT_EYE, &m_viewport_right);
 	m_onDraw();
 	frame.Unbind();
 
