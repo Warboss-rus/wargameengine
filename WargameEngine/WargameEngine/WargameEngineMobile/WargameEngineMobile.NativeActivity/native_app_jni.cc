@@ -52,8 +52,6 @@ struct NativeAppJni
 		context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 		context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 		context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
-
-		gameView = std::make_unique<CGameView>(&context);
 	}
 };
 
@@ -86,7 +84,9 @@ JNI_METHOD(void, nativeDestroyRenderer)(JNIEnv *env, jclass clazz, jlong nativeR
 
 JNI_METHOD(void, nativeInitializeGl)(JNIEnv *env, jobject obj, jlong nativeRenderer) 
 {
-  native(nativeRenderer)->window->Init();
+	auto renderer = native(nativeRenderer);
+	renderer->window->Init();
+	renderer->gameView = std::make_unique<CGameView>(&renderer->context);
 }
 
 JNI_METHOD(void, nativeDrawFrame)(JNIEnv *env, jobject obj, jlong nativeRenderer) 

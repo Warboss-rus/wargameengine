@@ -32,7 +32,7 @@ void CGvrGameWindow::Init()
 	m_swapchain = m_gvr_api->CreateSwapChain(specs);
 	auto size = m_swapchain.GetBufferSize(0);
 	m_renderer.Init(size.width, size.height);
-	m_onResize(size.width, size.height);
+	if(m_onResize) m_onResize(size.width, size.height);
 	m_viewport_list = m_gvr_api->CreateEmptyBufferViewportList();
 }
 
@@ -94,7 +94,9 @@ void CGvrGameWindow::DoOnDrawScene(std::function<void() > const& handler)
 void CGvrGameWindow::DoOnResize(std::function<void(int, int) > const& handler)
 {
 	m_onResize = handler;
-	m_onResize(1920, 1080);
+	int width, height;
+	GetWindowSize(width, height);
+	m_onResize(width, height);
 }
 
 void CGvrGameWindow::DoOnShutdown(std::function<void() > const& handler)
@@ -142,6 +144,15 @@ void CGvrGameWindow::EnableMultisampling(bool enable, int level /*= 1.0f*/)
 
 void CGvrGameWindow::GetWindowSize(int& width, int& height)
 {
-	width = 1920;
-	height = 1080;
+	if(m_swapchain)
+	{ 
+		auto size = m_swapchain.GetBufferSize(0);
+		width = size.width;
+		height = size.height;
+	}
+	else
+	{
+		width = 1920;
+		height = 1080;
+	}
 }
