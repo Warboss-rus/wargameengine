@@ -20,6 +20,7 @@ public:
 	virtual ~IShaderManager() {}
 
 	virtual std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") = 0;
+	virtual std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") = 0;
 	virtual void PushProgram(IShaderProgram const& program) const = 0;
 	virtual void PopProgram() const = 0;
 

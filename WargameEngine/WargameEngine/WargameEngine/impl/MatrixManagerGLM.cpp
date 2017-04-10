@@ -135,7 +135,7 @@ void CMatrixManagerGLM::UpdateMatrices(IShaderManager & shaderManager) const
 	static const std::string proj_matrix_key = "proj_matrix";
 	shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
 	shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
-	if (m_vrViewMatrices.empty() || m_2dMode)
+	if (m_vrViewMatrices.empty())
 	{
 		glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
 		shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
@@ -143,13 +143,16 @@ void CMatrixManagerGLM::UpdateMatrices(IShaderManager & shaderManager) const
 	}
 	else
 	{
+		std::vector<glm::mat4> mvpMatrices;
+		std::vector<glm::mat4> viewMatrices;
 		for (auto& mat : m_vrViewMatrices)
 		{
-			glm::mat4 v = m_viewMatrix * mat;
-			glm::mat4 m = m_projectionMatrix * v * *m_modelMatrix;
-			shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
-			shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(v));
+			viewMatrices.push_back(m_2dMode ? m_viewMatrix : m_viewMatrix * mat);
+			mvpMatrices.push_back(m_projectionMatrix * viewMatrices.back() * *m_modelMatrix);
+
 		}
+		shaderManager.SetUniformValue(mvpMatrixKey, 16, mvpMatrices.size(), glm::value_ptr(mvpMatrices.front()));
+		shaderManager.SetUniformValue(view_matrix_key, 16, viewMatrices.size(), glm::value_ptr(viewMatrices.front()));
 	}
 	m_matricesChanged = false;
 }
@@ -182,7 +185,7 @@ void CMatrixManagerGLM::SetProjectionMatrix(const float * matrix)
 	m_matricesChanged = true;
 }
 
-void CMatrixManagerGLM::SetVrViewMatrices(std::vector<float*> const& matrices)
+void CMatrixManagerGLM::SetVrViewMatrices(std::vector<const float*> const& matrices)
 {
 	m_vrViewMatrices.clear();
 	for (auto& mat : matrices)

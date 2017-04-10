@@ -32,7 +32,7 @@ public:
 	void RestoreMatrices();
 	void SetOrthographicProjection(float left, float right, float bottom, float top);
 	void SetProjectionMatrix(const float * matrix);
-	void SetVrViewMatrices(std::vector<float*> const& matrices);
+	void SetVrViewMatrices(std::vector<const float*> const& matrices);
 private:
 	std::vector<glm::mat4> m_modelMatrices;
 	glm::mat4* m_modelMatrix;

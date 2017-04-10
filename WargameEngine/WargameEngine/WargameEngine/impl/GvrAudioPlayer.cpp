@@ -34,7 +34,11 @@ void CGvrAudioPlayer::PlaySoundPosition(std::wstring const& channel, std::wstrin
 
 void CGvrAudioPlayer::PlaySoundPlaylist(std::wstring const& channel, std::vector<std::wstring> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
 {
-	Play(channel, files.front(), volume);
+	StopChannel(channel);
+	auto sound = m_gvr_audio_api->CreateSoundObject(WStringToUtf8(files.front()));
+	m_gvr_audio_api->PlaySound(sound, repeat);
+	m_gvr_audio_api->SetSoundVolume(sound, volume);
+	m_channels.emplace(std::make_pair(channel, sound));
 }
 
 void CGvrAudioPlayer::SetListenerPosition(CVector3f const& position, CVector3f const& center)

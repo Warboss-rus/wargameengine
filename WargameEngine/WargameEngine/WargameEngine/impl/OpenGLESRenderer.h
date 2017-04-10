@@ -78,7 +78,7 @@ public:
 	void SetVersion(int version);
 	void Init(int width, int height);
 	void SetVrViewport(float x, float y, float width, float height, float fov);
-	void SetVrViewMatrices(std::vector<float*> const& matrices);
+	void SetVrViewMatrices(std::vector<const float*> const& matrices);
 private:
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;

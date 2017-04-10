@@ -9,6 +9,7 @@ class CShaderManagerOpenGLES : public IShaderManager
 public:
 	~CShaderManagerOpenGLES();
 	std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
+	std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
 	void PushProgram(IShaderProgram const& program) const override;
 	void PopProgram() const override;
 
@@ -39,6 +40,7 @@ private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	ShaderProgramCache& GetProgramCache() const;
 	int GetUniformLocation(std::string const& uniform) const;
+	void NewProgramImpl(unsigned prgm, unsigned vertexShader, unsigned framgentShader);
 		
 	mutable std::vector<unsigned int> m_programs;
 	mutable unsigned int m_activeProgram;

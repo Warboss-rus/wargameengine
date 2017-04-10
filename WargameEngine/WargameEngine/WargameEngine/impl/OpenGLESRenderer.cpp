@@ -690,7 +690,7 @@ void COpenGLESRenderer::SetVrViewport(float x, float y, float width, float heigh
 	m_vrFovOverride = fov;
 }
 
-void COpenGLESRenderer::SetVrViewMatrices(std::vector<float*> const& matrices)
+void COpenGLESRenderer::SetVrViewMatrices(std::vector<const float*> const& matrices)
 {
 	m_matrixManager.SetVrViewMatrices(matrices);
 }

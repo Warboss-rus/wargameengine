@@ -128,42 +128,22 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 	{
 		LogWriter::WriteLine("Geomerty shaders are not supported in openGL ES");
 	}
-	glLinkProgram(program->program);
-	GLint isLinked = 0;
-	glGetProgramiv(program->program, GL_LINK_STATUS, &isLinked);
-	if (isLinked != GL_TRUE)
-	{
-		char buffer[1000];
-		int size = 0;
-		glGetProgramInfoLog(program->program, 1000, &size, buffer);
-		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
-	}
-	glUseProgram(program->program);
-	int unfrm = glGetUniformLocation(program->program, "mainTexture");
-	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(program->program, "cubemapTexture");
-	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(program->program, "shadowMap");
-	glUniform1i(unfrm, 1);
-	unfrm = glGetUniformLocation(program->program, "specular");
-	glUniform1i(unfrm, 2);
-	unfrm = glGetUniformLocation(program->program, "bump");
-	glUniform1i(unfrm, 3);
-	glDetachShader(program->program, vertexShader);
-	glDeleteShader(vertexShader);
-	glDetachShader(program->program, framgentShader);
-	glDeleteShader(framgentShader);
-	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	unfrm = glGetAttribLocation(program->program, "weights");
-	if (unfrm >= 0)
-	{
-		glVertexAttrib4fv(unfrm, def);
-	}
-	if (!m_programs.empty())
-	{
-		glUseProgram(m_activeProgram);
-	}
+	NewProgramImpl(program->program, vertexShader, framgentShader);
+	return std::move(program);
+}
 
+std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgramSource(std::string const& vertex /*= ""*/, std::string const& fragment /*= ""*/, std::string const& geometry /*= ""*/)
+{
+	std::unique_ptr<COpenGLESShaderProgram> program = std::make_unique<COpenGLESShaderProgram>();
+	program->program = glCreateProgram();
+	GLuint vertexShader(0), framgentShader(0);
+	vertexShader = CompileShader(vertex.empty() ? defaultVertexShader : vertex, program->program, GL_VERTEX_SHADER);
+	framgentShader = CompileShader(fragment.empty() ? defaultFragmentShader : fragment, program->program, GL_FRAGMENT_SHADER);
+	if (!geometry.empty())
+	{
+		LogWriter::WriteLine("Geomerty shaders are not supported in openGL ES");
+	}
+	NewProgramImpl(program->program, vertexShader, framgentShader);
 	return std::move(program);
 }
 
@@ -357,4 +337,49 @@ void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute
 	if (index == -1) return;
 	glDisableVertexAttribArray(index);
 	glVertexAttribI4uiv(index, defaultValue);
+}
+
+void CShaderManagerOpenGLES::NewProgramImpl(unsigned prgm, unsigned vertexShader, unsigned framgentShader)
+{
+	glLinkProgram(prgm);
+	GLint isLinked = 0;
+	glGetProgramiv(prgm, GL_LINK_STATUS, &isLinked);
+	if (isLinked != GL_TRUE)
+	{
+		char buffer[1000];
+		int size = 0;
+		glGetProgramInfoLog(prgm, 1000, &size, buffer);
+		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
+	}
+	glUseProgram(prgm);
+	int unfrm = glGetUniformLocation(prgm, "mainTexture");
+	glUniform1i(unfrm, 0);
+	unfrm = glGetUniformLocation(prgm, "cubemapTexture");
+	glUniform1i(unfrm, 0);
+	unfrm = glGetUniformLocation(prgm, "shadowMap");
+	glUniform1i(unfrm, 1);
+	unfrm = glGetUniformLocation(prgm, "specular");
+	glUniform1i(unfrm, 2);
+	unfrm = glGetUniformLocation(prgm, "bump");
+	glUniform1i(unfrm, 3);
+	if (vertexShader)
+	{
+		glDetachShader(prgm, vertexShader);
+		glDeleteShader(vertexShader);
+	}
+	if (framgentShader)
+	{
+		glDetachShader(prgm, framgentShader);
+		glDeleteShader(framgentShader);
+	}
+	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	unfrm = glGetAttribLocation(prgm, "weights");
+	if (unfrm >= 0)
+	{
+		glVertexAttrib4fv(unfrm, def);
+	}
+	if (!m_programs.empty())
+	{
+		glUseProgram(m_activeProgram);
+	}
 }

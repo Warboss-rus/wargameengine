@@ -38,6 +38,8 @@ private:
 	gvr::SwapChain m_swapchain;
 	gvr::BufferViewport m_viewport_left;
 	gvr::BufferViewport m_viewport_right;
+	bool m_multiview = false;
+	std::unique_ptr<IShaderProgram> m_multiviewDefaultProgram;
 
 	CInputAndroid m_input;
 	COpenGLESRenderer m_renderer;
