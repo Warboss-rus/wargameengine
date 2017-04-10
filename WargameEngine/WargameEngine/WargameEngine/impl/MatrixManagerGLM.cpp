@@ -129,15 +129,28 @@ void CMatrixManagerGLM::SetUpViewport(unsigned int viewportWidth, unsigned int v
 void CMatrixManagerGLM::UpdateMatrices(IShaderManager & shaderManager) const
 {
 	if (!m_matricesChanged) return;
-	glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
 	static const std::string mvpMatrixKey = "mvp_matrix";
 	static const std::string view_matrix_key = "view_matrix";
 	static const std::string model_matrix_key = "model_matrix";
 	static const std::string proj_matrix_key = "proj_matrix";
-	shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
-	shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
 	shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
 	shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
+	if (m_vrViewMatrices.empty() || m_2dMode)
+	{
+		glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
+		shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
+		shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
+	}
+	else
+	{
+		for (auto& mat : m_vrViewMatrices)
+		{
+			glm::mat4 v = m_viewMatrix * mat;
+			glm::mat4 m = m_projectionMatrix * v * *m_modelMatrix;
+			shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
+			shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(v));
+		}
+	}
 	m_matricesChanged = false;
 }
 
@@ -153,16 +166,27 @@ void CMatrixManagerGLM::RestoreMatrices()
 	m_projectionMatrix = m_savedProjectionMatrix;
 	m_viewMatrix = m_savedViewMatrix;
 	PopMatrix();
+	m_2dMode = false;
 }
 
 void CMatrixManagerGLM::SetOrthographicProjection(float left, float right, float bottom, float top)
 {
 	m_projectionMatrix = glm::ortho(left, right, bottom, top);
 	m_matricesChanged = true;
+	m_2dMode = true;
 }
 
 void CMatrixManagerGLM::SetProjectionMatrix(const float * matrix)
 {
 	m_projectionMatrix = glm::make_mat4(matrix);
 	m_matricesChanged = true;
+}
+
+void CMatrixManagerGLM::SetVrViewMatrices(std::vector<float*> const& matrices)
+{
+	m_vrViewMatrices.clear();
+	for (auto& mat : matrices)
+	{
+		m_vrViewMatrices.push_back(glm::make_mat4(mat));
+	}
 }

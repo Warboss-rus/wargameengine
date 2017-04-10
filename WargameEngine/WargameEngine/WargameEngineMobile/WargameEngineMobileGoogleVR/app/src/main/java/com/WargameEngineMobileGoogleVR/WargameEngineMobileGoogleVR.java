@@ -68,7 +68,7 @@ public class WargameEngineMobileGoogleVR extends Activity
 
     // Add the GLSurfaceView to the GvrLayout.
     surfaceView = new GLSurfaceView(this);
-    surfaceView.setEGLContextClientVersion(2);
+    surfaceView.setEGLContextClientVersion(3);
     surfaceView.setEGLConfigChooser(8, 8, 8, 0, 0, 0);
     surfaceView.setPreserveEGLContextOnPause(true);
     surfaceView.setRenderer(
@@ -89,19 +89,15 @@ public class WargameEngineMobileGoogleVR extends Activity
     surfaceView.setOnTouchListener(
         new View.OnTouchListener() {
           @Override
-          public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-              // Give user feedback and signal a trigger event.
-              surfaceView.queueEvent(
-                  new Runnable() {
+          public boolean onTouch(View v, final MotionEvent event) {
+			surfaceView.queueEvent(
+				new Runnable() {
                     @Override
                     public void run() {
-                      nativeOnTriggerEvent(nativeApp);
+                      nativeOnTouchEvent(nativeApp, event.getAction(), event.getX(), event.getY());
                     }
-                  });
-              return true;
-            }
-            return false;
+                });
+            return true;
           }
         });
     gvrLayout.setPresentationView(surfaceView);
@@ -189,7 +185,7 @@ public class WargameEngineMobileGoogleVR extends Activity
   private native void nativeDestroyRenderer(long nativeApp);
   private native void nativeInitializeGl(long nativeApp);
   private native long nativeDrawFrame(long nativeApp);
-  private native void nativeOnTriggerEvent(long nativeApp);
+  private native void nativeOnTouchEvent(long nativeApp, int action, float x, float y);
   private native void nativeOnPause(long nativeApp);
   private native void nativeOnResume(long nativeApp);
 }

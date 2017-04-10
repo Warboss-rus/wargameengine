@@ -77,7 +77,8 @@ public:
 
 	void SetVersion(int version);
 	void Init(int width, int height);
-
+	void SetVrViewport(float x, float y, float width, float height, float fov);
+	void SetVrViewMatrices(std::vector<float*> const& matrices);
 private:
 	CTextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;
@@ -86,4 +87,6 @@ private:
 	float m_color[4];
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
 	unsigned int m_vao;
+	float m_vrViewport[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	float m_vrFovOverride = 0.0f;
 };

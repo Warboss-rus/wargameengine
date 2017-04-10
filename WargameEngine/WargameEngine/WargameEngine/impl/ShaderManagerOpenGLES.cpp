@@ -154,7 +154,11 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring 
 	glDetachShader(program->program, framgentShader);
 	glDeleteShader(framgentShader);
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	glVertexAttrib4fv(glGetAttribLocation(program->program, "weights"), def);
+	unfrm = glGetAttribLocation(program->program, "weights");
+	if (unfrm >= 0)
+	{
+		glVertexAttrib4fv(unfrm, def);
+	}
 	if (!m_programs.empty())
 	{
 		glUseProgram(m_activeProgram);

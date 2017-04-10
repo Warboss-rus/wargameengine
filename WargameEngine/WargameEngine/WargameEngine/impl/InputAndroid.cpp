@@ -38,6 +38,24 @@ void CInputAndroid::HandleInput(AInputEvent* event)
 	}
 }
 
+void CInputAndroid::HandleMotionEvent(int action, float x, float y)
+{
+	m_lastX = x;
+	m_lastY = y;
+	action &= AMOTION_EVENT_ACTION_MASK;
+	switch (action) {
+	case AMOTION_EVENT_ACTION_DOWN:
+		OnLMBDown(m_lastX, m_lastY);
+		break;
+	case AMOTION_EVENT_ACTION_UP:
+		OnLMBUp(m_lastX, m_lastY);
+		break;
+	case AMOTION_EVENT_ACTION_MOVE:
+		OnMouseMove(m_lastX, m_lastY);
+		break;
+	}
+}
+
 void CInputAndroid::EnableCursor(bool enable /*= true*/)
 {
 	//no cursor on android for now

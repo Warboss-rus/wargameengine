@@ -32,6 +32,7 @@ public:
 	void RestoreMatrices();
 	void SetOrthographicProjection(float left, float right, float bottom, float top);
 	void SetProjectionMatrix(const float * matrix);
+	void SetVrViewMatrices(std::vector<float*> const& matrices);
 private:
 	std::vector<glm::mat4> m_modelMatrices;
 	glm::mat4* m_modelMatrix;
@@ -40,4 +41,6 @@ private:
 	mutable bool m_matricesChanged = true;
 	glm::mat4 m_savedViewMatrix;
 	glm::mat4 m_savedProjectionMatrix;
+	std::vector<glm::mat4> m_vrViewMatrices;
+	bool m_2dMode = false;
 };

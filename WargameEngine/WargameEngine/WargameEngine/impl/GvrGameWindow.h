@@ -17,6 +17,7 @@ public:
 	void TriggerEvent();
 	void Pause();
 	void Resume();
+	CInputAndroid& GetInput();
 
 	virtual void LaunchMainLoop() override;
 	virtual void DoOnDrawScene(std::function<void() > const& handler) override;

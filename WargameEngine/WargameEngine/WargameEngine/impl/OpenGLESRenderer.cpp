@@ -518,8 +518,8 @@ void COpenGLESRenderer::EnableBlending(bool enable)
 
 void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
-	m_matrixManager.SetUpViewport(viewportWidth, viewportHeight, viewingAngle, nearPane, farPane);
-	glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+	m_matrixManager.SetUpViewport(viewportWidth * m_vrViewport[2], viewportHeight * m_vrViewport[3], m_vrFovOverride > 0.00001f ? m_vrFovOverride : viewingAngle, nearPane, farPane);
+	glViewport(viewportX + m_vrViewport[0] * viewportWidth, viewportY + m_vrViewport[1] * viewportHeight, viewportWidth * m_vrViewport[2], viewportHeight * m_vrViewport[3]);
 }
 
 void COpenGLESRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
@@ -656,10 +656,17 @@ void COpenGLESRenderer::SetVersion(int version)
 	m_version = version;
 }
 
+void ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/, const GLchar *message, const void * /*userParam*/)
+{
+	LogWriter::WriteLine(message);
+}
+
 void COpenGLESRenderer::Init(int width, int height)
 {
+#if not defined(NDEBUG) and defined(GL_ES_VERSION_3_2)
+	glDebugMessageCallback(ErrorCallback, nullptr);
+#endif
 	glDepthFunc(GL_LESS);
-	glEnable(GL_TEXTURE_2D);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glViewport(0, 0, width, height);
@@ -671,6 +678,21 @@ void COpenGLESRenderer::Init(int width, int height)
 	});
 	m_defaultProgram = m_shaderManager.NewProgram();
 	m_shaderManager.PushProgram(*m_defaultProgram);
+	auto err = glGetError();
+}
+
+void COpenGLESRenderer::SetVrViewport(float x, float y, float width, float height, float fov)
+{
+	m_vrViewport[0] = x;
+	m_vrViewport[1] = y;
+	m_vrViewport[2] = width;
+	m_vrViewport[3] = height;
+	m_vrFovOverride = fov;
+}
+
+void COpenGLESRenderer::SetVrViewMatrices(std::vector<float*> const& matrices)
+{
+	m_matrixManager.SetVrViewMatrices(matrices);
 }
 
 bool COpenGLESRenderer::SupportsFeature(Feature /*feature*/) const
@@ -683,7 +705,7 @@ void COpenGLESRenderer::DrawIn2D(std::function<void()> const& drawHandler)
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	m_matrixManager.SaveMatrices();
-	m_matrixManager.SetOrthographicProjection(viewport[0], viewport[2], viewport[3], viewport[1]);
+	m_matrixManager.SetOrthographicProjection(viewport[0], viewport[2] + viewport[0], viewport[3] + viewport[1], viewport[1]);
 	m_matrixManager.ResetModelView();
 
 	drawHandler();

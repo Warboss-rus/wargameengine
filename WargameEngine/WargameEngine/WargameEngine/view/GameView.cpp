@@ -61,7 +61,7 @@ CGameView::CGameView(sGameViewContext * context)
 	Init(context->module);
 
 	m_window->DoOnDrawScene([this]() {
-		m_viewHelper->ClearBuffers(true, true);
+		//m_viewHelper->ClearBuffers(true, true);
 		Update();
 	});
 	m_window->DoOnResize([this](int width, int height) {
