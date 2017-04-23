@@ -50,11 +50,11 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_animations.swap(animations);
 }
 
-void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr)
+void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures = nullptr)
 {
 	if(!material)
 	{
-		renderer.SetTexture(L"");
+		renderer.SetTexture(Path());
 		return;
 	}
 	sMaterial& mat = *material;
@@ -69,7 +69,7 @@ void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<s
 	}
 	else 
 	{
-		std::wstring texture = material->texture;
+		Path texture = material->texture;
 		if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
 		{
 			texture = replaceTextures->at(texture);
@@ -81,7 +81,7 @@ void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<s
 }
 
 void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer,
-	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
+	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
 {
 	auto& shaderManager = renderer.GetShaderManager();
 	vertexBuffer.Bind();
@@ -306,7 +306,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 
 //returns if animations is ended
 bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, 
-	bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
+	bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
 {
 	bool result;
 	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);

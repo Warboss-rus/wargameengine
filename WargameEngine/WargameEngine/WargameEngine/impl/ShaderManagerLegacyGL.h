@@ -8,6 +8,7 @@ class CShaderManagerLegacyGL : public IShaderManager
 public:
 	CShaderManagerLegacyGL();
 	std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
+	std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */) override;
 	void PushProgram(IShaderProgram const& shaderProgram) const override;
 	void PopProgram() const override;
 
@@ -28,5 +29,6 @@ public:
 	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const override;
 private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
+	void NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader);
 	mutable std::vector<unsigned int> m_programs;
 };

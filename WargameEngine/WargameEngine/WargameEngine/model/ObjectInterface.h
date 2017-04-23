@@ -3,11 +3,13 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <chrono>
 #include "../view/Vector3.h"
 #include "Animation.h"
 #include "TeamColor.h"
 #include "MovementLimiter.h"
 #include "../Signal.h"
+#include "../Typedefs.h"
 
 class IObject;
 
@@ -21,7 +23,7 @@ public:
 
 	virtual ~IBaseObject() {}
 
-	virtual std::wstring GetPathToModel() const = 0;
+	virtual Path GetPathToModel() const = 0;
 	virtual void SetCoords(float x, float y, float z) = 0;
 	virtual void SetCoords(CVector3f const& coords) = 0;
 	virtual void Move(float dx, float dy, float dz) = 0;
@@ -53,16 +55,16 @@ public:
 	virtual void PlayAnimation(std::string const& animation, eAnimationLoopMode loop = eAnimationLoopMode::NONLOOPING, float speed = 1.0f) = 0;
 	virtual std::string GetAnimation() const = 0;
 	virtual float GetAnimationTime() const = 0;
-	virtual void AddSecondaryModel(std::wstring const& model) = 0;
-	virtual void RemoveSecondaryModel(std::wstring const& model) = 0;
+	virtual void AddSecondaryModel(const Path& model) = 0;
+	virtual void RemoveSecondaryModel(const Path& model) = 0;
 	virtual size_t GetSecondaryModelsCount() const = 0;
-	virtual std::wstring GetSecondaryModel(size_t index) const = 0;
+	virtual Path GetSecondaryModel(size_t index) const = 0;
 	virtual eAnimationLoopMode GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;
-	virtual void Update(long long timeSinceLastUpdate) = 0;
+	virtual void Update(std::chrono::microseconds timeSinceLastUpdate) = 0;
 	virtual std::vector<sTeamColor> const& GetTeamColor() const = 0;
 	virtual void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) = 0;
-	virtual void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) = 0;
-	virtual std::map<std::wstring, std::wstring> const& GetReplaceTextures() const = 0;
+	virtual void ReplaceTexture(const Path& oldTexture, const Path& newTexture) = 0;
+	virtual std::map<Path, Path> const& GetReplaceTextures() const = 0;
 	virtual bool IsGroup() const = 0;
 };

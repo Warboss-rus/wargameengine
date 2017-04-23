@@ -1,11 +1,10 @@
 #include "TranslationManager.h"
 #include <fstream>
-#include "../Utils.h"
+#include "..\Utils.h"
 
-void CTranslationManager::LoadFile(std::wstring const& path)
+void CTranslationManager::LoadFile(const Path& path)
 {
-	std::wifstream iFile;
-	OpenFile(iFile, path, std::ios::binary | std::ios::in);
+	std::wifstream iFile(path, std::ios::binary | std::ios::in);
 	while(iFile.good())
 	{
 		std::wstring str;

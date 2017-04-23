@@ -52,6 +52,11 @@ public:
 		return Utf8ToWstring(GetStr(index));
 	}
 
+	virtual Path GetPath(int index) const override
+	{
+		return make_path(GetStr(index));
+	}
+
 	virtual int GetInt(int index) const override
 	{
 		return static_cast<int>(luaL_checkinteger(m_lua_state, index + m_diff));

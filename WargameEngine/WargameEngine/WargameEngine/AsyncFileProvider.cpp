@@ -10,7 +10,7 @@ class AsyncReadTask : public TaskBase
 {
 public:
 	typedef std::function<void(void*, size_t)> AsyncReadHandler;
-	AsyncReadTask(std::wstring const& file, AsyncReadHandler const& handler, ThreadPool & threadPool)
+	AsyncReadTask(const Path& file, AsyncReadHandler const& handler, ThreadPool & threadPool)
 		: TaskBase(threadPool)
 		, m_path(file)
 		, m_handler(handler)
@@ -64,7 +64,7 @@ public:
 		}
 	}
 private:
-	std::wstring m_path;
+	Path m_path;
 	std::vector<char> m_data;
 	AsyncReadHandler m_handler;
 };
@@ -74,9 +74,9 @@ CAsyncFileProvider::CAsyncFileProvider(ThreadPool & threadPool)
 {
 }
 
-std::vector<std::wstring> SplitPath(std::wstring const &path)
+std::vector<Path> SplitPath(const Path& path)
 {
-	std::vector<std::wstring> pathElements;
+	std::vector<Path> pathElements;
 	size_t begin = 0;
 	for (size_t i = 0; i < path.size(); ++i)
 	{
@@ -93,9 +93,9 @@ std::vector<std::wstring> SplitPath(std::wstring const &path)
 	return pathElements;
 }
 
-std::wstring MakePath(std::vector<std::wstring> const& parts)
+Path MakePath(std::vector<Path> const& parts)
 {
-	std::wstring result;
+	Path result;
 	for (auto& part : parts)
 	{
 		if (!result.empty())
@@ -107,14 +107,14 @@ std::wstring MakePath(std::vector<std::wstring> const& parts)
 	return result;
 }
 
-bool IsAbsolute(std::wstring const& firstPart)
+bool IsAbsolute(const Path& firstPart)
 {
 	if (firstPart.empty()) return true;//Linux absolute path
 	if (firstPart.size() == 2 && firstPart[0] >= 'A' && firstPart[0] <= 'Z' && firstPart[1] == ':') return true;//Windows drive letter
 	return false;
 }
 
-std::wstring AppendPath(std::wstring const& oldPath, std::wstring const& newPath)
+Path AppendPath(const Path& oldPath, const Path& newPath)
 {
 	auto newParts = SplitPath(newPath);
 	if (newParts.size() > 0 && IsAbsolute(newParts[0]))//absolute path
@@ -124,7 +124,7 @@ std::wstring AppendPath(std::wstring const& oldPath, std::wstring const& newPath
 	auto existringParts = SplitPath(oldPath);
 	for (auto& part : newParts)
 	{
-		if (part == L".." && !existringParts.empty())
+		if (part == make_path(L"..") && !existringParts.empty())
 		{
 			existringParts.pop_back();
 		}
@@ -145,7 +145,7 @@ void CAsyncFileProvider::SetModule(sModule const & module)
 	m_shaderDir = AppendPath(m_moduleDir, module.shaders);
 }
 
-void CAsyncFileProvider::GetTextureAsync(std::wstring const& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler, bool now)
+void CAsyncFileProvider::GetTextureAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler, bool now)
 {
 	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(AppendPath(m_textureDir, path), processHandler, m_threadPool);
 	readTask->AddOnCompleteHandler(completionHandler);
@@ -157,7 +157,7 @@ void CAsyncFileProvider::GetTextureAsync(std::wstring const& path, ProcessHandle
 	}
 }
 
-void CAsyncFileProvider::GetModelAsync(std::wstring const& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler /*= ErrorHandler()*/)
+void CAsyncFileProvider::GetModelAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler /*= ErrorHandler()*/)
 {
 	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(AppendPath(m_modelDir, path), processHandler, m_threadPool);
 	readTask->AddOnCompleteHandler(completionHandler);
@@ -165,27 +165,27 @@ void CAsyncFileProvider::GetModelAsync(std::wstring const& path, ProcessHandler 
 	m_threadPool.AddTask(readTask);
 }
 
-std::wstring CAsyncFileProvider::GetModelAbsolutePath(std::wstring const& path) const
+Path CAsyncFileProvider::GetModelAbsolutePath(const Path& path) const
 {
 	return AppendPath(m_modelDir, path);
 }
 
-std::wstring CAsyncFileProvider::GetTextureAbsolutePath(std::wstring const& path) const
+Path CAsyncFileProvider::GetTextureAbsolutePath(const Path& path) const
 {
 	return AppendPath(m_textureDir, path);
 }
 
-std::wstring CAsyncFileProvider::GetScriptAbsolutePath(std::wstring const& path) const
+Path CAsyncFileProvider::GetScriptAbsolutePath(const Path& path) const
 {
 	return AppendPath(m_scriptDir, path);
 }
 
-std::wstring CAsyncFileProvider::GetShaderAbsolutePath(std::wstring const& path) const
+Path CAsyncFileProvider::GetShaderAbsolutePath(const Path& path) const
 {
 	return AppendPath(m_shaderDir, path);
 }
 
-std::wstring CAsyncFileProvider::GetAbsolutePath(std::wstring const & path) const
+Path CAsyncFileProvider::GetAbsolutePath(const Path& path) const
 {
 	return AppendPath(m_moduleDir, path);
 }

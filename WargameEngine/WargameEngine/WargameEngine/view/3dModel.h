@@ -8,6 +8,7 @@
 #include "Vector3.h"
 #include "../model/Animation.h"
 #include "../model/TeamColor.h"
+#include "../Typedefs.h"
 
 class IObject;
 class IShaderManager;
@@ -57,9 +58,9 @@ public:
 	void PreloadTextures(IRenderer & renderer) const;
 	std::vector<std::string> GetAnimations() const;
 private:
-	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
+	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
 	void CalculateGPUWeights(IRenderer & renderer);
-	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr);
+	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;

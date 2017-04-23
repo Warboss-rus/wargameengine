@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include "..\view\KeyDefines.h"
 
 class CUITheme;
 
@@ -18,7 +19,7 @@ public:
 	virtual bool LeftMouseButtonDown(int x, int y) = 0;
 	virtual bool LeftMouseButtonUp(int x, int y) = 0;
 	virtual bool OnCharacterInput(wchar_t key) = 0;
-	virtual bool OnKeyPress(int key, int modifiers) = 0;
+	virtual bool OnKeyPress(VirtualKey key, int modifiers) = 0;
 	virtual void OnMouseMove(int x, int y) = 0;
 	virtual int GetX() const = 0;
 	virtual int GetY() const = 0;

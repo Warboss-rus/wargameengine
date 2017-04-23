@@ -6,6 +6,7 @@
 #include <limits.h>
 #include "../model/TeamColor.h"
 #include "../array_view.h"
+#include "../Typedefs.h"
 
 class IShaderManager;
 
@@ -86,14 +87,14 @@ public:
 	virtual void GetViewMatrix(float * matrix) const = 0;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) = 0;
 
-	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) = 0;
-	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) = 0;
-	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) = 0;
+	virtual void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) = 0;
+	virtual void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) = 0;
+	virtual void SetTexture(const Path& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) = 0;
 	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) = 0;
 	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) = 0;
 	virtual void RenderToTexture(std::function<void()> const& func, ICachedTexture & texture, unsigned int width, unsigned int height) = 0;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) = 0;
-	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const = 0;
+	virtual ICachedTexture* GetTexturePtr(const Path& texture) const = 0;
 
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) = 0;
 

@@ -12,7 +12,7 @@ CLandscape::CLandscape()
 	m_deltaY = 5.0;
 }
 
-void CLandscape::Reset(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth)
+void CLandscape::Reset(float width, float depth, const Path& texture, size_t pointsPerWidth, size_t pointsPerDepth)
 {
 	m_width = width;
 	m_depth = depth;
@@ -98,7 +98,7 @@ float CLandscape::GetVerticalTextureScale() const
 	}
 }
 
-std::wstring const& CLandscape::GetTexture() const
+const Path& CLandscape::GetTexture() const
 {
 	return m_texture;
 }

@@ -11,11 +11,11 @@ class CInputGLFW : public CInputBase
 public:
 	CInputGLFW(GLFWwindow * window);
 
-	virtual void EnableCursor(bool enable = true) override;
-	virtual int GetMouseX() const override;
-	virtual int GetMouseY() const override;
-	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
-	virtual int GetModifiers() const override;
+	void EnableCursor(bool enable = true) override;
+	int GetMouseX() const override;
+	int GetMouseY() const override;
+	int GetModifiers() const override;
+	bool IsKeyPressed(VirtualKey key) const override;
 
 	static void OnMouse(GLFWwindow* window, int button, int action, int mods);
 	static void OnScroll(GLFWwindow* window, double xoffset, double yoffset);
@@ -26,6 +26,7 @@ public:
 	void UpdateControllers();
 	void SetHeadRotation(int deviceIndex, float x, float y, float z);
 private:
+	static VirtualKey KeycodeToVirtualKey(int key);
 	GLFWwindow * m_window;
 
 	bool m_cursorEnabled = true;

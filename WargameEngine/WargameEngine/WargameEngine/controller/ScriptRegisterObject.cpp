@@ -15,7 +15,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 	handler.RegisterMethod(CLASS_OBJECT, NEW_OBJECT, [&](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (model, x, y, rotation)");
-		std::wstring model =  args.GetWStr(1);
+		Path model =  args.GetPath(1);
 		float x = args.GetFloat(2);
 		float y = args.GetFloat(3);
 		float rotation = args.GetFloat(4);
@@ -351,7 +351,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		object->AddSecondaryModel(args.GetWStr(1));
+		object->AddSecondaryModel(args.GetPath(1));
 		return nullptr;
 	});
 
@@ -362,7 +362,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		object->RemoveSecondaryModel(args.GetWStr(1));
+		object->RemoveSecondaryModel(args.GetPath(1));
 		return nullptr;
 	});
 
@@ -405,8 +405,8 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		IObject* object = reinterpret_cast<IObject *>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
-		std::wstring oldt = args.GetWStr(1);
-		std::wstring newt = args.GetWStr(2);
+		Path oldt = args.GetPath(1);
+		Path newt = args.GetPath(2);
 		object->ReplaceTexture(oldt, newt);
 		return nullptr;
 	});

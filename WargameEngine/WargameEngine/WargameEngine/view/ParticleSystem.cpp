@@ -9,7 +9,7 @@ CParticleSystem::CParticleSystem(IRenderer & renderer)
 {
 }
 
-void CParticleSystem::SetShaders(std::wstring const& vertex, std::wstring const& fragment)
+void CParticleSystem::SetShaders(const Path& vertex, const Path& fragment)
 {
 	if (m_renderer.SupportsFeature(Feature::INSTANSING))
 	{
@@ -96,11 +96,11 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		if(useColorAttrib) shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
 		m_renderer.RenderArrays(RenderMode::TRIANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
 	}
-	m_renderer.SetTexture(L"");
+	m_renderer.UnbindTexture();
 	m_renderer.PopMatrix();
 }
 
-IParticleUpdater* CParticleSystem::GetParticleUpdater(std::wstring const& path)
+IParticleUpdater* CParticleSystem::GetParticleUpdater(const Path& path)
 {
 	if (m_models.find(path) == m_models.end())
 	{

@@ -83,14 +83,11 @@
     <ClCompile Include="..\..\WargameEngine\Utils.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\3dModel.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\BuiltInImageReaders.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\CameraFirstPerson.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\CameraStrategy.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\Camera.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ColladaModelFactory.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\FixedCamera.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\GameView.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\InputBase.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\MaterialManager.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\MirrorCamera.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ModelManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\OBJModelFactory.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\ParticleModel.cpp" />
@@ -173,12 +170,9 @@
     <ClInclude Include="..\..\WargameEngine\Utils.h" />
     <ClInclude Include="..\..\WargameEngine\view\3dModel.h" />
     <ClInclude Include="..\..\WargameEngine\view\BuiltInImageReaders.h" />
-    <ClInclude Include="..\..\WargameEngine\view\CameraFirstPerson.h" />
-    <ClInclude Include="..\..\WargameEngine\view\CameraStrategy.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Camera.h" />
     <ClInclude Include="..\..\WargameEngine\view\ColladaModelFactory.h" />
-    <ClInclude Include="..\..\WargameEngine\view\FixedCamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\GameView.h" />
-    <ClInclude Include="..\..\WargameEngine\view\ICamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\IGameWindow.h" />
     <ClInclude Include="..\..\WargameEngine\view\IImageReader.h" />
     <ClInclude Include="..\..\WargameEngine\view\IInput.h" />
@@ -195,7 +189,6 @@
     <ClInclude Include="..\..\WargameEngine\view\Material.h" />
     <ClInclude Include="..\..\WargameEngine\view\MaterialManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\Matrix4.h" />
-    <ClInclude Include="..\..\WargameEngine\view\MirrorCamera.h" />
     <ClInclude Include="..\..\WargameEngine\view\ModelManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\OBJModelFactory.h" />
     <ClInclude Include="..\..\WargameEngine\view\ParticleModel.h" />

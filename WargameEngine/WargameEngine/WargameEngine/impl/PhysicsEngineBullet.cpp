@@ -106,10 +106,9 @@ public:
 		}
 	}
 
-	void Update(long long timeDelta)
+	void Update(std::chrono::duration<float> timeDelta)
 	{
-		double timeStep = static_cast<double>(timeDelta) / 1000.0;
-		m_dynamicsWorld->stepSimulation(static_cast<btScalar>(timeStep), 10);
+		m_dynamicsWorld->stepSimulation(static_cast<btScalar>(timeDelta.count()), 10);
 	}
 
 	void Reset()
@@ -401,7 +400,7 @@ CPhysicsEngineBullet::~CPhysicsEngineBullet()
 {
 }
 
-void CPhysicsEngineBullet::Update(long long timeDelta)
+void CPhysicsEngineBullet::Update(std::chrono::microseconds timeDelta)
 {
 	m_pImpl->Update(timeDelta);
 }

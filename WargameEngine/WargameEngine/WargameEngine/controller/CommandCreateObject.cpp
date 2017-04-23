@@ -3,6 +3,7 @@
 #include "../model/IGameModel.h"
 #include "../IMemoryStream.h"
 #include "../model/Object.h"
+#include "../Utils.h"
 
 CCommandCreateObject::CCommandCreateObject(std::shared_ptr<IObject> const& object, IGameModel& model)
 	:m_pObject(object), m_model(model) 
@@ -17,9 +18,9 @@ CCommandCreateObject::CCommandCreateObject(IReadMemoryStream & stream, IGameMode
 	float y = stream.ReadFloat();
 	float z = stream.ReadFloat();
 	float rotation = stream.ReadFloat();
-	std::wstring path = stream.ReadWString();
+	std::string path = stream.ReadString();
 	bool shadow = stream.ReadBool();
-	m_pObject = std::make_shared<CObject>(path, CVector3f{ x, y, z }, rotation, shadow);
+	m_pObject = std::make_shared<CObject>(make_path(path), CVector3f{ x, y, z }, rotation, shadow);
 }
 
 void CCommandCreateObject::Execute()
@@ -40,6 +41,6 @@ void CCommandCreateObject::Serialize(IWriteMemoryStream & stream) const
 	stream.WriteFloat(m_pObject->GetY());
 	stream.WriteFloat(m_pObject->GetZ());
 	stream.WriteFloat(m_pObject->GetRotation());
-	stream.WriteWString(m_pObject->GetPathToModel());
+	stream.WriteString(to_string(m_pObject->GetPathToModel()));
 	stream.WriteBool(m_pObject->CastsShadow());
 }

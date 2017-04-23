@@ -7,7 +7,7 @@ class CPhysicsEngineBullet : public IPhysicsEngine
 public:
 	CPhysicsEngineBullet();
 	~CPhysicsEngineBullet();
-	virtual void Update(long long deltaTime) override;
+	virtual void Update(std::chrono::microseconds deltaTime) override;
 	virtual void Reset() override;
 	virtual void AddDynamicObject(IObject * object, double mass) override;
 	virtual void AddStaticObject(IBaseObject * staticObject) override;

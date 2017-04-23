@@ -1,15 +1,16 @@
 #include "ObjectGroup.h"
 #include "IGameModel.h"
 #include <algorithm>
+#include "../Utils.h"
 
 CObjectGroup::CObjectGroup(IGameModel & model) :m_current(0), m_model(model)
 {
 
 }
 
-std::wstring CObjectGroup::GetPathToModel() const
+Path CObjectGroup::GetPathToModel() const
 {
-	if(m_children.empty()) return L"";
+	if(m_children.empty()) return make_path(L"");
 	return m_children[m_current]->GetPathToModel();
 }
 
@@ -243,7 +244,7 @@ float CObjectGroup::GetAnimationTime() const
 	return m_children[m_current]->GetAnimationTime();
 }
 
-void CObjectGroup::AddSecondaryModel(std::wstring const& model)
+void CObjectGroup::AddSecondaryModel(const Path& model)
 {
 	for (auto& child : m_children)
 	{
@@ -251,7 +252,7 @@ void CObjectGroup::AddSecondaryModel(std::wstring const& model)
 	}
 }
 
-void CObjectGroup::RemoveSecondaryModel(std::wstring const& model)
+void CObjectGroup::RemoveSecondaryModel(const Path& model)
 {
 	for (auto& child : m_children)
 	{
@@ -265,9 +266,9 @@ size_t CObjectGroup::GetSecondaryModelsCount() const
 	return m_children[m_current]->GetSecondaryModelsCount();
 }
 
-std::wstring CObjectGroup::GetSecondaryModel(size_t index) const
+Path CObjectGroup::GetSecondaryModel(size_t index) const
 {
-	if (m_children.empty()) return L"";
+	if (m_children.empty()) return Path();
 	return m_children[m_current]->GetSecondaryModel(index);
 }
 
@@ -283,7 +284,7 @@ float CObjectGroup::GetAnimationSpeed() const
 	return m_children[m_current]->GetAnimationSpeed();
 }
 
-void CObjectGroup::Update(long long timeSinceLastUpdate)
+void CObjectGroup::Update(std::chrono::microseconds timeSinceLastUpdate)
 {
 	for (auto& child : m_children)
 	{
@@ -299,7 +300,7 @@ void CObjectGroup::ApplyTeamColor(std::wstring const& suffix, unsigned char r, u
 	}
 }
 
-void CObjectGroup::ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture)
+void CObjectGroup::ReplaceTexture(const Path& oldTexture, const Path& newTexture)
 {
 	for (auto& child : m_children)
 	{
@@ -317,11 +318,11 @@ std::vector<sTeamColor> const& CObjectGroup::GetTeamColor() const
 	return m_children[m_current]->GetTeamColor();
 }
 
-std::map<std::wstring, std::wstring> const& CObjectGroup::GetReplaceTextures() const
+std::map<Path, Path> const& CObjectGroup::GetReplaceTextures() const
 { 
 	if (m_children.empty())
 	{
-		static std::map<std::wstring, std::wstring> dummy;
+		static std::map<Path, Path> dummy;
 		return dummy;
 	}
 	return m_children[m_current]->GetReplaceTextures();

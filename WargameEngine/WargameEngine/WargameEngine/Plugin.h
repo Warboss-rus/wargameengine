@@ -1,4 +1,4 @@
-#include <string>
+#include "Typedefs.h"
 
 typedef const char* (*PluginGetTypeFunction)();
 typedef void* (*PluginGetClassFunction)();
@@ -6,7 +6,7 @@ typedef void* (*PluginGetClassFunction)();
 class CPlugin
 {
 public:
-	CPlugin(std::wstring const& str);
+	CPlugin(const Path& str);
 	~CPlugin();
 	void * GetFunction(std::string const& name);
 private:

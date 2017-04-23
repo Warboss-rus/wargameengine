@@ -25,7 +25,7 @@ CGameController::~CGameController()
 	if(m_controllerThread.get_id() != std::thread::id())m_controllerThread.join();
 }
 
-void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath)
+void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath)
 {
 	m_view = &view;
 	m_commandHandler = std::make_unique<CCommandHandler>();
@@ -49,10 +49,10 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 		m_scriptHandler->RunScript(scriptPath);
 	}
 
-	m_lastUpdateTime = GetCurrentTimeLL();
+	m_lastUpdateTime = std::chrono::high_resolution_clock::now();
 }
 
-void CGameController::InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath)
+void CGameController::InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath)
 {
 	m_controllerThread = std::thread([this, &view, socketFactory, scriptPath] {
 		Init(view, socketFactory, scriptPath);
@@ -85,8 +85,8 @@ void CGameController::Update()
 		m_singleCallback();
 		m_singleCallback = std::function<void()>();
 	}
-	long long currentTime = GetCurrentTimeLL();
-	long long delta = currentTime - m_lastUpdateTime;
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	auto delta = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - m_lastUpdateTime);
 	m_lastUpdateTime = currentTime;
 	for (auto& decorator : m_objectDecorators)
 	{
@@ -388,7 +388,7 @@ void CGameController::SerializeState(IWriteMemoryStream & stream, bool hasAdress
 		stream.WriteFloat(object->GetY());
 		stream.WriteFloat(object->GetZ());
 		stream.WriteFloat(object->GetRotation());
-		stream.WriteWString(object->GetPathToModel());
+		stream.WriteString(to_string(object->GetPathToModel()));
 		if (hasAdresses)
 		{
 			stream.WritePointer(object);
@@ -408,7 +408,7 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 		float y = stream.ReadFloat();
 		float z = stream.ReadFloat();
 		float rotation = stream.ReadFloat();
-		std::wstring path = stream.ReadWString();
+		Path path = make_path(stream.ReadString());
 		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, { x, y, z }, rotation));
 		m_model.AddObject(object);
 		if (hasAdresses)
@@ -432,14 +432,14 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 	}
 }
 
-void CGameController::Save(std::wstring const& filename)
+void CGameController::Save(const Path&  filename)
 {
 	CWriteMemoryStream stream;
 	SerializeState(stream);
 	WriteFile(filename, stream.GetData(), stream.GetSize());
 }
 
-void CGameController::Load(std::wstring const& filename)
+void CGameController::Load(const Path& filename)
 {
 	std::vector<char> data = ReadFile(filename);
 	CReadMemoryStream stream(data.data());
@@ -539,7 +539,7 @@ void CGameController::RotateObject(std::shared_ptr<IObject> const& obj, float de
 	m_commandHandler->AddNewRotateObject(obj, deltaRot);
 }
 
-std::shared_ptr<IObject> CGameController::CreateObject(std::wstring const& model, float x, float y, float rotation)
+std::shared_ptr<IObject> CGameController::CreateObject(const Path& model, float x, float y, float rotation)
 {
 	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, CVector3f{ x, y, 0.0f }, rotation);
 	m_view->GetModelManager().LoadIfNotExist(model);
@@ -615,7 +615,7 @@ IObject* CObjectDecorator::GetObject()
 	return m_object.get();
 }
 
-void CObjectDecorator::Update(long long timeSinceLastUpdate)
+void CObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 {
 	if (fabs(m_goSpeed) < DBL_EPSILON)
 	{
@@ -624,7 +624,7 @@ void CObjectDecorator::Update(long long timeSinceLastUpdate)
 	CVector3f dir = m_goTarget - m_object->GetCoords();
 	dir.Normalize();
 	m_object->SetRotation(static_cast<float>(atan2(dir.y, dir.x) * 180.0f / (float)M_PI));
-	dir = dir * static_cast<float>(timeSinceLastUpdate) / 1000.0f * m_goSpeed;
+	dir = dir * timeSinceLastUpdate.count() * m_goSpeed;
 	if (dir.GetLength() > (m_goTarget - m_object->GetCoords()).GetLength()) dir = (m_goTarget - m_object->GetCoords());
 	m_object->Move(dir.x, dir.y, dir.z);
 	if ((m_object->GetCoords() - m_goTarget).GetLength() < 0.0001)

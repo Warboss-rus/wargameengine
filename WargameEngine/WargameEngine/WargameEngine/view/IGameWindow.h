@@ -18,7 +18,7 @@ public:
 	virtual void ToggleFullscreen() = 0;
 	typedef std::function<std::pair<IViewport&, IViewport&>(unsigned width, unsigned height)> VRViewportFactory;
 	virtual bool EnableVRMode(bool show, VRViewportFactory const& viewportFactory = VRViewportFactory()) = 0;
-	virtual IInput& ResetInput() = 0;
+	virtual IInput& GetInput() = 0;
 	virtual IRenderer& GetRenderer() = 0;
 	virtual IViewHelper& GetViewHelper() = 0;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) = 0;

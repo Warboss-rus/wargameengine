@@ -54,6 +54,10 @@ public:
 		if (m_callbacks.empty()) return;
 		m_callbacks.erase(std::remove_if(m_callbacks.begin(), m_callbacks.end(), [&](sCallback const& callback) {return callback.tag == tag;}), m_callbacks.end());
 	}
+	void Reset()
+	{
+		m_callbacks.clear();
+	}
 private:
 	struct sCallback
 	{

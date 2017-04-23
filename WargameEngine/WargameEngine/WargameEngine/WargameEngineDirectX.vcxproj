@@ -30,7 +30,7 @@
     <ProjectGuid>{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WargameEngineDirectX</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

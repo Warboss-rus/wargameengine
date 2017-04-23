@@ -16,16 +16,16 @@ std::string GetErrorString()
 #endif
 }
 
-CPlugin::CPlugin(std::wstring const& str)
+CPlugin::CPlugin(const Path& str)
 {
 #ifdef WIN32
 	m_handle = LoadLibraryW(str.c_str());
 #else
-	m_handle = dlopen(WStringToUtf8(str).c_str(), RTLD_NOW);
+	m_handle = dlopen(str.c_str(), RTLD_NOW);
 #endif
 	if (!m_handle)
 	{
-		LogWriter::WriteLine("Error loading plugin '" + WStringToUtf8(str) + "'. " + GetErrorString());
+		LogWriter::WriteLine("Error loading plugin '" + to_string(str) + "'. " + GetErrorString());
 	}
 }
 

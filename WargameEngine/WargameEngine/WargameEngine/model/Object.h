@@ -7,7 +7,7 @@
 class CObject : public CBaseObject<IObject>
 {
 public:
-	CObject(std::wstring const& model, CVector3f const& position, float rotation, bool hasShadow = true);
+	CObject(const Path& model, CVector3f const& position, float rotation, bool hasShadow = true);
 	std::set<std::string> const& GetHiddenMeshes() const override;
 	void HideMesh(std::string const& meshName) override;
 	void ShowMesh(std::string const& meshName) override;
@@ -20,29 +20,29 @@ public:
 	void PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
-	void AddSecondaryModel(std::wstring const& model) override;
-	void RemoveSecondaryModel(std::wstring const& model) override;
+	void AddSecondaryModel(const Path& model) override;
+	void RemoveSecondaryModel(const Path& model) override;
 	size_t GetSecondaryModelsCount() const override;
-	std::wstring GetSecondaryModel(size_t index) const override;
+	Path GetSecondaryModel(size_t index) const override;
 	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
-	void Update(long long timeSinceLastUpdate) override;
+	void Update(std::chrono::microseconds timeSinceLastUpdate) override;
 	std::vector<sTeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
-	void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) override;
-	std::map<std::wstring, std::wstring> const& GetReplaceTextures() const override;
+	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
+	std::map<Path, Path> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
 	virtual IObject* GetFullObject() override;
 private:
-	std::vector<std::wstring> m_secondaryModels;
+	std::vector<Path> m_secondaryModels;
 	std::set<std::string> m_hiddenMeshes;
 	std::map<std::wstring, std::wstring> m_properties;
 	bool m_isSelectable;
 	std::unique_ptr<IMoveLimiter> m_movelimiter;
 	std::string m_animation;
-	long long m_animationTime;
+	std::chrono::microseconds m_animationTime;
 	eAnimationLoopMode m_animationLoop = eAnimationLoopMode::HOLDEND;
 	float m_animationSpeed = 1.0f;
 	std::vector<sTeamColor> m_teamColor;
-	std::map<std::wstring, std::wstring> m_replaceTextures;
+	std::map<Path, Path> m_replaceTextures;
 };

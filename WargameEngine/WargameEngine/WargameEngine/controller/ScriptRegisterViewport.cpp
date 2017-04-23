@@ -1,7 +1,5 @@
 #include "ScriptRegisterFunctions.h"
 #include "ScriptViewportProtocol.h"
-#include "../view/CameraStrategy.h"
-#include "../view/CameraFirstPerson.h"
 #include "IScriptHandler.h"
 #include "../view/GameView.h"
 
@@ -16,7 +14,7 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		int height = args.GetInt(3);
 		float fieldOfView = args.GetFloat(4);
 		bool resize = (args.GetCount() > 5) ? args.GetBool(5) : false;
-		return FunctionArgument(&view.AddViewport(std::make_unique<CViewportBase>(x, y, width, height, fieldOfView, view.GetViewHelper(), true, resize)), CLASS_VIEWPORT);
+		return FunctionArgument(&view.AddViewport(CViewportBase(x, y, width, height, fieldOfView, view.GetViewHelper(), view.GetInput(), true, resize)), CLASS_VIEWPORT);
 	});
 	handler.RegisterMethod(CLASS_VIEWPORT, NEW_OFFSCREEN_VIEWPORT, [&](void*, IArguments const& args) {
 		if (args.GetCount() != 4)
@@ -25,8 +23,8 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		int height = args.GetInt(2);
 		float fieldOfView = args.GetFloat(3);
 		int textureSlot = args.GetInt(4);
-		auto viewport = std::make_unique<CViewportBase>(0, 0, width, height, fieldOfView, view.GetViewHelper(), false, false);
-		viewport->AttachNewTexture(CachedTextureType::RGBA, textureSlot);
+		CViewportBase viewport(0, 0, width, height, fieldOfView, view.GetViewHelper(), view.GetInput(), false, false);
+		viewport.AttachNewTexture(CachedTextureType::RGBA, textureSlot);
 		return FunctionArgument(&view.AddViewport(std::move(viewport)), CLASS_VIEWPORT);
 	});
 
@@ -85,8 +83,9 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		float maxScale = args.GetFloat(3);
 		float minScale = args.GetFloat(4);
 		auto viewport = instance ? static_cast<CViewportBase*>(instance) : &view.GetViewport(0);
-		viewport->SetCamera(std::make_unique<CCameraStrategy>(maxTransX, maxTransY, maxScale, minScale));
-		viewport->GetCamera().SetInput(view.GetInput());
+		auto& camera = viewport->GetCamera();
+		camera.SetLimits(maxTransX, maxTransY, maxScale, minScale);
+		camera.SetCameraMode(Camera::Mode::THIRD_PERSON);
 		return nullptr;
 	});
 
@@ -94,8 +93,8 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected ()");
 		auto viewport = instance ? static_cast<CViewportBase*>(instance) : &view.GetViewport(0);
-		viewport->SetCamera(std::make_unique<CCameraFirstPerson>());
-		viewport->GetCamera().SetInput(view.GetInput());
+		viewport->GetCamera().SetCameraMode(Camera::Mode::FIRST_PERSON);
+		viewport->GetCamera().Set(CVector3f(), CVector3f(0.0f, 1.0f, 0.0f));
 		return nullptr;
 	});
 
@@ -110,7 +109,7 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected ()");
 		auto viewport = instance ? static_cast<CViewportBase*>(instance) : &view.GetViewport();
-		viewport->GetCamera().EnableTouchMode();
+		viewport->GetCamera().AttachToTouchScreen();
 		return nullptr;
 	});
 }

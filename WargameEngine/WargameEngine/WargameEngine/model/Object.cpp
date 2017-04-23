@@ -5,8 +5,8 @@
 #include <math.h>
 #include <float.h>
 
-CObject::CObject(std::wstring const& model, CVector3f const& position, float rotation, bool hasShadow)
-	: CBaseObject(model, position, rotation, hasShadow), m_isSelectable(true), m_animationTime(0L)
+CObject::CObject(const Path& model, CVector3f const& position, float rotation, bool hasShadow)
+	: CBaseObject(model, position, rotation, hasShadow), m_isSelectable(true)
 {
 }
 
@@ -71,7 +71,7 @@ void CObject::PlayAnimation(std::string const& animation, eAnimationLoopMode loo
 	m_animation = animation;
 	m_animationLoop = loop;
 	m_animationSpeed = speed;
-	m_animationTime = 0;
+	m_animationTime = std::chrono::microseconds(0ll);
 }
 
 std::string CObject::GetAnimation() const
@@ -81,16 +81,15 @@ std::string CObject::GetAnimation() const
 
 float CObject::GetAnimationTime() const
 {
-	if (m_animationTime == 0L) return 0.0f;
-	return static_cast<float>((double)m_animationTime / 1000.0);
+	return std::chrono::duration<float>(m_animationTime).count();
 }
 
-void CObject::AddSecondaryModel(std::wstring const& model)
+void CObject::AddSecondaryModel(const Path& model)
 {
 	m_secondaryModels.push_back(model);
 }
 
-void CObject::RemoveSecondaryModel(std::wstring const& model)
+void CObject::RemoveSecondaryModel(const Path& model)
 {
 	for (auto i = m_secondaryModels.begin(); i != m_secondaryModels.end(); ++i)
 	{
@@ -106,7 +105,7 @@ size_t CObject::GetSecondaryModelsCount() const
 	return m_secondaryModels.size();
 }
 
-std::wstring CObject::GetSecondaryModel(size_t index) const
+Path CObject::GetSecondaryModel(size_t index) const
 {
 	return m_secondaryModels[index];
 }
@@ -121,7 +120,7 @@ float CObject::GetAnimationSpeed() const
 	return m_animationSpeed;
 }
 
-void CObject::Update(long long timeSinceLastUpdate)
+void CObject::Update(std::chrono::microseconds timeSinceLastUpdate)
 {
 	m_animationTime += timeSinceLastUpdate;
 }
@@ -146,7 +145,7 @@ void CObject::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsign
 	m_teamColor.push_back(tc);
 }
 
-void CObject::ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture)
+void CObject::ReplaceTexture(const Path& oldTexture, const Path& newTexture)
 {
 	if (newTexture.empty())
 	{
@@ -158,7 +157,7 @@ void CObject::ReplaceTexture(std::wstring const& oldTexture, std::wstring const&
 	}
 }
 
-std::map<std::wstring, std::wstring> const& CObject::GetReplaceTextures() const
+std::map<Path, Path> const& CObject::GetReplaceTextures() const
 {
 	return m_replaceTextures;
 }

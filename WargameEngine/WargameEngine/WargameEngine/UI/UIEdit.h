@@ -6,7 +6,7 @@ public:
 	CUIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
 	void Draw() const override;
 	bool OnCharacterInput(wchar_t key) override;
-	bool OnKeyPress(int key, int modifiers) override;
+	bool OnKeyPress(VirtualKey key, int modifiers) override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	bool LeftMouseButtonDown(int x, int y) override;
 	std::wstring const GetText() const override;

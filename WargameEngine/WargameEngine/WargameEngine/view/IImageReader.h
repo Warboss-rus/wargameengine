@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "../Typedefs.h"
 #include "ITextureHelper.h"
 
 class CImage
@@ -63,6 +64,6 @@ class IImageReader
 public:
 	virtual ~IImageReader() {}
 
-	virtual bool ImageIsSupported(unsigned char * data, size_t size, std::wstring const& filePath) const = 0;
-	virtual CImage ReadImage(unsigned char * data, size_t size, std::wstring const& filePath, sReaderParameters const& params) = 0;
+	virtual bool ImageIsSupported(unsigned char * data, size_t size, const Path& filePath) const = 0;
+	virtual CImage ReadImage(unsigned char * data, size_t size, const Path& filePath, sReaderParameters const& params) = 0;
 };

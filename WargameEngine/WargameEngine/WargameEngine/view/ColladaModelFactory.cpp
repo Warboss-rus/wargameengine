@@ -284,8 +284,8 @@ void LoadPhongModel(xml_node<>* phong, sMaterial &material, map<string, string>&
 		if (texture)
 		{
 			string image = texture->first_attribute("texture")->value();
-			material.texture = Utf8ToWstring(imageTranslator[GetImagePath(image, common)]);
-			if (material.texture.size() > 7 && ((material.texture.substr(0, 7) == L"file://" || material.texture.substr(0, 7) == L"file:\\\\")))
+			material.texture = make_path(imageTranslator[GetImagePath(image, common)]);
+			if (material.texture.size() > 7 && ((material.texture.substr(0, 7) == make_path(L"file://") || material.texture.substr(0, 7) == make_path(L"file:\\\\"))))
 			{
 				material.texture.erase(0, 8);
 			}
@@ -342,7 +342,7 @@ void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageT
 			if (technique && string(technique->first_attribute("profile")->value()) == "FCOLLADA")
 			{
 				xml_node<>* userProperties = technique->first_node("user_properties");
-				if (userProperties) material.texture = Utf8ToWstring(userProperties->value());
+				if (userProperties) material.texture = make_path(userProperties->value());
 			}
 		}
 		for (auto i = materialTranslator.begin(); i != materialTranslator.end(); ++i)
@@ -389,7 +389,7 @@ void LoadAnimationClips(xml_node<>* clipsLib, std::vector<sAnimation> & animatio
 	}
 }
 
-std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, size_t size, C3DModel const& dummyModel, std::wstring const& /*filePath*/)
+std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, size_t size, C3DModel const& dummyModel, const Path& /*filePath*/)
 {
 	std::vector<char> normalizedData;
 	normalizedData.resize(size);
@@ -766,10 +766,10 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	return result;
 }
 
-bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& filePath) const
+bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, const Path& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
-	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
-	return extension == L"dae";
+	return extension == make_path(L"dae");
 }

@@ -23,7 +23,7 @@ public:
 	CObjectDecorator(std::shared_ptr<IObject> const& object);
 	void GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed);
 	IObject* GetObject();
-	void Update(long long timeSinceLastUpdate);
+	void Update(std::chrono::duration<float> timeSinceLastUpdate);
 private:
 	std::shared_ptr<IObject> m_object;
 	CVector3f m_goTarget;
@@ -37,8 +37,8 @@ public:
 
 	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine);
 	~CGameController();
-	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
-	void InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, std::wstring const& scriptPath);
+	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath);
+	void InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath);
 	void Update();
 
 	virtual void SerializeState(IWriteMemoryStream & stream, bool hasAdresses = false) const override;
@@ -59,11 +59,11 @@ public:
 	void SetRMBCallback(MouseButtonCallback const& callback);
 	void SetGamepadButtonCallback(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler);
 	void SetGamepadAxisCallback(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler);
-	void Save(std::wstring const& filename);
-	void Load(std::wstring const& filename);
+	void Save(const Path& filename);
+	void Load(const Path& filename);
 	void BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func);
 	bool OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt);
-	std::shared_ptr<IObject> CreateObject(std::wstring const& model, float x, float y, float rotation);
+	std::shared_ptr<IObject> CreateObject(const Path& model, float x, float y, float rotation);
 	void DeleteObject(std::shared_ptr<IObject> const& obj);
 	void SetObjectProperty(std::shared_ptr<IObject> const& obj, std::wstring const& key, std::wstring const& value);
 	void PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
@@ -100,7 +100,7 @@ private:
 	std::unique_ptr<CVector2d> m_selectionRectangleBegin;
 	float m_selectedObjectPrevRotation = 0;
 	std::unique_ptr<CVector3f> m_rotationPosBegin;
-	long long m_lastUpdateTime;
+	std::chrono::high_resolution_clock::time_point m_lastUpdateTime;
 
 	std::unique_ptr<IScriptHandler> m_scriptHandler;
 	std::unique_ptr<CCommandHandler> m_commandHandler;

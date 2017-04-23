@@ -7,9 +7,9 @@ template<class T>
 class CBaseObject : public T
 {
 public:
-	CBaseObject(std::wstring const& model, CVector3f const& position, float rotation, bool hasShadow = true)
+	CBaseObject(const Path& model, CVector3f const& position, float rotation, bool hasShadow = true)
 		:m_coords(position), m_rotation(rotation), m_model(model), m_castsShadow(hasShadow) {}
-	virtual std::wstring GetPathToModel() const final { return m_model; }
+	virtual Path GetPathToModel() const final { return m_model; }
 	virtual float GetX() const final { return m_coords.x; }
 	virtual float GetY() const final { return m_coords.y; }
 	virtual float GetZ() const final { return m_coords.z; }
@@ -59,7 +59,7 @@ public:
 private:
 	CVector3f m_coords;
 	float m_rotation;
-	std::wstring m_model;
+	Path m_model;
 	bool m_castsShadow;
 	typename T::CoordsSignal m_onCoordsChange;
 	typename T::RotationSignal m_onRotationChange;

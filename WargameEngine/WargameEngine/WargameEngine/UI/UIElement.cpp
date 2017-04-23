@@ -194,7 +194,7 @@ bool CUIElement::OnCharacterInput(wchar_t key)
 	return false;
 }
 
-bool CUIElement::OnKeyPress(int key, int modifiers)
+bool CUIElement::OnKeyPress(VirtualKey key, int modifiers)
 {
 	if(!m_visible) return false;
 	for(auto i = m_children.begin(); i != m_children.end(); ++i)

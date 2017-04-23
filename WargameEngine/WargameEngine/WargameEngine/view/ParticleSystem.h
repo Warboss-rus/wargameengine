@@ -12,11 +12,11 @@ class CParticleSystem
 {
 public:
 	CParticleSystem(IRenderer & renderer);
-	void SetShaders(std::wstring const& vertex, std::wstring const& fragment);
+	void SetShaders(const Path& vertex, const Path& fragment);
 	void Draw(CParticleEffect const& particleEffect);
-	IParticleUpdater* GetParticleUpdater(std::wstring const& path);
+	IParticleUpdater* GetParticleUpdater(const Path& path);
 private:
-	std::map<std::wstring, CParticleModel> m_models;
+	std::map<Path, CParticleModel> m_models;
 	IRenderer & m_renderer;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::vector<CVector3f> m_vertexBuffer;

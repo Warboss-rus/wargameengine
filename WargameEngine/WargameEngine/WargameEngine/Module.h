@@ -1,5 +1,5 @@
 #pragma once
-#include <string>
+#include "Typedefs.h"
 
 struct sModule
 {
@@ -9,10 +9,10 @@ struct sModule
 	std::wstring site;
 	int minVersion;
 	bool playable;
-	std::wstring folder;
-	std::wstring script;
-	std::wstring models;
-	std::wstring textures;
-	std::wstring shaders;
-	void Load(std::wstring const& filename);
+	Path folder;
+	Path script;
+	Path models;
+	Path textures;
+	Path shaders;
+	void Load(Path const& filename);
 };

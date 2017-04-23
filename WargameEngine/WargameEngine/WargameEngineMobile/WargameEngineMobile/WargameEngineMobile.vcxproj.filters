@@ -16,9 +16,6 @@
     <Filter Include="Source Files\view\Readers">
       <UniqueIdentifier>{98b08335-61eb-47de-a940-f4687512197d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\view\Cameras">
-      <UniqueIdentifier>{71ee9a97-722c-4018-b8ff-a7a87969365b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\model">
       <UniqueIdentifier>{1a1bc0bd-6213-4437-9c82-41d6aee0a697}</UniqueIdentifier>
     </Filter>
@@ -150,18 +147,6 @@
     <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp">
       <Filter>Source Files\view\Readers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\CameraFirstPerson.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\CameraStrategy.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\FixedCamera.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\view\MirrorCamera.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\WargameEngine\model\GameModel.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -230,6 +215,9 @@
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterViewport.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\Camera.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -326,9 +314,6 @@
     <ClInclude Include="..\..\WargameEngine\view\GameView.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\ICamera.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\IGameWindow.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -415,15 +400,6 @@
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\view\WBMModelFactory.h">
       <Filter>Source Files\view\Readers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\CameraFirstPerson.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\CameraStrategy.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\MirrorCamera.h">
-      <Filter>Source Files\view\Cameras</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\model\Animation.h">
       <Filter>Source Files\model</Filter>
@@ -545,8 +521,8 @@
     <ClInclude Include="..\..\WargameEngine\IPhysicsEngine.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\view\FixedCamera.h">
-      <Filter>Source Files\view\Cameras</Filter>
+    <ClInclude Include="..\..\WargameEngine\view\Camera.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

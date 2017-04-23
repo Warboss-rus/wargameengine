@@ -5,10 +5,9 @@
 #include <functional>
 #include "ObjectStatic.h"
 
-
 struct sDecal
 {
-	std::wstring texture;
+	Path texture;
 	float width;
 	float depth;
 	float rotation;
@@ -20,14 +19,14 @@ class CLandscape
 {
 public:
 	CLandscape();
-	void Reset(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth);
+	void Reset(float width, float depth, const Path& texture, size_t pointsPerWidth, size_t pointsPerDepth);
 	void SetHeight(float x, float y, float value);
 	float GetHeight(float x, float y) const;
 	float GetWidth() const;
 	float GetDepth() const;
 	float GetHorizontalTextureScale() const;
 	float GetVerticalTextureScale() const;
-	std::wstring const& GetTexture() const;
+	const Path& GetTexture() const;
 	size_t GetPointsPerWidth() const;
 	size_t GetPointsPerDepth() const;
 	bool isCoordsOnTable(double worldX, double worldY) const;
@@ -43,7 +42,7 @@ private:
 	float m_depth;
 	float m_deltaX;
 	float m_deltaY;
-	std::wstring m_texture;
+	Path m_texture;
 	size_t m_pointsPerWidth;
 	size_t m_pointsPerDepth;
 	std::vector<float> m_heights;

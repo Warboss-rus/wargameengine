@@ -46,14 +46,14 @@ public:
 	CGameView(sGameViewContext * context);
 	~CGameView();
 	void Init(sModule const& module);
-	void CreateSkybox(float size, std::wstring const& textureFolder);
+	void CreateSkybox(float size, const Path& textureFolder);
 	IUIElement * GetUI();
 	CModelManager& GetModelManager();
 	ISoundPlayer& GetSoundPlayer();
 	CTranslationManager& GetTranslationManager();
 	CRuler& GetRuler();
 	IRenderer& GetRenderer();
-	void NewShaderProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry);
+	void NewShaderProgram(const Path& vertex, const Path& fragment, const Path& geometry);
 	IShaderProgram const& GetShaderProgram() const;
 	CAsyncFileProvider& GetAsyncFileProvider();
 	ThreadPool& GetThreadPool();
@@ -63,7 +63,7 @@ public:
 
 	size_t GetViewportCount() const;
 	CViewportBase& GetViewport(size_t index = 0);
-	CViewportBase& AddViewport(std::unique_ptr<CViewportBase> && viewport);
+	CViewportBase& AddViewport(CViewportBase&& viewport);
 	CViewportBase& CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition);
 	void RemoveViewport(IViewport * viewport);
 
@@ -75,11 +75,11 @@ public:
 	void SetAnisotropyLevel(float level);
 	void ClearResources();
 	void SetWindowTitle(std::wstring const& title);
-	void Preload(std::wstring const& image);
-	void LoadModule(std::wstring const& module);
+	void Preload(const Path& image);
+	void LoadModule(const Path& module);
 	bool EnableVRMode(bool enable, bool mirrorToScreen = true);
-	void AddParticleEffect(std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
-	void SetSkyboxShaders(std::wstring const& vertex, std::wstring const& fragment);
+	void AddParticleEffect(const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
+	void SetSkyboxShaders(const Path& vertex, const Path& fragment);
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();
@@ -96,16 +96,16 @@ private:
 	CGameView& operator=(const CGameView&) = delete;
 
 	std::unique_ptr<IGameWindow> m_window;
-	IRenderer * m_renderer;
-	IViewHelper * m_viewHelper;
-	IInput * m_input;
+	IRenderer& m_renderer;
+	IViewHelper& m_viewHelper;
+	IInput& m_input;
 	std::unique_ptr<CGameModel> m_gameModel;
 	std::unique_ptr<CGameController> m_gameController;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
-	std::unique_ptr<ISoundPlayer> m_soundPlayer;
-	std::unique_ptr<ITextWriter> m_textWriter;
-	std::unique_ptr<IPhysicsEngine> m_physicsEngine;
-	std::vector<std::unique_ptr<CViewportBase>> m_viewports;
+	ISoundPlayer& m_soundPlayer;
+	ITextWriter& m_textWriter;
+	IPhysicsEngine& m_physicsEngine;
+	std::vector<CViewportBase> m_viewports;
 	std::unique_ptr<CSkyBox> m_skybox;
 	CUIElement m_ui;
 	ThreadPool m_threadPool;
@@ -120,5 +120,5 @@ private:
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;
 	size_t m_tableBufferSize;
 	CViewportBase * m_currentViewport;
-	long long m_lastFrameTime = 0;
+	std::chrono::high_resolution_clock::time_point m_lastFrameTime;
 };

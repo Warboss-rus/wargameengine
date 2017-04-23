@@ -75,7 +75,7 @@ bool CUIEdit::OnCharacterInput(wchar_t key)
 	return true;
 }
 
-bool CUIEdit::OnKeyPress(int key, int modifiers)
+bool CUIEdit::OnKeyPress(VirtualKey key, int modifiers)
 {
 	if (!m_visible) return false;
 	Invalidate();
@@ -87,29 +87,29 @@ bool CUIEdit::OnKeyPress(int key, int modifiers)
 	}
 	switch (key)
 	{
-	case KEY_LEFT:
+	case VirtualKey::KEY_LEFT:
 	{
 		if (m_pos > 0) m_pos--;
 		if (m_beginSelection > 0) m_beginSelection--;
 		return true;
 	}break;
-	case KEY_RIGHT:
+	case VirtualKey::KEY_RIGHT:
 	{
 		if (m_pos < m_text.size()) m_pos++;
 		if (m_beginSelection < m_text.size()) m_beginSelection++;
 		return true;
 	}break;
-	case KEY_HOME:
+	case VirtualKey::KEY_HOME:
 	{
 		m_pos = 0;
 		return true;
 	}break;
-	case KEY_END:
+	case VirtualKey::KEY_END:
 	{
 		m_pos = m_text.size();
 		return true;
 	}break;
-	case KEY_BACKSPACE:
+	case VirtualKey::KEY_BACKSPACE:
 	{
 		if (m_pos > 0)
 		{
@@ -118,7 +118,7 @@ bool CUIEdit::OnKeyPress(int key, int modifiers)
 			m_beginSelection--;
 		}
 	}break;
-	case KEY_DELETE:
+	case VirtualKey::KEY_DELETE:
 	{
 		if (m_pos != m_beginSelection)
 		{

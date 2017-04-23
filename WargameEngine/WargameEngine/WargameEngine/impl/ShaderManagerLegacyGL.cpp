@@ -125,25 +125,36 @@ std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring 
 			geometryShader = CompileShader(geometry, program->program, GL_GEOMETRY_SHADER);
 		}
 	}
-	glBindAttribLocation(program->program, 9, "weights");
-	glBindAttribLocation(program->program, 10, "weightIndices");
-	glLinkProgram(program->program);
-	glUseProgram(program->program);
-	int unfrm = glGetUniformLocation(program->program, "texture");
+	NewProgramImpl(program->program, vertexShader, framgentShader);
+
+	return std::move(program);
+}
+
+void CShaderManagerLegacyGL::NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader)
+{
+	glBindAttribLocation(program, 9, "weights");
+	glBindAttribLocation(program, 10, "weightIndices");
+	glLinkProgram(program);
+	glUseProgram(program);
+	int unfrm = glGetUniformLocation(program, "texture");
 	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(program->program, "shadowMap");
+	unfrm = glGetUniformLocation(program, "shadowMap");
 	glUniform1i(unfrm, 1);
-	unfrm = glGetUniformLocation(program->program, "specular");
+	unfrm = glGetUniformLocation(program, "specular");
 	glUniform1i(unfrm, 2);
-	unfrm = glGetUniformLocation(program->program, "bump");
+	unfrm = glGetUniformLocation(program, "bump");
 	glUniform1i(unfrm, 3);
-	glDetachShader(program->program, vertexShader);
+	glDetachShader(program, vertexShader);
 	glDeleteShader(vertexShader);
-	glDetachShader(program->program, framgentShader);
+	glDetachShader(program, framgentShader);
 	glDeleteShader(framgentShader);
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	glVertexAttrib4fv(glGetAttribLocation(program->program, "weights"), def);
-	return std::move(program);
+	glVertexAttrib4fv(glGetAttribLocation(program, "weights"), def);
+}
+
+std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */)
+{
+	return nullptr;
 }
 
 void CShaderManagerLegacyGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const

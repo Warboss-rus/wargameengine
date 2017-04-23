@@ -1,15 +1,16 @@
 #include "SkyBox.h"
 #include "TextureManager.h"
+#include "..\Utils.h"
 
-CSkyBox::CSkyBox(float width, float height, float length, std::wstring const& imageFolder, IRenderer & renderer, CTextureManager & texMan)
+CSkyBox::CSkyBox(float width, float height, float length, const Path& imageFolder, IRenderer & renderer, CTextureManager & texMan)
 	: m_height(height), m_width(width), m_length(length), m_renderer(renderer)
 {
-	m_images[0] = imageFolder + L"/right.bmp";
-	m_images[1] = imageFolder + L"/left.bmp";
-	m_images[2] = imageFolder + L"/back.bmp";
-	m_images[3] = imageFolder + L"/front.bmp";
-	m_images[4] = imageFolder + L"/top.bmp";
-	m_images[5] = imageFolder + L"/bottom.bmp";
+	m_images[0] = imageFolder + make_path("/right.bmp");
+	m_images[1] = imageFolder + make_path(L"/left.bmp");
+	m_images[2] = imageFolder + make_path(L"/back.bmp");
+	m_images[3] = imageFolder + make_path(L"/front.bmp");
+	m_images[4] = imageFolder + make_path(L"/top.bmp");
+	m_images[5] = imageFolder + make_path(L"/bottom.bmp");
 	m_texture = texMan.CreateCubemapTexture(m_images[0], m_images[1], m_images[2], m_images[3], m_images[4], m_images[5], TextureFlags::TEXTURE_NO_WRAP);
 }
 
@@ -81,12 +82,12 @@ void CSkyBox::Draw(CVector3f const& pos, float scale)
 		// Right side
 		m_renderer.SetTexture(m_images[0], false, TextureFlags::TEXTURE_NO_WRAP);
 		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, 0.0f, 0.0f),{ m_width, 0.0f, m_length },{ m_width, m_height, 0.0f },{ m_width, m_height, m_length } }, {}, texCoords);
-		m_renderer.SetTexture(L"");
+		m_renderer.UnbindTexture();
 		m_renderer.PopMatrix();
 	}
 }
 
-void CSkyBox::SetShaders(std::wstring const& vertex, std::wstring const& fragment)
+void CSkyBox::SetShaders(const Path& vertex, const Path& fragment)
 {
 	m_shader = m_renderer.GetShaderManager().NewProgram(vertex, fragment);
 }

@@ -10,6 +10,7 @@ import android.os.Vibrator;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.InputDevice;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -100,6 +101,16 @@ public class WargameEngineMobileGoogleVR extends Activity
             return true;
           }
         });
+	surfaceView.setOnGenericMotionListener(
+		new View.OnGenericMotionListener() {
+			@Override
+			public boolean onGenericMotion(View v, final MotionEvent event)	{
+				if (((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)) {
+					//gamepad axis
+				}
+				return true;
+			}
+		});
     gvrLayout.setPresentationView(surfaceView);
 
     // Add the GvrLayout to the View hierarchy.
@@ -165,6 +176,9 @@ public class WargameEngineMobileGoogleVR extends Activity
         || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
       return true;
     }
+	if (((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) && (event.getRepeatCount() == 0)) {
+		
+	}
     return super.dispatchKeyEvent(event);
   }
 
@@ -188,4 +202,5 @@ public class WargameEngineMobileGoogleVR extends Activity
   private native void nativeOnTouchEvent(long nativeApp, int action, float x, float y);
   private native void nativeOnPause(long nativeApp);
   private native void nativeOnResume(long nativeApp);
+  private native void nativeOnGamepadButtonEvent(long nativeApp, int action, int button);
 }

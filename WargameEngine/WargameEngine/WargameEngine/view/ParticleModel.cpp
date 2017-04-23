@@ -133,10 +133,9 @@ private:
 };
 }
 
-CParticleModel::CParticleModel(wstring const& file)
+CParticleModel::CParticleModel(const Path& file)
 {
-	ifstream istream;
-	OpenFile(istream, file);
+	ifstream istream(file);
 	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
 	std::unique_ptr<xml_document<>> doc = std::make_unique<xml_document<>>();
 	doc->parse<parse_trim_whitespace>(&content[0]);
@@ -145,7 +144,7 @@ CParticleModel::CParticleModel(wstring const& file)
 	xml_node<>* texture = root->first_node("texture");
 	if (texture)
 	{
-		m_texture = Utf8ToWstring(texture->first_attribute("path")->value());
+		m_texture = make_path(texture->first_attribute("path")->value());
 		m_textureFrameSize = GetVector2f(texture->first_attribute("frameSize")->value());
 	}
 	xml_node<>* particle = root->first_node("particle");
@@ -199,7 +198,7 @@ CParticleModel::CParticleModel(wstring const& file)
 	doc->clear();
 }
 
-std::wstring CParticleModel::GetTexture() const
+Path CParticleModel::GetTexture() const
 {
 	return m_texture;
 }

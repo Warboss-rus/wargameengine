@@ -114,7 +114,7 @@ CProjectile const& CGameModel::GetProjectile(size_t index) const
 	return m_projectiles[index];
 }
 
-void CGameModel::AddParticleEffect(const IParticleUpdater * updater, std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles)
+void CGameModel::AddParticleEffect(const IParticleUpdater * updater, const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles)
 {
 	m_particleEffects.emplace_back(updater, effectPath, position, scale, maxParticles);
 }
@@ -134,7 +134,7 @@ void CGameModel::RemoveParticleEffect(size_t index)
 	m_particleEffects.erase(m_particleEffects.begin() + index);
 }
 
-void CGameModel::ResetLandscape(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth)
+void CGameModel::ResetLandscape(float width, float depth, const Path& texture, size_t pointsPerWidth, size_t pointsPerDepth)
 {
 	m_landscape.Reset(width, depth, texture, pointsPerWidth, pointsPerDepth);
 }
@@ -175,7 +175,7 @@ std::unique_lock<std::mutex> CGameModel::LockModel()
 	return std::unique_lock<std::mutex>(m_modelLock);
 }
 
-void CGameModel::Update(long long timeSinceLastUpdate)
+void CGameModel::Update(std::chrono::microseconds timeSinceLastUpdate)
 {
 	for (size_t i = 0; i < m_objects.size(); ++i)
 	{

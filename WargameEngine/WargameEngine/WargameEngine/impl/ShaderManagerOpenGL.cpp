@@ -113,12 +113,11 @@ GLuint CompileShader(std::string const& shaderText, GLuint program, GLenum type)
 	return shader;
 }
 
-GLuint CompileShaderFromFile(std::wstring const& path, GLuint program, GLenum type)
+GLuint CompileShaderFromFile(const Path& path, GLuint program, GLenum type)
 {
 	std::string shaderText;
 	std::string line;
-	std::ifstream iFile;
-	OpenFile(iFile, path);
+	std::ifstream iFile(path);
 	while (std::getline(iFile, line))
 	{
 		shaderText += line + '\n';
@@ -127,7 +126,7 @@ GLuint CompileShaderFromFile(std::wstring const& path, GLuint program, GLenum ty
 	return CompileShader(shaderText, program, type);
 }
 
-std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry)
+std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(const Path& vertex, const Path& fragment, const Path& geometry)
 {
 	if (!GLEW_ARB_shader_objects)
 	{
@@ -150,42 +149,70 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(std::wstring co
 			geometryShader = CompileShaderFromFile(geometry, program->program, GL_GEOMETRY_SHADER);
 		}
 	}
-	glLinkProgram(program->program);
+	NewProgramImpl(program->program, vertexShader, framgentShader, geometryShader);
+
+	return std::move(program);
+}
+
+void CShaderManagerOpenGL::NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader, unsigned geometryShader)
+{
+	glLinkProgram(program);
 	GLint isLinked = 0;
-	glGetProgramiv(program->program, GL_LINK_STATUS, &isLinked);
+	glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
 	if (isLinked != GL_TRUE)
 	{
 		char buffer[1000];
 		int size = 0;
-		glGetProgramInfoLog(program->program, 1000, &size, buffer);
+		glGetProgramInfoLog(program, 1000, &size, buffer);
 		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
 	}
-	glUseProgram(program->program);
-	int unfrm = glGetUniformLocation(program->program, "mainTexture");
+	glUseProgram(program);
+	int unfrm = glGetUniformLocation(program, "mainTexture");
 	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(program->program, "cubemapTexture");
+	unfrm = glGetUniformLocation(program, "cubemapTexture");
 	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(program->program, "shadowMap");
+	unfrm = glGetUniformLocation(program, "shadowMap");
 	glUniform1i(unfrm, 1);
-	unfrm = glGetUniformLocation(program->program, "specular");
+	unfrm = glGetUniformLocation(program, "specular");
 	glUniform1i(unfrm, 2);
-	unfrm = glGetUniformLocation(program->program, "bump");
+	unfrm = glGetUniformLocation(program, "bump");
 	glUniform1i(unfrm, 3);
-	glDetachShader(program->program, vertexShader);
+	glDetachShader(program, vertexShader);
 	glDeleteShader(vertexShader);
-	glDetachShader(program->program, framgentShader);
+	glDetachShader(program, framgentShader);
 	glDeleteShader(framgentShader);
 	if (geometryShader)
 	{
-		glDetachShader(program->program, geometryShader);
+		glDetachShader(program, geometryShader);
 		glDeleteShader(geometryShader);
 	}
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	glVertexAttrib4fv(glGetAttribLocation(program->program, "weights"), def);
+	glVertexAttrib4fv(glGetAttribLocation(program, "weights"), def);
 	if (!m_programs.empty())
 	{
 		glUseProgram(m_activeProgram);
 	}
+}
+
+std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */)
+{
+	std::unique_ptr<COpenGLShaderProgram> program = std::make_unique<COpenGLShaderProgram>();
+	program->program = glCreateProgram();
+	GLuint vertexShader(0), framgentShader(0), geometryShader(0);
+	vertexShader = CompileShader(vertex.empty() ? defaultVertexShader : vertex, program->program, GL_VERTEX_SHADER);
+	framgentShader = CompileShader(fragment.empty() ? defaultFragmentShader : fragment, program->program, GL_FRAGMENT_SHADER);
+	if (!geometry.empty())
+	{
+		if (!GLEW_ARB_geometry_shader4)
+		{
+			LogWriter::WriteLine("Geometry Shaders(GL_ARB_geometry_shader4) are not supported");
+		}
+		else
+		{
+			geometryShader = CompileShader(geometry, program->program, GL_GEOMETRY_SHADER);
+		}
+	}
+	NewProgramImpl(program->program, vertexShader, framgentShader, geometryShader);
 
 	return std::move(program);
 }

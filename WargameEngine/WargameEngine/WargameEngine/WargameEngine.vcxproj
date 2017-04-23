@@ -42,7 +42,7 @@
     <ProjectGuid>{525B45EF-5FB2-495E-8F33-27363E097E50}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WargameEngine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -240,7 +240,7 @@
     <ClCompile Include="controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="controller\ScriptRegisterUI.cpp" />
     <ClCompile Include="model\Particle.cpp" />
-    <ClCompile Include="view\FixedCamera.cpp" />
+    <ClCompile Include="view\Camera.cpp" />
     <ClCompile Include="MemoryStream.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
     <ClCompile Include="model\Projectile.cpp" />
@@ -265,7 +265,6 @@
     <ClCompile Include="Ruler.cpp" />
     <ClCompile Include="controller\ScriptRegisterViewport.cpp" />
     <ClCompile Include="view\InputBase.cpp" />
-    <ClCompile Include="view\MirrorCamera.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
     <ClCompile Include="UI\UIButton.cpp" />
     <ClCompile Include="UI\UICheckBox.cpp" />
@@ -283,8 +282,6 @@
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\BuiltInImageReaders.cpp" />
-    <ClCompile Include="view\CameraFirstPerson.cpp" />
-    <ClCompile Include="view\CameraStrategy.cpp" />
     <ClCompile Include="view\ColladaModelFactory.cpp" />
     <ClCompile Include="view\GameView.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
@@ -314,7 +311,8 @@
     <ClInclude Include="IPhysicsEngine.h" />
     <ClInclude Include="model\Light.h" />
     <ClInclude Include="model\Particle.h" />
-    <ClInclude Include="view\FixedCamera.h" />
+    <ClInclude Include="Typedefs.h" />
+    <ClInclude Include="view\Camera.h" />
     <ClInclude Include="IMemoryStream.h" />
     <ClInclude Include="ITask.h" />
     <ClInclude Include="MemoryStream.h" />
@@ -347,17 +345,13 @@
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
     <ClInclude Include="view\InputBase.h" />
-    <ClInclude Include="view\MirrorCamera.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
     <ClInclude Include="UI\UIScrollBar.h" />
     <ClInclude Include="UI\UIWindow.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="view\BuiltInImageReaders.h" />
-    <ClInclude Include="view\CameraFirstPerson.h" />
-    <ClInclude Include="view\CameraStrategy.h" />
     <ClInclude Include="view\ColladaModelFactory.h" />
-    <ClInclude Include="view\ICamera.h" />
     <ClInclude Include="view\IImageReader.h" />
     <ClInclude Include="view\IInput.h" />
     <ClInclude Include="view\IModelReader.h" />

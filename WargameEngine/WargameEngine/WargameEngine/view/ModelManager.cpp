@@ -17,10 +17,9 @@ CModelManager::~CModelManager()
 {
 }
 
-sBounding LoadBoundingFromFile(std::wstring const& path, float & scale, double * rotation)
+sBounding LoadBoundingFromFile(const Path& path, float & scale, double * rotation)
 {
-	std::ifstream iFile;
-	OpenFile(iFile, path);
+	std::ifstream iFile(path);
 	sBounding::sCompound compound;
 	std::string line;
 	if (!iFile.good()) return sBounding(compound);
@@ -57,11 +56,11 @@ sBounding LoadBoundingFromFile(std::wstring const& path, float & scale, double *
 	return bounding;
 }
 
-void CModelManager::LoadIfNotExist(std::wstring const& path)
+void CModelManager::LoadIfNotExist(const Path& path)
 {
 	if(m_models.find(path) == m_models.end())
 	{
-		std::wstring boundingPath = path.substr(0, path.find_last_of('.')) + L".txt";
+		Path boundingPath = path.substr(0, path.find_last_of('.')) + make_path(L".txt");
 		float scale = 1.0;
 		double rotation[3] = { 0.0, 0.0, 0.0 };
 		m_bbManager->AddBounding(path, LoadBoundingFromFile(m_asyncFileProvider->GetModelAbsolutePath(boundingPath), scale, rotation));
@@ -80,7 +79,7 @@ void CModelManager::LoadIfNotExist(std::wstring const& path)
 					return;
 				}
 			}
-			throw std::runtime_error("Cannot load model " + WStringToUtf8(path) + ". None of installed readers cannot load it");
+			throw std::runtime_error("Cannot load model " + to_string(path) + ". None of installed readers cannot load it");
 		}, [=]() {
 			 m_models[path]->PreloadTextures(*m_renderer);
 		}, [](std::exception const& e) {
@@ -89,14 +88,14 @@ void CModelManager::LoadIfNotExist(std::wstring const& path)
 	}
 }
 
-void CModelManager::DrawModel(std::wstring const& path, IObject* object, bool vertexOnly)
+void CModelManager::DrawModel(const Path& path, IObject* object, bool vertexOnly)
 {
 	LoadIfNotExist(path);
 	std::unique_lock<std::mutex> lk(m_mutex);
 	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning);
 }
 
-std::vector<std::string> CModelManager::GetAnimations(std::wstring const& path)
+std::vector<std::string> CModelManager::GetAnimations(const Path& path)
 {
 	return m_models[path]->GetAnimations();
 }

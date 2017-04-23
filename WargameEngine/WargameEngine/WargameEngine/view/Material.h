@@ -1,4 +1,4 @@
-#include <string>
+#include "../Typedefs.h"
 
 class ICachedTexture;
 
@@ -17,8 +17,8 @@ struct sMaterial
 	float diffuse[3];
 	float specular[3];
 	float shininess = 0.0f;
-	std::wstring texture;
-	std::wstring specularMap;
-	std::wstring bumpMap;
+	Path texture;
+	Path specularMap;
+	Path bumpMap;
 	ICachedTexture* texturePtr = nullptr;
 };

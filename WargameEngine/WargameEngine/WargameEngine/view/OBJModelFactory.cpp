@@ -43,15 +43,14 @@ FaceIndex ParseFaceIndex(std::string const& str)
 	return res;
 }
 
-std::map<std::string, sMaterial> LoadMTL(std::wstring const& path)
+std::map<std::string, sMaterial> LoadMTL(const Path& path)
 {
 	std::map<std::string, sMaterial> materials;
-	std::ifstream iFile;
-	OpenFile(iFile, path);
+	std::ifstream iFile(path);
 	if (!iFile.good())
 	{
 		iFile.close();
-		LogWriter::WriteLine(L"Error loading MTL " + path);
+		LogWriter::WriteLine("Error loading MTL " + to_string(path));
 		return materials;
 	}
 	std::string line;
@@ -106,29 +105,29 @@ std::map<std::string, sMaterial> LoadMTL(std::wstring const& path)
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->texture = Utf8ToWstring(texture);
+			lastMaterial->texture = make_path(texture);
 		}
 		if ((type == "map_bump" || type == "bump") && lastMaterial) //bump texture
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->bumpMap = Utf8ToWstring(texture);
+			lastMaterial->bumpMap = make_path(texture);
 		}
 		if (type == "map_specular" && lastMaterial) //custom specular map extension
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->texture = Utf8ToWstring(texture);
+			lastMaterial->texture = make_path(texture);
 		}
 	}
 	iFile.close();
 	return materials;
 }
 
-std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::wstring const& filePath)
+std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size_t /*size*/, const C3DModel& dummyModel, const Path& filePath)
 {
-	auto slashPos = filePath.find_last_of(L"\\/");
-	std::wstring parentPath = slashPos == filePath.npos ? filePath : filePath.substr(0, slashPos);
+	auto slashPos = filePath.find_last_of(make_path(L"\\/"));
+	Path parentPath = slashPos == filePath.npos ? filePath : filePath.substr(0, slashPos);
 	std::vector<CVector3f> tempVertices;
 	std::vector<CVector2f> tempTextureCoords;
 	std::vector<CVector3f> tempNormals;
@@ -225,7 +224,7 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 			{
 				mtlPath = mtlPath.substr(2);
 			}
-			materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, Utf8ToWstring(mtlPath))));
+			materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, make_path(mtlPath))));
 		}
 		if(type == "usemtl")//apply material
 		{
@@ -280,10 +279,10 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 	return result;
 }
 
-bool CObjModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& filePath) const
+bool CObjModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, const Path& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
-	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
-	return extension == L"obj";
+	return extension == make_path(L"obj");
 }

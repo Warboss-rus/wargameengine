@@ -290,12 +290,12 @@ void ConvertBgra(unsigned char * data, size_t count, unsigned short bpp)
 	}
 }
 
-bool CBmpImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/) const
+bool CBmpImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, const Path& /*filePath*/) const
 {
 	return strncmp((char*)data, "BM", 2) == 0;
 }
 
-CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, sReaderParameters const& params)
+CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, const Path& /*filePath*/, sReaderParameters const& params)
 {
 	CReadMemoryStream stream(reinterpret_cast<char*>(data));
 	stream.Seek(0x0A);
@@ -329,14 +329,14 @@ CImage CBmpImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	return CImage(data, width, height, bpp, flags);
 }
 
-bool CTgaImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& filePath) const
+bool CTgaImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, const Path& filePath) const
 {
-	std::wstring extension = filePath.substr(filePath.find_last_of('.') + 1);
+	Path extension = filePath.substr(filePath.find_last_of('.') + 1);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
-	return extension == L"tga" && (data[2] == 2 || data[2] == 10);//non-rgb texture
+	return extension == make_path("tga") && (data[2] == 2 || data[2] == 10);//non-rgb texture
 }
 
-CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, sReaderParameters const& params)
+CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, const Path& /*filePath*/, sReaderParameters const& params)
 {
 	unsigned int width = data[13] * 256 + data[12];
 	unsigned int height = data[15] * 256 + data[14];
@@ -370,12 +370,12 @@ CImage CTgaImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	return result;
 }
 
-bool CDdsImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/) const
+bool CDdsImageReader::ImageIsSupported(unsigned char * data, size_t /*size*/, const Path& /*filePath*/) const
 {
 	return strncmp((char*)data, "DDS ", 4) == 0;
 }
 
-CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::wstring const& /*filePath*/, sReaderParameters const& params)
+CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, const Path& /*filePath*/, sReaderParameters const& params)
 {
 	struct DDS_PIXELFORMAT
 	{
@@ -497,12 +497,12 @@ CImage CDdsImageReader::ReadImage(unsigned char * data, size_t /*size*/, std::ws
 	return result;
 }
 
-bool CStbImageReader::ImageIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& /*filePath*/) const
+bool CStbImageReader::ImageIsSupported(unsigned char * /*data*/, size_t /*size*/, const Path& /*filePath*/) const
 {
 	return true;
 }
 
-CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, std::wstring const& /*filePath*/, sReaderParameters const& params)
+CImage CStbImageReader::ReadImage(unsigned char * data, size_t size, const Path& /*filePath*/, sReaderParameters const& params)
 {
 	int width, height, bpp;
 	unsigned char * newData = stbi_load_from_memory(data, static_cast<int>(size), &width, &height, &bpp, 4);

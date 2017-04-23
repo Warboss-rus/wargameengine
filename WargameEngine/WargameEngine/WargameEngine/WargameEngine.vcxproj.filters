@@ -36,9 +36,6 @@
     <Filter Include="Source Files\view\Readers">
       <UniqueIdentifier>{3277a43f-59f5-4307-943b-4083e49616d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\view\Cameras">
-      <UniqueIdentifier>{4e8f5037-83f9-460d-9a61-afa6cd100b7b}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Ruler.cpp">
@@ -215,18 +212,6 @@
     <ClCompile Include="controller\ScriptRegisterViewport.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
-    <ClCompile Include="view\CameraFirstPerson.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="view\CameraStrategy.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="view\FixedCamera.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="view\MirrorCamera.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
     <ClCompile Include="model\Particle.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -234,6 +219,9 @@
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\InputBase.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Camera.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
@@ -374,9 +362,6 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\GameView.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\IRenderer.h">
@@ -529,18 +514,6 @@
     <ClInclude Include="controller\ScriptViewportProtocol.h">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClInclude>
-    <ClInclude Include="view\CameraFirstPerson.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="view\CameraStrategy.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="view\FixedCamera.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="view\MirrorCamera.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
     <ClInclude Include="IPhysicsEngine.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -554,6 +527,12 @@
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="array_view.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Camera.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="Typedefs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

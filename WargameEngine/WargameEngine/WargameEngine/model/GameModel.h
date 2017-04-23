@@ -32,14 +32,14 @@ public:
 	void AddProjectile(CProjectile const& projectile);
 	size_t GetProjectileCount() const;
 	CProjectile const& GetProjectile(size_t index) const;
-	void AddParticleEffect(const IParticleUpdater * updater, std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
+	void AddParticleEffect(const IParticleUpdater * updater, const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
 	size_t GetParticleCount() const;
 	CParticleEffect const& GetParticleEffect(size_t index) const;
 	void RemoveParticleEffect(size_t index);
-	void Update(long long timeSinceLastUpdate);
+	void Update(std::chrono::microseconds timeSinceLastUpdate);
 	void RemoveProjectile(unsigned int index);
 	CLandscape & GetLandscape();
-	void ResetLandscape(float width, float depth, std::wstring const& texture, size_t pointsPerWidth, size_t pointsPerDepth);
+	void ResetLandscape(float width, float depth, const Path& texture, size_t pointsPerWidth, size_t pointsPerDepth);
 	void AddLight();
 	void RemoveLight(size_t index);
 	CLight& GetLight(size_t index);

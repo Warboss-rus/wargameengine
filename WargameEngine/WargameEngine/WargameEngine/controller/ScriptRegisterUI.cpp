@@ -320,7 +320,7 @@ void RegisterUI(IScriptHandler & handler, IUIElement * uiRoot, CTranslationManag
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (theme file)");
 		IUIElement * c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		std::wstring file = args.GetWStr(1);
+		Path file = args.GetPath(1);
 		std::shared_ptr<CUITheme> theme = std::make_shared<CUITheme>();
 		theme->Load(file);
 		c->SetTheme(theme);

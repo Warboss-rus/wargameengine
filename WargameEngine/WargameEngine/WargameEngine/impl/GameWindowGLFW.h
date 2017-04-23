@@ -26,7 +26,7 @@ public:
 	virtual void ToggleFullscreen() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
 	virtual bool EnableVRMode(bool show, VRViewportFactory const& viewportFactory = VRViewportFactory()) override;
-	virtual IInput& ResetInput() override;
+	virtual IInput& GetInput() override;
 	virtual IRenderer& GetRenderer() override;
 	virtual IViewHelper& GetViewHelper() override;
 	virtual void GetWindowSize(int& width, int& height) override;

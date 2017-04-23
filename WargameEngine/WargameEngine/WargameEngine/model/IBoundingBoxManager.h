@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <string>
+#include "../Typedefs.h"
 #include <vector>
 #include "../view/Vector3.h"
 
@@ -50,8 +50,8 @@ private:
 class IBoundingBoxManager
 {
 public:
-	virtual void AddBounding(std::wstring const& path, sBounding const& bounding) = 0;
-	virtual sBounding GetBounding(std::wstring const& path) const = 0;
+	virtual void AddBounding(const Path& path, sBounding const& bounding) = 0;
+	virtual sBounding GetBounding(const Path& path) const = 0;
 
 	virtual ~IBoundingBoxManager() {}
 };

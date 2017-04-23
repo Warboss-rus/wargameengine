@@ -9,7 +9,7 @@
 #include "../Utils.h"
 #include "../MemoryStream.h"
 
-std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::wstring const& /*filePath*/)
+std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, const Path& /*filePath*/)
 {
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
@@ -55,7 +55,7 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 		stream.ReadData(materials[key].diffuse, sizeof(float) * 3);
 		stream.ReadData(materials[key].specular, sizeof(float) * 3);
 		materials[key].shininess = stream.ReadFloat();
-		materials[key].texture = Utf8ToWstring(stream.ReadString());
+		materials[key].texture = make_path(stream.ReadString());
 	}
 	materialManager =  CMaterialManager(materials);
 	auto result = std::make_unique<C3DModel>(dummyModel);
@@ -64,10 +64,10 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 	return result;
 }
 
-bool CWBMModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& filePath) const
+bool CWBMModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, const Path& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
-	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
-	return extension == L"wbm";
+	return extension == make_path(L"wbm");
 }

@@ -7,8 +7,8 @@
 class CParticleModel : public IParticleUpdater
 {
 public:
-	CParticleModel(std::wstring const& file);
-	std::wstring GetTexture() const;
+	CParticleModel(const Path& file);
+	Path GetTexture() const;
 	CVector2f GetTextureFrameSize() const;
 	CVector2f GetParticleSize() const;
 	bool HasDifferentTexCoords() const;
@@ -34,7 +34,7 @@ public:
 private:
 	std::unique_ptr<IEmitter> m_emitter;
 	std::unique_ptr<IUpdater> m_updater;
-	std::wstring m_texture;
+	Path m_texture;
 	float m_minLifeTime;
 	float m_maxLifeTime;
 	float m_minScale;

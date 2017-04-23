@@ -1,12 +1,12 @@
-#include <string>
 #pragma once
+#include "../Typedefs.h"
 
 class CUITheme
 {
 public:
 	CUITheme();
-	void Load(std::wstring const& filename);
-	std::wstring texture;
+	void Load(const Path& filename);
+	Path texture;
 	float defaultColor[4];
 	float textfieldColor[4];
 	struct sText

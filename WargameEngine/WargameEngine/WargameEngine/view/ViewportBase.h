@@ -1,21 +1,27 @@
 #pragma once
+#include "Camera.h"
+#include "IViewHelper.h"
 #include "IViewport.h"
 #include <map>
 #include <vector>
-#include "IViewHelper.h"
 
 class IViewHelper;
 class IOcclusionQuery;
 class IObject;
+class IInput;
 
 class CViewportBase : public IViewport
 {
 public:
-	CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper & renderer, bool onScreen, bool resize);
+	CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper& renderer, IInput& input, bool onScreen, bool resize);
+	CViewportBase(const CViewportBase& other) = delete;
+	CViewportBase(CViewportBase&& other) = default;
+	CViewportBase& operator=(const CViewportBase& other) = delete;
+	CViewportBase& operator=(CViewportBase&& other) = default;
 	~CViewportBase();
 
 	//IViewport
-	const ICachedTexture & GetTexture(size_t index) const override;
+	const ICachedTexture& GetTexture(size_t index) const override;
 	const float* GetProjectionMatrix() const override;
 	const float* GetViewMatrix() const override;
 	int GetX() const override { return m_x; }
@@ -23,15 +29,14 @@ public:
 	int GetWidth() const override { return m_width; }
 	int GetHeight() const override { return m_height; }
 
-	ICamera& GetCamera();
-	ICamera const& GetCamera() const;
-	void SetCamera(std::unique_ptr<ICamera> && camera);
+	Camera& GetCamera();
+	Camera const& GetCamera() const;
 	void AttachNewTexture(CachedTextureType type, int textureIndex = -1);
 	void Bind();
 	void Unbind();
 	bool IsDepthOnly() const;
 	bool DrawUI() const;
-	IOcclusionQuery & GetOcclusionQuery(const IBaseObject* object);
+	IOcclusionQuery& GetOcclusionQuery(const IBaseObject* object);
 	void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f);
 	void SetClippingPlanes(float near = 1.0, float far = 1000.0);
 	bool PointIsInViewport(int x, int y) const;
@@ -41,13 +46,13 @@ public:
 	IViewport* GetShadowViewport() const { return m_shadowMapViewport; }
 
 private:
-	std::unique_ptr<ICamera> m_camera;
+	Camera m_camera;
 	int m_x;
 	int m_y;
 	int m_width;
 	int m_height;
 	float m_fieldOfView;
-	IViewHelper & m_renderer;
+	IViewHelper* m_renderer;
 	float m_projectionMatrix[16];
 	float m_viewMatrix[16];
 	float m_polygonOffsetFactor = 0.0f;

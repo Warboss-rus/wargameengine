@@ -94,6 +94,11 @@ std::unique_ptr<IShaderProgram> CVulkanShaderManager::NewProgram(std::wstring co
 	return std::move(program);
 }
 
+std::unique_ptr<IShaderProgram> CVulkanShaderManager::NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */)
+{
+	return nullptr;
+}
+
 void CVulkanShaderManager::PushProgram(IShaderProgram const& program) const
 {
 	auto& vulkanProgram = reinterpret_cast<const CVulkanShaderProgram&>(program);

@@ -3,12 +3,12 @@
 #ifdef _WINDOWS
 #include <Windows.h>
 
-std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const& mask, bool recursive)
+std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive)
 {
-	std::vector<std::wstring> result;
+	std::vector<Path> result;
 	WIN32_FIND_DATAW FindFileData;
 	HANDLE hFind;
-	std::vector<std::wstring> dir;
+	std::vector<Path> dir;
 	hFind=FindFirstFileW(((!path.empty())?path + L"\\" + mask:mask).c_str(), &FindFileData);
 	if (hFind != INVALID_HANDLE_VALUE)
 		do{
@@ -30,7 +30,7 @@ std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const&
 	{
 		for (size_t i = 0; i < dir.size(); ++i)
 		{
-			std::vector<std::wstring> temp = GetFiles(dir[i], mask, recursive);
+			std::vector<Path> temp = GetFiles(dir[i], mask, recursive);
 			for (auto j = temp.begin(); j != temp.end(); ++j)
 			{
 				result.push_back(path + L"\\" + *j);
@@ -40,7 +40,6 @@ std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const&
 	return result;
 }
 #else
-#include "Utils.h"
 #include <unistd.h>
 #include <cstring>
 #include <dirent.h>
@@ -69,12 +68,11 @@ bool match(char const *needle, char const *haystack) {
 	return *haystack == '\0';
 }
 
-std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const& mask, bool recursive)
+std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive)
 {
-    std::vector<std::wstring> result;
-    std::vector<std::wstring> dirs;
-	std::string smask = WStringToUtf8(mask);
-    DIR *d = opendir(WStringToUtf8(path).c_str());
+    std::vector<Path> result;
+    std::vector<Path> dirs;
+    DIR *d = opendir(path.c_str());
     struct dirent *dir;
     if (d)
     {
@@ -85,13 +83,13 @@ std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const&
 
             if (dir->d_type == DT_DIR)
             {
-                dirs.push_back(path + L"/" + Utf8ToWstring(dir->d_name));
+                dirs.push_back(path + "/" + dir->d_name);
             }
             else
             {
-				if (match(smask.c_str(), dir->d_name))
+				if (match(mask.c_str(), dir->d_name))
 				{
-					result.push_back(Utf8ToWstring(dir->d_name));
+					result.push_back(dir->d_name);
 				}
             }
         }
@@ -101,10 +99,10 @@ std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const&
     {
         for (size_t i = 0; i < dirs.size(); ++i)
         {
-            std::vector<std::wstring> temp = GetFiles(dirs[i], mask, recursive);
+            std::vector<Path> temp = GetFiles(dirs[i], mask, recursive);
             for (auto i = temp.begin(); i != temp.end(); ++i)
             {
-                    result.push_back(path + L"/" + *i);
+                    result.push_back(path + "/" + *i);
             }
         }
     }

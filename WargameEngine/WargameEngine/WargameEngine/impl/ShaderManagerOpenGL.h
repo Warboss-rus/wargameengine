@@ -9,7 +9,8 @@ class CShaderManagerOpenGL : public IShaderManager
 public:
 	CShaderManagerOpenGL();
 	~CShaderManagerOpenGL();
-	std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
+	std::unique_ptr<IShaderProgram> NewProgram(const Path& vertex = Path(), const Path& fragment = Path(), const Path& geometry = Path()) override;
+	std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */) override;
 	void PushProgram(IShaderProgram const& shaderProgram) const override;
 	void PopProgram() const override;
 
@@ -40,6 +41,7 @@ private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	ShaderProgramCache& GetProgramCache() const;
 	int GetUniformLocation(std::string const& uniform) const;
+	void NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader, unsigned geometryShader);
 		
 	mutable std::vector<unsigned int> m_programs;
 	mutable unsigned int m_activeProgram;

@@ -1,6 +1,6 @@
 #include "Particle.h"
 
-CParticleEffect::CParticleEffect(const IParticleUpdater * updater, std::wstring const& effectPath, CVector3f const& position, float scale, size_t maxParticles)
+CParticleEffect::CParticleEffect(const IParticleUpdater* updater, const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles)
 	: m_updater(updater), m_maxParticles(maxParticles), m_effectPath(effectPath), m_center(position), m_scale(scale)
 {
 #ifdef _DEBUG
@@ -36,9 +36,9 @@ float CParticleEffect::GetScale() const
 	return m_scale;
 }
 
-void CParticleEffect::Update(long long deltaTime)
+void CParticleEffect::Update(std::chrono::microseconds deltaTime)
 {
-	float ftime = static_cast<float>(deltaTime) / 1000.0f;
+	float ftime = std::chrono::duration<float>(deltaTime).count();
 	size_t particlesEmmitted = 0;
 	for (auto& particle : m_particles)
 	{
@@ -73,7 +73,7 @@ void CParticleEffect::Update(long long deltaTime)
 	}*/
 }
 
-std::wstring CParticleEffect::GetEffectPath() const
+Path CParticleEffect::GetEffectPath() const
 {
 	return m_effectPath;
 }

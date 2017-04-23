@@ -8,7 +8,7 @@ class CObjectGroup : public IObject
 {
 public:
 	CObjectGroup(IGameModel & model);
-	std::wstring GetPathToModel() const override;
+	Path GetPathToModel() const override;
 	void Move(float dx, float dy, float dz) override;
 	void SetCoords(float x, float y, float z) override;
 	void SetCoords(CVector3f const& coords) override;
@@ -40,17 +40,17 @@ public:
 	void PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
-	void AddSecondaryModel(std::wstring const& model) override;
-	void RemoveSecondaryModel(std::wstring const& model) override;
+	void AddSecondaryModel(const Path& model) override;
+	void RemoveSecondaryModel(const Path& model) override;
 	size_t GetSecondaryModelsCount() const override;
-	std::wstring GetSecondaryModel(size_t index) const override;
+	Path GetSecondaryModel(size_t index) const override;
 	eAnimationLoopMode GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
-	void Update(long long timeSinceLastUpdate) override;
+	void Update(std::chrono::microseconds timeSinceLastUpdate) override;
 	std::vector<sTeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
-	void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) override;
-	std::map<std::wstring, std::wstring> const& GetReplaceTextures() const override;
+	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
+	std::map<Path, Path> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
 	virtual IObject* GetFullObject() override;
 	virtual CSignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) override;

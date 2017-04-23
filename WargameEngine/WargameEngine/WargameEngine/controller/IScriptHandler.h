@@ -6,6 +6,7 @@
 #include <map>
 #include <algorithm>
 #include <iterator>
+#include "../Typedefs.h"
 
 struct FunctionArgument;
 typedef std::vector<FunctionArgument> FunctionArguments;
@@ -20,6 +21,7 @@ public:
 	virtual bool GetBool(int index) const = 0;
 	virtual std::string GetStr(int index) const = 0;
 	virtual std::wstring GetWStr(int index) const = 0;
+	virtual Path GetPath(int index) const = 0;
 	virtual int GetInt(int index) const = 0;
 	virtual long GetLong(int index) const = 0;
 	virtual size_t GetSizeT(int index) const = 0;
@@ -113,7 +115,7 @@ class IScriptHandler
 public:
 	virtual ~IScriptHandler() {}
 
-	virtual void RunScript(std::wstring const& path) = 0;
+	virtual void RunScript(const Path& path) = 0;
 	virtual void CallFunction(std::wstring const& funcName, FunctionArguments const& arguments = FunctionArguments()) = 0;
 	virtual void RegisterConstant(std::wstring const& name, FunctionArgument const& value) = 0;
 	typedef std::function<FunctionArgument(IArguments const& args)> FunctionHandler;

@@ -1,4 +1,5 @@
 #include "GameWindowGLFW.h"
+#define RENDERER_NO_VULKAN
 #ifndef RENDERER_NO_VULKAN
 #include "VulkanRenderer.h"
 #endif
@@ -160,6 +161,7 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	{
 		return;
 	}
+	m_input = std::make_unique<CInputGLFW>(m_window);
 	glfwMakeContextCurrent(m_window);
 	glfwSetWindowUserPointer(m_window, this);
 
@@ -344,9 +346,8 @@ bool CGameWindowGLFW::EnableVRMode(bool enable, VRViewportFactory const& viewpor
 	return true;
 }
 
-IInput& CGameWindowGLFW::ResetInput()
+IInput& CGameWindowGLFW::GetInput()
 {
-	m_input = std::make_unique<CInputGLFW>(m_window);
 	return *m_input;
 }
 

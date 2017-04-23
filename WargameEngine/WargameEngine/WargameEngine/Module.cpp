@@ -27,10 +27,9 @@ std::wstring GetParent(std::wstring const& path)
 	return pos == path.npos ? L"" : path.substr(0, pos + 1);
 }
 
-void sModule::Load(std::wstring const& filename)
+void sModule::Load(Path const& filename)
 {
-	std::wifstream iFile;
-	OpenFile(iFile, filename);
+	std::wifstream iFile(filename);
 	std::wstring line;
 	std::wstring key;
 	std::wstring value;
@@ -48,11 +47,11 @@ void sModule::Load(std::wstring const& filename)
 		else if (key == L"Author") author = value;
 		else if (key == L"Site") site = value;
 		else if (key == L"Playable") playable = std::stoi(value.c_str()) != 0;
-		else if (key == L"Folder") folder = AddSlash(GetParent(filename) + value);
-		else if (key == L"Script") script = value;
-		else if (key == L"Models") models = AddSlash(value);
-		else if (key == L"Textures") textures = AddSlash(value);
-		else if (key == L"Shaders") shaders = AddSlash(value);
+		else if (key == L"Folder") folder = make_path(AddSlash(GetParent(to_wstring(filename)) + value));
+		else if (key == L"Script") script = make_path(value);
+		else if (key == L"Models") models = make_path(AddSlash(value));
+		else if (key == L"Textures") textures = make_path(AddSlash(value));
+		else if (key == L"Shaders") shaders = make_path(AddSlash(value));
 	}
 
 	iFile.close();
