@@ -33,7 +33,7 @@ void CInputAndroid::HandleInput(AInputEvent* event)
 		switch (AInputEvent_getSource(event))
 		{
 		case AINPUT_SOURCE_KEYBOARD:
-			OnKeyDown(AKeyEvent_getKeyCode(event), 0);
+			OnKeyDown(KeycodeToVirtualKey(AKeyEvent_getKeyCode(event)), AKeyEvent_getKeyCode(event));
 		}
 	}
 }
@@ -76,7 +76,12 @@ int CInputAndroid::GetMouseY() const
 	return 0;//Return last touch position
 }
 
-VirtualKey CInputAndroid::KeycodeToVirtualKey(int key) const
+bool CInputAndroid::IsKeyPressed(VirtualKey key) const
 {
-	return KEY_UNKNOWN;
+	return false;
+}
+
+VirtualKey CInputAndroid::KeycodeToVirtualKey(int key)
+{
+	return VirtualKey::KEY_UNKNOWN;
 }

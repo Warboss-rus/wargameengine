@@ -181,7 +181,7 @@ CShaderManagerDirectX::sConstantBuffer* CShaderManagerDirectX::FindBuffer(std::s
 	return nullptr;
 }
 
-std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(std::wstring const& vertex /*= ""*/, std::wstring const& fragment /*= ""*/, std::wstring const& geometry /*= ""*/)
+std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(const Path& vertex /*= ""*/, const Path& fragment /*= ""*/, const Path& geometry /*= ""*/)
 {
 	ProgramCacheKey key = std::make_tuple(vertex, fragment, geometry);
 	auto it = m_programsCache.find(key);
@@ -208,6 +208,40 @@ std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(std::wstring c
 		}
 
 		
+		if (program.m_VS) ReflectConstantBuffers(program.m_VS, program, 0);
+		if (PS) ReflectConstantBuffers(PS, program, 1);
+		if (GS) ReflectConstantBuffers(GS, program, 1);
+	}
+	return std::make_unique<CDirectXShaderProgram>(&it->second);
+}
+
+std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgramSource(const std::string& vertex /*= ""*/, const std::string& fragment /*= ""*/, const std::string& geometry /*= ""*/)
+{
+	SourceProgramCacheKey key = std::make_tuple(vertex, fragment, geometry);
+	auto it = m_sourceProgramCache.find(key);
+	if (it == m_sourceProgramCache.end())
+	{
+		it = m_sourceProgramCache.emplace(std::make_pair(key, CDirectXShaderProgramImpl())).first;
+		auto& program = it->second;
+		CComPtr<ID3D10Blob> PS, GS;
+		CompileShader(L"", "VShader", "vs_4_0", vertex, &program.m_VS);
+		CompileShader(L"", "PShader", "ps_4_0", fragment, &PS);
+		if (!geometry.empty()) CompileShader(L"", "GShader", "gs_4_0", geometry, &GS);
+
+		if (program.m_VS)
+		{
+			m_dev->CreateVertexShader(program.m_VS->GetBufferPointer(), program.m_VS->GetBufferSize(), NULL, &program.pVS);
+		}
+		if (PS)
+		{
+			m_dev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &program.pPS);
+		}
+		if (GS)
+		{
+			m_dev->CreateGeometryShader(GS->GetBufferPointer(), GS->GetBufferSize(), NULL, &program.pGS);
+		}
+
+
 		if (program.m_VS) ReflectConstantBuffers(program.m_VS, program, 0);
 		if (PS) ReflectConstantBuffers(PS, program, 1);
 		if (GS) ReflectConstantBuffers(GS, program, 1);

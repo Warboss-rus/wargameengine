@@ -124,10 +124,10 @@ void android_main(struct android_app* state) {
 	sGameViewContext context;
 	if (context.module.name.empty())
 	{
-		context.module.script = L"main.lua";
-		context.module.textures = L"texture/";
-		context.module.models = L"models/";
-		context.module.folder = L"/sdcard/WargameEngine/";
+		context.module.script = "main.lua";
+		context.module.textures = "texture/";
+		context.module.models = "models/";
+		context.module.folder = "/sdcard/WargameEngine/";
 	}
 	try
 	{

@@ -6,6 +6,9 @@
 #include "../LogWriter.h"
 #include "../Module.h"
 
+namespace
+{
+
 class COpenGLShaderProgram : public IShaderProgram
 {
 public:
@@ -37,6 +40,39 @@ private:
 	GLuint m_cache;
 };
 
+GLuint CompileShader(const std::string& shaderText, GLuint program, GLenum type)
+{
+	GLuint shader = glCreateShader(type);
+	glAttachShader(program, shader);
+	GLcharARB const * text = shaderText.c_str();
+	glShaderSource(shader, 1, &text, NULL);
+	glCompileShader(shader);
+	GLint compileStatus;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
+	if (compileStatus != GL_TRUE)
+	{
+		char buffer[1000];
+		int size = 0;
+		glGetShaderInfoLog(shader, 1000, &size, buffer);
+		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
+	}
+	return shader;
+}
+
+GLuint CompileShaderFromFile(const Path& path, GLuint program, GLenum type)
+{
+	std::string shaderText;
+	std::string line;
+	std::ifstream iFile(path);
+	while (std::getline(iFile, line))
+	{
+		shaderText += line + '\n';
+	}
+	iFile.close();
+	return CompileShader(shaderText, program, type);
+}
+}
+
 CShaderManagerLegacyGL::CShaderManagerLegacyGL()
 {
 	m_programs.push_back(0);
@@ -55,34 +91,7 @@ void CShaderManagerLegacyGL::PopProgram() const
 	glUseProgram(m_programs.back());
 }
 
-GLuint CompileShader(std::wstring const& path, GLuint program, GLenum type)
-{
-	std::string shaderText;
-	std::string line;
-	std::ifstream iFile(path);
-	while(std::getline(iFile, line))
-	{
-		shaderText += line + '\n';
-	}
-	iFile.close();
-	GLuint shader = glCreateShader(type);
-	glAttachShader(program, shader);
-	GLcharARB const * text = shaderText.c_str();
-	glShaderSource(shader, 1, &text, NULL);
-	glCompileShader(shader);
-	GLint compileStatus;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
-	if (compileStatus != GL_TRUE)
-	{
-		char buffer[1000];
-		int size = 0;
-		glGetShaderInfoLog(shader, 1000, &size, buffer);
-		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
-	}
-	return shader;
-}
-
-std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry)
+std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(const Path& vertex, const Path& fragment, const Path& geometry)
 {
 	if (!GLEW_ARB_shader_objects)
 	{
@@ -100,7 +109,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring 
 		}
 		else
 		{
-			vertexShader = CompileShader(vertex, program->program, GL_VERTEX_SHADER);
+			vertexShader = CompileShaderFromFile(vertex, program->program, GL_VERTEX_SHADER);
 		}
 	}
 	if(!fragment.empty())
@@ -111,7 +120,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring 
 		}
 		else
 		{
-			framgentShader = CompileShader(fragment, program->program, GL_FRAGMENT_SHADER);
+			framgentShader = CompileShaderFromFile(fragment, program->program, GL_FRAGMENT_SHADER);
 		}
 	}
 	if(!geometry.empty())
@@ -122,7 +131,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring 
 		}
 		else
 		{
-			geometryShader = CompileShader(geometry, program->program, GL_GEOMETRY_SHADER);
+			geometryShader = CompileShaderFromFile(geometry, program->program, GL_GEOMETRY_SHADER);
 		}
 	}
 	NewProgramImpl(program->program, vertexShader, framgentShader);
@@ -154,7 +163,50 @@ void CShaderManagerLegacyGL::NewProgramImpl(unsigned program, unsigned vertexSha
 
 std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */)
 {
-	return nullptr;
+	if (!GLEW_ARB_shader_objects)
+	{
+		LogWriter::WriteLine("Shader objects(GL_ARB_shader_objects) are not supported");
+		return nullptr;
+	}
+	std::unique_ptr<COpenGLShaderProgram> program = std::make_unique<COpenGLShaderProgram>();
+	program->program = glCreateProgram();
+	GLuint vertexShader(0), framgentShader(0), geometryShader(0);
+	if (!vertex.empty())
+	{
+		if (!GLEW_ARB_vertex_shader)
+		{
+			LogWriter::WriteLine("Vertex Shaders(GL_ARB_vertex_shader) are not supported");
+		}
+		else
+		{
+			vertexShader = CompileShader(vertex, program->program, GL_VERTEX_SHADER);
+		}
+	}
+	if (!fragment.empty())
+	{
+		if (!GLEW_ARB_fragment_shader)
+		{
+			LogWriter::WriteLine("Fragment Shaders(GL_ARB_fragment_shader) are not supported");
+		}
+		else
+		{
+			framgentShader = CompileShader(fragment, program->program, GL_FRAGMENT_SHADER);
+		}
+	}
+	if (!geometry.empty())
+	{
+		if (!GLEW_ARB_geometry_shader4)
+		{
+			LogWriter::WriteLine("Geometry Shaders(GL_ARB_geometry_shader4) are not supported");
+		}
+		else
+		{
+			geometryShader = CompileShader(geometry, program->program, GL_GEOMETRY_SHADER);
+		}
+	}
+	NewProgramImpl(program->program, vertexShader, framgentShader);
+
+	return std::move(program);
 }
 
 void CShaderManagerLegacyGL::SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const

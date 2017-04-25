@@ -63,8 +63,8 @@ class CVulkanShaderManager : public IShaderManager
 {
 public:
 	CVulkanShaderManager(CVulkanRenderer & renderer);
-	virtual std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
-	virtual std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */) override;
+	virtual std::unique_ptr<IShaderProgram> NewProgram(const Path& vertex = Path(), const Path& fragment = Path(), const Path& geometry = Path()) override;
+	virtual std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
 	virtual void PushProgram(IShaderProgram const& program) const override;
 	virtual void PopProgram() const override;
 

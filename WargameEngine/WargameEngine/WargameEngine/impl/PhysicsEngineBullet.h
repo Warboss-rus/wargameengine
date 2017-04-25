@@ -18,8 +18,8 @@ public:
 	virtual void Draw() const override;
 	virtual void EnableDebugDraw(IRenderer & renderer) override;
 	//IBoundingBoxManager
-	virtual void AddBounding(std::wstring const& modelName, sBounding const& bounding) override;
-	virtual sBounding GetBounding(std::wstring const& path) const override;
+	virtual void AddBounding(const Path& modelName, sBounding const& bounding) override;
+	virtual sBounding GetBounding(const Path& path) const override;
 private:
 	struct Impl;
 	std::unique_ptr<Impl> m_pImpl;

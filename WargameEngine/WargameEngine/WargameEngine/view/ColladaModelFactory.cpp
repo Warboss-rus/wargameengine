@@ -322,7 +322,7 @@ void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageT
 			while (technique)
 			{
 				string sid = technique->first_attribute("sid")->value();
-				transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
+				transform(sid.begin(), sid.end(), sid.begin(), [](char c) {return static_cast<char>(::tolower(c)); });
 				if (sid == "common" || sid == "standard")
 				{
 					xml_node<>* phong = technique->first_node("phong");

@@ -9,7 +9,7 @@ class CScriptHandlerLua : public IScriptHandler
 public:
 	CScriptHandlerLua();
 	~CScriptHandlerLua();
-	virtual void RunScript(std::wstring const& path) override;
+	virtual void RunScript(const Path& path) override;
 	virtual void CallFunction(std::wstring const& funcName, FunctionArguments const& arguments = FunctionArguments()) override;
 	virtual void RegisterConstant(std::wstring const& name, FunctionArgument const& value) override;
 	virtual void RegisterFunction(std::wstring const& name, FunctionHandler const& handler) override;

@@ -47,7 +47,7 @@ public:
 	virtual void SetState(bool state) override;
 	virtual bool GetState() const override;
 	virtual void Invalidate(bool resetTexture = false) const override;
-	virtual void InvalidateChildren() const override;
+	virtual void InvalidateChildren(bool resetTexture = false) const override;
 	virtual void SetTargetSize(int width, int height) override;
 	virtual void SetScale(float scale) override;
 
@@ -77,6 +77,7 @@ protected:
 	float m_scale = 1.0f;
 	bool m_visible = true;
 	mutable bool m_invalidated = true;
+	mutable bool m_childrenInvalidated = true;
 	IUIElement * m_parent;
 	IUIElement * m_focused = nullptr;
 	std::shared_ptr<CUITheme> m_theme;

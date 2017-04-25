@@ -25,13 +25,13 @@ struct NativeAppJni
 	CGvrGameWindow * window;
 	NativeAppJni(gvr_context* gvr_context, std::unique_ptr<gvr::AudioApi> gvr_audio_api)
 	{
-		context.module.Load(L"/sdcard/WargameEngine/test.module");
+		context.module.Load("/sdcard/WargameEngine/test.module");
 		if (context.module.name.empty())
 		{
-			context.module.script = L"main.lua";
-			context.module.textures = L"texture/";
-			context.module.models = L"models/";
-			context.module.folder = L"/sdcard/WargameEngine/";
+			context.module.script = "main.lua";
+			context.module.textures = "texture/";
+			context.module.models = "models/";
+			context.module.folder = "/sdcard/WargameEngine/";
 		}
 		window = new CGvrGameWindow(gvr_context);
 		context.window.reset(window);
@@ -96,7 +96,7 @@ JNI_METHOD(void, nativeDrawFrame)(JNIEnv *env, jobject obj, jlong nativeRenderer
 
 JNI_METHOD(void, nativeOnTouchEvent)(JNIEnv *env, jobject obj, jlong nativeRenderer, jint action, jfloat x, jfloat y)
 {
-  native(nativeRenderer)->window->GetInput().HandleMotionEvent(action, x, y);
+  native(nativeRenderer)->window->GetAndroidInput().HandleMotionEvent(action, x, y);
 }
 
 JNI_METHOD(void, nativeOnPause)(JNIEnv *env, jobject obj, jlong nativeRenderer) 

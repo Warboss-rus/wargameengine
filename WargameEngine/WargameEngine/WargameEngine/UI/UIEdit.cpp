@@ -136,6 +136,8 @@ bool CUIEdit::OnKeyPress(VirtualKey key, int modifiers)
 			}
 		}
 	}break;
+	default:
+		break;
 	}
 	return false;
 }

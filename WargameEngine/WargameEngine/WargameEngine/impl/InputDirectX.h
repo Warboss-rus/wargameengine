@@ -8,15 +8,17 @@ class CInputDirectX : public CInputBase
 {
 public:
 	CInputDirectX(HWND hWnd);
-	virtual void EnableCursor(bool enable = true) override;
-	virtual int GetModifiers() const override;
-	virtual int GetMouseX() const override;
-	virtual int GetMouseY() const override;
-	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
+	void EnableCursor(bool enable = true) override;
+	int GetModifiers() const override;
+	int GetMouseX() const override;
+	int GetMouseY() const override;
+	bool IsKeyPressed(VirtualKey key) const override;
 
 	bool ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam);
 	void UpdateControllers();
 private:
+	static VirtualKey KeycodeToVirtualKey(int key);
+
 	HWND m_hWnd;
 	bool m_cursorEnabled = true;
 	std::vector<XINPUT_STATE> m_gamepadStates;

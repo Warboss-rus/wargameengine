@@ -15,7 +15,8 @@ class CShaderManagerDirectX : public IShaderManager
 public:
 	CShaderManagerDirectX(CDirectXRenderer * render);
 
-	virtual std::unique_ptr<IShaderProgram> NewProgram(std::wstring const& vertex = L"", std::wstring const& fragment = L"", std::wstring const& geometry = L"") override;
+	virtual std::unique_ptr<IShaderProgram> NewProgram(const Path& vertex = Path(), const Path& fragment = Path(), const Path& geometry = Path()) override;
+	virtual std::unique_ptr<IShaderProgram> NewProgramSource(const std::string& vertex = "", const std::string& fragment = "", const std::string& geometry = "") override;
 	virtual void PushProgram(IShaderProgram const& program) const override;
 	virtual void PopProgram() const override;
 
@@ -82,6 +83,8 @@ private:
 	};
 	typedef std::tuple<std::wstring, std::wstring, std::wstring> ProgramCacheKey;
 	std::map<ProgramCacheKey, CDirectXShaderProgramImpl> m_programsCache;
+	typedef std::tuple<std::string, std::string, std::string> SourceProgramCacheKey;
+	std::map<SourceProgramCacheKey, CDirectXShaderProgramImpl> m_sourceProgramCache;
 	mutable std::vector<CDirectXShaderProgramImpl*> m_programs;
 	mutable CDirectXShaderProgramImpl* m_activeProgram;
 

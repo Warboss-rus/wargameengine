@@ -18,7 +18,12 @@ void CUIElement::Draw() const
 		return;
 	if (!m_childrenCache)
 	{
-		//m_childrenCache = m_renderer.RenderToTexture([this] {
+		m_childrenCache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_childrenInvalidated = true;
+	}
+	if(m_childrenInvalidated)
+	{
+		m_renderer.RenderToTexture([this] {
 			for (auto i = m_children.begin(); i != m_children.end(); ++i)
 			{
 				if (i->second && i->second.get() != m_focused)
@@ -30,13 +35,14 @@ void CUIElement::Draw() const
 			{
 				m_focused->Draw();
 			}
-		//}, GetWidth(), GetHeight());
+		}, *m_childrenCache, GetWidth(), GetHeight());
+		m_childrenInvalidated = false;
 	}
-/*	m_renderer.SetTexture(*m_childrenCache);
+	m_renderer.SetTexture(*m_childrenCache);
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0,GetHeight() },{ GetWidth(), GetHeight() } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	m_renderer.UnbindTexture();*/
+	m_renderer.UnbindTexture();
 }
 
 void CUIElement::SetVisible(bool visible)
@@ -114,9 +120,10 @@ void CUIElement::Invalidate(bool resetTexture) const
 	if (m_parent) m_parent->InvalidateChildren();
 }
 
-void CUIElement::InvalidateChildren() const
+void CUIElement::InvalidateChildren(bool resetTexture) const
 {
-	m_childrenCache.reset();
+	m_childrenInvalidated = true;
+	if(resetTexture) m_childrenCache.reset();
 	if (m_parent) m_parent->InvalidateChildren();
 }
 

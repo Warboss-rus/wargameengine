@@ -745,7 +745,7 @@ void CVulkanRenderer::LookAt(CVector3f const& position, CVector3f const& directi
 	m_matrixManager.LookAt(position, direction, -up, true);
 }
 
-void CVulkanRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
+void CVulkanRenderer::SetTexture(const Path& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
 {
 	if (forceLoadNow)
 	{
@@ -754,12 +754,12 @@ void CVulkanRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow 
 	m_textureManager->SetTexture(texture, flags);
 }
 
-void CVulkanRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
+void CVulkanRenderer::SetTexture(const Path& texture, TextureSlot slot, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void CVulkanRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
+void CVulkanRenderer::SetTexture(const Path& texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }

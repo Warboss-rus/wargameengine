@@ -33,7 +33,7 @@ ShaderReflection ReflectShader(const std::vector<char> & code)
 	return reflection;
 }
 
-VkShaderModule CompileShader(std::wstring const& filename, VkDevice device, ShaderReflection * reflection = nullptr)
+VkShaderModule CompileShader(const Path& filename, VkDevice device, ShaderReflection * reflection = nullptr)
 {
 	if (filename.empty()) return VK_NULL_HANDLE;
 	const std::vector<char> code = ReadFile(filename);
@@ -79,7 +79,7 @@ CVulkanShaderManager::CVulkanShaderManager(CVulkanRenderer & renderer)
 {
 }
 
-std::unique_ptr<IShaderProgram> CVulkanShaderManager::NewProgram(std::wstring const& vertex /*= L""*/, std::wstring const& fragment /*= L""*/, std::wstring const& geometry /*= L""*/)
+std::unique_ptr<IShaderProgram> CVulkanShaderManager::NewProgram(const Path& vertex /*= L""*/, const Path& fragment /*= L""*/, const Path& geometry /*= L""*/)
 {
 	VkDevice device = m_renderer.GetDevice();
 	ShaderReflection vertexReflection, fragmentReflection, geometryReflection;

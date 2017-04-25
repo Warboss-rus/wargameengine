@@ -58,7 +58,7 @@ CGameView::CGameView(sGameViewContext * context)
 	Init(context->module);
 
 	m_window->DoOnDrawScene([this]() {
-		//m_viewHelper.ClearBuffers(true, true);
+		m_viewHelper.ClearBuffers(true, true);
 		Update();
 	});
 	m_window->DoOnResize([this](int width, int height) {
@@ -86,7 +86,7 @@ void CGameView::Init(sModule const& module)
 	int width, height;
 	m_window->GetWindowSize(width, height);
 	m_viewports.emplace_back(0, 0, width, height, 60.0f, m_viewHelper, m_input, true, true);
-	m_viewports.front().GetCamera().SetLimits(100.0f, 100.0f, 2.8f, 0.5f);
+	m_viewports.front().GetCamera().SetLimits(100.0f, 100.0f, 100.0f, 0.5f, 2.8f);
 	m_gameController.reset();
 
 	m_asyncFileProvider.SetModule(module);
@@ -95,6 +95,7 @@ void CGameView::Init(sModule const& module)
 	ClearResources();
 	InitLandscape();
 	InitInput();
+	m_viewports.front().GetCamera().AttachToKeyboardMouse();
 	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory(), m_physicsEngine);
 	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(module.script));
 	m_soundPlayer.Init();

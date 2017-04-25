@@ -205,7 +205,7 @@ public:
 		return *obj != nullptr;
 	}
 
-	void AddBounding(std::wstring const& modelName, sBounding const& bounding)
+	void AddBounding(const Path& modelName, sBounding const& bounding)
 	{
 		std::function<std::unique_ptr<btCollisionShape>(sBounding const&)> processShape = [&processShape, this](sBounding const& bounding)->std::unique_ptr<btCollisionShape> {
 			if (bounding.type == sBounding::eType::BOX)
@@ -308,7 +308,7 @@ public:
 		m_dynamicsWorld->setDebugDrawer(m_debugDrawer.get());
 	}
 
-	sBounding GetAABB(std::wstring const& path) const
+	sBounding GetAABB(const Path& path) const
 	{
 		auto it = m_collisionShapes.find(path);
 		if (it == m_collisionShapes.end())
@@ -384,7 +384,7 @@ private:
 	std::unique_ptr<btSequentialImpulseConstraintSolver> m_solver;
 	std::unique_ptr<btDiscreteDynamicsWorld> m_dynamicsWorld;
 	std::vector<Object> m_objects;
-	std::map<std::wstring, std::unique_ptr<btCollisionShape>> m_collisionShapes;
+	std::map<Path, std::unique_ptr<btCollisionShape>> m_collisionShapes;
 	std::vector<std::unique_ptr<btCollisionShape>> m_childCollisionShapes;
 	std::map<const btCollisionShape*, CVector3f> m_shapeOffset;
 	std::unique_ptr<CDebugDrawer> m_debugDrawer;
@@ -440,12 +440,12 @@ bool CPhysicsEngineBullet::TestObject(IObject * object) const
 	return m_pImpl->TestObject(object);
 }
 
-void CPhysicsEngineBullet::AddBounding(std::wstring const& modelName, sBounding const& bounding)
+void CPhysicsEngineBullet::AddBounding(const Path& modelName, sBounding const& bounding)
 {
 	m_pImpl->AddBounding(modelName, bounding);
 }
 
-sBounding CPhysicsEngineBullet::GetBounding(std::wstring const& path) const
+sBounding CPhysicsEngineBullet::GetBounding(const Path& path) const
 {
 	return m_pImpl->GetAABB(path);
 }

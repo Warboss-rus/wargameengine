@@ -11,31 +11,31 @@ void CGvrAudioPlayer::Init()
 {
 }
 
-void CGvrAudioPlayer::Play(std::wstring const& channel, std::wstring const& file, float volume /*= 1.0f*/)
+void CGvrAudioPlayer::Play(std::wstring const& channel, const Path& file, float volume /*= 1.0f*/)
 {
 	StopChannel(channel);
-	m_gvr_audio_api->PreloadSoundfile(WStringToUtf8(file));
-	auto sound = m_gvr_audio_api->CreateSoundObject(WStringToUtf8(file));
+	m_gvr_audio_api->PreloadSoundfile(to_string(file));
+	auto sound = m_gvr_audio_api->CreateSoundObject(to_string(file));
 	m_gvr_audio_api->PlaySound(sound, false);
 	m_gvr_audio_api->SetSoundVolume(sound, volume);
 	m_channels.emplace(std::make_pair(channel, sound));
 }
 
-void CGvrAudioPlayer::PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3f const& position, float volume /*= 1.0f*/)
+void CGvrAudioPlayer::PlaySoundPosition(std::wstring const& channel, const Path& file, CVector3f const& position, float volume /*= 1.0f*/)
 {
 	StopChannel(channel);
-	m_gvr_audio_api->PreloadSoundfile(WStringToUtf8(file));
-	auto sound = m_gvr_audio_api->CreateSoundObject(WStringToUtf8(file));
+	m_gvr_audio_api->PreloadSoundfile(to_string(file));
+	auto sound = m_gvr_audio_api->CreateSoundObject(to_string(file));
 	m_gvr_audio_api->PlaySound(sound, false);
 	m_gvr_audio_api->SetSoundVolume(sound, volume);
 	m_gvr_audio_api->SetSoundObjectPosition(sound, position.x, position.y, position.z);
 	m_channels.emplace(std::make_pair(channel, sound));
 }
 
-void CGvrAudioPlayer::PlaySoundPlaylist(std::wstring const& channel, std::vector<std::wstring> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
+void CGvrAudioPlayer::PlaySoundPlaylist(std::wstring const& channel, std::vector<Path> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
 {
 	StopChannel(channel);
-	auto sound = m_gvr_audio_api->CreateSoundObject(WStringToUtf8(files.front()));
+	auto sound = m_gvr_audio_api->CreateSoundObject(to_string(files.front()));
 	m_gvr_audio_api->PlaySound(sound, repeat);
 	m_gvr_audio_api->SetSoundVolume(sound, volume);
 	m_channels.emplace(std::make_pair(channel, sound));

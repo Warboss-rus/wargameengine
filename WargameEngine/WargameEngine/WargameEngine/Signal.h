@@ -1,5 +1,5 @@
 #pragma once
-#include <list>
+#include <vector>
 #include <functional>
 #include <algorithm>
 #include <memory>
@@ -51,7 +51,6 @@ public:
 	}
 	void RemoveByTag(std::string const& tag)
 	{
-		if (m_callbacks.empty()) return;
 		m_callbacks.erase(std::remove_if(m_callbacks.begin(), m_callbacks.end(), [&](sCallback const& callback) {return callback.tag == tag;}), m_callbacks.end());
 	}
 	void Reset()
@@ -65,12 +64,15 @@ private:
 		int priority;
 		std::string tag;
 	};
-	void RemoveByConnection(typename std::list<sCallback>::iterator const& it)
+	void RemoveByConnection(typename std::vector<sCallback>::iterator const& it)
 	{
-		m_callbacks.erase(it);
+		if (it > m_callbacks.begin() && it < m_callbacks.end())
+		{
+			m_callbacks.erase(it);
+		}
 	}
 protected:
-	std::list<sCallback> m_callbacks;
+	std::vector<sCallback> m_callbacks;
 };
 
 template<class... Arguments>
@@ -96,7 +98,7 @@ public:
 class CScopedConnection
 {
 public:
-	CScopedConnection(CSignalConnection & connection)
+	CScopedConnection(const CSignalConnection & connection)
 		: m_connection(std::make_shared<CScopedConnectionImpl>(connection))
 	{}
 	CScopedConnection() = default;
@@ -104,7 +106,7 @@ private:
 	class CScopedConnectionImpl
 	{
 	public:
-		CScopedConnectionImpl(CSignalConnection & connection)
+		CScopedConnectionImpl(const CSignalConnection & connection)
 			:m_connection(connection)
 		{
 		}

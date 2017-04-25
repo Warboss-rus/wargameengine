@@ -103,12 +103,11 @@ GLuint CompileShader(std::string const& shaderText, GLuint program, GLenum type)
 	return shader;
 }
 
-GLuint CompileShaderFromFile(std::wstring const& path, GLuint program, GLenum type)
+GLuint CompileShaderFromFile(const Path& path, GLuint program, GLenum type)
 {
 	std::string shaderText;
 	std::string line;
-	std::ifstream iFile;
-	OpenFile(iFile, path);
+	std::ifstream iFile(path);
 	while (std::getline(iFile, line))
 	{
 		shaderText += line + '\n';
@@ -117,7 +116,7 @@ GLuint CompileShaderFromFile(std::wstring const& path, GLuint program, GLenum ty
 	return CompileShader(shaderText, program, type);
 }
 
-std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry)
+std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(const Path& vertex, const Path& fragment, const Path& geometry)
 {
 	std::unique_ptr<COpenGLESShaderProgram> program = std::make_unique<COpenGLESShaderProgram>();
 	program->program = glCreateProgram();

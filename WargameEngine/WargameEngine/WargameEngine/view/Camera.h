@@ -2,6 +2,7 @@
 #include "Vector3.h"
 #include <chrono>
 #include <vector>
+#include "..\Signal.h"
 
 class IInput;
 
@@ -27,12 +28,13 @@ public:
 	const float GetScale() const;
 
 	void Set(const CVector3f& position, const CVector3f& target = CVector3f(), const CVector3f& up = CVector3f(0.0f, 0.0f, 1.0f));
-	void Rotate(float dx, float dy, float dz = 0.0f);
+	void Rotate(float dx, float dy, float dz);
 	void Translate(float dx, float dy, float dz);
-	void TranslateAbsolute(float dx, float dy, float dz);
+	void TranslateAbsolute(const CVector3f& delta);
 	void Scale(float multiplier);
 	void SetCameraMode(Mode mode);
-	void SetLimits(float maxTransX, float maxTransY, float minScale, float maxScale);
+	void SetLimits(float maxTransX, float maxTransY, float maxTransZ, float minScale, float maxScale);
+	void SetMouseSensitivity(float horizontalSensitivity, float verticalSensitivity);
 
 	void AttachToTouchScreen();
 	void AttachToKeyboardMouse();
@@ -43,7 +45,7 @@ public:
 private:
 	IInput* m_input;
 	CVector3f m_position = { 0.0f, 10.0f, 10.0f };
-	CVector3f m_direction = { 0.0f, 0.0f, 0.0f };
+	CVector3f m_target = { 0.0f, 0.0f, 0.0f };
 	CVector3f m_up = { 0.0f, 0.0f, 1.0f };
 	float m_scale = 1.0f;
 	Mode m_cameraMode = Mode::THIRD_PERSON;
@@ -51,8 +53,12 @@ private:
 	float m_maxTransX = 100.0f;
 	float m_minTransY = -100.0f;
 	float m_maxTransY = 100.0f;
+	float m_minTransZ = 0.0f;
+	float m_maxTransZ = 100.0f;
 	float m_minScale = 0.5f;
 	float m_maxScale = 2.0f;
+	float m_mouseHorizontalSensitivity = 1.0f;
+	float m_mouseVerticalSensitivity = 1.0f;
 	struct CameraTarget
 	{
 		CVector3f position;
@@ -60,5 +66,5 @@ private:
 		std::chrono::milliseconds time;
 	};
 	std::vector<CameraTarget> m_cameraPath;
-	bool m_mouseButtonPressed = false;
+	std::vector<CScopedConnection> m_inputConnections;
 };

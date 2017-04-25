@@ -7,19 +7,14 @@ class CSoundPlayerOpenSLES : public ISoundPlayer
 public:
 	virtual void Init() override;
 
-	virtual void Play(std::wstring const& channel, std::wstring const& file, float volume = 1.0f) override;
+	void Play(const std::wstring& channel, const Path& file, float volume = 1.0f) override;
+	void PlaySoundPosition(const std::wstring& channel, const Path& file, CVector3f const& position, float volume = 1.0f) override;
+	void PlaySoundPlaylist(const std::wstring& name, const std::vector<Path>& files, float volume = 1.0f, bool shuffle = false, bool repeat = false) override;
+	void SetListenerPosition(const CVector3f& position, const CVector3f& center) override;
+	void PauseChannel(const std::wstring& name, bool pause) override;
+	void StopChannel(const std::wstring& name) override;
+	void Update() override;
 
-	virtual void PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3f const& position, float volume = 1.0f) override;
-
-	virtual void PlaySoundPlaylist(std::wstring const& name, std::vector<std::wstring> const& files, float volume = 1.0f, bool shuffle = false, bool repeat = false) override;
-
-	virtual void SetListenerPosition(CVector3f const& position, CVector3f const& center) override;
-
-	virtual void PauseChannel(std::wstring const& name, bool pause) override;
-
-	virtual void StopChannel(std::wstring const& name) override;
-
-	virtual void Update() override;
 private:
 	SLObjectItf m_engineObj;
 	SLEngineItf m_engine;

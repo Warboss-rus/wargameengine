@@ -7,6 +7,8 @@
 #include "../Module.h"
 #include "../Utils.h"
 
+namespace
+{
 static const std::string defaultVertexShader = "\
 #version 330 core\n\
 layout (location = 0) in vec3 Position;\n\
@@ -65,35 +67,6 @@ private:
 	GLuint m_cache;
 };
 
-CShaderManagerOpenGL::CShaderManagerOpenGL()
-{
-}
-
-CShaderManagerOpenGL::~CShaderManagerOpenGL()
-{
-	for (auto& buf : m_vertexAttribBuffers)
-	{
-		glDeleteBuffers(1, &buf.second);
-	}
-}
-
-void CShaderManagerOpenGL::PushProgram(IShaderProgram const& program) const
-{
-	unsigned int p = reinterpret_cast<COpenGLShaderProgram const&>(program).program;
-	m_programs.push_back(p);
-	m_activeProgram = m_programs.back();
-	glUseProgram(m_activeProgram);
-	if(m_onProgramChange) m_onProgramChange();
-}
-
-void CShaderManagerOpenGL::PopProgram() const
-{
-	m_programs.pop_back();
-	m_activeProgram = m_programs.back();
-	glUseProgram(m_activeProgram);
-	if (m_onProgramChange) m_onProgramChange();
-}
-
 GLuint CompileShader(std::string const& shaderText, GLuint program, GLenum type)
 {
 	GLuint shader = glCreateShader(type);
@@ -124,6 +97,36 @@ GLuint CompileShaderFromFile(const Path& path, GLuint program, GLenum type)
 	}
 	iFile.close();
 	return CompileShader(shaderText, program, type);
+}
+}
+
+CShaderManagerOpenGL::CShaderManagerOpenGL()
+{
+}
+
+CShaderManagerOpenGL::~CShaderManagerOpenGL()
+{
+	for (auto& buf : m_vertexAttribBuffers)
+	{
+		glDeleteBuffers(1, &buf.second);
+	}
+}
+
+void CShaderManagerOpenGL::PushProgram(IShaderProgram const& program) const
+{
+	unsigned int p = reinterpret_cast<COpenGLShaderProgram const&>(program).program;
+	m_programs.push_back(p);
+	m_activeProgram = m_programs.back();
+	glUseProgram(m_activeProgram);
+	if(m_onProgramChange) m_onProgramChange();
+}
+
+void CShaderManagerOpenGL::PopProgram() const
+{
+	m_programs.pop_back();
+	m_activeProgram = m_programs.back();
+	glUseProgram(m_activeProgram);
+	if (m_onProgramChange) m_onProgramChange();
 }
 
 std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(const Path& vertex, const Path& fragment, const Path& geometry)

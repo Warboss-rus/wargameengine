@@ -124,7 +124,7 @@ void CGvrGameWindow::Resume()
 	m_gvr_api->ResumeTracking();
 }
 
-CInputAndroid& CGvrGameWindow::GetInput()
+CInputAndroid& CGvrGameWindow::GetAndroidInput()
 {
 	return m_input;
 }
@@ -169,9 +169,8 @@ bool CGvrGameWindow::EnableVRMode(bool, VRViewportFactory const&)
 
 }
 
-IInput& CGvrGameWindow::ResetInput()
+IInput& CGvrGameWindow::GetInput()
 {
-	m_input = CInputAndroid();
 	return m_input;
 }
 

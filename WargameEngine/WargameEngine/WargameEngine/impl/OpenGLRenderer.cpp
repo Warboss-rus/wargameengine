@@ -108,7 +108,7 @@ private:
 	GLuint m_id = 0;
 };
 
-void COpenGLRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
+void COpenGLRenderer::SetTexture(const Path& texture, bool forceLoadNow, int flags)
 {
 	if (forceLoadNow)
 	{
@@ -117,12 +117,12 @@ void COpenGLRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow,
 	m_textureManager->SetTexture(texture, flags);
 }
 
-void COpenGLRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
+void COpenGLRenderer::SetTexture(const Path& texture, TextureSlot slot, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void COpenGLRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
+void COpenGLRenderer::SetTexture(const Path& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }

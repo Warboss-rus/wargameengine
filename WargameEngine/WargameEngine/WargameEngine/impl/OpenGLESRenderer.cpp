@@ -112,7 +112,7 @@ private:
 	GLuint m_id = 0;
 };
 
-void COpenGLESRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
+void COpenGLESRenderer::SetTexture(const Path& texture, bool forceLoadNow, int flags)
 {
 	if (forceLoadNow)
 	{
@@ -121,12 +121,12 @@ void COpenGLESRenderer::SetTexture(std::wstring const& texture, bool forceLoadNo
 	m_textureManager->SetTexture(texture, flags);
 }
 
-void COpenGLESRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
+void COpenGLESRenderer::SetTexture(const Path& texture, TextureSlot slot, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void COpenGLESRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
+void COpenGLESRenderer::SetTexture(const Path& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }
@@ -309,7 +309,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void * da
 	return move(texture);
 }
 
-ICachedTexture* COpenGLESRenderer::GetTexturePtr(std::wstring const& texture) const
+ICachedTexture* COpenGLESRenderer::GetTexturePtr(const Path& texture) const
 {
 	return m_textureManager->GetTexturePtr(texture);
 }

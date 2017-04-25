@@ -52,20 +52,27 @@ int CInputDirectX::GetMouseY() const
 	return point.y;
 }
 
-VirtualKey CInputDirectX::KeycodeToVirtualKey(int key) const
+static const std::map<int, VirtualKey> virtualKeys = {
+	{ VK_BACK, VirtualKey::KEY_BACKSPACE },
+	{ VK_LEFT, VirtualKey::KEY_LEFT },
+	{ VK_UP, VirtualKey::KEY_UP },
+	{ VK_RIGHT, VirtualKey::KEY_RIGHT },
+	{ VK_DOWN, VirtualKey::KEY_DOWN },
+	{ VK_HOME, VirtualKey::KEY_HOME },
+	{ VK_END, VirtualKey::KEY_END },
+	{ VK_DELETE, VirtualKey::KEY_DELETE },
+};
+
+bool CInputDirectX::IsKeyPressed(VirtualKey key) const
 {
-	static const std::map<int, VirtualKey> virtualKeys = {
-		{ VK_BACK, KEY_BACKSPACE },
-		{ VK_LEFT, KEY_LEFT },
-		{ VK_UP, KEY_UP },
-		{ VK_RIGHT, KEY_RIGHT },
-		{ VK_DOWN, KEY_DOWN },
-		{ VK_HOME, KEY_HOME },
-		{ VK_END, KEY_END },
-		{ VK_DELETE, KEY_DELETE },
-	};
+	auto it = std::find_if(virtualKeys.begin(), virtualKeys.end(), [key](const std::pair<int, VirtualKey>& pair) {return pair.second == key; });
+	return it != virtualKeys.end() ? HIWORD(GetKeyState(it->first)) : false;
+}
+
+VirtualKey CInputDirectX::KeycodeToVirtualKey(int key)
+{
 	auto it = virtualKeys.find(key);
-	return it == virtualKeys.end() ? KEY_UNKNOWN : it->second;
+	return it == virtualKeys.end() ? VirtualKey::KEY_UNKNOWN : it->second;
 }
 
 bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
@@ -90,14 +97,7 @@ bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 	}break;
 	case WM_MOUSEWHEEL:
 	{
-		if ((HIWORD(wParam) & 0xf000) == 0)
-		{
-			OnMouseWheelUp();
-		}
-		else
-		{
-			OnMouseWheelDown();
-		}
+		OnMouseWheel(static_cast<float>(HIWORD(wParam)) / WHEEL_DELTA);
 	}break;
 	case WM_MOUSEMOVE:
 	{
@@ -121,11 +121,11 @@ bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 	}break;
 	case WM_KEYDOWN:
 	{
-		OnKeyDown(wParam, GetModifiers());
+		OnKeyDown(KeycodeToVirtualKey(wParam), wParam);
 	}break;
 	case WM_KEYUP:
 	{
-		OnKeyUp(wParam, GetModifiers());
+		OnKeyUp(KeycodeToVirtualKey(wParam), wParam);
 	}break;
 	case WM_CHAR:
 	{

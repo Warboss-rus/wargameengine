@@ -84,7 +84,7 @@ void RegisterViewport(IScriptHandler & handler, CGameView & view)
 		float minScale = args.GetFloat(4);
 		auto viewport = instance ? static_cast<CViewportBase*>(instance) : &view.GetViewport(0);
 		auto& camera = viewport->GetCamera();
-		camera.SetLimits(maxTransX, maxTransY, maxScale, minScale);
+		camera.SetLimits(maxTransX, maxTransY, 100.0f, maxScale, minScale);
 		camera.SetCameraMode(Camera::Mode::THIRD_PERSON);
 		return nullptr;
 	});

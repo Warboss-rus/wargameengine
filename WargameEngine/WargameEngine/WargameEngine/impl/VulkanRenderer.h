@@ -258,9 +258,9 @@ public:
 	virtual void Scale(const double scale) override;
 	virtual void GetViewMatrix(float * matrix) const override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
-	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
-	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
-	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	virtual void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
+	virtual void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) override;
+	virtual void SetTexture(const Path& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
 	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	virtual void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;

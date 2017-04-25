@@ -320,7 +320,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		float speed = 1.0f;
 		if (n == 2) sloop = args.GetStr(2);
 		if (n == 3) speed = args.GetFloat(3);
-		transform(sloop.begin(), sloop.end(), sloop.begin(), ::tolower);
+		transform(sloop.begin(), sloop.end(), sloop.begin(), [](char c) {return static_cast<char>(::tolower(c)); });
 		eAnimationLoopMode loop = eAnimationLoopMode::NONLOOPING;
 		if (sloop == "looping") loop = eAnimationLoopMode::LOOPING;
 		if (sloop == "holdend") loop = eAnimationLoopMode::HOLDEND;

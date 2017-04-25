@@ -288,9 +288,9 @@ CScriptHandlerLua::~CScriptHandlerLua()
 	lua_close(m_lua_state);
 }
 
-void CScriptHandlerLua::RunScript(std::wstring const& path)
+void CScriptHandlerLua::RunScript(const Path& path)
 {
-	int result = luaL_dofile(m_lua_state, WStringToUtf8(path).c_str());
+	int result = luaL_dofile(m_lua_state, to_string(path).c_str());
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char *err = lua_tostring(m_lua_state, -1);

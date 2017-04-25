@@ -17,21 +17,22 @@ public:
 	void TriggerEvent();
 	void Pause();
 	void Resume();
-	CInputAndroid& GetInput();
+	CInputAndroid& GetAndroidInput();
 
-	virtual void LaunchMainLoop() override;
-	virtual void DoOnDrawScene(std::function<void() > const& handler) override;
-	virtual void DoOnResize(std::function<void(int, int) > const& handler) override;
-	virtual void DoOnShutdown(std::function<void() > const& handler) override;
-	virtual void ResizeWindow(int width, int height) override;
-	virtual void SetTitle(std::wstring const& title) override;
-	virtual void ToggleFullscreen() override;
-	virtual bool EnableVRMode(bool show, VRViewportFactory const&) override;
-	virtual IInput& ResetInput() override;
-	virtual IRenderer& GetRenderer() override;
-	virtual IViewHelper& GetViewHelper() override;
-	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
-	virtual void GetWindowSize(int& width, int& height) override;
+	void LaunchMainLoop() override;
+	void DoOnDrawScene(std::function<void() > const& handler) override;
+	void DoOnResize(std::function<void(int, int) > const& handler) override;
+	void DoOnShutdown(std::function<void() > const& handler) override;
+	void ResizeWindow(int width, int height) override;
+	void SetTitle(std::wstring const& title) override;
+	void ToggleFullscreen() override;
+	bool EnableVRMode(bool show, VRViewportFactory const&) override;
+	IInput& GetInput() override;
+	IRenderer& GetRenderer() override;
+	IViewHelper& GetViewHelper() override;
+	void EnableMultisampling(bool enable, int level = 1.0f) override;
+	void GetWindowSize(int& width, int& height) override;
+
 private:
 	std::unique_ptr<gvr::GvrApi> m_gvr_api;
 	gvr::BufferViewportList m_viewport_list;

@@ -15,6 +15,7 @@ public:
 		CreateMainWindow();
 
 		m_renderer = std::make_unique<CDirectXRenderer>(m_hWnd);
+		m_input = std::make_unique<CInputDirectX>(m_hWnd);
 	}
 
 	static LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -113,9 +114,8 @@ public:
 		m_renderer->ToggleFullscreen();
 	}
 
-	IInput& ResetInput()
+	IInput& GetInput()
 	{
-		m_input = std::make_unique<CInputDirectX>(m_hWnd);
 		return *m_input;
 	}
 
@@ -255,9 +255,9 @@ bool CGameWindowDirectX::EnableVRMode(bool /*show*/, VRViewportFactory const&)
 	throw std::runtime_error("GameWindowDirectX does not support VR mode, use GameWindowVR instead");
 }
 
-IInput& CGameWindowDirectX::ResetInput()
+IInput& CGameWindowDirectX::GetInput()
 {
-	return m_pImpl->ResetInput();
+	return m_pImpl->GetInput();
 }
 
 IRenderer& CGameWindowDirectX::GetRenderer()
