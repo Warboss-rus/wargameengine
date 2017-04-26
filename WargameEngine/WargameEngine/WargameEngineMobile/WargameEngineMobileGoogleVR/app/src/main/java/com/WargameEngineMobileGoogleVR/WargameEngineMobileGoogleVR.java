@@ -13,10 +13,11 @@ import android.view.View;
 import android.view.InputDevice;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+import android.view.ScaleGestureDetector;
 
 public class WargameEngineMobileGoogleVR extends Activity
 {
-    static {
+  static {
     System.loadLibrary("gvr");
     System.loadLibrary("gvr_audio");
     System.loadLibrary("WargameEngineMobile");
@@ -27,6 +28,21 @@ public class WargameEngineMobileGoogleVR extends Activity
 
   private GvrLayout gvrLayout;
   private GLSurfaceView surfaceView;
+  private ScaleGestureDetector mScaleDetector;
+
+  public WargameEngineMobileGoogleVR(Context mContext) {
+	  mScaleDetector = new ScaleGestureDetector(mContext, new ScaleListener());
+  }
+
+  private class ScaleListener
+        extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+    @Override
+    public boolean onScale(ScaleGestureDetector detector) {
+        float factor = detector.getScaleFactor();
+		nativeOnScaleEvent(nativeApp, factor);
+        return true;
+    }
+}
 
   // Note that pause and resume signals to the native renderer are performed on the GL thread,
   // ensuring thread-safety.
@@ -98,6 +114,7 @@ public class WargameEngineMobileGoogleVR extends Activity
                       nativeOnTouchEvent(nativeApp, event.getAction(), event.getX(), event.getY());
                     }
                 });
+			mScaleDetector.onTouchEvent(event);
             return true;
           }
         });
@@ -203,4 +220,5 @@ public class WargameEngineMobileGoogleVR extends Activity
   private native void nativeOnPause(long nativeApp);
   private native void nativeOnResume(long nativeApp);
   private native void nativeOnGamepadButtonEvent(long nativeApp, int action, int button);
+  private native void nativeOnScaleEvent(long nativeApp, float delta);
 }

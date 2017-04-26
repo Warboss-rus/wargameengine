@@ -99,6 +99,11 @@ JNI_METHOD(void, nativeOnTouchEvent)(JNIEnv *env, jobject obj, jlong nativeRende
   native(nativeRenderer)->window->GetAndroidInput().HandleMotionEvent(action, x, y);
 }
 
+JNI_METHOD(void, nativeOnScaleEvent)(JNIEnv *env, jobject obj, jlong nativeRenderer, jfloat delta)
+{
+	native(nativeRenderer)->window->GetAndroidInput().HandleZoom(delta);
+}
+
 JNI_METHOD(void, nativeOnPause)(JNIEnv *env, jobject obj, jlong nativeRenderer) 
 {
   native(nativeRenderer)->window->Pause();

@@ -3,7 +3,7 @@
 #include "..\..\WargameEngineMobile\WargameEngineMobile.NativeActivity\android_native_app_glue.h"
 
 CGameWindowAndroidVulkan::CGameWindowAndroidVulkan(android_app* app)
-	:m_renderer({"VK_KHR_surface", "VK_KHR_android_surface"}), m_app(app)
+	: m_app(app), m_renderer({"VK_KHR_surface", "VK_KHR_android_surface"})
 {
 }
 
@@ -110,9 +110,8 @@ bool CGameWindowAndroidVulkan::EnableVRMode(bool show, VRViewportFactory const& 
 	throw std::logic_error("The method or operation is not implemented.");
 }
 
-IInput& CGameWindowAndroidVulkan::ResetInput()
+IInput& CGameWindowAndroidVulkan::GetInput()
 {
-	m_input = CInputAndroid();
 	return m_input;
 }
 

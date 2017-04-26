@@ -7,6 +7,7 @@ class CInputAndroid : public CInputBase
 public:
 	void HandleInput(AInputEvent* event);
 	void HandleMotionEvent(int action, float x, float y);
+	void HandleZoom(float delta);
 
 	void EnableCursor(bool enable = true) override;
 	int GetModifiers() const override;

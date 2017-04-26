@@ -264,7 +264,7 @@ public:
 	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	virtual void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
-	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
+	virtual ICachedTexture* GetTexturePtr(const Path& texture) const override;
 	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;

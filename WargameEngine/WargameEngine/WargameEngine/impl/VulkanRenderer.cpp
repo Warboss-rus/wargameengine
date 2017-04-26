@@ -346,11 +346,11 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	m_renderPass = CreateRenderPass(m_swapchain.GetFormat(), m_swapchain.GetDepthTexture().GetFormat());
 	m_renderPass.SetDevice(m_device);
 #ifdef TO_STRING_HACK
-	const std::wstring shaderLocation = L"/sdcard/WargameEngine/Killteam/shaders/Vulkan/";
+	const Path shaderLocation = make_path("/sdcard/WargameEngine/Killteam/shaders/Vulkan/");
 #else
-	const std::wstring shaderLocation = L"Killteam/shaders/Vulkan/";
+	const Path shaderLocation = make_path(L"Killteam/shaders/Vulkan/");
 #endif
-	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation + L"vert.spv", shaderLocation + L"frag.spv");
+	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation + make_path("vert.spv"), shaderLocation + make_path("frag.spv"));
 	m_shaderManager.PushProgram(*m_defaultProgram);
 	m_pipelineHelper.SetShaderProgram(*reinterpret_cast<CVulkanShaderProgram*>(m_defaultProgram.get()));
 	m_pipelineHelper.SetVertexAttributes({
@@ -853,7 +853,7 @@ std::unique_ptr<ICachedTexture> CVulkanRenderer::CreateTexture(const void * data
 	return std::move(texture);
 }
 
-ICachedTexture* CVulkanRenderer::GetTexturePtr(std::wstring const& texture) const
+ICachedTexture* CVulkanRenderer::GetTexturePtr(const Path& texture) const
 {
 	return m_textureManager->GetTexturePtr(texture);
 }

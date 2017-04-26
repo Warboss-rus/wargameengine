@@ -56,6 +56,11 @@ void CInputAndroid::HandleMotionEvent(int action, float x, float y)
 	}
 }
 
+void CInputAndroid::HandleZoom(float delta)
+{
+	OnMouseWheel(delta);
+}
+
 void CInputAndroid::EnableCursor(bool enable /*= true*/)
 {
 	//no cursor on android for now
