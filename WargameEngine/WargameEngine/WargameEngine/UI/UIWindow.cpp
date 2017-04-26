@@ -24,6 +24,7 @@ void CUIWindow::Draw() const
 	if (m_invalidated)
 	{
 		m_renderer.RenderToTexture([this]() {
+			m_renderer.UnbindTexture();
 			m_renderer.SetColor(0.4f, 0.4f, 1.0f);
 			auto& theme = m_theme->window;
 			int headerHeight = static_cast<int>(theme.headerHeight * m_scale);

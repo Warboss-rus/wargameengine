@@ -96,7 +96,6 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		if(useColorAttrib) shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
 		m_renderer.RenderArrays(RenderMode::TRIANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
 	}
-	m_renderer.UnbindTexture();
 	m_renderer.PopMatrix();
 }
 

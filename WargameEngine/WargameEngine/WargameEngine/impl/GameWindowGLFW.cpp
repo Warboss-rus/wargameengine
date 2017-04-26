@@ -71,30 +71,6 @@ Matrix4F ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
 	return matrixObj;
 }
 
-void GetRotation(Matrix4F const& matrix, double& Yaw, double& Pitch, double& Roll)
-{
-	if (matrix.m_union._11 == 1.0f)
-	{
-		Yaw = atan2f(matrix.m_union._13, matrix.m_union._34);
-		Pitch = 0;
-		Roll = 0;
-
-	}
-	else if (matrix.m_union._11 == -1.0f)
-	{
-		Yaw = atan2f(matrix.m_union._13, matrix.m_union._34);
-		Pitch = 0;
-		Roll = 0;
-	}
-	else
-	{
-
-		Yaw = atan2(-matrix.m_union._31, matrix.m_union._11);
-		Pitch = asin(matrix.m_union._21);
-		Roll = atan2(-matrix.m_union._23, matrix.m_union._22);
-	}
-}
-
 void CGameWindowGLFW::LaunchMainLoop()
 {
 	while (m_window && !glfwWindowShouldClose(m_window))
@@ -112,9 +88,7 @@ void CGameWindowGLFW::LaunchMainLoop()
 					if (m_rTrackedDevicePose[i].bPoseIsValid)
 					{
 						auto matrix = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[i].mDeviceToAbsoluteTracking);
-						double x, y, z;
-						GetRotation(matrix, z, y, x);
-						m_input->SetHeadRotation(i, static_cast<float>(-x * 180 / M_PI), static_cast<float>(y * 180 / M_PI), static_cast<float>(z * 180 / M_PI));
+						m_input->SetHeadRotation(i, matrix);
 					}
 				}
 			}
@@ -135,11 +109,31 @@ void CGameWindowGLFW::LaunchMainLoop()
 			}
 			if (compositor)
 			{
+#ifndef RENDERER_NO_VULKAN
+				vr::VRVulkanTextureData_t textureData[2];
+#endif
 				for (int i = 0; i < 2; ++i)
 				{
-					unsigned int t = reinterpret_cast<const COpenGlCachedTexture&>(*m_eyeTextures[i]);
-					const vr::Texture_t tex = { reinterpret_cast<void*>(t), TextureType_OpenGL, ColorSpace_Gamma };
-					 compositor->Submit(vr::EVREye(i), &tex);
+					vr::Texture_t tex;
+					if (m_vulkanRenderer)
+					{
+#ifndef RENDERER_NO_VULKAN
+						tex.eType = vr::ETextureType::TextureType_Vulkan;
+						auto& t = reinterpret_cast<const CVulkanCachedTexture&>(*m_eyeTextures[i]);
+						textureData[i].m_nFormat = t.GetFormat();
+						textureData[i].m_nImage = t;
+						//TODO: fill the structure
+						tex.handle = reinterpret_cast<void*>(&textureData[i]);
+#endif
+					}
+					else
+					{
+						tex.eType = vr::ETextureType::TextureType_OpenGL;
+						unsigned int t = reinterpret_cast<const COpenGlCachedTexture&>(*m_eyeTextures[i]);
+						tex.handle = reinterpret_cast<void*>(t);
+					}
+					tex.eColorSpace = vr::EColorSpace::ColorSpace_Gamma;
+					compositor->Submit(vr::EVREye(i), &tex);
 				}
 				compositor->PostPresentHandoff();
 			}

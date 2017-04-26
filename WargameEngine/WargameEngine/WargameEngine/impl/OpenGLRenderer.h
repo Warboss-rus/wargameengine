@@ -80,6 +80,7 @@ private:
 	std::unique_ptr<IShaderProgram> m_defaultProgram;
 	unsigned int m_vao;
 	CMatrixManagerGLM m_matrixManager;
+	std::vector<unsigned> m_currentTextures;
 };
 
 class COpenGlCachedTexture : public ICachedTexture

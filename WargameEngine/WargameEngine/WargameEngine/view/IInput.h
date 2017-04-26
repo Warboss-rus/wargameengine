@@ -11,6 +11,8 @@ public:
 	using MouseMoveHandler = std::function<bool(int newX, int newY, int deltaX, int deltaY)>;
 	using KeyboardHandler = std::function<bool(VirtualKey virtualKey, int nativeKey)>;
 	using CharacterHandler = std::function<bool(wchar_t character)>;
+	using GamepadButtonHandler = std::function<bool(int gamepadIndex, int buttonIndex, bool newState)>;
+	using GamepadAxisHandler = std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)>;
 
 	enum Modifiers
 	{
@@ -28,9 +30,8 @@ public:
 	virtual CSignalConnection DoOnKeyUp(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual CSignalConnection DoOnCharacter(const CharacterHandler& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual CSignalConnection DoOnMouseMove(const MouseMoveHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnHeadRotationChange(std::function<bool(int deviceIndex, float x, float y, float z)> const& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual CSignalConnection DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual CSignalConnection DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void EnableCursor(bool enable = true) = 0;
 	virtual int GetMouseX() const = 0;
 	virtual int GetMouseY() const = 0;
@@ -40,6 +41,7 @@ public:
 	virtual bool IsRMBPressed() const = 0;
 	virtual void Reset() = 0;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) = 0;
+	virtual const float* GetHeadTrackingMatrix(size_t deviceIndex) const = 0;
 
 	virtual ~IInput() {}
 };

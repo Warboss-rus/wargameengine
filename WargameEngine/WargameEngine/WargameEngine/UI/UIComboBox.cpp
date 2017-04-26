@@ -22,6 +22,7 @@ void CUIComboBox::Draw() const
 	if(m_invalidated)
 	{
 		m_renderer.RenderToTexture([this]() {
+			m_renderer.UnbindTexture();
 			auto& theme = m_theme->combobox;
 			int elementSize = static_cast<int>(theme.elementSize * m_scale);
 			m_renderer.SetColor(m_theme->defaultColor);
@@ -47,27 +48,26 @@ void CUIComboBox::Draw() const
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(firstX, 0), { firstX, GetHeight() },{ GetWidth(), 0 }, {GetWidth(), GetHeight()} },
 			{ CVector2f(texCoords), {texCoords[0], texCoords[3]},{ texCoords[2], texCoords[1] }, {texCoords[2], texCoords[3]} });
-			m_renderer.UnbindTexture();
 
 			if (m_expanded)
 			{
+				m_renderer.UnbindTexture();
 				m_renderer.SetColor(m_theme->textfieldColor);
 				int totalHeight = GetHeight() + elementSize * static_cast<int>(m_items.size());
 				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, GetHeight()), { 0, totalHeight },{ GetWidth(), GetHeight()}, {GetWidth(), totalHeight} }, {});
 
-				m_renderer.SetColor(textTheme.color);
 				for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 				{
 					if (GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight) break;
 					PrintText(m_renderer, m_textWriter, borderSize, GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition(), GetWidth(), elementSize, m_items[i], textTheme, m_scale);
 				}
+				m_renderer.SetColor(0, 0, 0);
 
 				m_renderer.PushMatrix();
 				m_renderer.Translate(0, GetHeight(), 0);
 				m_scrollbar.Draw();
 				m_renderer.PopMatrix();
 			}
-			m_renderer.SetColor(0, 0, 0);
 		}, *m_cache, GetWidth(), realHeight);
 	}
 
@@ -75,7 +75,6 @@ void CUIComboBox::Draw() const
 	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, realHeight },{ GetWidth(), realHeight } },
 	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	m_renderer.UnbindTexture();
 
 	CUIElement::Draw();
 	m_renderer.PopMatrix();

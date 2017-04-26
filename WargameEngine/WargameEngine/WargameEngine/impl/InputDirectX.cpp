@@ -97,7 +97,8 @@ bool CInputDirectX::ProcessEvent(UINT message, WPARAM wParam, LPARAM lParam)
 	}break;
 	case WM_MOUSEWHEEL:
 	{
-		OnMouseWheel(static_cast<float>(HIWORD(wParam)) / WHEEL_DELTA);
+		WORD delta = HIWORD(wParam);
+		OnMouseWheel(static_cast<float>((short&)delta) / WHEEL_DELTA);
 	}break;
 	case WM_MOUSEMOVE:
 	{

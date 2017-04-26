@@ -45,7 +45,7 @@ void CInputGLFW::OnScroll(GLFWwindow* window, double /*xoffset*/, double yoffset
 	constexpr double offsetthreshold = 0.1;
 	if (abs(yoffset) > offsetthreshold)
 	{
-		instance.OnMouseWheel(static_cast<int>(yoffset));
+		instance.OnMouseWheel(static_cast<float>(yoffset));
 	}
 }
 
@@ -176,9 +176,9 @@ void CInputGLFW::UpdateControllers()
 	}
 }
 
-void CInputGLFW::SetHeadRotation(int deviceIndex, float x, float y, float z)
+void CInputGLFW::SetHeadRotation(size_t deviceIndex, const float* matrix)
 {
-	CInputBase::OnHeadRotation(deviceIndex, x, y, z);
+	CInputBase::OnHeadRotation(deviceIndex, matrix);
 }
 
 int CInputGLFW::GetMouseX() const

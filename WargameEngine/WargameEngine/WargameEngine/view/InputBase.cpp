@@ -45,19 +45,19 @@ CSignalConnection CInputBase::DoOnMouseMove(const MouseMoveHandler& handler, int
 	return m_onMouseMove.Connect(handler, priority, tag);
 }
 
-CSignalConnection CInputBase::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+CSignalConnection CInputBase::DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
 {
 	return m_onGamepadButton.Connect(handler, priority, tag);
 }
 
-CSignalConnection CInputBase::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+CSignalConnection CInputBase::DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
 {
 	return m_onGamepadAxis.Connect(handler, priority, tag);
 }
 
-CSignalConnection CInputBase::DoOnHeadRotationChange(std::function<bool(int deviceIndex, float x, float y, float z)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+const float* CInputBase::GetHeadTrackingMatrix(size_t deviceIndex) const
 {
-	return m_onHeadRotation.Connect(handler, priority, tag);
+	return m_headTrackings.at(deviceIndex);
 }
 
 void CInputBase::DeleteAllSignalsByTag(std::string const& tag)
@@ -172,7 +172,11 @@ void CInputBase::OnGamepadAxis(int gamepadIndex, int axisIndex, double horizonta
 	m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
 }
 
-void CInputBase::OnHeadRotation(int deviceIndex, float x, float y, float z)
+void CInputBase::OnHeadRotation(size_t deviceIndex, const float* data)
 {
-	m_onHeadRotation(deviceIndex, x, y, z);
+	if (deviceIndex > m_headTrackings.size())
+	{
+		m_headTrackings.resize(deviceIndex + 1);
+	}
+	m_headTrackings[deviceIndex] = data;
 }

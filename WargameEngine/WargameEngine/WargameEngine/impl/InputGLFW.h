@@ -24,7 +24,7 @@ public:
 	static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
 	static void JoystickCallback(int joy, int event);
 	void UpdateControllers();
-	void SetHeadRotation(int deviceIndex, float x, float y, float z);
+	void SetHeadRotation(size_t deviceIndex, const float* matrix);
 private:
 	static VirtualKey KeycodeToVirtualKey(int key);
 	GLFWwindow * m_window;

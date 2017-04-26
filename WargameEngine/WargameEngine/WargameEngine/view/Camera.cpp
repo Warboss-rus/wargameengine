@@ -7,8 +7,9 @@ namespace
 {
 constexpr float PI = static_cast<float>(M_PI);
 constexpr char CAMERA_TAG[] = "camera";
-constexpr int CAMERA_PRIORITY = 0;
+constexpr int CAMERA_PRIORITY = 1;
 constexpr float TRANSLATE = 0.3f;
+
 float clamp(float value, float min, float max)
 {
 	if (value < min) return min;
@@ -58,12 +59,10 @@ void Camera::Rotate(float dx, float dy, float dz)
 {
 	auto deltaVec = m_target - m_position;
 	float r = deltaVec.GetLength();
-	auto t = atan(deltaVec.y / deltaVec.x) * 180.0f / PI;
-	auto p = acos(deltaVec.z / deltaVec.GetLength()) * 180.0f / PI;
-	t += dx;
-	p += dz;
-	t *= PI / 180.0f;
-	p *= PI / 180.0f;
+	auto t = atan2(deltaVec.y, deltaVec.x);
+	auto p = acos(deltaVec.z / deltaVec.GetLength());
+	t += dx * PI / 180.0f;
+	p += dz * PI / 180.0f;
 	deltaVec.x = r * sin(p) * cos(t);
 	deltaVec.y = r * sin(p) * sin(t);
 	deltaVec.z = r * cos(p);
@@ -76,16 +75,7 @@ void Camera::Rotate(float dx, float dy, float dz)
 	}
 	case Mode::FIRST_PERSON:
 	{
-		//Rotate target around position
-		//rotateX
-		/*float temp = pos.y * cos(dx * PI / 180) + pos.z * sin(dx * PI / 180);
-		pos.z = pos.y * sin(dx * PI / 180) + pos.z * cos(dx * PI / 180);
-		pos.y = temp;
-		//rotateZ
-		temp = pos.x * cos(dz * PI / 180) + pos.y * sin(dz * PI / 180);
-		pos.y = pos.x * sin(dz * PI / 180) + pos.y * cos(dz * PI / 180);
-		pos.x = temp;
-		m_target = m_position + pos;*/
+		m_target = deltaVec + m_position;
 		break;
 	}
 	}
@@ -95,12 +85,11 @@ void Camera::Translate(float dx, float dy, float dz)
 {
 	auto deltaVec = m_target - m_position;
 	float r = deltaVec.GetLength();
-	auto t = atan(deltaVec.y / deltaVec.x);
+	auto t = atan2(deltaVec.y, deltaVec.x);
 	auto p = acos(deltaVec.z / deltaVec.GetLength());
 	CVector3f delta(dx, dy, dz);
-	delta.z = dy * sin(p) + dz;
-	delta.x = dx * cos(t) + dy * sin(t);
-	delta.y = -dx * sin(t) + dy * cos(t);
+	delta.x = dx * sin(t) + dy * cos(t);
+	delta.y = dx * cos(t) + dy * sin(t);
 	TranslateAbsolute(delta);
 }
 
@@ -130,6 +119,18 @@ void Camera::Scale(float multiplier)
 {
 	m_scale *= multiplier;
 	m_scale = clamp(m_scale, m_minScale, m_maxScale);
+}
+
+void Camera::ChangeDistance(float delta)
+{
+	if (m_cameraMode == Mode::THIRD_PERSON)
+	{
+		auto pos = m_position - m_target;
+		float length = pos.GetLength();
+		float newLength = clamp(length + delta, m_minDistance, m_maxDistance);
+		pos *= 1 + (newLength - length) / length;
+		m_position = m_target + pos;
+	}
 }
 
 void Camera::SetCameraMode(Mode mode)
@@ -196,7 +197,7 @@ void Camera::AttachToKeyboardMouse()
 		return false;
 	}));
 	m_inputConnections.emplace_back(m_input->DoOnMouseWheel([this](float delta) {
-		Scale(1.0f - delta * 0.1f);
+		ChangeDistance(-delta);
 		return false;
 	}));
 }
@@ -206,12 +207,13 @@ void Camera::AttachToGamepad(size_t gamepadIndex)
 
 }
 
-void Camera::AttachToVR()
+void Camera::AttachToVR(size_t deviceIndex)
 {
-
+	m_vrDevice = deviceIndex;
 }
 
 void Camera::ResetInput()
 {
 	m_inputConnections.clear();
+	m_vrDevice = -1;
 }

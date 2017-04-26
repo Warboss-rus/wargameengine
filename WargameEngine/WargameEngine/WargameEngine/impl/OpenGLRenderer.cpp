@@ -129,10 +129,12 @@ void COpenGLRenderer::SetTexture(const Path& texture, const std::vector<sTeamCol
 
 void COpenGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot)
 {
-	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
 	auto& glTexture = reinterpret_cast<COpenGlCachedTexture const&>(texture);
+	if (m_currentTextures[static_cast<int>(slot)] == glTexture) return;
+	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
 	glBindTexture(glTexture.GetType(), glTexture);
 	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0);
+	m_currentTextures[static_cast<int>(slot)] = glTexture;
 }
 
 static const map<RenderMode, GLenum> renderModeMap = {
@@ -153,7 +155,7 @@ void ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*s
 }
 
 COpenGLRenderer::COpenGLRenderer()
-	:m_textureManager(nullptr)
+	:m_textureManager(nullptr), m_currentTextures(8)
 {
 	if (glewInit() != GLEW_OK || !GLEW_VERSION_3_0)
 	{
@@ -587,9 +589,11 @@ void COpenGLRenderer::ClearBuffers(bool color, bool depth)
 
 void COpenGLRenderer::UnbindTexture(TextureSlot slot)
 {
+	if (m_currentTextures[static_cast<size_t>(slot)] == 0) return;
 	if(slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
 	glBindTexture(GL_TEXTURE_2D, 0);
 	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0);
+	m_currentTextures[static_cast<size_t>(slot)] = 0;
 }
 
 std::unique_ptr<ICachedTexture> COpenGLRenderer::CreateEmptyTexture(bool cubemap)

@@ -251,6 +251,7 @@ void CGameView::DrawUI()
 
 void DrawBBox(sBounding::sBox const& bbox, IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
 {
+	renderer.UnbindTexture();
 	renderer.PushMatrix();
 	renderer.Translate(object.GetX(), object.GetY(), object.GetZ());
 	renderer.Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
@@ -327,7 +328,7 @@ void CGameView::Update()
 		if (m_skybox && !m_currentViewport->IsDepthOnly())
 		{
 			auto& camera = m_currentViewport->GetCamera();
-			m_skybox->Draw(-camera.GetDirection(), camera.GetScale());
+			m_skybox->Draw(-camera.GetPosition(), camera.GetScale());
 		}
 		DrawObjects(m_currentViewport->IsDepthOnly());
 		if (!m_currentViewport->IsDepthOnly())
@@ -424,7 +425,6 @@ void CGameView::DrawTable(bool shadowOnly)
 			m_renderer.PopMatrix();
 		}
 	}
-	m_renderer.UnbindTexture();
 }
 
 void CGameView::DrawObjects(bool shadowOnly)
@@ -707,7 +707,6 @@ void CGameView::Preload(const Path& image)
 		shared_ptr<const IObject> object = m_gameModel->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
 	}
-	m_renderer.UnbindTexture();
 }
 
 void CGameView::LoadModule(const Path& modulePath)

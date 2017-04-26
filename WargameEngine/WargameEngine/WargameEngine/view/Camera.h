@@ -32,6 +32,7 @@ public:
 	void Translate(float dx, float dy, float dz);
 	void TranslateAbsolute(const CVector3f& delta);
 	void Scale(float multiplier);
+	void ChangeDistance(float delta);
 	void SetCameraMode(Mode mode);
 	void SetLimits(float maxTransX, float maxTransY, float maxTransZ, float minScale, float maxScale);
 	void SetMouseSensitivity(float horizontalSensitivity, float verticalSensitivity);
@@ -39,12 +40,12 @@ public:
 	void AttachToTouchScreen();
 	void AttachToKeyboardMouse();
 	void AttachToGamepad(size_t gamepadIndex);
-	void AttachToVR();
+	void AttachToVR(size_t deviceIndex);
 	void ResetInput();
 
 private:
 	IInput* m_input;
-	CVector3f m_position = { 0.0f, 10.0f, 10.0f };
+	CVector3f m_position = { 0.0f, -10.0f, 10.0f };
 	CVector3f m_target = { 0.0f, 0.0f, 0.0f };
 	CVector3f m_up = { 0.0f, 0.0f, 1.0f };
 	float m_scale = 1.0f;
@@ -57,8 +58,11 @@ private:
 	float m_maxTransZ = 100.0f;
 	float m_minScale = 0.5f;
 	float m_maxScale = 2.0f;
+	float m_minDistance = 1.0f;
+	float m_maxDistance = 100.0f;
 	float m_mouseHorizontalSensitivity = 1.0f;
 	float m_mouseVerticalSensitivity = 1.0f;
+	int m_vrDevice = -1;
 	struct CameraTarget
 	{
 		CVector3f position;
