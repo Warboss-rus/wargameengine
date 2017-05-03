@@ -1,8 +1,8 @@
 #pragma once
 #include "../view/IShaderManager.h"
-#include <vector>
 #include <functional>
 #include <map>
+#include <vector>
 
 class CShaderManagerOpenGLES : public IShaderManager
 {
@@ -29,6 +29,11 @@ public:
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
 	void DoOnProgramChange(std::function<void()> const& handler);
+
+	void SetInputAttributes(const void* vertices, const void* normals, const void* texCoords, size_t count, size_t vertexComponents);
+	void SetInputAttributes(const IVertexAttribCache& cache, size_t vertexOffset, size_t normalOffset, size_t texCoordOffset, size_t stride);
+	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess);
+
 private:
 	struct ShaderProgramCache
 	{
@@ -41,11 +46,12 @@ private:
 	ShaderProgramCache& GetProgramCache() const;
 	int GetUniformLocation(std::string const& uniform) const;
 	void NewProgramImpl(unsigned prgm, unsigned vertexShader, unsigned framgentShader);
-		
-	mutable std::vector<unsigned int> m_programs;
+
+	mutable std::vector<const IShaderProgram*> m_programs;
 	mutable unsigned int m_activeProgram;
 	std::function<void()> m_onProgramChange;
 	mutable std::map<std::string, unsigned> m_vertexAttribBuffers;
-	
+	mutable unsigned m_vertexInputBuffer = 0;
+
 	mutable std::map<unsigned, ShaderProgramCache> m_shaderProgramCache;
 };

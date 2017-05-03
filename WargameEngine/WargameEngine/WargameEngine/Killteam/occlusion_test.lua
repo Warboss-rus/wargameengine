@@ -17,6 +17,8 @@ elseif(GetRendererName() == "OpenGLES") then
 	SetSkyboxShaders("GLES/skybox.vsh", "GLES/skybox.fsh")
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
+elseif(GetRendererName() == "Vulkan") then
+	--do nothing
 else
 	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
 	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")

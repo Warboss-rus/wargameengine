@@ -146,7 +146,6 @@ void CTextureManager::SetAnisotropyLevel(float level)
 		m_helper.SetTexture(*i->second);
 		m_helper.SetTextureAnisotropy(level);
 	}
-	m_helper.UnbindTexture();
 	m_anisotropyLevel = level;
 }
 

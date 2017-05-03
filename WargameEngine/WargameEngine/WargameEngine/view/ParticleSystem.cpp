@@ -56,7 +56,6 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
 		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
 		auto buffer = m_renderer.CreateVertexBuffer(reinterpret_cast<float*>(vertex), nullptr, reinterpret_cast<float*>(texCoord), 6, true);
-		buffer->Bind();
 		shaderManager.SetVertexAttribute("instancePosition", 4, particlesCount, particleEffect.GetPositionCache().data(), true);
 		if (useTexCoordAttrib)
 		{
@@ -67,12 +66,11 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 			shaderManager.SetVertexAttribute("instanceColor", 4, particlesCount, particleEffect.GetColorCache().data(), true);
 		}
 
-		buffer->DrawInstanced(6, particlesCount);
+		m_renderer.DrawInstanced(*buffer, 6, particlesCount);
 		static float empty[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		shaderManager.DisableVertexAttribute("instanceColor", 4, empty);
 		shaderManager.DisableVertexAttribute("instancePosition", 4, empty);
 		shaderManager.DisableVertexAttribute("instanceTexCoordPos", 2, empty);
-		buffer->UnBind();
 		shaderManager.PopProgram();
 	}
 	else

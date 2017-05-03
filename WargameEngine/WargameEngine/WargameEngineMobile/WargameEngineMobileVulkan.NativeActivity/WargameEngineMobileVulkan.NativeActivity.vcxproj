@@ -261,6 +261,7 @@
     <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h" />
     <ClInclude Include="..\..\WargameEngine\impl\VulkanHelpers.h" />
     <ClInclude Include="..\..\WargameEngine\impl\VulkanMemory.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\VulkanPipelineManager.h" />
     <ClInclude Include="..\..\WargameEngine\impl\VulkanRenderer.h" />
     <ClInclude Include="..\..\WargameEngine\impl\VulkanShaderManager.h" />
     <ClInclude Include="..\WargameEngineMobile.NativeActivity\android_native_app_glue.h" />
@@ -275,6 +276,7 @@
     <ClCompile Include="..\..\WargameEngine\impl\InputAndroid.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\VulkanMemory.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\VulkanPipelineManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\VulkanRenderer.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\VulkanShaderManager.cpp" />
     <ClCompile Include="..\WargameEngineMobile.NativeActivity\android_native_app_glue.c" />

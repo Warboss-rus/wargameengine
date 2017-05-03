@@ -48,10 +48,7 @@ void CSkyBox::Draw(CVector3f const& pos, float scale)
 		m_renderer.Translate(x, y, z);
 		m_renderer.Scale(1.0f / scale);
 		m_renderer.SetTexture(*m_texture);
-		m_buffer->Bind();
-		m_buffer->DrawAll(skyboxVertices);
-		m_buffer->UnBind();
-		m_renderer.UnbindTexture();
+		m_renderer.DrawAll(*m_buffer, skyboxVertices);
 		m_renderer.PopMatrix();
 		m_renderer.GetShaderManager().PopProgram();
 	}
@@ -82,7 +79,6 @@ void CSkyBox::Draw(CVector3f const& pos, float scale)
 		// Right side
 		m_renderer.SetTexture(m_images[0], false, TextureFlags::TEXTURE_NO_WRAP);
 		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, 0.0f, 0.0f),{ m_width, 0.0f, m_length },{ m_width, m_height, 0.0f },{ m_width, m_height, m_length } }, {}, texCoords);
-		m_renderer.UnbindTexture();
 		m_renderer.PopMatrix();
 	}
 }

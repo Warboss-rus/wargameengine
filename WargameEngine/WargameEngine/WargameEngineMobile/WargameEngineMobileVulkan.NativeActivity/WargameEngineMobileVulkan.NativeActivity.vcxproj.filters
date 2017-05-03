@@ -14,6 +14,7 @@
     <ClInclude Include="..\..\WargameEngine\impl\VulkanRenderer.h" />
     <ClInclude Include="..\..\WargameEngine\impl\VulkanShaderManager.h" />
     <ClInclude Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\VulkanPipelineManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\WargameEngine\impl\MatrixManagerGLM.cpp" />
@@ -29,5 +30,6 @@
     <ClCompile Include="..\..\WargameEngine\impl\VulkanRenderer.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\VulkanShaderManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\VulkanPipelineManager.cpp" />
   </ItemGroup>
 </Project>

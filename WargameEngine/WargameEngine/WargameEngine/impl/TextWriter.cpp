@@ -26,7 +26,8 @@ FT_Face CTextWriter::GetFace(std::string const& name)
 #elif __unix
 			&& FT_New_Face(m_ft, ("/usr/share/fonts/" + name).c_str(), 0, &m_faces[name])
 			&& FT_New_Face(m_ft, ("/usr/local/share/fonts/" + name).c_str(), 0, &m_faces[name])
-			&& FT_New_Face(m_ft, ("~/.fonts/" + name).c_str(), 0, &m_faces[name]))
+			&& FT_New_Face(m_ft, ("~/.fonts/" + name).c_str(), 0, &m_faces[name])
+			&& FT_New_Face(m_ft, ("/system/fonts/" + name).c_str(), 0, &m_faces[name]))
 #elif __APPLE__
 			&& FT_New_Face(m_ft, ("~/Library/Fonts/" + name).c_str(), 0, &m_faces[name])
 			&& FT_New_Face(m_ft, ("/System/Library/Fonts/" + name).c_str(), 0, &m_faces[name])

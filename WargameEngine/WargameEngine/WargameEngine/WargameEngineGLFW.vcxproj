@@ -259,6 +259,7 @@
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="impl\ShaderManagerLegacyGL.cpp" />
     <ClCompile Include="impl\VulkanMemory.cpp" />
+    <ClCompile Include="impl\VulkanPipelineManager.cpp" />
     <ClCompile Include="impl\VulkanRenderer.cpp" />
     <ClCompile Include="impl\VulkanShaderManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -286,6 +287,7 @@
     <ClInclude Include="impl\TextWriter.h" />
     <ClInclude Include="impl\VulkanHelpers.h" />
     <ClInclude Include="impl\VulkanMemory.h" />
+    <ClInclude Include="impl\VulkanPipelineManager.h" />
     <ClInclude Include="impl\VulkanRenderer.h" />
     <ClInclude Include="impl\VulkanShaderManager.h" />
   </ItemGroup>

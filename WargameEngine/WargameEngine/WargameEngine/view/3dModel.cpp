@@ -84,7 +84,6 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
 {
 	auto& shaderManager = renderer.GetShaderManager();
-	vertexBuffer.Bind();
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
 		shaderManager.SetVertexAttribute("weights", *m_weightsCache, 4, m_weightsCount.size() * 4, IShaderManager::TYPE::FLOAT32);
@@ -110,12 +109,12 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 				material = mesh.material;
 				SetMaterial(renderer, material, teamcolor, replaceTextures);
 			}
-			vertexBuffer.DrawIndexes(mesh.begin, mesh.end - mesh.begin);
+			renderer.DrawIndexes(vertexBuffer, mesh.begin, mesh.end - mesh.begin);
 		}
 	}
 	else //Draw in a row
 	{
-		vertexBuffer.DrawAll(m_count);
+		renderer.DrawAll(vertexBuffer, m_count);
 	}
 	if (useGPUskinning)
 	{
@@ -124,7 +123,6 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 		int idef = 0;
 		shaderManager.DisableVertexAttribute("weightIndices", 1, &idef);
 	}
-	vertexBuffer.UnBind();
 	renderer.PopMatrix();
 }
 

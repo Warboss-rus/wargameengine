@@ -36,7 +36,7 @@ public:
 	{
 	}
 
-	virtual void Bind() const override
+	void Bind() const
 	{
 		const UINT stride[] = { sizeof(float) * 3, sizeof(float) * 2, sizeof(float) * 3 };
 		const UINT offset[] = { 0, m_texCoordOffset, m_normalOffset };
@@ -79,24 +79,6 @@ public:
 		m_renderer->GetContext()->Unmap(m_pIndexBuffer, NULL);                        // unmap the buffer
 	}
 
-	virtual void DrawIndexes(size_t begin, size_t count) override
-	{		
-		if (m_beforeDraw) m_beforeDraw();
-		m_renderer->GetContext()->DrawIndexed(count, begin, 0);
-	}
-
-	virtual void DrawAll(size_t count) override
-	{
-		if (m_beforeDraw) m_beforeDraw();
-		m_renderer->GetContext()->Draw(count, 0);
-	}
-
-	virtual void UnBind() const override
-	{
-		m_renderer->GetContext()->IASetVertexBuffers(0, 0, NULL, NULL, NULL);
-		m_renderer->GetContext()->IASetIndexBuffer(0, DXGI_FORMAT_UNKNOWN, 0);
-	}
-
 	ID3D11Buffer ** operator&()
 	{
 		return &m_pVertexBuffer;
@@ -119,17 +101,6 @@ public:
 		m_sharedIndexBuffer = true;
 	}
 
-	virtual void DrawInstanced(size_t size, size_t instanceCount) override
-	{
-		if (m_beforeDraw) m_beforeDraw();
-		m_renderer->GetContext()->DrawInstanced(size, instanceCount, 0, 0);
-	}
-
-	void DoBeforeDraw(std::function<void()> const& handler)
-	{
-		m_beforeDraw = handler;
-	}
-
 	void SetOffsets(UINT normalOffset, UINT texCoordOffset)
 	{
 		m_normalOffset = normalOffset;
@@ -145,7 +116,6 @@ private:
 	UINT m_normalOffset = 0;
 	UINT m_texCoordOffset = 0;
 	bool m_sharedIndexBuffer = false;
-	std::function<void()> m_beforeDraw;
 };
 
 class CDirectXFrameBuffer : public IFrameBuffer
@@ -440,6 +410,28 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const
 	m_devcon->Draw(vertices.size(), 0);
 }
 
+void CDirectXRenderer::DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count)
+{
+	UpdateMatrices();
+	reinterpret_cast<CDirectXVertexBuffer&>(buffer).Bind();
+	m_devcon->DrawIndexed(count, begin, 0);
+
+}
+
+void CDirectXRenderer::DrawAll(IVertexBuffer& buffer, size_t count)
+{
+	UpdateMatrices();
+	reinterpret_cast<CDirectXVertexBuffer&>(buffer).Bind();
+	m_devcon->Draw(count, 0);
+}
+
+void CDirectXRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount)
+{
+	UpdateMatrices();
+	reinterpret_cast<CDirectXVertexBuffer&>(buffer).Bind();
+	m_devcon->DrawInstanced(size, instanceCount, 0, 0);
+}
+
 void CDirectXRenderer::SetColor(const int * color)
 {
 	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
@@ -644,7 +636,6 @@ std::unique_ptr<IVertexBuffer> CDirectXRenderer::CreateVertexBuffer(const float 
 		CreateBuffer(&*buffer, bufferSize);
 	}
 	CopyDataToBuffer(*buffer, m_vertexCache.data(), bufferSize);
-	buffer->DoBeforeDraw(std::bind(&CDirectXRenderer::UpdateMatrices, this));
 	buffer->SetOffsets(normalsOffset, texCoordOffset);
 
 	return std::move(buffer);

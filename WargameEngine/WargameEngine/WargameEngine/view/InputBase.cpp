@@ -174,7 +174,7 @@ void CInputBase::OnGamepadAxis(int gamepadIndex, int axisIndex, double horizonta
 
 void CInputBase::OnHeadRotation(size_t deviceIndex, const float* data)
 {
-	if (deviceIndex > m_headTrackings.size())
+	if (deviceIndex + 1 > m_headTrackings.size())
 	{
 		m_headTrackings.resize(deviceIndex + 1);
 	}

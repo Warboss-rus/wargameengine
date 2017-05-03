@@ -25,20 +25,21 @@ struct NativeAppJni
 	CGvrGameWindow * window;
 	NativeAppJni(gvr_context* gvr_context, std::unique_ptr<gvr::AudioApi> gvr_audio_api)
 	{
-		context.module.Load("/sdcard/WargameEngine/test.module");
+		const std::string storage = getenv("EXTERNAL_STORAGE");
+		context.module.Load(storage + "/WargameEngine/test.module");
 		if (context.module.name.empty())
 		{
 			context.module.script = "main.lua";
 			context.module.textures = "texture/";
 			context.module.models = "models/";
-			context.module.folder = "/sdcard/WargameEngine/";
+			context.module.folder = storage + "/WargameEngine/";
 		}
 		window = new CGvrGameWindow(gvr_context);
 		context.window.reset(window);
 		context.soundPlayer = std::make_unique<CGvrAudioPlayer>(std::move(gvr_audio_api));
 		context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
 		context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
-		static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");
+		static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
 		context.scriptHandlerFactory = []() {
 			return std::make_unique<CScriptHandlerLua>();
 		};

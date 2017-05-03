@@ -14,12 +14,13 @@ class CLegacyGLVertexBuffer : public IVertexBuffer
 public:
 	CLegacyGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = true);
 	~CLegacyGLVertexBuffer();
-	virtual void Bind() const override;
+	void Bind() const;
 	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
-	virtual void DrawIndexes(size_t begin, size_t count) override;
-	virtual void DrawAll(size_t count) override;
-	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
-	virtual void UnBind() const override;
+	void DrawIndexed(size_t begin, size_t count) const
+	{
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
+	}
+
 private:
 	const float * m_vertex = NULL;
 	const float * m_normals = NULL;
@@ -151,23 +152,29 @@ void Bind(const void* vertices, const void* normals, const void* texCoords, GLen
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(vertexAxesCount, vertexType, 0, vertices);
 	}
+	else
+	{
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
 	if (normals)
 	{
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glNormalPointer(normalType, 0, normals);
+	}
+	else
+	{
+		glDisableClientState(GL_NORMAL_ARRAY);
 	}
 	if (texCoords)
 	{
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, texCoordType, 0, texCoords);
 	}
-}
-
-void Unbind()
-{
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	else
+	{
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 }
 
 CLegacyGLRenderer::CLegacyGLRenderer()
@@ -186,21 +193,12 @@ void CLegacyGLRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> cons
 {
 	Bind(vertices.data(), normals.data(), texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 3);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
 }
 
 void CLegacyGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
 {
-	/*Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
+	Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_FLOAT, GL_FLOAT, 2);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();*/
-	glBegin(renderModeMap.at(mode));
-	for (size_t i = 0; i < vertices.size(); ++i)
-	{
-		if (i < texCoords.size()) glTexCoord2f(texCoords[i].x, texCoords[i].y);
-		glVertex2i(vertices[i].x, vertices[i].y);
-	}
-	glEnd();
 }
 
 void CLegacyGLRenderer::PushMatrix()
@@ -425,7 +423,6 @@ CLegacyGLVertexBuffer::CLegacyGLVertexBuffer(const float * vertex, const float *
 
 CLegacyGLVertexBuffer::~CLegacyGLVertexBuffer()
 {
-	UnBind();
 	glDeleteBuffers(4, &m_vertexBuffer);
 }
 
@@ -471,27 +468,23 @@ void CLegacyGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t index
 	}
 }
 
-void CLegacyGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
+void CLegacyGLRenderer::DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count)
 {
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
+	auto& glBuffer = reinterpret_cast<const CLegacyGLVertexBuffer&>(buffer);
+	glBuffer.Bind();
+	glBuffer.DrawIndexed(begin, count);
 }
 
-void CLegacyGLVertexBuffer::DrawAll(size_t count)
+void CLegacyGLRenderer::DrawAll(IVertexBuffer& buffer, size_t count)
 {
+	reinterpret_cast<const CLegacyGLVertexBuffer&>(buffer).Bind();
 	glDrawArrays(GL_TRIANGLES, 0, count);
 }
 
-void CLegacyGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
+void CLegacyGLRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount)
 {
+	reinterpret_cast<const CLegacyGLVertexBuffer&>(buffer).Bind();
 	glDrawArraysInstanced(GL_TRIANGLES, 0, size, instanceCount);
-}
-
-void CLegacyGLVertexBuffer::UnBind() const
-{
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 }
 
 std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)

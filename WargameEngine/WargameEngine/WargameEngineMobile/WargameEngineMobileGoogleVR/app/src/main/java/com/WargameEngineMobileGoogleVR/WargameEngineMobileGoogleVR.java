@@ -30,10 +30,6 @@ public class WargameEngineMobileGoogleVR extends Activity
   private GLSurfaceView surfaceView;
   private ScaleGestureDetector mScaleDetector;
 
-  public WargameEngineMobileGoogleVR(Context mContext) {
-	  mScaleDetector = new ScaleGestureDetector(mContext, new ScaleListener());
-  }
-
   private class ScaleListener
         extends ScaleGestureDetector.SimpleOnScaleGestureListener {
     @Override
@@ -65,6 +61,8 @@ public class WargameEngineMobileGoogleVR extends Activity
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+	mScaleDetector = new ScaleGestureDetector(getApplicationContext(), new ScaleListener());
 
     // Ensure fullscreen immersion.
     setImmersiveSticky();

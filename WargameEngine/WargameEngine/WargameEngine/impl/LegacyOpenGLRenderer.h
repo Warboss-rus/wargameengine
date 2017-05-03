@@ -9,6 +9,9 @@ public:
 
 	virtual void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) override;
+	virtual void DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count) override;
+	virtual void DrawAll(IVertexBuffer& buffer, size_t count) override;
+	virtual void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
 
 	virtual void PushMatrix() override;
 	virtual void PopMatrix() override;

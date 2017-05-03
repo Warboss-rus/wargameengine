@@ -17,7 +17,6 @@
 #include "..\..\WargameEngine\view\OBJModelFactory.h"
 #include "..\..\WargameEngine\view\ColladaModelFactory.h"
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
-#include "..\..\WargameEngine\impl\GameWindowAndroid.h"
 #include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
 #ifdef RENDERER_VULKAN
 #include "..\..\WargameEngine\impl\GameWindowAndroidVulkan.h"
@@ -121,13 +120,14 @@ void android_main(struct android_app* state) {
 	struct engine engine;
 	memset(&engine, 0, sizeof(engine));
 	
+	const std::string storage = getenv("EXTERNAL_STORAGE");
 	sGameViewContext context;
 	if (context.module.name.empty())
 	{
 		context.module.script = "main.lua";
 		context.module.textures = "texture/";
 		context.module.models = "models/";
-		context.module.folder = "/sdcard/WargameEngine/";
+		context.module.folder = storage + "/WargameEngine/";
 	}
 	try
 	{
@@ -148,7 +148,7 @@ void android_main(struct android_app* state) {
 	context.soundPlayer = std::make_unique<SOUND_PLAYER_CLASS>();
 	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
-	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");
+	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
 	context.scriptHandlerFactory = []() {
 		return std::make_unique<CScriptHandlerLua>();
 	};

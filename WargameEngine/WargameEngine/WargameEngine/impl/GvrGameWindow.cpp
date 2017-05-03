@@ -81,11 +81,14 @@ void CGvrGameWindow::Draw()
 	}
 	gvr::Frame frame = m_swapchain.AcquireFrame();
 	gvr::Mat4f head_matrix = m_gvr_api->GetHeadSpaceFromStartSpaceRotation(m_gvr_api->GetTimePointNow());
-	glm::mat4 left_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_LEFT_EYE).m[0]) * glm::make_mat4(head_matrix.m[0]);
-	glm::mat4 right_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_RIGHT_EYE).m[0]) * glm::make_mat4(head_matrix.m[0]);
+	m_input.OnHeadRotation(0, head_matrix.m[0]);
+	glm::mat4 left_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_LEFT_EYE).m[0]);
+	glm::mat4 right_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_RIGHT_EYE).m[0]);
 
 	frame.BindBuffer(0);
+	m_renderer.DisableClear(false);
 	m_renderer.ClearBuffers();
+	m_renderer.DisableClear(true);
 	if (m_multiview)
 	{
 		m_renderer.SetVrViewMatrices({ glm::value_ptr(glm::transpose(left_eye_matrix)), glm::value_ptr(glm::transpose(right_eye_matrix)) });

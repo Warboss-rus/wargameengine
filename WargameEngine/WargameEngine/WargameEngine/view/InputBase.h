@@ -24,6 +24,8 @@ public:
 	bool IsLMBPressed() const override;
 	bool IsRMBPressed() const override;
 
+	void OnHeadRotation(size_t deviceIndex, const float* data);
+
 protected:
 	void OnLMBDown(int x, int y);
 	void OnLMBUp(int x, int y);
@@ -36,7 +38,6 @@ protected:
 	void OnMouseMove(int x, int y);
 	void OnGamepadButton(int gamepadIndex, int buttonIndex, bool newState);
 	void OnGamepadAxis(int gamepadIndex, int axisIndex, double horizontal, double vertical);
-	void OnHeadRotation(size_t deviceIndex, const float* data);
 
 private:
 	CExclusiveSignal<int, int> m_onLMBDown;

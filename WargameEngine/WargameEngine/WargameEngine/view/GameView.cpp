@@ -404,9 +404,7 @@ void CGameView::DrawTable(bool shadowOnly)
 	}
 	CLandscape const& landscape = m_gameModel->GetLandscape();
 	if (!shadowOnly)m_renderer.SetTexture(landscape.GetTexture());
-	m_tableBuffer->Bind();
-	m_tableBuffer->DrawAll(m_tableBufferSize);
-	m_tableBuffer->UnBind();
+	m_renderer.DrawAll(*m_tableBuffer, m_tableBufferSize);
 	if (!shadowOnly)//Don't draw decals because they don't cast shadows
 	{
 		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
