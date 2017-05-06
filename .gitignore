@@ -4,7 +4,7 @@ Debug
 dist
 .dep.inc
 Thumbs.db
-/WargameEngine/freetype-2.6/objs
+/WargameEngine/freetype2/objs
 *.sdf
 *.user
 *.suo
@@ -27,3 +27,4 @@ Thumbs.db
 *.db
 /WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/app/build
 .workspace
+/WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/.gradle
