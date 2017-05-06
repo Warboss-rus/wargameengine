@@ -55,18 +55,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -129,7 +129,7 @@
     <ProjectReference Include="..\..\bullet\build3\vs2010\LinearMath.vcxproj">
       <Project>{e57afbbf-8c5b-4d44-973d-d304dc6245c8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
+    <ProjectReference Include="..\..\freetype2\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\glew\build\vc12\glew_static.vcxproj">

@@ -123,28 +123,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <IncludePath>..\..\..\freetype-2.6\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
+    <IncludePath>..\..\..\freetype2\include;..\..\..\bullet\src;..\..\..\glm;..\..\..\LUA;..\..\..\SPIRV-Cross</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
