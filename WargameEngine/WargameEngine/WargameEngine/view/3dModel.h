@@ -47,7 +47,7 @@ struct sAnimation
 class C3DModel
 {
 public:
-	C3DModel(double scale, double rotateX, double rotateY, double rotateZ);
+	C3DModel(float scale, const CVector3f& rotations);
 	~C3DModel();
 	C3DModel(C3DModel const& other);
 	C3DModel& operator=(C3DModel const& other) = default;
@@ -60,7 +60,7 @@ public:
 private:
 	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
 	void CalculateGPUWeights(IRenderer & renderer);
-	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
+	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, AnimationLoop loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
@@ -72,8 +72,8 @@ private:
 	std::vector<sAnimation> m_animations;
 	std::vector<sMesh> m_meshes;
 	CMaterialManager m_materials;
-	double m_scale;
-	CVector3d m_rotation;
+	float m_scale;
+	CVector3f m_rotation;
 	size_t m_count;
 	std::unique_ptr<IVertexBuffer> m_vertexBuffer;
 	std::unique_ptr<IVertexAttribCache> m_weightsCache;

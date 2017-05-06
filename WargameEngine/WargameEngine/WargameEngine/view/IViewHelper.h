@@ -23,7 +23,7 @@ public:
 	virtual void SetNumberOfLights(size_t count) = 0;
 	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) = 0;
 	virtual float GetMaximumAnisotropyLevel() const = 0;
-	virtual void GetProjectionMatrix(float * matrix) const = 0;
+	virtual const float* GetProjectionMatrix() const = 0;
 	virtual void EnableDepthTest(bool enable) = 0;
 	virtual void EnableBlending(bool enable) = 0;
 	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) = 0;

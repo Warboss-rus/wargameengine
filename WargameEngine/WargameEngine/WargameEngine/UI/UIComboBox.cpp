@@ -17,7 +17,7 @@ void CUIComboBox::Draw() const
 	if (m_expanded) realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), realHeight, CachedTextureType::RENDER_TARGET);
 	}
 	if(m_invalidated)
 	{
@@ -102,7 +102,7 @@ bool CUIComboBox::LeftMouseButtonDown(int x, int y)
 bool CUIComboBox::LeftMouseButtonUp(int x, int y)
 {
 	if(!m_visible) return false;
-	Invalidate();
+	Invalidate(true);
 	if(CUIElement::LeftMouseButtonUp(x, y))
 	{
 		m_pressed = false;
@@ -142,7 +142,7 @@ void CUIComboBox::AddItem(std::wstring const& str)
 	}
 	int elementSize = static_cast<int>(m_theme->combobox.elementSize * m_scale);
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
-	Invalidate();
+	Invalidate(true);
 }
 
 std::wstring const CUIComboBox::GetText() const
@@ -175,7 +175,7 @@ void CUIComboBox::DeleteItem(size_t index)
 	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
 	int elementSize = static_cast<int>(m_theme->combobox.elementSize * m_scale);
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
-	Invalidate();
+	Invalidate(true);
 }
 
 void CUIComboBox::SetText(std::wstring const& text)
@@ -196,7 +196,7 @@ void CUIComboBox::Resize(int windowHeight, int windowWidth)
 	CUIElement::Resize(windowHeight, windowWidth);
 	int elementSize = static_cast<int>(m_theme->combobox.elementSize * m_scale);
 	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
-	Invalidate();
+	Invalidate(true);
 }
 
 size_t CUIComboBox::GetSelectedIndex() const
@@ -218,7 +218,7 @@ void CUIComboBox::ClearItems()
 { 
 	m_items.clear(); 
 	m_selected = -1; 
-	Invalidate();
+	Invalidate(true);
 }
 
 void CUIComboBox::SetOnChangeCallback(std::function<void()> const& onChange)

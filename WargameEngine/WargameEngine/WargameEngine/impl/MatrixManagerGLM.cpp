@@ -4,6 +4,7 @@
 #pragma warning(disable: 4201)
 #include <glm/gtc/type_ptr.hpp>
 #pragma warning(pop)
+#include <glm/gtx/euler_angles.hpp>
 #include "../view/IShaderManager.h"
 #include <float.h>
 
@@ -45,28 +46,34 @@ void CMatrixManagerGLM::Scale(float scale)
 	m_matricesChanged = true;
 }
 
-void CMatrixManagerGLM::Rotate(float angle, float x, float y, float z)
+void CMatrixManagerGLM::Rotate(float angle, const CVector3f& axis)
 {
 	if (fabs(angle) < FLT_EPSILON) return;
-	*m_modelMatrix = glm::rotate(*m_modelMatrix, glm::radians(angle), glm::vec3(x, y, z));
+	*m_modelMatrix = glm::rotate(*m_modelMatrix, glm::radians(angle), glm::make_vec3(axis.ptr()));
 	m_matricesChanged = true;
 }
 
-void CMatrixManagerGLM::GetModelViewMatrix(float * matrix) const
+
+void CMatrixManagerGLM::Rotate(const CVector3f& rotations)
 {
-	glm::mat4 modelView = m_viewMatrix * *m_modelMatrix;
-	memcpy(matrix, glm::value_ptr(modelView), sizeof(float) * 16);
+	*m_modelMatrix = glm::yawPitchRoll(glm::radians(rotations.x), glm::radians(rotations.y), glm::radians(rotations.z));
+	m_matricesChanged = true;
 }
 
-void CMatrixManagerGLM::GetProjectionMatrix(float * matrix) const
+const float* CMatrixManagerGLM::GetModelViewMatrix() const
 {
-	memcpy(matrix, glm::value_ptr(m_projectionMatrix), sizeof(float) * 16);
+	m_modelView = m_viewMatrix * *m_modelMatrix;
+	return glm::value_ptr(m_modelView);
 }
 
-
-void CMatrixManagerGLM::GetViewMatrix(float * matrix) const
+const float* CMatrixManagerGLM::GetProjectionMatrix() const
 {
-	memcpy(matrix, glm::value_ptr(m_viewMatrix), sizeof(float) * 16);
+	return glm::value_ptr(m_projectionMatrix);
+}
+
+const float* CMatrixManagerGLM::GetViewMatrix() const
+{
+	return glm::value_ptr(m_viewMatrix);
 }
 
 void CMatrixManagerGLM::ResetModelView()

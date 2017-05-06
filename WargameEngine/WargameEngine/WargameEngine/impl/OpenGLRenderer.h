@@ -15,15 +15,16 @@ public:
 	void DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count) override;
 	void DrawAll(IVertexBuffer& buffer, size_t count) override;
 	void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
+	void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
 
 	void PushMatrix() override;
 	void PopMatrix() override;
-	void Translate(const float dx, const float dy, const float dz) override;
-	void Translate(const double dx, const double dy, const double dz) override;
-	void Translate(const int dx, const int dy, const int dz) override;
-	void Rotate(const double angle, const double x, const double y, const double z) override;
-	void Scale(const double scale) override;
-	void GetViewMatrix(float* matrix) const override;
+	void Translate(const CVector3f& delta) override;
+	void Translate(int dx, int dy, int dz = 0) override;
+	void Rotate(float angle, const CVector3f& axis) override;
+	void Rotate(const CVector3f& rotations) override;
+	void Scale(float scale) override;
+	const float* GetViewMatrix() const override;
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
@@ -35,11 +36,9 @@ public:
 	std::unique_ptr<ICachedTexture> CreateTexture(const void* data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
 	ICachedTexture* GetTexturePtr(const Path& texture) const override;
 
-	void SetColor(const float r, const float g, const float b, const float a = 1.0f) override;
-	void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) override;
+	void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) override;
 	void SetColor(const float* color) override;
-	void SetColor(const int* color) override;
-	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess) override;
+	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess) override;
 
 	std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
@@ -59,7 +58,7 @@ public:
 	bool Force32Bits() const override;
 	bool ForceFlipBMP() const override;
 	bool ConvertBgra() const override;
-	
+
 	//IViewHelper
 	std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
 	void SetTextureManager(CTextureManager& textureManager) override;
@@ -69,7 +68,7 @@ public:
 	void SetNumberOfLights(size_t count) override;
 	void SetUpLight(size_t index, CVector3f const& position, const float* ambient, const float* diffuse, const float* specular) override;
 	float GetMaximumAnisotropyLevel() const override;
-	void GetProjectionMatrix(float* matrix) const override;
+	const float* GetProjectionMatrix() const override;
 	void EnableDepthTest(bool enable) override;
 	void EnableBlending(bool enable) override;
 	void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
@@ -80,11 +79,8 @@ public:
 	void EnableMultisampling(bool enable) override;
 
 	void BindVAO(unsigned vao, unsigned indexBuffer);
-private:
-	void UpdateColor() const;
-	
-	void BeforeDraw();
 
+private:
 	CTextureManager* m_textureManager = nullptr;
 	CShaderManagerOpenGL m_shaderManager;
 	float m_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };

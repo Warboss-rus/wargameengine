@@ -4,7 +4,6 @@
 #include "../model/TeamColor.h"
 #include "Vector3.h"
 #include <functional>
-#include <limits.h>
 #include <memory>
 #include <string>
 
@@ -48,8 +47,6 @@ public:
 class IVertexBuffer
 {
 public:
-	virtual void SetIndexBuffer(unsigned int* indexPtr, size_t indexesSize) = 0;
-
 	virtual ~IVertexBuffer() {}
 };
 
@@ -70,31 +67,30 @@ public:
 	virtual void DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count) = 0;
 	virtual void DrawAll(IVertexBuffer& buffer, size_t count) = 0;
 	virtual void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) = 0;
+	virtual void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) = 0;
 
 	virtual void PushMatrix() = 0;
 	virtual void PopMatrix() = 0;
-	virtual void Translate(const float dx, const float dy, const float dz) = 0;
-	virtual void Translate(const double dx, const double dy, const double dz) = 0;
-	virtual void Translate(const int dx, const int dy, const int dz) = 0;
-	virtual void Rotate(const double angle, const double x, const double y, const double z) = 0;
-	virtual void Scale(const double scale) = 0;
-	virtual void GetViewMatrix(float* matrix) const = 0;
-	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) = 0;
+	virtual void Translate(const CVector3f& delta) = 0;
+	virtual void Translate(int dx, int dy, int dz = 0) = 0;
+	virtual void Rotate(float angle, const CVector3f& axis) = 0;
+	virtual void Rotate(const CVector3f& rotations) = 0;
+	virtual void Scale(float scale) = 0;
+	virtual const float* GetViewMatrix() const = 0;
+	virtual void LookAt(const CVector3f& position, const CVector3f& direction, const CVector3f& up) = 0;
 
 	virtual void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) = 0;
 	virtual void SetTexture(const Path& texture, const std::vector<sTeamColor>* teamcolor, int flags = 0) = 0;
-	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) = 0;
+	virtual void SetTexture(const ICachedTexture& texture, TextureSlot slot = TextureSlot::eDiffuse) = 0;
 	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) = 0;
-	virtual void RenderToTexture(std::function<void()> const& func, ICachedTexture& texture, unsigned int width, unsigned int height) = 0;
+	virtual void RenderToTexture(const std::function<void()>& func, ICachedTexture& texture, unsigned int width, unsigned int height) = 0;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void* data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) = 0;
 	virtual ICachedTexture* GetTexturePtr(const Path& texture) const = 0;
 
-	virtual void SetColor(const float r, const float g, const float b, const float a = 1.0f) = 0;
-	virtual void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) = 0;
+	virtual void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) = 0;
 	virtual void SetColor(const float* color) = 0;
-	virtual void SetColor(const int* color) = 0;
-	virtual void SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess) = 0;
+	virtual void SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess) = 0;
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = false) = 0;
 	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() = 0;

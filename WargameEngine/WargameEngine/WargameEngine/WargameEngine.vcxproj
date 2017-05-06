@@ -309,6 +309,7 @@
     <ClInclude Include="controller\ScriptRegisterFunctions.h" />
     <ClInclude Include="controller\ScriptUIProtocol.h" />
     <ClInclude Include="IPhysicsEngine.h" />
+    <ClInclude Include="model\IBaseObject.h" />
     <ClInclude Include="model\Light.h" />
     <ClInclude Include="model\Particle.h" />
     <ClInclude Include="Typedefs.h" />
@@ -320,7 +321,7 @@
     <ClInclude Include="model\IBoundingBoxManager.h" />
     <ClInclude Include="model\IGameModel.h" />
     <ClInclude Include="model\Landscape.h" />
-    <ClInclude Include="model\ObjectStatic.h" />
+    <ClInclude Include="model\BaseObject.h" />
     <ClInclude Include="model\Projectile.h" />
     <ClInclude Include="model\TeamColor.h" />
     <ClInclude Include="OSSpecific.h" />
@@ -332,7 +333,7 @@
     <ClInclude Include="model\Object.h" />
     <ClInclude Include="model\MovementLimiter.h" />
     <ClInclude Include="model\ObjectGroup.h" />
-    <ClInclude Include="model\ObjectInterface.h" />
+    <ClInclude Include="model\IObject.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="Plugin.h" />
     <ClInclude Include="PluginManager.h" />

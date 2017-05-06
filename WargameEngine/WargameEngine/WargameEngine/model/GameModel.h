@@ -5,7 +5,7 @@
 #include <map>
 #include "../Signal.h"
 #include "IGameModel.h"
-#include "ObjectInterface.h"
+#include "IObject.h"
 #include "Projectile.h"
 #include "Particle.h"
 #include "Landscape.h"
@@ -38,7 +38,7 @@ public:
 	void RemoveParticleEffect(size_t index);
 	void Update(std::chrono::microseconds timeSinceLastUpdate);
 	void RemoveProjectile(unsigned int index);
-	CLandscape & GetLandscape();
+	Landscape & GetLandscape();
 	void ResetLandscape(float width, float depth, const Path& texture, size_t pointsPerWidth, size_t pointsPerDepth);
 	void AddLight();
 	void RemoveLight(size_t index);
@@ -56,7 +56,7 @@ private:
 	std::vector<CParticleEffect> m_particleEffects;
 	std::shared_ptr<IObject> m_selectedObject;
 	std::map<std::wstring, std::wstring> m_properties;
-	CLandscape m_landscape;
+	Landscape m_landscape;
 	std::vector<CLight> m_lights;
 	CSignal<void, IObject *> m_onObjectCreation;
 	CSignal<void, IObject *> m_onObjectRemove;

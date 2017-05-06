@@ -48,7 +48,7 @@ public:
 		m_renderer->SetInputLayout(DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT);
 	}
 
-	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
+	virtual void SetIndexBuffer(const unsigned int * indexPtr, size_t indexesSize)
 	{
 		if (indexesSize == 0) return;
 		if (indexesSize > m_indexBufferSize || !m_pIndexBuffer)
@@ -432,11 +432,9 @@ void CDirectXRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t 
 	m_devcon->DrawInstanced(size, instanceCount, 0, 0);
 }
 
-void CDirectXRenderer::SetColor(const int * color)
+void CDirectXRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
 {
-	auto charToFloat = [](const int value) {return static_cast<float>(value) / UCHAR_MAX; };
-	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), charToFloat(color[3]) };
-	SetColor(fcolor);
+	reinterpret_cast<CDirectXVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);
 }
 
 void CDirectXRenderer::SetColor(const float * color)
@@ -444,15 +442,10 @@ void CDirectXRenderer::SetColor(const float * color)
 	m_shaderManager.SetColor(color);
 }
 
-void CDirectXRenderer::SetColor(const int r, const int g, const int b, const int a)
+void CDirectXRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	const int color[] = { r, g, b, a };
-	SetColor(color);
-}
-
-void CDirectXRenderer::SetColor(const float r, const float g, const float b, const float a)
-{
-	const float color[] = { r, g, b, a };
+	auto charToFloat = [](const int value) {return static_cast<float>(value) / 0xff; };
+	const float color[] = { charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a) };
 	SetColor(color);
 }
 
@@ -469,43 +462,44 @@ void CDirectXRenderer::PopMatrix()
 	m_matricesChanged = true;
 }
 
-void CDirectXRenderer::Translate(const int dx, const int dy, const int dz)
+void CDirectXRenderer::Translate(int dx, int dy, int dz)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	Translate(CVector3f(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
 }
 
-void CDirectXRenderer::Translate(const double dx, const double dy, const double dz)
+void CDirectXRenderer::Translate(const CVector3f& delta)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
-}
-
-void CDirectXRenderer::Translate(const float dx, const float dy, const float dz)
-{
-	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON && abs(dz) < FLT_EPSILON) return;
-	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(dx, dy, dz), Load(*m_modelMatrix)));
+	if (abs(delta.x) < FLT_EPSILON && abs(delta.y) < FLT_EPSILON && abs(delta.z) < FLT_EPSILON) return;
+	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixTranslation(delta.x, delta.y, delta.z), Load(*m_modelMatrix)));
 	m_matricesChanged = false;
 }
 
-void CDirectXRenderer::Rotate(const double angle, const double x, const double y, const double z)
+void CDirectXRenderer::Rotate(float angle, const CVector3f& axis)
 {
-	if (fabs(angle) < DBL_EPSILON) return;
-	XMVECTOR axis = DirectX::XMVectorSet(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z), 1.0f);
-	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axis, static_cast<float>(angle * M_PI / 180.0)), Load(*m_modelMatrix)));
+	if (fabs(angle) < FLT_EPSILON) return;
+	XMVECTOR axisVec = DirectX::XMVectorSet(axis.x, axis.y, axis.z, 1.0f);
+	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationAxis(axisVec, angle * static_cast<float>(M_PI) / 180.0f), Load(*m_modelMatrix)));
 	m_matricesChanged = true;
 }
 
-void CDirectXRenderer::Scale(const double scale)
+void CDirectXRenderer::Rotate(const CVector3f& angles)
 {
-	if (fabs(scale - 1.0) < DBL_EPSILON) return;
-	float fscale = static_cast<float>(scale);
-	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(fscale, fscale, fscale), Load(*m_modelMatrix)));
+	auto radians = [](float degrees) {return degrees * static_cast<float>(M_PI) / 180.0f; };
+	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationRollPitchYaw(radians(angles.x), radians(angles.y), radians(angles.z)), Load(*m_modelMatrix)));
 	m_matricesChanged = true;
 }
 
-void CDirectXRenderer::GetViewMatrix(float * matrix) const
+void CDirectXRenderer::Scale(float scale)
 {
-	auto m = Store(DirectX::XMMatrixMultiply(Load(*m_modelMatrix), Load(m_viewMatrix)));
-	memcpy(matrix, *m.m, sizeof(float) * 16);
+	if (fabs(scale - 1.0f) < FLT_EPSILON) return;
+	*m_modelMatrix = Store(DirectX::XMMatrixMultiply(DirectX::XMMatrixScaling(scale, scale, scale), Load(*m_modelMatrix)));
+	m_matricesChanged = true;
+}
+
+const float* CDirectXRenderer::GetViewMatrix() const
+{
+	m_modelViewMatrix = Store(DirectX::XMMatrixMultiply(Load(*m_modelMatrix), Load(m_viewMatrix)));
+	return m_modelViewMatrix.m[0];
 }
 
 void CDirectXRenderer::ResetViewMatrix()
@@ -610,7 +604,7 @@ ICachedTexture* CDirectXRenderer::GetTexturePtr(std::wstring const& texture) con
 	return m_textureManager->GetTexturePtr(texture);
 }
 
-void CDirectXRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
+void CDirectXRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, float shininess)
 {
 	m_shaderManager.SetMaterial(ambient, diffuse, specular, shininess);
 }
@@ -706,9 +700,9 @@ float CDirectXRenderer::GetMaximumAnisotropyLevel() const
 	return D3D11_REQ_MAXANISOTROPY;
 }
 
-void CDirectXRenderer::GetProjectionMatrix(float * matrix) const
+const float* CDirectXRenderer::GetProjectionMatrix() const
 {
-	memcpy(matrix, *m_projectionMatrix.m, sizeof(float) * 16);
+	return *m_projectionMatrix.m;
 }
 
 void CDirectXRenderer::EnableDepthTest(bool enable)

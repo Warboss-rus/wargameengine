@@ -27,10 +27,10 @@ void CUIScrollBar::Draw() const
 	int scrollWidth = static_cast<int>(theme.width * m_scale);
 	int buttonSize = scrollBegin;
 	m_renderer->UnbindTexture();
-	m_renderer->SetColor(0.5f, 0.5f, 0.5f);
+	m_renderer->SetColor(theme.backgroundColor);
 	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
-	m_renderer->SetColor(0.75f, 0.75f, 0.75f);
-	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width -scrollWidth, scrollBegin + intPos),{ m_width, scrollBegin + intPos },
+	m_renderer->SetColor(theme.barColor);
+	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - scrollWidth, scrollBegin + intPos),{ m_width, scrollBegin + intPos },
 	{ m_width - scrollWidth, scrollBegin + intPos + scrollSize },{ m_width, scrollBegin + intPos + scrollSize } }, {});
 	m_renderer->SetColor(0, 0, 0);
 	m_renderer->SetTexture(m_theme->texture, true);

@@ -39,7 +39,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 	handler.RegisterFunction(NEW_DECAL, [&](IArguments const& args) {
 		if (args.GetCount() != 6)
 			throw std::runtime_error("6 argument expected (decal, x, y, rotation, width, height)");
-		sDecal decal;
+		Decal decal;
 		decal.texture = args.GetPath(1);
 		decal.x = args.GetFloat(2);
 		decal.y = args.GetFloat(3);
@@ -57,7 +57,7 @@ void RegisterModelFunctions(IScriptHandler & handler, CGameModel & model)
 		float x = args.GetFloat(2);
 		float y = args.GetFloat(3);
 		float rotation = args.GetFloat(4);
-		model.GetLandscape().AddStaticObject(CStaticObject(objectModel, { x, y, 0.0f }, rotation));
+		model.GetLandscape().AddStaticObject(StaticObject(objectModel, { x, y, 0.0f }, rotation));
 		return nullptr;
 	});
 

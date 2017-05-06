@@ -1,48 +1,63 @@
 #pragma once
-#include <memory>
 #include "../Typedefs.h"
-#include <vector>
 #include "../view/Vector3.h"
+#include <memory>
+#include <vector>
 
-struct sBounding
+struct Bounding
 {
-	struct sBox
+	struct Box
 	{
 		CVector3f min;
 		CVector3f max;
 	};
-	struct sCompound
+
+	struct Compound
 	{
-		std::vector<sBounding> items;
+		std::vector<Bounding> items;
 	};
-	sBounding()
-		:type(eType::NONE)
+
+	Bounding()
+		: type(eType::None)
 	{
 	}
-	sBounding(sBox const& box)
-		:type(eType::BOX), shape(std::make_shared<sBox>(box))
+
+	Bounding(Box const& box)
+		: type(eType::Box)
+		, shape(std::make_shared<Box>(box))
 	{
 	}
-	sBounding(sCompound const& box)
-		:type(eType::COMPOUND), shape(std::make_shared<sCompound>(box))
+
+	Bounding(Compound const& box)
+		: type(eType::Compound)
+		, shape(std::make_shared<Compound>(box))
 	{
 	}
-	const sBox& GetBox() const
+
+	const Box& GetBox() const
 	{
-		return *reinterpret_cast<sBox*>(shape.get());
+		return *reinterpret_cast<Box*>(shape.get());
 	}
-	const sCompound& GetCompound() const
+
+	const Compound& GetCompound() const
 	{
-		return *reinterpret_cast<sCompound*>(shape.get());
+		return *reinterpret_cast<Compound*>(shape.get());
 	}
+
 	float scale = 1.0;
+
 	enum class eType
 	{
-		BOX,
-		COMPOUND,
-		NONE,
+		Box,
+		Compound,
+		None,
 	} type;
-	operator bool() { return type != eType::NONE; }
+
+	operator bool()
+	{
+		return type != eType::None;
+	}
+
 private:
 	std::shared_ptr<void> shape;
 };
@@ -50,8 +65,8 @@ private:
 class IBoundingBoxManager
 {
 public:
-	virtual void AddBounding(const Path& path, sBounding const& bounding) = 0;
-	virtual sBounding GetBounding(const Path& path) const = 0;
+	virtual void AddBounding(const Path& path, const Bounding& bounding) = 0;
+	virtual Bounding GetBounding(const Path& path) const = 0;
 
 	virtual ~IBoundingBoxManager() {}
 };

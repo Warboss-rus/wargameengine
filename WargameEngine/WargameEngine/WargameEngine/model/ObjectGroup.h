@@ -1,4 +1,4 @@
-#include "ObjectInterface.h"
+#include "IObject.h"
 #include <memory>
 #include <vector>
 
@@ -14,6 +14,8 @@ public:
 	void SetCoords(CVector3f const& coords) override;
 	void Rotate(float rotation) override;
 	void SetRotation(float rotation) override;
+	void SetRotations(const CVector3f& rotations) override;
+	CVector3f GetRotations() const override;
 	float GetX() const override;
 	float GetY() const override;
 	float GetZ() const override;
@@ -37,14 +39,14 @@ public:
 	void SetMovementLimiter(IMoveLimiter * limiter) override;
 	std::map<std::wstring, std::wstring> const& GetAllProperties() const override;
 	bool CastsShadow() const override;
-	void PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed) override;
+	void PlayAnimation(std::string const& animation, AnimationLoop loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
 	void AddSecondaryModel(const Path& model) override;
 	void RemoveSecondaryModel(const Path& model) override;
 	size_t GetSecondaryModelsCount() const override;
 	Path GetSecondaryModel(size_t index) const override;
-	eAnimationLoopMode GetAnimationLoop() const override;
+	AnimationLoop GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void Update(std::chrono::microseconds timeSinceLastUpdate) override;
 	std::vector<sTeamColor> const& GetTeamColor() const override;

@@ -6,8 +6,7 @@
 #pragma warning (disable: 4127)
 #include <btBulletDynamicsCommon.h>
 #pragma warning (pop)
-#include "../model/ObjectInterface.h"
-#include "../model/ObjectStatic.h"
+#include "../model/IBaseObject.h"
 #include "../model/Landscape.h"
 #include "../view/IRenderer.h"
 #define _USE_MATH_DEFINES
@@ -38,7 +37,8 @@ public:
 	}
 	virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color) override
 	{
-		m_renderer.SetColor(color.x(), color.y(), color.z());
+		const float fcolor[] = { color.x(), color.y(), color.z(), 1.0f };
+		m_renderer.SetColor(fcolor);
 		m_renderer.RenderArrays(RenderMode::LINES, { ToVector3f(from), ToVector3f(to) }, {}, {});
 	}
 
@@ -162,7 +162,7 @@ public:
 		m_objects.push_back(Object{std::move(body), std::move(motionState), nullptr});
 	}
 
-	void SetGround(CLandscape * landscape)
+	void SetGround(Landscape * landscape)
 	{
 		landscape;
 	}
@@ -205,10 +205,10 @@ public:
 		return *obj != nullptr;
 	}
 
-	void AddBounding(const Path& modelName, sBounding const& bounding)
+	void AddBounding(const Path& modelName, Bounding const& bounding)
 	{
-		std::function<std::unique_ptr<btCollisionShape>(sBounding const&)> processShape = [&processShape, this](sBounding const& bounding)->std::unique_ptr<btCollisionShape> {
-			if (bounding.type == sBounding::eType::BOX)
+		std::function<std::unique_ptr<btCollisionShape>(Bounding const&)> processShape = [&processShape, this](Bounding const& bounding)->std::unique_ptr<btCollisionShape> {
+			if (bounding.type == Bounding::eType::Box)
 			{
 				auto& box = bounding.GetBox();
 				CVector3f halfSize = (box.max - box.min) / 2;
@@ -219,7 +219,7 @@ public:
 				shape->setLocalScaling(btVector3(btScale, btScale, btScale));
 				return std::move(shape);
 			}
-			else if (bounding.type == sBounding::eType::COMPOUND)
+			else if (bounding.type == Bounding::eType::Compound)
 			{
 				auto& compound = bounding.GetCompound();
 				auto shape = std::make_unique<btCompoundShape>();
@@ -308,12 +308,12 @@ public:
 		m_dynamicsWorld->setDebugDrawer(m_debugDrawer.get());
 	}
 
-	sBounding GetAABB(const Path& path) const
+	Bounding GetAABB(const Path& path) const
 	{
 		auto it = m_collisionShapes.find(path);
 		if (it == m_collisionShapes.end())
 		{
-			return sBounding();
+			return Bounding();
 		}
 		btVector3 min, max;
 		btTransform transform;
@@ -322,10 +322,10 @@ public:
 		auto it2 = m_shapeOffset.find(it->second.get());
 		if (it2 == m_shapeOffset.end())
 		{
-			return sBounding();
+			return Bounding();
 		}
 		auto offset = it2->second;
-		return sBounding::sBox{ ToVector3f(min) + offset, ToVector3f(max) + offset };
+		return Bounding::Box{ ToVector3f(min) + offset, ToVector3f(max) + offset };
 	}
 private:
 	static btTransform GetObjectTransform(IBaseObject * object, CVector3f const& shapeOffset)
@@ -425,7 +425,7 @@ void CPhysicsEngineBullet::RemoveDynamicObject(IObject * object)
 	m_pImpl->RemoveDynamicObject(object);
 }
 
-void CPhysicsEngineBullet::SetGround(CLandscape * landscape)
+void CPhysicsEngineBullet::SetGround(Landscape * landscape)
 {
 	m_pImpl->SetGround(landscape);
 }
@@ -440,12 +440,12 @@ bool CPhysicsEngineBullet::TestObject(IObject * object) const
 	return m_pImpl->TestObject(object);
 }
 
-void CPhysicsEngineBullet::AddBounding(const Path& modelName, sBounding const& bounding)
+void CPhysicsEngineBullet::AddBounding(const Path& modelName, Bounding const& bounding)
 {
 	m_pImpl->AddBounding(modelName, bounding);
 }
 
-sBounding CPhysicsEngineBullet::GetBounding(const Path& path) const
+Bounding CPhysicsEngineBullet::GetBounding(const Path& path) const
 {
 	return m_pImpl->GetAABB(path);
 }

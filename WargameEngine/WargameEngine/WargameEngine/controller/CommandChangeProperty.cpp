@@ -1,5 +1,5 @@
 #include "CommandChangeProperty.h"
-#include "../model/ObjectInterface.h"
+#include "../model/IObject.h"
 #include "../IMemoryStream.h"
 #include "../model/IGameModel.h"
 

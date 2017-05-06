@@ -1,10 +1,10 @@
 #pragma once
-#include "ObjectStatic.h"
+#include "BaseObject.h"
 #include <functional>
 #include <memory>
 #include "Particle.h"
 
-class CProjectile : public CStaticObject
+class CProjectile : public StaticObject
 {
 public:
 	CProjectile(CVector3f const& origin, CVector3f & target, float speed, const Path& model, CParticleEffect* particleEffect, std::function<void()> const& onHit, std::function<void()> const& onCollision);

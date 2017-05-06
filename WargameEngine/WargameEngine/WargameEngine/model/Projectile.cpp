@@ -1,7 +1,7 @@
 #include "Projectile.h"
 
 CProjectile::CProjectile(CVector3f const& origin, CVector3f & target, float speed, const Path& model, CParticleEffect * particleEffect, std::function<void()> const& onHit, std::function<void()> const& onCollision)
-	: CStaticObject(model, origin, 0.0f, model.empty()), m_target(target), m_speed(speed), m_particle(particleEffect), m_onHit(onHit), m_onCollision(onCollision)
+	: StaticObject(model, origin, 0.0f, model.empty()), m_target(target), m_speed(speed), m_particle(particleEffect), m_onHit(onHit), m_onCollision(onCollision)
 {
 }
 

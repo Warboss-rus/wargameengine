@@ -321,9 +321,9 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		if (n == 2) sloop = args.GetStr(2);
 		if (n == 3) speed = args.GetFloat(3);
 		transform(sloop.begin(), sloop.end(), sloop.begin(), [](char c) {return static_cast<char>(::tolower(c)); });
-		eAnimationLoopMode loop = eAnimationLoopMode::NONLOOPING;
-		if (sloop == "looping") loop = eAnimationLoopMode::LOOPING;
-		if (sloop == "holdend") loop = eAnimationLoopMode::HOLDEND;
+		AnimationLoop loop = AnimationLoop::NonLooping;
+		if (sloop == "looping") loop = AnimationLoop::Looping;
+		if (sloop == "holdend") loop = AnimationLoop::HoldEnd;
 		if (!object)
 		{
 			throw std::runtime_error("needs to be called on valid object");

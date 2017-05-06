@@ -22,7 +22,7 @@ public:
 	void AddNewRotateObject(std::shared_ptr<IObject> object, float deltaRotation);
 	void AddNewChangeProperty(std::shared_ptr<IObject> object, std::wstring const& key, std::wstring const& value);
 	void AddNewChangeGlobalProperty(std::wstring const& key, std::wstring const& value, IGameModel & model);
-	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
+	void AddNewPlayAnimation(std::shared_ptr<IObject> object, std::string const& animation, AnimationLoop loopMode, float speed);
 	void AddNewGoTo(std::shared_ptr<CObjectDecorator> object, float x, float y, float speed, std::string const& animation, float animationSpeed);
 	void Undo();
 	void Redo();

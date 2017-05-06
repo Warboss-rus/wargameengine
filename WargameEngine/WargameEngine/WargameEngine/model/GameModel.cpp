@@ -196,7 +196,7 @@ void CGameModel::RemoveProjectile(unsigned int index)
 	m_projectiles.erase(m_projectiles.begin() + index);
 }
 
-CLandscape & CGameModel::GetLandscape()
+Landscape & CGameModel::GetLandscape()
 {
 	return m_landscape;
 }

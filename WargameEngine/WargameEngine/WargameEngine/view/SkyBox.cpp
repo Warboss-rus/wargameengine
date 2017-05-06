@@ -42,10 +42,7 @@ void CSkyBox::Draw(CVector3f const& pos, float scale)
 			m_buffer = m_renderer.CreateVertexBuffer(vertex->ptr(), nullptr, nullptr, skyboxVertices);
 		}
 		m_renderer.PushMatrix();
-		float x = -pos.x;
-		float y = -pos.y;
-		float z = -pos.z;
-		m_renderer.Translate(x, y, z);
+		m_renderer.Translate(-pos);
 		m_renderer.Scale(1.0f / scale);
 		m_renderer.SetTexture(*m_texture);
 		m_renderer.DrawAll(*m_buffer, skyboxVertices);
@@ -58,9 +55,9 @@ void CSkyBox::Draw(CVector3f const& pos, float scale)
 		float x = -pos.x - m_width / (scale * 2);
 		float y = -pos.y - m_height / (scale * 2);
 		float z = -pos.z - m_length / (scale * 2);
-		m_renderer.Translate(x, y, z);
+		m_renderer.Translate(CVector3f(x, y, z));
 		m_renderer.Scale(1.0f / scale);
-		static const std::array<CVector2f, 4> texCoords = { CVector2f{ 1.0f, 0.0f },{ 1.0f, 1.0f },{ 0.0f, 0.0f },{ 0.0f, 1.0f } };
+		static const std::array<CVector2f, 4> texCoords = { CVector2f(1.0f, 0.0f), { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f } };
 		// Top side
 		m_renderer.SetTexture(m_images[4], false, TextureFlags::TEXTURE_NO_WRAP);
 		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, 0.0f, m_length),{ 0.0f, 0.0f, m_length },{ m_width, m_height, m_length },{ 0.0f, m_height, m_length } }, {}, texCoords);

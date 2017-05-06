@@ -4,6 +4,7 @@
 #include "IViewport.h"
 #include <map>
 #include <vector>
+#include "Matrix4.h"
 
 class IViewHelper;
 class IOcclusionQuery;
@@ -53,8 +54,8 @@ private:
 	int m_height;
 	float m_fieldOfView;
 	IViewHelper* m_renderer;
-	float m_projectionMatrix[16];
-	float m_viewMatrix[16];
+	Matrix4F m_projectionMatrix;
+	Matrix4F m_viewMatrix;
 	float m_polygonOffsetFactor = 0.0f;
 	float m_polygonOffsetUnits = 0.0f;
 	float m_nearPane = 1.0f;

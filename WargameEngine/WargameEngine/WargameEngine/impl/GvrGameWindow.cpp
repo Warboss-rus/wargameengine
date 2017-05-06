@@ -169,7 +169,7 @@ void CGvrGameWindow::ToggleFullscreen()
 
 bool CGvrGameWindow::EnableVRMode(bool, VRViewportFactory const&)
 {
-
+	return true;
 }
 
 IInput& CGvrGameWindow::GetInput()

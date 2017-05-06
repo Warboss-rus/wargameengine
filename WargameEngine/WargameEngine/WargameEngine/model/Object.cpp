@@ -1,12 +1,13 @@
 #include "Object.h"
-#include <algorithm>
 #include "MovementLimiter.h"
+#include <algorithm>
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include <float.h>
+#include <math.h>
 
 CObject::CObject(const Path& model, CVector3f const& position, float rotation, bool hasShadow)
-	: CBaseObject(model, position, rotation, hasShadow), m_isSelectable(true)
+	: BaseObject(model, position, rotation, hasShadow)
+	, m_isSelectable(true)
 {
 }
 
@@ -16,33 +17,33 @@ std::set<std::string> const& CObject::GetHiddenMeshes() const
 }
 
 void CObject::ShowMesh(std::string const& meshName)
-{ 
+{
 	auto i = m_hiddenMeshes.find(meshName);
-	if(i != m_hiddenMeshes.end())
+	if (i != m_hiddenMeshes.end())
 	{
 		m_hiddenMeshes.erase(i);
 	}
 }
 
-void CObject::HideMesh(std::string const& meshName) 
-{ 
-	m_hiddenMeshes.insert(meshName); 
-}
-
-void CObject::SetProperty(std::wstring const& key, std::wstring const& value) 
-{ 
-	m_properties[key] = value; 
-}
-
-std::wstring const CObject::GetProperty(std::wstring const& key) const 
+void CObject::HideMesh(std::string const& meshName)
 {
-	if(m_properties.find(key) != m_properties.end())
+	m_hiddenMeshes.insert(meshName);
+}
+
+void CObject::SetProperty(std::wstring const& key, std::wstring const& value)
+{
+	m_properties[key] = value;
+}
+
+std::wstring const CObject::GetProperty(std::wstring const& key) const
+{
+	if (m_properties.find(key) != m_properties.end())
 	{
 		return m_properties.find(key)->second;
 	}
 	else
 	{
-		return L"";	
+		return L"";
 	}
 }
 
@@ -56,7 +57,7 @@ void CObject::SetSelectable(bool selectable)
 	m_isSelectable = selectable;
 }
 
-void CObject::SetMovementLimiter(IMoveLimiter * limiter)
+void CObject::SetMovementLimiter(IMoveLimiter* limiter)
 {
 	m_movelimiter.reset(limiter);
 }
@@ -66,7 +67,7 @@ std::map<std::wstring, std::wstring> const& CObject::GetAllProperties() const
 	return m_properties;
 }
 
-void CObject::PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed)
+void CObject::PlayAnimation(std::string const& animation, AnimationLoop loop, float speed)
 {
 	m_animation = animation;
 	m_animationLoop = loop;
@@ -100,7 +101,7 @@ void CObject::RemoveSecondaryModel(const Path& model)
 	}
 }
 
-size_t CObject::GetSecondaryModelsCount() const 
+size_t CObject::GetSecondaryModelsCount() const
 {
 	return m_secondaryModels.size();
 }
@@ -110,7 +111,7 @@ Path CObject::GetSecondaryModel(size_t index) const
 	return m_secondaryModels[index];
 }
 
-eAnimationLoopMode CObject::GetAnimationLoop() const
+AnimationLoop CObject::GetAnimationLoop() const
 {
 	return m_animationLoop;
 }
@@ -137,7 +138,7 @@ void CObject::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsign
 	tc.color[0] = r;
 	tc.color[1] = g;
 	tc.color[2] = b;
-	auto it = std::find_if(m_teamColor.begin(), m_teamColor.end(), [&suffix](sTeamColor const& tc) {return tc.suffix == suffix;});
+	auto it = std::find_if(m_teamColor.begin(), m_teamColor.end(), [&suffix](sTeamColor const& tc) { return tc.suffix == suffix; });
 	if (it != m_teamColor.end())
 	{
 		m_teamColor.erase(it);

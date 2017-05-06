@@ -20,10 +20,9 @@ void CParticleSystem::SetShaders(const Path& vertex, const Path& fragment)
 void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 {
 	float modelview[4][4];
-	m_renderer.GetViewMatrix(&modelview[0][0]);
+	memcpy(modelview, m_renderer.GetViewMatrix(), sizeof(float) * 16);
 	m_renderer.PushMatrix();
-	CVector3f const & coords = particleEffect.GetPosition();
-	m_renderer.Translate(coords.x, coords.y, coords.z);
+	m_renderer.Translate(particleEffect.GetPosition());
 	m_renderer.Scale(particleEffect.GetScale());
 	auto& model = m_models.at(particleEffect.GetEffectPath());
 	m_renderer.SetTexture(model.GetTexture());

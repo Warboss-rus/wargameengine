@@ -17,12 +17,12 @@ CModelManager::~CModelManager()
 {
 }
 
-sBounding LoadBoundingFromFile(const Path& path, float & scale, double * rotation)
+Bounding LoadBoundingFromFile(const Path& path, float & scale, CVector3f& rotation)
 {
 	std::ifstream iFile(path);
-	sBounding::sCompound compound;
+	Bounding::Compound compound;
 	std::string line;
-	if (!iFile.good()) return sBounding(compound);
+	if (!iFile.good()) return Bounding(compound);
 	while (iFile.good())
 	{
 		iFile >> line;
@@ -30,8 +30,8 @@ sBounding LoadBoundingFromFile(const Path& path, float & scale, double * rotatio
 		{
 			CVector3f min, max;
 			iFile >> min.x >> min.y >> min.z >> max.x >> max.y >> max.z;
-			sBounding::sBox box{ min, max };
-			compound.items.push_back(sBounding(box));
+			Bounding::Box box{ min, max };
+			compound.items.push_back(Bounding(box));
 		}
 		if (line == "scale")
 		{
@@ -39,19 +39,19 @@ sBounding LoadBoundingFromFile(const Path& path, float & scale, double * rotatio
 		}
 		if (line == "rotationX")
 		{
-			iFile >> rotation[0];
+			iFile >> rotation.x;
 		}
 		if (line == "rotationY")
 		{
-			iFile >> rotation[1];
+			iFile >> rotation.y;
 		}
 		if (line == "rotationZ")
 		{
-			iFile >> rotation[2];
+			iFile >> rotation.z;
 		}
 	}
 	iFile.close();
-	sBounding bounding = compound.items.size() == 1 ? compound.items[0]: sBounding(compound);
+	Bounding bounding = compound.items.size() == 1 ? compound.items[0]: Bounding(compound);
 	bounding.scale = scale;
 	return bounding;
 }
@@ -62,9 +62,9 @@ void CModelManager::LoadIfNotExist(const Path& path)
 	{
 		Path boundingPath = path.substr(0, path.find_last_of('.')) + make_path(L".txt");
 		float scale = 1.0;
-		double rotation[3] = { 0.0, 0.0, 0.0 };
+		CVector3f rotation;
 		m_bbManager->AddBounding(path, LoadBoundingFromFile(m_asyncFileProvider->GetModelAbsolutePath(boundingPath), scale, rotation));
-		std::shared_ptr<C3DModel> model = std::make_shared<C3DModel>(scale, rotation[0], rotation[1], rotation[2]);
+		std::shared_ptr<C3DModel> model = std::make_shared<C3DModel>(scale, rotation);
 		m_models[path] = model;
 		auto fullPath = m_asyncFileProvider->GetModelAbsolutePath(path);		
 		m_asyncFileProvider->GetModelAsync(path, [=](void* data, size_t size) {

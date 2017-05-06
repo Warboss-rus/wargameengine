@@ -52,12 +52,9 @@ public:
 			glDeleteVertexArrays(1, &m_vao);
 	}
 
-	void SetIndexBuffer(unsigned int* indexPtr, size_t indexesSize) override
+	void SetIndexBuffer(GLuint indexBuffer)
 	{
-		glGenBuffers(1, &m_indexesBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		m_indexesBuffer = indexBuffer;
 	}
 
 	void Bind(COpenGLRenderer& renderer, CShaderManagerOpenGL& shaderManager) const
@@ -254,7 +251,6 @@ COpenGLRenderer::COpenGLRenderer()
 	m_color[3] = 1.0f;
 	m_shaderManager.DoOnProgramChange([this]() {
 		m_matrixManager.InvalidateMatrices();
-		UpdateColor();
 	});
 
 	m_defaultProgram = m_shaderManager.NewProgram();
@@ -297,23 +293,33 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const&
 
 void COpenGLRenderer::DrawIndexes(IVertexBuffer& vertexBuffer, size_t begin, size_t count)
 {
-	BeforeDraw();
+	m_matrixManager.UpdateMatrices(m_shaderManager);
 	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
 	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
 }
 
 void COpenGLRenderer::DrawAll(IVertexBuffer& vertexBuffer, size_t count)
 {
-	BeforeDraw();
+	m_matrixManager.UpdateMatrices(m_shaderManager);
 	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
 }
 
 void COpenGLRenderer::DrawInstanced(IVertexBuffer& vertexBuffer, size_t size, size_t instanceCount)
 {
-	BeforeDraw();
+	m_matrixManager.UpdateMatrices(m_shaderManager);
 	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(size), static_cast<GLsizei>(instanceCount));
+}
+
+void COpenGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
+{
+	GLuint indexBuffer;
+	glGenBuffers(1, &indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
+	reinterpret_cast<COpenGLVertexBuffer&>(buffer).SetIndexBuffer(indexBuffer);
 }
 
 void COpenGLRenderer::PushMatrix()
@@ -327,34 +333,34 @@ void COpenGLRenderer::PopMatrix()
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 }
 
-void COpenGLRenderer::Translate(const int dx, const int dy, const int dz)
+void COpenGLRenderer::Translate(int dx, int dy, int dz)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_matrixManager.Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 }
 
-void COpenGLRenderer::Translate(const double dx, const double dy, const double dz)
+void COpenGLRenderer::Translate(const CVector3f& delta)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_matrixManager.Translate(delta.x, delta.y, delta.z);
 }
 
-void COpenGLRenderer::Translate(const float dx, const float dy, const float dz)
+void COpenGLRenderer::Scale(float scale)
 {
-	m_matrixManager.Translate(dx, dy, dz);
+	m_matrixManager.Scale(scale);
 }
 
-void COpenGLRenderer::Scale(double scale)
+void COpenGLRenderer::Rotate(float angle, const CVector3f& axis)
 {
-	m_matrixManager.Scale(static_cast<float>(scale));
+	m_matrixManager.Rotate(angle, axis);
 }
 
-void COpenGLRenderer::Rotate(double angle, double x, double y, double z)
+void COpenGLRenderer::Rotate(const CVector3f& rotations)
 {
-	m_matrixManager.Rotate(static_cast<float>(angle), static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+	m_matrixManager.Rotate(rotations);
 }
 
-void COpenGLRenderer::GetViewMatrix(float* matrix) const
+const float* COpenGLRenderer::GetViewMatrix() const
 {
-	m_matrixManager.GetModelViewMatrix(matrix);
+	return m_matrixManager.GetModelViewMatrix();
 }
 
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
@@ -450,11 +456,11 @@ void COpenGLRenderer::RenderToTexture(function<void()> const& func, ICachedTextu
 	}
 	int oldViewport[4];
 	memcpy(oldViewport, m_viewport, sizeof(int) * 4);
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 	m_viewport[0] = 0;
 	m_viewport[1] = 0;
-	m_viewport[2] = width;
-	m_viewport[3] = height;
+	m_viewport[2] = static_cast<int>(width);
+	m_viewport[3] = static_cast<int>(height);
 	m_matrixManager.SaveMatrices();
 	m_matrixManager.SetOrthographicProjection(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
 	m_matrixManager.ResetModelView();
@@ -464,6 +470,7 @@ void COpenGLRenderer::RenderToTexture(function<void()> const& func, ICachedTextu
 
 	m_matrixManager.RestoreMatrices();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
+	memcpy(m_viewport, oldViewport, sizeof(int) * 4);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
 	glDeleteFramebuffers(1, &framebuffer);
@@ -487,10 +494,10 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 	if (m_supportsDSA)
 	{
 		unsigned glTexture = *texture;
-		glTextureStorage2D(glTexture, 1, get<1>(formatMap.at(type)), width, height);
+		glTextureStorage2D(glTexture, 1, get<1>(formatMap.at(type)), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 		if (data)
 		{
-			glTextureSubImage2D(glTexture, 0, 0, 0, width, height, get<0>(formatMap.at(type)), get<2>(formatMap.at(type)), data);
+			glTextureSubImage2D(glTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), get<0>(formatMap.at(type)), get<2>(formatMap.at(type)), data);
 		}
 
 		if (type == CachedTextureType::ALPHA)
@@ -511,7 +518,7 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 	else
 	{
 		SetTexture(*texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, get<1>(formatMap.at(type)), width, height, 0, get<0>(formatMap.at(type)), get<2>(formatMap.at(type)), data);
+		glTexImage2D(GL_TEXTURE_2D, 0, get<1>(formatMap.at(type)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, get<0>(formatMap.at(type)), get<2>(formatMap.at(type)), data);
 		if (type == CachedTextureType::ALPHA)
 		{
 			GLint swizzleMask[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
@@ -535,29 +542,17 @@ ICachedTexture* COpenGLRenderer::GetTexturePtr(wstring const& texture) const
 	return m_textureManager->GetTexturePtr(texture);
 }
 
-void COpenGLRenderer::SetColor(const float r, const float g, const float b, const float a)
+void COpenGLRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	const float color[] = { r, g, b, a };
-	SetColor(color);
-}
-
-void COpenGLRenderer::SetColor(const int r, const int g, const int b, const int a)
-{
-	const int color[] = { r, g, b, a };
+	auto charToFloat = [](const int value) { return static_cast<float>(value) / 0xff; };
+	const float color[] = { charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a) };
 	SetColor(color);
 }
 
 void COpenGLRenderer::SetColor(const float* color)
 {
 	memcpy(m_color, color, sizeof(float) * 4);
-	UpdateColor();
-}
-
-void COpenGLRenderer::SetColor(const int* color)
-{
-	auto charToFloat = [](const int value) { return static_cast<float>(value) / UCHAR_MAX; };
-	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), charToFloat(color[3]) };
-	SetColor(fcolor);
+	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
 }
 
 void COpenGLRenderer::SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess)
@@ -786,9 +781,9 @@ float COpenGLRenderer::GetMaximumAnisotropyLevel() const
 	return aniso;
 }
 
-void COpenGLRenderer::GetProjectionMatrix(float* matrix) const
+const float* COpenGLRenderer::GetProjectionMatrix() const
 {
-	m_matrixManager.GetProjectionMatrix(matrix);
+	return m_matrixManager.GetProjectionMatrix();
 }
 
 void COpenGLRenderer::EnableDepthTest(bool enable)
@@ -881,14 +876,4 @@ void COpenGLRenderer::BindVAO(unsigned vao, unsigned indexBuffer)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 		m_indexBuffer = indexBuffer;
 	}
-}
-
-void COpenGLRenderer::UpdateColor() const
-{
-	m_shaderManager.SetUniformValue("color", 4, 1, m_color);
-}
-
-void COpenGLRenderer::BeforeDraw()
-{
-	m_matrixManager.UpdateMatrices(m_shaderManager);
 }

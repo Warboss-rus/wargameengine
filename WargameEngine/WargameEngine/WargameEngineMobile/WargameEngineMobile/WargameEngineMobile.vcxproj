@@ -135,8 +135,8 @@
     <ClInclude Include="..\..\WargameEngine\model\MovementLimiter.h" />
     <ClInclude Include="..\..\WargameEngine\model\Object.h" />
     <ClInclude Include="..\..\WargameEngine\model\ObjectGroup.h" />
-    <ClInclude Include="..\..\WargameEngine\model\ObjectInterface.h" />
-    <ClInclude Include="..\..\WargameEngine\model\ObjectStatic.h" />
+    <ClInclude Include="..\..\WargameEngine\model\IObject.h" />
+    <ClInclude Include="..\..\WargameEngine\model\BaseObject.h" />
     <ClInclude Include="..\..\WargameEngine\model\Particle.h" />
     <ClInclude Include="..\..\WargameEngine\model\Projectile.h" />
     <ClInclude Include="..\..\WargameEngine\model\TeamColor.h" />

@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "IShaderManager.h"
 
-C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
+C3DModel::C3DModel(float scale, const CVector3f& rotations):m_scale(scale), m_rotation(rotations), m_count(0) {}
 
 C3DModel::C3DModel(C3DModel const& other)
 	: m_vertices(other.m_vertices), m_textureCoords(other.m_textureCoords), m_normals(other.m_normals), m_indexes(other.m_indexes), m_weightsCount(other.m_weightsCount)
@@ -90,9 +90,7 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache, 4, m_weightsCount.size() * 4, IShaderManager::TYPE::FLOAT32);
 	}
 	renderer.PushMatrix();
-	renderer.Rotate(m_rotation.x, 1.0, 0.0, 0.0);//causes transparent models
-	renderer.Rotate(m_rotation.y, 0.0, 1.0, 0.0);
-	renderer.Rotate(m_rotation.z, 0.0, 0.0, 1.0); 
+	renderer.Rotate(m_rotation);
 	renderer.Scale(m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{
@@ -217,7 +215,7 @@ void InterpolateMatrices(float * m1, const float * m2, float t)//works bad if ma
 	}
 }
 
-std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, eAnimationLoopMode loop, 
+std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, AnimationLoop loop, 
 	float time, bool & animationIsEnded)
 {
 	animationIsEnded = false;
@@ -240,11 +238,11 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 				AddAllChildren(animations, i, animsToPlay);
 				if (time > animations[i].duration)
 				{
-					if (loop == eAnimationLoopMode::LOOPING)
+					if (loop == AnimationLoop::Looping)
 					{
 						time = fmod(time, animations[i].duration);
 					}
-					else if (loop == eAnimationLoopMode::HOLDEND)
+					else if (loop == AnimationLoop::HoldEnd)
 					{
 						time = animations[i].duration;
 					}
@@ -303,7 +301,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 }
 
 //returns if animations is ended
-bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, 
+bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, AnimationLoop loop, float time, 
 	bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
 {
 	bool result;
@@ -343,7 +341,7 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 			}
 		}
 		auto vertexBuffer = renderer.CreateVertexBuffer(&vertices.data()->x, &normals.data()->x, &m_textureCoords.data()->x, vertices.size(), true);
-		vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
+		renderer.SetIndexBuffer(*vertexBuffer, m_indexes.data(), m_indexes.size());
 		DrawModel(renderer, hideMeshes, vertexOnly, *vertexBuffer, false, teamcolor, replaceTextures);
 	}
 	return result;
@@ -354,7 +352,7 @@ void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool
 	if (!m_vertexBuffer)
 	{
 		m_vertexBuffer = renderer.CreateVertexBuffer(&m_vertices.data()->x, &m_normals.data()->x, &m_textureCoords.data()->x, m_vertices.size(), false);
-		m_vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
+		renderer.SetIndexBuffer(*m_vertexBuffer, m_indexes.data(), m_indexes.size());
 	}
 
 	auto* hiddenMeshes = (object && !object->GetHiddenMeshes().empty()) ? &object->GetHiddenMeshes() : nullptr;
@@ -364,7 +362,7 @@ void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool
 	{
 		if (object->GetAnimation().empty())//no animation is playing, default pose
 		{
-			DrawSkinned(renderer, hiddenMeshes, vertexOnly, "", eAnimationLoopMode::NONLOOPING, 0.0f, gpuSkinning, teamcolor, replaceTextures);
+			DrawSkinned(renderer, hiddenMeshes, vertexOnly, "", AnimationLoop::NonLooping, 0.0f, gpuSkinning, teamcolor, replaceTextures);
 		}
 		else//animation is playing, full computation
 		{

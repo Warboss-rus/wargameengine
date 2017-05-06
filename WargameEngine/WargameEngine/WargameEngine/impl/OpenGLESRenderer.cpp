@@ -73,12 +73,9 @@ public:
 			shaderManager.SetInputAttributes(m_vertex, m_normals, m_texCoords, m_vertexCount, 3);
 		}
 	}
-	void SetIndexBuffer(unsigned int* indexPtr, size_t indexesSize) override
+	void SetIndexBuffer(GLuint indexBuffer)
 	{
-		glGenBuffers(1, &m_indexesBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexesBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		m_indexesBuffer = indexBuffer;
 	}
 
 private:
@@ -273,6 +270,16 @@ void COpenGLESRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t
 	glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(size), static_cast<GLsizei>(instanceCount));
 }
 
+void COpenGLESRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
+{
+	GLuint indexBuffer;
+	glGenBuffers(1, &indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
+	reinterpret_cast<COpenGLESVertexBuffer&>(buffer).SetIndexBuffer(indexBuffer);
+}
+
 void COpenGLESRenderer::PushMatrix()
 {
 	m_matrixManager.PushMatrix();
@@ -284,34 +291,34 @@ void COpenGLESRenderer::PopMatrix()
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 }
 
-void COpenGLESRenderer::Translate(const int dx, const int dy, const int dz)
+void COpenGLESRenderer::Translate(int dx, int dy, int dz)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_matrixManager.Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 }
 
-void COpenGLESRenderer::Translate(const double dx, const double dy, const double dz)
+void COpenGLESRenderer::Translate(const CVector3f& delta)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_matrixManager.Translate(delta.x, delta.y, delta.z);
 }
 
-void COpenGLESRenderer::Translate(const float dx, const float dy, const float dz)
+void COpenGLESRenderer::Scale(float scale)
 {
-	m_matrixManager.Translate(dx, dy, dz);
+	m_matrixManager.Scale(scale);
 }
 
-void COpenGLESRenderer::Scale(double scale)
+void COpenGLESRenderer::Rotate(float angle, const CVector3f& axis)
 {
-	m_matrixManager.Scale(static_cast<float>(scale));
+	m_matrixManager.Rotate(angle, axis);
 }
 
-void COpenGLESRenderer::Rotate(double angle, double x, double y, double z)
+void COpenGLESRenderer::Rotate(const CVector3f& rotations)
 {
-	m_matrixManager.Rotate(angle, static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+	m_matrixManager.Rotate(rotations);
 }
 
-void COpenGLESRenderer::GetViewMatrix(float* matrix) const
+const float* COpenGLESRenderer::GetViewMatrix() const
 {
-	m_matrixManager.GetModelViewMatrix(matrix);
+	return m_matrixManager.GetModelViewMatrix();
 }
 
 void COpenGLESRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
@@ -383,11 +390,11 @@ void COpenGLESRenderer::RenderToTexture(std::function<void()> const& func, ICach
 	}
 	int oldViewport[4];
 	memcpy(oldViewport, m_viewport, sizeof(int) * 4);
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 	m_viewport[0] = 0;
 	m_viewport[1] = 0;
-	m_viewport[2] = width;
-	m_viewport[3] = height;
+	m_viewport[2] = static_cast<int>(width);
+	m_viewport[3] = static_cast<int>(height);
 	m_matrixManager.SaveMatrices();
 	m_matrixManager.SetOrthographicProjection(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
 	m_matrixManager.ResetModelView();
@@ -397,6 +404,7 @@ void COpenGLESRenderer::RenderToTexture(std::function<void()> const& func, ICach
 
 	m_matrixManager.RestoreMatrices();
 	glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
+	memcpy(m_viewport, oldViewport, sizeof(int) * 4);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
 	glDeleteFramebuffers(1, &framebuffer);
@@ -413,7 +421,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void* dat
 	};
 	auto texture = std::make_unique<COpenGLESCachedTexture>();
 	SetTexture(*texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, std::get<1>(formatMap.at(type)), width, height, 0, std::get<0>(formatMap.at(type)), std::get<2>(formatMap.at(type)), data);
+	glTexImage2D(GL_TEXTURE_2D, 0, std::get<1>(formatMap.at(type)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, std::get<0>(formatMap.at(type)), std::get<2>(formatMap.at(type)), data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -431,15 +439,10 @@ ICachedTexture* COpenGLESRenderer::GetTexturePtr(const Path& texture) const
 	return m_textureManager->GetTexturePtr(texture);
 }
 
-void COpenGLESRenderer::SetColor(const float r, const float g, const float b, const float a)
+void COpenGLESRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	float color[] = { r, g, b, a };
-	SetColor(color);
-}
-
-void COpenGLESRenderer::SetColor(const int r, const int g, const int b, const int a)
-{
-	int color[] = { r, g, b, a };
+	auto charToFloat = [](const int value) { return static_cast<float>(value) / 0xff; };
+	const float color[] = { charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a) };
 	SetColor(color);
 }
 
@@ -448,13 +451,6 @@ void COpenGLESRenderer::SetColor(const float* color)
 	memcpy(m_color, color, sizeof(float) * 4);
 	static const std::string colorKey = "color";
 	m_shaderManager.SetUniformValue(colorKey, 4, 1, m_color);
-}
-
-void COpenGLESRenderer::SetColor(const int* color)
-{
-	auto charToFloat = [](const int value) { return static_cast<float>(value) / UCHAR_MAX; };
-	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), 1.0f };
-	SetColor(fcolor);
 }
 
 void COpenGLESRenderer::SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess)
@@ -625,9 +621,9 @@ float COpenGLESRenderer::GetMaximumAnisotropyLevel() const
 	return aniso;
 }
 
-void COpenGLESRenderer::GetProjectionMatrix(float* matrix) const
+const float* COpenGLESRenderer::GetProjectionMatrix() const
 {
-	m_matrixManager.GetProjectionMatrix(matrix);
+	return m_matrixManager.GetProjectionMatrix();
 }
 
 void COpenGLESRenderer::EnableDepthTest(bool enable)

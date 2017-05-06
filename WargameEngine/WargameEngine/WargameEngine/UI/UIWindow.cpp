@@ -25,8 +25,8 @@ void CUIWindow::Draw() const
 	{
 		m_renderer.RenderToTexture([this]() {
 			m_renderer.UnbindTexture();
-			m_renderer.SetColor(0.4f, 0.4f, 1.0f);
 			auto& theme = m_theme->window;
+			m_renderer.SetColor(theme.headerColor);
 			int headerHeight = static_cast<int>(theme.headerHeight * m_scale);
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
 			{ CVector2i(0, 0),{ 0, headerHeight },{ GetWidth(), 0 },{ GetWidth(), headerHeight } }, {});

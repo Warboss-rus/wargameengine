@@ -3,6 +3,7 @@
 #pragma warning(disable : 4201)
 #include <glm/gtc/type_ptr.hpp>
 #pragma warning(pop)
+#include "../view/Matrix4.h"
 namespace glm
 {
 template<typename T>
@@ -197,6 +198,7 @@ class IVulkanVertexBuffer : public IVertexBuffer
 {
 public:
 	virtual void Bind(VkCommandBuffer commandBuffer) const = 0;
+	virtual void SetIndexBuffer(std::unique_ptr<CVulkanVertexAttribCache>&& indexCache) = 0;
 };
 
 class CVulkanVertexBuffer : public IVulkanVertexBuffer
@@ -205,7 +207,6 @@ public:
 	CVulkanVertexBuffer(CVulkanRenderer* renderer, VkCommandBuffer commandBuffer, const float* vertex, const float* normals, const float* texcoords, size_t size)
 		: m_size((vertex ? size * 3 * sizeof(float) : 0) + (normals ? size * 3 * sizeof(float) : 0) + (texcoords ? size * 2 * sizeof(float) : 0))
 		, m_vertexCache(m_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *renderer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-		, m_renderer(renderer)
 	{
 		m_offsets[0] = 0;
 		m_offsets[1] = normals ? (vertex ? size * 3 * sizeof(float) : 0) : 0;
@@ -226,12 +227,9 @@ public:
 		}
 	}
 
-	void SetIndexBuffer(unsigned int* indexPtr, size_t indexesSize) override
+	void SetIndexBuffer(std::unique_ptr<CVulkanVertexAttribCache>&& indexCache) override
 	{
-		if (!indexPtr || indexesSize == 0)
-			return;
-		m_indexCache = std::make_unique<CVulkanVertexAttribCache>(indexesSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *m_renderer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-		m_indexCache->Upload(indexPtr, indexesSize * sizeof(float));
+		m_indexCache = std::move(indexCache);
 	}
 
 	void Bind(VkCommandBuffer commandBuffer) const override
@@ -247,7 +245,6 @@ private:
 	VkDeviceSize m_size;
 	CVulkanVertexAttribCache m_vertexCache;
 	std::unique_ptr<CVulkanVertexAttribCache> m_indexCache;
-	CVulkanRenderer* m_renderer;
 	VkBuffer m_buffers[3];
 	VkDeviceSize m_offsets[3];
 };
@@ -276,25 +273,24 @@ public:
 			memcpy(data, texcoords, size * 2 * sizeof(float));
 		}
 	}
-	void SetIndexBuffer(unsigned int* indexPtr, size_t indexesSize) override
+	void SetIndexBuffer(std::unique_ptr<CVulkanVertexAttribCache>&& indexCache) override
 	{
-		throw std::runtime_error("no support for temp indexes yet");
+		m_indexCache = std::move(indexCache);
 	}
 
 	void Bind(VkCommandBuffer commandBuffer) const override
 	{
 		vkCmdBindVertexBuffers(commandBuffer, 0, 3, m_buffers, m_offsets);
-		if (m_indexBuffer)
+		if (m_indexCache)
 		{
-			vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffer, *m_indexCache, 0, VK_INDEX_TYPE_UINT32);
 		}
 	}
 
 private:
 	VkBuffer m_buffers[3];
 	VkDeviceSize m_offsets[3] = { 0, 0, 0 };
-	VkBuffer m_indexBuffer = VK_NULL_HANDLE;
-	VkDeviceSize m_indexOffset = 0;
+	std::unique_ptr<CVulkanVertexAttribCache> m_indexCache;
 };
 }
 
@@ -519,13 +515,9 @@ void CVulkanRenderer::WindowCoordsToWorldVector(IViewport& viewport, int x, int 
 	float winY = (float)y;
 
 	auto ToVector3f = [](glm::vec3 const& v) -> CVector3f { return { v.x, v.y, v.z }; };
-	float projectionMatrix[16];
-	float viewMatrix[16];
-	m_matrixManager.GetProjectionMatrix(projectionMatrix);
-	m_matrixManager.GetViewMatrix(viewMatrix);
 	//Cast a ray from eye to mouse cursor;
-	glm::mat4 proj = glm::make_mat4(projectionMatrix);
-	glm::mat4 view = glm::make_mat4(viewMatrix);
+	glm::mat4 proj = glm::make_mat4(m_matrixManager.GetProjectionMatrix());
+	glm::mat4 view = glm::make_mat4(m_matrixManager.GetViewMatrix());
 	start = ToVector3f(glm::unProjectZeroToOne(glm::vec3(winX, winY, 0.0f), view, proj, viewportData));
 	end = ToVector3f(glm::unProjectZeroToOne(glm::vec3(winX, winY, 1.0f), view, proj, viewportData));
 }
@@ -533,11 +525,9 @@ void CVulkanRenderer::WindowCoordsToWorldVector(IViewport& viewport, int x, int 
 void CVulkanRenderer::WorldCoordsToWindowCoords(IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const
 {
 	glm::vec4 viewportData(viewport.GetX(), viewport.GetY(), viewport.GetWidth(), viewport.GetHeight());
-	float projectionMatrix[16];
-	float viewMatrix[16];
-	m_matrixManager.GetProjectionMatrix(projectionMatrix);
-	m_matrixManager.GetViewMatrix(viewMatrix);
-	auto windowPos = glm::projectZeroToOne(glm::make_vec3(worldCoords.ptr()), glm::make_mat4(viewMatrix), glm::make_mat4(projectionMatrix), viewportData);
+	glm::mat4 projectionMatrix = glm::make_mat4(m_matrixManager.GetProjectionMatrix());
+	glm::mat4 viewMatrix = glm::make_mat4(m_matrixManager.GetViewMatrix());
+	auto windowPos = glm::projectZeroToOne(glm::make_vec3(worldCoords.ptr()), viewMatrix, projectionMatrix, viewportData);
 	x = static_cast<int>(windowPos.x);
 	y = static_cast<int>(viewportData[3] - windowPos.y);
 }
@@ -568,9 +558,9 @@ float CVulkanRenderer::GetMaximumAnisotropyLevel() const
 	return 16.0f;
 }
 
-void CVulkanRenderer::GetProjectionMatrix(float* matrix) const
+const float* CVulkanRenderer::GetProjectionMatrix() const
 {
-	m_matrixManager.GetProjectionMatrix(matrix);
+	return m_matrixManager.GetProjectionMatrix();
 }
 
 void CVulkanRenderer::EnableDepthTest(bool enable)
@@ -730,28 +720,25 @@ void CVulkanRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t i
 	vkCmdDraw(*m_activeCommandBuffer, size, instanceCount, 0, 0);
 }
 
-void CVulkanRenderer::SetColor(const float r, const float g, const float b, const float a /*= 1.0f*/)
+void CVulkanRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
 {
-	const float color[] = { r, g, b, a };
-	SetColor(color);
+	if (!indexPtr || indexesSize == 0)
+		return;
+	auto indexCache = std::make_unique<CVulkanVertexAttribCache>(indexesSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, *this, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+	indexCache->Upload(indexPtr, indexesSize * sizeof(float));
+	reinterpret_cast<IVulkanVertexBuffer&>(buffer).SetIndexBuffer(std::move(indexCache));
 }
 
-void CVulkanRenderer::SetColor(const int r, const int g, const int b, const int a /*= UCHAR_MAX*/)
+void CVulkanRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a /*= UCHAR_MAX*/)
 {
-	const int color[] = { r, g, b, a };
+	auto charToFloat = [](const int value) { return static_cast<float>(value) / 0xff; };
+	const float color[] = { charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a) };
 	SetColor(color);
 }
 
 void CVulkanRenderer::SetColor(const float* color)
 {
 	m_shaderManager.SetUniformValue("color", 4, 1, color);
-}
-
-void CVulkanRenderer::SetColor(const int* color)
-{
-	auto charToFloat = [](const int value) { return static_cast<float>(value) / UCHAR_MAX; };
-	float fcolor[] = { charToFloat(color[0]), charToFloat(color[1]), charToFloat(color[2]), charToFloat(color[3]) };
-	SetColor(fcolor);
 }
 
 void CVulkanRenderer::PushMatrix()
@@ -764,34 +751,34 @@ void CVulkanRenderer::PopMatrix()
 	m_matrixManager.PopMatrix();
 }
 
-void CVulkanRenderer::Translate(const float dx, const float dy, const float dz)
+void CVulkanRenderer::Translate(const CVector3f& delta)
 {
-	m_matrixManager.Translate(dx, dy, dz);
+	m_matrixManager.Translate(delta.x, delta.y, delta.z);
 }
 
-void CVulkanRenderer::Translate(const double dx, const double dy, const double dz)
+void CVulkanRenderer::Translate(int dx, int dy, int dz)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_matrixManager.Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
 }
 
-void CVulkanRenderer::Translate(const int dx, const int dy, const int dz)
+void CVulkanRenderer::Rotate(float angle, const CVector3f& axis)
 {
-	Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
+	m_matrixManager.Rotate(angle, axis);
 }
 
-void CVulkanRenderer::Rotate(const double angle, const double x, const double y, const double z)
+void CVulkanRenderer::Rotate(const CVector3f& angles)
 {
-	m_matrixManager.Rotate(static_cast<float>(angle), static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+	m_matrixManager.Rotate(angles);
 }
 
-void CVulkanRenderer::Scale(const double scale)
+void CVulkanRenderer::Scale(float scale)
 {
-	m_matrixManager.Scale(static_cast<float>(scale));
+	m_matrixManager.Scale(scale);
 }
 
-void CVulkanRenderer::GetViewMatrix(float* matrix) const
+const float* CVulkanRenderer::GetViewMatrix() const
 {
-	m_matrixManager.GetModelViewMatrix(matrix);
+	return m_matrixManager.GetModelViewMatrix();
 }
 
 void CVulkanRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
@@ -912,7 +899,7 @@ ICachedTexture* CVulkanRenderer::GetTexturePtr(const Path& texture) const
 	return m_textureManager->GetTexturePtr(texture);
 }
 
-void CVulkanRenderer::SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess)
+void CVulkanRenderer::SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess)
 {
 	static const std::string ambientKey = "material.ambient";
 	static const std::string diffuseKey = "material.diffuse";
@@ -1017,12 +1004,12 @@ void CVulkanRenderer::CreateSwapchain()
 	uint32_t count;
 	if ((vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &count, nullptr) != VK_SUCCESS) || (count == 0))
 	{
-		throw std::runtime_error("Cannot query sufrace formats");
+		throw std::runtime_error("Cannot query surface formats");
 	}
 	std::vector<VkSurfaceFormatKHR> surface_formats(count);
 	if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &count, surface_formats.data()) != VK_SUCCESS)
 	{
-		throw std::runtime_error("Cannot query sufrace formats");
+		throw std::runtime_error("Cannot query surface formats");
 	}
 	if ((vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &count, nullptr) != VK_SUCCESS) || (count == 0))
 	{

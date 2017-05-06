@@ -60,6 +60,23 @@ void CObjectGroup::SetRotation(float rotation)
 	}
 }
 
+void CObjectGroup::SetRotations(const CVector3f& rotations)
+{
+	for (auto& child : m_children)
+	{
+		child->SetRotations(rotations);
+	}
+}
+
+CVector3f CObjectGroup::GetRotations() const
+{
+	if (m_current < m_children.size())
+	{
+		return m_children[m_current]->GetRotations();
+	}
+	return CVector3f();
+}
+
 float CObjectGroup::GetX() const
 {
 	if(m_current < m_children.size())
@@ -224,7 +241,7 @@ bool CObjectGroup::CastsShadow() const
 	return m_children[m_current]->CastsShadow();
 }
 
-void CObjectGroup::PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed)
+void CObjectGroup::PlayAnimation(std::string const& animation, AnimationLoop loop, float speed)
 {
 	for (auto& child : m_children)
 	{
@@ -272,9 +289,9 @@ Path CObjectGroup::GetSecondaryModel(size_t index) const
 	return m_children[m_current]->GetSecondaryModel(index);
 }
 
-eAnimationLoopMode CObjectGroup::GetAnimationLoop() const
+AnimationLoop CObjectGroup::GetAnimationLoop() const
 {
-	if (m_children.empty()) return eAnimationLoopMode::NONLOOPING;
+	if (m_children.empty()) return AnimationLoop::NonLooping;
 	return m_children[m_current]->GetAnimationLoop();
 }
 

@@ -9,104 +9,10 @@
 using namespace std;
 using namespace rapidxml;
 
-CUITheme CUITheme::defaultTheme;
-
 CUITheme::CUITheme()
+	: texture(make_path(L"g2Default.png"))
 {
-	texture = make_path(L"g2Default.png");
-	for(unsigned int i = 0; i < 3; ++i)
-	{
-		defaultColor[i] = 0.75f;
-		textfieldColor[i] = 1.0f;
-		text.color[i] = 0.0f;
-	}
-	defaultColor[3] = 1.0f;
-	textfieldColor[3] = 1.0f;
-	text.color[3] = 1.0f;
-	//text
-	text.font = "times.ttf";
-	text.fontSize = 18;
-	text.aligment = text.left;
-	//button
-	button.texCoord[0] = 0.02344f;
-	button.texCoord[1] = 0.59375f;
-	button.texCoord[2] = 0.22266f;
-	button.texCoord[3] = 0.53516f;
-	button.pressedTexCoord[0] = 0.02344f;
-	button.pressedTexCoord[1] = 0.66016f;
-	button.pressedTexCoord[2] = 0.22266f;
-	button.pressedTexCoord[3] = 0.60157f;
-	button.text = text;
-	button.text.aligment = text.center;
-	//combobox
-	combobox.texCoord[0] = 0.27734f;
-	combobox.texCoord[1] = 0.80469f;
-	combobox.texCoord[2] = 0.3125f;
-	combobox.texCoord[3] = 0.74219f;
-	combobox.expandedTexCoord[0] = 0.27734f;
-	combobox.expandedTexCoord[1] = 0.74219f;
-	combobox.expandedTexCoord[2] = 0.3125f;
-	combobox.expandedTexCoord[3] = 0.80469f;
-	combobox.buttonWidthCoeff = 0.66f;
-	combobox.borderSize = 2;
-	combobox.elementSize = 25;
-	combobox.text = text;
-	//list
-	list.borderSize = 2;
-	list.elementSize = 20;
-	list.text = text;
-	list.selectionColor[0] = 0.2f;
-	list.selectionColor[1] = 0.2f;
-	list.selectionColor[2] = 1.0f;
-	list.selectionColor[3] = 1.0f;
-	//checkbox
-	checkbox.texCoord[0] = 0.121f;
-	checkbox.texCoord[1] = 0.789f;
-	checkbox.texCoord[2] = 0.168f;
-	checkbox.texCoord[3] = 0.7422f;
-	checkbox.checkedTexCoord[0] = 0.121f;
-	checkbox.checkedTexCoord[1] = 0.844f;
-	checkbox.checkedTexCoord[2] = 0.168f;
-	checkbox.checkedTexCoord[3] = 0.797f;
-	checkbox.checkboxSizeCoeff = 1.0f;
-	checkbox.text = text;
-	//edit
-	edit.borderSize = 2;
-	edit.text = text;
-	edit.selectionColor[0] = 0.0f;
-	edit.selectionColor[1] = 0.0f;
-	edit.selectionColor[2] = 1.0f;
-	edit.selectionColor[3] = 1.0f;
-	//radiogroup
-	radiogroup.texCoord[0] = 0.379f;
-	radiogroup.texCoord[1] = 0.793f;
-	radiogroup.texCoord[2] = 0.429f;
-	radiogroup.texCoord[3] = 0.742f;
-	radiogroup.selectedTexCoord[0] = 0.379f;
-	radiogroup.selectedTexCoord[1] = 0.8515f;
-	radiogroup.selectedTexCoord[2] = 0.429f;
-	radiogroup.selectedTexCoord[3] = 0.8f;
-	radiogroup.buttonSize = 15.0f;
-	radiogroup.elementSize = 22.0f;
-	radiogroup.text = text;
-	sbar.texCoord[0] = 0.07f;
-	sbar.texCoord[1] = 0.984f;
-	sbar.texCoord[2] = 0.117f;
-	sbar.texCoord[3] = 0.953f;
-	sbar.pressedTexCoord[0] = 0.121f;
-	sbar.pressedTexCoord[1] = 0.984f;
-	sbar.pressedTexCoord[2] = 0.168f;
-	sbar.pressedTexCoord[3] = 0.953f;
-	sbar.buttonSize = 20;
-	sbar.width = 20;
-	//window
-	window.buttonSize = 20;
-	window.headerHeight = 20;
-	window.headerText = text;
-	window.closeButtonTexCoord[0] = 0.6758f;
-	window.closeButtonTexCoord[1] = 0.996f;
-	window.closeButtonTexCoord[2] = 0.7343f;
-	window.closeButtonTexCoord[3] = 0.9453f;
+	button.text.aligment = Text::Aligment::center;
 }
 
 float atoff(const char * ch)
@@ -128,7 +34,7 @@ void GetValues(float * array, const char* data, size_t max = UINT_MAX)
 	}
 }
 
-void ParseTextTheme(xml_node<>* theme, CUITheme::sText & text)
+void ParseTextTheme(xml_node<>* theme, CUITheme::Text & text)
 {
 	if (theme->first_attribute("color")) GetValues(text.color, (char*)theme->first_attribute("color"), 3);
 	if (theme->first_attribute("font")) text.font = theme->first_attribute("font")->value();
@@ -136,9 +42,9 @@ void ParseTextTheme(xml_node<>* theme, CUITheme::sText & text)
 	if (theme->first_attribute("aligment"))
 	{
 		std::string aligment = theme->first_attribute("aligment")->value();
-		if (aligment == "center") text.aligment = CUITheme::sText::center;
-		if (aligment == "right") text.aligment = CUITheme::sText::right;
-		if (aligment == "left") text.aligment = CUITheme::sText::left;
+		if (aligment == "center") text.aligment = CUITheme::Text::Aligment::center;
+		if (aligment == "right") text.aligment = CUITheme::Text::Aligment::right;
+		if (aligment == "left") text.aligment = CUITheme::Text::Aligment::left;
 	}
 }
 

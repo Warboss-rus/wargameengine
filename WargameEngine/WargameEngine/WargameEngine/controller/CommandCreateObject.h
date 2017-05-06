@@ -1,5 +1,5 @@
 #include "ICommand.h"
-#include "../model/ObjectInterface.h"
+#include "../model/IObject.h"
 #include <string>
 #include <memory>
 

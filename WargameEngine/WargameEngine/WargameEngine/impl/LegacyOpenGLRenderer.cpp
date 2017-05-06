@@ -15,7 +15,7 @@ public:
 	CLegacyGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = true);
 	~CLegacyGLVertexBuffer();
 	void Bind() const;
-	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
+	void SetIndexBuffer(const unsigned int * indexPtr, size_t indexesSize);
 	void DrawIndexed(size_t begin, size_t count) const
 	{
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
@@ -211,34 +211,37 @@ void CLegacyGLRenderer::PopMatrix()
 	glPopMatrix();
 }
 
-void CLegacyGLRenderer::Translate(const int dx, const int dy, const int dz)
+void CLegacyGLRenderer::Translate(int dx, int dy, int dz)
 {
 	glTranslated(static_cast<double>(dx), static_cast<double>(dy), static_cast<double>(dz));
 }
 
-void CLegacyGLRenderer::Translate(const double dx, const double dy, const double dz)
+void CLegacyGLRenderer::Translate(const CVector3f& delta)
 {
-	glTranslated(dx, dy, dz);
+	glTranslatef(delta.x, delta.y, delta.z);
 }
 
-void CLegacyGLRenderer::Translate(const float dx, const float dy, const float dz)
+void CLegacyGLRenderer::Scale(float scale)
 {
-	glTranslatef(dx, dy, dz);
+	glScalef(scale, scale, scale);
 }
 
-void CLegacyGLRenderer::Scale(double scale)
+void CLegacyGLRenderer::Rotate(float angle, const CVector3f& axis)
 {
-	glScaled(scale, scale, scale);
+	glRotatef(angle, axis.x, axis.y, axis.z);
 }
 
-void CLegacyGLRenderer::Rotate(double angle, double x, double y, double z)
+void CLegacyGLRenderer::Rotate(const CVector3f& rotations)
 {
-	glRotated(angle, x, y, z);
+	glRotatef(rotations.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(rotations.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(rotations.z, 0.0f, 0.0f, 1.0f);
 }
 
-void CLegacyGLRenderer::GetViewMatrix(float * matrix) const
+const float* CLegacyGLRenderer::GetViewMatrix() const
 {
-	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, m_matrix);
+	return m_matrix;
 }
 
 void CLegacyGLRenderer::ResetViewMatrix()
@@ -251,24 +254,14 @@ void CLegacyGLRenderer::LookAt(CVector3f const& position, CVector3f const& direc
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
 }
 
-void CLegacyGLRenderer::SetColor(const float r, const float g, const float b, const float a)
+void CLegacyGLRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	glColor4f(r, g, b, a);
-}
-
-void CLegacyGLRenderer::SetColor(const int r, const int g, const int b, const int a)
-{
-	glColor4i(r, g, b, a);
+	glColor4ub(r, g, b, a);
 }
 
 void CLegacyGLRenderer::SetColor(const float * color)
 {
-	glColor3fv(color);
-}
-
-void CLegacyGLRenderer::SetColor(const int * color)
-{
-	glColor3iv(color);
+	glColor4fv(color);
 }
 
 void CLegacyGLRenderer::RenderToTexture(std::function<void() > const& func, ICachedTexture & tex, unsigned int width, unsigned int height)
@@ -370,7 +363,7 @@ void CLegacyGLRenderer::SetTextureManager(CTextureManager & textureManager)
 	m_textureManager = &textureManager;
 }
 
-void CLegacyGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
+void CLegacyGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, float shininess)
 {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
@@ -453,7 +446,7 @@ void CLegacyGLVertexBuffer::Bind() const
 	glBindBuffer(GL_ARRAY_BUFFER, NULL);
 }
 
-void CLegacyGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
+void CLegacyGLVertexBuffer::SetIndexBuffer(const unsigned int * indexPtr, size_t indexesSize)
 {
 	if ((m_vertexBuffer || m_normalsBuffer || m_texCoordBuffer) && indexPtr)
 	{
@@ -485,6 +478,11 @@ void CLegacyGLRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t
 {
 	reinterpret_cast<const CLegacyGLVertexBuffer&>(buffer).Bind();
 	glDrawArraysInstanced(GL_TRIANGLES, 0, size, instanceCount);
+}
+
+void CLegacyGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
+{
+	reinterpret_cast<CLegacyGLVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);
 }
 
 std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)
@@ -562,9 +560,10 @@ float CLegacyGLRenderer::GetMaximumAnisotropyLevel() const
 	return aniso;
 }
 
-void CLegacyGLRenderer::GetProjectionMatrix(float * matrix) const
+const float* CLegacyGLRenderer::GetProjectionMatrix() const
 {
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	glGetFloatv(GL_PROJECTION_MATRIX, m_matrix);
+	return m_matrix;
 }
 
 void CLegacyGLRenderer::EnableDepthTest(bool enable)

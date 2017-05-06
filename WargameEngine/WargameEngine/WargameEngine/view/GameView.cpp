@@ -53,7 +53,7 @@ CGameView::CGameView(sGameViewContext * context)
 	setlocale(LC_ALL, "");
 	setlocale(LC_NUMERIC, "english");
 
-	m_ui.SetTheme(make_shared<CUITheme>(CUITheme::defaultTheme));
+	m_ui.SetTheme(make_shared<CUITheme>());
 
 	Init(context->module);
 
@@ -243,23 +243,23 @@ void CGameView::InitInput()
 
 void CGameView::DrawUI()
 {
-	m_renderer.SetColor(0.0f, 0.0f, 0.0f);
+	m_renderer.SetColor(0, 0, 0);
 	m_viewHelper.DrawIn2D([this] {
 		m_ui.Draw();
 	});
 }
 
-void DrawBBox(sBounding::sBox const& bbox, IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
+void DrawBBox(Bounding::Box const& bbox, IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
 {
 	renderer.UnbindTexture();
 	renderer.PushMatrix();
-	renderer.Translate(object.GetX(), object.GetY(), object.GetZ());
-	renderer.Rotate(object.GetRotation(), 0.0, 0.0, 1.0);
+	renderer.Translate(object.GetCoords());
+	renderer.Rotate(object.GetRotations());
 	CVector3f min = bbox.max;
 	CVector3f max = bbox.min;
 	if (wireframe)
 	{
-		renderer.SetColor(0.0f, 0.0f, 255.0f);
+		renderer.SetColor(0, 0, 255);
 		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
 		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
 		renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
@@ -356,18 +356,18 @@ void CGameView::DrawRuler()
 {
 	if (m_ruler.IsVisible())
 	{
-		m_renderer.SetColor(1.0f, 1.0f, 0.0f);
+		m_renderer.SetColor(255, 255, 0);
 		m_renderer.RenderArrays(RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
-		m_renderer.SetColor(1.0f, 1.0f, 1.0f);
+		m_renderer.SetColor(255, 255, 255);
 		DrawText3D(m_ruler.GetEnd(), ToWstring(m_ruler.GetDistance(), 2));
-		m_renderer.SetColor(0.0f, 0.0f, 0.0f);
+		m_renderer.SetColor(0, 0, 0);
 	}
 }
 void CGameView::DrawTable(bool shadowOnly)
 {
 	if (!m_tableBuffer)
 	{
-		CLandscape const& landscape = m_gameModel->GetLandscape();
+		Landscape const& landscape = m_gameModel->GetLandscape();
 		float x1 = -landscape.GetWidth() / 2.0f;
 		float x2 = landscape.GetWidth() / 2.0f;
 		float y1 = -landscape.GetDepth() / 2.0f;
@@ -402,18 +402,18 @@ void CGameView::DrawTable(bool shadowOnly)
 		m_tableBuffer = m_renderer.CreateVertexBuffer(vertex.data()->ptr(), nullptr, &texCoord.data()->x, vertex.size());
 		m_tableBufferSize = vertex.size();
 	}
-	CLandscape const& landscape = m_gameModel->GetLandscape();
+	Landscape const& landscape = m_gameModel->GetLandscape();
 	if (!shadowOnly)m_renderer.SetTexture(landscape.GetTexture());
 	m_renderer.DrawAll(*m_tableBuffer, m_tableBufferSize);
 	if (!shadowOnly)//Don't draw decals because they don't cast shadows
 	{
 		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 		{
-			sDecal const& decal = landscape.GetDecal(i);
+			Decal const& decal = landscape.GetDecal(i);
 			m_renderer.SetTexture(decal.texture);
 			m_renderer.PushMatrix();
-			m_renderer.Translate(decal.x, decal.y, 0.0f);
-			m_renderer.Rotate(decal.rotation, 0.0, 0.0, 1.0);
+			m_renderer.Translate(CVector3f(decal.x, decal.y, 0.0f));
+			m_renderer.Rotate(decal.rotation, CVector3f(0.0f, 0.0f, 1.0f));
 			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, {
 				CVector3f(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001f),
 				{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
@@ -467,7 +467,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 
 	for (size_t i = 0; i < staticObjectsCount; i++)
 	{
-		CStaticObject& obj = m_gameModel->GetLandscape().GetStaticObject(i);
+		StaticObject& obj = m_gameModel->GetLandscape().GetStaticObject(i);
 		if (isVisibleInFrustum(&obj))
 		{
 			objects.push_back(&obj);
@@ -486,8 +486,8 @@ void CGameView::DrawObjects(bool shadowOnly)
 			if (queryResult || !bounding)
 			{
 				m_renderer.PushMatrix();
-				m_renderer.Translate(object->GetX(), object->GetY(), object->GetCoords().z);
-				m_renderer.Rotate(object->GetRotation(), 0.0, 0.0, 1.0);
+				m_renderer.Translate(object->GetCoords());
+				m_renderer.Rotate(object->GetRotations());
 				IObject* fullObject = object->GetFullObject();
 				m_modelManager.DrawModel(object->GetPathToModel(), fullObject, shadowOnly);
 				if (fullObject)
@@ -513,8 +513,8 @@ void CGameView::DrawObjects(bool shadowOnly)
 		{
 			CProjectile const& projectile = m_gameModel->GetProjectile(i);
 			m_renderer.PushMatrix();
-			m_renderer.Translate(projectile.GetX(), projectile.GetY(), projectile.GetZ());
-			m_renderer.Rotate(projectile.GetRotation(), 0.0, 0.0, 1.0);
+			m_renderer.Translate(projectile.GetCoords());
+			m_renderer.Rotate(projectile.GetRotations());
 			if (!projectile.GetPathToModel().empty())
 				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false);
 			if (projectile.GetParticle())

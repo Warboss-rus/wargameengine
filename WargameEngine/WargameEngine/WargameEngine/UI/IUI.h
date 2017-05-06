@@ -5,7 +5,7 @@
 #include <functional>
 #include "..\view\KeyDefines.h"
 
-class CUITheme;
+struct CUITheme;
 
 class IUIElement
 {

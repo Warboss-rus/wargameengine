@@ -1,5 +1,5 @@
 #include "CommandCreateObject.h"
-#include "../model/ObjectInterface.h"
+#include "../model/IObject.h"
 #include "../model/IGameModel.h"
 #include "../IMemoryStream.h"
 #include "../model/Object.h"

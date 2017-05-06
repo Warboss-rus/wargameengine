@@ -310,12 +310,6 @@
     <ClInclude Include="model\ObjectGroup.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
-    <ClInclude Include="model\ObjectInterface.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\ObjectStatic.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="model\Projectile.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
@@ -534,6 +528,15 @@
     </ClInclude>
     <ClInclude Include="Typedefs.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model\IObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\IBaseObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\BaseObject.h">
+      <Filter>Source Files\model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

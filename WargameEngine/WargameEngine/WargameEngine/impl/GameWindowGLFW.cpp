@@ -1,5 +1,5 @@
 #include "GameWindowGLFW.h"
-//#define RENDERER_NO_VULKAN
+#define RENDERER_NO_VULKAN
 #ifndef RENDERER_NO_VULKAN
 #include "VulkanRenderer.h"
 #endif

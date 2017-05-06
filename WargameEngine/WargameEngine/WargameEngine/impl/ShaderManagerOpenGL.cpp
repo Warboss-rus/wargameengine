@@ -2,8 +2,8 @@
 #include "../LogWriter.h"
 #include "../Module.h"
 #include "../Utils.h"
-#include "gl.h"
 #include <GL/glew.h>
+#include "gl.h"
 #include <fstream>
 #include <map>
 

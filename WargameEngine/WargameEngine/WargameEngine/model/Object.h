@@ -1,13 +1,14 @@
 #pragma once
-#include "ObjectInterface.h"
-#include <vector>
+#include "BaseObject.h"
+#include "IObject.h"
 #include <memory>
-#include "ObjectStatic.h"
+#include <vector>
 
-class CObject : public CBaseObject<IObject>
+class CObject : public BaseObject<IObject>
 {
 public:
-	CObject(const Path& model, CVector3f const& position, float rotation, bool hasShadow = true);
+	CObject(const Path& model, const CVector3f& position, float rotation, bool hasShadow = true);
+
 	std::set<std::string> const& GetHiddenMeshes() const override;
 	void HideMesh(std::string const& meshName) override;
 	void ShowMesh(std::string const& meshName) override;
@@ -15,24 +16,25 @@ public:
 	std::wstring const GetProperty(std::wstring const& key) const override;
 	bool IsSelectable() const override;
 	void SetSelectable(bool selectable) override;
-	void SetMovementLimiter(IMoveLimiter * limiter) override;
+	void SetMovementLimiter(IMoveLimiter* limiter) override;
 	std::map<std::wstring, std::wstring> const& GetAllProperties() const override;
-	void PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed) override;
+	void PlayAnimation(std::string const& animation, AnimationLoop loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
 	void AddSecondaryModel(const Path& model) override;
 	void RemoveSecondaryModel(const Path& model) override;
 	size_t GetSecondaryModelsCount() const override;
 	Path GetSecondaryModel(size_t index) const override;
-	eAnimationLoopMode GetAnimationLoop() const override;
+	AnimationLoop GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void Update(std::chrono::microseconds timeSinceLastUpdate) override;
 	std::vector<sTeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
 	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
 	std::map<Path, Path> const& GetReplaceTextures() const override;
-	virtual bool IsGroup() const override;
-	virtual IObject* GetFullObject() override;
+	bool IsGroup() const override;
+	IObject* GetFullObject() override;
+
 private:
 	std::vector<Path> m_secondaryModels;
 	std::set<std::string> m_hiddenMeshes;
@@ -41,7 +43,7 @@ private:
 	std::unique_ptr<IMoveLimiter> m_movelimiter;
 	std::string m_animation;
 	std::chrono::microseconds m_animationTime;
-	eAnimationLoopMode m_animationLoop = eAnimationLoopMode::HOLDEND;
+	AnimationLoop m_animationLoop = AnimationLoop::HoldEnd;
 	float m_animationSpeed = 1.0f;
 	std::vector<sTeamColor> m_teamColor;
 	std::map<Path, Path> m_replaceTextures;

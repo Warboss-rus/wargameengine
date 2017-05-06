@@ -304,10 +304,10 @@ void CGameController::SelectObject(const float * begin, const float * end, bool 
 	{
 		if (add && object && selectedObject)
 		{
-			CObjectGroup * group = new CObjectGroup(m_model);
+			auto group = std::make_shared<CObjectGroup>(m_model);
 			group->AddChildren(object);
 			group->AddChildren(selectedObject);
-			m_model.SelectObject(std::shared_ptr<IObject>(group));
+			m_model.SelectObject(group);
 		}
 		else
 		{
@@ -317,13 +317,13 @@ void CGameController::SelectObject(const float * begin, const float * end, bool 
 	if (m_selectionCallback && !noCallback) m_selectionCallback();
 }
 
-size_t CGameController::BBoxlos(CVector3f const& origin, sBounding * target, IObject * shooter, IObject * targetObject)
+size_t CGameController::BBoxlos(CVector3f const& origin, Bounding * target, IObject * shooter, IObject * targetObject)
 {
 	size_t result = 0;
 	size_t total = 0;
-	if (target->type == sBounding::eType::COMPOUND)
+	if (target->type == Bounding::eType::Compound)
 	{
-		sBounding::sCompound compound = target->GetCompound();
+		Bounding::Compound compound = target->GetCompound();
 		for (size_t i = 0; i < compound.items.size(); ++i)
 		{
 			result += BBoxlos(origin, &compound.items[i], shooter, targetObject);
@@ -333,7 +333,7 @@ size_t CGameController::BBoxlos(CVector3f const& origin, sBounding * target, IOb
 	}
 	else
 	{
-		sBounding::sBox const& tarBox = target->GetBox();
+		Bounding::Box const& tarBox = target->GetBox();
 		CVector3f dir;
 		for (dir.x = tarBox.min[0] + targetObject->GetX(); dir.x < tarBox.max[0] + targetObject->GetX(); dir.x += (tarBox.max[0] - tarBox.min[0]) / 10.0f + 0.0001f)
 		{
@@ -356,7 +356,7 @@ size_t CGameController::BBoxlos(CVector3f const& origin, sBounding * target, IOb
 size_t CGameController::GetLineOfSight(IObject * shooter, IObject * target)
 {
 	if (!shooter || !target) return 0;
-	sBounding targetBound = m_physicsEngine.GetBounding(target->GetPathToModel());
+	Bounding targetBound = m_physicsEngine.GetBounding(target->GetPathToModel());
 	CVector3f center = shooter->GetCoords();
 	center.z += 2.0f;
 	return BBoxlos(center, &targetBound, shooter, target);
@@ -558,7 +558,7 @@ void CGameController::SetObjectProperty(std::shared_ptr<IObject> const& obj, std
 	m_commandHandler->AddNewChangeProperty(obj, key, value);
 }
 
-void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, eAnimationLoopMode loopMode, float speed)
+void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, AnimationLoop loopMode, float speed)
 {
 	m_commandHandler->AddNewPlayAnimation(object, animation, loopMode, speed);
 }
@@ -607,7 +607,7 @@ void CObjectDecorator::GoTo(CVector3f const& coords, float speed, std::string co
 {
 	m_goTarget = coords;
 	m_goSpeed = speed;
-	m_object->PlayAnimation(animation, eAnimationLoopMode::LOOPING, animationSpeed);
+	m_object->PlayAnimation(animation, AnimationLoop::Looping, animationSpeed);
 }
 
 IObject* CObjectDecorator::GetObject()
@@ -630,6 +630,6 @@ void CObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 	if ((m_object->GetCoords() - m_goTarget).GetLength() < 0.0001)
 	{
 		m_goSpeed = 0.0;
-		m_object->PlayAnimation("", eAnimationLoopMode::NONLOOPING, 0.0f);
+		m_object->PlayAnimation("", AnimationLoop::NonLooping, 0.0f);
 	}
 }

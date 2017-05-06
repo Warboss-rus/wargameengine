@@ -1,7 +1,6 @@
 #include "ViewportBase.h"
 #include "IShaderManager.h"
 #include "IViewHelper.h"
-#include "Matrix4.h"
 #include <stdexcept>
 
 CViewportBase::CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper& renderer, IInput& input, bool onScreen, bool resize)
@@ -71,8 +70,8 @@ void CViewportBase::Bind()
 	m_renderer->SetUpViewport(0, 0, m_width, m_height, m_fieldOfView, m_nearPane, m_farPane);
 	m_renderer->LookAt(m_camera.GetPosition(), m_camera.GetDirection(), m_camera.GetUpVector());
 
-	m_renderer->GetViewMatrix(m_viewMatrix);
-	m_renderer->GetProjectionMatrix(m_projectionMatrix);
+	m_viewMatrix = m_renderer->GetViewMatrix();
+	m_projectionMatrix = m_renderer->GetProjectionMatrix();
 }
 
 void CViewportBase::Unbind()
@@ -148,8 +147,7 @@ void CViewportBase::SetUpShadowMap() const
 {
 	if (m_shadowMapViewport)
 	{
-		Matrix4F cameraModelViewMatrix;
-		m_renderer->GetViewMatrix(cameraModelViewMatrix);
+		Matrix4F cameraModelViewMatrix = m_renderer->GetViewMatrix();
 
 		Matrix4F cameraInverseModelViewMatrix = cameraModelViewMatrix.Invert();
 

@@ -66,7 +66,7 @@ public:
 	std::shared_ptr<IObject> CreateObject(const Path& model, float x, float y, float rotation);
 	void DeleteObject(std::shared_ptr<IObject> const& obj);
 	void SetObjectProperty(std::shared_ptr<IObject> const& obj, std::wstring const& key, std::wstring const& value);
-	void PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, eAnimationLoopMode loopMode, float speed);
+	void PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, AnimationLoop loopMode, float speed);
 	void ObjectGoTo(std::shared_ptr<IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed);
 	CCommandHandler & GetCommandHandler();
 	CNetwork& GetNetwork();
@@ -88,7 +88,7 @@ private:
 	void TryMoveSelectedObject(std::shared_ptr<IObject> const& object, CVector3f const& pos);
 	void MoveObject(std::shared_ptr<IObject> const& obj, float deltaX, float deltaY);
 	void RotateObject(std::shared_ptr<IObject> const& obj, float deltaRot);
-	size_t BBoxlos(CVector3f const& origin, sBounding * target, IObject * shooter, IObject * targetObject);
+	size_t BBoxlos(CVector3f const& origin, Bounding * target, IObject * shooter, IObject * targetObject);
 	CVector3f RayToPoint(CVector3f const& begin, CVector3f const& end, float z = 0);
 	static void PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream);
 

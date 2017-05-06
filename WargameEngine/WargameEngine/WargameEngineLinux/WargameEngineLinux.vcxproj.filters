@@ -482,9 +482,6 @@
     <ClInclude Include="..\WargameEngine\model\Landscape.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\WargameEngine\model\ObjectStatic.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="..\WargameEngine\model\Projectile.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
@@ -498,9 +495,6 @@
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\model\ObjectGroup.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WargameEngine\model\ObjectInterface.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\model\GameModel.h">
@@ -610,6 +604,12 @@
     </ClInclude>
     <ClInclude Include="..\WargameEngine\impl\gl.h">
       <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\model\IObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\model\BaseObject.h">
+      <Filter>Source Files\model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,8 @@
 #pragma once
 
-enum class eAnimationLoopMode {
-	NONLOOPING,
-	LOOPING,
-	HOLDEND
+enum class AnimationLoop
+{
+	NonLooping,
+	Looping,
+	HoldEnd
 };
