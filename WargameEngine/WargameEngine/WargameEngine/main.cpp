@@ -5,6 +5,7 @@
 #include "view/OBJModelFactory.h"
 #include "view/ColladaModelFactory.h"
 #include "view/WBMModelFactory.h"
+#include "impl/AssimpModelLoader.h"
 #include <cstring>
 #include <time.h>
 #ifdef DIRECTX
@@ -28,6 +29,7 @@
 
 int WINAPI WinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
+#include "impl/AssimpModelLoader.h"
 	int argc = __argc;
 	char** argv = __argv;
 #else
@@ -72,6 +74,7 @@ int main(int argc, char* argv[])
 	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
+	context.modelReaders.push_back(std::make_unique<CAssimpModelLoader>());
 
 	CGameView view(&context);
 	return 0;
