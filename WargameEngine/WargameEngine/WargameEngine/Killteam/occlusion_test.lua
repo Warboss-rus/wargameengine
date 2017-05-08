@@ -20,8 +20,8 @@ elseif(GetRendererName() == "OpenGLES") then
 elseif(GetRendererName() == "Vulkan") then
 	--do nothing
 else
-	SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
-	SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
+	--SetShaders("openGL/gpu_skinning.vsh", "openGL/gpu_skinning.fsh")
+	--SetParticleSystemShaders("openGL/particle.vsh", "openGL/particle.fsh")
 	SetSkyboxShaders("openGL/skybox.vsh", "openGL/skybox.fsh")
 end
 EnableGPUSkinning()

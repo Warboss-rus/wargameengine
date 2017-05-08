@@ -26,6 +26,7 @@ public:
 	void DrawAll(IVertexBuffer& buffer, size_t count) override;
 	void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
 	void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
+	void ForceBindVertexBuffer(IVertexBuffer& buffer) override;
 
 	void PushMatrix() override;
 	void PopMatrix() override;
@@ -109,6 +110,7 @@ private:
 	CComPtr<ID3D11Buffer> m_vertexBuffer;
 	CComPtr<ID3D11Buffer> m_sharedIndexBuffer;
 	std::vector<char> m_vertexCache;
+	std::unique_ptr<ICachedTexture> m_emptyTexture;
 
 	std::vector<DirectX::XMFLOAT4X4> m_modelMatrices;
 	DirectX::XMFLOAT4X4* m_modelMatrix;

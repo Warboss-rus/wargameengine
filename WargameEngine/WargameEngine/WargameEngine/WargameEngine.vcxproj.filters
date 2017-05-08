@@ -538,5 +538,8 @@
     <ClInclude Include="model\BaseObject.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
+    <ClInclude Include="IPathfinding.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

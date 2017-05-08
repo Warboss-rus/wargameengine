@@ -56,7 +56,7 @@ void CMatrixManagerGLM::Rotate(float angle, const CVector3f& axis)
 
 void CMatrixManagerGLM::Rotate(const CVector3f& rotations)
 {
-	*m_modelMatrix = glm::yawPitchRoll(glm::radians(rotations.x), glm::radians(rotations.y), glm::radians(rotations.z));
+	*m_modelMatrix *= glm::yawPitchRoll(glm::radians(rotations.x), glm::radians(rotations.y), glm::radians(rotations.z));
 	m_matricesChanged = true;
 }
 

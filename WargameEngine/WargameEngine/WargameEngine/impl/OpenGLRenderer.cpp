@@ -322,6 +322,11 @@ void COpenGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* 
 	reinterpret_cast<COpenGLVertexBuffer&>(buffer).SetIndexBuffer(indexBuffer);
 }
 
+void COpenGLRenderer::ForceBindVertexBuffer(IVertexBuffer& buffer)
+{
+	reinterpret_cast<COpenGLVertexBuffer&>(buffer).Bind(*this, m_shaderManager);
+}
+
 void COpenGLRenderer::PushMatrix()
 {
 	m_matrixManager.PushMatrix();

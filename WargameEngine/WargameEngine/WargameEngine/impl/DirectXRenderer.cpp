@@ -318,6 +318,9 @@ CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	MakeSureBufferCanFitSize(1000 * sizeof(float));
 
 	SetTextureAnisotropy(1.0f);
+
+	float emptyTextureData[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	m_emptyTexture = CreateTexture(emptyTextureData, 1, 1);
 }
 
 void CDirectXRenderer::MakeSureBufferCanFitSize(size_t size)
@@ -435,6 +438,11 @@ void CDirectXRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t 
 void CDirectXRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
 {
 	reinterpret_cast<CDirectXVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);
+}
+
+void CDirectXRenderer::ForceBindVertexBuffer(IVertexBuffer&)
+{
+	//Do nothing
 }
 
 void CDirectXRenderer::SetColor(const float * color)
@@ -802,8 +810,7 @@ void CDirectXRenderer::SetTextureManager(CTextureManager& texMan)
 
 void CDirectXRenderer::UnbindTexture(TextureSlot slot)
 {
-	ID3D11ShaderResourceView* views[] = { nullptr };
-	m_devcon->PSSetShaderResources(static_cast<UINT>(slot), 1, views);
+	SetTexture(*m_emptyTexture, slot);
 }
 
 std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateEmptyTexture(bool cubemap)

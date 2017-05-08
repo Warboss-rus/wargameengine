@@ -41,6 +41,9 @@
     <ClCompile Include="impl\TextWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="impl\AssimpModelLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\DirectXRenderer.h">
@@ -68,6 +71,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\TextWriter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\AssimpModelLoader.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

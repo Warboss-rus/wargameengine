@@ -280,6 +280,11 @@ void COpenGLESRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int
 	reinterpret_cast<COpenGLESVertexBuffer&>(buffer).SetIndexBuffer(indexBuffer);
 }
 
+void COpenGLESRenderer::ForceBindVertexBuffer(IVertexBuffer& buffer)
+{
+	reinterpret_cast<COpenGLESVertexBuffer&>(buffer).Bind(*this, m_shaderManager);
+}
+
 void COpenGLESRenderer::PushMatrix()
 {
 	m_matrixManager.PushMatrix();

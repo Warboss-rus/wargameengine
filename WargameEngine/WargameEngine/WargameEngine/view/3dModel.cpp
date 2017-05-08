@@ -83,6 +83,7 @@ void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<s
 void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer,
 	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
 {
+	renderer.ForceBindVertexBuffer(vertexBuffer);
 	auto& shaderManager = renderer.GetShaderManager();
 	if (useGPUskinning && m_skeleton.size() > 0)
 	{
@@ -90,7 +91,7 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache, 4, m_weightsCount.size() * 4, IShaderManager::TYPE::FLOAT32);
 	}
 	renderer.PushMatrix();
-	renderer.Rotate(m_rotation);
+	//renderer.Rotate(m_rotation);
 	renderer.Scale(m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{

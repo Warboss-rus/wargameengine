@@ -68,6 +68,7 @@ public:
 	virtual void DrawAll(IVertexBuffer& buffer, size_t count) = 0;
 	virtual void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) = 0;
 	virtual void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) = 0;
+	virtual void ForceBindVertexBuffer(IVertexBuffer& buffer) = 0;
 
 	virtual void PushMatrix() = 0;
 	virtual void PopMatrix() = 0;

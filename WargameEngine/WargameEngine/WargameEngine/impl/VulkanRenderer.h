@@ -130,6 +130,7 @@ public:
 	void DrawAll(IVertexBuffer& buffer, size_t count) override;
 	void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
 	void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
+	void ForceBindVertexBuffer(IVertexBuffer& buffer) override;
 
 	void PushMatrix() override;
 	void PopMatrix() override;

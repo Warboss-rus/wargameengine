@@ -55,6 +55,7 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
 		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
 		auto buffer = m_renderer.CreateVertexBuffer(reinterpret_cast<float*>(vertex), nullptr, reinterpret_cast<float*>(texCoord), 6, true);
+		m_renderer.ForceBindVertexBuffer(*buffer);
 		shaderManager.SetVertexAttribute("instancePosition", 4, particlesCount, particleEffect.GetPositionCache().data(), true);
 		if (useTexCoordAttrib)
 		{

@@ -729,6 +729,11 @@ void CVulkanRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* 
 	reinterpret_cast<IVulkanVertexBuffer&>(buffer).SetIndexBuffer(std::move(indexCache));
 }
 
+void CVulkanRenderer::ForceBindVertexBuffer(IVertexBuffer& buffer)
+{
+	//Do nothing
+}
+
 void CVulkanRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a /*= UCHAR_MAX*/)
 {
 	auto charToFloat = [](const int value) { return static_cast<float>(value) / 0xff; };

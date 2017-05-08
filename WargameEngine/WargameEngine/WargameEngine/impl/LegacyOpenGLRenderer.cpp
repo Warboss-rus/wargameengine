@@ -485,6 +485,11 @@ void CLegacyGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int
 	reinterpret_cast<CLegacyGLVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);
 }
 
+void CLegacyGLRenderer::ForceBindVertexBuffer(IVertexBuffer& buffer)
+{
+	reinterpret_cast<const CLegacyGLVertexBuffer&>(buffer).Bind();
+}
+
 std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)
 {
 	std::vector<double> result(16);

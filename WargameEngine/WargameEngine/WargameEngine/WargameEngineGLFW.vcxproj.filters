@@ -65,6 +65,12 @@
     <ClCompile Include="impl\AssimpModelLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="impl\micropather.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\PathfindingMicroPather.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\GameWindowGLFW.h">
@@ -125,6 +131,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\AssimpModelLoader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\micropather.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\PathfindingMicroPather.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

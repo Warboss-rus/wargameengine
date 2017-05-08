@@ -13,6 +13,7 @@ public:
 	virtual void DrawAll(IVertexBuffer& buffer, size_t count) override;
 	virtual void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
 	virtual void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
+	virtual void ForceBindVertexBuffer(IVertexBuffer& buffer) override;
 
 	virtual void PushMatrix() override;
 	virtual void PopMatrix() override;
