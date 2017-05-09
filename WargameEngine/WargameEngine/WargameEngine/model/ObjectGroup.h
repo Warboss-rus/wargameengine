@@ -36,7 +36,6 @@ public:
 	std::wstring const GetProperty(std::wstring const& key) const override;
 	bool IsSelectable() const override;
 	void SetSelectable(bool selectable) override;
-	void SetMovementLimiter(IMoveLimiter * limiter) override;
 	std::map<std::wstring, std::wstring> const& GetAllProperties() const override;
 	bool CastsShadow() const override;
 	void PlayAnimation(std::string const& animation, AnimationLoop loop, float speed) override;

@@ -37,12 +37,10 @@ struct NativeAppJni
 		window = new CGvrGameWindow(gvr_context);
 		context.window.reset(window);
 		context.soundPlayer = std::make_unique<CGvrAudioPlayer>(std::move(gvr_audio_api));
-		context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+		context.textWriter = std::make_unique<CTextWriter>();
 		context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 		static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
-		context.scriptHandlerFactory = []() {
-			return std::make_unique<CScriptHandlerLua>();
-		};
+		context.scriptHandler = std::make_unique<CScriptHandlerLua>();
 		context.socketFactory = []() {
 			return std::make_unique<CNetSocket>();
 		};
@@ -88,6 +86,7 @@ JNI_METHOD(void, nativeInitializeGl)(JNIEnv *env, jobject obj, jlong nativeRende
 	auto renderer = native(nativeRenderer);
 	renderer->window->Init();
 	renderer->gameView = std::make_unique<CGameView>(&renderer->context);
+	renderer->gameView->GetViewport(0).GetCamera().AttachToVR(0);
 }
 
 JNI_METHOD(void, nativeDrawFrame)(JNIEnv *env, jobject obj, jlong nativeRenderer) 

@@ -1,7 +1,6 @@
 #pragma once
 #include "IBaseObject.h"
 #include "Animation.h"
-#include "MovementLimiter.h"
 #include "TeamColor.h"
 #include <chrono>
 #include <map>
@@ -19,7 +18,6 @@ public:
 	virtual std::wstring const GetProperty(std::wstring const& key) const = 0;
 	virtual bool IsSelectable() const = 0;
 	virtual void SetSelectable(bool selectable) = 0;
-	virtual void SetMovementLimiter(IMoveLimiter* limiter) = 0;
 	virtual std::map<std::wstring, std::wstring> const& GetAllProperties() const = 0;
 	virtual void PlayAnimation(std::string const& animation, AnimationLoop loop = AnimationLoop::NonLooping, float speed = 1.0f) = 0;
 	virtual std::string GetAnimation() const = 0;

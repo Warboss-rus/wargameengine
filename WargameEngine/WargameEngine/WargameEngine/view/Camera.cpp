@@ -2,6 +2,7 @@
 #include "IInput.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "Matrix4.h"
 
 namespace
 {
@@ -15,6 +16,26 @@ float clamp(float value, float min, float max)
 	if (value < min) return min;
 	if (value > max) return max;
 	return value;
+}
+
+CVector3f operator*(const CVector3f& vect, const Matrix4F& matrix)
+{
+	float result[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			result[i] += matrix[i * 4 + j] * ((j == 3) ? 1.0f : vect[j]);
+		}
+	}
+	if (fabs(result[3]) > FLT_EPSILON)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			result[i] /= result[3];
+		}
+	}
+	return CVector3f(result);
 }
 }
 
@@ -30,16 +51,28 @@ Camera::~Camera()
 
 CVector3f Camera::GetPosition() const
 {
+	if (m_vrDevice != -1)
+	{
+		return m_position * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
+	}
 	return m_position;
 }
 
 CVector3f Camera::GetDirection() const
 {
+	if (m_vrDevice != -1)
+	{
+		return m_target * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
+	}
 	return m_target;
 }
 
 CVector3f Camera::GetUpVector() const
 {
+	if (m_vrDevice != -1)
+	{
+		return m_up * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
+	}
 	return m_up;
 }
 
@@ -158,17 +191,23 @@ void Camera::SetMouseSensitivity(float horizontalSensitivity, float verticalSens
 
 void Camera::AttachToTouchScreen()
 {
+	ResetInput();
 	m_inputConnections.emplace_back(m_input->DoOnMouseMove([this](int, int, int dx, int dy) {
 		if (m_input->IsLMBPressed())
 		{
-			Translate(dx / 10.0f, dy / 10.0f, 0.0f);
+			Translate(-dx / 100.0f, dy / 100.0f, 0.0f);
 		}
 		return false;
 	}, CAMERA_PRIORITY, CAMERA_TAG));
+	m_inputConnections.emplace_back(m_input->DoOnMouseWheel([this](float multiplier) {
+		ChangeDistance((m_position - m_target).GetLength() * (1.0f - multiplier));
+		return false;
+	}));
 }
 
 void Camera::AttachToKeyboardMouse()
 {
+	ResetInput();
 	m_inputConnections.emplace_back(m_input->DoOnMouseMove([this](int /*newX*/, int /*newY*/, int deltaX, int deltaY) {
 		if ((m_cameraMode == Mode::FIRST_PERSON) || (m_input->GetModifiers() & IInput::MODIFIER_ALT))
 		{

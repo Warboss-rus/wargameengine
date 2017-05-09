@@ -191,7 +191,7 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 				{
 					indexes.push_back(faces[index3]);
 				}
-				else//New vertex/texcoord/normal
+				else//std::make_unique<vertex/texcoord/normal
 				{
 					FaceIndex faceIndex  = ParseFaceIndex(index3);
 					vertices.push_back(tempVertices[faceIndex.vertex - 1]);

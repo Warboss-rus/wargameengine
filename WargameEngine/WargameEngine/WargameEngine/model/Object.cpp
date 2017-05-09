@@ -57,11 +57,6 @@ void CObject::SetSelectable(bool selectable)
 	m_isSelectable = selectable;
 }
 
-void CObject::SetMovementLimiter(IMoveLimiter* limiter)
-{
-	m_movelimiter.reset(limiter);
-}
-
 std::map<std::wstring, std::wstring> const& CObject::GetAllProperties() const
 {
 	return m_properties;

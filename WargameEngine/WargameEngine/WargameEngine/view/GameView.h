@@ -33,7 +33,7 @@ struct sGameViewContext
 	std::unique_ptr<ISoundPlayer> soundPlayer;
 	std::unique_ptr<ITextWriter> textWriter;
 	std::unique_ptr<IPhysicsEngine> physicsEngine;
-	std::function<std::unique_ptr<IScriptHandler>()> scriptHandlerFactory;
+	std::unique_ptr<IScriptHandler> scriptHandler;
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
 	std::vector<std::unique_ptr<IImageReader>> imageReaders;
 	std::vector<std::unique_ptr<IModelReader>> modelReaders;
@@ -115,7 +115,7 @@ private:
 	CParticleSystem m_particles;
 	CRuler m_ruler;
 	CTranslationManager m_translationManager;
-	std::function<std::unique_ptr<IScriptHandler>()> m_scriptHandlerFactory;
+	IScriptHandler& m_scriptHandler;
 	std::function<std::unique_ptr<INetSocket>()> m_socketFactory;
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;
 	size_t m_tableBufferSize;

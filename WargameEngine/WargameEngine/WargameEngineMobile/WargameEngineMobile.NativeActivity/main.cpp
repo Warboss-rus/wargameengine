@@ -146,12 +146,10 @@ void android_main(struct android_app* state) {
 	lib = dlopen("libfmodL.so", RTLD_NOW | RTLD_LOCAL);
 #endif
 	context.soundPlayer = std::make_unique<SOUND_PLAYER_CLASS>();
-	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+	context.textWriter = std::make_unique<CTextWriter>();
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
-	context.scriptHandlerFactory = []() {
-		return std::make_unique<CScriptHandlerLua>();
-	};
+	context.scriptHandler = std::make_unique<CScriptHandlerLua>();
 	context.socketFactory = []() {
 		return std::make_unique<CNetSocket>();
 	};

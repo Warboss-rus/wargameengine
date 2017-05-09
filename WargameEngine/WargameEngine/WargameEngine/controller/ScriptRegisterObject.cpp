@@ -188,7 +188,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 	{
 		if (args.GetCount() < 1)
 			throw std::runtime_error("at least 1 argument expected(moveLimiterType)");
-		IObject* object = reinterpret_cast<IObject *>(instance);
+		auto object = model.Get3DObject(reinterpret_cast<IObject *>(instance));
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
 		std::string limiterType = args.GetStr(1);
@@ -196,13 +196,13 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		{
 			if (args.GetCount() != 1)//I have no idea why arguments are +1
 				throw std::runtime_error("1 argument expected(moveLimiterType)");
-			object->SetMovementLimiter(NULL);
+			controller.SetMovementLimiter(object, NULL);
 		}
 		if(limiterType == "static")
 		{
 			if (args.GetCount() != 1)
 				throw std::runtime_error("1 argument expected(moveLimiterType)");
-			object->SetMovementLimiter(new CMoveLimiterStatic());
+			controller.SetMovementLimiter(object, std::make_unique<CMoveLimiterStatic>());
 		}
 		if(limiterType == "circle")
 		{
@@ -211,7 +211,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			double centerX = args.GetDbl(2);
 			double centerY = args.GetDbl(3);
 			double radius = args.GetDbl(4);
-			object->SetMovementLimiter(new CMoveLimiterCircle(centerX, centerY, radius));
+			controller.SetMovementLimiter(object, std::make_unique<CMoveLimiterCircle>(centerX, centerY, radius));
 		}
 		if(limiterType == "rectangle")
 		{
@@ -221,13 +221,13 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			double y1 = args.GetDbl(3);
 			double x2 = args.GetDbl(4);
 			double y2 = args.GetDbl(5);
-			object->SetMovementLimiter(new CMoveLimiterRectangle(x1, y1, x2, y2));
+			controller.SetMovementLimiter(object, std::make_unique<CMoveLimiterRectangle>(x1, y1, x2, y2));
 		}
 		if (limiterType == "tiles")
 		{
 			if (args.GetCount() != 1)
 				throw std::runtime_error("1 argument expected(moveLimiterType)");
-			object->SetMovementLimiter(new CMoveLimiterTiles());
+			controller.SetMovementLimiter(object, std::make_unique<CMoveLimiterTiles>());
 		}
 		if (limiterType == "custom")
 		{
@@ -241,7 +241,7 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 				handler.CallFunction(functionName, { vector3DConvert(position), rotation, vector3DConvert(oldPosition), oldRotation });
 				//TODO: get updated values from the function return
 			};
-			object->SetMovementLimiter(new CCustomMoveLimiter(function));
+			controller.SetMovementLimiter(object, std::make_unique<CCustomMoveLimiter>(function));
 		}
 		return nullptr;
 	});

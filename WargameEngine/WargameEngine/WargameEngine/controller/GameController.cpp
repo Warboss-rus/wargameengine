@@ -10,9 +10,10 @@
 #include "../view/GameView.h"
 #include "../MemoryStream.h"
 #include "../Utils.h"
+#include "../model/MovementLimiter.h"
 
-CGameController::CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine)
-	:m_model(model), m_physicsEngine(physicsEngine), m_scriptHandler(std::move(scriptHandler))
+CGameController::CGameController(CGameModel& model, IScriptHandler & scriptHandler, IPhysicsEngine & physicsEngine)
+	:m_model(model), m_physicsEngine(physicsEngine), m_scriptHandler(scriptHandler)
 {
 	m_model.DoOnObjectCreation(std::bind(&IPhysicsEngine::AddDynamicObject, &m_physicsEngine, std::placeholders::_1, 1.0));
 	m_model.DoOnObjectRemove(std::bind(&IPhysicsEngine::RemoveDynamicObject, &m_physicsEngine, std::placeholders::_1));
@@ -38,15 +39,16 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 	});
 	m_physicsEngine.Reset();
 
-	RegisterModelFunctions(*m_scriptHandler, m_model);
-	RegisterViewFunctions(*m_scriptHandler, view);
-	RegisterControllerFunctions(*m_scriptHandler, *this, view.GetAsyncFileProvider(), view.GetThreadPool());
-	RegisterUI(*m_scriptHandler, view.GetUI(), view.GetTranslationManager());
-	RegisterObject(*m_scriptHandler, *this, m_model, view.GetModelManager());
-	RegisterViewport(*m_scriptHandler, view);
+	m_scriptHandler.Reset();
+	RegisterModelFunctions(m_scriptHandler, m_model);
+	RegisterViewFunctions(m_scriptHandler, view);
+	RegisterControllerFunctions(m_scriptHandler, *this, view.GetAsyncFileProvider(), view.GetThreadPool());
+	RegisterUI(m_scriptHandler, view.GetUI(), view.GetTranslationManager());
+	RegisterObject(m_scriptHandler, *this, m_model, view.GetModelManager());
+	RegisterViewport(m_scriptHandler, view);
 	{
 		auto lock = m_model.LockModel();
-		m_scriptHandler->RunScript(scriptPath);
+		m_scriptHandler.RunScript(scriptPath);
 	}
 
 	m_lastUpdateTime = std::chrono::high_resolution_clock::now();
@@ -409,7 +411,7 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 		float z = stream.ReadFloat();
 		float rotation = stream.ReadFloat();
 		Path path = make_path(stream.ReadString());
-		std::shared_ptr<IObject> object = std::shared_ptr<IObject>(new CObject(path, { x, y, z }, rotation));
+		std::shared_ptr<IObject> object = std::make_shared<CObject>(path, CVector3f{ x, y, z }, rotation);
 		m_model.AddObject(object);
 		if (hasAdresses)
 		{
@@ -568,6 +570,11 @@ void CGameController::ObjectGoTo(std::shared_ptr<IObject> const& object, float x
 	m_commandHandler->AddNewGoTo(GetDecorator(object), x, y, speed, animation, animationSpeed);
 }
 
+void CGameController::SetMovementLimiter(std::shared_ptr<IObject> const& object, std::unique_ptr<IMoveLimiter> && limiter)
+{
+	GetDecorator(object)->SetLimiter(std::move(limiter));
+}
+
 CCommandHandler & CGameController::GetCommandHandler()
 {
 	return *m_commandHandler;
@@ -603,11 +610,18 @@ CObjectDecorator::CObjectDecorator(std::shared_ptr<IObject> const& object)
 {
 }
 
+CObjectDecorator::~CObjectDecorator() = default;
+
 void CObjectDecorator::GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed)
 {
 	m_goTarget = coords;
 	m_goSpeed = speed;
 	m_object->PlayAnimation(animation, AnimationLoop::Looping, animationSpeed);
+}
+
+void CObjectDecorator::SetLimiter(std::unique_ptr<IMoveLimiter> && limiter)
+{
+	m_limiter = std::move(limiter);
 }
 
 IObject* CObjectDecorator::GetObject()

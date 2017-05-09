@@ -16,18 +16,22 @@
 #include <deque>
 
 class CGameView;
+class IMoveLimiter;
 
 class CObjectDecorator
 {
 public:
 	CObjectDecorator(std::shared_ptr<IObject> const& object);
+	~CObjectDecorator();
 	void GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed);
+	void SetLimiter(std::unique_ptr<IMoveLimiter> && limiter);
 	IObject* GetObject();
 	void Update(std::chrono::duration<float> timeSinceLastUpdate);
 private:
 	std::shared_ptr<IObject> m_object;
 	CVector3f m_goTarget;
 	float m_goSpeed;
+	std::unique_ptr<IMoveLimiter> m_limiter;
 };
 
 class CGameController : public IStateManager
@@ -35,7 +39,7 @@ class CGameController : public IStateManager
 public:
 	typedef std::function<bool(std::shared_ptr<IObject> const& obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
 
-	CGameController(CGameModel& model, std::unique_ptr<IScriptHandler> && scriptHandler, IPhysicsEngine & physicsEngine);
+	CGameController(CGameModel& model, IScriptHandler& scriptHandler, IPhysicsEngine& physicsEngine);
 	~CGameController();
 	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath);
 	void InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath);
@@ -68,6 +72,7 @@ public:
 	void SetObjectProperty(std::shared_ptr<IObject> const& obj, std::wstring const& key, std::wstring const& value);
 	void PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, AnimationLoop loopMode, float speed);
 	void ObjectGoTo(std::shared_ptr<IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed);
+	void SetMovementLimiter(std::shared_ptr<IObject> const& object, std::unique_ptr<IMoveLimiter> && limiter);
 	CCommandHandler & GetCommandHandler();
 	CNetwork& GetNetwork();
 	std::shared_ptr<CObjectDecorator> GetDecorator(std::shared_ptr<IObject> const& object);
@@ -102,7 +107,7 @@ private:
 	std::unique_ptr<CVector3f> m_rotationPosBegin;
 	std::chrono::high_resolution_clock::time_point m_lastUpdateTime;
 
-	std::unique_ptr<IScriptHandler> m_scriptHandler;
+	IScriptHandler& m_scriptHandler;
 	std::unique_ptr<CCommandHandler> m_commandHandler;
 	std::unique_ptr<CNetwork> m_network;
 

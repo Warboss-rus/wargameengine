@@ -59,13 +59,11 @@ struct DXTColBlock
 
 void swap(void *byte1, void *byte2, size_t size)
 {
-	unsigned char *tmp = new unsigned char[size];
+	std::vector<unsigned char> tmp(size);
 
-	memcpy(tmp, byte1, size);
+	memcpy(tmp.data(), byte1, size);
 	memcpy(byte1, byte2, size);
-	memcpy(byte2, tmp, size);
-
-	delete[] tmp;
+	memcpy(byte2, tmp.data(), size);
 }
 
 void flip_blocks_dxtc1(DXTColBlock *line, int numBlocks)
@@ -232,7 +230,6 @@ void FlipImage(unsigned char * data, unsigned int width, unsigned int height, un
 		DXTColBlock *top;
 		DXTColBlock *bottom;
 
-		unsigned char * temp = new unsigned char[linesize];
 		for (int j = 0; j < (yblocks >> 1); j++)
 		{
 			top = (DXTColBlock*)(data + j * linesize);
@@ -243,7 +240,6 @@ void FlipImage(unsigned char * data, unsigned int width, unsigned int height, un
 
 			swap(bottom, top, linesize);
 		}
-		delete[] temp;
 	}
 }
 

@@ -16,7 +16,6 @@ public:
 	std::wstring const GetProperty(std::wstring const& key) const override;
 	bool IsSelectable() const override;
 	void SetSelectable(bool selectable) override;
-	void SetMovementLimiter(IMoveLimiter* limiter) override;
 	std::map<std::wstring, std::wstring> const& GetAllProperties() const override;
 	void PlayAnimation(std::string const& animation, AnimationLoop loop, float speed) override;
 	std::string GetAnimation() const override;
@@ -40,7 +39,6 @@ private:
 	std::set<std::string> m_hiddenMeshes;
 	std::map<std::wstring, std::wstring> m_properties;
 	bool m_isSelectable;
-	std::unique_ptr<IMoveLimiter> m_movelimiter;
 	std::string m_animation;
 	std::chrono::microseconds m_animationTime;
 	AnimationLoop m_animationLoop = AnimationLoop::HoldEnd;

@@ -222,14 +222,6 @@ void CObjectGroup::SetSelectable(bool selectable)
 	}
 }
 
-void CObjectGroup::SetMovementLimiter(IMoveLimiter * limiter)
-{
-	for(auto& child : m_children)
-	{
-		child->SetMovementLimiter(limiter);
-	}
-}
-
 std::map<std::wstring, std::wstring> const& CObjectGroup::GetAllProperties() const
 {
 	return m_children[0]->GetAllProperties();

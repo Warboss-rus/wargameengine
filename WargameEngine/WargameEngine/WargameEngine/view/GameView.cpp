@@ -38,7 +38,7 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_modelManager(m_renderer, m_physicsEngine, m_asyncFileProvider)
 	, m_textureManager(m_window->GetViewHelper(), m_asyncFileProvider)
 	, m_particles(m_renderer)
-	, m_scriptHandlerFactory(context->scriptHandlerFactory)
+	, m_scriptHandler(*context->scriptHandler)
 	, m_socketFactory(context->socketFactory)
 {
 	m_viewHelper.SetTextureManager(m_textureManager);
@@ -96,7 +96,7 @@ void CGameView::Init(sModule const& module)
 	InitLandscape();
 	InitInput();
 	m_viewports.front().GetCamera().AttachToKeyboardMouse();
-	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandlerFactory(), m_physicsEngine);
+	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandler, m_physicsEngine);
 	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(module.script));
 	m_soundPlayer.Init();
 }
@@ -348,7 +348,7 @@ void CGameView::Update()
 	auto fps = 1.0f / std::chrono::duration<float>(currentTime - m_lastFrameTime).count();
 	m_lastFrameTime = currentTime;
 	m_viewHelper.DrawIn2D([this, fps] {
-		m_textWriter.PrintText(1, 10, "times.ttf", 12, std::to_wstring(static_cast<int>(fps)));
+		m_textWriter.PrintText(m_renderer, 1, 10, "times.ttf", 12, std::to_wstring(static_cast<int>(fps)));
 	});
 }
 
@@ -532,7 +532,7 @@ void CGameView::DrawObjects(bool shadowOnly)
 
 void CGameView::CreateSkybox(float size, const Path& textureFolder)
 {
-	m_skybox.reset(new CSkyBox(size, size, size, textureFolder, m_renderer, m_textureManager));
+	m_skybox = std::make_unique<CSkyBox>(size, size, size, textureFolder, m_renderer, m_textureManager);
 }
 
 CModelManager& CGameView::GetModelManager()
@@ -722,7 +722,7 @@ void CGameView::DrawText3D(CVector3f const& pos, wstring const& text)
 	m_viewHelper.DrawIn2D([&] {
 		int x, y;
 		m_viewHelper.WorldCoordsToWindowCoords(*m_currentViewport, pos, x, y);
-		m_textWriter.PrintText(x, y, "times.ttf", 24, text);
+		m_textWriter.PrintText(m_renderer, x, y, "times.ttf", 24, text);
 	});
 }
 

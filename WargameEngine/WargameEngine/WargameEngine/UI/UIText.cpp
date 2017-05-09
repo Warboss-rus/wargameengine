@@ -18,6 +18,6 @@ void PrintText(IRenderer & renderer, ITextWriter & textWriter, int x, int y, int
 		x = width - textWriter.GetStringWidth(theme.font, textSize, str);
 	y += (height - textSize) / 2 + textSize;
 	renderer.SetColor(theme.color);
-	textWriter.PrintText(x, y, theme.font, textSize, str);
+	textWriter.PrintText(renderer, x, y, theme.font, textSize, str);
 	renderer.SetColor(0, 0, 0);
 }

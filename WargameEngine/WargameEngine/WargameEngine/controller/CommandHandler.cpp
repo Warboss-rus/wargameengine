@@ -111,7 +111,7 @@ void CCommandHandler::Redo()
 
 void CCommandHandler::BeginCompound()
 {
-	m_compound.reset(new CCommandCompound());
+	m_compound = std::make_unique<CCommandCompound>();
 }
 
 void CCommandHandler::EndCompound()

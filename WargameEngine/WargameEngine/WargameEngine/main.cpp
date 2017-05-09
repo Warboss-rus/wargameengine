@@ -23,13 +23,13 @@
 #include "impl/ScriptHandlerLua.h"
 #include "impl/PhysicsEngineBullet.h"
 #include "impl/NetSocket.h"
+#include "impl/AssimpModelLoader.h"
 #include "Utils.h"
 #ifdef _WINDOWS
 #include <windows.h>
 
 int WINAPI WinMain(_In_ HINSTANCE /*hInstance*/, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
-#include "impl/AssimpModelLoader.h"
 	int argc = __argc;
 	char** argv = __argv;
 #else
@@ -59,11 +59,9 @@ int main(int argc, char* argv[])
 	}
 	context.window = std::make_unique<WINDOW_CLASS>();
 	context.soundPlayer = std::make_unique<CSoundPlayerFMod>();
-	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+	context.textWriter = std::make_unique<CTextWriter>();
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
-	context.scriptHandlerFactory = []() {
-		return std::make_unique<CScriptHandlerLua>();
-	};
+	context.scriptHandler = std::make_unique<CScriptHandlerLua>();
 	context.socketFactory = []() {
 		return std::make_unique<CNetSocket>();
 	};

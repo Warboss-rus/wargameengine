@@ -2,11 +2,11 @@
 #include "../view/ITextWriter.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <string>
+#include "../view/IRenderer.h"
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
-#include "../view/IRenderer.h"
 
 struct sSymbol
 {
@@ -14,7 +14,7 @@ struct sSymbol
 	wchar_t unicodeSymbol;
 	unsigned int size;
 	FT_Face face;
-	bool operator< (const sSymbol & other) const;
+	bool operator<(const sSymbol& other) const;
 };
 struct sGlyph
 {
@@ -24,29 +24,32 @@ struct sGlyph
 	int width;
 	int rows;
 	int advancex;
+	std::vector<unsigned char> bitmapData;
 };
 
 class CTextWriter : public ITextWriter
 {
 public:
-	CTextWriter(IRenderer & renderer);
+	CTextWriter();
 	~CTextWriter();
-	virtual void PrintText(int x, int y, std::string const& font, unsigned int size, std::string const& text, int width = 0, int height = 0) override;
-	virtual void PrintText(int x, int y, std::string const& font, unsigned int size, std::wstring const& text, int width = 0, int height = 0) override;
+	virtual void PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::string const& text, int width = 0, int height = 0) override;
+	virtual void PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::wstring const& text, int width = 0, int height = 0) override;
 	virtual int GetStringHeight(std::string const& font, unsigned int size, std::string const& text) override;
 	virtual int GetStringWidth(std::string const& font, unsigned int size, std::string const& text) override;
 	virtual int GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text) override;
 	virtual int GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text) override;
 
 	void AddFontLocation(std::string const& fontLocation);
+
 private:
 	FT_Face GetFace(std::string const& name);
-	const sGlyph& GetSymbol(FT_Face font, unsigned int size, char symbol);
-	const sGlyph& GetSymbol(FT_Face font, unsigned int size, wchar_t symbol);
-	void DrawBitmap(int x, int y, sGlyph  const& symbol);
-	sGlyph CreateSymbol(sSymbol  const& s);
+	sGlyph& GetSymbol(FT_Face font, unsigned int size, char symbol);
+	sGlyph& GetSymbol(FT_Face font, unsigned int size, wchar_t symbol);
+	void DrawBitmap(IRenderer& renderer, int x, int y, sGlyph const& symbol);
+	sGlyph CreateSymbol(const sSymbol& s);
+	void CreateTexture(sGlyph& glyph, IRenderer& renderer);
+
 	FT_Library m_ft;
-	IRenderer & m_renderer;
 	std::map<std::string, FT_Face> m_faces;
 	std::map<sSymbol, sGlyph> m_symbols;
 	std::string m_customFontLocation;
