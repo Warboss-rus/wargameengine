@@ -72,6 +72,7 @@ CGameView::CGameView(sGameViewContext * context)
 	});
 	m_window->DoOnShutdown([this] {
 		m_threadPool.CancelAll();
+		m_textWriter.Reset();
 	});
 
 #ifdef _DEBUG
@@ -98,7 +99,7 @@ void CGameView::Init(sModule const& module)
 	InitLandscape();
 	InitInput();
 	m_viewports.front().GetCamera().AttachToKeyboardMouse();
-	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandler, m_physicsEngine);
+	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandler, m_physicsEngine, m_pathFinder);
 	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(module.script));
 	m_soundPlayer.Init();
 }

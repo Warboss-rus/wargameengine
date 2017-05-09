@@ -208,19 +208,19 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 		{
 			if (args.GetCount() != 4)
 				throw std::runtime_error("4 argument expected(moveLimiterType, centerX, centerY, radius)");
-			double centerX = args.GetDbl(2);
-			double centerY = args.GetDbl(3);
-			double radius = args.GetDbl(4);
+			float centerX = args.GetFloat(2);
+			float centerY = args.GetFloat(3);
+			float radius = args.GetFloat(4);
 			controller.SetMovementLimiter(object, std::make_unique<CMoveLimiterCircle>(centerX, centerY, radius));
 		}
 		if(limiterType == "rectangle")
 		{
 			if (args.GetCount() != 5)
 				throw std::runtime_error("5 argument expected(moveLimiterType, x1, y1, x2, y2)");
-			double x1 = args.GetDbl(2);
-			double y1 = args.GetDbl(3);
-			double x2 = args.GetDbl(4);
-			double y2 = args.GetDbl(5);
+			float x1 = args.GetFloat(2);
+			float y1 = args.GetFloat(3);
+			float x2 = args.GetFloat(4);
+			float y2 = args.GetFloat(5);
 			controller.SetMovementLimiter(object, std::make_unique<CMoveLimiterRectangle>(x1, y1, x2, y2));
 		}
 		if (limiterType == "tiles")
@@ -234,12 +234,13 @@ void RegisterObject(IScriptHandler & handler, CGameController & controller, CGam
 			if (args.GetCount() != 3)
 				throw std::runtime_error("3 arguments expected(moveLimiterType, functionName)");
 			std::wstring functionName = args.GetWStr(1);
-			auto function = [&, functionName](CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) {
-				auto vector3DConvert = [](CVector3d const& vec) {
+			auto function = [&, functionName](CVector3f & position, CVector3f& rotation, const CVector3f & oldPosition, const CVector3f& oldRotation) {
+				auto vector3FConvert = [](CVector3f const& vec) {
 					return std::vector<FunctionArgument>{vec.x, vec.y, vec.z};
 				};
-				handler.CallFunction(functionName, { vector3DConvert(position), rotation, vector3DConvert(oldPosition), oldRotation });
+				handler.CallFunction(functionName, { vector3FConvert(position), vector3FConvert(rotation), vector3FConvert(oldPosition), vector3FConvert(oldRotation) });
 				//TODO: get updated values from the function return
+				return true;
 			};
 			controller.SetMovementLimiter(object, std::make_unique<CCustomMoveLimiter>(function));
 		}

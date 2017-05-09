@@ -14,6 +14,12 @@ CTextWriter::~CTextWriter()
 	FT_Done_FreeType(m_ft);
 }
 
+void CTextWriter::Reset()
+{
+	m_faces.clear();
+	m_symbols.clear();
+}
+
 FT_Face CTextWriter::GetFace(std::string const& name)
 {
 	if (m_faces.find(name) == m_faces.end())

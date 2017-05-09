@@ -7,65 +7,65 @@
 class IMoveLimiter
 {
 public:
-	virtual void FixPosition(CVector3d& position, double& rotation, const CVector3d& oldPosition, double oldRotation) const = 0;
+	virtual bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const = 0;
 	virtual ~IMoveLimiter() {}
 };
 
 class CMoveLimiterCircle : public IMoveLimiter
 {
 public:
-	CMoveLimiterCircle(double x, double y, double radius)
+	CMoveLimiterCircle(float x, float y, float radius)
 		: m_x(x)
 		, m_y(y)
 		, m_radius(radius)
 	{
 	}
-	void FixPosition(CVector3d& position, double& rotation, const CVector3d& oldPosition, double oldRotation) const;
+	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 
 private:
-	double m_x;
-	double m_y;
-	double m_radius;
+	float m_x;
+	float m_y;
+	float m_radius;
 };
 
 class CMoveLimiterRectangle : public IMoveLimiter
 {
 public:
-	CMoveLimiterRectangle(double x1, double y1, double x2, double y2)
+	CMoveLimiterRectangle(float x1, float y1, float x2, float y2)
 		: m_minX((x1 < x2) ? x1 : x2)
 		, m_maxX((x1 > x2) ? x1 : x2)
 		, m_minY((y1 < y2) ? y1 : y2)
 		, m_maxY((y1 > y2) ? y1 : y2)
 	{
 	}
-	void FixPosition(CVector3d& position, double& rotation, const CVector3d& oldPosition, double oldRotation) const;
+	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 
 private:
-	double m_minX;
-	double m_maxX;
-	double m_minY;
-	double m_maxY;
+	float m_minX;
+	float m_maxX;
+	float m_minY;
+	float m_maxY;
 };
 
 class CMoveLimiterStatic : public IMoveLimiter
 {
 public:
 	CMoveLimiterStatic() {}
-	void FixPosition(CVector3d& position, double& rotation, const CVector3d& oldPosition, double oldRotation) const;
+	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 };
 
 class CMoveLimiterTiles : public IMoveLimiter
 {
 public:
-	void FixPosition(CVector3d& position, double& rotation, const CVector3d& oldPosition, double oldRotation) const;
+	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 };
 
 class CCustomMoveLimiter : public IMoveLimiter
 {
 public:
-	typedef std::function<void(CVector3d& position, double& rotation, const CVector3d& oldPosition, double oldRotation)> CustomMoveLimiterHandler;
+	typedef std::function<bool(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations)> CustomMoveLimiterHandler;
 	CCustomMoveLimiter(CustomMoveLimiterHandler const& function);
-	void FixPosition(CVector3d& position, double& rotation, const CVector3d& oldPosition, double oldRotation) const;
+	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 
 private:
 	CustomMoveLimiterHandler m_function;

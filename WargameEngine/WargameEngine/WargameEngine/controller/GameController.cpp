@@ -12,8 +12,8 @@
 #include "../Utils.h"
 #include "../model/MovementLimiter.h"
 
-CGameController::CGameController(CGameModel& model, IScriptHandler & scriptHandler, IPhysicsEngine & physicsEngine)
-	:m_model(model), m_physicsEngine(physicsEngine), m_scriptHandler(scriptHandler)
+CGameController::CGameController(CGameModel& model, IScriptHandler & scriptHandler, IPhysicsEngine & physicsEngine, IPathfinding& pathFinder)
+	: m_model(model), m_physicsEngine(physicsEngine), m_scriptHandler(scriptHandler), m_pathFinder(pathFinder)
 {
 	m_model.DoOnObjectCreation(std::bind(&IPhysicsEngine::AddDynamicObject, &m_physicsEngine, std::placeholders::_1, 1.0));
 	m_model.DoOnObjectRemove(std::bind(&IPhysicsEngine::RemoveDynamicObject, &m_physicsEngine, std::placeholders::_1));
@@ -608,6 +608,20 @@ bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind 
 CObjectDecorator::CObjectDecorator(std::shared_ptr<IObject> const& object)
 	:m_object(object), m_goSpeed(0.0f)
 {
+	auto fixPosition = [this](CVector3f position, CVector3f rotation, const CVector3f& oldPosition, const CVector3f& oldRotation) {
+		if (m_limiter && !m_limiter->FixPosition(position, rotation, oldPosition, oldRotation))
+		{
+			m_object->SetCoords(position);
+			m_object->SetRotations(rotation);
+		}
+	};
+	
+	m_positionChangeConnection = object->DoOnCoordsChange([fixPosition, this](const CVector3f& oldPosition, const CVector3f& newPosition) {
+		fixPosition(newPosition, m_object->GetRotations(), oldPosition, m_object->GetRotations());
+	});
+	m_rotationChangeConnection = object->DoOnRotationChange([fixPosition, this](const CVector3f& oldRotations, const CVector3f& newRotations) {
+		fixPosition(m_object->GetCoords(), newRotations, m_object->GetCoords(), oldRotations);
+	});
 }
 
 CObjectDecorator::~CObjectDecorator() = default;

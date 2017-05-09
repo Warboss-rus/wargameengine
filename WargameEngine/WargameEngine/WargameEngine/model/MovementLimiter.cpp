@@ -1,41 +1,51 @@
 #include "MovementLimiter.h"
 
-void CMoveLimiterRectangle::FixPosition(CVector3d & position, double & /*rotation*/, const CVector3d & /*oldPosition*/, double /*oldRotation*/) const
-{ 
-	if (position.x < m_minX) position.x = m_minX;
-	if (position.x > m_maxX) position.x = m_maxX;
-	if (position.y < m_minY) position.y = m_minY;
-	if (position.y > m_maxY) position.y = m_maxY;
+bool CMoveLimiterRectangle::FixPosition(CVector3f& position, CVector3f& /*rotations*/, const CVector3f& /*oldPosition*/, const CVector3f& /*oldRotations*/) const
+{
+	if (position.x < m_minX)
+		position.x = m_minX;
+	if (position.x > m_maxX)
+		position.x = m_maxX;
+	if (position.y < m_minY)
+		position.y = m_minY;
+	if (position.y > m_maxY)
+		position.y = m_maxY;
+	return position.x >= m_minX && position.x <= m_maxX && position.y >= m_minY && position.y <= m_maxY;
 }
 
-void CMoveLimiterCircle::FixPosition(CVector3d & position, double & /*rotation*/, const CVector3d & /*oldPosition*/, double /*oldRotation*/) const
+bool CMoveLimiterCircle::FixPosition(CVector3f& position, CVector3f& /*rotations*/, const CVector3f& /*oldPosition*/, const CVector3f& /*oldRotations*/) const
 {
 	if (sqrt((position.x - m_x) * (position.x - m_x) + (position.y - m_y) * (position.y - m_y)) > m_radius)
 	{
-		double angle = atan2(position.y - m_y, position.x - m_x);
+		float angle = atan2(position.y - m_y, position.x - m_x);
 		position.x = m_x + m_radius * cos(angle);
 		position.y = m_y + m_radius * sin(angle);
+		return false;
 	}
+	return true;
 }
 
-void CMoveLimiterStatic::FixPosition(CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) const
+bool CMoveLimiterStatic::FixPosition(CVector3f& position, CVector3f& rotation, const CVector3f& oldPosition, const CVector3f& oldRotation) const
 {
 	position = oldPosition;
 	rotation = oldRotation;
+	return false;
 }
 
-void CMoveLimiterTiles::FixPosition(CVector3d & position, double & /*rotation*/, const CVector3d & /*oldPosition*/, double /*oldRotation*/) const
+bool CMoveLimiterTiles::FixPosition(CVector3f& position, CVector3f& /*rotation*/, const CVector3f& /*oldPosition*/, const CVector3f& /*oldRotation*/) const
 {
 	position.x = floor(position.x);
 	position.y = floor(position.y);
 	position.z = floor(position.z);
+	return false;
 }
 
-CCustomMoveLimiter::CCustomMoveLimiter(CustomMoveLimiterHandler const& function) :m_function(function)
+CCustomMoveLimiter::CCustomMoveLimiter(CustomMoveLimiterHandler const& function)
+	: m_function(function)
 {
 }
 
-void CCustomMoveLimiter::FixPosition(CVector3d & position, double & rotation, const CVector3d & oldPosition, double oldRotation) const
+bool CCustomMoveLimiter::FixPosition(CVector3f& position, CVector3f& rotation, const CVector3f& oldPosition, const CVector3f& oldRotation) const
 {
-	m_function(position, rotation, oldPosition, oldRotation);
+	return m_function(position, rotation, oldPosition, oldRotation);
 }

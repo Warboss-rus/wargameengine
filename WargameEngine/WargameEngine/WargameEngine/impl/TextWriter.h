@@ -32,12 +32,14 @@ class CTextWriter : public ITextWriter
 public:
 	CTextWriter();
 	~CTextWriter();
-	virtual void PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::string const& text, int width = 0, int height = 0) override;
-	virtual void PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::wstring const& text, int width = 0, int height = 0) override;
-	virtual int GetStringHeight(std::string const& font, unsigned int size, std::string const& text) override;
-	virtual int GetStringWidth(std::string const& font, unsigned int size, std::string const& text) override;
-	virtual int GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text) override;
-	virtual int GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text) override;
+
+	 void Reset() override;
+	 void PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::string const& text, int width = 0, int height = 0) override;
+	 void PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::wstring const& text, int width = 0, int height = 0) override;
+	 int GetStringHeight(std::string const& font, unsigned int size, std::string const& text) override;
+	 int GetStringWidth(std::string const& font, unsigned int size, std::string const& text) override;
+	 int GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text) override;
+	 int GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text) override;
 
 	void AddFontLocation(std::string const& fontLocation);
 

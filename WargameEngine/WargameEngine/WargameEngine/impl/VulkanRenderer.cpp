@@ -1246,7 +1246,7 @@ CVulkanCachedTexture::~CVulkanCachedTexture()
 std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateTexture(bool deviceLocal, CVulkanMemoryManager& memoryManager)
 {
 	VkImage image;
-	const VkImageUsageFlags usageFlags = m_usageFlags | (deviceLocal ? VK_IMAGE_USAGE_TRANSFER_DST_BIT : VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+	const VkImageUsageFlags usageFlags = m_usageFlags | (m_format == VK_FORMAT_D32_SFLOAT ? 0 : (deviceLocal ? VK_IMAGE_USAGE_TRANSFER_DST_BIT : VK_IMAGE_USAGE_TRANSFER_SRC_BIT));
 	const VkImageCreateInfo image_create_info = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO, nullptr, 0, VK_IMAGE_TYPE_2D, m_format, m_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT,
 		m_format == VK_FORMAT_D32_SFLOAT ? VK_IMAGE_TILING_OPTIMAL : VK_IMAGE_TILING_LINEAR, usageFlags, VK_SHARING_MODE_EXCLUSIVE, 0, nullptr, VK_IMAGE_LAYOUT_PREINITIALIZED };
 	VkResult result = vkCreateImage(m_device, &image_create_info, nullptr, &image);
@@ -1274,7 +1274,7 @@ void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryMa
 	m_extent = { width, height, 1 };
 	m_components = type == CachedTextureType::ALPHA ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
 	m_usageFlags = type == CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : ((type == CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | VK_IMAGE_USAGE_SAMPLED_BIT);
-	m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	if(type != CachedTextureType::DEPTH) m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	std::tie(m_image, m_memory) = CreateTexture(true, memoryManager);
 
 	const VkComponentSwizzle swizzle = type == CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY;

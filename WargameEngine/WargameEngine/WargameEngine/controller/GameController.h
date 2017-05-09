@@ -17,6 +17,7 @@
 
 class CGameView;
 class IMoveLimiter;
+class IPathfinding;
 
 class CObjectDecorator
 {
@@ -32,6 +33,8 @@ private:
 	CVector3f m_goTarget;
 	float m_goSpeed;
 	std::unique_ptr<IMoveLimiter> m_limiter;
+	CScopedConnection m_positionChangeConnection;
+	CScopedConnection m_rotationChangeConnection;
 };
 
 class CGameController : public IStateManager
@@ -39,7 +42,7 @@ class CGameController : public IStateManager
 public:
 	typedef std::function<bool(std::shared_ptr<IObject> const& obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
 
-	CGameController(CGameModel& model, IScriptHandler& scriptHandler, IPhysicsEngine& physicsEngine);
+	CGameController(CGameModel& model, IScriptHandler& scriptHandler, IPhysicsEngine& physicsEngine, IPathfinding& pathFinder);
 	~CGameController();
 	void Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath);
 	void InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath);
@@ -108,6 +111,7 @@ private:
 	std::chrono::high_resolution_clock::time_point m_lastUpdateTime;
 
 	IScriptHandler& m_scriptHandler;
+	IPathfinding& m_pathFinder;
 	std::unique_ptr<CCommandHandler> m_commandHandler;
 	std::unique_ptr<CNetwork> m_network;
 

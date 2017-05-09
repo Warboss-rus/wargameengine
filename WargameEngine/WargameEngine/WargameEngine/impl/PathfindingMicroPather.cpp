@@ -141,8 +141,36 @@ private:
 
 	std::vector<size_t> GetAffectedCells(const Bounding& bounding, const CVector3f& position, const CVector3f& rotation) const
 	{
-		//TODO: fill result array with all cells that contain the object
 		std::vector<size_t> result;
+		if (bounding.type == Bounding::eType::Compound)
+		{
+			auto& compound = bounding.GetCompound().items;
+			for (auto& item : compound)
+			{
+				std::vector<size_t> subResult = GetAffectedCells(item, position, rotation);
+				result.insert(result.end(), subResult.begin(), subResult.end());
+			}
+		}
+		else if (bounding.type == Bounding::eType::Box)
+		{
+			//TODO: rotate bbox
+			auto& box = bounding.GetBox();
+			const float left = box.min[0] + position.x;
+			const float right = box.max[0] + position.x;
+			const float top = box.min[1] + position.y;
+			const float bottom = box.max[1] + position.y;
+			const size_t ileft = static_cast<size_t>(round((left + m_width / 2) * m_horizontalResolution / m_width));
+			const size_t iright = static_cast<size_t>(round((right + m_width / 2) * m_horizontalResolution / m_width));
+			const size_t itop = static_cast<size_t>(round((top + m_height / 2) * m_verticalResolution / m_height));
+			const size_t ibottom = static_cast<size_t>(round((bottom + m_height / 2) * m_verticalResolution / m_height));
+			for (size_t i = ileft; i <= iright; ++i)
+			{
+				for (size_t j = itop; j <= ibottom; ++j)
+				{
+					result.push_back(j * m_horizontalResolution + i);
+				}
+			}
+		}
 		return result;
 	}
 
