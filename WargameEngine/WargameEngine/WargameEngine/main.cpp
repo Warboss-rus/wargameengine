@@ -24,6 +24,7 @@
 #include "impl/PhysicsEngineBullet.h"
 #include "impl/NetSocket.h"
 #include "impl/AssimpModelLoader.h"
+#include "impl/PathfindingMicroPather.h"
 #include "Utils.h"
 #ifdef _WINDOWS
 #include <windows.h>
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
 	context.textWriter = std::make_unique<CTextWriter>();
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	context.scriptHandler = std::make_unique<CScriptHandlerLua>();
+	context.pathFinder = std::make_unique<CPathfindingMicroPather>();
 	context.socketFactory = []() {
 		return std::make_unique<CNetSocket>();
 	};

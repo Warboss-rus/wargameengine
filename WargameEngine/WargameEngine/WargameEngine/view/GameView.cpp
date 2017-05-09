@@ -13,6 +13,7 @@
 #include "IModelReader.h"
 #include "../Utils.h"
 #include "../IPhysicsEngine.h"
+#include "../IPathfinding.h"
 
 using namespace std;
 using namespace placeholders;
@@ -33,6 +34,7 @@ CGameView::CGameView(sGameViewContext * context)
 	, m_soundPlayer(*context->soundPlayer)
 	, m_textWriter(*context->textWriter)
 	, m_physicsEngine(*context->physicsEngine)
+	, m_pathFinder(*context->pathFinder)
 	, m_ui(m_renderer, m_textWriter)
 	, m_asyncFileProvider(m_threadPool)
 	, m_modelManager(m_renderer, m_physicsEngine, m_asyncFileProvider)

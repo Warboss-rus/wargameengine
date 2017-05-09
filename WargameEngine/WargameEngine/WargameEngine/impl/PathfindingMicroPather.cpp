@@ -70,6 +70,22 @@ private:
 		const size_t idx = reinterpret_cast<size_t>(state);
 		const size_t ix = idx % m_horizontalResolution;
 		const size_t iy = idx / m_horizontalResolution;
+		if ((ix != 0) && (m_field[iy * m_horizontalResolution + ix - 1] == 0))//cell on the left
+		{
+			adjacent->push_back({ reinterpret_cast<void*>(iy * m_horizontalResolution + ix - 1), 1.0f });
+		}
+		if ((ix != m_horizontalResolution - 1) && (m_field[iy * m_horizontalResolution + ix + 1] == 0))//cell on the right
+		{
+			adjacent->push_back({ reinterpret_cast<void*>(iy * m_horizontalResolution + ix + 1), 1.0f });
+		}
+		if ((iy != 0) && (m_field[(iy - 1) * m_horizontalResolution + ix] == 0))//cell at the bottom
+		{
+			adjacent->push_back({ reinterpret_cast<void*>((iy - 1) * m_horizontalResolution + ix), 1.0f });
+		}
+		if ((iy != m_verticalResolution - 1) && (m_field[(iy + 1) * m_horizontalResolution + ix] == 0))//cell on the top
+		{
+			adjacent->push_back({ reinterpret_cast<void*>((iy + 1) * m_horizontalResolution + ix), 1.0f });
+		}
 	}
 
 	void PrintStateInfo(void* state) override
@@ -125,6 +141,7 @@ private:
 
 	std::vector<size_t> GetAffectedCells(const Bounding& bounding, const CVector3f& position, const CVector3f& rotation) const
 	{
+		//TODO: fill result array with all cells that contain the object
 		std::vector<size_t> result;
 		return result;
 	}
@@ -138,8 +155,8 @@ private:
 
 	CVector3f IndexToPosition(size_t ix, size_t iy) const
 	{
-		const float x = 0.0f;
-		const float y = 0.0f;
+		const float x = ix * m_width / m_horizontalResolution - m_width / 2;
+		const float y = iy * m_height / m_verticalResolution - m_height / 2;
 		return CVector3f(x, y, m_landscape->GetHeight(x, y));
 	}
 	

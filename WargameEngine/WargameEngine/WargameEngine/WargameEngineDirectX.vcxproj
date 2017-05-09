@@ -101,7 +101,7 @@
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;..\..\assimp\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -110,7 +110,7 @@
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;..\..\assimp\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
@@ -119,7 +119,7 @@
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;..\..\assimp\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -244,7 +244,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="impl\AssimpModelLoader.cpp" />
+    <ClCompile Include="impl\micropather.cpp" />
     <ClCompile Include="impl\NetSocket.cpp" />
+    <ClCompile Include="impl\PathfindingMicroPather.cpp" />
     <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
@@ -257,7 +259,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\AssimpModelLoader.h" />
+    <ClInclude Include="impl\micropather.h" />
     <ClInclude Include="impl\NetSocket.h" />
+    <ClInclude Include="impl\PathfindingMicroPather.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />
     <ClInclude Include="impl\ScriptHandlerLua.h" />
     <ClInclude Include="impl\SoundPlayerFMod.h" />

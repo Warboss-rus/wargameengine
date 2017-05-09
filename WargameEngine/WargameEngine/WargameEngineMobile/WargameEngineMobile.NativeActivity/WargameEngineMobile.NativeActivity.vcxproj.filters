@@ -40,6 +40,12 @@
     <ClInclude Include="..\..\WargameEngine\impl\GvrGameWindow.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\impl\micropather.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\impl\PathfindingMicroPather.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="android_native_app_glue.c">
@@ -85,6 +91,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\impl\GvrGameWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\impl\micropather.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\impl\PathfindingMicroPather.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

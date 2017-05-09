@@ -55,18 +55,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;..\..\assimp\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;..\..\assimp\include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;..\..\assimp\include;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -120,6 +120,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\assimp\project\assimp.vcxproj">
+      <Project>{0f7f7f0b-e419-3705-9658-6052b2f0b95f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\bullet\build3\vs2010\BulletCollision.vcxproj">
       <Project>{51155a97-5122-7748-82ee-b5eb729a7104}</Project>
     </ProjectReference>
@@ -143,8 +146,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="impl\AssimpModelLoader.cpp" />
     <ClCompile Include="impl\MatrixManagerGLM.cpp" />
+    <ClCompile Include="impl\micropather.cpp" />
     <ClCompile Include="impl\NetSocket.cpp" />
+    <ClCompile Include="impl\PathfindingMicroPather.cpp" />
     <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
@@ -156,9 +162,12 @@
     <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\AssimpModelLoader.h" />
     <ClInclude Include="impl\gl.h" />
     <ClInclude Include="impl\MatrixManagerGLM.h" />
+    <ClInclude Include="impl\micropather.h" />
     <ClInclude Include="impl\NetSocket.h" />
+    <ClInclude Include="impl\PathfindingMicroPather.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />
     <ClInclude Include="impl\ScriptHandlerLua.h" />
     <ClInclude Include="impl\SoundPlayerFMod.h" />

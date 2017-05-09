@@ -12,6 +12,7 @@
 #include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
 #include "..\..\WargameEngine\impl\GvrGameWindow.h"
 #include "..\..\WargameEngine\impl\GvrAudioPlayer.h"
+#include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
 
 #define JNI_METHOD(return_type, method_name) \
   JNIEXPORT return_type JNICALL              \
@@ -39,6 +40,7 @@ struct NativeAppJni
 		context.soundPlayer = std::make_unique<CGvrAudioPlayer>(std::move(gvr_audio_api));
 		context.textWriter = std::make_unique<CTextWriter>();
 		context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
+		context.pathFinder = std::make_unique<CPathfindingMicroPather>();
 		static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
 		context.scriptHandler = std::make_unique<CScriptHandlerLua>();
 		context.socketFactory = []() {

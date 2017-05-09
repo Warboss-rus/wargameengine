@@ -18,6 +18,7 @@
 #include "..\..\WargameEngine\view\ColladaModelFactory.h"
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
 #include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
+#include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
 #ifdef RENDERER_VULKAN
 #include "..\..\WargameEngine\impl\GameWindowAndroidVulkan.h"
 #define WINDOW_CLASS CGameWindowAndroidVulkan
@@ -150,6 +151,7 @@ void android_main(struct android_app* state) {
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
 	context.scriptHandler = std::make_unique<CScriptHandlerLua>();
+	context.pathFinder = std::make_unique<CPathfindingMicroPather>();
 	context.socketFactory = []() {
 		return std::make_unique<CNetSocket>();
 	};

@@ -253,7 +253,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.h" />
     <ClInclude Include="..\..\WargameEngine\impl\MatrixManagerGLM.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\micropather.h" />
     <ClInclude Include="..\..\WargameEngine\impl\NetSocket.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\PathfindingMicroPather.h" />
     <ClInclude Include="..\..\WargameEngine\impl\PhysicsEngineBullet.h" />
     <ClInclude Include="..\..\WargameEngine\impl\ScriptHandlerLua.h" />
     <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.h" />
@@ -269,7 +271,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\MatrixManagerGLM.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\micropather.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\NetSocket.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\PathfindingMicroPather.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.cpp" />

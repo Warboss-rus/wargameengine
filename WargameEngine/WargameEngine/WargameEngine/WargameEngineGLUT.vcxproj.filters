@@ -44,6 +44,15 @@
     <ClCompile Include="impl\MatrixManagerGLM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="impl\AssimpModelLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\micropather.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\PathfindingMicroPather.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\GameWindowGLUT.h">
@@ -77,6 +86,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\gl.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\AssimpModelLoader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\micropather.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\PathfindingMicroPather.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

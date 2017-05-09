@@ -1,3 +1,4 @@
+#pragma once
 #include <memory>
 #include <functional>
 #include "IRenderer.h"
@@ -25,6 +26,7 @@ class INetSocket;
 class IImageReader;
 class IPhysicsEngine;
 class IOcclusionQuery;
+class IPathfinding;
 
 struct sGameViewContext
 {
@@ -34,6 +36,7 @@ struct sGameViewContext
 	std::unique_ptr<ITextWriter> textWriter;
 	std::unique_ptr<IPhysicsEngine> physicsEngine;
 	std::unique_ptr<IScriptHandler> scriptHandler;
+	std::unique_ptr<IPathfinding> pathFinder;
 	std::function<std::unique_ptr<INetSocket>()> socketFactory;
 	std::vector<std::unique_ptr<IImageReader>> imageReaders;
 	std::vector<std::unique_ptr<IModelReader>> modelReaders;
@@ -105,6 +108,7 @@ private:
 	ISoundPlayer& m_soundPlayer;
 	ITextWriter& m_textWriter;
 	IPhysicsEngine& m_physicsEngine;
+	IPathfinding& m_pathFinder;
 	std::vector<CViewportBase> m_viewports;
 	std::unique_ptr<CSkyBox> m_skybox;
 	CUIElement m_ui;

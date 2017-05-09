@@ -15,6 +15,8 @@
     <ClInclude Include="..\..\WargameEngine\impl\VulkanShaderManager.h" />
     <ClInclude Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.h" />
     <ClInclude Include="..\..\WargameEngine\impl\VulkanPipelineManager.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\micropather.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\PathfindingMicroPather.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\WargameEngine\impl\MatrixManagerGLM.cpp" />
@@ -31,5 +33,7 @@
     <ClCompile Include="..\..\WargameEngine\impl\VulkanShaderManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\GameWindowAndroidVulkan.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\VulkanPipelineManager.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\micropather.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\PathfindingMicroPather.cpp" />
   </ItemGroup>
 </Project>
