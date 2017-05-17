@@ -2,7 +2,7 @@
 #include <android/log.h>
 #include <dlfcn.h>
 #include "android_native_app_glue.h"
-#include "..\..\WargameEngine\view\GameView.h"
+#include "..\..\WargameEngine\view\View.h"
 #ifdef SOUND_FMOD
 #include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
 #define SOUND_PLAYER_CLASS CSoundPlayerFMod
@@ -175,5 +175,5 @@ void android_main(struct android_app* state) {
 	}
 	//context.window->LaunchMainLoop();
 	// loop waiting for stuff to do.
-	CGameView view(&context);
+	View view(&context);
 }

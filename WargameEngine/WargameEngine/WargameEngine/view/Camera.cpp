@@ -1,9 +1,13 @@
 #include "Camera.h"
 #include "IInput.h"
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include "Matrix4.h"
+#include <math.h>
 
+namespace wargameEngine
+{
+namespace view
+{
 namespace
 {
 constexpr float PI = static_cast<float>(M_PI);
@@ -13,8 +17,10 @@ constexpr float TRANSLATE = 0.3f;
 
 float clamp(float value, float min, float max)
 {
-	if (value < min) return min;
-	if (value > max) return max;
+	if (value < min)
+		return min;
+	if (value > max)
+		return max;
 	return value;
 }
 
@@ -198,7 +204,8 @@ void Camera::AttachToTouchScreen()
 			Translate(-dx / 100.0f, dy / 100.0f, 0.0f);
 		}
 		return false;
-	}, CAMERA_PRIORITY, CAMERA_TAG));
+	},
+		CAMERA_PRIORITY, CAMERA_TAG));
 	m_inputConnections.emplace_back(m_input->DoOnMouseWheel([this](float multiplier) {
 		ChangeDistance((m_position - m_target).GetLength() * (1.0f - multiplier));
 		return false;
@@ -214,7 +221,8 @@ void Camera::AttachToKeyboardMouse()
 			Rotate(deltaX * m_mouseHorizontalSensitivity, 0.0f, deltaY * m_mouseVerticalSensitivity);
 		}
 		return false;
-	}, CAMERA_PRIORITY, CAMERA_TAG));
+	},
+		CAMERA_PRIORITY, CAMERA_TAG));
 	m_inputConnections.emplace_back(m_input->DoOnKeyDown([this](VirtualKey virtualKey, int) {
 		switch (virtualKey)
 		{
@@ -243,7 +251,6 @@ void Camera::AttachToKeyboardMouse()
 
 void Camera::AttachToGamepad(size_t gamepadIndex)
 {
-
 }
 
 void Camera::AttachToVR(size_t deviceIndex)
@@ -255,4 +262,6 @@ void Camera::ResetInput()
 {
 	m_inputConnections.clear();
 	m_vrDevice = -1;
+}
+}
 }

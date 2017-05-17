@@ -1,11 +1,15 @@
 #include "TranslationManager.h"
-#include <fstream>
 #include "..\Utils.h"
+#include <fstream>
 
-void CTranslationManager::LoadFile(const Path& path)
+namespace wargameEngine
+{
+namespace view
+{
+void TranslationManager::LoadFile(const Path& path)
 {
 	std::wifstream iFile(path, std::ios::binary | std::ios::in);
-	while(iFile.good())
+	while (iFile.good())
 	{
 		std::wstring str;
 		std::getline(iFile, str);
@@ -17,7 +21,7 @@ void CTranslationManager::LoadFile(const Path& path)
 	iFile.close();
 }
 
-std::wstring CTranslationManager::GetTranslation(std::wstring const& key, std::vector<std::wstring> const& insertValues)
+std::wstring TranslationManager::GetTranslation(std::wstring const& key, std::vector<std::wstring> const& insertValues)
 {
 	auto it = m_dictionary.find(key);
 	if (it == m_dictionary.end())
@@ -36,7 +40,9 @@ std::wstring CTranslationManager::GetTranslation(std::wstring const& key, std::v
 	}
 }
 
-void CTranslationManager::Reset()
+void TranslationManager::Reset()
 {
 	m_dictionary.clear();
+}
+}
 }

@@ -1,21 +1,28 @@
 #pragma once
 #include "UIElement.h"
 
-class CUIWindow : public CUIElement
+namespace wargameEngine
+{
+namespace ui
+{
+class CUIWindow : public UIElement
 {
 public:
-	CUIWindow(int width, int height, std::wstring const& headerText, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter);
+	CUIWindow(int width, int height, std::wstring const& headerText, IUIElement* parent, view::ITextWriter& textWriter);
 
-	virtual void Draw() const override;
-	virtual bool LeftMouseButtonDown(int x, int y) override;
-	virtual bool LeftMouseButtonUp(int x, int y) override;
-	virtual void OnMouseMove(int x, int y) override;
-	virtual int GetHeight() const override;
-	virtual int GetX() const override;
-	virtual int GetY() const override;
+	void Draw(view::IRenderer& renderer) const override;
+	bool LeftMouseButtonDown(int x, int y) override;
+	bool LeftMouseButtonUp(int x, int y) override;
+	void OnMouseMove(int x, int y) override;
+	int GetHeight() const override;
+	int GetX() const override;
+	int GetY() const override;
+
 private:
 	std::wstring m_headerText;
 	bool m_dragging;
 	int m_prevX = 0;
 	int m_prevY = 0;
 };
+}
+}

@@ -8,6 +8,10 @@
 #include <string>
 #include <vector>
 
+namespace wargameEngine
+{
+namespace model
+{
 class IObject : public IBaseObject
 {
 public:
@@ -29,9 +33,11 @@ public:
 	virtual AnimationLoop GetAnimationLoop() const = 0;
 	virtual float GetAnimationSpeed() const = 0;
 	virtual void Update(std::chrono::microseconds timeSinceLastUpdate) = 0;
-	virtual std::vector<sTeamColor> const& GetTeamColor() const = 0;
+	virtual std::vector<TeamColor> const& GetTeamColor() const = 0;
 	virtual void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) = 0;
 	virtual void ReplaceTexture(const Path& oldTexture, const Path& newTexture) = 0;
 	virtual std::map<Path, Path> const& GetReplaceTextures() const = 0;
 	virtual bool IsGroup() const = 0;
 };
+}
+}

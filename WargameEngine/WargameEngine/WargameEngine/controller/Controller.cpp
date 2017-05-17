@@ -1,48 +1,57 @@
-#include "GameController.h"
+#include "Controller.h"
 #define _USE_MATH_DEFINES
-#include <math.h>
-#include <float.h>
-#include "ScriptRegisterFunctions.h"
-#include "../model/ObjectGroup.h"
-#include "../model/Object.h"
-#include "../view/IInput.h"
 #include "../LogWriter.h"
-#include "../view/GameView.h"
 #include "../MemoryStream.h"
 #include "../Utils.h"
-#include "../model/MovementLimiter.h"
+#include "../model/Object.h"
+#include "../model/ObjectGroup.h"
+#include "../view/IInput.h"
+#include "../view/View.h"
+#include "MovementLimiter.h"
+#include "ScriptRegisterFunctions.h"
+#include <float.h>
+#include <math.h>
 
-CGameController::CGameController(CGameModel& model, IScriptHandler & scriptHandler, IPhysicsEngine & physicsEngine, IPathfinding& pathFinder)
-	: m_model(model), m_physicsEngine(physicsEngine), m_scriptHandler(scriptHandler), m_pathFinder(pathFinder)
+namespace wargameEngine
+{
+namespace controller
+{
+Controller::Controller(model::Model& model, IScriptHandler& scriptHandler, IPhysicsEngine& physicsEngine, IPathfinding& pathFinder, model::IBoundingBoxManager& boundingManager)
+	: m_model(model)
+	, m_physicsEngine(physicsEngine)
+	, m_boundingManager(boundingManager)
+	, m_scriptHandler(scriptHandler)
+	, m_pathFinder(pathFinder)
 {
 	m_model.DoOnObjectCreation(std::bind(&IPhysicsEngine::AddDynamicObject, &m_physicsEngine, std::placeholders::_1, 1.0));
-	m_model.DoOnObjectRemove(std::bind(&IPhysicsEngine::RemoveDynamicObject, &m_physicsEngine, std::placeholders::_1));
+	m_model.DoOnObjectRemove(std::bind(&IPhysicsEngine::RemoveObject, &m_physicsEngine, std::placeholders::_1));
 	m_destroyThread = false;
 }
 
-CGameController::~CGameController()
+Controller::~Controller()
 {
 	m_destroyThread = true;
-	if(m_controllerThread.get_id() != std::thread::id())m_controllerThread.join();
+	if (m_controllerThread.get_id() != std::thread::id())
+	{
+		m_controllerThread.join();
+	}
 }
 
-void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath)
+void Controller::Init(view::View& view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath, AsyncFileProvider& asyncFileProvider)
 {
-	m_view = &view;
-	m_commandHandler = std::make_unique<CCommandHandler>();
-	m_network = std::make_unique<CNetwork>(*this, *m_commandHandler, m_model, socketFactory);
-	m_commandHandler->DoOnNewCommand([this] (ICommand * command){
+	m_network = std::make_unique<Network>(*this, m_commandHandler, m_model, socketFactory);
+	m_commandHandler.DoOnNewCommand([this](ICommand* command) {
 		if (m_network->IsConnected())
 		{
 			m_network->SendAction(*command);
 		}
 	});
-	m_physicsEngine.Reset();
+	m_physicsEngine.Reset(m_boundingManager);
 
 	m_scriptHandler.Reset();
 	RegisterModelFunctions(m_scriptHandler, m_model);
-	RegisterViewFunctions(m_scriptHandler, view);
-	RegisterControllerFunctions(m_scriptHandler, *this, view.GetAsyncFileProvider(), view.GetThreadPool());
+	RegisterViewFunctions(m_scriptHandler, view, asyncFileProvider);
+	RegisterControllerFunctions(m_scriptHandler, *this, asyncFileProvider, view.GetThreadPool());
 	RegisterUI(m_scriptHandler, view.GetUI(), view.GetTranslationManager());
 	RegisterObject(m_scriptHandler, *this, m_model, view.GetModelManager());
 	RegisterViewport(m_scriptHandler, view);
@@ -54,10 +63,10 @@ void CGameController::Init(CGameView & view, std::function<std::unique_ptr<INetS
 	m_lastUpdateTime = std::chrono::high_resolution_clock::now();
 }
 
-void CGameController::InitAsync(CGameView & view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath)
+void Controller::InitAsync(view::View& view, std::function<std::unique_ptr<INetSocket>()> const& socketFactory, const Path& scriptPath, AsyncFileProvider& asyncFileProvider)
 {
-	m_controllerThread = std::thread([this, &view, socketFactory, scriptPath] {
-		Init(view, socketFactory, scriptPath);
+	m_controllerThread = std::thread([this, &view, socketFactory, scriptPath, &asyncFileProvider] {
+		Init(view, socketFactory, scriptPath, asyncFileProvider);
 		auto lastUpdateTime = std::chrono::high_resolution_clock::now();
 		while (!m_destroyThread)
 		{
@@ -67,7 +76,7 @@ void CGameController::InitAsync(CGameView & view, std::function<std::unique_ptr<
 	});
 }
 
-void CGameController::Update()
+void Controller::Update()
 {
 	{
 		std::unique_lock<std::mutex> lk(m_taskMutex);
@@ -81,7 +90,8 @@ void CGameController::Update()
 		}
 	}
 	m_network->Update();
-	if (m_updateCallback) m_updateCallback();
+	if (m_updateCallback)
+		m_updateCallback();
 	if (m_singleCallback)
 	{
 		m_singleCallback();
@@ -98,7 +108,7 @@ void CGameController::Update()
 	m_physicsEngine.Update(delta);
 }
 
-CVector3f CGameController::RayToPoint(CVector3f const& begin, CVector3f const& end, float z)
+CVector3f Controller::RayToPoint(CVector3f const& begin, CVector3f const& end, float z)
 {
 	CVector3f result;
 	float a = (z - begin.z) / (end.z - begin.z);
@@ -108,11 +118,11 @@ CVector3f CGameController::RayToPoint(CVector3f const& begin, CVector3f const& e
 	return result;
 }
 
-bool CGameController::OnLeftMouseDown(CVector3f const& begin, CVector3f const& end, int modifiers)
+bool Controller::OnLeftMouseDown(CVector3f const& begin, CVector3f const& end, int modifiers)
 {
-	SelectObject(begin, end, modifiers & IInput::MODIFIER_SHIFT);
+	SelectObject(begin, end, modifiers & view::IInput::MODIFIER_SHIFT);
 	auto selected = m_model.GetSelectedObject();
-	if (!selected)//selection rectangle
+	if (!selected) //selection rectangle
 	{
 		auto point = RayToPoint(begin, end);
 		m_selectionRectangleBegin = std::make_unique<CVector2d>(point.x, point.y);
@@ -124,7 +134,7 @@ bool CGameController::OnLeftMouseDown(CVector3f const& begin, CVector3f const& e
 	return selected.get() != nullptr;
 }
 
-bool CGameController::OnLeftMouseUp(CVector3f const& begin, CVector3f const& end, int)
+bool Controller::OnLeftMouseUp(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto selected = m_model.GetSelectedObject();
 	auto pos = RayToPoint(begin, end);
@@ -144,7 +154,7 @@ bool CGameController::OnLeftMouseUp(CVector3f const& begin, CVector3f const& end
 			MoveObject(selected, selected->GetX() - m_selectedObjectBeginCoords->x, selected->GetY() - m_selectedObjectBeginCoords->y);
 		}
 	}
-	else//needs a fix
+	else //needs a fix
 	{
 		if (m_selectionRectangleBegin)
 		{
@@ -156,18 +166,19 @@ bool CGameController::OnLeftMouseUp(CVector3f const& begin, CVector3f const& end
 	return selected.get() != nullptr;
 }
 
-bool CGameController::OnRightMouseDown(CVector3f const& begin, CVector3f const& end, int)
+bool Controller::OnRightMouseDown(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto prev = m_model.GetSelectedObject();
 	SelectObject(begin, end, false);
 	auto object = m_model.GetSelectedObject();
-	if (!object) m_model.SelectObject(prev);
+	if (!object)
+		m_model.SelectObject(prev);
 	m_selectedObjectPrevRotation = (object) ? object->GetRotation() : 0;
 	m_rotationPosBegin = std::make_unique<CVector3f>(RayToPoint(begin, end));
 	return !!object;
 }
 
-bool CGameController::OnRightMouseUp(CVector3f const& begin, CVector3f const& end, int)
+bool Controller::OnRightMouseUp(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto object = m_model.GetSelectedObject();
 	float rot = object ? object->GetRotation() : 0.0f;
@@ -192,7 +203,7 @@ bool CGameController::OnRightMouseUp(CVector3f const& begin, CVector3f const& en
 	return result;
 }
 
-bool CGameController::OnMouseMove(CVector3f const& begin, CVector3f const& end, int)
+bool Controller::OnMouseMove(CVector3f const& begin, CVector3f const& end, int)
 {
 	auto selected = m_model.GetSelectedObject();
 	if (selected && m_selectedObjectBeginCoords)
@@ -212,28 +223,28 @@ bool CGameController::OnMouseMove(CVector3f const& begin, CVector3f const& end, 
 	return false;
 }
 
-bool CGameController::OnGamepadButtonStateChange(int gamepadIndex, int buttonIndex, bool newState)
+bool Controller::OnGamepadButtonStateChange(int gamepadIndex, int buttonIndex, bool newState)
 {
 	m_onGamepadButton(gamepadIndex, buttonIndex, newState);
 	return m_onGamepadButton;
 }
 
-bool CGameController::OnGamepadAxisChange(int gamepadIndex, int axisIndex, double horizontal, double vertical)
+bool Controller::OnGamepadAxisChange(int gamepadIndex, int axisIndex, double horizontal, double vertical)
 {
 	m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
 	return m_onGamepadAxis;
 }
 
-void CGameController::SelectObjectGroup(double beginX, double beginY, double endX, double endY)
+void Controller::SelectObjectGroup(double beginX, double beginY, double endX, double endY)
 {
 	double minX = (beginX < endX) ? beginX : endX;
 	double maxX = (beginX > endX) ? beginX : endX;
 	double minY = (beginY < endY) ? beginY : endY;
 	double maxY = (beginY > endY) ? beginY : endY;
-	auto group = std::make_shared<CObjectGroup>(m_model);
+	auto group = std::make_shared<model::ObjectGroup>(m_model);
 	for (size_t i = 0; i < m_model.GetObjectCount(); ++i)
 	{
-		std::shared_ptr<IObject> object = m_model.Get3DObject(i);
+		std::shared_ptr<model::IObject> object = m_model.Get3DObject(i);
 		if (object->GetX() > minX && object->GetX() < maxX && object->GetY() > minY && object->GetY() < maxY && object->IsSelectable())
 		{
 			group->AddChildren(object);
@@ -244,43 +255,51 @@ void CGameController::SelectObjectGroup(double beginX, double beginY, double end
 	case 0:
 	{
 		m_model.SelectObject(NULL);
-	}break;
+	}
+	break;
 	case 1:
 	{
 		m_model.SelectObject(group->GetChild(0));
-	}break;
+	}
+	break;
 	default:
 	{
 		m_model.SelectObject(group);
-	}break;
 	}
-	if (m_selectionCallback) m_selectionCallback();
+	break;
+	}
+	if (m_selectionCallback)
+		m_selectionCallback();
 }
 
-std::shared_ptr<IObject> CGameController::GetNearestObject(const float * start, const float * end)
+std::shared_ptr<model::IObject> Controller::GetNearestObject(const float* start, const float* end)
 {
-	IObject* selectedObject = nullptr;
-	m_physicsEngine.CastRay(CVector3f(start), CVector3f(end), &selectedObject, m_selectedObjectCapturePoint);
-	return m_model.Get3DObject(selectedObject);
+	auto result = m_physicsEngine.CastRay(CVector3f(start), CVector3f(end));
+	if (result.success)
+	{
+		m_selectedObjectCapturePoint = result.hitPoint;
+		return m_model.Get3DObject(result.object);
+	}
+	return nullptr;
 }
 
-void CGameController::SelectObject(const float * begin, const float * end, bool add, bool noCallback /*= false*/)
+void Controller::SelectObject(const float* begin, const float* end, bool add, bool noCallback /*= false*/)
 {
-	std::shared_ptr<IObject> selectedObject = GetNearestObject(begin, end);
+	std::shared_ptr<model::IObject> selectedObject = GetNearestObject(begin, end);
 	if (selectedObject && !selectedObject->IsSelectable())
 	{
 		return;
 	}
-	std::shared_ptr<IObject> object = m_model.GetSelectedObject();
+	std::shared_ptr<model::IObject> object = m_model.GetSelectedObject();
 	if (object && object->IsGroup())
 	{
-		CObjectGroup * group = (CObjectGroup *)object.get();
+		model::ObjectGroup* group = (model::ObjectGroup*)object.get();
 		if (add)
 		{
 			if (group->ContainsChildren(selectedObject))
 			{
 				group->RemoveChildren(selectedObject);
-				if (group->GetCount() == 1)//Destroy group
+				if (group->GetCount() == 1) //Destroy group
 				{
 					m_model.SelectObject(group->GetChild(0));
 				}
@@ -306,7 +325,7 @@ void CGameController::SelectObject(const float * begin, const float * end, bool 
 	{
 		if (add && object && selectedObject)
 		{
-			auto group = std::make_shared<CObjectGroup>(m_model);
+			auto group = std::make_shared<model::ObjectGroup>(m_model);
 			group->AddChildren(object);
 			group->AddChildren(selectedObject);
 			m_model.SelectObject(group);
@@ -316,16 +335,17 @@ void CGameController::SelectObject(const float * begin, const float * end, bool 
 			m_model.SelectObject(selectedObject);
 		}
 	}
-	if (m_selectionCallback && !noCallback) m_selectionCallback();
+	if (m_selectionCallback && !noCallback)
+		m_selectionCallback();
 }
 
-size_t CGameController::BBoxlos(CVector3f const& origin, Bounding * target, IObject * shooter, IObject * targetObject)
+size_t Controller::BBoxlos(CVector3f const& origin, model::Bounding* target, model::IObject* shooter, model::IObject* targetObject)
 {
 	size_t result = 0;
 	size_t total = 0;
-	if (target->type == Bounding::eType::Compound)
+	if (target->type == model::Bounding::eType::Compound)
 	{
-		Bounding::Compound compound = target->GetCompound();
+		model::Bounding::Compound compound = target->GetCompound();
 		for (size_t i = 0; i < compound.items.size(); ++i)
 		{
 			result += BBoxlos(origin, &compound.items[i], shooter, targetObject);
@@ -335,7 +355,7 @@ size_t CGameController::BBoxlos(CVector3f const& origin, Bounding * target, IObj
 	}
 	else
 	{
-		Bounding::Box const& tarBox = target->GetBox();
+		model::Bounding::Box const& tarBox = target->GetBox();
 		CVector3f dir;
 		for (dir.x = tarBox.min[0] + targetObject->GetX(); dir.x < tarBox.max[0] + targetObject->GetX(); dir.x += (tarBox.max[0] - tarBox.min[0]) / 10.0f + 0.0001f)
 		{
@@ -344,9 +364,7 @@ size_t CGameController::BBoxlos(CVector3f const& origin, Bounding * target, IObj
 				for (dir.z = tarBox.min[2] + targetObject->GetZ(); dir.z < tarBox.max[2] + targetObject->GetZ(); dir.z += (tarBox.max[2] - tarBox.min[2]) / 10.0f + 0.0001f)
 				{
 					total++;
-					CVector3f coords;
-					IObject * obj;
-					if (!m_physicsEngine.CastRay(origin, dir, &obj, coords, { shooter, targetObject }))
+					if (!m_physicsEngine.CastRay(origin, dir, { shooter, targetObject }).success)
 						result++;
 				}
 			}
@@ -355,21 +373,22 @@ size_t CGameController::BBoxlos(CVector3f const& origin, Bounding * target, IObj
 	return result * 100 / total;
 }
 
-size_t CGameController::GetLineOfSight(IObject * shooter, IObject * target)
+size_t Controller::GetLineOfSight(model::IObject* shooter, model::IObject* target)
 {
-	if (!shooter || !target) return 0;
-	Bounding targetBound = m_physicsEngine.GetBounding(target->GetPathToModel());
+	if (!shooter || !target)
+		return 0;
+	model::Bounding targetBound = m_boundingManager.GetBounding(target->GetPathToModel());
 	CVector3f center = shooter->GetCoords();
 	center.z += 2.0f;
 	return BBoxlos(center, &targetBound, shooter, target);
 }
 
-void CGameController::SetSelectionCallback(std::function<void()> const& onSelect)
+void Controller::SetSelectionCallback(std::function<void()> const& onSelect)
 {
 	m_selectionCallback = onSelect;
 }
 
-void CGameController::PackProperties(std::map<std::wstring, std::wstring> const&properties, IWriteMemoryStream & stream)
+void Controller::PackProperties(std::map<std::wstring, std::wstring> const& properties, IWriteMemoryStream& stream)
 {
 	stream.WriteSizeT(properties.size());
 	for (auto i = properties.begin(); i != properties.end(); ++i)
@@ -379,13 +398,13 @@ void CGameController::PackProperties(std::map<std::wstring, std::wstring> const&
 	}
 }
 
-void CGameController::SerializeState(IWriteMemoryStream & stream, bool hasAdresses /*= false*/) const
+void Controller::SerializeState(IWriteMemoryStream& stream, bool hasAdresses /*= false*/) const
 {
 	size_t count = m_model.GetObjectCount();
 	stream.WriteSizeT(count);
 	for (size_t i = 0; i < count; ++i)
 	{
-		IObject * object = m_model.Get3DObject(i).get();
+		model::IObject* object = m_model.Get3DObject(i).get();
 		stream.WriteFloat(object->GetX());
 		stream.WriteFloat(object->GetY());
 		stream.WriteFloat(object->GetZ());
@@ -400,7 +419,7 @@ void CGameController::SerializeState(IWriteMemoryStream & stream, bool hasAdress
 	PackProperties(m_model.GetAllProperties(), stream);
 }
 
-void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
+void Controller::LoadState(IReadMemoryStream& stream, bool hasAdresses)
 {
 	size_t count = stream.ReadSizeT();
 	m_model.Clear();
@@ -411,7 +430,7 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 		float z = stream.ReadFloat();
 		float rotation = stream.ReadFloat();
 		Path path = make_path(stream.ReadString());
-		std::shared_ptr<IObject> object = std::make_shared<CObject>(path, CVector3f{ x, y, z }, rotation);
+		std::shared_ptr<model::IObject> object = std::make_shared<model::Object>(path, CVector3f{ x, y, z }, rotation);
 		m_model.AddObject(object);
 		if (hasAdresses)
 		{
@@ -434,22 +453,22 @@ void CGameController::LoadState(IReadMemoryStream & stream, bool hasAdresses)
 	}
 }
 
-void CGameController::Save(const Path&  filename)
+void Controller::Save(const Path& filename)
 {
-	CWriteMemoryStream stream;
+	WriteMemoryStream stream;
 	SerializeState(stream);
 	WriteFile(filename, stream.GetData(), stream.GetSize());
 }
 
-void CGameController::Load(const Path& filename)
+void Controller::Load(const Path& filename)
 {
 	std::vector<char> data = ReadFile(filename);
-	CReadMemoryStream stream(data.data());
+	ReadMemoryStream stream(data.data());
 	LoadState(stream);
 	m_network->CallStateRecievedCallback();
 }
 
-void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> const& object, CVector3f const& pos)
+void Controller::TryMoveSelectedObject(std::shared_ptr<model::IObject> const& object, CVector3f const& pos)
 {
 	if (!object)
 	{
@@ -474,37 +493,37 @@ void CGameController::TryMoveSelectedObject(std::shared_ptr<IObject> const& obje
 	}
 }
 
-void CGameController::SetUpdateCallback(std::function<void()> const& onUpdate)
+void Controller::SetUpdateCallback(std::function<void()> const& onUpdate)
 {
 	m_updateCallback = onUpdate;
 }
 
-void CGameController::SetSingleCallback(std::function<void()> const& onSingleUpdate)
+void Controller::SetSingleCallback(std::function<void()> const& onSingleUpdate)
 {
 	m_singleCallback = onSingleUpdate;
 }
 
-void CGameController::SetLMBCallback(MouseButtonCallback const& callback)
+void Controller::SetLMBCallback(MouseButtonCallback const& callback)
 {
 	m_lmbCallback = callback;
 }
 
-void CGameController::SetRMBCallback(MouseButtonCallback const& callback)
+void Controller::SetRMBCallback(MouseButtonCallback const& callback)
 {
 	m_rmbCallback = callback;
 }
 
-void CGameController::SetGamepadButtonCallback(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler)
+void Controller::SetGamepadButtonCallback(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler)
 {
 	m_onGamepadButton.Connect(handler);
 }
 
-void CGameController::SetGamepadAxisCallback(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler)
+void Controller::SetGamepadAxisCallback(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler)
 {
 	m_onGamepadAxis.Connect(handler);
 }
 
-void CGameController::BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func)
+void Controller::BindKey(unsigned char key, bool shift, bool ctrl, bool alt, std::function<void()> const& func)
 {
 	sKeyBind keybind(key, shift, ctrl, alt);
 	if (func)
@@ -520,7 +539,7 @@ void CGameController::BindKey(unsigned char key, bool shift, bool ctrl, bool alt
 	}
 }
 
-bool CGameController::OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt)
+bool Controller::OnKeyPress(unsigned char key, bool shift, bool ctrl, bool alt)
 {
 	sKeyBind keybind(key, shift, ctrl, alt);
 	if (m_keyBindings.find(keybind) != m_keyBindings.end())
@@ -531,82 +550,82 @@ bool CGameController::OnKeyPress(unsigned char key, bool shift, bool ctrl, bool 
 	return false;
 }
 
-void CGameController::MoveObject(std::shared_ptr<IObject> const& obj, float deltaX, float deltaY)
+void Controller::MoveObject(std::shared_ptr<model::IObject> const& obj, float deltaX, float deltaY)
 {
-	m_commandHandler->AddNewMoveObject(obj, deltaX, deltaY);
+	m_commandHandler.AddNewMoveObject(obj, deltaX, deltaY);
 }
 
-void CGameController::RotateObject(std::shared_ptr<IObject> const& obj, float deltaRot)
+void Controller::RotateObject(std::shared_ptr<model::IObject> const& obj, float deltaRot)
 {
-	m_commandHandler->AddNewRotateObject(obj, deltaRot);
+	m_commandHandler.AddNewRotateObject(obj, deltaRot);
 }
 
-std::shared_ptr<IObject> CGameController::CreateObject(const Path& model, float x, float y, float rotation)
+std::shared_ptr<model::IObject> Controller::CreateObject(const Path& model, float x, float y, float rotation)
 {
-	std::shared_ptr<IObject> object = std::make_shared<CObject>(model, CVector3f{ x, y, 0.0f }, rotation);
-	m_view->GetModelManager().LoadIfNotExist(model);
-	m_commandHandler->AddNewCreateObject(object, m_model);
+	std::shared_ptr<model::IObject> object = std::make_shared<model::Object>(model, CVector3f{ x, y, 0.0f }, rotation);
+	m_commandHandler.AddNewCreateObject(object, m_model);
 	m_network->AddAddressLocal(object);
 	return object;
 }
 
-void CGameController::DeleteObject(std::shared_ptr<IObject> const& obj)
+void Controller::DeleteObject(std::shared_ptr<model::IObject> const& obj)
 {
-	m_commandHandler->AddNewDeleteObject(obj, m_model);
+	m_commandHandler.AddNewDeleteObject(obj, m_model);
 }
 
-void CGameController::SetObjectProperty(std::shared_ptr<IObject> const& obj, std::wstring const& key, std::wstring const& value)
+void Controller::SetObjectProperty(std::shared_ptr<model::IObject> const& obj, std::wstring const& key, std::wstring const& value)
 {
-	m_commandHandler->AddNewChangeProperty(obj, key, value);
+	m_commandHandler.AddNewChangeProperty(obj, key, value);
 }
 
-void CGameController::PlayObjectAnimation(std::shared_ptr<IObject> const& object, std::string const& animation, AnimationLoop loopMode, float speed)
+void Controller::PlayObjectAnimation(std::shared_ptr<model::IObject> const& object, std::string const& animation, model::AnimationLoop loopMode, float speed)
 {
-	m_commandHandler->AddNewPlayAnimation(object, animation, loopMode, speed);
+	m_commandHandler.AddNewPlayAnimation(object, animation, loopMode, speed);
 }
 
-void CGameController::ObjectGoTo(std::shared_ptr<IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed)
+void Controller::ObjectGoTo(std::shared_ptr<model::IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed)
 {
-	m_commandHandler->AddNewGoTo(GetDecorator(object), x, y, speed, animation, animationSpeed);
+	m_commandHandler.AddNewGoTo(GetDecorator(object), x, y, speed, animation, animationSpeed);
 }
 
-void CGameController::SetMovementLimiter(std::shared_ptr<IObject> const& object, std::unique_ptr<IMoveLimiter> && limiter)
+void Controller::SetMovementLimiter(std::shared_ptr<model::IObject> const& object, std::unique_ptr<IMoveLimiter>&& limiter)
 {
 	GetDecorator(object)->SetLimiter(std::move(limiter));
 }
 
-CCommandHandler & CGameController::GetCommandHandler()
+CommandHandler& Controller::GetCommandHandler()
 {
-	return *m_commandHandler;
+	return m_commandHandler;
 }
 
-CNetwork& CGameController::GetNetwork()
+Network& Controller::GetNetwork()
 {
 	return *m_network;
 }
 
-std::shared_ptr<CObjectDecorator> CGameController::GetDecorator(std::shared_ptr<IObject> const& object)
+std::shared_ptr<ObjectDecorator> Controller::GetDecorator(std::shared_ptr<model::IObject> const& object)
 {
 	if (m_objectDecorators.find(object.get()) == m_objectDecorators.end())
 	{
-		m_objectDecorators[object.get()] = std::make_shared<CObjectDecorator>(object);
+		m_objectDecorators[object.get()] = std::make_shared<ObjectDecorator>(object);
 	}
 	return m_objectDecorators[object.get()];
 }
 
-void CGameController::QueueTask(std::function<void()> const& handler)
+void Controller::QueueTask(std::function<void()> const& handler)
 {
 	std::unique_lock<std::mutex> lk(m_taskMutex);
 	m_tasks.push_back(handler);
 }
 
-bool operator< (CGameController::sKeyBind const& one, CGameController::sKeyBind const& two)
+bool operator<(Controller::sKeyBind const& one, Controller::sKeyBind const& two)
 {
 	return one.key < two.key;
 }
 
-CObjectDecorator::CObjectDecorator(std::shared_ptr<IObject> const& object)
-	:m_object(object), m_goSpeed(0.0f)
+ObjectDecorator::ObjectDecorator(std::shared_ptr<model::IObject> const& object)
+	: m_object(object)
+	, m_goSpeed(0.0f)
 {
 	auto fixPosition = [this](CVector3f position, CVector3f rotation, const CVector3f& oldPosition, const CVector3f& oldRotation) {
 		if (m_limiter && !m_limiter->FixPosition(position, rotation, oldPosition, oldRotation))
@@ -615,7 +634,7 @@ CObjectDecorator::CObjectDecorator(std::shared_ptr<IObject> const& object)
 			m_object->SetRotations(rotation);
 		}
 	};
-	
+
 	m_positionChangeConnection = object->DoOnCoordsChange([fixPosition, this](const CVector3f& oldPosition, const CVector3f& newPosition) {
 		fixPosition(newPosition, m_object->GetRotations(), oldPosition, m_object->GetRotations());
 	});
@@ -624,26 +643,26 @@ CObjectDecorator::CObjectDecorator(std::shared_ptr<IObject> const& object)
 	});
 }
 
-CObjectDecorator::~CObjectDecorator() = default;
+ObjectDecorator::~ObjectDecorator() = default;
 
-void CObjectDecorator::GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed)
+void ObjectDecorator::GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed)
 {
 	m_goTarget = coords;
 	m_goSpeed = speed;
-	m_object->PlayAnimation(animation, AnimationLoop::Looping, animationSpeed);
+	m_object->PlayAnimation(animation, model::AnimationLoop::Looping, animationSpeed);
 }
 
-void CObjectDecorator::SetLimiter(std::unique_ptr<IMoveLimiter> && limiter)
+void ObjectDecorator::SetLimiter(std::unique_ptr<IMoveLimiter>&& limiter)
 {
 	m_limiter = std::move(limiter);
 }
 
-IObject* CObjectDecorator::GetObject()
+model::IObject* ObjectDecorator::GetObject()
 {
 	return m_object.get();
 }
 
-void CObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
+void ObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 {
 	if (fabs(m_goSpeed) < DBL_EPSILON)
 	{
@@ -653,11 +672,14 @@ void CObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 	dir.Normalize();
 	m_object->SetRotation(static_cast<float>(atan2(dir.y, dir.x) * 180.0f / (float)M_PI));
 	dir = dir * timeSinceLastUpdate.count() * m_goSpeed;
-	if (dir.GetLength() > (m_goTarget - m_object->GetCoords()).GetLength()) dir = (m_goTarget - m_object->GetCoords());
+	if (dir.GetLength() > (m_goTarget - m_object->GetCoords()).GetLength())
+		dir = (m_goTarget - m_object->GetCoords());
 	m_object->Move(dir.x, dir.y, dir.z);
 	if ((m_object->GetCoords() - m_goTarget).GetLength() < 0.0001)
 	{
 		m_goSpeed = 0.0;
-		m_object->PlayAnimation("", AnimationLoop::NonLooping, 0.0f);
+		m_object->PlayAnimation("", model::AnimationLoop::NonLooping, 0.0f);
 	}
+}
+}
 }

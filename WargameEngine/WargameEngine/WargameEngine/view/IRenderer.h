@@ -7,36 +7,12 @@
 #include <memory>
 #include <string>
 
+namespace wargameEngine
+{
+namespace view
+{
+
 class IShaderManager;
-
-enum class RenderMode
-{
-	TRIANGLES,
-	TRIANGLE_STRIP,
-	LINES,
-	LINE_LOOP
-};
-
-enum class CachedTextureType
-{
-	RGBA,
-	ALPHA,
-	DEPTH,
-	RENDER_TARGET
-};
-
-enum class Feature
-{
-	INSTANSING,
-};
-
-enum class TextureSlot
-{
-	eDiffuse = 0,
-	eShadowMap = 1,
-	eSpecular = 2,
-	eBump = 3,
-};
 
 class ICachedTexture
 {
@@ -62,6 +38,35 @@ public:
 class IRenderer
 {
 public:
+	enum class RenderMode
+	{
+		TRIANGLES,
+		TRIANGLE_STRIP,
+		LINES,
+		LINE_LOOP
+	};
+
+	enum class CachedTextureType
+	{
+		RGBA,
+		ALPHA,
+		DEPTH,
+		RENDER_TARGET
+	};
+
+	enum class TextureSlot
+	{
+		eDiffuse = 0,
+		eShadowMap = 1,
+		eSpecular = 2,
+		eBump = 3,
+	};
+
+	enum class Feature
+	{
+		INSTANSING,
+	};
+
 	virtual void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) = 0;
 	virtual void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) = 0;
 	virtual void DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count) = 0;
@@ -82,7 +87,7 @@ public:
 
 	virtual void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) = 0;
-	virtual void SetTexture(const Path& texture, const std::vector<sTeamColor>* teamcolor, int flags = 0) = 0;
+	virtual void SetTexture(const Path& texture, const std::vector<model::TeamColor>* teamcolor, int flags = 0) = 0;
 	virtual void SetTexture(const ICachedTexture& texture, TextureSlot slot = TextureSlot::eDiffuse) = 0;
 	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) = 0;
 	virtual void RenderToTexture(const std::function<void()>& func, ICachedTexture& texture, unsigned int width, unsigned int height) = 0;
@@ -103,3 +108,6 @@ public:
 
 	virtual ~IRenderer() {}
 };
+
+}
+}

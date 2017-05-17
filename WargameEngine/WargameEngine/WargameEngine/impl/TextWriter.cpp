@@ -1,6 +1,9 @@
 #include "TextWriter.h"
 #include <algorithm>
 
+using namespace wargameEngine;
+using namespace view;
+
 CTextWriter::CTextWriter()
 {
 	if (FT_Init_FreeType(&m_ft))
@@ -67,7 +70,7 @@ void CTextWriter::CreateTexture(sGlyph& glyph, IRenderer& renderer)
 {
 	if (!glyph.texture)
 	{
-		glyph.texture = renderer.CreateTexture(glyph.bitmapData.data(), glyph.width, glyph.rows, CachedTextureType::ALPHA);
+		glyph.texture = renderer.CreateTexture(glyph.bitmapData.data(), glyph.width, glyph.rows, IRenderer::CachedTextureType::ALPHA);
 	}
 }
 
@@ -116,7 +119,7 @@ void CTextWriter::DrawBitmap(IRenderer& renderer, int x, int y, sGlyph const& sy
 	int w = symbol.width;
 	int h = symbol.rows;
 	static const std::array<CVector2f, 4> tex = { CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } };
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(x2, y2), { x2 + w, y2 }, { x2, y2 + h }, { x2 + w, y2 + h } }, tex);
+	renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector2i(x2, y2), { x2 + w, y2 }, { x2, y2 + h }, { x2 + w, y2 + h } }, tex);
 }
 
 void CTextWriter::PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::string const& text, int width, int /*height*/)

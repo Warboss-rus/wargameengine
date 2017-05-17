@@ -4,7 +4,11 @@
 #include <map>
 #include "../Typedefs.h"
 
-class CTranslationManager
+namespace wargameEngine
+{
+namespace view
+{
+class TranslationManager
 {
 public:
 	void LoadFile(const Path& path);
@@ -13,3 +17,5 @@ public:
 private:
 	std::map<std::wstring, std::wstring> m_dictionary;
 };
+}
+}

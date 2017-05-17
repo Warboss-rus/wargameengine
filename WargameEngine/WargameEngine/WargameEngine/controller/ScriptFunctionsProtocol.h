@@ -2,9 +2,9 @@
 
 /*MODEL*/
 
-//void CreateTable(float width, float height, string texture)
+//void CreateLandscape(float width, float height, string texture)
 //Creates a new landscape with given size and texture
-#define CREATE_TABLE L"CreateTable"
+#define CREATE_LANDSCAPE L"CreateLandscape"
 
 //string GetGlobalProperty(string key)
 //Returns a global property value by given key. If no such property is present returns an empty string.

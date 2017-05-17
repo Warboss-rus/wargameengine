@@ -8,6 +8,8 @@
 #include "../view/IViewport.h"
 
 using namespace std;
+using namespace wargameEngine;
+using namespace view;
 
 class CLegacyGLVertexBuffer : public IVertexBuffer
 {
@@ -39,7 +41,7 @@ public:
 	~CLegacyGLFrameBuffer();
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
-	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override;
+	virtual void AssignTexture(ICachedTexture & texture, IRenderer::CachedTextureType type) override;
 private:
 	unsigned int m_id;
 };
@@ -125,7 +127,7 @@ void CLegacyGLRenderer::SetTexture(const Path& texture, TextureSlot slot, int fl
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void CLegacyGLRenderer::SetTexture(const Path& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
+void CLegacyGLRenderer::SetTexture(const Path& texture, const std::vector<model::TeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }
@@ -138,11 +140,11 @@ void CLegacyGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot sl
 	if (slot != TextureSlot::eDiffuse) glActiveTexture(GL_TEXTURE0);
 }
 
-static const map<RenderMode, GLenum> renderModeMap = {
-	{ RenderMode::TRIANGLES, GL_TRIANGLES },
-	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::LINES, GL_LINES },
-	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
+static const map<IRenderer::RenderMode, GLenum> renderModeMap = {
+	{ IRenderer::RenderMode::TRIANGLES, GL_TRIANGLES },
+	{ IRenderer::RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
+	{ IRenderer::RenderMode::LINES, GL_LINES },
+	{ IRenderer::RenderMode::LINE_LOOP, GL_LINE_LOOP }
 };
 
 void Bind(const void* vertices, const void* normals, const void* texCoords, GLenum vertexType, GLenum normalType, GLenum texCoordType, int vertexAxesCount)
@@ -358,7 +360,7 @@ IShaderManager& CLegacyGLRenderer::GetShaderManager()
 	return m_shaderManager;
 }
 
-void CLegacyGLRenderer::SetTextureManager(CTextureManager & textureManager)
+void CLegacyGLRenderer::SetTextureManager(TextureManager & textureManager)
 {
 	m_textureManager = &textureManager;
 }
@@ -811,25 +813,25 @@ void CLegacyGLFrameBuffer::UnBind() const
 	glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 }
 
-void CLegacyGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureType type)
+void CLegacyGLFrameBuffer::AssignTexture(ICachedTexture & texture, IRenderer::CachedTextureType type)
 {
-	static const std::map<CachedTextureType, GLenum> typeMap = {
-		{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
-		{ CachedTextureType::RENDER_TARGET, GL_COLOR_ATTACHMENT0 },
-		{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
-		{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
+	static const std::map<IRenderer::CachedTextureType, GLenum> typeMap = {
+		{ IRenderer::CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
+		{ IRenderer::CachedTextureType::RENDER_TARGET, GL_COLOR_ATTACHMENT0 },
+		{ IRenderer::CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
+		{ IRenderer::CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
 	};
-	const std::map<CachedTextureType, pair<GLboolean, string>> extensionMap = {
-		{ CachedTextureType::RGBA, {GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" }},
-		{ CachedTextureType::RENDER_TARGET,{ GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" } },
-		{ CachedTextureType::ALPHA, {GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" }},
-		{ CachedTextureType::DEPTH, {GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" }}
+	const std::map<IRenderer::CachedTextureType, pair<GLboolean, string>> extensionMap = {
+		{ IRenderer::CachedTextureType::RGBA, {GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" }},
+		{ IRenderer::CachedTextureType::RENDER_TARGET,{ GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" } },
+		{ IRenderer::CachedTextureType::ALPHA, {GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" }},
+		{ IRenderer::CachedTextureType::DEPTH, {GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" }}
 	};
 	if (!extensionMap.at(type).first)
 	{
 		throw std::runtime_error(extensionMap.at(type).second + " is not supported");
 	}
-	if (type == CachedTextureType::DEPTH)
+	if (type == IRenderer::CachedTextureType::DEPTH)
 	{
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);

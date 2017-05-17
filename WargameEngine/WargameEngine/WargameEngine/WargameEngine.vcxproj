@@ -232,6 +232,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Application.cpp" />
     <ClCompile Include="AsyncFileProvider.cpp" />
     <ClCompile Include="controller\CommandGoTo.cpp" />
     <ClCompile Include="controller\CommandPlayAnimation.cpp" />
@@ -239,7 +240,8 @@
     <ClCompile Include="controller\ScriptRegisterFunctions.cpp" />
     <ClCompile Include="controller\ScriptRegisterObject.cpp" />
     <ClCompile Include="controller\ScriptRegisterUI.cpp" />
-    <ClCompile Include="model\Particle.cpp" />
+    <ClCompile Include="model\BoundingBoxManager.cpp" />
+    <ClCompile Include="model\ParticleEffect.cpp" />
     <ClCompile Include="view\Camera.cpp" />
     <ClCompile Include="MemoryStream.cpp" />
     <ClCompile Include="model\Landscape.cpp" />
@@ -252,17 +254,18 @@
     <ClCompile Include="controller\CommandHandler.cpp" />
     <ClCompile Include="controller\CommandMoveObject.cpp" />
     <ClCompile Include="controller\CommandRotateObject.cpp" />
-    <ClCompile Include="controller\GameController.cpp" />
+    <ClCompile Include="controller\Controller.cpp" />
     <ClCompile Include="LogWriter.cpp" />
     <ClCompile Include="model\Object.cpp" />
-    <ClCompile Include="model\GameModel.cpp" />
-    <ClCompile Include="model\MovementLimiter.cpp" />
+    <ClCompile Include="model\Model.cpp" />
+    <ClCompile Include="controller\MovementLimiter.cpp" />
     <ClCompile Include="model\ObjectGroup.cpp" />
     <ClCompile Include="Module.cpp" />
     <ClCompile Include="OSSpecific.cpp" />
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp" />
-    <ClCompile Include="Ruler.cpp" />
+    <ClCompile Include="view\Image.cpp" />
+    <ClCompile Include="view\Ruler.cpp" />
     <ClCompile Include="controller\ScriptRegisterViewport.cpp" />
     <ClCompile Include="view\InputBase.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
@@ -283,7 +286,7 @@
     <ClCompile Include="view\3dModel.cpp" />
     <ClCompile Include="view\BuiltInImageReaders.cpp" />
     <ClCompile Include="view\ColladaModelFactory.cpp" />
-    <ClCompile Include="view\GameView.cpp" />
+    <ClCompile Include="view\View.cpp" />
     <ClCompile Include="view\MaterialManager.cpp" />
     <ClCompile Include="view\ModelManager.cpp" />
     <ClCompile Include="view\OBJModelFactory.cpp" />
@@ -296,10 +299,11 @@
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Application.h" />
     <ClInclude Include="array_view.h" />
     <ClInclude Include="AsyncFileProvider.h" />
-    <ClInclude Include="controller\INetSocket.h" />
-    <ClInclude Include="controller\IScriptHandler.h" />
+    <ClInclude Include="INetSocket.h" />
+    <ClInclude Include="IScriptHandler.h" />
     <ClInclude Include="controller\IStateManager.h" />
     <ClInclude Include="controller\CommandGoTo.h" />
     <ClInclude Include="controller\CommandPlayAnimation.h" />
@@ -310,9 +314,10 @@
     <ClInclude Include="controller\ScriptUIProtocol.h" />
     <ClInclude Include="IPathfinding.h" />
     <ClInclude Include="IPhysicsEngine.h" />
+    <ClInclude Include="model\BoundingBoxManager.h" />
     <ClInclude Include="model\IBaseObject.h" />
     <ClInclude Include="model\Light.h" />
-    <ClInclude Include="model\Particle.h" />
+    <ClInclude Include="model\ParticleEffect.h" />
     <ClInclude Include="Typedefs.h" />
     <ClInclude Include="view\Camera.h" />
     <ClInclude Include="IMemoryStream.h" />
@@ -320,7 +325,7 @@
     <ClInclude Include="MemoryStream.h" />
     <ClInclude Include="model\Animation.h" />
     <ClInclude Include="model\IBoundingBoxManager.h" />
-    <ClInclude Include="model\IGameModel.h" />
+    <ClInclude Include="model\IModel.h" />
     <ClInclude Include="model\Landscape.h" />
     <ClInclude Include="model\BaseObject.h" />
     <ClInclude Include="model\Projectile.h" />
@@ -332,7 +337,7 @@
     <ClInclude Include="controller\CommandRotateObject.h" />
     <ClInclude Include="LogWriter.h" />
     <ClInclude Include="model\Object.h" />
-    <ClInclude Include="model\MovementLimiter.h" />
+    <ClInclude Include="controller\MovementLimiter.h" />
     <ClInclude Include="model\ObjectGroup.h" />
     <ClInclude Include="model\IObject.h" />
     <ClInclude Include="Module.h" />
@@ -346,6 +351,7 @@
     <ClInclude Include="Signal.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="Task.h" />
+    <ClInclude Include="view\Image.h" />
     <ClInclude Include="view\InputBase.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="UI\UIRadioGroup.h" />
@@ -369,6 +375,7 @@
     <ClInclude Include="view\Matrix4.h" />
     <ClInclude Include="view\ParticleModel.h" />
     <ClInclude Include="view\ParticleSystem.h" />
+    <ClInclude Include="view\PluginModelLoader.h" />
     <ClInclude Include="view\TranslationManager.h" />
     <ClInclude Include="view\Vector2.h" />
     <ClInclude Include="view\Vector3.h" />
@@ -376,10 +383,10 @@
     <ClInclude Include="controller\CommandDeleteObject.h" />
     <ClInclude Include="controller\CommandHandler.h" />
     <ClInclude Include="controller\CommandMoveObject.h" />
-    <ClInclude Include="controller\GameController.h" />
+    <ClInclude Include="controller\Controller.h" />
     <ClInclude Include="controller\ICommand.h" />
-    <ClInclude Include="model\GameModel.h" />
-    <ClInclude Include="Ruler.h" />
+    <ClInclude Include="model\Model.h" />
+    <ClInclude Include="view\Ruler.h" />
     <ClInclude Include="UI\IUI.h" />
     <ClInclude Include="UI\UIButton.h" />
     <ClInclude Include="UI\UICheckBox.h" />
@@ -392,7 +399,7 @@
     <ClInclude Include="UI\UIText.h" />
     <ClInclude Include="UI\UITheme.h" />
     <ClInclude Include="view\3dModel.h" />
-    <ClInclude Include="view\GameView.h" />
+    <ClInclude Include="view\View.h" />
     <ClInclude Include="view\Material.h" />
     <ClInclude Include="view\MaterialManager.h" />
     <ClInclude Include="view\ModelManager.h" />

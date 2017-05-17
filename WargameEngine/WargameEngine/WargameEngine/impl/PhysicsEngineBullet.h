@@ -1,25 +1,26 @@
 #pragma once
-#include <memory>
 #include "../IPhysicsEngine.h"
+#include <memory>
 
-class CPhysicsEngineBullet : public IPhysicsEngine
+class CPhysicsEngineBullet : public wargameEngine::IPhysicsEngine
 {
 public:
+	using IObject = wargameEngine::model::IObject;
+	using IBaseObject = wargameEngine::model::IBaseObject;
+
 	CPhysicsEngineBullet();
 	~CPhysicsEngineBullet();
-	virtual void Update(std::chrono::microseconds deltaTime) override;
-	virtual void Reset() override;
-	virtual void AddDynamicObject(IObject * object, double mass) override;
-	virtual void AddStaticObject(IBaseObject * staticObject) override;
-	virtual void RemoveDynamicObject(IObject * object) override;
-	virtual void SetGround(Landscape * landscape) override;
-	virtual bool CastRay(CVector3f const& origin, CVector3f const& dest, IObject ** obj, CVector3f & hitPoint, std::vector<IObject*> const& excludeObjects = std::vector<IObject*>()) const override;
-	virtual bool TestObject(IObject * object) const override;
-	virtual void Draw() const override;
-	virtual void EnableDebugDraw(IRenderer & renderer) override;
-	//IBoundingBoxManager
-	virtual void AddBounding(const Path& modelName, Bounding const& bounding) override;
-	virtual Bounding GetBounding(const Path& path) const override;
+
+	void Update(std::chrono::microseconds deltaTime) override;
+	void Reset(wargameEngine::model::IBoundingBoxManager& boundingManager) override;
+	void AddDynamicObject(IObject* object, double mass) override;
+	void AddStaticObject(IBaseObject* staticObject) override;
+	void RemoveObject(IBaseObject* object) override;
+	void SetGround(wargameEngine::model::Landscape* landscape) override;
+	CastRayResult CastRay(CVector3f const& origin, CVector3f const& dest, std::vector<IBaseObject*> const& excludeObjects = std::vector<IBaseObject*>()) const override;
+	bool TestObject(IBaseObject* object) const override;
+	void Draw(wargameEngine::view::IRenderer& renderer) const override;
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> m_pImpl;

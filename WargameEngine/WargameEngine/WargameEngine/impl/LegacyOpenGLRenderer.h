@@ -5,11 +5,15 @@
 class CLegacyGLRenderer : public IOpenGLRenderer
 {
 public:
+	using IVertexBuffer = wargameEngine::view::IVertexBuffer;
+	using ICachedTexture = wargameEngine::view::ICachedTexture;
+	using TextureMipMaps = wargameEngine::view::TextureMipMaps;
+
 	CLegacyGLRenderer();
 
 	virtual void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) override;
-	virtual void DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count) override;
+	virtual void DrawIndexes(wargameEngine::view::IVertexBuffer& buffer, size_t begin, size_t count) override;
 	virtual void DrawAll(IVertexBuffer& buffer, size_t count) override;
 	virtual void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
 	virtual void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
@@ -25,9 +29,9 @@ public:
 	virtual const float* GetViewMatrix() const override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
-	virtual void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
-	virtual void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) override;
-	virtual void SetTexture(const Path& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	virtual void SetTexture(const wargameEngine::Path& texture, bool forceLoadNow = false, int flags = 0) override;
+	virtual void SetTexture(const wargameEngine::Path& texture, TextureSlot slot, int flags = 0) override;
+	virtual void SetTexture(const wargameEngine::Path& texture, const std::vector<wargameEngine::model::TeamColor> * teamcolor, int flags = 0) override;
 	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 
@@ -41,16 +45,16 @@ public:
 
 	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 
-	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
+	virtual std::unique_ptr<wargameEngine::view::IFrameBuffer> CreateFramebuffer() const override;
 
-	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
+	virtual std::unique_ptr<wargameEngine::view::IOcclusionQuery> CreateOcclusionQuery() override;
 
-	virtual IShaderManager& GetShaderManager()  override;
+	virtual wargameEngine::view::IShaderManager& GetShaderManager()  override;
 
-	virtual void SetTextureManager(CTextureManager & textureManager) override;
+	virtual void SetTextureManager(wargameEngine::view::TextureManager & textureManager) override;
 
-	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
-	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
+	virtual void WindowCoordsToWorldVector(wargameEngine::view::IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
+	virtual void WorldCoordsToWindowCoords(wargameEngine::view::IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
 	virtual void SetNumberOfLights(size_t count) override;
 	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
@@ -76,7 +80,7 @@ public:
 	virtual void EnableMultisampling(bool enable) override;
 private:
 	void ResetViewMatrix();
-	CTextureManager* m_textureManager;
+	wargameEngine::view::TextureManager* m_textureManager;
 	CShaderManagerLegacyGL m_shaderManager;
 	mutable float m_matrix[16];
 };

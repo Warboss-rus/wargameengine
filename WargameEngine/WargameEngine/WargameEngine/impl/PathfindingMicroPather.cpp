@@ -1,8 +1,10 @@
 #include "PathfindingMicroPather.h"
 #include "micropather.h"
-#include "..\model\GameModel.h"
+#include "..\model\Model.h"
 #include "..\model\IBoundingBoxManager.h"
 #include "..\LogWriter.h"
+
+using namespace wargameEngine;
 
 struct CPathfindingMicroPather::Impl : public micropather::Graph
 {
@@ -11,7 +13,7 @@ public:
 		: m_solver(this, 10000, 8, true)
 	{}
 
-	void Init(CGameModel& model, const IBoundingBoxManager& boundingBoxManager, size_t horizontalResolution, size_t verticalResolution)
+	void Init(model::Model& model, model::IBoundingBoxManager& boundingBoxManager, size_t horizontalResolution, size_t verticalResolution)
 	{
 		m_solver.Reset();
 		m_field.clear();
@@ -30,15 +32,15 @@ public:
 			auto object = model.Get3DObject(i);
 			AddObjectAndSubscribe(*object);
 		}
-		for (size_t i = 0; i < landscape.GetStaticObjectCount(); ++i)
+		for (size_t i = 0; i < model.GetStaticObjectCount(); ++i)
 		{
-			auto& object = landscape.GetStaticObject(i);
+			auto& object = model.GetStaticObject(i);
 			AddObjectAndSubscribe(object);
 		}
-		model.DoOnObjectCreation([this](IObject* object) {
+		model.DoOnObjectCreation([this](model::IObject* object) {
 			AddObjectAndSubscribe(*object);
 		});
-		model.DoOnObjectRemove([this](IObject* object) {
+		model.DoOnObjectRemove([this](model::IObject* object) {
 			RemoveObject(*object);
 		});
 	}
@@ -97,7 +99,7 @@ private:
 #endif
 	}
 
-	void AddObjectAndSubscribe(IBaseObject& object)
+	void AddObjectAndSubscribe(model::IBaseObject& object)
 	{
 		AddObject(object);
 		object.DoOnCoordsChange([this, &object](const CVector3f& oldPos, const CVector3f& /*newPos*/) {
@@ -110,7 +112,7 @@ private:
 		});
 	}
 
-	void AddObject(IBaseObject& object)
+	void AddObject(model::IBaseObject& object)
 	{
 		//Increment object count for the cells occupied by this object
 		auto cellIndices = GetAffectedCells(m_boundingBoxManager->GetBounding(object.GetPathToModel()), object.GetCoords(), object.GetRotations());
@@ -120,7 +122,7 @@ private:
 		}
 	}
 
-	void RemoveObject(IBaseObject& object, const CVector3f* overridePosition = nullptr, const CVector3f* overrideRotation = nullptr)
+	void RemoveObject(model::IBaseObject& object, const CVector3f* overridePosition = nullptr, const CVector3f* overrideRotation = nullptr)
 	{
 		CVector3f position = overridePosition ? *overridePosition : object.GetCoords();
 		CVector3f rotations = overrideRotation ? *overrideRotation : object.GetRotations();
@@ -139,10 +141,10 @@ private:
 		}
 	}
 
-	std::vector<size_t> GetAffectedCells(const Bounding& bounding, const CVector3f& position, const CVector3f& rotation) const
+	std::vector<size_t> GetAffectedCells(const model::Bounding& bounding, const CVector3f& position, const CVector3f& rotation) const
 	{
 		std::vector<size_t> result;
-		if (bounding.type == Bounding::eType::Compound)
+		if (bounding.type == model::Bounding::eType::Compound)
 		{
 			auto& compound = bounding.GetCompound().items;
 			for (auto& item : compound)
@@ -151,7 +153,7 @@ private:
 				result.insert(result.end(), subResult.begin(), subResult.end());
 			}
 		}
-		else if (bounding.type == Bounding::eType::Box)
+		else if (bounding.type == model::Bounding::eType::Box)
 		{
 			//TODO: rotate bbox
 			auto& box = bounding.GetBox();
@@ -197,8 +199,8 @@ private:
 	}
 
 	micropather::MicroPather m_solver;
-	const IBoundingBoxManager* m_boundingBoxManager = nullptr;
-	const Landscape* m_landscape = nullptr;
+	model::IBoundingBoxManager* m_boundingBoxManager = nullptr;
+	const model::Landscape* m_landscape = nullptr;
 	std::vector<int> m_field;
 	float m_width = 0.0f;
 	float m_height = 0.0f;
@@ -213,7 +215,7 @@ CPathfindingMicroPather::CPathfindingMicroPather()
 
 CPathfindingMicroPather::~CPathfindingMicroPather() = default;
 
-void CPathfindingMicroPather::Init(CGameModel& model, const IBoundingBoxManager& boundingBoxManager, size_t horizontalResolution, size_t verticalResolution)
+void CPathfindingMicroPather::Init(model::Model& model, model::IBoundingBoxManager& boundingBoxManager, size_t horizontalResolution, size_t verticalResolution)
 {
 	m_pImpl->Init(model, boundingBoxManager, horizontalResolution, verticalResolution);
 }

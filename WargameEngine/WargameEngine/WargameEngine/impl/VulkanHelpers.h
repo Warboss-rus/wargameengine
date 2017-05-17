@@ -91,4 +91,4 @@ private:
 	throw std::runtime_error(message)
 #define LOG_VK_RESULT(result, message) \
 	if (result)                        \
-	LogWriter::WriteLine(message)
+	wargameEngine::LogWriter::WriteLine(message)

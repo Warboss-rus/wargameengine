@@ -630,7 +630,7 @@ function LoadMap(filename)
 		elseif(splitted[1] == "skybox") then
 			CreateSkybox(80, splitted[2])
 		elseif(splitted[1] == "table") then
-			CreateTable(60, 30, splitted[2])
+			CreateLandscape(60, 30, splitted[2])
 		end
 	end
 end

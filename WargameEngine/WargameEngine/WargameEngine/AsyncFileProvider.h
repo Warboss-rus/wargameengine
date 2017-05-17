@@ -2,18 +2,20 @@
 #include "Typedefs.h"
 #include <functional>
 
+namespace wargameEngine
+{
 class ThreadPool;
-struct sModule;
+struct Module;
 
-class CAsyncFileProvider
+class AsyncFileProvider
 {
 public:
 	typedef std::function<void(void*, size_t)> ProcessHandler;
 	typedef std::function<void()> CompletionHandler;
 	typedef std::function<void(std::exception const&)> ErrorHandler;
 
-	CAsyncFileProvider(ThreadPool & threadPool);
-	void SetModule(sModule const& module);
+	AsyncFileProvider(ThreadPool& threadPool);
+	void SetModule(Module const& module);
 	void GetTextureAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler(), bool now = false);
 	void GetModelAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler());
 	Path GetModelAbsolutePath(const Path& path) const;
@@ -21,8 +23,9 @@ public:
 	Path GetScriptAbsolutePath(const Path& path) const;
 	Path GetShaderAbsolutePath(const Path& path) const;
 	Path GetAbsolutePath(const Path& path) const;
+
 private:
-	ThreadPool & m_threadPool;
+	ThreadPool& m_threadPool;
 	Path m_workingDir;
 	Path m_moduleDir;
 	Path m_textureDir;
@@ -32,3 +35,4 @@ private:
 };
 
 Path AppendPath(const Path& oldPath, const Path& newPath);
+}

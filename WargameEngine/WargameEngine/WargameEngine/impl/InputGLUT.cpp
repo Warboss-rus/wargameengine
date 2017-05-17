@@ -9,6 +9,9 @@
 #pragma warning(pop)
 #endif
 
+using namespace wargameEngine;
+using namespace view;
+
 CInputGLUT* CInputGLUT::m_instance = nullptr;
 static const int SCROLL_UP = 3;
 static const int SCROLL_DOWN = 4;

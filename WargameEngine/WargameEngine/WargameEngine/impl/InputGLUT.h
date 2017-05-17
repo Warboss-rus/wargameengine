@@ -3,7 +3,7 @@
 #include <set>
 #include "../view/InputBase.h"
 
-class CInputGLUT : public CInputBase
+class CInputGLUT : public wargameEngine::view::CInputBase
 {
 public:
 	CInputGLUT();
@@ -11,7 +11,7 @@ public:
 	int GetMouseX() const override;
 	int GetMouseY() const override;
 	int GetModifiers() const override;
-	bool IsKeyPressed(VirtualKey key) const override;
+	bool IsKeyPressed(wargameEngine::view::VirtualKey key) const override;
 
 	static void OnSpecialKeyPress(int key, int x, int y);
 	static void OnSpecialKeyRelease(int key, int x, int y);
@@ -22,10 +22,10 @@ public:
 	static void MouseMoveCallback(int x, int y);
 	static void OnJoystick(unsigned int buttonMask, int x, int y, int z);
 private:
-	static VirtualKey KeycodeToVirtualKey(int key);
+	static wargameEngine::view::VirtualKey KeycodeToVirtualKey(int key);
 	static CInputGLUT * m_instance;
 	bool m_cursorEnabled = true;
 	unsigned int m_joystickButtons = 0;
 	int m_joystickAxes[3] = {0, 0, 0};
-	std::set<VirtualKey> m_pressedKeys;
+	std::set<wargameEngine::view::VirtualKey> m_pressedKeys;
 };

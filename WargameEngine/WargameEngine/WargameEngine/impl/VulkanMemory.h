@@ -56,7 +56,7 @@ private:
 	int m_resourceFreeDelay = 1000;
 };
 
-class CVulkanVertexAttribCache : public IVertexAttribCache
+class CVulkanVertexAttribCache : public wargameEngine::view::IVertexAttribCache
 {
 public:
 	CVulkanVertexAttribCache(VkDeviceSize size, VkBufferUsageFlags flags, CVulkanRenderer & renderer, VkMemoryPropertyFlags properties, const void * data = nullptr);

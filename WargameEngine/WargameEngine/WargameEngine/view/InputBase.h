@@ -3,20 +3,24 @@
 #include "IInput.h"
 #include "Matrix4.h"
 
+namespace wargameEngine
+{
+namespace view
+{
 class CInputBase : public IInput
 {
 public:
-	CSignalConnection DoOnLMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnLMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnRMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnRMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnMouseWheel(const MouseWheelHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnKeyDown(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnKeyUp(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnCharacter(const CharacterHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnMouseMove(const MouseMoveHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority = 0, std::string const& tag = "") override;
-	CSignalConnection DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnLMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnLMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnRMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnRMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnMouseWheel(const MouseWheelHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnKeyDown(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnKeyUp(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnCharacter(const CharacterHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnMouseMove(const MouseMoveHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority = 0, std::string const& tag = "") override;
+	signals::SignalConnection DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority = 0, std::string const& tag = "") override;
 	const float* GetHeadTrackingMatrix(size_t deviceIndex) const override;
 	void DeleteAllSignalsByTag(std::string const& tag) override;
 	void Reset() override;
@@ -40,20 +44,22 @@ protected:
 	void OnGamepadAxis(int gamepadIndex, int axisIndex, double horizontal, double vertical);
 
 private:
-	CExclusiveSignal<int, int> m_onLMBDown;
-	CExclusiveSignal<int, int> m_onLMBUp;
-	CExclusiveSignal<int, int> m_onRMBDown;
-	CExclusiveSignal<int, int> m_onRMBUp;
-	CExclusiveSignal<float> m_onWheel;
-	CExclusiveSignal<VirtualKey, int> m_onKeyDown;
-	CExclusiveSignal<VirtualKey, int> m_onKeyUp;
-	CExclusiveSignal<wchar_t> m_onCharacter;
-	CExclusiveSignal<int, int, int, int> m_onMouseMove;
-	CExclusiveSignal<int, int, bool> m_onGamepadButton;
-	CExclusiveSignal<int, int, double, double> m_onGamepadAxis;
+	signals::ExclusiveSignal<int, int> m_onLMBDown;
+	signals::ExclusiveSignal<int, int> m_onLMBUp;
+	signals::ExclusiveSignal<int, int> m_onRMBDown;
+	signals::ExclusiveSignal<int, int> m_onRMBUp;
+	signals::ExclusiveSignal<float> m_onWheel;
+	signals::ExclusiveSignal<VirtualKey, int> m_onKeyDown;
+	signals::ExclusiveSignal<VirtualKey, int> m_onKeyUp;
+	signals::ExclusiveSignal<wchar_t> m_onCharacter;
+	signals::ExclusiveSignal<int, int, int, int> m_onMouseMove;
+	signals::ExclusiveSignal<int, int, bool> m_onGamepadButton;
+	signals::ExclusiveSignal<int, int, double, double> m_onGamepadAxis;
 	std::vector<Matrix4F> m_headTrackings;
 	int m_prevX = 0;
 	int m_prevY = 0;
 	bool m_lmbDown = false;
 	bool m_rmbDown = false;
 };
+}
+}

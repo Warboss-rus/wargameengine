@@ -5,6 +5,9 @@
 #include <algorithm>
 #include "VulkanRenderer.h"
 
+using namespace wargameEngine;
+using namespace view;
+
 namespace
 {
 ShaderReflection ReflectShader(const std::vector<char> & code)

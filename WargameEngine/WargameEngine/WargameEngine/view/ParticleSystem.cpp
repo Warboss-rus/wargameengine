@@ -4,20 +4,24 @@
 
 using namespace std;
 
-CParticleSystem::CParticleSystem(IRenderer & renderer)
-	:m_renderer(renderer)
+namespace wargameEngine
+{
+namespace view
+{
+ParticleSystem::ParticleSystem(IRenderer& renderer)
+	: m_renderer(renderer)
 {
 }
 
-void CParticleSystem::SetShaders(const Path& vertex, const Path& fragment)
+void ParticleSystem::SetShaders(const Path& vertex, const Path& fragment)
 {
-	if (m_renderer.SupportsFeature(Feature::INSTANSING))
+	if (m_renderer.SupportsFeature(IRenderer::Feature::INSTANSING))
 	{
 		m_shaderProgram = m_renderer.GetShaderManager().NewProgram(vertex, fragment);
 	}
 }
 
-void CParticleSystem::Draw(CParticleEffect const& particleEffect)
+void ParticleSystem::Draw(model::ParticleEffect const& particleEffect)
 {
 	float modelview[4][4];
 	memcpy(modelview, m_renderer.GetViewMatrix(), sizeof(float) * 16);
@@ -77,7 +81,8 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 	{
 		m_vertexBuffer.resize(particlesCount * 6);
 		m_texCoordBuffer2.resize(particlesCount * 6);
-		if (useColorAttrib) m_colorBuffer.resize(particlesCount * 4 * 6);
+		if (useColorAttrib)
+			m_colorBuffer.resize(particlesCount * 4 * 6);
 		size_t arrIndex = 0;
 		for (auto& particle : particles)
 		{
@@ -85,23 +90,27 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 			float scale = *particle.m_scale;
 			CVector2f tc(particle.m_texCoord);
 			m_vertexBuffer.insert(m_vertexBuffer.end(), { p0 * scale + pos, p1 * scale + pos, p2 * scale + pos, p1 * scale + pos, p2 * scale + pos, p3 * scale + pos });
-			if (useTexCoordAttrib) m_texCoordBuffer2.insert(m_texCoordBuffer2.end(), { t0 + tc, t1 + tc, t2 + tc, t1 + tc, t2 + tc, t3 + tc });
-			if (useColorAttrib) 
-				for(int i = 0; i < 6; ++i)
+			if (useTexCoordAttrib)
+				m_texCoordBuffer2.insert(m_texCoordBuffer2.end(), { t0 + tc, t1 + tc, t2 + tc, t1 + tc, t2 + tc, t3 + tc });
+			if (useColorAttrib)
+				for (int i = 0; i < 6; ++i)
 					memcpy(m_colorBuffer.data() + arrIndex * 24 + i * 4, particle.m_color, sizeof(float) * 4);
 			++arrIndex;
 		}
-		if(useColorAttrib) shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
-		m_renderer.RenderArrays(RenderMode::TRIANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
+		if (useColorAttrib)
+			shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
+		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
 	}
 	m_renderer.PopMatrix();
 }
 
-IParticleUpdater* CParticleSystem::GetParticleUpdater(const Path& path)
+model::IParticleUpdater* ParticleSystem::GetParticleUpdater(const Path& path)
 {
 	if (m_models.find(path) == m_models.end())
 	{
-		m_models.emplace(path, CParticleModel(path));
+		m_models.emplace(path, ParticleModel(path));
 	}
 	return &m_models.at(path);
+}
+}
 }

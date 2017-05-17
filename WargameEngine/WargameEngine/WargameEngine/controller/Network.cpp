@@ -1,15 +1,18 @@
 #include "Network.h"
 #include <string.h>
 #include "../LogWriter.h"
-#include "../model/GameModel.h"
+#include "../model/Model.h"
 #include "../model/Object.h"
 #include "CommandHandler.h"
 #include "IStateManager.h"
-#include "INetSocket.h"
 #include "../MemoryStream.h"
 #include "ICommand.h"
 
-CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory)
+namespace wargameEngine
+{
+namespace controller
+{
+Network::Network(IStateManager & stateManager, CommandHandler & commandHandler, model::IModel & model, SocketFactory const& socketFactory)
 	: m_socketFactory(socketFactory)
 	, m_host(true)
 	, m_netRecievedSize(0)
@@ -20,7 +23,7 @@ CNetwork::CNetwork(IStateManager & stateManager, CCommandHandler & commandHandle
 {
 }
 
-void CNetwork::Host(unsigned short port)
+void Network::Host(unsigned short port)
 {
 	if (m_socket)
 	{
@@ -33,7 +36,7 @@ void CNetwork::Host(unsigned short port)
 	SendState();
 }
 
-void CNetwork::Client(const char * ip, unsigned short port)
+void Network::Client(const char * ip, unsigned short port)
 {
 	if (m_socket)
 	{
@@ -45,7 +48,7 @@ void CNetwork::Client(const char * ip, unsigned short port)
 	m_host = false;
 }
 
-void CNetwork::Stop()
+void Network::Stop()
 {
 	m_socket.reset();
 	m_host = true;
@@ -54,7 +57,7 @@ void CNetwork::Stop()
 	m_netTotalSize = 0;
 }
 
-void CNetwork::Update()
+void Network::Update()
 {
 	if (!m_socket) return;
 	int result;
@@ -69,7 +72,7 @@ void CNetwork::Update()
 		result = m_socket->RecieveData(data, 128);
 		if (result > 0)
 		{
-			m_netTotalSize = CReadMemoryStream(data + 1).ReadSizeT();
+			m_netTotalSize = ReadMemoryStream(data + 1).ReadSizeT();
 			m_netData.resize(m_netTotalSize);
 			m_netRecievedSize = result;
 			memcpy(m_netData.data(), data, result);
@@ -81,7 +84,7 @@ void CNetwork::Update()
 	}
 	if (!m_netData.empty() && m_netRecievedSize >= m_netTotalSize && m_netRecievedSize > 4)
 	{
-		CReadMemoryStream stream(m_netData.data());
+		ReadMemoryStream stream(m_netData.data());
 		unsigned char type = stream.ReadByte();
 		if (type == 0) //string
 		{
@@ -155,19 +158,19 @@ void CNetwork::Update()
 	}
 }
 
-bool CNetwork::IsHost() const
+bool Network::IsHost() const
 {
 	return m_host;
 }
 
-void CNetwork::SendState()
+void Network::SendState()
 {
 	if (!m_socket)
 	{
 		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
-	CWriteMemoryStream stream;
+	WriteMemoryStream stream;
 	stream.WriteByte(1);//1 For full dump
 	stream.WriteSizeT(0);
 	m_stateManager.SerializeState(stream, true);
@@ -176,27 +179,27 @@ void CNetwork::SendState()
 	m_socket->SendData(stream.GetData(), stream.GetSize());
 }
 
-void CNetwork::SendMessage(std::wstring const& message)
+void Network::SendMessage(std::wstring const& message)
 {
 	if (!m_socket)
 	{
 		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
-	CWriteMemoryStream data;
+	WriteMemoryStream data;
 	data.WriteByte(0);//0 for text message
 	data.WriteWString(message);
 	m_socket->SendData(data.GetData(), data.GetSize());
 }
 
-void CNetwork::SendAction(ICommand const& command)
+void Network::SendAction(ICommand const& command)
 {
 	if (!m_socket)
 	{
 		LogWriter::WriteLine("Net error. No connection established.");
 		return;
 	}
-	CWriteMemoryStream result;
+	WriteMemoryStream result;
 	result.WriteByte(2);//2 for action;
 	result.WriteSizeT(0);//message size
 	command.Serialize(result);
@@ -213,12 +216,12 @@ void CNetwork::SendAction(ICommand const& command)
 	LogWriter::WriteLine("Action sent.");
 }
 
-bool CNetwork::IsConnected()
+bool Network::IsConnected()
 {
 	return m_socket.get() != NULL;
 }
 
-void* CNetwork::GetAddress(void* object)
+void* Network::GetAddress(void* object)
 {
 	for (auto i = m_translator.begin(); i != m_translator.end(); ++i)
 	{
@@ -230,27 +233,29 @@ void* CNetwork::GetAddress(void* object)
 	return 0;
 }
 
-void CNetwork::AddAddressLocal(std::shared_ptr<IObject> const& obj)
+void Network::AddAddressLocal(std::shared_ptr<model::IObject> const& obj)
 {
 	m_translator[obj.get()] = obj.get();
 }
 
-void CNetwork::AddAddress(std::shared_ptr<IObject> const& obj, void* address)
+void Network::AddAddress(std::shared_ptr<model::IObject> const& obj, void* address)
 {
 	m_translator[address] = obj.get();
 }
 
-void CNetwork::SetStateRecievedCallback(OnStateRecievedHandler const& onStateRecieved)
+void Network::SetStateRecievedCallback(OnStateRecievedHandler const& onStateRecieved)
 {
 	m_stateRecievedCallback = onStateRecieved;
 }
 
-void CNetwork::SetStringRecievedCallback(OnStringReceivedHandler const& onStringRecieved)
+void Network::SetStringRecievedCallback(OnStringReceivedHandler const& onStringRecieved)
 {
 	m_stringRecievedCallback = onStringRecieved;
 }
 
-void CNetwork::CallStateRecievedCallback()
+void Network::CallStateRecievedCallback()
 {
 	if (m_stateRecievedCallback) m_stateRecievedCallback();
+}
+}
 }

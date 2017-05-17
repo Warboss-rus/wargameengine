@@ -345,7 +345,7 @@ void COpenGLESRenderer::SetTexture(const Path& texture, TextureSlot slot, int fl
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void COpenGLESRenderer::SetTexture(const Path& texture, const std::vector<sTeamColor>* teamcolor /*= nullptr*/, int flags /*= 0*/)
+void COpenGLESRenderer::SetTexture(const Path& texture, const std::vector<TeamColor>* teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }
@@ -588,7 +588,7 @@ std::unique_ptr<IFrameBuffer> COpenGLESRenderer::CreateFramebuffer() const
 	return std::make_unique<COpenGLESFrameBuffer>();
 }
 
-void COpenGLESRenderer::SetTextureManager(CTextureManager& textureManager)
+void COpenGLESRenderer::SetTextureManager(TextureManager& textureManager)
 {
 	m_textureManager = &textureManager;
 }

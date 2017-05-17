@@ -1,19 +1,24 @@
 #include "CommandGoTo.h"
 #include "../model/IObject.h"
 #include "../IMemoryStream.h"
-#include "../model/IGameModel.h"
-#include "GameController.h"
+#include "../model/IModel.h"
+#include "Controller.h"
 
-CCommandGoTo::CCommandGoTo(std::shared_ptr<CObjectDecorator> object, CVector3f const& target, float speed, std::string const& animation, float animationSpeed)
+namespace wargameEngine
+{
+namespace controller
+{
+
+CCommandGoTo::CCommandGoTo(std::shared_ptr<ObjectDecorator> object, CVector3f const& target, float speed, std::string const& animation, float animationSpeed)
 	:m_object(object), m_target(target), m_speed(speed), m_animation(animation), m_animationSpeed(animationSpeed)
 {
 	m_oldCoords = object->GetObject()->GetCoords();
 }
 
 
-CCommandGoTo::CCommandGoTo(IReadMemoryStream & stream, IGameModel & model, CGameController& controller)
+CCommandGoTo::CCommandGoTo(IReadMemoryStream & stream, model::IModel & model, Controller& controller)
 {
-	auto objectPtr = reinterpret_cast<IObject*>(stream.ReadPointer());
+	auto objectPtr = reinterpret_cast<model::IObject*>(stream.ReadPointer());
 	m_object = controller.GetDecorator(model.Get3DObject(objectPtr));
 	float x = stream.ReadFloat();
 	float y = stream.ReadFloat();
@@ -42,4 +47,7 @@ void CCommandGoTo::Serialize(IWriteMemoryStream & stream) const
 	stream.WriteFloat(m_speed);
 	stream.WriteFloat(m_animationSpeed);
 	stream.WriteString(m_animation);
+}
+
+}
 }

@@ -4,18 +4,23 @@
 #include <string>
 #include <map>
 #include "../Signal.h"
-#include "IGameModel.h"
+#include "IModel.h"
 #include "IObject.h"
 #include "Projectile.h"
-#include "Particle.h"
+#include "ParticleEffect.h"
 #include "Landscape.h"
 #include "Light.h"
 #include <mutex>
 
-class CGameModel : public IGameModel
+namespace wargameEngine
+{
+namespace model
+{
+class Model : public IModel
 {
 public:
-	CGameModel() = default;
+	Model() = default;
+
 	virtual size_t GetObjectCount() const override;
 	void Clear();
 	std::shared_ptr<const IObject> Get3DObject(size_t number) const;
@@ -26,15 +31,18 @@ public:
 	void SelectObject(std::shared_ptr<IObject> const& pObject);
 	std::shared_ptr<const IObject> GetSelectedObject() const;
 	std::shared_ptr<IObject> GetSelectedObject();
+	void AddStaticObject(const StaticObject& object);
+	size_t GetStaticObjectCount() const;
+	StaticObject& GetStaticObject(size_t index);
 	virtual void SetProperty(std::wstring const& key, std::wstring const& value) override;
 	virtual std::wstring GetProperty(std::wstring const& key) const override;
 	std::map<std::wstring, std::wstring> const& GetAllProperties() const;
-	void AddProjectile(CProjectile const& projectile);
+	void AddProjectile(Projectile const& projectile);
 	size_t GetProjectileCount() const;
-	CProjectile const& GetProjectile(size_t index) const;
+	Projectile const& GetProjectile(size_t index) const;
 	void AddParticleEffect(const IParticleUpdater * updater, const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
 	size_t GetParticleCount() const;
-	CParticleEffect const& GetParticleEffect(size_t index) const;
+	ParticleEffect const& GetParticleEffect(size_t index) const;
 	void RemoveParticleEffect(size_t index);
 	void Update(std::chrono::microseconds timeSinceLastUpdate);
 	void RemoveProjectile(unsigned int index);
@@ -42,23 +50,29 @@ public:
 	void ResetLandscape(float width, float depth, const Path& texture, size_t pointsPerWidth, size_t pointsPerDepth);
 	void AddLight();
 	void RemoveLight(size_t index);
-	CLight& GetLight(size_t index);
-	const std::vector<CLight>& GetLights() const;
+	Light& GetLight(size_t index);
+	const std::vector<Light>& GetLights() const;
 
-	CSignalConnection DoOnObjectCreation(std::function<void(IObject*)> const& handler);
-	CSignalConnection DoOnObjectRemove(std::function<void(IObject*)> const& handler);
+	signals::SignalConnection DoOnObjectCreation(std::function<void(IObject*)> const& handler);
+	signals::SignalConnection DoOnObjectRemove(std::function<void(IObject*)> const& handler);
 	std::unique_lock<std::mutex> LockModel();
 private:
-	CGameModel(CGameModel const&) = delete;
+	Model(const Model&) = delete;
+	Model(Model&&) = delete;
+	Model& operator=(const Model&) = delete;
+	Model& operator=(Model&&) = delete;
 
 	std::vector<std::shared_ptr<IObject>> m_objects;
-	std::vector<CProjectile> m_projectiles;
-	std::vector<CParticleEffect> m_particleEffects;
+	std::vector<StaticObject> m_staticObjects;
+	std::vector<Projectile> m_projectiles;
+	std::vector<ParticleEffect> m_particleEffects;
 	std::shared_ptr<IObject> m_selectedObject;
 	std::map<std::wstring, std::wstring> m_properties;
 	Landscape m_landscape;
-	std::vector<CLight> m_lights;
-	CSignal<void, IObject *> m_onObjectCreation;
-	CSignal<void, IObject *> m_onObjectRemove;
+	std::vector<Light> m_lights;
+	signals::Signal<void, IObject *> m_onObjectCreation;
+	signals::Signal<void, IObject *> m_onObjectRemove;
 	std::mutex m_modelLock;
 };
+}
+}

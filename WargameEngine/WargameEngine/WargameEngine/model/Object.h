@@ -4,10 +4,14 @@
 #include <memory>
 #include <vector>
 
-class CObject : public BaseObject<IObject>
+namespace wargameEngine
+{
+namespace model
+{
+class Object : public BaseObject<IObject>
 {
 public:
-	CObject(const Path& model, const CVector3f& position, float rotation, bool hasShadow = true);
+	Object(const Path& model, const CVector3f& position, float rotation, bool hasShadow = true);
 
 	std::set<std::string> const& GetHiddenMeshes() const override;
 	void HideMesh(std::string const& meshName) override;
@@ -27,7 +31,7 @@ public:
 	AnimationLoop GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void Update(std::chrono::microseconds timeSinceLastUpdate) override;
-	std::vector<sTeamColor> const& GetTeamColor() const override;
+	std::vector<TeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
 	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
 	std::map<Path, Path> const& GetReplaceTextures() const override;
@@ -43,6 +47,8 @@ private:
 	std::chrono::microseconds m_animationTime;
 	AnimationLoop m_animationLoop = AnimationLoop::HoldEnd;
 	float m_animationSpeed = 1.0f;
-	std::vector<sTeamColor> m_teamColor;
+	std::vector<TeamColor> m_teamColor;
 	std::map<Path, Path> m_replaceTextures;
 };
+}
+}

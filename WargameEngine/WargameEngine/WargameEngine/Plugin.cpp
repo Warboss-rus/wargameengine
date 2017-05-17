@@ -7,6 +7,8 @@
 #include "LogWriter.h"
 #include "Utils.h"
 
+namespace wargameEngine
+{
 std::string GetErrorString()
 {
 #ifdef WIN32
@@ -16,7 +18,7 @@ std::string GetErrorString()
 #endif
 }
 
-CPlugin::CPlugin(const Path& str)
+Plugin::Plugin(const Path& str)
 {
 #ifdef WIN32
 	m_handle = LoadLibraryW(str.c_str());
@@ -25,11 +27,11 @@ CPlugin::CPlugin(const Path& str)
 #endif
 	if (!m_handle)
 	{
-		LogWriter::WriteLine("Error loading plugin '" + to_string(str) + "'. " + GetErrorString());
+		throw std::runtime_error("Error loading plugin '" + to_string(str) + "'. " + GetErrorString());
 	}
 }
 
-CPlugin::~CPlugin()
+Plugin::~Plugin()
 {
 	if (m_handle)
 	{
@@ -41,12 +43,14 @@ CPlugin::~CPlugin()
 	}
 }
 
-void * CPlugin::GetFunction(std::string const& name)
+void* Plugin::GetFunction(std::string const& name)
 {
-	if (!m_handle) return nullptr;
+	if (!m_handle)
+		return nullptr;
 #ifdef WIN32
 	return ::GetProcAddress((HMODULE)m_handle, name.c_str());
 #else
 	return ::dlsym(m_handle, name.c_str());
 #endif
+}
 }

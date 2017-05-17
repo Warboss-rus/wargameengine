@@ -1,4 +1,4 @@
-#include "view/GameView.h"
+#include "Application.h"
 #include "LogWriter.h"
 #include "Module.h"
 #include "view/BuiltInImageReaders.h"
@@ -26,6 +26,23 @@
 #include "impl/AssimpModelLoader.h"
 #include "impl/PathfindingMicroPather.h"
 #include "Utils.h"
+#include "view/PluginModelLoader.h"
+
+using namespace wargameEngine;
+using namespace view;
+
+std::unique_ptr<Plugin> TryLoadPlugin(const Path& path)
+{
+	try
+	{
+		return std::make_unique<Plugin>(path);
+	}
+	catch (...)
+	{
+	}
+	return nullptr;
+}
+
 #ifdef _WINDOWS
 #include <windows.h>
 
@@ -38,7 +55,8 @@ int main(int argc, char* argv[])
 {
 #endif
 	srand(static_cast<unsigned int>(time(NULL)));
-	sGameViewContext context;
+	Context context;
+	Module module;
 	for (int i = 1; i < argc; ++i)
 	{
 		if (!strcmp(argv[i], "-module"))
@@ -49,14 +67,14 @@ int main(int argc, char* argv[])
 				LogWriter::WriteLine("Module filename expected");
 				return 1;
 			}
-			context.module.Load(Utf8ToWstring(argv[i]));
+			module.Load(Utf8ToWstring(argv[i]));
 		}
 	}
-	if (context.module.name.empty())
+	if (module.name.empty())
 	{
-		context.module.script = L"main.lua";
-		context.module.textures = L"texture\\";
-		context.module.models = L"models\\";
+		module.script = L"main.lua";
+		module.textures = L"texture\\";
+		module.models = L"models\\";
 	}
 	context.window = std::make_unique<WINDOW_CLASS>();
 	context.soundPlayer = std::make_unique<CSoundPlayerFMod>();
@@ -74,8 +92,13 @@ int main(int argc, char* argv[])
 	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
-	context.modelReaders.push_back(std::make_unique<CAssimpModelLoader>());
+	auto assimpPlugin = TryLoadPlugin(make_path("AssimpPlugin.dll"));
+	if (assimpPlugin)
+	{
+		context.modelReaders.push_back(std::make_unique<PluginModelLoader>(std::move(assimpPlugin)));
+	}
 
-	CGameView view(&context);
+	Application app(std::move(context));
+	app.Run(std::move(module));
 	return 0;
 }

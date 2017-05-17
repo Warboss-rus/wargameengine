@@ -133,7 +133,7 @@ void CMatrixManagerGLM::SetUpViewport(unsigned int viewportWidth, unsigned int v
 	m_matricesChanged = true;
 }
 
-void CMatrixManagerGLM::UpdateMatrices(IShaderManager & shaderManager) const
+void CMatrixManagerGLM::UpdateMatrices(wargameEngine::view::IShaderManager & shaderManager) const
 {
 	if (!m_matricesChanged) return;
 	static const std::string mvpMatrixKey = "mvp_matrix";

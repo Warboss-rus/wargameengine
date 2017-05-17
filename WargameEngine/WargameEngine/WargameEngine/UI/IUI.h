@@ -1,25 +1,34 @@
 #pragma once
+#include "..\view\KeyDefines.h"
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
-#include <functional>
-#include "..\view\KeyDefines.h"
 
-struct CUITheme;
+namespace wargameEngine
+{
+namespace view
+{
+class IRenderer;
+}
+
+namespace ui
+{
+struct UITheme;
 
 class IUIElement
 {
 public:
 	virtual ~IUIElement() {}
-	virtual void Draw() const = 0;
+	virtual void Draw(view::IRenderer& renderer) const = 0;
 	virtual IUIElement* GetChildByName(std::string const& name) = 0;
 	virtual void DeleteChild(std::string const& name) = 0;
-	virtual void DeleteChild(IUIElement * element) = 0;
+	virtual void DeleteChild(IUIElement* element) = 0;
 	virtual void ClearChildren() = 0;
 	virtual bool LeftMouseButtonDown(int x, int y) = 0;
 	virtual bool LeftMouseButtonUp(int x, int y) = 0;
 	virtual bool OnCharacterInput(wchar_t key) = 0;
-	virtual bool OnKeyPress(VirtualKey key, int modifiers) = 0;
+	virtual bool OnKeyPress(view::VirtualKey key, int modifiers) = 0;
 	virtual void OnMouseMove(int x, int y) = 0;
 	virtual int GetX() const = 0;
 	virtual int GetY() const = 0;
@@ -27,9 +36,9 @@ public:
 	virtual int GetWidth() const = 0;
 	virtual void SetVisible(bool visible) = 0;
 	virtual bool GetVisible() const = 0;
-	virtual bool IsFocused(const IUIElement * child) const = 0;
-	virtual void SetTheme(std::shared_ptr<CUITheme> const&) = 0;
-	virtual std::shared_ptr<CUITheme> GetTheme() const = 0;
+	virtual bool IsFocused(const IUIElement* child) const = 0;
+	virtual void SetTheme(std::shared_ptr<UITheme> const&) = 0;
+	virtual std::shared_ptr<UITheme> GetTheme() const = 0;
 	virtual std::wstring const GetText() const = 0;
 	virtual void SetText(std::wstring const& text) = 0;
 	virtual void AddItem(std::wstring const& str) = 0;
@@ -54,10 +63,12 @@ public:
 	virtual IUIElement* AddNewStaticText(std::string const& name, int x, int y, int height, int width, std::wstring const& text) = 0;
 	virtual IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState) = 0;
-	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring> * items = nullptr) = 0;
+	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring>* items = nullptr) = 0;
 	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) = 0;
 	virtual IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) = 0;
-	virtual void SetFocus(IUIElement * focus = nullptr) = 0;
+	virtual void SetFocus(IUIElement* focus = nullptr) = 0;
 };
+}
+}

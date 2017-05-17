@@ -3,6 +3,10 @@
 #include "Vector3.h"
 #include <vector>
 
+namespace wargameEngine
+{
+namespace view
+{
 class ISoundPlayer
 {
 public:
@@ -16,3 +20,5 @@ public:
 	virtual void Update() = 0;
 	virtual ~ISoundPlayer() {}
 };
+}
+}

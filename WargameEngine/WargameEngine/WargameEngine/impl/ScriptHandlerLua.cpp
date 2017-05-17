@@ -3,6 +3,8 @@
 #include "../Utils.h"
 #include <lua.hpp>
 
+using namespace wargameEngine;
+
 class CLuaRegistryValue
 {
 public:

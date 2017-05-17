@@ -3,6 +3,10 @@
 #include "IObject.h"
 #include <float.h>
 
+namespace wargameEngine
+{
+namespace model
+{
 template<class T>
 class BaseObject : public T
 {
@@ -115,12 +119,12 @@ public:
 		return nullptr;
 	}
 
-	CSignalConnection DoOnCoordsChange(typename T::CoordsSignal::Slot const& handler) override
+	signals::SignalConnection DoOnCoordsChange(typename T::CoordsSignal::Slot const& handler) override
 	{
 		return m_onCoordsChange.Connect(handler);
 	}
 
-	CSignalConnection DoOnRotationChange(typename T::RotationSignal::Slot const& handler) override
+	signals::SignalConnection DoOnRotationChange(typename T::RotationSignal::Slot const& handler) override
 	{
 		return m_onRotationChange.Connect(handler);
 	}
@@ -135,3 +139,5 @@ private:
 };
 
 using StaticObject = BaseObject<IBaseObject>;
+}
+}

@@ -1,10 +1,14 @@
 #pragma once
-#include "view/Vector3.h"
+#include "Vector3.h"
 
-class CRuler
+namespace wargameEngine
+{
+namespace view
+{
+class Ruler
 {
 public:
-	CRuler();
+	Ruler();
 	void Enable();
 	void Disable();
 	void SetBegin(float x, float y);
@@ -23,3 +27,5 @@ private:
 	float m_worldBeginY;
 	float m_worldEndY;
 };
+}
+}

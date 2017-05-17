@@ -1,9 +1,11 @@
 #pragma once
-#include <vector>
-#include <functional>
 #include <algorithm>
+#include <functional>
 #include <memory>
+#include <vector>
 
+namespace signals
+{
 class ICallback
 {
 public:
@@ -11,12 +13,13 @@ public:
 	virtual void Disconnect() = 0;
 };
 
-class CSignalConnection
+class SignalConnection
 {
 public:
-	CSignalConnection(const std::weak_ptr<ICallback>& callback)
+	SignalConnection(const std::weak_ptr<ICallback>& callback)
 		: m_callback(callback)
-	{}
+	{
+	}
 	void Disconnect()
 	{
 		auto callback = m_callback.lock();
@@ -25,16 +28,17 @@ public:
 			callback->Disconnect();
 		}
 	}
+
 private:
 	std::weak_ptr<ICallback> m_callback;
 };
 
 template<typename Result, typename... Arguments>
-class CSignal
+class Signal
 {
 public:
 	typedef std::function<Result(Arguments...)> Slot;
-	CSignalConnection Connect(Slot const& handler, int priority = 0, std::string const& tag = "")
+	SignalConnection Connect(Slot const& handler, int priority = 0, std::string const& tag = "")
 	{
 		for (auto it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
 		{
@@ -42,14 +46,14 @@ public:
 			{
 				auto callback = std::make_shared<Callback>(handler, priority, tag, this);
 				m_callbacks.insert(it, callback);
-				return CSignalConnection(callback);
+				return SignalConnection(callback);
 			}
 		}
 		auto callback = std::make_shared<Callback>(handler, priority, tag, this);
 		m_callbacks.push_back(callback);
-		return CSignalConnection(callback);
+		return SignalConnection(callback);
 	}
-	virtual void operator() (Arguments... args)
+	virtual void operator()(Arguments... args)
 	{
 		for (auto& callback : m_callbacks)
 		{
@@ -60,13 +64,13 @@ public:
 			callback->func(args...);
 		}
 	}
-	operator bool() const 
+	operator bool() const
 	{
 		return !m_callbacks.empty();
 	}
 	void RemoveByTag(std::string const& tag)
 	{
-		m_callbacks.erase(std::remove_if(m_callbacks.begin(), m_callbacks.end(), [&](std::shared_ptr<Callback> const& callback) {return callback->tag == tag;}), m_callbacks.end());
+		m_callbacks.erase(std::remove_if(m_callbacks.begin(), m_callbacks.end(), [&](std::shared_ptr<Callback> const& callback) { return callback->tag == tag; }), m_callbacks.end());
 	}
 	void Reset()
 	{
@@ -79,11 +83,15 @@ protected:
 		Slot func;
 		int priority;
 		std::string tag;
-		CSignal * signal;
+		Signal* signal;
 
-		Callback(const Slot& f, int p, const std::string& t, CSignal* s)
-			:func(f), priority(p), tag(t), signal(s)
-		{}
+		Callback(const Slot& f, int p, const std::string& t, Signal* s)
+			: func(f)
+			, priority(p)
+			, tag(t)
+			, signal(s)
+		{
+		}
 
 		void Disconnect() override
 		{
@@ -92,7 +100,7 @@ protected:
 	};
 	using CallbackList = std::vector<std::shared_ptr<Callback>>;
 
-	void RemoveByConnection(const Callback * callback)
+	void RemoveByConnection(const Callback* callback)
 	{
 		auto it = std::find_if(m_callbacks.begin(), m_callbacks.end(), [callback](const std::shared_ptr<Callback>& callbackPtr) {
 			return callbackPtr.get() == callback;
@@ -107,10 +115,10 @@ protected:
 };
 
 template<class... Arguments>
-class CExclusiveSignal : public CSignal<bool, Arguments...>
+class ExclusiveSignal : public Signal<bool, Arguments...>
 {
 public:
-	void operator() (Arguments... args) override
+	void operator()(Arguments... args) override
 	{
 		for (auto& callback : this->m_callbacks)
 		{
@@ -126,28 +134,32 @@ public:
 	}
 };
 
-class CScopedConnection
+class ScopedConnection
 {
 public:
-	CScopedConnection(const CSignalConnection & connection)
+	ScopedConnection(const SignalConnection& connection)
 		: m_connection(std::make_shared<CScopedConnectionImpl>(connection))
-	{}
-	CScopedConnection() = default;
+	{
+	}
+	ScopedConnection() = default;
+
 private:
 	class CScopedConnectionImpl
 	{
 	public:
-		CScopedConnectionImpl(const CSignalConnection & connection)
-			:m_connection(connection)
+		CScopedConnectionImpl(const SignalConnection& connection)
+			: m_connection(connection)
 		{
 		}
 		~CScopedConnectionImpl()
 		{
 			m_connection.Disconnect();
 		}
+
 	private:
-		CSignalConnection m_connection;
+		SignalConnection m_connection;
 	};
 
 	std::shared_ptr<CScopedConnectionImpl> m_connection;
 };
+}

@@ -2,10 +2,14 @@
 #include "../view/Vector3.h"
 #include <string.h>
 
-class CLight
+namespace wargameEngine
+{
+namespace model
+{
+class Light
 {
 public:
-	CLight(const CVector3f& position, float distance = 0.0f)
+	Light(const CVector3f& position, float distance = 0.0f)
 		: m_position(position)
 		, m_disatance(distance)
 	{
@@ -63,3 +67,5 @@ private:
 	float m_diffuse[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float m_specular[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
+}
+}

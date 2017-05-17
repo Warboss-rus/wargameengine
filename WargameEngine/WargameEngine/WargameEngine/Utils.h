@@ -4,6 +4,8 @@
 #include <fstream>
 #include <map>
 
+namespace wargameEngine
+{
 std::wstring Utf8ToWstring(std::string const& str);
 std::string WStringToUtf8(std::wstring const& str);
 std::vector<char> ReadFile(const Path& path);
@@ -21,6 +23,7 @@ inline Path make_path(const std::string& p) { return Utf8ToWstring(p); }
 inline Path make_path(const std::wstring& p) { return WStringToUtf8(p); }
 inline Path make_path(const std::string& p) { return p; }
 #endif
+}
 
 #ifdef TO_STRING_HACK
 #include <sstream>

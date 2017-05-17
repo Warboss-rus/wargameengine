@@ -2,24 +2,32 @@
 #include "Camera.h"
 #include "IViewHelper.h"
 #include "IViewport.h"
+#include "Matrix4.h"
 #include <map>
 #include <vector>
-#include "Matrix4.h"
 
+namespace wargameEngine
+{
+namespace model
+{
+class IBaseObject;
+}
+
+namespace view
+{
 class IViewHelper;
 class IOcclusionQuery;
-class IObject;
 class IInput;
 
-class CViewportBase : public IViewport
+class Viewport : public IViewport
 {
 public:
-	CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper& renderer, IInput& input, bool onScreen, bool resize);
-	CViewportBase(const CViewportBase& other) = delete;
-	CViewportBase(CViewportBase&& other) = default;
-	CViewportBase& operator=(const CViewportBase& other) = delete;
-	CViewportBase& operator=(CViewportBase&& other) = default;
-	~CViewportBase();
+	Viewport(int x, int y, int width, int height, float fieldOfView, IViewHelper& renderer, IInput& input, bool onScreen, bool resize);
+	Viewport(const Viewport& other) = delete;
+	Viewport(Viewport&& other) = default;
+	Viewport& operator=(const Viewport& other) = delete;
+	Viewport& operator=(Viewport&& other) = default;
+	~Viewport();
 
 	//IViewport
 	const ICachedTexture& GetTexture(size_t index) const override;
@@ -32,12 +40,12 @@ public:
 
 	Camera& GetCamera();
 	Camera const& GetCamera() const;
-	void AttachNewTexture(CachedTextureType type, int textureIndex = -1);
+	void AttachNewTexture(IRenderer::CachedTextureType type, int textureIndex = -1);
 	void Bind();
 	void Unbind();
 	bool IsDepthOnly() const;
 	bool DrawUI() const;
-	IOcclusionQuery& GetOcclusionQuery(const IBaseObject* object);
+	IOcclusionQuery& GetOcclusionQuery(const model::IBaseObject* object);
 	void SetPolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f);
 	void SetClippingPlanes(float near = 1.0, float far = 1000.0);
 	bool PointIsInViewport(int x, int y) const;
@@ -61,9 +69,11 @@ private:
 	float m_nearPane = 1.0f;
 	float m_farPane = 1000.0f;
 	IViewport* m_shadowMapViewport = nullptr;
-	std::map<const IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
+	std::map<const model::IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
 	std::unique_ptr<IFrameBuffer> m_FBO;
 	std::vector<std::unique_ptr<ICachedTexture>> m_textures;
 	bool m_depthOnly;
 	bool m_resize;
 };
+}
+}

@@ -3,18 +3,26 @@
 #include <string>
 #include <memory>
 
-class IGameModel;
+namespace wargameEngine
+{
+namespace model
+{
+class IModel;
+}
 
+namespace controller
+{
 class CCommandCreateObject : public ICommand
 {
 public:
-	CCommandCreateObject(std::shared_ptr<IObject> const& object, IGameModel& model);
-	CCommandCreateObject(IReadMemoryStream & stream, IGameModel& model);
+	CCommandCreateObject(std::shared_ptr<model::IObject> const& object, model::IModel& model);
+	CCommandCreateObject(IReadMemoryStream & stream, model::IModel& model);
 	void Execute();
 	void Rollback();
 	void Serialize(IWriteMemoryStream & stream) const;
 private:
-	std::shared_ptr<IObject> m_pObject;
-	IGameModel& m_model;
+	std::shared_ptr<model::IObject> m_pObject;
+	model::IModel& m_model;
 };
-
+}
+}

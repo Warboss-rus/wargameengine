@@ -81,6 +81,9 @@ GLM_FUNC_QUALIFIER tvec3<T, P> projectZeroToOne(tvec3<T, P> const& obj, tmat4x4<
 #include <algorithm>
 #include <iterator>
 
+using namespace wargameEngine;
+using namespace view;
+
 namespace
 {
 constexpr uint32_t COMMAND_BUFFERS_COUNT = 3;
@@ -175,17 +178,17 @@ VkPresentModeKHR SelectPresentMode(const std::vector<VkPresentModeKHR>& supporte
 	return supportedPresentModes.front();
 }
 
-VkFormat GetTextureFormat(CachedTextureType type, int flags)
+VkFormat GetTextureFormat(IRenderer::CachedTextureType type, int flags)
 {
 	switch (type)
 	{
-	case CachedTextureType::ALPHA:
+	case IRenderer::CachedTextureType::ALPHA:
 		return VK_FORMAT_R8_UNORM;
-	case CachedTextureType::DEPTH:
+	case IRenderer::CachedTextureType::DEPTH:
 		return VK_FORMAT_D32_SFLOAT;
-	case CachedTextureType::RENDER_TARGET:
+	case IRenderer::CachedTextureType::RENDER_TARGET:
 		return VK_FORMAT_R8G8B8A8_UNORM;
-	case CachedTextureType::RGBA:
+	case IRenderer::CachedTextureType::RGBA:
 		return (flags & TEXTURE_HAS_ALPHA)
 			? (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_R8G8B8A8_UNORM)
 			: (flags & TEXTURE_BGRA ? VK_FORMAT_B8G8R8_UNORM : VK_FORMAT_R8G8B8_UNORM);
@@ -368,7 +371,7 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 #else
 	const Path shaderLocation = make_path(L"Killteam/shaders/Vulkan/");
 #endif
-	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation + make_path("vert.spv"), shaderLocation + make_path("frag.spv"));
+	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation + make_path("vert.spv"), shaderLocation + make_path("frag.spv"), Path());
 	m_shaderManager.PushProgram(*m_defaultProgram);
 	m_pipelineHelper.SetShaderProgram(*reinterpret_cast<CVulkanShaderProgram*>(m_defaultProgram.get()));
 	m_pipelineHelper.SetVertexAttributes({
@@ -608,7 +611,7 @@ void CVulkanRenderer::ClearBuffers(bool /*color = true*/, bool depth /*= true*/)
 	vkCmdBindPipeline(*m_activeCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetPipeline());
 }
 
-void CVulkanRenderer::SetTextureManager(CTextureManager& textureManager)
+void CVulkanRenderer::SetTextureManager(TextureManager& textureManager)
 {
 	m_textureManager = &textureManager;
 }
@@ -805,7 +808,7 @@ void CVulkanRenderer::SetTexture(const Path& texture, TextureSlot slot, int flag
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void CVulkanRenderer::SetTexture(const Path& texture, const std::vector<sTeamColor>* teamcolor, int flags /*= 0*/)
+void CVulkanRenderer::SetTexture(const Path& texture, const std::vector<model::TeamColor>* teamcolor, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }
@@ -953,7 +956,7 @@ bool CVulkanRenderer::SupportsFeature(Feature) const
 	return true;
 }
 
-IShaderManager& CVulkanRenderer::GetShaderManager()
+wargameEngine::view::IShaderManager& CVulkanRenderer::GetShaderManager()
 {
 	return m_shaderManager;
 }
@@ -1218,7 +1221,7 @@ void CSwapchainWrapper::Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent
 	m_format = format;
 
 	m_depthTexture = std::make_unique<CVulkanCachedTexture>(*renderer);
-	m_depthTexture->Init(m_extent.width, m_extent.height, renderer->GetMemoryManager(), CachedTextureType::DEPTH);
+	m_depthTexture->Init(m_extent.width, m_extent.height, renderer->GetMemoryManager(), IRenderer::CachedTextureType::DEPTH);
 }
 
 CSwapchainWrapper::~CSwapchainWrapper()
@@ -1266,20 +1269,20 @@ std::pair<VkImage, std::unique_ptr<CVulkanMemory>> CVulkanCachedTexture::CreateT
 	return std::make_pair(image, std::move(memory));
 }
 
-void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryManager& memoryManager, CachedTextureType type, int flags)
+void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryManager& memoryManager, IRenderer::CachedTextureType type, int flags)
 {
 	if (width == 0 || height == 0)
 		return;
 	m_format = GetTextureFormat(type, flags);
 	m_extent = { width, height, 1 };
-	m_components = type == CachedTextureType::ALPHA ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
-	m_usageFlags = type == CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : ((type == CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | VK_IMAGE_USAGE_SAMPLED_BIT);
-	if(type != CachedTextureType::DEPTH) m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	m_components = type == IRenderer::CachedTextureType::ALPHA ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
+	m_usageFlags = type == IRenderer::CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : ((type == IRenderer::CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | VK_IMAGE_USAGE_SAMPLED_BIT);
+	if(type != IRenderer::CachedTextureType::DEPTH) m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	std::tie(m_image, m_memory) = CreateTexture(true, memoryManager);
 
-	const VkComponentSwizzle swizzle = type == CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY;
-	const VkComponentMapping mapping = { swizzle, swizzle, swizzle, type == CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_IDENTITY };
-	const VkImageAspectFlags aspectFlags = type == CachedTextureType::DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	const VkComponentSwizzle swizzle = type == IRenderer::CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY;
+	const VkComponentMapping mapping = { swizzle, swizzle, swizzle, type == IRenderer::CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_IDENTITY };
+	const VkImageAspectFlags aspectFlags = type == IRenderer::CachedTextureType::DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	const VkImageViewCreateInfo image_view_create_info = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, m_image, VK_IMAGE_VIEW_TYPE_2D, m_format,
 		mapping, { aspectFlags, 0, 1, 0, 1 } };
 	VkResult result = vkCreateImageView(m_device, &image_view_create_info, nullptr, &m_imageView);

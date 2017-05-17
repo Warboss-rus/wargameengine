@@ -1,43 +1,50 @@
 #include "UIStaticText.h"
-#include "UIText.h"
 #include "../view/IRenderer.h"
+#include "UIText.h"
 
-CUIStaticText::CUIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
-	: CUIElement(x, y, height, width, parent, renderer, textWriter), m_text(text)
+namespace wargameEngine
+{
+namespace ui
+{
+UIStaticText::UIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent, view::ITextWriter& textWriter)
+	: UIElement(x, y, height, width, parent, textWriter)
+	, m_text(text)
 {
 }
 
-void CUIStaticText::Draw() const
+void UIStaticText::Draw(view::IRenderer& renderer) const
 {
-	if(!m_visible)
+	if (!m_visible)
 		return;
-	m_renderer.PushMatrix();
-	m_renderer.Translate(GetX(), GetY(), 0);
+	renderer.PushMatrix();
+	renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
 	}
 	if (m_invalidated)
 	{
-		m_renderer.RenderToTexture([this]() {
-			PrintText(m_renderer, m_textWriter, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->text, m_scale);
+		renderer.RenderToTexture([this, &renderer]() {
+			PrintText(renderer, m_textWriter, 0, 0, GetWidth(), GetHeight(), m_text, m_theme->text, m_scale);
 		}, *m_cache, GetWidth(), GetHeight());
 	}
-	m_renderer.SetTexture(*m_cache);
-	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
-	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	CUIElement::Draw();
-	m_renderer.PopMatrix();
+	renderer.SetTexture(*m_cache);
+	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
+		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
+	UIElement::Draw(renderer);
+	renderer.PopMatrix();
 }
 
-std::wstring const CUIStaticText::GetText() const
-{ 
-	return m_text; 
+std::wstring const UIStaticText::GetText() const
+{
+	return m_text;
 }
 
-void CUIStaticText::SetText(std::wstring const& text)
-{ 
-	m_text = text; 
+void UIStaticText::SetText(std::wstring const& text)
+{
+	m_text = text;
 	Invalidate();
+}
+}
 }

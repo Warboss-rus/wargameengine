@@ -3,6 +3,10 @@
 #include <memory>
 #include <vector>
 
+namespace wargameEngine
+{
+namespace controller
+{
 class CCommandCompound : public ICommand
 {
 public:
@@ -15,3 +19,5 @@ public:
 private:
 	std::vector<std::unique_ptr<ICommand>> m_children;
 };
+}
+}

@@ -1,63 +1,70 @@
 #include "UIList.h"
-#include "UIText.h"
 #include "../view/IRenderer.h"
+#include "UIText.h"
 
-CUIList::CUIList(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter)
-	: CUIElement(x, y, height, width, parent, renderer, textWriter), m_selected(0), m_scrollbar(m_theme, m_renderer)
+namespace wargameEngine
+{
+namespace ui
+{
+UIList::UIList(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter)
+	: UIElement(x, y, height, width, parent, textWriter)
+	, m_selected(0)
+	, m_scrollbar(m_theme)
 {
 }
 
-void CUIList::Draw() const
+void UIList::Draw(view::IRenderer& renderer) const
 {
-	if(!m_visible)
+	if (!m_visible)
 		return;
-	m_renderer.PushMatrix();
-	m_renderer.Translate(GetX(), GetY(), 0);
+	renderer.PushMatrix();
+	renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = m_renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
 	}
 	if (m_invalidated)
 	{
-		m_renderer.RenderToTexture([this]() {
-			m_renderer.UnbindTexture();
-			m_renderer.SetColor(m_theme->defaultColor);
-			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-			{ CVector2i(0, 0), { 0, GetHeight() },{ GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
-			m_renderer.SetColor(m_theme->textfieldColor);
+		renderer.RenderToTexture([this, &renderer]() {
+			renderer.UnbindTexture();
+			renderer.SetColor(m_theme->defaultColor);
+			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+				{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
+			renderer.SetColor(m_theme->textfieldColor);
 			auto& theme = m_theme->list;
 			int borderSize = static_cast<int>(theme.borderSize * m_scale);
 			int elementSize = static_cast<int>(theme.elementSize * m_scale);
-			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-			{ CVector2i(borderSize, borderSize), {borderSize, GetHeight() - borderSize},{ GetWidth() - borderSize, borderSize }, {GetWidth() - borderSize, GetHeight() - borderSize} }, {});
+			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+				{ CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
 			if (m_items.size() > 0)
 			{
-				m_renderer.SetColor(theme.selectionColor);
+				renderer.SetColor(theme.selectionColor);
 				int intSelected = static_cast<int>(m_selected);
-				m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize + elementSize * intSelected), {borderSize, 2 * borderSize + elementSize * (intSelected + 1)},
-				{ GetWidth() - borderSize, borderSize + elementSize * intSelected }, {GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) } }, {});
+				renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize + elementSize * intSelected), { borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * intSelected }, { GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) } }, {});
 			}
-			m_renderer.SetColor(theme.text.color);
+			renderer.SetColor(theme.text.color);
 			for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 			{
-				if (borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize) > GetHeight()) break;
-				PrintText(m_renderer, m_textWriter, borderSize, borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize), GetWidth(), static_cast<int>(theme.text.fontSize * m_scale), m_items[i], theme.text, m_scale);
+				if (borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize) > GetHeight())
+					break;
+				PrintText(renderer, m_textWriter, borderSize, borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize), GetWidth(), static_cast<int>(theme.text.fontSize * m_scale), m_items[i], theme.text, m_scale);
 			}
-			m_scrollbar.Draw();
+			m_scrollbar.Draw(renderer);
 		}, *m_cache, GetWidth(), GetHeight());
 	}
-	m_renderer.SetTexture(*m_cache);
-	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-	{ CVector2i(0, 0),{ GetWidth(), 0 },{ 0, GetHeight() },{ GetWidth(), GetHeight() } },
-	{ CVector2f(0.0f, 0.0f),{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
-	CUIElement::Draw();
-	m_renderer.PopMatrix();
+	renderer.SetTexture(*m_cache);
+	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
+		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
+	UIElement::Draw(renderer);
+	renderer.PopMatrix();
 }
 
-bool CUIList::LeftMouseButtonDown(int x, int y)
+bool UIList::LeftMouseButtonDown(int x, int y)
 {
-	if (!m_visible) return false;
-	if (CUIElement::LeftMouseButtonDown(x, y))
+	if (!m_visible)
+		return false;
+	if (UIElement::LeftMouseButtonDown(x, y))
 	{
 		return true;
 	}
@@ -65,30 +72,34 @@ bool CUIList::LeftMouseButtonDown(int x, int y)
 	return m_scrollbar.LeftMouseButtonDown(x - GetX(), y - GetY());
 }
 
-bool CUIList::LeftMouseButtonUp(int x, int y)
+bool UIList::LeftMouseButtonUp(int x, int y)
 {
-	if(!m_visible) return false;
-	if(CUIElement::LeftMouseButtonUp(x, y))
+	if (!m_visible)
+		return false;
+	if (UIElement::LeftMouseButtonUp(x, y))
 	{
 		return true;
 	}
 	Invalidate();
-	if (m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY())) return true;
-	if(PointIsOnElement(x, y))
+	if (m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY()))
+		return true;
+	if (PointIsOnElement(x, y))
 	{
 		int index = (y - GetY()) / static_cast<int>(m_theme->list.elementSize * m_scale);
-		if(index >= 0 && static_cast<size_t>(index) < m_items.size()) m_selected = static_cast<size_t>(index);
-		if(m_onChange) m_onChange();
+		if (index >= 0 && static_cast<size_t>(index) < m_items.size())
+			m_selected = static_cast<size_t>(index);
+		if (m_onChange)
+			m_onChange();
 		SetFocus();
 		return true;
 	}
 	return false;
 }
 
-void CUIList::AddItem(std::wstring const& str)
+void UIList::AddItem(std::wstring const& str)
 {
 	m_items.push_back(str);
-	if(m_selected == -1)
+	if (m_selected == -1)
 	{
 		m_selected = 0;
 	}
@@ -97,7 +108,7 @@ void CUIList::AddItem(std::wstring const& str)
 	Invalidate();
 }
 
-std::wstring const CUIList::GetText() const
+std::wstring const UIList::GetText() const
 {
 	if (m_selected < m_items.size())
 	{
@@ -106,28 +117,30 @@ std::wstring const CUIList::GetText() const
 	return L"";
 }
 
-void CUIList::SetSelected(size_t index)
+void UIList::SetSelected(size_t index)
 {
 	m_selected = index;
 	Invalidate();
 }
 
-void CUIList::DeleteItem(size_t index)
+void UIList::DeleteItem(size_t index)
 {
 	m_items.erase(m_items.begin() + index);
-	if(m_selected == index) m_selected--;
-	if(m_selected == -1 && !m_items.empty()) m_selected = 0;
+	if (m_selected == index)
+		m_selected--;
+	if (m_selected == -1 && !m_items.empty())
+		m_selected = 0;
 	int elementSize = static_cast<int>(m_theme->list.elementSize * m_scale);
 	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
 
-void CUIList::SetText(std::wstring const& text)
+void UIList::SetText(std::wstring const& text)
 {
 	Invalidate();
-	for(size_t i = 0; i < m_items.size(); ++i)
+	for (size_t i = 0; i < m_items.size(); ++i)
 	{
-		if(m_items[i] == text)
+		if (m_items[i] == text)
 		{
 			m_selected = i;
 			return;
@@ -135,59 +148,62 @@ void CUIList::SetText(std::wstring const& text)
 	}
 }
 
-void CUIList::Resize(int windowHeight, int windowWidth)
+void UIList::Resize(int windowHeight, int windowWidth)
 {
-	CUIElement::Resize(windowHeight, windowWidth);
+	UIElement::Resize(windowHeight, windowWidth);
 	int elementSize = static_cast<int>(m_theme->list.elementSize * m_scale);
 	m_scrollbar.Update(GetHeight(), elementSize * static_cast<int>(m_items.size()), GetWidth(), elementSize);
 	Invalidate();
 }
 
-size_t CUIList::GetSelectedIndex() const
-{ 
-	return m_selected; 
-}
-
-size_t CUIList::GetItemsCount() const
-{ 
-	return m_items.size(); 
-}
-
-std::wstring CUIList::GetItem(size_t index) const
-{ 
-	return m_items[index]; 
-}
-
-void CUIList::ClearItems()
-{ 
-	m_items.clear(); 
-	m_selected = 0; 
-	Invalidate();
-}
-
-void CUIList::SetOnChangeCallback(std::function<void()> const& onChange)
-{ 
-	m_onChange = onChange; 
-}
-
-void CUIList::SetTheme(std::shared_ptr<CUITheme> const& theme)
-{ 
-	m_theme = theme; 
-	m_scrollbar = CUIScrollBar(theme, m_renderer); 
-	Invalidate();
-}
-
-void CUIList::SetScale(float scale)
+size_t UIList::GetSelectedIndex() const
 {
-	CUIElement::SetScale(scale);
+	return m_selected;
+}
+
+size_t UIList::GetItemsCount() const
+{
+	return m_items.size();
+}
+
+std::wstring UIList::GetItem(size_t index) const
+{
+	return m_items[index];
+}
+
+void UIList::ClearItems()
+{
+	m_items.clear();
+	m_selected = 0;
+	Invalidate();
+}
+
+void UIList::SetOnChangeCallback(std::function<void()> const& onChange)
+{
+	m_onChange = onChange;
+}
+
+void UIList::SetTheme(std::shared_ptr<UITheme> const& theme)
+{
+	m_theme = theme;
+	m_scrollbar = UIScrollBar(theme);
+	Invalidate();
+}
+
+void UIList::SetScale(float scale)
+{
+	UIElement::SetScale(scale);
 	m_scrollbar.SetScale(scale);
 }
 
-void CUIList::OnMouseMove(int x, int y)
+void UIList::OnMouseMove(int x, int y)
 {
-	if (m_visible && m_focused) m_focused->OnMouseMove(x, y);
+	if (m_visible && m_focused)
+		m_focused->OnMouseMove(x, y);
 	if (m_scrollbar.OnMouseMove(x, y))
 	{
 		Invalidate();
 	}
+}
+}
 }

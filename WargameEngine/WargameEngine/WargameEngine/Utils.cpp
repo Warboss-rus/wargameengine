@@ -1,12 +1,14 @@
 #include "Utils.h"
+#include <fstream>
+#include <iomanip>
+#include <locale>
+#include <sstream>
+#include <stdlib.h>
 #include <string>
 #include <vector>
-#include <locale>
 
-#include <fstream>
-#include <sstream>
-#include <iomanip>
-#include <stdlib.h>
+namespace wargameEngine
+{
 std::wstring Utf8ToWstring(std::string const& str)
 {
 	std::wstring result;
@@ -38,7 +40,6 @@ std::wstring ReplaceAll(std::wstring const& text, std::map<std::wstring, std::ws
 	return result;
 }
 
-
 std::string to_string(const Path& path)
 {
 #ifdef _WINDOWS
@@ -47,7 +48,6 @@ std::string to_string(const Path& path)
 	return path;
 #endif
 }
-
 
 std::wstring to_wstring(const Path& path)
 {
@@ -62,7 +62,8 @@ std::vector<char> ReadFile(const Path& path)
 {
 	std::vector<char> result;
 	std::ifstream file(path, std::ios::binary | std::ios::in);
-	if (!file) return result;
+	if (!file)
+		return result;
 	file.seekg(0, std::ios::end);
 	std::streamsize size = file.tellg();
 	result.resize(static_cast<size_t>(size));
@@ -87,4 +88,5 @@ std::wstring ToWstring(double value, size_t precision /*= 0*/)
 	std::wostringstream out;
 	out << std::setprecision(precision) << std::fixed << value;
 	return out.str();
+}
 }

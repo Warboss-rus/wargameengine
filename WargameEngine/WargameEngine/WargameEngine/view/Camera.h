@@ -1,9 +1,13 @@
 #pragma once
+#include "..\Signal.h"
 #include "Vector3.h"
 #include <chrono>
 #include <vector>
-#include "..\Signal.h"
 
+namespace wargameEngine
+{
+namespace view
+{
 class IInput;
 
 class Camera
@@ -70,5 +74,7 @@ private:
 		std::chrono::milliseconds time;
 	};
 	std::vector<CameraTarget> m_cameraPath;
-	std::vector<CScopedConnection> m_inputConnections;
+	std::vector<signals::ScopedConnection> m_inputConnections;
 };
+}
+}

@@ -6,6 +6,8 @@
 #include "gl.h"
 
 using namespace std;
+using namespace wargameEngine;
+using namespace view;
 
 namespace
 {
@@ -101,23 +103,23 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void AssignTexture(ICachedTexture& texture, CachedTextureType type) override
+	void AssignTexture(ICachedTexture& texture, IRenderer::CachedTextureType type) override
 	{
-		static const map<CachedTextureType, GLenum> typeMap = {
-			{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
-			{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
-			{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
+		static const map<IRenderer::CachedTextureType, GLenum> typeMap = {
+			{ IRenderer::CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
+			{ IRenderer::CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
+			{ IRenderer::CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
 		};
-		const map<CachedTextureType, pair<GLboolean, string>> extensionMap = {
-			{ CachedTextureType::RGBA, { GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" } },
-			{ CachedTextureType::ALPHA, { GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" } },
-			{ CachedTextureType::DEPTH, { GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" } }
+		const map<IRenderer::CachedTextureType, pair<GLboolean, string>> extensionMap = {
+			{ IRenderer::CachedTextureType::RGBA, { GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" } },
+			{ IRenderer::CachedTextureType::ALPHA, { GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" } },
+			{ IRenderer::CachedTextureType::DEPTH, { GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" } }
 		};
 		if (!extensionMap.at(type).first)
 		{
 			throw runtime_error(extensionMap.at(type).second + " is not supported");
 		}
-		if (type == CachedTextureType::DEPTH)
+		if (type == IRenderer::CachedTextureType::DEPTH)
 		{
 			glDrawBuffer(GL_NONE);
 			glReadBuffer(GL_NONE);
@@ -192,11 +194,11 @@ private:
 	GLuint m_id = 0;
 };
 
-static const map<RenderMode, GLenum> renderModeMap = {
-	{ RenderMode::TRIANGLES, GL_TRIANGLES },
-	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::LINES, GL_LINES },
-	{ RenderMode::LINE_LOOP, GL_LINE_LOOP } //
+static const map<IRenderer::RenderMode, GLenum> renderModeMap = {
+	{ IRenderer::RenderMode::TRIANGLES, GL_TRIANGLES },
+	{ IRenderer::RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
+	{ IRenderer::RenderMode::LINES, GL_LINES },
+	{ IRenderer::RenderMode::LINE_LOOP, GL_LINE_LOOP } //
 };
 
 #ifdef _WINDOWS
@@ -253,7 +255,7 @@ COpenGLRenderer::COpenGLRenderer()
 		m_matrixManager.InvalidateMatrices();
 	});
 
-	m_defaultProgram = m_shaderManager.NewProgram();
+	m_defaultProgram = m_shaderManager.NewProgram(Path(), Path(), Path());
 	m_shaderManager.PushProgram(*m_defaultProgram);
 	if (GLEW_ARB_seamless_cube_map)
 	{
@@ -293,15 +295,15 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const&
 
 void COpenGLRenderer::DrawIndexes(IVertexBuffer& vertexBuffer, size_t begin, size_t count)
 {
-	m_matrixManager.UpdateMatrices(m_shaderManager);
 	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
+	m_matrixManager.UpdateMatrices(m_shaderManager);
 	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
 }
 
 void COpenGLRenderer::DrawAll(IVertexBuffer& vertexBuffer, size_t count)
 {
-	m_matrixManager.UpdateMatrices(m_shaderManager);
 	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
+	m_matrixManager.UpdateMatrices(m_shaderManager);
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
 }
 
@@ -387,7 +389,7 @@ void COpenGLRenderer::SetTexture(const Path& texture, TextureSlot slot, int flag
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void COpenGLRenderer::SetTexture(const Path& texture, const vector<sTeamColor>* teamcolor /*= nullptr*/, int flags /*= 0*/)
+void COpenGLRenderer::SetTexture(const Path& texture, const vector<model::TeamColor>* teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }
@@ -747,7 +749,7 @@ unique_ptr<IFrameBuffer> COpenGLRenderer::CreateFramebuffer() const
 	return make_unique<COpenGLFrameBuffer>();
 }
 
-void COpenGLRenderer::SetTextureManager(CTextureManager& textureManager)
+void COpenGLRenderer::SetTextureManager(TextureManager& textureManager)
 {
 	m_textureManager = &textureManager;
 }

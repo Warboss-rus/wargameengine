@@ -19,6 +19,7 @@
 #endif
 
 using namespace vr;
+using namespace wargameEngine;
 
 void LogVRError(HmdError result, std::string const& prefix = "OVR error. ")
 {
@@ -340,17 +341,17 @@ bool CGameWindowGLFW::EnableVRMode(bool enable, VRViewportFactory const& viewpor
 	return true;
 }
 
-IInput& CGameWindowGLFW::GetInput()
+view::IInput& CGameWindowGLFW::GetInput()
 {
 	return *m_input;
 }
 
-IRenderer& CGameWindowGLFW::GetRenderer()
+view::IRenderer& CGameWindowGLFW::GetRenderer()
 {
 	return *m_renderer;
 }
 
-IViewHelper& CGameWindowGLFW::GetViewHelper()
+view::IViewHelper& CGameWindowGLFW::GetViewHelper()
 {
 	return *m_renderer;
 }

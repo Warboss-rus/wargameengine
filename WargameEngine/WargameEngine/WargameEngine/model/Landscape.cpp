@@ -1,5 +1,10 @@
 #include "Landscape.h"
 
+namespace wargameEngine
+{
+namespace model
+{
+
 Landscape::Landscape()
 	: m_width(10.0)
 	, m_depth(10.0)
@@ -123,26 +128,10 @@ Decal const& Landscape::GetDecal(size_t index) const
 	return m_decals[index];
 }
 
-void Landscape::AddStaticObject(const StaticObject& object)
-{
-	m_staticObjects.push_back(object);
-	if (m_onUpdated)
-	{
-		m_onUpdated();
-	}
-}
-
-size_t Landscape::GetStaticObjectCount() const
-{
-	return m_staticObjects.size();
-}
-
-StaticObject& Landscape::GetStaticObject(size_t index)
-{
-	return m_staticObjects[index];
-}
-
 void Landscape::DoOnUpdated(const std::function<void()>& onUpdated)
 {
 	m_onUpdated = onUpdated;
+}
+
+}
 }

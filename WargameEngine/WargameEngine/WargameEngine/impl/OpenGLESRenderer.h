@@ -33,7 +33,7 @@ public:
 
 	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
 	void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) override;
-	void SetTexture(const Path& texture, const std::vector<sTeamColor>* teamcolor, int flags = 0) override;
+	void SetTexture(const Path& texture, const std::vector<TeamColor>* teamcolor, int flags = 0) override;
 	void SetTexture(const ICachedTexture& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 	void RenderToTexture(std::function<void()> const& func, ICachedTexture& texture, unsigned int width, unsigned int height) override;
@@ -65,7 +65,7 @@ public:
 	//IViewHelper
 
 	std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
-	void SetTextureManager(CTextureManager& textureManager) override;
+	void SetTextureManager(TextureManager& textureManager) override;
 
 	void WindowCoordsToWorldVector(IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const override;
 	void WorldCoordsToWindowCoords(IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const override;
@@ -88,7 +88,7 @@ public:
 	void BindVAO(unsigned vao, unsigned indexBuffer);
 
 private:
-	CTextureManager* m_textureManager;
+	TextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;
 	int m_viewport[4];
 	int m_version;

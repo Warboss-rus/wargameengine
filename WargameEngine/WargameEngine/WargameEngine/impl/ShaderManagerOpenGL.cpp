@@ -7,6 +7,9 @@
 #include <fstream>
 #include <map>
 
+using namespace wargameEngine;
+using namespace view;
+
 namespace
 {
 constexpr char defaultVertexShader[] = "\
@@ -221,7 +224,7 @@ void CShaderManagerOpenGL::NewProgramImpl(unsigned program, unsigned vertexShade
 	}
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	glVertexAttrib4fv(glGetAttribLocation(program, "weights"), def);
-	if (!m_programs.empty())
+	if (m_activeProgram)
 	{
 		glUseProgram(m_activeProgram);
 	}

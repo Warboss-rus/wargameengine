@@ -5,19 +5,28 @@
 #include <mutex>
 #include "../Typedefs.h"
 
+namespace wargameEngine
+{
+class AsyncFileProvider;
+
+namespace model
+{
 class IObject;
-class IRenderer;
 class IBoundingBoxManager;
-class CAsyncFileProvider;
+}
+
+namespace view
+{
+class IRenderer;
 class IModelReader;
 class C3DModel;
 
-class CModelManager
+class ModelManager
 {
 public:
-	CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager, CAsyncFileProvider & asyncFileProvider);
-	~CModelManager();
-	void DrawModel(const Path& path, IObject* object, bool vertexOnly = false);
+	ModelManager(IRenderer & renderer, model::IBoundingBoxManager & bbmanager, AsyncFileProvider & asyncFileProvider);
+	~ModelManager();
+	void DrawModel(const Path& path, model::IObject* object, bool vertexOnly = false);
 	void LoadIfNotExist(const Path& path);
 	std::vector<std::string> GetAnimations(const Path& path);
 	void EnableGPUSkinning(bool enable);
@@ -27,8 +36,10 @@ private:
 	std::map<Path, std::shared_ptr<C3DModel>> m_models;
 	std::vector<std::unique_ptr<IModelReader>> m_modelReaders;
 	IRenderer * m_renderer;
-	IBoundingBoxManager * m_bbManager;
-	CAsyncFileProvider * m_asyncFileProvider;
+	model::IBoundingBoxManager * m_bbManager;
+	AsyncFileProvider * m_asyncFileProvider;
 	std::mutex m_mutex;
 	bool m_gpuSkinning;
 };
+}
+}

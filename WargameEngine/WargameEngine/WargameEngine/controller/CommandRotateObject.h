@@ -2,20 +2,28 @@
 #include <string>
 #include <memory>
 
+namespace wargameEngine
+{
+namespace model
+{
 class IObject;
-class IGameModel;
+class IModel;
+}
 
+namespace controller
+{
 class CCommandRotateObject :
 	public ICommand
 {
 public:
-	CCommandRotateObject(std::shared_ptr<IObject> object, float deltaRotation);
-	CCommandRotateObject(IReadMemoryStream & stream, IGameModel& model);
+	CCommandRotateObject(std::shared_ptr<model::IObject> object, float deltaRotation);
+	CCommandRotateObject(IReadMemoryStream & stream, model::IModel& model);
 	void Execute();
 	void Rollback();
 	void Serialize(IWriteMemoryStream & stream) const;
 private:
-	std::shared_ptr<IObject> m_pObject;
+	std::shared_ptr<model::IObject> m_pObject;
 	float m_deltaRotation;
 };
-
+}
+}

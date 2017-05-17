@@ -3,15 +3,19 @@
 #include "../Typedefs.h"
 #include "../view/Vector3.h"
 
+namespace wargameEngine
+{
+namespace model
+{
 class IObject;
 
 class IBaseObject
 {
 public:
 	//CVector3f oldPosition, CVector3f newPosition
-	typedef CSignal<void, const CVector3f&, const CVector3f&> CoordsSignal;
+	typedef signals::Signal<void, const CVector3f&, const CVector3f&> CoordsSignal;
 	//CVector3f oldRotations, CVector3f newRotations
-	typedef CSignal<void, const CVector3f&, const CVector3f&> RotationSignal;
+	typedef signals::Signal<void, const CVector3f&, const CVector3f&> RotationSignal;
 
 	virtual ~IBaseObject() {}
 
@@ -30,6 +34,8 @@ public:
 	virtual void SetRotations(const CVector3f& rotations) = 0;
 	virtual bool CastsShadow() const = 0;
 	virtual IObject* GetFullObject() = 0;
-	virtual CSignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) = 0;
-	virtual CSignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) = 0;
+	virtual signals::SignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) = 0;
+	virtual signals::SignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) = 0;
 };
+}
+}

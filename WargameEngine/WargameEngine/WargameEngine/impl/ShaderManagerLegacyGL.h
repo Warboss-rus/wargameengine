@@ -3,13 +3,13 @@
 #include "../view/IShaderManager.h"
 #include <vector>
 
-class CShaderManagerLegacyGL : public IShaderManager
+class CShaderManagerLegacyGL : public wargameEngine::view::IShaderManager
 {
 public:
 	CShaderManagerLegacyGL();
-	std::unique_ptr<IShaderProgram> NewProgram(const Path& vertex = Path(), const Path& fragment = Path(), const Path& geometry = Path()) override;
-	std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
-	void PushProgram(IShaderProgram const& shaderProgram) const override;
+	std::unique_ptr<wargameEngine::view::IShaderProgram> NewProgram(const wargameEngine::Path& vertex, const wargameEngine::Path& fragment, const wargameEngine::Path& geometry) override;
+	std::unique_ptr<wargameEngine::view::IShaderProgram> NewProgramSource(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
+	void PushProgram(wargameEngine::view::IShaderProgram const& shaderProgram) const override;
 	void PopProgram() const override;
 
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const override;
@@ -24,9 +24,9 @@ public:
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const override;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const override;
 
-	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
+	virtual std::unique_ptr<wargameEngine::view::IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
-	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, wargameEngine::view::IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const override;
 private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	void NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader);

@@ -6,6 +6,9 @@
 #include "../LogWriter.h"
 #include "../Module.h"
 
+using namespace wargameEngine;
+using namespace view;
+
 namespace
 {
 

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+namespace wargameEngine
+{
 class IReadMemoryStream
 {
 public:
@@ -37,3 +39,4 @@ public:
 	virtual void WriteWString(std::wstring const& value) = 0;
 	virtual void WritePointer(void* value) = 0;
 };
+}

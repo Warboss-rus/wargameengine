@@ -1,46 +1,48 @@
 #pragma once
+#include "../view/IGameWindow.h"
 #include <functional>
 #include <memory>
-#include "../view/IGameWindow.h"
 
 class IOpenGLRenderer;
 class CInputGLFW;
 struct GLFWwindow;
 struct GLFWmonitor;
+
 namespace vr
 {
-	class IVRSystem;
+class IVRSystem;
 }
 
-class CGameWindowGLFW : public IGameWindow
+class CGameWindowGLFW : public wargameEngine::view::IGameWindow
 {
 public:
 	CGameWindowGLFW();
 	~CGameWindowGLFW();
-	virtual void LaunchMainLoop() override;
-	virtual void DoOnDrawScene(std::function<void()> const& handler) override;
-	virtual void DoOnResize(std::function<void(int, int)> const& handler) override;
-	virtual void DoOnShutdown(std::function<void()> const& handler) override;
-	virtual void ResizeWindow(int width, int height) override;
-	virtual void SetTitle(std::wstring const& title) override;
-	virtual void ToggleFullscreen() override;
-	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
-	virtual bool EnableVRMode(bool show, VRViewportFactory const& viewportFactory = VRViewportFactory()) override;
-	virtual IInput& GetInput() override;
-	virtual IRenderer& GetRenderer() override;
-	virtual IViewHelper& GetViewHelper() override;
-	virtual void GetWindowSize(int& width, int& height) override;
+	void LaunchMainLoop() override;
+	void DoOnDrawScene(std::function<void()> const& handler) override;
+	void DoOnResize(std::function<void(int, int)> const& handler) override;
+	void DoOnShutdown(std::function<void()> const& handler) override;
+	void ResizeWindow(int width, int height) override;
+	void SetTitle(std::wstring const& title) override;
+	void ToggleFullscreen() override;
+	void EnableMultisampling(bool enable, int level = 1.0f) override;
+	bool EnableVRMode(bool show, VRViewportFactory const& viewportFactory = VRViewportFactory()) override;
+	wargameEngine::view::IInput& GetInput() override;
+	wargameEngine::view::IRenderer& GetRenderer() override;
+	wargameEngine::view::IViewHelper& GetViewHelper() override;
+	void GetWindowSize(int& width, int& height) override;
 
 	CInputGLFW& Input() { return *m_input; }
+
 private:
-	void CreateNewWindow(GLFWmonitor * monitor = NULL);
+	void CreateNewWindow(GLFWmonitor* monitor = NULL);
 
-	static void OnChangeState(GLFWwindow * window, int state);
-	static void OnReshape(GLFWwindow * window, int width, int height);
-	static void OnShutdown(GLFWwindow * window);
+	static void OnChangeState(GLFWwindow* window, int state);
+	static void OnReshape(GLFWwindow* window, int width, int height);
+	static void OnShutdown(GLFWwindow* window);
 
-	GLFWwindow * m_window = NULL;
-	std::unique_ptr<CInputGLFW>m_input;
+	GLFWwindow* m_window = NULL;
+	std::unique_ptr<CInputGLFW> m_input;
 	std::unique_ptr<IOpenGLRenderer> m_renderer;
 	bool m_vulkanRenderer = false;
 	bool m_visible = true;
@@ -50,5 +52,5 @@ private:
 	std::function<void()> m_onShutdown;
 
 	vr::IVRSystem* m_vrSystem = NULL;
-	std::vector<const ICachedTexture *> m_eyeTextures;
+	std::vector<const wargameEngine::view::ICachedTexture*> m_eyeTextures;
 };

@@ -15,6 +15,12 @@
 using namespace std;
 using namespace rapidxml;
 
+namespace wargameEngine
+{
+namespace view
+{
+namespace
+{
 template<class T>
 vector<T> GetValues(xml_node<>* data)
 {
@@ -259,7 +265,7 @@ void LoadMaterials(xml_node<>* library_materials, map<string, string> &materialT
 	}
 }
 
-void LoadPhongModel(xml_node<>* phong, sMaterial &material, map<string, string>& imageTranslator, xml_node<>* common)
+void LoadPhongModel(xml_node<>* phong, Material &material, map<string, string>& imageTranslator, xml_node<>* common)
 {
 	xml_node<>* ambient = phong->first_node("ambient");
 	if (ambient)
@@ -309,12 +315,12 @@ void LoadPhongModel(xml_node<>* phong, sMaterial &material, map<string, string>&
 	}
 }
 
-void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageTranslator, map<string, string> &materialTranslator, CMaterialManager & materialManager)
+void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageTranslator, map<string, string> &materialTranslator, MaterialManager & materialManager)
 {
 	xml_node<>* effect = library_effects->first_node("effect");
 	while (effect)
 	{
-		sMaterial material;
+		Material material;
 		xml_node<>* common = effect->first_node("profile_COMMON");
 		if (common)
 		{
@@ -388,6 +394,7 @@ void LoadAnimationClips(xml_node<>* clipsLib, std::vector<sAnimation> & animatio
 		clip = clip->next_sibling("animation_clip");
 	}
 }
+}
 
 std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, size_t size, C3DModel const& dummyModel, const Path& /*filePath*/)
 {
@@ -407,7 +414,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
 	std::vector<unsigned int> indexes;
-	CMaterialManager materialManager;
+	MaterialManager materialManager;
 	std::vector<sMesh> meshes;
 	std::vector<unsigned int> weightsCount;
 	std::vector<unsigned int> weightsIndexes;
@@ -514,8 +521,8 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 					{
 						string fl;
 						sstream >> fl;
-						auto it = find_if(joints.begin(), joints.end(), [&](sJoint const& joint) {return joint.bone == fl;});
-						if(it != joints.end())
+						auto it = find_if(joints.begin(), joints.end(), [&](sJoint const& joint) {return joint.bone == fl; });
+						if (it != joints.end())
 						{
 							memcpy(it->invBindMatrix, &inv[index * 16], sizeof(float) * 16);
 						}
@@ -664,7 +671,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 								else if (inputType == "TEXCOORD")
 								{
 									texcoord = GetValues<float>(sources[vertEntry->first_attribute("source")->value()]);
-									
+
 								}
 								vertEntry = vertEntry->next_sibling("input");
 							}
@@ -772,4 +779,6 @@ bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*s
 	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
 	return extension == make_path(L"dae");
+}
+}
 }

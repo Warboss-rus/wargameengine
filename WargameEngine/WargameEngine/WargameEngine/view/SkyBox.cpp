@@ -1,9 +1,16 @@
 #include "SkyBox.h"
-#include "TextureManager.h"
 #include "..\Utils.h"
+#include "TextureManager.h"
 
-CSkyBox::CSkyBox(float width, float height, float length, const Path& imageFolder, IRenderer & renderer, CTextureManager & texMan)
-	: m_height(height), m_width(width), m_length(length), m_renderer(renderer)
+namespace wargameEngine
+{
+namespace view
+{
+SkyBox::SkyBox(float width, float height, float length, const Path& imageFolder, IRenderer& renderer, TextureManager& texMan)
+	: m_height(height)
+	, m_width(width)
+	, m_length(length)
+	, m_renderer(renderer)
 {
 	m_images[0] = imageFolder + make_path("/right.bmp");
 	m_images[1] = imageFolder + make_path(L"/left.bmp");
@@ -14,7 +21,7 @@ CSkyBox::CSkyBox(float width, float height, float length, const Path& imageFolde
 	m_texture = texMan.CreateCubemapTexture(m_images[0], m_images[1], m_images[2], m_images[3], m_images[4], m_images[5], TextureFlags::TEXTURE_NO_WRAP);
 }
 
-void CSkyBox::Draw(CVector3f const& pos, float scale)
+void SkyBox::Draw(CVector3f const& pos, float scale)
 {
 	if (m_shader)
 	{
@@ -60,27 +67,29 @@ void CSkyBox::Draw(CVector3f const& pos, float scale)
 		static const std::array<CVector2f, 4> texCoords = { CVector2f(1.0f, 0.0f), { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f } };
 		// Top side
 		m_renderer.SetTexture(m_images[4], false, TextureFlags::TEXTURE_NO_WRAP);
-		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, 0.0f, m_length),{ 0.0f, 0.0f, m_length },{ m_width, m_height, m_length },{ 0.0f, m_height, m_length } }, {}, texCoords);
+		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, 0.0f, m_length), { 0.0f, 0.0f, m_length }, { m_width, m_height, m_length }, { 0.0f, m_height, m_length } }, {}, texCoords);
 		// Bottom side
 		m_renderer.SetTexture(m_images[5], false, TextureFlags::TEXTURE_NO_WRAP);
-		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(0.0f, 0.0f, 0.0f),{ m_width, 0.0f, 0.0f },{ 0.0f,m_height, 0.0f },{ m_width, m_height, 0.0f } }, {}, texCoords);
+		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector3f(0.0f, 0.0f, 0.0f), { m_width, 0.0f, 0.0f }, { 0.0f, m_height, 0.0f }, { m_width, m_height, 0.0f } }, {}, texCoords);
 		// Front side
 		m_renderer.SetTexture(m_images[3], false, TextureFlags::TEXTURE_NO_WRAP);
-		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(0.0f, 0.0f, 0.0f),{ 0.0f, 0.0f, m_length },{ m_width, 0.0f, 0.0f },{ m_width, 0.0f, m_length } }, {}, texCoords);
+		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector3f(0.0f, 0.0f, 0.0f), { 0.0f, 0.0f, m_length }, { m_width, 0.0f, 0.0f }, { m_width, 0.0f, m_length } }, {}, texCoords);
 		// Back side
 		m_renderer.SetTexture(m_images[2], false, TextureFlags::TEXTURE_NO_WRAP);
-		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, m_height, 0.0f),{ m_width, m_height, m_length },{ 0.0f, m_height, 0.0f },{ 0.0f, m_height, m_length } }, {}, texCoords);
+		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, m_height, 0.0f), { m_width, m_height, m_length }, { 0.0f, m_height, 0.0f }, { 0.0f, m_height, m_length } }, {}, texCoords);
 		// Left side
 		m_renderer.SetTexture(m_images[1], false, TextureFlags::TEXTURE_NO_WRAP);
-		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(0.0f, m_height, 0.0f),{ 0.0f, m_height, m_length },{ 0.0f, 0.0f, 0.0f },{ 0.0f, 0.0f, m_length } }, {}, texCoords);
+		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector3f(0.0f, m_height, 0.0f), { 0.0f, m_height, m_length }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, m_length } }, {}, texCoords);
 		// Right side
 		m_renderer.SetTexture(m_images[0], false, TextureFlags::TEXTURE_NO_WRAP);
-		m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, 0.0f, 0.0f),{ m_width, 0.0f, m_length },{ m_width, m_height, 0.0f },{ m_width, m_height, m_length } }, {}, texCoords);
+		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector3f(m_width, 0.0f, 0.0f), { m_width, 0.0f, m_length }, { m_width, m_height, 0.0f }, { m_width, m_height, m_length } }, {}, texCoords);
 		m_renderer.PopMatrix();
 	}
 }
 
-void CSkyBox::SetShaders(const Path& vertex, const Path& fragment)
+void SkyBox::SetShaders(const Path& vertex, const Path& fragment)
 {
 	m_shader = m_renderer.GetShaderManager().NewProgram(vertex, fragment);
+}
+}
 }

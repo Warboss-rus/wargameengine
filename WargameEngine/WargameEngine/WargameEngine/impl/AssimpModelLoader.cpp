@@ -8,6 +8,8 @@
 #include "..\LogWriter.h"
 
 using namespace Assimp;
+using namespace wargameEngine;
+using namespace view;
 
 struct CAssimpModelLoader::Impl
 {
@@ -26,7 +28,7 @@ public:
 		if (!scene) throw std::runtime_error("Cannot process model");
 
 		std::unique_ptr<C3DModel> result = std::make_unique<C3DModel>(dummyModel);
-		CMaterialManager materialManager;
+		MaterialManager materialManager;
 		std::vector<CVector3f> vertices;
 		std::vector<CVector3f> normals;
 		std::vector<CVector2f> texCoords;
@@ -191,7 +193,7 @@ public:
 	}
 
 private:
-	std::pair<std::string,sMaterial> ProcessMaterial(aiMaterial* material)
+	std::pair<std::string,Material> ProcessMaterial(aiMaterial* material)
 	{
 		aiString name;
 		material->Get(AI_MATKEY_NAME, name);
@@ -207,7 +209,7 @@ private:
 		material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
 		float shineness = 0.0f;
 		material->Get(AI_MATKEY_SHININESS, shineness);
-		sMaterial mat;
+		Material mat;
 		memcpy(mat.ambient, &ambient, sizeof(float) * 3);
 		memcpy(mat.diffuse, &diffuse, sizeof(float) * 3);
 		memcpy(mat.specular, &specular, sizeof(float) * 3);

@@ -1,13 +1,18 @@
 #include "TextureManager.h"
-#include "../LogWriter.h"
 #include "../AsyncFileProvider.h"
-#include "IImageReader.h"
-#include "../Utils.h"
+#include "../LogWriter.h"
 #include "../MemoryStream.h"
+#include "../Utils.h"
+#include "IImageReader.h"
 #include <algorithm>
 #include <iterator>
 
-void CTextureManager::UseTexture(CImage const& img, ICachedTexture& texture, int additionalFlags)
+namespace wargameEngine
+{
+namespace view
+{
+
+void TextureManager::UseTexture(Image const& img, ICachedTexture& texture, int additionalFlags)
 {
 	if (img.GetMipmaps().empty())
 	{
@@ -23,9 +28,9 @@ void CTextureManager::UseTexture(CImage const& img, ICachedTexture& texture, int
 	}
 	m_helper.SetTextureAnisotropy(m_anisotropyLevel);
 }
-void ApplyTeamcolor(CImage & image, const Path& maskFile, unsigned char * color, const Path& fileName);
+void ApplyTeamcolor(Image& image, const Path& maskFile, unsigned char* color, const Path& fileName);
 
-std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(const Path& path, std::vector<sTeamColor> const& teamcolor, bool now, int flags)
+std::unique_ptr<ICachedTexture> TextureManager::LoadTexture(const Path& path, std::vector<model::TeamColor> const& teamcolor, bool now, int flags)
 {
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
 	ICachedTexture& texRef = *tex;
@@ -33,7 +38,7 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(const Path& path, s
 	params.flipBmp = m_helper.ForceFlipBMP();
 	params.force32bit = m_helper.Force32Bits();
 	params.convertBgra = m_helper.ConvertBgra();
-	std::shared_ptr<CImage> img = std::make_shared<CImage>();
+	std::shared_ptr<Image> img = std::make_shared<Image>();
 	m_asyncFileProvider.GetTextureAsync(path, [=](void* data, size_t size) {
 		unsigned char* charData = reinterpret_cast<unsigned char*>(data);
 		for (auto& reader : m_imageReaders)
@@ -45,7 +50,7 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(const Path& path, s
 					*img = reader->ReadImage(charData, size, path, params);
 					if (!img->IsCompressed())
 					{
-						for (auto& color: teamcolor)
+						for (auto& color : teamcolor)
 						{
 							ApplyTeamcolor(*img, make_path(color.suffix), const_cast<unsigned char*>(color.color), m_asyncFileProvider.GetTextureAbsolutePath(path));
 						}
@@ -57,40 +62,36 @@ std::unique_ptr<ICachedTexture> CTextureManager::LoadTexture(const Path& path, s
 					LogWriter::WriteLine(e.what());
 				}
 			}
-		}
-	}, [=, &texRef]() {
-		UseTexture(*img, texRef, flags);
-	}, [](std::exception const& e) {
-		LogWriter::WriteLine(e.what());
-	}, now);
+		} }, [=, &texRef]() { UseTexture(*img, texRef, flags); }, [](std::exception const& e) { LogWriter::WriteLine(e.what()); }, now);
 	return tex;
 }
 
-CTextureManager::CTextureManager(ITextureHelper & helper, CAsyncFileProvider & asyncFileProvider)
-	:m_helper(helper), m_asyncFileProvider(asyncFileProvider)
+TextureManager::TextureManager(ITextureHelper& helper, AsyncFileProvider& asyncFileProvider)
+	: m_helper(helper)
+	, m_asyncFileProvider(asyncFileProvider)
 {
 }
 
-CTextureManager::~CTextureManager()
+TextureManager::~TextureManager()
 {
 }
 
-void CTextureManager::SetTexture(const Path& path, int flags)
+void TextureManager::SetTexture(const Path& path, int flags)
 {
-	if(path.empty()) 
+	if (path.empty())
 	{
 		m_helper.UnbindTexture();
-		return;	
+		return;
 	}
-	auto pair = std::make_pair(path, std::vector<sTeamColor>());
-	if(m_textures.find(pair) == m_textures.end())
+	auto pair = std::make_pair(path, std::vector<model::TeamColor>());
+	if (m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
 	}
 	m_helper.SetTexture(*m_textures[pair]);
 }
 
-std::unique_ptr<ICachedTexture> CTextureManager::CreateCubemapTexture(const Path& right, const Path& left, const Path& back, const Path& front, const Path& top, const Path& bottom, int flags /*= 0*/)
+std::unique_ptr<ICachedTexture> TextureManager::CreateCubemapTexture(const Path& right, const Path& left, const Path& back, const Path& front, const Path& top, const Path& bottom, int flags /*= 0*/)
 {
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
 	ICachedTexture& texRef = *tex;
@@ -99,7 +100,7 @@ std::unique_ptr<ICachedTexture> CTextureManager::CreateCubemapTexture(const Path
 	params.force32bit = m_helper.Force32Bits();
 	params.convertBgra = m_helper.ConvertBgra();
 	const std::vector<Path> imagePaths = { right, left, back, front, top, bottom };
-	std::shared_ptr<std::vector<CImage>> images = std::make_shared<std::vector<CImage>>(6);
+	std::shared_ptr<std::vector<Image>> images = std::make_shared<std::vector<Image>>(6);
 	std::shared_ptr<size_t> imagesReady = std::make_shared<size_t>(0);
 	for (size_t i = 0; i < imagePaths.size(); ++i)
 	{
@@ -121,25 +122,21 @@ std::unique_ptr<ICachedTexture> CTextureManager::CreateCubemapTexture(const Path
 						LogWriter::WriteLine(e.what());
 					}
 				}
-			}
-		}, [=, &texRef]() {
+			} }, [=, &texRef]() {
 			++(*imagesReady);
 			if (*imagesReady == images->size())
 			{
-				std::vector<sTextureMipMap> sides;
-				std::transform(images->begin(), images->end(), std::back_inserter(sides), [](CImage const& img) {
-					return sTextureMipMap{img.GetData(), static_cast<unsigned int>(img.GetWidth()), static_cast<unsigned int>(img.GetHeight()), 0};
+				std::vector<TextureMipMap> sides;
+				std::transform(images->begin(), images->end(), std::back_inserter(sides), [](Image const& img) {
+					return TextureMipMap{ img.GetData(), static_cast<unsigned int>(img.GetWidth()), static_cast<unsigned int>(img.GetHeight()), 0 };
 				});
 				m_helper.UploadCubemap(texRef, sides, images->front().GetBPP(), images->front().GetFlags() | flags);
-			}
-		}, [](std::exception const& e) {
-			LogWriter::WriteLine(e.what());
-		});
+			} }, [](std::exception const& e) { LogWriter::WriteLine(e.what()); });
 	}
 	return tex;
 }
 
-void CTextureManager::SetAnisotropyLevel(float level)
+void TextureManager::SetAnisotropyLevel(float level)
 {
 	for (auto i = m_textures.begin(); i != m_textures.end(); ++i)
 	{
@@ -149,28 +146,28 @@ void CTextureManager::SetAnisotropyLevel(float level)
 	m_anisotropyLevel = level;
 }
 
-void CTextureManager::LoadTextureNow(const Path& path, const std::vector<sTeamColor>* teamcolor /*= nullptr*/, int flags)
+void TextureManager::LoadTextureNow(const Path& path, const std::vector<model::TeamColor>* teamcolor /*= nullptr*/, int flags)
 {
-	auto pair = std::pair<Path, std::vector<sTeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<sTeamColor>());
+	auto pair = std::pair<Path, std::vector<model::TeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<model::TeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, true, flags);
 	}
 }
 
-void CTextureManager::Reset()
+void TextureManager::Reset()
 {
 	m_textures.clear();
 }
 
-void CTextureManager::RegisterImageReader(std::unique_ptr<IImageReader>&& reader)
+void TextureManager::RegisterImageReader(std::unique_ptr<IImageReader>&& reader)
 {
 	m_imageReaders.push_back(std::move(reader));
 }
 
-ICachedTexture* CTextureManager::GetTexturePtr(const Path& texture)
+ICachedTexture* TextureManager::GetTexturePtr(const Path& texture)
 {
-	auto pair = std::pair<Path, std::vector<sTeamColor>>(texture, std::vector<sTeamColor>());
+	auto pair = std::pair<Path, std::vector<model::TeamColor>>(texture, std::vector<model::TeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(texture, pair.second, false);
@@ -178,14 +175,14 @@ ICachedTexture* CTextureManager::GetTexturePtr(const Path& texture)
 	return m_textures[pair].get();
 }
 
-void CTextureManager::SetTexture(const Path& path, TextureSlot slot, const std::vector<sTeamColor>* teamcolor, int flags)
+void TextureManager::SetTexture(const Path& path, IRenderer::TextureSlot slot, const std::vector<model::TeamColor>* teamcolor, int flags)
 {
 	if (path.empty())
 	{
 		m_helper.UnbindTexture(slot);
 		return;
 	}
-	auto pair = std::make_pair(path, teamcolor ? *teamcolor : std::vector<sTeamColor>());
+	auto pair = std::make_pair(path, teamcolor ? *teamcolor : std::vector<model::TeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
 		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
@@ -193,7 +190,7 @@ void CTextureManager::SetTexture(const Path& path, TextureSlot slot, const std::
 	m_helper.SetTexture(*m_textures[pair], slot);
 }
 
-void ApplyTeamcolor(CImage & image, const Path& maskFile, unsigned char * color, const Path& fileName)
+void ApplyTeamcolor(Image& image, const Path& maskFile, unsigned char* color, const Path& fileName)
 {
 	Path path = fileName.substr(0, fileName.find_last_of('.')) + maskFile + make_path(L".bmp");
 	std::vector<char> maskData = ReadFile(path);
@@ -202,7 +199,7 @@ void ApplyTeamcolor(CImage & image, const Path& maskFile, unsigned char * color,
 		LogWriter::WriteLine(L"Texture manager: Cannot open mask file " + to_wstring(path));
 		return;
 	}
-	CReadMemoryStream stream(maskData.data());
+	ReadMemoryStream stream(maskData.data());
 	stream.Seek(0x12);
 	int maskHeight = stream.ReadInt();
 	int maskWidth = stream.ReadInt();
@@ -228,4 +225,6 @@ void ApplyTeamcolor(CImage & image, const Path& maskFile, unsigned char * color,
 			}
 		}
 	}
+}
+}
 }

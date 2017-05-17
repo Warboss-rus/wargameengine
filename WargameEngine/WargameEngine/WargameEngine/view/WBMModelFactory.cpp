@@ -1,31 +1,35 @@
 #include "WBMModelFactory.h"
-#include "3dModel.h"
-#include <string>
-#include <map>
-#include <vector>
-#include <cstring>
-#include <algorithm>
-#include <cwctype>
-#include "../Utils.h"
 #include "../MemoryStream.h"
+#include "../Utils.h"
+#include "3dModel.h"
+#include <algorithm>
+#include <cstring>
+#include <cwctype>
+#include <map>
+#include <string>
+#include <vector>
 
-std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, const Path& /*filePath*/)
+namespace wargameEngine
+{
+namespace view
+{
+std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char* data, size_t /*size*/, C3DModel const& dummyModel, const Path& /*filePath*/)
 {
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
 	std::vector<unsigned int> indexes;
-	CMaterialManager materialManager;
+	MaterialManager materialManager;
 	std::vector<sMesh> meshes;
 	std::vector<unsigned int> weightsCount;
 	std::vector<unsigned int> weightsIndexes;
 	std::vector<float> weights;
 	std::vector<sJoint> joints;
 	std::vector<sAnimation> animations;
-	
-	CReadMemoryStream stream(reinterpret_cast<char*>(data));
-	std::map<std::string, sMaterial> materials;
-	stream.ReadUnsigned();//version
+
+	ReadMemoryStream stream(reinterpret_cast<char*>(data));
+	std::map<std::string, Material> materials;
+	stream.ReadUnsigned(); //version
 	size_t size = stream.ReadSizeT();
 	vertices.resize(size / sizeof(CVector3f));
 	stream.ReadData(vertices.data(), size);
@@ -39,7 +43,7 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 	indexes.resize(size / sizeof(unsigned int));
 	stream.ReadData(indexes.data(), size);
 	size_t count = stream.ReadSizeT();
-	for(size_t i = 0; i < count; ++i)
+	for (size_t i = 0; i < count; ++i)
 	{
 		sMesh mesh;
 		mesh.name = stream.ReadString();
@@ -48,7 +52,7 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 		meshes.push_back(mesh);
 	}
 	count = stream.ReadSizeT();
-	for(size_t i = 0; i < count; ++i)
+	for (size_t i = 0; i < count; ++i)
 	{
 		std::string key = stream.ReadString();
 		stream.ReadData(materials[key].ambient, sizeof(float) * 3);
@@ -57,17 +61,19 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char * data, size
 		materials[key].shininess = stream.ReadFloat();
 		materials[key].texture = make_path(stream.ReadString());
 	}
-	materialManager =  CMaterialManager(materials);
+	materialManager = MaterialManager(materials);
 	auto result = std::make_unique<C3DModel>(dummyModel);
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
 	return result;
 }
 
-bool CWBMModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, const Path& filePath) const
+bool CWBMModelFactory::ModelIsSupported(unsigned char* /*data*/, size_t /*size*/, const Path& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
 	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
 	return extension == make_path(L"wbm");
+}
+}
 }

@@ -2,13 +2,13 @@
 #include <memory>
 #include "..\IPathfinding.h"
 
-class CPathfindingMicroPather : public IPathfinding
+class CPathfindingMicroPather : public wargameEngine::IPathfinding
 {
 public:
 	CPathfindingMicroPather();
 	~CPathfindingMicroPather();
 
-	void Init(CGameModel& model, const IBoundingBoxManager& boundingBoxManager, size_t horizontalResolution, size_t verticalResolution) override;
+	void Init(wargameEngine::model::Model& model, wargameEngine::model::IBoundingBoxManager& boundingBoxManager, size_t horizontalResolution, size_t verticalResolution) override;
 	std::vector<CVector3f> GetPath(const CVector3f& from, const CVector3f& to) const override;
 
 private:

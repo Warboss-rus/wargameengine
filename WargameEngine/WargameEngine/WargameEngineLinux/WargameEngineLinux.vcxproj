@@ -90,7 +90,7 @@
     <ClCompile Include="..\WargameEngine\controller\CommandMoveObject.cpp" />
     <ClCompile Include="..\WargameEngine\controller\CommandPlayAnimation.cpp" />
     <ClCompile Include="..\WargameEngine\controller\CommandRotateObject.cpp" />
-    <ClCompile Include="..\WargameEngine\controller\GameController.cpp" />
+    <ClCompile Include="..\WargameEngine\controller\Controller.cpp" />
     <ClCompile Include="..\WargameEngine\controller\Network.cpp" />
     <ClCompile Include="..\WargameEngine\controller\ScriptRegisterFunctions.cpp" />
     <ClCompile Include="..\WargameEngine\controller\ScriptRegisterObject.cpp" />
@@ -108,12 +108,12 @@
     <ClCompile Include="..\WargameEngine\LogWriter.cpp" />
     <ClCompile Include="..\WargameEngine\main.cpp" />
     <ClCompile Include="..\WargameEngine\MemoryStream.cpp" />
-    <ClCompile Include="..\WargameEngine\model\GameModel.cpp" />
+    <ClCompile Include="..\WargameEngine\model\Model.cpp" />
     <ClCompile Include="..\WargameEngine\model\Landscape.cpp" />
     <ClCompile Include="..\WargameEngine\model\MovementLimiter.cpp" />
     <ClCompile Include="..\WargameEngine\model\Object.cpp" />
     <ClCompile Include="..\WargameEngine\model\ObjectGroup.cpp" />
-    <ClCompile Include="..\WargameEngine\model\Particle.cpp" />
+    <ClCompile Include="..\WargameEngine\model\ParticleEffect.cpp" />
     <ClCompile Include="..\WargameEngine\model\Projectile.cpp" />
     <ClCompile Include="..\WargameEngine\Module.cpp" />
     <ClCompile Include="..\WargameEngine\OSSpecific.cpp" />
@@ -141,7 +141,7 @@
     <ClCompile Include="..\WargameEngine\view\CameraStrategy.cpp" />
     <ClCompile Include="..\WargameEngine\view\ColladaModelFactory.cpp" />
     <ClCompile Include="..\WargameEngine\view\FixedCamera.cpp" />
-    <ClCompile Include="..\WargameEngine\view\GameView.cpp" />
+    <ClCompile Include="..\WargameEngine\view\View.cpp" />
     <ClCompile Include="..\WargameEngine\view\InputBase.cpp" />
     <ClCompile Include="..\WargameEngine\view\MaterialManager.cpp" />
     <ClCompile Include="..\WargameEngine\view\MirrorCamera.cpp" />
@@ -167,7 +167,7 @@
     <ClInclude Include="..\WargameEngine\controller\CommandMoveObject.h" />
     <ClInclude Include="..\WargameEngine\controller\CommandPlayAnimation.h" />
     <ClInclude Include="..\WargameEngine\controller\CommandRotateObject.h" />
-    <ClInclude Include="..\WargameEngine\controller\GameController.h" />
+    <ClInclude Include="..\WargameEngine\controller\Controller.h" />
     <ClInclude Include="..\WargameEngine\controller\ICommand.h" />
     <ClInclude Include="..\WargameEngine\controller\INetSocket.h" />
     <ClInclude Include="..\WargameEngine\controller\IScriptHandler.h" />
@@ -194,9 +194,9 @@
     <ClInclude Include="..\WargameEngine\LogWriter.h" />
     <ClInclude Include="..\WargameEngine\MemoryStream.h" />
     <ClInclude Include="..\WargameEngine\model\Animation.h" />
-    <ClInclude Include="..\WargameEngine\model\GameModel.h" />
+    <ClInclude Include="..\WargameEngine\model\Model.h" />
     <ClInclude Include="..\WargameEngine\model\IBoundingBoxManager.h" />
-    <ClInclude Include="..\WargameEngine\model\IGameModel.h" />
+    <ClInclude Include="..\WargameEngine\model\IModel.h" />
     <ClInclude Include="..\WargameEngine\model\Landscape.h" />
     <ClInclude Include="..\WargameEngine\model\Light.h" />
     <ClInclude Include="..\WargameEngine\model\MovementLimiter.h" />
@@ -204,7 +204,7 @@
     <ClInclude Include="..\WargameEngine\model\ObjectGroup.h" />
     <ClInclude Include="..\WargameEngine\model\IObject.h" />
     <ClInclude Include="..\WargameEngine\model\BaseObject.h" />
-    <ClInclude Include="..\WargameEngine\model\Particle.h" />
+    <ClInclude Include="..\WargameEngine\model\ParticleEffect.h" />
     <ClInclude Include="..\WargameEngine\model\Projectile.h" />
     <ClInclude Include="..\WargameEngine\model\TeamColor.h" />
     <ClInclude Include="..\WargameEngine\Module.h" />
@@ -241,7 +241,7 @@
     <ClInclude Include="..\WargameEngine\view\CameraStrategy.h" />
     <ClInclude Include="..\WargameEngine\view\ColladaModelFactory.h" />
     <ClInclude Include="..\WargameEngine\view\FixedCamera.h" />
-    <ClInclude Include="..\WargameEngine\view\GameView.h" />
+    <ClInclude Include="..\WargameEngine\view\View.h" />
     <ClInclude Include="..\WargameEngine\view\ICamera.h" />
     <ClInclude Include="..\WargameEngine\view\IGameWindow.h" />
     <ClInclude Include="..\WargameEngine\view\IImageReader.h" />

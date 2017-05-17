@@ -1,6 +1,10 @@
 #pragma once
 #include <string>
 
+namespace wargameEngine
+{
+namespace view
+{
 class IRenderer;
 
 class ITextWriter
@@ -16,3 +20,5 @@ public:
 	virtual int GetStringHeight(const std::string& font, unsigned int size, const std::wstring& text) = 0;
 	virtual int GetStringWidth(const std::string& font, unsigned int size, const std::wstring& text) = 0;
 };
+}
+}

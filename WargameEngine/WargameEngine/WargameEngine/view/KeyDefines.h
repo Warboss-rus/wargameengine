@@ -1,5 +1,9 @@
 #pragma once
 
+namespace wargameEngine
+{
+namespace view
+{
 enum class VirtualKey
 {
 	KEY_UNKNOWN,
@@ -111,3 +115,5 @@ enum class VirtualKey
 	KEY_RIGHT_SUPER,
 	KEY_MENU,
 };
+}
+}

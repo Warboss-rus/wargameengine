@@ -3,20 +3,23 @@
 #ifdef _WINDOWS
 #include <Windows.h>
 
+namespace wargameEngine
+{
 std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive)
 {
 	std::vector<Path> result;
 	WIN32_FIND_DATAW FindFileData;
 	HANDLE hFind;
 	std::vector<Path> dir;
-	hFind=FindFirstFileW(((!path.empty())?path + L"\\" + mask:mask).c_str(), &FindFileData);
+	hFind = FindFirstFileW(((!path.empty()) ? path + L"\\" + mask : mask).c_str(), &FindFileData);
 	if (hFind != INVALID_HANDLE_VALUE)
-		do{
+		do
+		{
 			if (wcscmp(FindFileData.cFileName, L".") == 0 || wcscmp(FindFileData.cFileName, L"..") == 0)
 			{
 				continue;
 			}
-			if(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+			if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 			{
 				dir.push_back(path + L"\\" + FindFileData.cFileName);
 			}
@@ -39,18 +42,26 @@ std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive)
 	}
 	return result;
 }
+}
 #else
-#include <unistd.h>
+#include <algorithm>
 #include <cstring>
 #include <dirent.h>
-#include <algorithm>
+#include <unistd.h>
 
-bool match(char const *needle, char const *haystack) {
-	for (; *needle != '\0'; ++needle) {
-		switch (*needle) {
-		case '?': ++haystack;
+namespace wargameEngine
+{
+bool match(char const* needle, char const* haystack)
+{
+	for (; *needle != '\0'; ++needle)
+	{
+		switch (*needle)
+		{
+		case '?':
+			++haystack;
 			break;
-		case '*': {
+		case '*':
+		{
 			size_t max = strlen(haystack);
 			if (needle[1] == '\0' || max == 0)
 				return true;
@@ -70,43 +81,46 @@ bool match(char const *needle, char const *haystack) {
 
 std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive)
 {
-    std::vector<Path> result;
-    std::vector<Path> dirs;
-    DIR *d = opendir(path.c_str());
-    struct dirent *dir;
-    if (d)
-    {
-        while ((dir = readdir(d)) != NULL)
-        {
-            if (!strcmp(dir->d_name, "")) continue;
-            if (dir->d_name[0] == '.') continue;
+	std::vector<Path> result;
+	std::vector<Path> dirs;
+	DIR* d = opendir(path.c_str());
+	struct dirent* dir;
+	if (d)
+	{
+		while ((dir = readdir(d)) != NULL)
+		{
+			if (!strcmp(dir->d_name, ""))
+				continue;
+			if (dir->d_name[0] == '.')
+				continue;
 
-            if (dir->d_type == DT_DIR)
-            {
-                dirs.push_back(path + "/" + dir->d_name);
-            }
-            else
-            {
+			if (dir->d_type == DT_DIR)
+			{
+				dirs.push_back(path + "/" + dir->d_name);
+			}
+			else
+			{
 				if (match(mask.c_str(), dir->d_name))
 				{
 					result.push_back(dir->d_name);
 				}
-            }
-        }
-        closedir(d);
-    }
-    if (recursive)
-    {
-        for (size_t i = 0; i < dirs.size(); ++i)
-        {
-            std::vector<Path> temp = GetFiles(dirs[i], mask, recursive);
-            for (auto i = temp.begin(); i != temp.end(); ++i)
-            {
-                    result.push_back(path + "/" + *i);
-            }
-        }
-    }
-    std::sort(result.begin(), result.end());
-    return result;
+			}
+		}
+		closedir(d);
+	}
+	if (recursive)
+	{
+		for (size_t i = 0; i < dirs.size(); ++i)
+		{
+			std::vector<Path> temp = GetFiles(dirs[i], mask, recursive);
+			for (auto i = temp.begin(); i != temp.end(); ++i)
+			{
+				result.push_back(path + "/" + *i);
+			}
+		}
+	}
+	std::sort(result.begin(), result.end());
+	return result;
+}
 }
 #endif

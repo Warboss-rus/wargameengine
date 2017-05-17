@@ -4,6 +4,11 @@
 #include <memory>
 #include <vector>
 
+namespace wargameEngine
+{
+namespace model
+{
+
 struct Bounding
 {
 	struct Box
@@ -65,8 +70,11 @@ private:
 class IBoundingBoxManager
 {
 public:
-	virtual void AddBounding(const Path& path, const Bounding& bounding) = 0;
-	virtual Bounding GetBounding(const Path& path) const = 0;
+	virtual Bounding GetBounding(const Path& path) = 0;
+	virtual float GetModelScale(const Path& path) = 0;
+	virtual CVector3f GetModelRotation(const Path& path) = 0;
 
 	virtual ~IBoundingBoxManager() {}
 };
+}
+}

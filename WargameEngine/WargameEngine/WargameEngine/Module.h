@@ -1,7 +1,9 @@
 #pragma once
 #include "Typedefs.h"
 
-struct sModule
+namespace wargameEngine
+{
+struct Module
 {
 	std::wstring name;
 	int version;
@@ -16,3 +18,4 @@ struct sModule
 	Path shaders;
 	void Load(Path const& filename);
 };
+}

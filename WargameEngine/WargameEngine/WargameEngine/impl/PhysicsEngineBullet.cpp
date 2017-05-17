@@ -6,12 +6,16 @@
 #pragma warning (disable: 4127)
 #include <btBulletDynamicsCommon.h>
 #pragma warning (pop)
-#include "../model/IBaseObject.h"
+#include "../model/IObject.h"
 #include "../model/Landscape.h"
+#include "../model/IBoundingBoxManager.h"
 #include "../view/IRenderer.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "../LogWriter.h"
+
+using namespace wargameEngine;
+using namespace model;
 
 CVector3f ToVector3f(btVector3 const& vec)
 {
@@ -31,7 +35,7 @@ btQuaternion RotationToQuaternion(float rotation)
 class CDebugDrawer : public btIDebugDraw
 {
 public:
-	CDebugDrawer(IRenderer & renderer)
+	CDebugDrawer(view::IRenderer & renderer)
 		:m_debugMode(0), m_renderer(renderer)
 	{
 	}
@@ -39,7 +43,7 @@ public:
 	{
 		const float fcolor[] = { color.x(), color.y(), color.z(), 1.0f };
 		m_renderer.SetColor(fcolor);
-		m_renderer.RenderArrays(RenderMode::LINES, { ToVector3f(from), ToVector3f(to) }, {}, {});
+		m_renderer.RenderArrays(view::IRenderer::RenderMode::LINES, { ToVector3f(from), ToVector3f(to) }, {}, {});
 	}
 
 	virtual void drawContactPoint(const btVector3& /*PointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) override
@@ -68,7 +72,7 @@ public:
 	}
 private:
 	int m_debugMode;
-	IRenderer & m_renderer;
+	view::IRenderer & m_renderer;
 };
 
 struct CPhysicsEngineBullet::Impl
@@ -98,7 +102,7 @@ public:
 
 	~Impl()
 	{
-		Reset();
+		Reset(*m_boundingManager);
 		for (int i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0;i--)
 		{
 			btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[i];
@@ -111,7 +115,7 @@ public:
 		m_dynamicsWorld->stepSimulation(static_cast<btScalar>(timeDelta.count()), 10);
 	}
 
-	void Reset()
+	void Reset(IBoundingBoxManager& boundingManager)
 	{
 		for (int i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0;i--)
 		{
@@ -121,12 +125,19 @@ public:
 		m_objects.clear();
 		m_collisionShapes.clear();
 		m_childCollisionShapes.clear();
+		m_boundingManager = &boundingManager;
 		CreateGround();
 	}
 
 	void AddDynamicObject(IObject * object, double mass)
 	{
-		btCollisionShape* colShape = m_collisionShapes.at(object->GetPathToModel()).get();
+		auto it = m_collisionShapes.find(object->GetPathToModel());
+		if (it == m_collisionShapes.end())
+		{
+			AddBounding(object->GetPathToModel(), m_boundingManager->GetBounding(object->GetPathToModel()));
+			it = m_collisionShapes.find(object->GetPathToModel());
+		}
+		btCollisionShape* colShape = it->second.get();
 		
 		bool isDynamic = fabs(mass) > DBL_EPSILON;
 		btVector3 localInertia(0, 0, 0);
@@ -167,9 +178,9 @@ public:
 		landscape;
 	}
 
-	bool CastRay(CVector3f const& origin, CVector3f const& dest, IObject ** obj, CVector3f & hitPoint, std::vector<IObject*> const& excludeObjects) const
+	IPhysicsEngine::CastRayResult CastRay(CVector3f const& origin, CVector3f const& dest, std::vector<IBaseObject*> const& excludeObjects) const
 	{
-		*obj = nullptr;
+		IPhysicsEngine::CastRayResult result;
 		btCollisionWorld::AllHitsRayResultCallback RayCallback(ToBtVector3(origin), ToBtVector3(dest));
 		m_dynamicsWorld->rayTest(ToBtVector3(origin), ToBtVector3(dest), RayCallback);
 		if (RayCallback.hasHit())
@@ -183,26 +194,28 @@ public:
 				if (body)
 				{
 					trans = body->getWorldTransform();
-					*obj = reinterpret_cast<IObject*>(body->getUserPointer());
-					if (std::find(excludeObjects.begin(), excludeObjects.end(), *obj) != excludeObjects.end())
+					result.object = reinterpret_cast<IBaseObject*>(body->getUserPointer());
+					if (std::find(excludeObjects.begin(), excludeObjects.end(), result.object) != excludeObjects.end())
 					{
-						*obj = 0;
+						result.object = nullptr;
 					}
 				}
 				btVector3 btHitPoint = trans.invXform(RayCallback.m_hitPointWorld[i]);
-				hitPoint = ToVector3f(btHitPoint);
+				result.hitPoint = ToVector3f(btHitPoint);
 				auto offsetIt = body ? m_shapeOffset.find(body->getCollisionShape()) : m_shapeOffset.end();
 				if (offsetIt != m_shapeOffset.end())
 				{
-					hitPoint += offsetIt->second;
+					result.hitPoint += offsetIt->second;
 				}
-				if (*obj)
+				if (result.object)
 				{
-					return true;
+					result.success = true;
+					return result;
 				}
 			}
 		}
-		return *obj != nullptr;
+		result.success = result.object != nullptr;
+		return result;
 	}
 
 	void AddBounding(const Path& modelName, Bounding const& bounding)
@@ -242,12 +255,12 @@ public:
 		m_collisionShapes[modelName] = processShape(bounding);
 	}
 
-	void RemoveDynamicObject(IObject * objectToRemove)
+	void RemoveDynamicObject(IBaseObject * objectToRemove)
 	{
 		for (int i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0;i--)
 		{
 			btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[i];
-			IObject *object = reinterpret_cast<IObject*>(obj->getUserPointer());
+			IBaseObject *object = reinterpret_cast<IBaseObject*>(obj->getUserPointer());
 			if (object == objectToRemove)
 			{
 				m_dynamicsWorld->removeCollisionObject(obj);
@@ -258,7 +271,7 @@ public:
 		}), m_objects.end());
 	}
 
-	bool TestObject(IObject * object)
+	bool TestObject(IBaseObject * object)
 	{
 		btCollisionShape* colShape = m_collisionShapes.at(object->GetPathToModel()).get();
 
@@ -275,7 +288,7 @@ public:
 		{
 			btCollisionObject* ground;
 			bool* result;
-			IObject * self;
+			IBaseObject * self;
 			virtual btScalar addSingleResult(btManifoldPoint& /*cp*/, const btCollisionObjectWrapper* colObj0, int /*partId0*/, int /*index0*/,
 				const btCollisionObjectWrapper* colObj1, int /*partId1*/, int /*index1*/)
 			{
@@ -296,16 +309,12 @@ public:
 		return result;
 	}
 
-	void Draw()
-	{
-		m_dynamicsWorld->debugDrawWorld();
-	}
-
-	void EnableDebugDraw(IRenderer & renderer)
+	void Draw(view::IRenderer & renderer)
 	{
 		m_debugDrawer = std::make_unique<CDebugDrawer>(renderer);
 		m_debugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 		m_dynamicsWorld->setDebugDrawer(m_debugDrawer.get());
+		m_dynamicsWorld->debugDrawWorld();
 	}
 
 	Bounding GetAABB(const Path& path) const
@@ -374,10 +383,11 @@ private:
 	{
 		std::unique_ptr<btRigidBody> rigidBody;
 		std::unique_ptr<btMotionState> motionState;
-		IObject * object;
-		CScopedConnection coordsConnection;
-		CScopedConnection rotationConnection;
+		IBaseObject * object;
+		signals::ScopedConnection coordsConnection;
+		signals::ScopedConnection rotationConnection;
 	};
+	IBoundingBoxManager* m_boundingManager = nullptr;
 	btDefaultCollisionConfiguration m_collisionConfiguration;
 	btCollisionDispatcher m_dispatcher;
 	std::unique_ptr<btBroadphaseInterface> m_overlappingPairCache;
@@ -405,9 +415,9 @@ void CPhysicsEngineBullet::Update(std::chrono::microseconds timeDelta)
 	m_pImpl->Update(timeDelta);
 }
 
-void CPhysicsEngineBullet::Reset()
+void CPhysicsEngineBullet::Reset(IBoundingBoxManager& boundingManager)
 {
-	m_pImpl->Reset();
+	m_pImpl->Reset(boundingManager);
 }
 
 void CPhysicsEngineBullet::AddDynamicObject(IObject * object, double mass)
@@ -420,7 +430,7 @@ void CPhysicsEngineBullet::AddStaticObject(IBaseObject * staticObject)
 	m_pImpl->AddStaticObject(staticObject);
 }
 
-void CPhysicsEngineBullet::RemoveDynamicObject(IObject * object)
+void CPhysicsEngineBullet::RemoveObject(IBaseObject * object)
 {
 	m_pImpl->RemoveDynamicObject(object);
 }
@@ -430,32 +440,17 @@ void CPhysicsEngineBullet::SetGround(Landscape * landscape)
 	m_pImpl->SetGround(landscape);
 }
 
-bool CPhysicsEngineBullet::CastRay(CVector3f const& origin, CVector3f const& dest, IObject ** obj, CVector3f & hitPoint, std::vector<IObject*> const& excludeObjects) const
+IPhysicsEngine::CastRayResult CPhysicsEngineBullet::CastRay(CVector3f const& origin, CVector3f const& dest, std::vector<IBaseObject*> const& excludeObjects) const
 {
-	return m_pImpl->CastRay(origin, dest, obj, hitPoint, excludeObjects);
+	return m_pImpl->CastRay(origin, dest, excludeObjects);
 }
 
-bool CPhysicsEngineBullet::TestObject(IObject * object) const
+bool CPhysicsEngineBullet::TestObject(IBaseObject * object) const
 {
 	return m_pImpl->TestObject(object);
 }
 
-void CPhysicsEngineBullet::AddBounding(const Path& modelName, Bounding const& bounding)
+void CPhysicsEngineBullet::Draw(view::IRenderer & renderer) const
 {
-	m_pImpl->AddBounding(modelName, bounding);
-}
-
-Bounding CPhysicsEngineBullet::GetBounding(const Path& path) const
-{
-	return m_pImpl->GetAABB(path);
-}
-
-void CPhysicsEngineBullet::Draw() const
-{
-	m_pImpl->Draw();
-}
-
-void CPhysicsEngineBullet::EnableDebugDraw(IRenderer & renderer)
-{
-	m_pImpl->EnableDebugDraw(renderer);
+	m_pImpl->Draw(renderer);
 }

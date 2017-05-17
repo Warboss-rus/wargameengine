@@ -1,8 +1,14 @@
 #include "UIElement.h"
 
-class CUIPanel : public CUIElement
+namespace wargameEngine
+{
+namespace ui
+{
+class UIPanel : public UIElement
 {
 public:
-	CUIPanel(int x, int y, int height, int width, IUIElement * parent, IRenderer & renderer, ITextWriter & textWriter):CUIElement(x, y, height, width, parent, renderer, textWriter) {}
-	void Draw() const override;
+	UIPanel(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter);
+	void Draw(view::IRenderer& renderer) const override;
 };
+}
+}

@@ -3,6 +3,8 @@
 #include "../Utils.h"
 #include "../LogWriter.h"
 
+using namespace wargameEngine;
+
 void CSoundPlayerFMod::Init()
 {
 	if (FMOD::System_Create(&m_system) != FMOD_OK)

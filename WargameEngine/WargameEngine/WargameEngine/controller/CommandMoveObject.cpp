@@ -1,15 +1,20 @@
 #include "CommandMoveObject.h"
-#include "../model/GameModel.h"
+#include "../model/Model.h"
 #include "../IMemoryStream.h"
 
-CCommandMoveObject::CCommandMoveObject(std::shared_ptr<IObject> object, float deltaX, float deltaY) :
+namespace wargameEngine
+{
+namespace controller
+{
+
+CCommandMoveObject::CCommandMoveObject(std::shared_ptr<model::IObject> object, float deltaX, float deltaY) :
 	m_pObject(object), m_deltaX(deltaX), m_deltaY(deltaY)
 {
 }
 
-CCommandMoveObject::CCommandMoveObject(IReadMemoryStream & stream, IGameModel& model)
+CCommandMoveObject::CCommandMoveObject(IReadMemoryStream & stream, model::IModel& model)
 {
-	m_pObject = model.Get3DObject(reinterpret_cast<IObject*>(stream.ReadPointer()));
+	m_pObject = model.Get3DObject(reinterpret_cast<model::IObject*>(stream.ReadPointer()));
 	m_deltaX = stream.ReadFloat();
 	m_deltaY = stream.ReadFloat();
 }
@@ -21,7 +26,7 @@ void CCommandMoveObject::Execute()
 
 void CCommandMoveObject::Rollback()
 {
-	m_pObject->Move(-m_deltaX,-m_deltaY, 0);
+	m_pObject->Move(-m_deltaX, -m_deltaY, 0);
 }
 
 void CCommandMoveObject::Serialize(IWriteMemoryStream & stream) const
@@ -30,4 +35,7 @@ void CCommandMoveObject::Serialize(IWriteMemoryStream & stream) const
 	stream.WritePointer(m_pObject.get());
 	stream.WriteFloat(m_deltaX);
 	stream.WriteFloat(m_deltaY);
+}
+
+}
 }

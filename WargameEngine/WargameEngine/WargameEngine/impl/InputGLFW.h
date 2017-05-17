@@ -4,11 +4,11 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 
-class IObject;
-
-class CInputGLFW : public CInputBase
+class CInputGLFW : public wargameEngine::view::CInputBase
 {
 public:
+	using VirtualKey = wargameEngine::view::VirtualKey;
+
 	CInputGLFW(GLFWwindow * window);
 
 	void EnableCursor(bool enable = true) override;

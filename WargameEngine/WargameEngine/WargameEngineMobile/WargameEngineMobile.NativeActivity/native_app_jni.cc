@@ -1,7 +1,7 @@
 #include <android/log.h>
 #include <jni.h>
 #include <dlfcn.h>
-#include "..\..\WargameEngine\view\GameView.h"
+#include "..\..\WargameEngine\view\View.h"
 #include "..\..\WargameEngine\impl\TextWriter.h"
 #include "..\..\WargameEngine\impl\ScriptHandlerLua.h"
 #include "..\..\WargameEngine\impl\NetSocket.h"
@@ -22,7 +22,7 @@ namespace {
 struct NativeAppJni
 {
 	sGameViewContext context;
-	std::unique_ptr<CGameView> gameView;
+	std::unique_ptr<View> gameView;
 	CGvrGameWindow * window;
 	NativeAppJni(gvr_context* gvr_context, std::unique_ptr<gvr::AudioApi> gvr_audio_api)
 	{
@@ -87,7 +87,7 @@ JNI_METHOD(void, nativeInitializeGl)(JNIEnv *env, jobject obj, jlong nativeRende
 {
 	auto renderer = native(nativeRenderer);
 	renderer->window->Init();
-	renderer->gameView = std::make_unique<CGameView>(&renderer->context);
+	renderer->gameView = std::make_unique<View>(&renderer->context);
 	renderer->gameView->GetViewport(0).GetCamera().AttachToVR(0);
 }
 

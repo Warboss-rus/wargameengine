@@ -4,6 +4,10 @@
 #include "IRenderer.h"
 #include "IViewHelper.h"
 
+namespace wargameEngine
+{
+namespace view
+{
 class IGameWindow
 {
 public:
@@ -24,3 +28,5 @@ public:
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) = 0;
 	virtual void GetWindowSize(int& width, int& height) = 0;
 };
+}
+}

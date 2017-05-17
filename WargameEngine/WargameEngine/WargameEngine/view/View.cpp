@@ -1,76 +1,69 @@
-#include "GameView.h"
-#include <string>
-#include "Matrix4.h"
-#include "../controller/GameController.h"
+#include "View.h"
+#include "IGameWindow.h"
+#include "../controller/Controller.h"
 #include "../model/ObjectGroup.h"
 #include "../LogWriter.h"
 #include "../ThreadPool.h"
 #include "../Module.h"
-#include "../Ruler.h"
 #include "../UI/UIElement.h"
 #include "../UI/UITheme.h"
 #include "IImageReader.h"
 #include "IModelReader.h"
 #include "../Utils.h"
-#include "../IPhysicsEngine.h"
-#include "../IPathfinding.h"
+#include "ITextWriter.h"
+#include "ISoundPlayer.h"
 
 using namespace std;
 using namespace placeholders;
 
+namespace wargameEngine
+{
+namespace view
+{
+
 static const string g_controllerTag = "controller";
 
-CGameView::~CGameView()
-{
-	m_viewports.clear();
-}
-
-CGameView::CGameView(sGameViewContext * context)
-	: m_window(move(context->window))
-	, m_renderer(m_window->GetRenderer())
-	, m_viewHelper(m_window->GetViewHelper())
-	, m_input(m_window->GetInput())
-	, m_gameModel(make_unique<CGameModel>())
-	, m_soundPlayer(*context->soundPlayer)
-	, m_textWriter(*context->textWriter)
-	, m_physicsEngine(*context->physicsEngine)
-	, m_pathFinder(*context->pathFinder)
-	, m_ui(m_renderer, m_textWriter)
-	, m_asyncFileProvider(m_threadPool)
-	, m_modelManager(m_renderer, m_physicsEngine, m_asyncFileProvider)
-	, m_textureManager(m_window->GetViewHelper(), m_asyncFileProvider)
+View::View(IGameWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
+	vector<unique_ptr<IImageReader>>& imageReaders, vector<unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager)
+	: m_window(window)
+	, m_renderer(m_window.GetRenderer())
+	, m_viewHelper(m_window.GetViewHelper())
+	, m_input(m_window.GetInput())
+	, m_soundPlayer(soundPlayer)
+	, m_textWriter(textWriter)
+	, m_threadPool(threadPool)
+	, m_boundingManager(boundingManager)
+	, m_ui(m_textWriter)
+	, m_modelManager(m_renderer, m_boundingManager, asyncFileProvider)
+	, m_textureManager(m_viewHelper, asyncFileProvider)
 	, m_particles(m_renderer)
-	, m_scriptHandler(*context->scriptHandler)
-	, m_socketFactory(context->socketFactory)
 {
 	m_viewHelper.SetTextureManager(m_textureManager);
-	for (auto& reader : context->imageReaders)
+	for (auto& reader : imageReaders)
 	{
 		m_textureManager.RegisterImageReader(std::move(reader));
 	}
-	for (auto& reader : context->modelReaders)
+	for (auto& reader : modelReaders)
 	{
 		m_modelManager.RegisterModelReader(std::move(reader));
 	}
 	setlocale(LC_ALL, "");
 	setlocale(LC_NUMERIC, "english");
 
-	m_ui.SetTheme(make_shared<CUITheme>());
+	m_ui.SetTheme(make_shared<ui::UITheme>());
 
-	Init(context->module);
-
-	m_window->DoOnDrawScene([this]() {
+	m_window.DoOnDrawScene([this]() {
 		m_viewHelper.ClearBuffers(true, true);
 		Update();
 	});
-	m_window->DoOnResize([this](int width, int height) {
+	m_window.DoOnResize([this](int width, int height) {
 		m_ui.Resize(height, width);
 		for (auto& viewport : m_viewports)
 		{
 			viewport.Resize(width, height);
 		}
 	});
-	m_window->DoOnShutdown([this] {
+	m_window.DoOnShutdown([this] {
 		m_threadPool.CancelAll();
 		m_textWriter.Reset();
 	});
@@ -78,40 +71,40 @@ CGameView::CGameView(sGameViewContext * context)
 #ifdef _DEBUG
 	//m_physicsEngine->EnableDebugDraw(*m_renderer);
 #endif
-
-	m_window->LaunchMainLoop();
 }
 
-void CGameView::Init(sModule const& module)
+View::~View()
+{
+	m_viewports.clear();
+}
+
+void View::Init(model::Model& model, controller::Controller& controller)
 {
 	m_ui.ClearChildren();
 	m_viewports.clear();
 	int width, height;
-	m_window->GetWindowSize(width, height);
+	m_window.GetWindowSize(width, height);
 	m_viewports.emplace_back(0, 0, width, height, 60.0f, m_viewHelper, m_input, true, true);
 	m_viewports.front().GetCamera().SetLimits(100.0f, 100.0f, 100.0f, 0.5f, 2.8f);
-	m_gameController.reset();
 
-	m_asyncFileProvider.SetModule(module);
-		
-	m_gameModel = make_unique<CGameModel>();
+	m_model = &model;
+	m_controller = &controller;
+	
 	ClearResources();
 	InitLandscape();
 	InitInput();
 	m_viewports.front().GetCamera().AttachToKeyboardMouse();
-	m_gameController = make_unique<CGameController>(*m_gameModel, m_scriptHandler, m_physicsEngine, m_pathFinder);
-	m_gameController->Init(*this, m_socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(module.script));
 	m_soundPlayer.Init();
 }
 
-void CGameView::InitLandscape()
+void View::InitLandscape()
 {
-	m_gameModel->GetLandscape().DoOnUpdated([this]() {
+	m_model->GetLandscape().DoOnUpdated([this]() {
 		m_tableBuffer.reset();
 	});
 }
 
-void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, float & worldX, float & worldY, float worldZ)
+void View::WindowCoordsToWorldCoords(int windowX, int windowY, float & worldX, float & worldY, float worldZ)
 {
 	CVector3f start, end;
 	WindowCoordsToWorldVector(windowX, windowY, start, end);
@@ -120,7 +113,7 @@ void CGameView::WindowCoordsToWorldCoords(int windowX, int windowY, float & worl
 	worldY = a * (end.y - start.y) + start.y;
 }
 
-void CGameView::WindowCoordsToWorldVector(int x, int y, CVector3f & start, CVector3f & end)
+void View::WindowCoordsToWorldVector(int x, int y, CVector3f & start, CVector3f & end)
 {
 	for (auto& viewport : m_viewports)
 	{
@@ -132,7 +125,7 @@ void CGameView::WindowCoordsToWorldVector(int x, int y, CVector3f & start, CVect
 	}
 }
 
-void CGameView::InitInput()
+void View::InitInput()
 {
 	m_input.Reset();
 	//UI
@@ -196,8 +189,8 @@ void CGameView::InitInput()
 	m_input.DoOnLMBDown([this](int x, int y) {
 		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
-		bool result = m_gameController->OnLeftMouseDown(begin, end, m_input.GetModifiers());
-		auto object = m_gameModel->GetSelectedObject();
+		bool result = m_controller->OnLeftMouseDown(begin, end, m_input.GetModifiers());
+		auto object = m_model->GetSelectedObject();
 		if (result && object)
 		{
 			m_ruler.SetBegin(object->GetX(), object->GetY());
@@ -207,7 +200,7 @@ void CGameView::InitInput()
 	m_input.DoOnLMBUp([this](int x, int y) {
 		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
-		bool result = m_gameController->OnLeftMouseUp(begin, end, m_input.GetModifiers());
+		bool result = m_controller->OnLeftMouseUp(begin, end, m_input.GetModifiers());
 		if (result && !m_ruler.IsEnabled())
 		{
 			m_ruler.Hide();
@@ -218,8 +211,8 @@ void CGameView::InitInput()
 	m_input.DoOnMouseMove([this](int x, int y, int /*dx*/, int /*dy*/) {
 		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
-		bool result = m_gameController->OnMouseMove(begin, end, m_input.GetModifiers());
-		auto object = m_gameModel->GetSelectedObject();
+		bool result = m_controller->OnMouseMove(begin, end, m_input.GetModifiers());
+		auto object = m_model->GetSelectedObject();
 		if (result && object)
 		{
 			m_ruler.SetEnd(object->GetX(), object->GetY());
@@ -229,30 +222,30 @@ void CGameView::InitInput()
 	m_input.DoOnRMBDown([this](int x, int y) {
 		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
-		return m_gameController->OnRightMouseDown(begin, end, m_input.GetModifiers());
+		return m_controller->OnRightMouseDown(begin, end, m_input.GetModifiers());
 	}, 5, g_controllerTag);
 	m_input.DoOnRMBUp([this](int x, int y) {
 		CVector3f begin, end;
 		WindowCoordsToWorldVector(x, y, begin, end);
-		return m_gameController->OnRightMouseUp(begin, end, m_input.GetModifiers());
+		return m_controller->OnRightMouseUp(begin, end, m_input.GetModifiers());
 	}, 5, g_controllerTag);
-	m_input.DoOnGamepadButtonStateChange([this](int gamepadIndex, int buttonIndex, bool newState){
-		return m_gameController->OnGamepadButtonStateChange(gamepadIndex, buttonIndex, newState);
+	m_input.DoOnGamepadButtonStateChange([this](int gamepadIndex, int buttonIndex, bool newState) {
+		return m_controller->OnGamepadButtonStateChange(gamepadIndex, buttonIndex, newState);
 	}, 5, g_controllerTag);
 	m_input.DoOnGamepadAxisChange([this](int gamepadIndex, int axisIndex, double horizontal, double vertical) {
-		return m_gameController->OnGamepadAxisChange(gamepadIndex, axisIndex, horizontal, vertical);
+		return m_controller->OnGamepadAxisChange(gamepadIndex, axisIndex, horizontal, vertical);
 	}, 5, g_controllerTag);
 }
 
-void CGameView::DrawUI()
+void View::DrawUI()
 {
 	m_renderer.SetColor(0, 0, 0);
 	m_viewHelper.DrawIn2D([this] {
-		m_ui.Draw();
+		m_ui.Draw(m_renderer);
 	});
 }
 
-void DrawBBox(Bounding::Box const& bbox, IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
+void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
 {
 	renderer.UnbindTexture();
 	renderer.PushMatrix();
@@ -263,10 +256,10 @@ void DrawBBox(Bounding::Box const& bbox, IBaseObject const& object, IRenderer & 
 	if (wireframe)
 	{
 		renderer.SetColor(0, 0, 255);
-		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
-		renderer.RenderArrays(RenderMode::LINE_LOOP, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
-		renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
-		renderer.RenderArrays(RenderMode::LINE_LOOP, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
+		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
+		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
+		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
+		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
 		renderer.SetColor(0, 0, 0);
 	}
 	else
@@ -285,45 +278,45 @@ void DrawBBox(Bounding::Box const& bbox, IBaseObject const& object, IRenderer & 
 			CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
 			{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
 		};
-		renderer.RenderArrays(RenderMode::TRIANGLES, vertices, {}, {});
+		renderer.RenderArrays(IRenderer::RenderMode::TRIANGLES, vertices, {}, {});
 	}
 	renderer.PopMatrix();
 }
 
-void CGameView::DrawBoundingBox()
+void View::DrawBoundingBox()
 {
-	shared_ptr<IObject> object = m_gameModel->GetSelectedObject();
-	if(object)
+	shared_ptr<model::IObject> object = m_model->GetSelectedObject();
+	if (object)
 	{
 		if (object->IsGroup())
 		{
-			CObjectGroup * group = (CObjectGroup *)object.get();
-			for(size_t i = 0; i < group->GetCount(); ++i)
+			model::ObjectGroup * group = (model::ObjectGroup *)object.get();
+			for (size_t i = 0; i < group->GetCount(); ++i)
 			{
 				object = group->GetChild(i);
-				if(object)
+				if (object)
 				{
-					auto bbox = m_physicsEngine.GetBounding(object->GetPathToModel());
+					auto bbox = m_boundingManager.GetBounding(object->GetPathToModel());
 					DrawBBox(bbox.GetBox(), *object, m_renderer);
 				}
 			}
 		}
 		else
 		{
-			auto bbox = m_physicsEngine.GetBounding(object->GetPathToModel());
+			auto bbox = m_boundingManager.GetBounding(object->GetPathToModel());
 			DrawBBox(bbox.GetBox(), *object, m_renderer);
 		}
 	}
 }
 
-void CGameView::Update()
+void View::Update()
 {
 	m_threadPool.Update();
-	m_gameController->Update();
+	m_controller->Update();
 	auto& defaultCamera = m_viewports.front().GetCamera();
 	m_soundPlayer.SetListenerPosition(defaultCamera.GetPosition(), defaultCamera.GetDirection());
 	m_soundPlayer.Update();
-	for (auto it = m_viewports.rbegin();  it != m_viewports.rend(); ++it)
+	for (auto it = m_viewports.rbegin(); it != m_viewports.rend(); ++it)
 	{
 		m_currentViewport = &(*it);
 		m_currentViewport->Bind();
@@ -338,7 +331,7 @@ void CGameView::Update()
 		{
 			DrawBoundingBox();
 			DrawRuler();
-			m_physicsEngine.Draw();
+			//m_physicsEngine.Draw();
 		}
 		if (m_currentViewport->DrawUI())
 		{
@@ -355,22 +348,22 @@ void CGameView::Update()
 	});
 }
 
-void CGameView::DrawRuler()
+void View::DrawRuler()
 {
 	if (m_ruler.IsVisible())
 	{
 		m_renderer.SetColor(255, 255, 0);
-		m_renderer.RenderArrays(RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
+		m_renderer.RenderArrays(IRenderer::RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
 		m_renderer.SetColor(255, 255, 255);
 		DrawText3D(m_ruler.GetEnd(), ToWstring(m_ruler.GetDistance(), 2));
 		m_renderer.SetColor(0, 0, 0);
 	}
 }
-void CGameView::DrawTable(bool shadowOnly)
+void View::DrawTable(bool shadowOnly)
 {
 	if (!m_tableBuffer)
 	{
-		Landscape const& landscape = m_gameModel->GetLandscape();
+		model::Landscape const& landscape = m_model->GetLandscape();
 		float x1 = -landscape.GetWidth() / 2.0f;
 		float x2 = landscape.GetWidth() / 2.0f;
 		float y1 = -landscape.GetDepth() / 2.0f;
@@ -405,19 +398,19 @@ void CGameView::DrawTable(bool shadowOnly)
 		m_tableBuffer = m_renderer.CreateVertexBuffer(vertex.data()->ptr(), nullptr, &texCoord.data()->x, vertex.size());
 		m_tableBufferSize = vertex.size();
 	}
-	Landscape const& landscape = m_gameModel->GetLandscape();
+	model::Landscape const& landscape = m_model->GetLandscape();
 	if (!shadowOnly)m_renderer.SetTexture(landscape.GetTexture());
 	m_renderer.DrawAll(*m_tableBuffer, m_tableBufferSize);
 	if (!shadowOnly)//Don't draw decals because they don't cast shadows
 	{
 		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 		{
-			Decal const& decal = landscape.GetDecal(i);
+			model::Decal const& decal = landscape.GetDecal(i);
 			m_renderer.SetTexture(decal.texture);
 			m_renderer.PushMatrix();
 			m_renderer.Translate(CVector3f(decal.x, decal.y, 0.0f));
 			m_renderer.Rotate(decal.rotation, CVector3f(0.0f, 0.0f, 1.0f));
-			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, {
+			m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, {
 				CVector3f(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001f),
 				{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
 				{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001f },
@@ -428,15 +421,15 @@ void CGameView::DrawTable(bool shadowOnly)
 	}
 }
 
-void CGameView::DrawObjects(bool shadowOnly)
+void View::DrawObjects(bool shadowOnly)
 {
 	m_viewHelper.EnableDepthTest(true);
 	auto& shaderManager = m_renderer.GetShaderManager();
 	if (!shadowOnly)
 	{
-		if(m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
+		if (m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
 		m_currentViewport->SetUpShadowMap();
-		auto& lights = m_gameModel->GetLights();
+		auto& lights = m_model->GetLights();
 		size_t lightsCount = lights.size();
 		m_viewHelper.SetNumberOfLights(lightsCount);
 		for (size_t i = 0; i < lightsCount; ++i)
@@ -449,19 +442,19 @@ void CGameView::DrawObjects(bool shadowOnly)
 		m_renderer.GetShaderManager().SetUniformValue(eyePosKey, 3, 1, viewPos.ptr());
 	}
 	DrawTable(shadowOnly);
-	auto isVisibleInFrustum = [this](const IBaseObject* obj) {
+	auto isVisibleInFrustum = [this](const model::IBaseObject* obj) {
 		int x(-1), y(-1);
 		m_viewHelper.WorldCoordsToWindowCoords(*m_currentViewport, obj->GetCoords(), x, y);
 		return x >= m_currentViewport->GetX() && x <= m_currentViewport->GetX() + m_currentViewport->GetWidth() &&
 			y >= m_currentViewport->GetY() && y <= m_currentViewport->GetY() + m_currentViewport->GetHeight();
 	};
-	size_t countObjects = m_gameModel->GetObjectCount();
-	size_t staticObjectsCount = m_gameModel->GetLandscape().GetStaticObjectCount();
-	std::vector<IBaseObject*> objects;
+	size_t countObjects = m_model->GetObjectCount();
+	size_t staticObjectsCount = m_model->GetStaticObjectCount();
+	std::vector<model::IBaseObject*> objects;
 	objects.reserve(countObjects + staticObjectsCount);
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		auto obj = m_gameModel->Get3DObject(i).get();
+		auto obj = m_model->Get3DObject(i).get();
 		if (isVisibleInFrustum(obj))
 		{
 			objects.push_back(obj);
@@ -470,28 +463,28 @@ void CGameView::DrawObjects(bool shadowOnly)
 
 	for (size_t i = 0; i < staticObjectsCount; i++)
 	{
-		StaticObject& obj = m_gameModel->GetLandscape().GetStaticObject(i);
+		model::StaticObject& obj = m_model->GetStaticObject(i);
 		if (isVisibleInFrustum(&obj))
 		{
 			objects.push_back(&obj);
 		}
 	};
 	CVector3f cameraPos = m_currentViewport->GetCamera().GetPosition();
-	std::sort(objects.begin(), objects.end(), [&cameraPos](const IBaseObject* o1, const IBaseObject* o2) {
+	std::sort(objects.begin(), objects.end(), [&cameraPos](const model::IBaseObject* o1, const model::IBaseObject* o2) {
 		return (o1->GetCoords() - cameraPos).GetLength() < (o2->GetCoords() - cameraPos).GetLength();
 	});
-	for(auto& object : objects)
+	for (auto& object : objects)
 	{
 		auto& query = m_currentViewport->GetOcclusionQuery(object);
 		bool queryResult = query.IsVisible();
 		query.Query([&] {
-			auto bounding = m_physicsEngine.GetBounding(object->GetPathToModel());
+			auto bounding = m_boundingManager.GetBounding(object->GetPathToModel());
 			if (queryResult || !bounding)
 			{
 				m_renderer.PushMatrix();
 				m_renderer.Translate(object->GetCoords());
 				m_renderer.Rotate(object->GetRotations());
-				IObject* fullObject = object->GetFullObject();
+				model::IObject* fullObject = object->GetFullObject();
 				m_modelManager.DrawModel(object->GetPathToModel(), fullObject, shadowOnly);
 				if (fullObject)
 				{
@@ -509,12 +502,12 @@ void CGameView::DrawObjects(bool shadowOnly)
 			}
 		}, queryResult);
 	}
-	if(!shadowOnly && m_shaderProgram) shaderManager.PopProgram();
+	if (!shadowOnly && m_shaderProgram) shaderManager.PopProgram();
 	if (!shadowOnly)
 	{
-		for (size_t i = 0; i < m_gameModel->GetProjectileCount(); i++)
+		for (size_t i = 0; i < m_model->GetProjectileCount(); i++)
 		{
-			CProjectile const& projectile = m_gameModel->GetProjectile(i);
+			model::Projectile const& projectile = m_model->GetProjectile(i);
 			m_renderer.PushMatrix();
 			m_renderer.Translate(projectile.GetCoords());
 			m_renderer.Rotate(projectile.GetRotations());
@@ -524,77 +517,77 @@ void CGameView::DrawObjects(bool shadowOnly)
 				m_particles.Draw(*projectile.GetParticle());
 			m_renderer.PopMatrix();
 		}
-		for (size_t i = 0; i < m_gameModel->GetParticleCount(); ++i)
+		for (size_t i = 0; i < m_model->GetParticleCount(); ++i)
 		{
-			CParticleEffect const& effect = m_gameModel->GetParticleEffect(i);
+			model::ParticleEffect const& effect = m_model->GetParticleEffect(i);
 			m_particles.Draw(effect);
 		}
 	}
 	m_viewHelper.EnableDepthTest(false);
 }
 
-void CGameView::CreateSkybox(float size, const Path& textureFolder)
+void View::CreateSkybox(float size, const Path& textureFolder)
 {
-	m_skybox = std::make_unique<CSkyBox>(size, size, size, textureFolder, m_renderer, m_textureManager);
+	m_skybox = std::make_unique<SkyBox>(size, size, size, textureFolder, m_renderer, m_textureManager);
 }
 
-CModelManager& CGameView::GetModelManager()
+ModelManager& View::GetModelManager()
 {
 	return m_modelManager;
 }
 
-IUIElement * CGameView::GetUI()
+ui::IUIElement * View::GetUI()
 {
 	return &m_ui;
 }
 
-ISoundPlayer& CGameView::GetSoundPlayer()
+ISoundPlayer& View::GetSoundPlayer()
 {
 	return m_soundPlayer;
 }
 
-CTranslationManager& CGameView::GetTranslationManager()
+TranslationManager& View::GetTranslationManager()
 {
 	return m_translationManager;
 }
 
-CRuler& CGameView::GetRuler()
+Ruler& View::GetRuler()
 {
 	return m_ruler;
 }
 
-IRenderer& CGameView::GetRenderer()
+IRenderer& View::GetRenderer()
 {
 	return m_renderer;
 }
 
-void CGameView::NewShaderProgram(const Path& vertex, const Path& fragment, const Path& geometry)
+void View::NewShaderProgram(const Path& vertex, const Path& fragment, const Path& geometry)
 {
 	m_shaderProgram = m_renderer.GetShaderManager().NewProgram(vertex, fragment, geometry);
 }
 
-IShaderProgram const& CGameView::GetShaderProgram() const
+IShaderProgram const& View::GetShaderProgram() const
 {
 	return *m_shaderProgram;
 }
 
-void CGameView::ResizeWindow(int height, int width)
+void View::ResizeWindow(int height, int width)
 {
-	m_window->ResizeWindow(width, height);
+	m_window.ResizeWindow(width, height);
 }
 
-CViewportBase& CGameView::CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition)
+Viewport& View::CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition)
 {
 	m_viewports.emplace_back(0, 0, size, size, angle, m_viewHelper, m_input, false, false);
 	auto& shadowMapViewport = m_viewports.back();
-	shadowMapViewport.AttachNewTexture(CachedTextureType::DEPTH, static_cast<int>(TextureSlot::eShadowMap));
+	shadowMapViewport.AttachNewTexture(IRenderer::CachedTextureType::DEPTH, static_cast<int>(IRenderer::TextureSlot::eShadowMap));
 	shadowMapViewport.GetCamera().Set(lightPosition);
 	shadowMapViewport.SetPolygonOffset(true, 2.0f, 500.0f);
 	shadowMapViewport.SetClippingPlanes(3.0, 300.0);
 	return shadowMapViewport;
 }
 
-void CGameView::DisableShadowMap(CViewportBase& viewport)
+void View::DisableShadowMap(Viewport& viewport)
 {
 	auto shadowMapViewport = viewport.GetShadowViewport();
 	for (auto it = m_viewports.begin(); it != m_viewports.end(); ++it)
@@ -608,75 +601,70 @@ void CGameView::DisableShadowMap(CViewportBase& viewport)
 	viewport.SetShadowViewport(nullptr);
 }
 
-void CGameView::EnableMSAA(bool enable, int level)
+void View::EnableMSAA(bool enable, int level)
 {
-	m_window->EnableMultisampling(enable, level);
+	m_window.EnableMultisampling(enable, level);
 }
 
-float CGameView::GetMaxAnisotropy() const
+float View::GetMaxAnisotropy() const
 {
 	return m_viewHelper.GetMaximumAnisotropyLevel();
 }
 
-void CGameView::SetAnisotropyLevel(float level)
+void View::SetAnisotropyLevel(float level)
 {
 	m_textureManager.SetAnisotropyLevel(level);
 }
 
-void CGameView::ClearResources()
+void View::ClearResources()
 {
 	m_modelManager.Reset();
 	m_textureManager.Reset();
 	m_tableBuffer.reset();
 }
 
-void CGameView::SetWindowTitle(wstring const& title)
+void View::SetWindowTitle(wstring const& title)
 {
-	m_window->SetTitle(title + L" - Wargame Engine");
+	m_window.SetTitle(title + L" - Wargame Engine");
 }
 
-CAsyncFileProvider& CGameView::GetAsyncFileProvider()
-{
-	return m_asyncFileProvider;
-}
-
-ThreadPool& CGameView::GetThreadPool()
+ThreadPool& View::GetThreadPool()
 {
 	return m_threadPool;
 }
 
-IViewHelper& CGameView::GetViewHelper()
+IViewHelper& View::GetViewHelper()
 {
 	return m_viewHelper;
 }
 
-IInput& CGameView::GetInput()
+IInput& View::GetInput()
 {
 	return m_input;
 }
 
-CParticleSystem& CGameView::GetParticleSystem()
+ParticleSystem& View::GetParticleSystem()
 {
 	return m_particles;
 }
 
-size_t CGameView::GetViewportCount() const
+size_t View::GetViewportCount() const
 {
 	return m_viewports.size();
 }
 
-CViewportBase& CGameView::GetViewport(size_t index /*= 0*/)
+Viewport& View::GetViewport(size_t index /*= 0*/)
 {
 	return m_viewports[index];
 }
 
-CViewportBase& CGameView::AddViewport(CViewportBase&& viewport)
+Viewport& View::AddViewport(Viewport&& viewport)
 {
 	m_viewports.emplace_back(std::move(viewport));
 	return m_viewports.back();
 }
 
-void CGameView::RemoveViewport(IViewport * viewportPtr)
+void View::RemoveViewport(IViewport * viewportPtr)
 {
 	for (auto it = m_viewports.begin(); it != m_viewports.end(); ++it)
 	{
@@ -688,7 +676,7 @@ void CGameView::RemoveViewport(IViewport * viewportPtr)
 	}
 }
 
-void CGameView::Preload(const Path& image)
+void View::Preload(const Path& image)
 {
 	if (!image.empty())
 	{
@@ -697,30 +685,20 @@ void CGameView::Preload(const Path& image)
 			m_renderer.SetTexture(image);
 			int width = 640;
 			int height = 480;
-			m_window->GetWindowSize(width, height);
-			m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, height }, { width, 0 }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
+			m_window.GetWindowSize(width, height);
+			m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, height }, { width, 0 }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 			//glutSwapBuffers();
 		});
 	}
-	size_t countObjects = m_gameModel->GetObjectCount();
+	size_t countObjects = m_model->GetObjectCount();
 	for (size_t i = 0; i < countObjects; i++)
 	{
-		shared_ptr<const IObject> object = m_gameModel->Get3DObject(i);
+		shared_ptr<const model::IObject> object = m_model->Get3DObject(i);
 		m_modelManager.LoadIfNotExist(object->GetPathToModel());
 	}
 }
 
-void CGameView::LoadModule(const Path& modulePath)
-{
-	m_threadPool.CancelAll();
-	m_threadPool.QueueCallback([this, modulePath]() {
-		sModule module;
-		module.Load(modulePath);
-		Init(module);
-	});
-}
-
-void CGameView::DrawText3D(CVector3f const& pos, wstring const& text)
+void View::DrawText3D(CVector3f const& pos, wstring const& text)
 {
 	m_viewHelper.DrawIn2D([&] {
 		int x, y;
@@ -729,33 +707,31 @@ void CGameView::DrawText3D(CVector3f const& pos, wstring const& text)
 	});
 }
 
-bool CGameView::EnableVRMode(bool enable, bool mirrorToScreen)
+bool View::EnableVRMode(bool enable, bool mirrorToScreen)
 {
 	auto viewportFactory = [this](unsigned int width, unsigned int height) {
-		CViewportBase first(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
-		first.AttachNewTexture(CachedTextureType::RGBA);
-		CViewportBase second(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
-		second.AttachNewTexture(CachedTextureType::RGBA);
+		Viewport first(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
+		first.AttachNewTexture(IRenderer::CachedTextureType::RGBA);
+		Viewport second(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
+		second.AttachNewTexture(IRenderer::CachedTextureType::RGBA);
 		return std::pair<IViewport&, IViewport&>(AddViewport(std::move(first)), AddViewport(std::move(second)));
 	};
-	return m_window->EnableVRMode(enable, viewportFactory);
+	return m_window.EnableVRMode(enable, viewportFactory);
 }
 
-void CGameView::AddParticleEffect(const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles /*= 1000u*/)
+void View::AddParticleEffect(const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles /*= 1000u*/)
 {
-	m_gameModel->AddParticleEffect(m_particles.GetParticleUpdater(effectPath), effectPath, position, scale, maxParticles);
+	m_model->AddParticleEffect(m_particles.GetParticleUpdater(effectPath), effectPath, position, scale, maxParticles);
 }
 
-void CGameView::SetSkyboxShaders(const Path& vertex, const Path& fragment)
+void View::SetSkyboxShaders(const Path& vertex, const Path& fragment)
 {
 	m_skybox->SetShaders(vertex, fragment);
 }
 
-void CGameView::EnableGPUSkinning(bool enable)
+void View::EnableGPUSkinning(bool enable)
 {
 	m_modelManager.EnableGPUSkinning(enable);
 }
-
-sGameViewContext::~sGameViewContext()
-{
+}
 }

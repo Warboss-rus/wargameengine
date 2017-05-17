@@ -17,7 +17,7 @@ CVulkanVertexAttribCache::CVulkanVertexAttribCache(VkDeviceSize size, VkBufferUs
 	m_memory = renderer.GetMemoryManager().Allocate(buffer_memory_requirements, properties);
 	if (!m_memory)
 	{
-		LogWriter::WriteLine("Cannot allocate device memory");
+		wargameEngine::LogWriter::WriteLine("Cannot allocate device memory");
 		return;
 	}
 	result = vkBindBufferMemory(device, m_buffer, *m_memory, m_memory->GetOffset());

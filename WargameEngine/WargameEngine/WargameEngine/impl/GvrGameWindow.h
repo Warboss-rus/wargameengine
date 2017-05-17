@@ -5,7 +5,7 @@
 #include "InputAndroid.h"
 #include "OpenGLESRenderer.h"
 
-class CGameView;
+class View;
 
 class CGvrGameWindow : public IGameWindow
 {

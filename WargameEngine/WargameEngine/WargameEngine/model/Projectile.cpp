@@ -1,11 +1,16 @@
 #include "Projectile.h"
 
-CProjectile::CProjectile(CVector3f const& origin, CVector3f & target, float speed, const Path& model, CParticleEffect * particleEffect, std::function<void()> const& onHit, std::function<void()> const& onCollision)
+namespace wargameEngine
+{
+namespace model
+{
+
+Projectile::Projectile(CVector3f const& origin, CVector3f & target, float speed, const Path& model, ParticleEffect * particleEffect, std::function<void()> const& onHit, std::function<void()> const& onCollision)
 	: StaticObject(model, origin, 0.0f, model.empty()), m_target(target), m_speed(speed), m_particle(particleEffect), m_onHit(onHit), m_onCollision(onCollision)
 {
 }
 
-bool CProjectile::Update(std::chrono::microseconds timeSinceLastUpdate)
+bool Projectile::Update(std::chrono::microseconds timeSinceLastUpdate)
 {
 	CVector3f dir = m_target - GetCoords();
 	dir.Normalize();
@@ -22,17 +27,20 @@ bool CProjectile::Update(std::chrono::microseconds timeSinceLastUpdate)
 	return false;//Particle is not yet finished
 }
 
-const CParticleEffect* CProjectile::GetParticle() const
-{ 
-	return m_particle.get(); 
+const ParticleEffect* Projectile::GetParticle() const
+{
+	return m_particle.get();
 
 }
-void  CProjectile::CallOnCollision() const
-{ 
-	m_onCollision(); 
+void  Projectile::CallOnCollision() const
+{
+	m_onCollision();
 }
 
-float CProjectile::GetTime() const
-{ 
-	return std::chrono::duration<float>(m_time).count(); 
+float Projectile::GetTime() const
+{
+	return std::chrono::duration<float>(m_time).count();
+}
+
+}
 }

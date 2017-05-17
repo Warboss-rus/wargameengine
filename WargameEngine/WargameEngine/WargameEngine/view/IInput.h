@@ -1,8 +1,12 @@
 #pragma once
+#include "..\Signal.h"
 #include "KeyDefines.h"
 #include <functional>
-#include "..\Signal.h"
 
+namespace wargameEngine
+{
+namespace view
+{
 class IInput
 {
 public:
@@ -21,17 +25,17 @@ public:
 		MODIFIER_ALT = 4
 	};
 
-	virtual CSignalConnection DoOnLMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnLMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnRMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnRMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnMouseWheel(const MouseWheelHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnKeyDown(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnKeyUp(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnCharacter(const CharacterHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnMouseMove(const MouseMoveHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority = 0, std::string const& tag = "") = 0;
-	virtual CSignalConnection DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnLMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnLMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnRMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnRMBUp(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnMouseWheel(const MouseWheelHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnKeyDown(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnKeyUp(const KeyboardHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnCharacter(const CharacterHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnMouseMove(const MouseMoveHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority = 0, std::string const& tag = "") = 0;
+	virtual signals::SignalConnection DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority = 0, std::string const& tag = "") = 0;
 	virtual void EnableCursor(bool enable = true) = 0;
 	virtual int GetMouseX() const = 0;
 	virtual int GetMouseY() const = 0;
@@ -45,3 +49,5 @@ public:
 
 	virtual ~IInput() {}
 };
+}
+}

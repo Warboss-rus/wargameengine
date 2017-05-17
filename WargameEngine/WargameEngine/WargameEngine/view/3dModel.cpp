@@ -6,7 +6,12 @@
 #include <algorithm>
 #include "IShaderManager.h"
 
-C3DModel::C3DModel(float scale, const CVector3f& rotations):m_scale(scale), m_rotation(rotations), m_count(0) {}
+namespace wargameEngine
+{
+namespace view
+{
+
+C3DModel::C3DModel(float scale, const CVector3f& rotations) :m_scale(scale), m_rotation(rotations), m_count(0) {}
 
 C3DModel::C3DModel(C3DModel const& other)
 	: m_vertices(other.m_vertices), m_textureCoords(other.m_textureCoords), m_normals(other.m_normals), m_indexes(other.m_indexes), m_weightsCount(other.m_weightsCount)
@@ -20,12 +25,12 @@ C3DModel::~C3DModel()
 }
 
 void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-	CMaterialManager & materials, std::vector<sMesh> & meshes)
+	MaterialManager & materials, std::vector<sMesh> & meshes)
 {
 	m_vertices.swap(vertices);
 	m_textureCoords.swap(textureCoords);
 	m_normals.swap(normals);
-	m_count = (indexes.empty())?vertices.size():indexes.size();
+	m_count = (indexes.empty()) ? vertices.size() : indexes.size();
 	m_indexes.swap(indexes);
 	std::swap(m_materials, materials);
 	m_meshes.swap(meshes);
@@ -50,14 +55,14 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_animations.swap(animations);
 }
 
-void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures = nullptr)
+void SetMaterial(IRenderer & renderer, Material * material, const std::vector<model::TeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures = nullptr)
 {
-	if(!material)
+	if (!material)
 	{
 		renderer.SetTexture(Path());
 		return;
 	}
-	sMaterial& mat = *material;
+	Material& mat = *material;
 	renderer.SetMaterial(mat.ambient, mat.diffuse, mat.specular, mat.shininess);
 	if (!replaceTextures && !teamcolor)
 	{
@@ -67,7 +72,7 @@ void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<s
 		}
 		renderer.SetTexture(*mat.texturePtr);
 	}
-	else 
+	else
 	{
 		Path texture = material->texture;
 		if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
@@ -76,12 +81,12 @@ void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<s
 		}
 		renderer.SetTexture(texture, teamcolor);
 	}
-	if (!mat.specularMap.empty()) renderer.SetTexture(mat.specularMap, TextureSlot::eSpecular);
-	if (!mat.bumpMap.empty()) renderer.SetTexture(mat.bumpMap, TextureSlot::eBump);
+	if (!mat.specularMap.empty()) renderer.SetTexture(mat.specularMap, IRenderer::TextureSlot::eSpecular);
+	if (!mat.bumpMap.empty()) renderer.SetTexture(mat.bumpMap, IRenderer::TextureSlot::eBump);
 }
 
 void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer,
-	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
+	bool useGPUskinning, const std::vector<model::TeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
 {
 	renderer.ForceBindVertexBuffer(vertexBuffer);
 	auto& shaderManager = renderer.GetShaderManager();
@@ -91,11 +96,11 @@ void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hid
 		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache, 4, m_weightsCount.size() * 4, IShaderManager::TYPE::FLOAT32);
 	}
 	renderer.PushMatrix();
-	//renderer.Rotate(m_rotation);
+	renderer.Rotate(m_rotation);
 	renderer.Scale(m_scale);
 	if (!m_indexes.empty()) //Draw by meshes;
 	{
-		sMaterial * material = nullptr;
+		Material * material = nullptr;
 		for (size_t i = 0; i < m_meshes.size(); ++i)
 		{
 			sMesh& mesh = m_meshes[i];
@@ -167,7 +172,7 @@ void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			result[i] += matrix[i * 4 + j] * ((j == 3)?1.0f:vect[j]);
+			result[i] += matrix[i * 4 + j] * ((j == 3) ? 1.0f : vect[j]);
 		}
 	}
 	if (fabs(result[3]) > FLT_EPSILON)
@@ -216,7 +221,7 @@ void InterpolateMatrices(float * m1, const float * m2, float t)//works bad if ma
 	}
 }
 
-std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, AnimationLoop loop, 
+std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, model::AnimationLoop loop,
 	float time, bool & animationIsEnded)
 {
 	animationIsEnded = false;
@@ -239,11 +244,11 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 				AddAllChildren(animations, i, animsToPlay);
 				if (time > animations[i].duration)
 				{
-					if (loop == AnimationLoop::Looping)
+					if (loop == model::AnimationLoop::Looping)
 					{
 						time = fmod(time, animations[i].duration);
 					}
-					else if (loop == AnimationLoop::HoldEnd)
+					else if (loop == model::AnimationLoop::HoldEnd)
 					{
 						time = animations[i].duration;
 					}
@@ -302,8 +307,8 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 }
 
 //returns if animations is ended
-bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, AnimationLoop loop, float time, 
-	bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
+bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, model::AnimationLoop loop, float time,
+	bool gpuSkinning, const std::vector<model::TeamColor> * teamcolor, const std::map<Path, Path> * replaceTextures)
 {
 	bool result;
 	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);
@@ -348,7 +353,7 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 	return result;
 }
 
-void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool gpuSkinning)
+void C3DModel::Draw(IRenderer & renderer, model::IObject* object, bool vertexOnly, bool gpuSkinning)
 {
 	if (!m_vertexBuffer)
 	{
@@ -363,7 +368,7 @@ void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool
 	{
 		if (object->GetAnimation().empty())//no animation is playing, default pose
 		{
-			DrawSkinned(renderer, hiddenMeshes, vertexOnly, "", AnimationLoop::NonLooping, 0.0f, gpuSkinning, teamcolor, replaceTextures);
+			DrawSkinned(renderer, hiddenMeshes, vertexOnly, "", model::AnimationLoop::NonLooping, 0.0f, gpuSkinning, teamcolor, replaceTextures);
 		}
 		else//animation is playing, full computation
 		{
@@ -397,4 +402,6 @@ std::vector<std::string> C3DModel::GetAnimations() const
 		result.push_back(m_animations[i].id);
 	}
 	return result;
+}
+}
 }

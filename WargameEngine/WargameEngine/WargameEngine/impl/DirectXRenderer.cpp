@@ -532,7 +532,7 @@ void CDirectXRenderer::LookAt(CVector3f const& position, CVector3f const& direct
 	m_matricesChanged = true;
 }
 
-void CDirectXRenderer::SetTexture(const Path&  texture, const std::vector<sTeamColor> * teamcolor, int flags /*= 0*/)
+void CDirectXRenderer::SetTexture(const Path&  texture, const std::vector<TeamColor> * teamcolor, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }
@@ -803,7 +803,7 @@ void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/
 	if (depthBuffer && depth) m_devcon->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void CDirectXRenderer::SetTextureManager(CTextureManager& texMan)
+void CDirectXRenderer::SetTextureManager(TextureManager& texMan)
 {
 	m_textureManager = &texMan;
 }
@@ -861,7 +861,7 @@ void CDirectXRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigne
 void CDirectXRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short bpp, int flags)
 {
 	auto& dxtexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
-	const sTextureMipMap& first = sides[0];
+	const TextureMipMap& first = sides[0];
 	TextureMipMaps mipmaps(sides.begin() + 1, sides.end());
 	CreateTexture(first.width, first.height, flags, first.data, &dxtexture.m_texture, &dxtexture.m_resourceView, 0, CachedTextureType::RGBA, mipmaps, true);
 }

@@ -4,21 +4,28 @@
 #include <map>
 #include <string>
 #include <functional>
-#include "INetSocket.h"
+#include "../INetSocket.h"
 
-class IStateManager;
-class CCommandHandler;
+namespace wargameEngine
+{
+namespace model
+{
 class IObject;
-class IGameModel;
+class IModel;
+}
+namespace controller
+{
+class IStateManager;
+class CommandHandler;
 class ICommand;
 typedef std::function<std::unique_ptr<INetSocket>()> SocketFactory;
 
-class CNetwork
+class Network
 {
 	typedef std::function<void()> OnStateRecievedHandler;
 	typedef std::function<void(std::wstring const&)> OnStringReceivedHandler;
 public:
-	CNetwork(IStateManager & stateManager, CCommandHandler & commandHandler, IGameModel & model, SocketFactory const& socketFactory);
+	Network(IStateManager & stateManager, CommandHandler & commandHandler, model::IModel & model, SocketFactory const& socketFactory);
 	void Host(unsigned short port = 0);
 	void Client(const char * ip, unsigned short port = 0);
 	void Update();
@@ -28,8 +35,8 @@ public:
 	void SendMessage(std::wstring const& message);
 	void SendAction(ICommand const& command);
 	bool IsConnected();
-	void AddAddressLocal(std::shared_ptr<IObject> const& obj);
-	void AddAddress(std::shared_ptr<IObject> const& obj, void* address);
+	void AddAddressLocal(std::shared_ptr<model::IObject> const& obj);
+	void AddAddress(std::shared_ptr<model::IObject> const& obj, void* address);
 	void SetStateRecievedCallback(OnStateRecievedHandler const& onStateRecieved);
 	void SetStringRecievedCallback(OnStringReceivedHandler const& onStringRecieved);
 	void CallStateRecievedCallback();
@@ -45,6 +52,8 @@ private:
 	OnStateRecievedHandler m_stateRecievedCallback;
 	OnStringReceivedHandler m_stringRecievedCallback;
 	IStateManager & m_stateManager;
-	CCommandHandler & m_commandHandler;
-	IGameModel & m_model;
+	CommandHandler & m_commandHandler;
+	model::IModel & m_model;
 };
+}
+}

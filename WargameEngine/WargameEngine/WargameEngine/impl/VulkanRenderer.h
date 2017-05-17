@@ -43,12 +43,12 @@ private:
 	CVulkanSmartBuffer m_uniformBuffer;
 };
 
-class CVulkanCachedTexture : public ICachedTexture
+class CVulkanCachedTexture : public wargameEngine::view::ICachedTexture
 {
 public:
 	CVulkanCachedTexture(CVulkanRenderer& renderer);
 	~CVulkanCachedTexture();
-	void Init(uint32_t width, uint32_t height, CVulkanMemoryManager& memoryManager, CachedTextureType type = CachedTextureType::RGBA, int flags = 0);
+	void Init(uint32_t width, uint32_t height, CVulkanMemoryManager& memoryManager, wargameEngine::view::IRenderer::CachedTextureType type, int flags = 0);
 	void Upload(const void* data, CVulkanMemoryManager& memoryManager, VkCommandBuffer commandBuffer);
 	operator VkImage() const { return m_image; }
 	VkImageView GetImageView() const { return m_imageView; }
@@ -95,7 +95,7 @@ private:
 	CVulkanRenderer* m_renderer;
 };
 
-class CVulkanOcclusionQuery : public IOcclusionQuery
+class CVulkanOcclusionQuery : public wargameEngine::view::IOcclusionQuery
 {
 public:
 	void Query(std::function<void()> const& handler, bool /*renderToScreen*/) override { handler(); }
@@ -126,11 +126,11 @@ public:
 	//IRenderer
 	void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) override;
 	void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) override;
-	void DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count) override;
-	void DrawAll(IVertexBuffer& buffer, size_t count) override;
-	void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
-	void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
-	void ForceBindVertexBuffer(IVertexBuffer& buffer) override;
+	void DrawIndexes(wargameEngine::view::IVertexBuffer& buffer, size_t begin, size_t count) override;
+	void DrawAll(wargameEngine::view::IVertexBuffer& buffer, size_t count) override;
+	void DrawInstanced(wargameEngine::view::IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
+	void SetIndexBuffer(wargameEngine::view::IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
+	void ForceBindVertexBuffer(wargameEngine::view::IVertexBuffer& buffer) override;
 
 	void PushMatrix() override;
 	void PopMatrix() override;
@@ -142,42 +142,42 @@ public:
 	const float* GetViewMatrix() const override;
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
-	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
-	void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) override;
-	void SetTexture(const Path& texture, const std::vector<sTeamColor>* teamcolor, int flags = 0) override;
-	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
+	void SetTexture(const wargameEngine::Path& texture, bool forceLoadNow = false, int flags = 0) override;
+	void SetTexture(const wargameEngine::Path& texture, TextureSlot slot, int flags = 0) override;
+	void SetTexture(const wargameEngine::Path& texture, const std::vector<wargameEngine::model::TeamColor>* teamcolor, int flags = 0) override;
+	void SetTexture(wargameEngine::view::ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
-	void RenderToTexture(std::function<void()> const& func, ICachedTexture& texture, unsigned int width, unsigned int height) override;
-	std::unique_ptr<ICachedTexture> CreateTexture(const void* data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
-	ICachedTexture* GetTexturePtr(const Path& texture) const override;
+	void RenderToTexture(std::function<void()> const& func, wargameEngine::view::ICachedTexture& texture, unsigned int width, unsigned int height) override;
+	std::unique_ptr<wargameEngine::view::ICachedTexture> CreateTexture(const void* data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
+	wargameEngine::view::ICachedTexture* GetTexturePtr(const wargameEngine::Path& texture) const override;
 
 	void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) override;
 	void SetColor(const float* color) override;
 	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess) override;
 
-	std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = false) override;
-	std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
+	std::unique_ptr<wargameEngine::view::IVertexBuffer> CreateVertexBuffer(const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = false) override;
+	std::unique_ptr<wargameEngine::view::IOcclusionQuery> CreateOcclusionQuery() override;
 	std::string GetName() const override;
 	bool SupportsFeature(Feature feature) const override;
-	IShaderManager& GetShaderManager() override;
+	wargameEngine::view::IShaderManager& GetShaderManager() override;
 
 	//ITextureHelper
-	std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
+	std::unique_ptr<wargameEngine::view::ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
 	void SetTextureAnisotropy(float value = 1.0f) override;
-	void UploadTexture(ICachedTexture& texture, unsigned char* data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
-	void UploadCompressedTexture(ICachedTexture& texture, unsigned char* data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
-	void UploadCubemap(ICachedTexture& texture, TextureMipMaps const& sides, unsigned short bpp, int flags) override;
+	void UploadTexture(wargameEngine::view::ICachedTexture& texture, unsigned char* data, size_t width, size_t height, unsigned short bpp, int flags, wargameEngine::view::TextureMipMaps const& mipmaps = wargameEngine::view::TextureMipMaps()) override;
+	void UploadCompressedTexture(wargameEngine::view::ICachedTexture& texture, unsigned char* data, size_t width, size_t height, size_t size, int flags, wargameEngine::view::TextureMipMaps const& mipmaps = wargameEngine::view::TextureMipMaps()) override;
+	void UploadCubemap(wargameEngine::view::ICachedTexture& texture, wargameEngine::view::TextureMipMaps const& sides, unsigned short bpp, int flags) override;
 
 	bool Force32Bits() const override;
 	bool ForceFlipBMP() const override;
 	bool ConvertBgra() const override;
 
 	//IViewHelper
-	std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
-	void SetTextureManager(CTextureManager& textureManager) override;
+	std::unique_ptr<wargameEngine::view::IFrameBuffer> CreateFramebuffer() const override;
+	void SetTextureManager(wargameEngine::view::TextureManager& textureManager) override;
 
-	void WindowCoordsToWorldVector(IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const override;
-	void WorldCoordsToWindowCoords(IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const override;
+	void WindowCoordsToWorldVector(wargameEngine::view::IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const override;
+	void WorldCoordsToWindowCoords(wargameEngine::view::IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const override;
 	void SetNumberOfLights(size_t count) override;
 	void SetUpLight(size_t index, CVector3f const& position, const float* ambient, const float* diffuse, const float* specular) override;
 	float GetMaximumAnisotropyLevel() const override;
@@ -228,10 +228,10 @@ private:
 	size_t m_currentCommandBufferIndex = 0;
 	CVulkanShaderManager m_shaderManager;
 	CVulkanPipelineManager m_pipelineHelper;
-	std::unique_ptr<IShaderProgram> m_defaultProgram;
+	std::unique_ptr<wargameEngine::view::IShaderProgram> m_defaultProgram;
 	std::unique_ptr<CVulkanVertexAttribCache> m_emptyBuffer;
 	VkViewport m_viewport;
-	CTextureManager* m_textureManager = nullptr;
+	wargameEngine::view::TextureManager* m_textureManager = nullptr;
 	CMatrixManagerGLM m_matrixManager;
 	std::deque<std::pair<VkImage, int>> m_imagesToDestroy;
 	std::deque<std::pair<VkImageView, int>> m_imageViewsToDestroy;

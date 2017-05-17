@@ -1,5 +1,5 @@
 #pragma once
-#include "../Typedefs.h"
+#include "Typedefs.h"
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+namespace wargameEngine
+{
 struct FunctionArgument;
 typedef std::vector<FunctionArgument> FunctionArguments;
 
@@ -152,3 +154,4 @@ public:
 	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) = 0;
 	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, GetterHandler const& getterHandler) = 0;
 };
+}

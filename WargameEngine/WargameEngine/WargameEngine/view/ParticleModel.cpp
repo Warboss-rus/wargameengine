@@ -1,17 +1,21 @@
 #include "ParticleModel.h"
-#include <fstream>
-#include <map>
-#include <limits.h>
-#include <string.h>
-#include "../rapidxml/rapidxml.hpp"
 #include "../Utils.h"
+#include "../rapidxml/rapidxml.hpp"
+#include <fstream>
+#include <limits.h>
+#include <map>
+#include <string.h>
 #define _USE_MATH_DEFINES
-#include <math.h>
 #include <algorithm>
+#include <math.h>
 
 using namespace std;
 using namespace rapidxml;
 
+namespace wargameEngine
+{
+namespace view
+{
 namespace
 {
 vector<float> SplitFloatsBy(string const& data, char delimeter)
@@ -35,13 +39,13 @@ vector<float> SplitFloatsBy(string const& data, char delimeter)
 CVector2f GetVector2f(std::string const& data)
 {
 	auto arr = SplitFloatsBy(data, ';');
-	return{ arr[0], arr[1] };
+	return { arr[0], arr[1] };
 }
 
 std::pair<float, float> GetPair(std::string const& data)
 {
 	auto arr = SplitFloatsBy(data, '-');
-	return{ arr[0], arr[1] };
+	return { arr[0], arr[1] };
 }
 
 float frand(float start, float end)
@@ -53,16 +57,22 @@ float radians(float degrees)
 {
 	return degrees * (float)M_PI / 180;
 }
-class CSphereEmitter : public CParticleModel::IEmitter
+class CSphereEmitter : public ParticleModel::IEmitter
 {
 public:
-	CSphereEmitter(float minInclination, float maxInclination, float minAzimuth, float maxAzimuth, float minRadius, float maxRadius, float minSpeed, float maxSpeed, float * color)
-		:m_minInclination(minInclination), m_maxInclination(maxInclination), m_minAzimuth(minAzimuth), m_maxAzimuth(maxAzimuth)
-		, m_minRadius(minRadius), m_maxRadius(maxRadius), m_minSpeed(minSpeed), m_maxSpeed(maxSpeed)
+	CSphereEmitter(float minInclination, float maxInclination, float minAzimuth, float maxAzimuth, float minRadius, float maxRadius, float minSpeed, float maxSpeed, float* color)
+		: m_minInclination(minInclination)
+		, m_maxInclination(maxInclination)
+		, m_minAzimuth(minAzimuth)
+		, m_maxAzimuth(maxAzimuth)
+		, m_minRadius(minRadius)
+		, m_maxRadius(maxRadius)
+		, m_minSpeed(minSpeed)
+		, m_maxSpeed(maxSpeed)
 	{
 		memcpy(m_color, color, sizeof(float) * 4);
 	}
-	virtual void InitParticle(sParticle & particle) override
+	virtual void InitParticle(model::Particle& particle) override
 	{
 		float inclination = radians(frand(m_minInclination, m_maxInclination));
 		float azimuth = radians(frand(m_minAzimuth, m_maxAzimuth));
@@ -91,7 +101,7 @@ private:
 	float m_minSpeed, m_maxSpeed;
 	float m_color[4];
 };
-class CFrameUpdater : public CParticleModel::IUpdater
+class CFrameUpdater : public ParticleModel::IUpdater
 {
 public:
 	struct sFrame
@@ -99,13 +109,13 @@ public:
 		float startTime;
 		CVector2f texCoords = { -1, -1 };
 	};
-	CFrameUpdater(std::vector<sFrame> && frames)
-		:m_frames(std::move(frames))
+	CFrameUpdater(std::vector<sFrame>&& frames)
+		: m_frames(std::move(frames))
 	{
-		std::sort(m_frames.begin(), m_frames.end(), [](sFrame const& f1, sFrame const& f2) {return f1.startTime < f2.startTime;});
+		std::sort(m_frames.begin(), m_frames.end(), [](sFrame const& f1, sFrame const& f2) { return f1.startTime < f2.startTime; });
 	}
 
-	virtual void Update(std::vector<sParticle> & particles) override
+	void Update(std::vector<model::Particle>& particles) override
 	{
 		for (auto& particle : particles)
 		{
@@ -128,19 +138,21 @@ public:
 			memcpy(particle.m_texCoord, m_frames[begin].texCoords, sizeof(float) * 2);
 		}
 	}
+
 private:
 	std::vector<sFrame> m_frames;
 };
 }
 
-CParticleModel::CParticleModel(const Path& file)
+ParticleModel::ParticleModel(const Path& file)
 {
 	ifstream istream(file);
 	string content((istreambuf_iterator<char>(istream)), istreambuf_iterator<char>());
 	std::unique_ptr<xml_document<>> doc = std::make_unique<xml_document<>>();
 	doc->parse<parse_trim_whitespace>(&content[0]);
 	xml_node<>* root = doc->first_node();
-	if (!root) return;
+	if (!root)
+		return;
 	xml_node<>* texture = root->first_node("texture");
 	if (texture)
 	{
@@ -198,27 +210,27 @@ CParticleModel::CParticleModel(const Path& file)
 	doc->clear();
 }
 
-Path CParticleModel::GetTexture() const
+Path ParticleModel::GetTexture() const
 {
 	return m_texture;
 }
 
-CVector2f CParticleModel::GetTextureFrameSize() const
+CVector2f ParticleModel::GetTextureFrameSize() const
 {
 	return m_textureFrameSize;
 }
 
-CVector2f CParticleModel::GetParticleSize() const
+CVector2f ParticleModel::GetParticleSize() const
 {
 	return m_particleSize;
 }
 
-bool CParticleModel::HasDifferentTexCoords() const
+bool ParticleModel::HasDifferentTexCoords() const
 {
 	return true;
 }
 
-bool CParticleModel::HasDifferentColors() const
+bool ParticleModel::HasDifferentColors() const
 {
 	return false;
 }
@@ -233,12 +245,12 @@ CVector3f InterpolateVectors(CVector3f const& v1, CVector3f const& v2, float t)
 	return CVector3f(result);
 }
 
-float CParticleModel::GetAverageLifeTime() const
+float ParticleModel::GetAverageLifeTime() const
 {
 	return (m_maxLifeTime + m_minLifeTime) * 0.5f;
 }
 
-void CParticleModel::InitParticle(sParticle & particle) const
+void ParticleModel::InitParticle(model::Particle& particle) const
 {
 	if (m_emitter)
 	{
@@ -250,10 +262,12 @@ void CParticleModel::InitParticle(sParticle & particle) const
 	particle.m_texCoord[1] = 0.0f;
 }
 
-void CParticleModel::UpdateParticles(std::vector<sParticle> & particles) const
+void ParticleModel::UpdateParticles(std::vector<model::Particle>& particles) const
 {
 	if (m_updater)
 	{
 		m_updater->Update(particles);
 	}
+}
+}
 }

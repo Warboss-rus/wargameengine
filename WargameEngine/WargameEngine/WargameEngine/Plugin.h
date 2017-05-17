@@ -1,14 +1,18 @@
 #include "Typedefs.h"
 
+namespace wargameEngine
+{
 typedef const char* (*PluginGetTypeFunction)();
 typedef void* (*PluginGetClassFunction)();
 
-class CPlugin
+class Plugin
 {
 public:
-	CPlugin(const Path& str);
-	~CPlugin();
-	void * GetFunction(std::string const& name);
+	Plugin(const Path& str);
+	~Plugin();
+	void* GetFunction(std::string const& name);
+
 private:
-	void * m_handle;
+	void* m_handle;
 };
+}

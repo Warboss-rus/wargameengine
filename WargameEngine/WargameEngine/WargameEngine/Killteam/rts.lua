@@ -24,7 +24,7 @@ function Init()
 		SetShaders("openGL/per_pixel_shadow.vsh", "openGL/per_pixel_shadow.fsh")
 	end
 	CreateSkybox(80, "skybox_sand")
-	CreateTable(60, 30, "sand.dds")
+	CreateLandscape(60, 30, "sand.dds")
 	SetSelectionCallback("OnSelection")
 	SetRMBCallback("OnRMB", true)
 	

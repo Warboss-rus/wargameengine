@@ -1,9 +1,13 @@
 #pragma once
 #include "../Typedefs.h"
 
-struct CUITheme
+namespace wargameEngine
 {
-	CUITheme();
+namespace ui
+{
+struct UITheme
+{
+	UITheme();
 	void Load(const Path& filename);
 
 	Path texture;
@@ -11,7 +15,7 @@ struct CUITheme
 	float textfieldColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	struct Text
 	{
-		float color[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+		float color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		std::string font = "times.ttf";
 		unsigned int fontSize = 18;
 		enum class Aligment
@@ -60,11 +64,11 @@ struct CUITheme
 	struct RadioGroup
 	{
 		float texCoord[4] = { 0.379f, 0.793f, 0.429f, 0.742f };
-		float selectedTexCoord[4] = { 0.379f, 0.8515f, 0.429f, 0.8f};
+		float selectedTexCoord[4] = { 0.379f, 0.8515f, 0.429f, 0.8f };
 		float buttonSize = 15.0f;
 		float elementSize = 22.0f;
 		Text text;
-	} radiogroup ;
+	} radiogroup;
 	struct ScrollBar
 	{
 		float texCoord[4] = { 0.07f, 0.984f, 0.117f, 0.953f };
@@ -83,3 +87,5 @@ struct CUITheme
 		Text headerText;
 	} window;
 };
+}
+}

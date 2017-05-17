@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngine", "WargameEngine\WargameEngine.vcxproj", "{525B45EF-5FB2-495E-8F33-27363E097E50}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExamplePlugin", "ExamplePlugin\ExamplePlugin.vcxproj", "{1DAB2629-E7AA-4068-BBC3-DE6C62148527}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssimpPlugin", "AssimpPlugin\AssimpPlugin.vcxproj", "{1DAB2629-E7AA-4068-BBC3-DE6C62148527}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "..\freetype2\builds\windows\vc2010\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject

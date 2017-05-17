@@ -4,6 +4,10 @@
 #include <math.h>
 #include <string>
 
+namespace wargameEngine
+{
+namespace controller
+{
 class IMoveLimiter
 {
 public:
@@ -11,10 +15,10 @@ public:
 	virtual ~IMoveLimiter() {}
 };
 
-class CMoveLimiterCircle : public IMoveLimiter
+class MoveLimiterCircle : public IMoveLimiter
 {
 public:
-	CMoveLimiterCircle(float x, float y, float radius)
+	MoveLimiterCircle(float x, float y, float radius)
 		: m_x(x)
 		, m_y(y)
 		, m_radius(radius)
@@ -28,10 +32,10 @@ private:
 	float m_radius;
 };
 
-class CMoveLimiterRectangle : public IMoveLimiter
+class MoveLimiterRectangle : public IMoveLimiter
 {
 public:
-	CMoveLimiterRectangle(float x1, float y1, float x2, float y2)
+	MoveLimiterRectangle(float x1, float y1, float x2, float y2)
 		: m_minX((x1 < x2) ? x1 : x2)
 		, m_maxX((x1 > x2) ? x1 : x2)
 		, m_minY((y1 < y2) ? y1 : y2)
@@ -47,26 +51,28 @@ private:
 	float m_maxY;
 };
 
-class CMoveLimiterStatic : public IMoveLimiter
+class MoveLimiterStatic : public IMoveLimiter
 {
 public:
-	CMoveLimiterStatic() {}
+	MoveLimiterStatic() {}
 	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 };
 
-class CMoveLimiterTiles : public IMoveLimiter
+class MoveLimiterTiles : public IMoveLimiter
 {
 public:
 	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 };
 
-class CCustomMoveLimiter : public IMoveLimiter
+class CustomMoveLimiter : public IMoveLimiter
 {
 public:
 	typedef std::function<bool(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations)> CustomMoveLimiterHandler;
-	CCustomMoveLimiter(CustomMoveLimiterHandler const& function);
+	CustomMoveLimiter(CustomMoveLimiterHandler const& function);
 	bool FixPosition(CVector3f& position, CVector3f& rotations, const CVector3f& oldPosition, const CVector3f& oldRotations) const override;
 
 private:
 	CustomMoveLimiterHandler m_function;
 };
+}
+}

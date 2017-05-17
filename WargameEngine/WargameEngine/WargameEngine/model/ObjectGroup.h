@@ -2,12 +2,16 @@
 #include <memory>
 #include <vector>
 
-class IGameModel;
+namespace wargameEngine
+{
+namespace model
+{
+class IModel;
 
-class CObjectGroup : public IObject
+class ObjectGroup : public IObject
 {
 public:
-	CObjectGroup(IGameModel & model);
+	ObjectGroup(IModel & model);
 	Path GetPathToModel() const override;
 	void Move(float dx, float dy, float dz) override;
 	void SetCoords(float x, float y, float z) override;
@@ -48,17 +52,19 @@ public:
 	AnimationLoop GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
 	void Update(std::chrono::microseconds timeSinceLastUpdate) override;
-	std::vector<sTeamColor> const& GetTeamColor() const override;
+	std::vector<TeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
 	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
 	std::map<Path, Path> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
 	virtual IObject* GetFullObject() override;
-	virtual CSignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) override;
-	virtual CSignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) override;
+	virtual signals::SignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) override;
+	virtual signals::SignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) override;
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;
 	const std::set<std::string> empty;
-	IGameModel & m_model;
+	IModel & m_model;
 };
+}
+}

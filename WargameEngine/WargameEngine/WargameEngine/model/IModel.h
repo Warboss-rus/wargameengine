@@ -1,10 +1,14 @@
 #pragma once
 #include <memory>
 
-class IObject;
+namespace wargameEngine
+{
+namespace model
+{
 class IBaseObject;
+class IObject;
 
-class IGameModel
+class IModel
 {
 public:
 	using ObjectPtr = std::shared_ptr<IObject>;
@@ -17,5 +21,7 @@ public:
 	virtual size_t GetObjectCount() const = 0;
 	virtual ObjectPtr Get3DObject(size_t index) = 0;
 
-	virtual ~IGameModel() {}
+	virtual ~IModel() {}
 };
+}
+}

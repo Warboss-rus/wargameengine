@@ -3,6 +3,11 @@
 #include <memory>
 #include <vector>
 
+namespace wargameEngine
+{
+namespace view
+{
+
 enum TextureFlags
 {
 	TEXTURE_NO_WRAP = 1,
@@ -16,14 +21,14 @@ enum TextureFlags
 	TEXTURE_COMPRESSION_MASK = 48,
 };
 
-struct sTextureMipMap
+struct TextureMipMap
 {
 	unsigned char* data;
 	unsigned int width;
 	unsigned int height;
 	size_t size; //compressed only
 };
-typedef std::vector<sTextureMipMap> TextureMipMaps;
+typedef std::vector<TextureMipMap> TextureMipMaps;
 
 class ITextureHelper : public IRenderer
 {
@@ -40,3 +45,5 @@ public:
 	virtual bool ForceFlipBMP() const = 0;
 	virtual bool ConvertBgra() const = 0;
 };
+}
+}

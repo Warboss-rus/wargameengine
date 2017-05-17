@@ -3,7 +3,11 @@
 #include "IViewHelper.h"
 #include <stdexcept>
 
-CViewportBase::CViewportBase(int x, int y, int width, int height, float fieldOfView, IViewHelper& renderer, IInput& input, bool onScreen, bool resize)
+namespace wargameEngine
+{
+namespace view
+{
+Viewport::Viewport(int x, int y, int width, int height, float fieldOfView, IViewHelper& renderer, IInput& input, bool onScreen, bool resize)
 	: m_camera(input)
 	, m_x(x)
 	, m_y(y)
@@ -23,21 +27,21 @@ CViewportBase::CViewportBase(int x, int y, int width, int height, float fieldOfV
 	}
 }
 
-CViewportBase::~CViewportBase()
+Viewport::~Viewport()
 {
 }
 
-Camera& CViewportBase::GetCamera()
-{
-	return m_camera;
-}
-
-Camera const& CViewportBase::GetCamera() const
+Camera& Viewport::GetCamera()
 {
 	return m_camera;
 }
 
-void CViewportBase::AttachNewTexture(CachedTextureType type, int textureIndex /*= -1*/)
+Camera const& Viewport::GetCamera() const
+{
+	return m_camera;
+}
+
+void Viewport::AttachNewTexture(IRenderer::CachedTextureType type, int textureIndex /*= -1*/)
 {
 	if (!m_FBO)
 	{
@@ -48,11 +52,11 @@ void CViewportBase::AttachNewTexture(CachedTextureType type, int textureIndex /*
 	m_FBO->Bind();
 	m_FBO->AssignTexture(*texture, type);
 	m_FBO->UnBind();
-	m_renderer->SetTexture(*texture, static_cast<TextureSlot>(textureIndex));
+	m_renderer->SetTexture(*texture, static_cast<IRenderer::TextureSlot>(textureIndex));
 	m_textures.push_back(std::move(texture));
 }
 
-void CViewportBase::Bind()
+void Viewport::Bind()
 {
 	if (m_FBO)
 	{
@@ -74,7 +78,7 @@ void CViewportBase::Bind()
 	m_projectionMatrix = m_renderer->GetProjectionMatrix();
 }
 
-void CViewportBase::Unbind()
+void Viewport::Unbind()
 {
 	if (m_FBO)
 	{
@@ -82,22 +86,22 @@ void CViewportBase::Unbind()
 	}
 }
 
-bool CViewportBase::IsDepthOnly() const
+bool Viewport::IsDepthOnly() const
 {
 	return m_depthOnly;
 }
 
-bool CViewportBase::DrawUI() const
+bool Viewport::DrawUI() const
 {
 	return !m_FBO;
 }
 
-ICachedTexture const& CViewportBase::GetTexture(size_t index) const
+ICachedTexture const& Viewport::GetTexture(size_t index) const
 {
 	return *m_textures[index];
 }
 
-IOcclusionQuery& CViewportBase::GetOcclusionQuery(const IBaseObject* object)
+IOcclusionQuery& Viewport::GetOcclusionQuery(const model::IBaseObject* object)
 {
 	auto it = m_occlusionQueries.find(object);
 	if (it == m_occlusionQueries.end())
@@ -107,34 +111,34 @@ IOcclusionQuery& CViewportBase::GetOcclusionQuery(const IBaseObject* object)
 	return *it->second;
 }
 
-const float* CViewportBase::GetProjectionMatrix() const
+const float* Viewport::GetProjectionMatrix() const
 {
 	return m_projectionMatrix;
 }
 
-const float* CViewportBase::GetViewMatrix() const
+const float* Viewport::GetViewMatrix() const
 {
 	return m_viewMatrix;
 }
 
-void CViewportBase::SetPolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
+void Viewport::SetPolygonOffset(bool enable, float factor /*= 0.0f*/, float units /*= 0.0f*/)
 {
 	m_polygonOffsetFactor = enable ? factor : 0.0f;
 	m_polygonOffsetUnits = enable ? units : 0.0f;
 }
 
-void CViewportBase::SetClippingPlanes(float near /*= 1.0f*/, float far /*= 1000.0f*/)
+void Viewport::SetClippingPlanes(float near /*= 1.0f*/, float far /*= 1000.0f*/)
 {
 	m_nearPane = near;
 	m_farPane = far;
 }
 
-bool CViewportBase::PointIsInViewport(int x, int y) const
+bool Viewport::PointIsInViewport(int x, int y) const
 {
 	return !m_FBO && x >= m_x && x <= m_x + m_width && y >= m_y && y <= m_y + m_height;
 }
 
-void CViewportBase::Resize(int width, int height)
+void Viewport::Resize(int width, int height)
 {
 	if (m_resize)
 	{
@@ -143,7 +147,7 @@ void CViewportBase::Resize(int width, int height)
 	}
 }
 
-void CViewportBase::SetUpShadowMap() const
+void Viewport::SetUpShadowMap() const
 {
 	if (m_shadowMapViewport)
 	{
@@ -160,4 +164,6 @@ void CViewportBase::SetUpShadowMap() const
 
 		m_renderer->GetShaderManager().SetUniformValue("lightMatrix", 16, 1, lightMatrix);
 	}
+}
+}
 }

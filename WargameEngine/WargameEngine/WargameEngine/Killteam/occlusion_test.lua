@@ -25,7 +25,7 @@ else
 	SetSkyboxShaders("openGL/skybox.vsh", "openGL/skybox.fsh")
 end
 EnableGPUSkinning()
-CreateTable(60, 60, "sand.dds")--Creates a table (width, height, texture)
+CreateLandscape(60, 60, "sand.dds")--Creates a table (width, height, texture)
 local count = 30
 for i = 1, count do
 	local x = -count / 2 + i

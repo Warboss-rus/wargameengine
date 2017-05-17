@@ -1,10 +1,14 @@
 #pragma once
-#include "BaseObject.h"
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
+#include "../Typedefs.h"
 
+namespace wargameEngine
+{
+namespace model
+{
 struct Decal
 {
 	Path texture;
@@ -33,9 +37,6 @@ public:
 	void AddNewDecal(const Decal& decal);
 	size_t GetNumberOfDecals() const;
 	const Decal& GetDecal(size_t index) const;
-	void AddStaticObject(const StaticObject& object);
-	size_t GetStaticObjectCount() const;
-	StaticObject& GetStaticObject(size_t index);
 	void DoOnUpdated(const std::function<void()>& onUpdated);
 
 private:
@@ -51,6 +52,7 @@ private:
 	bool m_stretchTexture;
 	float m_horizontalTextureScale;
 	float m_verticalTextureScale;
-	std::vector<StaticObject> m_staticObjects;
 	std::function<void()> m_onUpdated;
 };
+}
+}

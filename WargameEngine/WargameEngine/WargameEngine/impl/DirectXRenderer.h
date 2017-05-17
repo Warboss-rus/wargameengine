@@ -40,7 +40,7 @@ public:
 	
 	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
 	void SetTexture(const Path&  texture, TextureSlot slot, int flags = 0) override;
-	void SetTexture(const Path&  texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	void SetTexture(const Path&  texture, const std::vector<TeamColor> * teamcolor, int flags = 0) override;
 	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 	void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
@@ -67,7 +67,7 @@ public:
 	void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
 	void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	void ClearBuffers(bool color = true, bool depth = true) override;
-	void SetTextureManager(CTextureManager & textureManager) override;
+	void SetTextureManager(TextureManager & textureManager) override;
 	void DrawIn2D(std::function<void()> const& drawHandler) override;
 
 	std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap) override;
@@ -102,7 +102,7 @@ private:
 	CComPtr<ID3D11Device> m_dev;
 	CComPtr<ID3D11DeviceContext> m_devcon;
 	HWND m_hWnd;
-	CTextureManager * m_textureManager;
+	TextureManager * m_textureManager;
 	CShaderManagerDirectX m_shaderManager;
 	CComPtr<ID3D11DepthStencilState> m_depthState[2];
 	CComPtr<ID3D11BlendState> m_blendStates[2];

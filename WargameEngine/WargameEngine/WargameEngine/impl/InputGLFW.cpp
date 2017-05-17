@@ -191,7 +191,7 @@ int CInputGLFW::GetMouseY() const
 	return g_lastMouseY;
 }
 
-VirtualKey CInputGLFW::KeycodeToVirtualKey(int key)
+wargameEngine::view::VirtualKey CInputGLFW::KeycodeToVirtualKey(int key)
 {
 	switch (key)
 	{

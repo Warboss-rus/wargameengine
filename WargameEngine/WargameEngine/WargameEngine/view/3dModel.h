@@ -10,7 +10,15 @@
 #include "../model/TeamColor.h"
 #include "../Typedefs.h"
 
+namespace wargameEngine
+{
+namespace model
+{
 class IObject;
+}
+
+namespace view
+{
 class IShaderManager;
 class IRenderer;
 class IVertexBuffer;
@@ -22,7 +30,7 @@ struct sMesh
 	std::string materialName;
 	size_t begin;
 	size_t end;
-	sMaterial * material;
+	Material * material;
 };
 
 struct sJoint
@@ -52,15 +60,15 @@ public:
 	C3DModel(C3DModel const& other);
 	C3DModel& operator=(C3DModel const& other) = default;
 	void SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-		CMaterialManager & materials, std::vector<sMesh> & meshes);
+		MaterialManager & materials, std::vector<sMesh> & meshes);
 	void SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations);
-	void Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool gpuSkinning);
+	void Draw(IRenderer & renderer, model::IObject* object, bool vertexOnly, bool gpuSkinning);
 	void PreloadTextures(IRenderer & renderer) const;
 	std::vector<std::string> GetAnimations() const;
 private:
-	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer, bool useGPUrendering = false, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
+	void DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer, bool useGPUrendering = false, const std::vector<model::TeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
 	void CalculateGPUWeights(IRenderer & renderer);
-	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, AnimationLoop loop, float time, bool gpuSkinning, const std::vector<sTeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
+	bool DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, model::AnimationLoop loop, float time, bool gpuSkinning, const std::vector<model::TeamColor> * teamcolor = nullptr, const std::map<Path, Path> * replaceTextures = nullptr);
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;
 	std::vector<CVector3f> m_normals;
@@ -71,7 +79,7 @@ private:
 	std::vector<sJoint> m_skeleton;
 	std::vector<sAnimation> m_animations;
 	std::vector<sMesh> m_meshes;
-	CMaterialManager m_materials;
+	MaterialManager m_materials;
 	float m_scale;
 	CVector3f m_rotation;
 	size_t m_count;
@@ -81,3 +89,5 @@ private:
 };
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix);
+}
+}

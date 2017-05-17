@@ -6,7 +6,13 @@
 #pragma warning(pop)
 #include "../view/Vector3.h"
 
+namespace wargameEngine
+{
+namespace view
+{
 class IShaderManager;
+}
+}
 
 class CMatrixManagerGLM
 {
@@ -28,7 +34,7 @@ public:
 	void WindowCoordsToWorldVector(int x, int y, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, CVector3f & start, CVector3f & end) const;
 	void WorldCoordsToWindowCoords(CVector3f const& worldCoords, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, int& x, int& y) const;
 	void SetUpViewport(unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane, bool leftHanded = false);
-	void UpdateMatrices(IShaderManager & shaderManager) const;
+	void UpdateMatrices(wargameEngine::view::IShaderManager & shaderManager) const;
 	void SaveMatrices();
 	void RestoreMatrices();
 	void SetOrthographicProjection(float left, float right, float bottom, float top);

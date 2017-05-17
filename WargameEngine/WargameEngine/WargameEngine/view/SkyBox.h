@@ -1,24 +1,31 @@
 #pragma once
 #include "../Typedefs.h"
 #include "IRenderer.h"
-#include "Vector3.h"
 #include "IShaderManager.h"
+#include "Vector3.h"
 
-class CTextureManager;
+namespace wargameEngine
+{
+namespace view
+{
+class TextureManager;
 
-class CSkyBox
+class SkyBox
 {
 public:
-	CSkyBox(float width, float height, float length, const Path& imageFolder, IRenderer & renderer, CTextureManager & texMan);
+	SkyBox(float width, float height, float length, const Path& imageFolder, IRenderer& renderer, TextureManager& texMan);
 	void Draw(CVector3f const& pos, float scale);
 	void SetShaders(const Path& vertex, const Path& fragment);
+
 private:
 	float m_height;
 	float m_width;
 	float m_length;
 	Path m_images[6];
-	IRenderer & m_renderer;
+	IRenderer& m_renderer;
 	std::unique_ptr<ICachedTexture> m_texture;
 	std::unique_ptr<IVertexBuffer> m_buffer;
 	std::unique_ptr<IShaderProgram> m_shader;
 };
+}
+}

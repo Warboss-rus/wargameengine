@@ -2,10 +2,12 @@
 #include "IMemoryStream.h"
 #include <vector>
 
-class CReadMemoryStream : public IReadMemoryStream
+namespace wargameEngine
+{
+class ReadMemoryStream : public IReadMemoryStream
 {
 public:
-	CReadMemoryStream(const char* data);
+	ReadMemoryStream(const char* data);
 
 	bool ReadBool() override;
 	unsigned char ReadByte() override;
@@ -20,12 +22,13 @@ public:
 	void* ReadPointer() override;
 	void ReadData(void* data, size_t size) override;
 	void Seek(size_t pos) override;
+
 private:
 	const char* m_data;
 	size_t m_position;
 };
 
-class CWriteMemoryStream : public IWriteMemoryStream
+class WriteMemoryStream : public IWriteMemoryStream
 {
 public:
 	void WriteBool(bool value) override;
@@ -39,9 +42,11 @@ public:
 	void WriteWString(std::wstring const& value) override;
 	void WritePointer(void* value) override;
 
-	const char * GetData() const;
-	char * GetData();
+	const char* GetData() const;
+	char* GetData();
 	size_t GetSize() const;
+
 private:
 	std::vector<char> m_data;
 };
+}

@@ -1,22 +1,26 @@
 #include "Object.h"
-#include "MovementLimiter.h"
 #include <algorithm>
 #define _USE_MATH_DEFINES
 #include <float.h>
 #include <math.h>
 
-CObject::CObject(const Path& model, CVector3f const& position, float rotation, bool hasShadow)
+namespace wargameEngine
+{
+namespace model
+{
+
+Object::Object(const Path& model, CVector3f const& position, float rotation, bool hasShadow)
 	: BaseObject(model, position, rotation, hasShadow)
 	, m_isSelectable(true)
 {
 }
 
-std::set<std::string> const& CObject::GetHiddenMeshes() const
+std::set<std::string> const& Object::GetHiddenMeshes() const
 {
 	return m_hiddenMeshes;
 }
 
-void CObject::ShowMesh(std::string const& meshName)
+void Object::ShowMesh(std::string const& meshName)
 {
 	auto i = m_hiddenMeshes.find(meshName);
 	if (i != m_hiddenMeshes.end())
@@ -25,17 +29,17 @@ void CObject::ShowMesh(std::string const& meshName)
 	}
 }
 
-void CObject::HideMesh(std::string const& meshName)
+void Object::HideMesh(std::string const& meshName)
 {
 	m_hiddenMeshes.insert(meshName);
 }
 
-void CObject::SetProperty(std::wstring const& key, std::wstring const& value)
+void Object::SetProperty(std::wstring const& key, std::wstring const& value)
 {
 	m_properties[key] = value;
 }
 
-std::wstring const CObject::GetProperty(std::wstring const& key) const
+std::wstring const Object::GetProperty(std::wstring const& key) const
 {
 	if (m_properties.find(key) != m_properties.end())
 	{
@@ -47,22 +51,22 @@ std::wstring const CObject::GetProperty(std::wstring const& key) const
 	}
 }
 
-bool CObject::IsSelectable() const
+bool Object::IsSelectable() const
 {
 	return m_isSelectable;
 }
 
-void CObject::SetSelectable(bool selectable)
+void Object::SetSelectable(bool selectable)
 {
 	m_isSelectable = selectable;
 }
 
-std::map<std::wstring, std::wstring> const& CObject::GetAllProperties() const
+std::map<std::wstring, std::wstring> const& Object::GetAllProperties() const
 {
 	return m_properties;
 }
 
-void CObject::PlayAnimation(std::string const& animation, AnimationLoop loop, float speed)
+void Object::PlayAnimation(std::string const& animation, AnimationLoop loop, float speed)
 {
 	m_animation = animation;
 	m_animationLoop = loop;
@@ -70,22 +74,22 @@ void CObject::PlayAnimation(std::string const& animation, AnimationLoop loop, fl
 	m_animationTime = std::chrono::microseconds(0ll);
 }
 
-std::string CObject::GetAnimation() const
+std::string Object::GetAnimation() const
 {
 	return m_animation;
 }
 
-float CObject::GetAnimationTime() const
+float Object::GetAnimationTime() const
 {
 	return std::chrono::duration<float>(m_animationTime).count();
 }
 
-void CObject::AddSecondaryModel(const Path& model)
+void Object::AddSecondaryModel(const Path& model)
 {
 	m_secondaryModels.push_back(model);
 }
 
-void CObject::RemoveSecondaryModel(const Path& model)
+void Object::RemoveSecondaryModel(const Path& model)
 {
 	for (auto i = m_secondaryModels.begin(); i != m_secondaryModels.end(); ++i)
 	{
@@ -96,44 +100,44 @@ void CObject::RemoveSecondaryModel(const Path& model)
 	}
 }
 
-size_t CObject::GetSecondaryModelsCount() const
+size_t Object::GetSecondaryModelsCount() const
 {
 	return m_secondaryModels.size();
 }
 
-Path CObject::GetSecondaryModel(size_t index) const
+Path Object::GetSecondaryModel(size_t index) const
 {
 	return m_secondaryModels[index];
 }
 
-AnimationLoop CObject::GetAnimationLoop() const
+AnimationLoop Object::GetAnimationLoop() const
 {
 	return m_animationLoop;
 }
 
-float CObject::GetAnimationSpeed() const
+float Object::GetAnimationSpeed() const
 {
 	return m_animationSpeed;
 }
 
-void CObject::Update(std::chrono::microseconds timeSinceLastUpdate)
+void Object::Update(std::chrono::microseconds timeSinceLastUpdate)
 {
 	m_animationTime += timeSinceLastUpdate;
 }
 
-std::vector<sTeamColor> const& CObject::GetTeamColor() const
+std::vector<TeamColor> const& Object::GetTeamColor() const
 {
 	return m_teamColor;
 }
 
-void CObject::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b)
+void Object::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b)
 {
-	sTeamColor tc;
+	TeamColor tc;
 	tc.suffix = suffix;
 	tc.color[0] = r;
 	tc.color[1] = g;
 	tc.color[2] = b;
-	auto it = std::find_if(m_teamColor.begin(), m_teamColor.end(), [&suffix](sTeamColor const& tc) { return tc.suffix == suffix; });
+	auto it = std::find_if(m_teamColor.begin(), m_teamColor.end(), [&suffix](TeamColor const& tc) { return tc.suffix == suffix; });
 	if (it != m_teamColor.end())
 	{
 		m_teamColor.erase(it);
@@ -141,7 +145,7 @@ void CObject::ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsign
 	m_teamColor.push_back(tc);
 }
 
-void CObject::ReplaceTexture(const Path& oldTexture, const Path& newTexture)
+void Object::ReplaceTexture(const Path& oldTexture, const Path& newTexture)
 {
 	if (newTexture.empty())
 	{
@@ -153,17 +157,20 @@ void CObject::ReplaceTexture(const Path& oldTexture, const Path& newTexture)
 	}
 }
 
-std::map<Path, Path> const& CObject::GetReplaceTextures() const
+std::map<Path, Path> const& Object::GetReplaceTextures() const
 {
 	return m_replaceTextures;
 }
 
-bool CObject::IsGroup() const
+bool Object::IsGroup() const
 {
 	return false;
 }
 
-IObject* CObject::GetFullObject()
+IObject* Object::GetFullObject()
 {
 	return this;
+}
+
+}
 }

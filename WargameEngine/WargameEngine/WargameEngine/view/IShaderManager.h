@@ -1,7 +1,12 @@
 #pragma once
-#include <string>
-#include <memory>
 #include "../Typedefs.h"
+#include <memory>
+#include <string>
+
+namespace wargameEngine
+{
+namespace view
+{
 
 class IShaderProgram
 {
@@ -47,3 +52,5 @@ public:
 	};
 	virtual void SetVertexAttribute(const std::string& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const = 0;
 };
+}
+}

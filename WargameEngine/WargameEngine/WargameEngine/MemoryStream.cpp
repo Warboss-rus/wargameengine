@@ -2,21 +2,25 @@
 #include "Utils.h"
 #include <string.h>
 
-CReadMemoryStream::CReadMemoryStream(const char* data) :m_data(data), m_position(0)
+namespace wargameEngine
+{
+ReadMemoryStream::ReadMemoryStream(const char* data)
+	: m_data(data)
+	, m_position(0)
 {
 }
 
-bool CReadMemoryStream::ReadBool()
+bool ReadMemoryStream::ReadBool()
 {
 	return m_data[m_position++] > 0 ? true : false;
 }
 
-unsigned char CReadMemoryStream::ReadByte()
+unsigned char ReadMemoryStream::ReadByte()
 {
 	return m_data[m_position++];
 }
 
-short CReadMemoryStream::ReadShort()
+short ReadMemoryStream::ReadShort()
 {
 	int16_t result;
 	memcpy(&result, &m_data[m_position], sizeof(int16_t));
@@ -24,7 +28,7 @@ short CReadMemoryStream::ReadShort()
 	return result;
 }
 
-int CReadMemoryStream::ReadInt()
+int ReadMemoryStream::ReadInt()
 {
 	int32_t result;
 	memcpy(&result, &m_data[m_position], sizeof(int32_t));
@@ -32,7 +36,7 @@ int CReadMemoryStream::ReadInt()
 	return result;
 }
 
-unsigned CReadMemoryStream::ReadUnsigned()
+unsigned ReadMemoryStream::ReadUnsigned()
 {
 	uint32_t result;
 	memcpy(&result, &m_data[m_position], sizeof(uint32_t));
@@ -40,12 +44,12 @@ unsigned CReadMemoryStream::ReadUnsigned()
 	return result;
 }
 
-size_t CReadMemoryStream::ReadSizeT()
+size_t ReadMemoryStream::ReadSizeT()
 {
 	return ReadUnsigned();
 }
 
-float CReadMemoryStream::ReadFloat()
+float ReadMemoryStream::ReadFloat()
 {
 	float result;
 	memcpy(&result, &m_data[m_position], sizeof(float));
@@ -53,7 +57,7 @@ float CReadMemoryStream::ReadFloat()
 	return result;
 }
 
-double CReadMemoryStream::ReadDouble()
+double ReadMemoryStream::ReadDouble()
 {
 	double result;
 	memcpy(&result, &m_data[m_position], sizeof(double));
@@ -61,7 +65,7 @@ double CReadMemoryStream::ReadDouble()
 	return result;
 }
 
-std::string CReadMemoryStream::ReadString()
+std::string ReadMemoryStream::ReadString()
 {
 	size_t size = ReadSizeT();
 	std::string result(&m_data[m_position], size);
@@ -69,7 +73,7 @@ std::string CReadMemoryStream::ReadString()
 	return result;
 }
 
-std::wstring CReadMemoryStream::ReadWString()
+std::wstring ReadMemoryStream::ReadWString()
 {
 	size_t size = ReadSizeT();
 	std::string result(&m_data[m_position], size);
@@ -77,7 +81,7 @@ std::wstring CReadMemoryStream::ReadWString()
 	return Utf8ToWstring(result);
 }
 
-void* CReadMemoryStream::ReadPointer()
+void* ReadMemoryStream::ReadPointer()
 {
 	uint64_t result;
 	memcpy(&result, &m_data[m_position], sizeof(uint64_t));
@@ -85,28 +89,28 @@ void* CReadMemoryStream::ReadPointer()
 	return reinterpret_cast<void*>(result);
 }
 
-void CReadMemoryStream::ReadData(void* data, size_t size)
+void ReadMemoryStream::ReadData(void* data, size_t size)
 {
 	memcpy(data, m_data + m_position, size);
 	m_position += size;
 }
 
-void CReadMemoryStream::Seek(size_t pos)
+void ReadMemoryStream::Seek(size_t pos)
 {
 	m_position = pos;
 }
 
-void CWriteMemoryStream::WriteBool(bool value)
+void WriteMemoryStream::WriteBool(bool value)
 {
 	m_data.push_back(value ? 1 : 0);
 }
 
-void CWriteMemoryStream::WriteByte(unsigned char value)
+void WriteMemoryStream::WriteByte(unsigned char value)
 {
 	m_data.push_back(value);
 }
 
-void CWriteMemoryStream::WriteInt(int value)
+void WriteMemoryStream::WriteInt(int value)
 {
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + sizeof(int32_t));
@@ -114,12 +118,12 @@ void CWriteMemoryStream::WriteInt(int value)
 	memcpy(&m_data[oldSize], &normalized, sizeof(int32_t));
 }
 
-void CWriteMemoryStream::WriteSizeT(size_t value)
+void WriteMemoryStream::WriteSizeT(size_t value)
 {
 	WriteUnsigned(static_cast<unsigned>(value));
 }
 
-void CWriteMemoryStream::WriteUnsigned(unsigned value)
+void WriteMemoryStream::WriteUnsigned(unsigned value)
 {
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + sizeof(uint32_t));
@@ -127,21 +131,21 @@ void CWriteMemoryStream::WriteUnsigned(unsigned value)
 	memcpy(&m_data[oldSize], &normalized, sizeof(uint32_t));
 }
 
-void CWriteMemoryStream::WriteFloat(float value)
+void WriteMemoryStream::WriteFloat(float value)
 {
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + sizeof(float));
 	memcpy(&m_data[oldSize], &value, sizeof(float));
 }
 
-void CWriteMemoryStream::WriteDouble(double value)
+void WriteMemoryStream::WriteDouble(double value)
 {
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + sizeof(double));
 	memcpy(&m_data[oldSize], &value, sizeof(double));
 }
 
-void CWriteMemoryStream::WriteString(std::string const& value)
+void WriteMemoryStream::WriteString(std::string const& value)
 {
 	WriteSizeT(value.size());
 	size_t oldSize = m_data.size();
@@ -149,29 +153,30 @@ void CWriteMemoryStream::WriteString(std::string const& value)
 	memcpy(&m_data[oldSize], value.c_str(), value.size());
 }
 
-void CWriteMemoryStream::WriteWString(std::wstring const& value)
+void WriteMemoryStream::WriteWString(std::wstring const& value)
 {
 	WriteString(WStringToUtf8(value));
 }
 
-void CWriteMemoryStream::WritePointer(void* value)
+void WriteMemoryStream::WritePointer(void* value)
 {
 	size_t oldSize = m_data.size();
 	m_data.resize(oldSize + sizeof(uint64_t));
 	memcpy(&m_data[oldSize], &value, sizeof(uint64_t));
 }
 
-char * CWriteMemoryStream::GetData()
+char* WriteMemoryStream::GetData()
 {
 	return m_data.data();
 }
 
-const char * CWriteMemoryStream::GetData() const
+const char* WriteMemoryStream::GetData() const
 {
 	return m_data.data();
 }
 
-size_t CWriteMemoryStream::GetSize() const
+size_t WriteMemoryStream::GetSize() const
 {
 	return m_data.size();
+}
 }

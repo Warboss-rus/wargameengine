@@ -1,8 +1,18 @@
 #pragma once
-#include <string>
 #include "UITheme.h"
+#include <string>
+
+namespace wargameEngine
+{
+namespace view
+{
 class IRenderer;
 class ITextWriter;
+}
 
-void PrintText(IRenderer & renderer, ITextWriter & textWriter, int x, int y, int width, int height, std::string const& str, CUITheme::Text const& theme, float scale);
-void PrintText(IRenderer & renderer, ITextWriter & textWriter, int x, int y, int width, int height, std::wstring const& str, CUITheme::Text const& theme, float scale);
+namespace ui
+{
+void PrintText(view::IRenderer& renderer, view::ITextWriter& textWriter, int x, int y, int width, int height, std::string const& str, ui::UITheme::Text const& theme, float scale);
+void PrintText(view::IRenderer& renderer, view::ITextWriter& textWriter, int x, int y, int width, int height, std::wstring const& str, ui::UITheme::Text const& theme, float scale);
+}
+}

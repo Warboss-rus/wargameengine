@@ -3,7 +3,11 @@
 #include <string>
 #include <cstring>
 
-CRuler::CRuler()
+namespace wargameEngine
+{
+namespace view
+{
+Ruler::Ruler()
 	: m_enabled(false)
 	, m_isVisible(false)
 	, m_worldBeginX(0.0f), m_worldEndX(0.0f), m_worldBeginY(0.0f), m_worldEndY(0.0f)
@@ -11,17 +15,17 @@ CRuler::CRuler()
 
 }
 
-void CRuler::Enable()
+void Ruler::Enable()
 {
 	m_enabled = true;
 }
 
-void CRuler::Disable()
+void Ruler::Disable()
 {
 	m_enabled = false;
 }
 
-void CRuler::SetBegin(float x, float y)
+void Ruler::SetBegin(float x, float y)
 {
 	m_worldBeginX = x;
 	m_worldBeginY = y;
@@ -30,40 +34,40 @@ void CRuler::SetBegin(float x, float y)
 	m_isVisible = true;
 }
 
-void CRuler::SetEnd(float x, float y)
+void Ruler::SetEnd(float x, float y)
 {
 	m_worldEndX = x;
 	m_worldEndY = y;
 }
 
-double CRuler::GetDistance() const
+double Ruler::GetDistance() const
 {
 	double deltaX = m_worldEndX - m_worldBeginX;
 	double deltaY = m_worldEndY - m_worldBeginY;
 	return sqrt(deltaX * deltaX + deltaY * deltaY);
 }
 
-bool CRuler::IsVisible() const
+bool Ruler::IsVisible() const
 {
 	return m_isVisible;
 }
 
-bool CRuler::IsEnabled() const
+bool Ruler::IsEnabled() const
 {
 	return m_enabled;
 }
 
-CVector3f CRuler::GetBegin() const
+CVector3f Ruler::GetBegin() const
 {
 	return { m_worldBeginX, m_worldBeginY, 0.0f };
 }
 
-CVector3f CRuler::GetEnd() const
+CVector3f Ruler::GetEnd() const
 {
 	return{ m_worldEndX, m_worldEndY, 0.0f };
 }
 
-void CRuler::Hide()
+void Ruler::Hide()
 {
 	m_isVisible = false;
 	m_worldBeginX = 0.0f;
@@ -71,4 +75,6 @@ void CRuler::Hide()
 	m_worldEndX = 0.0f;
 	m_worldEndY = 0.0f;
 	m_enabled = false;
+}
+}
 }
