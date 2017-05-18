@@ -196,17 +196,17 @@ bool CGameWindowAndroid::EnableVRMode(bool /*show*/, VRViewportFactory const&)
 	throw std::runtime_error("GameWindowAndroid does not support VR mode, use GameWindowVR instead");
 }
 
-IInput& CGameWindowAndroid::GetInput()
+wargameEngine::view::IInput& CGameWindowAndroid::GetInput()
 {
 	return m_input;
 }
 
-IRenderer& CGameWindowAndroid::GetRenderer()
+wargameEngine::view::IRenderer& CGameWindowAndroid::GetRenderer()
 {
 	return m_renderer;
 }
 
-IViewHelper& CGameWindowAndroid::GetViewHelper()
+wargameEngine::view::IViewHelper& CGameWindowAndroid::GetViewHelper()
 {
 	return m_renderer;
 }

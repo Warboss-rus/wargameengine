@@ -7,6 +7,8 @@
 #include <GLES3/gl3.h>
 
 using namespace std;
+using namespace wargameEngine;
+using namespace view;
 
 namespace
 {
@@ -113,15 +115,15 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void AssignTexture(ICachedTexture& texture, CachedTextureType type) override
+	void AssignTexture(ICachedTexture& texture, IRenderer::CachedTextureType type) override
 	{
-		static const std::map<CachedTextureType, GLenum> typeMap = {
-			{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
-			{ CachedTextureType::RENDER_TARGET, GL_COLOR_ATTACHMENT0 },
-			{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
-			{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
+		static const std::map<IRenderer::CachedTextureType, GLenum> typeMap = {
+			{ IRenderer::CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
+			{ IRenderer::CachedTextureType::RENDER_TARGET, GL_COLOR_ATTACHMENT0 },
+			{ IRenderer::CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
+			{ IRenderer::CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
 		};
-		if (type == CachedTextureType::DEPTH)
+		if (type == IRenderer::CachedTextureType::DEPTH)
 		{
 			GLenum buffers[] = { GL_NONE };
 			glDrawBuffers(1, buffers);
@@ -186,11 +188,11 @@ private:
 	GLuint m_id = 0;
 };
 
-static const map<RenderMode, GLenum> renderModeMap = {
-	{ RenderMode::TRIANGLES, GL_TRIANGLES },
-	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::LINES, GL_LINES },
-	{ RenderMode::LINE_LOOP, GL_LINE_LOOP } //
+static const map<IRenderer::RenderMode, GLenum> renderModeMap = {
+	{ IRenderer::RenderMode::TRIANGLES, GL_TRIANGLES },
+	{ IRenderer::RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
+	{ IRenderer::RenderMode::LINES, GL_LINES },
+	{ IRenderer::RenderMode::LINE_LOOP, GL_LINE_LOOP } //
 };
 
 #ifdef _WINDOWS
@@ -345,7 +347,7 @@ void COpenGLESRenderer::SetTexture(const Path& texture, TextureSlot slot, int fl
 	m_textureManager->SetTexture(texture, slot, nullptr, flags);
 }
 
-void COpenGLESRenderer::SetTexture(const Path& texture, const std::vector<TeamColor>* teamcolor /*= nullptr*/, int flags /*= 0*/)
+void COpenGLESRenderer::SetTexture(const Path& texture, const std::vector<model::TeamColor>* teamcolor /*= nullptr*/, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }

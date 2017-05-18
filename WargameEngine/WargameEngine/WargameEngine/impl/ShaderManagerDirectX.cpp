@@ -60,6 +60,9 @@ float4 PShader( PixelInputType input) : SV_TARGET\
 	return float4(tex.xyz + Color.xyz, tex.a * Color.a);\
 }";
 
+using namespace wargameEngine;
+using namespace view;
+
 class CShaderManagerDirectX::CDirectXShaderProgram : public IShaderProgram
 {
 public:

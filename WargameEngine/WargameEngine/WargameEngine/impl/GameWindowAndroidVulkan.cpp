@@ -110,17 +110,17 @@ bool CGameWindowAndroidVulkan::EnableVRMode(bool show, VRViewportFactory const& 
 	throw std::logic_error("The method or operation is not implemented.");
 }
 
-IInput& CGameWindowAndroidVulkan::GetInput()
+wargameEngine::view::IInput& CGameWindowAndroidVulkan::GetInput()
 {
 	return m_input;
 }
 
-IRenderer& CGameWindowAndroidVulkan::GetRenderer()
+wargameEngine::view::IRenderer& CGameWindowAndroidVulkan::GetRenderer()
 {
 	return m_renderer;
 }
 
-IViewHelper& CGameWindowAndroidVulkan::GetViewHelper()
+wargameEngine::view::IViewHelper& CGameWindowAndroidVulkan::GetViewHelper()
 {
 	return m_renderer;
 }

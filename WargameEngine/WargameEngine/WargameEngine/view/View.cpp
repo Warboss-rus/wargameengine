@@ -1,5 +1,5 @@
 #include "View.h"
-#include "IGameWindow.h"
+#include "IWindow.h"
 #include "../controller/Controller.h"
 #include "../model/ObjectGroup.h"
 #include "../LogWriter.h"
@@ -23,7 +23,7 @@ namespace view
 
 static const string g_controllerTag = "controller";
 
-View::View(IGameWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
+View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
 	vector<unique_ptr<IImageReader>>& imageReaders, vector<unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager)
 	: m_window(window)
 	, m_renderer(m_window.GetRenderer())

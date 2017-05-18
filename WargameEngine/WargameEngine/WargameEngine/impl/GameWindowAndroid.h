@@ -1,12 +1,12 @@
 #pragma once
-#include "..\view\IGameWindow.h"
+#include "..\view\IWindow.h"
 #include "OpenGLESRenderer.h"
 #include "InputAndroid.h"
 
 struct ANativeWindow;
 struct android_app;
 
-class CGameWindowAndroid : public IGameWindow
+class CGameWindowAndroid : public wargameEngine::view::IWindow
 {
 public:
 	CGameWindowAndroid(android_app* app);
@@ -27,9 +27,9 @@ public:
 	virtual void SetTitle(std::wstring const& title) override;
 	virtual void ToggleFullscreen() override;
 	virtual bool EnableVRMode(bool show, VRViewportFactory const&) override;
-	virtual IInput& GetInput() override;
-	virtual IRenderer& GetRenderer() override;
-	virtual IViewHelper& GetViewHelper() override;
+	virtual wargameEngine::view::IInput& GetInput() override;
+	virtual wargameEngine::view::IRenderer& GetRenderer() override;
+	virtual wargameEngine::view::IViewHelper& GetViewHelper() override;
 	virtual void EnableMultisampling(bool enable, int level = 1.0f) override;
 	virtual void GetWindowSize(int& width, int& height) override;
 private:

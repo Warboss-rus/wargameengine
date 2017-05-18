@@ -4,7 +4,11 @@
 #include <map>
 #include <vector>
 
-class CShaderManagerOpenGLES : public IShaderManager
+using wargameEngine::Path;
+using wargameEngine::view::IVertexAttribCache;
+using wargameEngine::view::IShaderProgram;
+
+class CShaderManagerOpenGLES : public wargameEngine::view::IShaderManager
 {
 public:
 	~CShaderManagerOpenGLES();

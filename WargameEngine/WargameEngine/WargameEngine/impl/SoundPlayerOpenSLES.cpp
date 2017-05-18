@@ -3,6 +3,8 @@
 #include <android/asset_manager.h>
 #include "../LogWriter.h"
 
+using namespace wargameEngine;
+
 void CSoundPlayerOpenSLES::Init()
 {
 	const SLInterfaceID pIDs[1] = { SL_IID_ENGINE };

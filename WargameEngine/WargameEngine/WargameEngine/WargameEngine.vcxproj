@@ -295,7 +295,7 @@
     <ClCompile Include="view\SkyBox.cpp" />
     <ClCompile Include="view\TextureManager.cpp" />
     <ClCompile Include="view\TranslationManager.cpp" />
-    <ClCompile Include="view\ViewportBase.cpp" />
+    <ClCompile Include="view\Viewport.cpp" />
     <ClCompile Include="view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -365,7 +365,7 @@
     <ClInclude Include="view\IModelReader.h" />
     <ClInclude Include="view\IRenderer.h" />
     <ClInclude Include="view\IShaderManager.h" />
-    <ClInclude Include="view\IGameWindow.h" />
+    <ClInclude Include="view\IWindow.h" />
     <ClInclude Include="view\ISoundPlayer.h" />
     <ClInclude Include="view\ITextureHelper.h" />
     <ClInclude Include="view\ITextWriter.h" />
@@ -406,7 +406,7 @@
     <ClInclude Include="view\OBJModelFactory.h" />
     <ClInclude Include="view\SkyBox.h" />
     <ClInclude Include="view\TextureManager.h" />
-    <ClInclude Include="view\ViewportBase.h" />
+    <ClInclude Include="view\Viewport.h" />
     <ClInclude Include="view\WBMModelFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -152,7 +152,7 @@
     <ClCompile Include="..\WargameEngine\view\SkyBox.cpp" />
     <ClCompile Include="..\WargameEngine\view\TextureManager.cpp" />
     <ClCompile Include="..\WargameEngine\view\TranslationManager.cpp" />
-    <ClCompile Include="..\WargameEngine\view\ViewportBase.cpp" />
+    <ClCompile Include="..\WargameEngine\view\Viewport.cpp" />
     <ClCompile Include="..\WargameEngine\view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -243,7 +243,7 @@
     <ClInclude Include="..\WargameEngine\view\FixedCamera.h" />
     <ClInclude Include="..\WargameEngine\view\View.h" />
     <ClInclude Include="..\WargameEngine\view\ICamera.h" />
-    <ClInclude Include="..\WargameEngine\view\IGameWindow.h" />
+    <ClInclude Include="..\WargameEngine\view\IWindow.h" />
     <ClInclude Include="..\WargameEngine\view\IImageReader.h" />
     <ClInclude Include="..\WargameEngine\view\IInput.h" />
     <ClInclude Include="..\WargameEngine\view\IModelReader.h" />
@@ -269,7 +269,7 @@
     <ClInclude Include="..\WargameEngine\view\TranslationManager.h" />
     <ClInclude Include="..\WargameEngine\view\Vector2.h" />
     <ClInclude Include="..\WargameEngine\view\Vector3.h" />
-    <ClInclude Include="..\WargameEngine\view\ViewportBase.h" />
+    <ClInclude Include="..\WargameEngine\view\Viewport.h" />
     <ClInclude Include="..\WargameEngine\view\WBMModelFactory.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">

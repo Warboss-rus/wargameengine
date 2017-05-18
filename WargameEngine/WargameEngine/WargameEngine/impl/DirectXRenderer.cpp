@@ -8,6 +8,8 @@
 #include "../view/IViewport.h"
 
 using namespace DirectX;
+using namespace wargameEngine;
+using namespace view;
 
 inline DirectX::XMFLOAT4X4 Store(DirectX::XMMATRIX const& matrix)
 {
@@ -141,10 +143,10 @@ public:
 		m_oldRenderTargetView = nullptr;
 	}
 
-	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override
+	virtual void AssignTexture(ICachedTexture & texture, IRenderer::CachedTextureType type) override
 	{
 		auto& dxTexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
-		if (type == CachedTextureType::DEPTH)
+		if (type == IRenderer::CachedTextureType::DEPTH)
 		{
 			m_depthStencilView = nullptr;
 
@@ -160,7 +162,7 @@ public:
 			m_renderTargetView = nullptr;
 
 			D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-			renderTargetViewDesc.Format = (type == CachedTextureType::RGBA || type == CachedTextureType::RENDER_TARGET) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_A8_UNORM;
+			renderTargetViewDesc.Format = (type == IRenderer::CachedTextureType::RGBA || type == IRenderer::CachedTextureType::RENDER_TARGET) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_A8_UNORM;
 			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			renderTargetViewDesc.Texture2D.MipSlice = 0;
 
@@ -359,11 +361,11 @@ void CDirectXRenderer::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elem
 	}
 }
 
-std::map<RenderMode, D3D11_PRIMITIVE_TOPOLOGY> renderModeMap = {
-	{ RenderMode::LINES, D3D11_PRIMITIVE_TOPOLOGY_LINELIST },
-	{ RenderMode::LINE_LOOP, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP },
-	{ RenderMode::TRIANGLES, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST },
-	{ RenderMode::TRIANGLE_STRIP, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP },
+std::map<IRenderer::RenderMode, D3D11_PRIMITIVE_TOPOLOGY> renderModeMap = {
+	{ IRenderer::RenderMode::LINES, D3D11_PRIMITIVE_TOPOLOGY_LINELIST },
+	{ IRenderer::RenderMode::LINE_LOOP, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP },
+	{ IRenderer::RenderMode::TRIANGLES, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST },
+	{ IRenderer::RenderMode::TRIANGLE_STRIP, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP },
 };
 
 void CDirectXRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
@@ -532,7 +534,7 @@ void CDirectXRenderer::LookAt(CVector3f const& position, CVector3f const& direct
 	m_matricesChanged = true;
 }
 
-void CDirectXRenderer::SetTexture(const Path&  texture, const std::vector<TeamColor> * teamcolor, int flags /*= 0*/)
+void CDirectXRenderer::SetTexture(const Path&  texture, const std::vector<model::TeamColor> * teamcolor, int flags /*= 0*/)
 {
 	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
 }

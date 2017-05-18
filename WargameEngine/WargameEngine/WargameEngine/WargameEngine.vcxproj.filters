@@ -197,9 +197,6 @@
     <ClCompile Include="controller\ScriptRegisterViewport.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
-    <ClCompile Include="view\ViewportBase.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="view\InputBase.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
@@ -224,14 +221,17 @@
     <ClCompile Include="model\ParticleEffect.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
-    <ClCompile Include="view\Image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="controller\MovementLimiter.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="model\BoundingBoxManager.cpp">
       <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Image.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Viewport.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -406,9 +406,6 @@
     <ClInclude Include="view\IShaderManager.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\IGameWindow.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="view\IViewHelper.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -496,9 +493,6 @@
     <ClInclude Include="IPhysicsEngine.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="view\ViewportBase.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="model\Light.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
@@ -561,6 +555,12 @@
     </ClInclude>
     <ClInclude Include="view\PluginModelLoader.h">
       <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Viewport.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IWindow.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

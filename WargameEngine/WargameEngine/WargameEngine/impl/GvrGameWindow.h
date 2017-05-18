@@ -1,5 +1,5 @@
 #pragma once
-#include "../view/IGameWindow.h"
+#include "../view/IWindow.h"
 #include <memory>
 #include "vr/gvr/capi/include/gvr.h"
 #include "InputAndroid.h"
@@ -7,7 +7,7 @@
 
 class View;
 
-class CGvrGameWindow : public IGameWindow
+class CGvrGameWindow : public wargameEngine::view::IWindow
 {
 public:
 	CGvrGameWindow(gvr_context* gvr_context);
@@ -27,9 +27,9 @@ public:
 	void SetTitle(std::wstring const& title) override;
 	void ToggleFullscreen() override;
 	bool EnableVRMode(bool show, VRViewportFactory const&) override;
-	IInput& GetInput() override;
-	IRenderer& GetRenderer() override;
-	IViewHelper& GetViewHelper() override;
+	wargameEngine::view::IInput& GetInput() override;
+	wargameEngine::view::IRenderer& GetRenderer() override;
+	wargameEngine::view::IViewHelper& GetViewHelper() override;
 	void EnableMultisampling(bool enable, int level = 1.0f) override;
 	void GetWindowSize(int& width, int& height) override;
 

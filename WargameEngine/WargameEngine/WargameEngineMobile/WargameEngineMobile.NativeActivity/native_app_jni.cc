@@ -1,7 +1,8 @@
 #include <android/log.h>
 #include <jni.h>
 #include <dlfcn.h>
-#include "..\..\WargameEngine\view\View.h"
+#include "..\..\WargameEngine\Application.h"
+#include "../../WargameEngine/view/View.h"
 #include "..\..\WargameEngine\impl\TextWriter.h"
 #include "..\..\WargameEngine\impl\ScriptHandlerLua.h"
 #include "..\..\WargameEngine\impl\NetSocket.h"
@@ -14,6 +15,9 @@
 #include "..\..\WargameEngine\impl\GvrAudioPlayer.h"
 #include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
 
+using namespace wargameEngine;
+using namespace view;
+
 #define JNI_METHOD(return_type, method_name) \
   JNIEXPORT return_type JNICALL              \
       Java_com_WargameEngineMobileGoogleVR_WargameEngineMobileGoogleVR_##method_name
@@ -21,19 +25,20 @@
 namespace {
 struct NativeAppJni
 {
-	sGameViewContext context;
-	std::unique_ptr<View> gameView;
+	Context context;
+	Module module;
+	std::unique_ptr<Application> app;
 	CGvrGameWindow * window;
 	NativeAppJni(gvr_context* gvr_context, std::unique_ptr<gvr::AudioApi> gvr_audio_api)
 	{
 		const std::string storage = getenv("EXTERNAL_STORAGE");
-		context.module.Load(storage + "/WargameEngine/test.module");
-		if (context.module.name.empty())
+		module.Load(storage + "/WargameEngine/test.module");
+		if (module.name.empty())
 		{
-			context.module.script = "main.lua";
-			context.module.textures = "texture/";
-			context.module.models = "models/";
-			context.module.folder = storage + "/WargameEngine/";
+			module.script = "main.lua";
+			module.textures = "texture/";
+			module.models = "models/";
+			module.folder = storage + "/WargameEngine/";
 		}
 		window = new CGvrGameWindow(gvr_context);
 		context.window.reset(window);
@@ -87,8 +92,9 @@ JNI_METHOD(void, nativeInitializeGl)(JNIEnv *env, jobject obj, jlong nativeRende
 {
 	auto renderer = native(nativeRenderer);
 	renderer->window->Init();
-	renderer->gameView = std::make_unique<View>(&renderer->context);
-	renderer->gameView->GetViewport(0).GetCamera().AttachToVR(0);
+	renderer->app = std::make_unique<Application>(std::move(renderer->context));
+	renderer->app->Run(std::move(renderer->module));
+	renderer->app->GetView().GetViewport(0).GetCamera().AttachToVR(0);
 }
 
 JNI_METHOD(void, nativeDrawFrame)(JNIEnv *env, jobject obj, jlong nativeRenderer) 

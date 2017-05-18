@@ -25,7 +25,7 @@ class Controller;
 namespace view
 {
 class View;
-class IGameWindow;
+class IWindow;
 class ISoundPlayer;
 class ITextWriter;
 class IImageReader;
@@ -34,7 +34,7 @@ class IModelReader;
 
 struct Context
 {
-	std::unique_ptr<view::IGameWindow> window;
+	std::unique_ptr<view::IWindow> window;
 	std::unique_ptr<view::ISoundPlayer> soundPlayer;
 	std::unique_ptr<view::ITextWriter> textWriter;
 	std::unique_ptr<IPhysicsEngine> physicsEngine;
@@ -53,6 +53,8 @@ public:
 
 	void Run(Module&& module);
 	void Run(const Path& modulePath);
+
+	view::View& GetView();
 
 private:
 	Context m_context;

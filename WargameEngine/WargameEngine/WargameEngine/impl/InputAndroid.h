@@ -2,7 +2,7 @@
 #include "android\input.h"
 #include "../view/InputBase.h"
 
-class CInputAndroid : public CInputBase
+class CInputAndroid : public wargameEngine::view::InputBase
 {
 public:
 	void HandleInput(AInputEvent* event);
@@ -13,10 +13,10 @@ public:
 	int GetModifiers() const override;
 	int GetMouseX() const override;
 	int GetMouseY() const override;
-	bool IsKeyPressed(VirtualKey key) const override;
+	bool IsKeyPressed(wargameEngine::view::VirtualKey key) const override;
 
 private:
-	static VirtualKey KeycodeToVirtualKey(int key);
+	static wargameEngine::view::VirtualKey KeycodeToVirtualKey(int key);
 
 	int m_lastX, m_lastY;
 };

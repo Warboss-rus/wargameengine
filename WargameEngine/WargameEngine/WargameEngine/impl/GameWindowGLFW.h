@@ -1,5 +1,5 @@
 #pragma once
-#include "../view/IGameWindow.h"
+#include "../view/IWindow.h"
 #include <functional>
 #include <memory>
 
@@ -13,7 +13,7 @@ namespace vr
 class IVRSystem;
 }
 
-class CGameWindowGLFW : public wargameEngine::view::IGameWindow
+class CGameWindowGLFW : public wargameEngine::view::IWindow
 {
 public:
 	CGameWindowGLFW();

@@ -7,6 +7,9 @@
 #include <fstream>
 #include <map>
 
+using namespace wargameEngine;
+using namespace view;
+
 namespace
 {
 constexpr char defaultVertexShader[] = "\

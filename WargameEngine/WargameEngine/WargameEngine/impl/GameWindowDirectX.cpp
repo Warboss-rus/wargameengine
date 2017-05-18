@@ -5,6 +5,8 @@
 #include "..\LogWriter.h"
 #include <thread>
 
+using namespace wargameEngine::view;
+
 struct CGameWindowDirectX::Impl
 {
 	static Impl * g_instance;

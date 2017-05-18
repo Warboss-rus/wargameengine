@@ -178,7 +178,7 @@ void CInputGLFW::UpdateControllers()
 
 void CInputGLFW::SetHeadRotation(size_t deviceIndex, const float* matrix)
 {
-	CInputBase::OnHeadRotation(deviceIndex, matrix);
+	InputBase::OnHeadRotation(deviceIndex, matrix);
 }
 
 int CInputGLFW::GetMouseX() const

@@ -1,10 +1,10 @@
 #pragma once
-#include "../view/IGameWindow.h"
+#include "../view/IWindow.h"
 #include <memory>
 
 class COpenGLRenderer;
 
-class CGameWindowGLUT : public wargameEngine::view::IGameWindow
+class CGameWindowGLUT : public wargameEngine::view::IWindow
 {
 public:
 	CGameWindowGLUT();

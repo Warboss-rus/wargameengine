@@ -10,9 +10,13 @@
 class CDirectXRenderer;
 struct sLightSource;
 
-class CShaderManagerDirectX : public IShaderManager
+class CShaderManagerDirectX : public wargameEngine::view::IShaderManager
 {
 public:
+	using Path = wargameEngine::Path;
+	using IShaderProgram = wargameEngine::view::IShaderProgram;
+	using IVertexAttribCache = wargameEngine::view::IVertexAttribCache;
+
 	CShaderManagerDirectX(CDirectXRenderer * render);
 
 	virtual std::unique_ptr<IShaderProgram> NewProgram(const Path& vertex = Path(), const Path& fragment = Path(), const Path& geometry = Path()) override;

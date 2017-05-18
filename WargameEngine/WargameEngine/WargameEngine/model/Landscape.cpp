@@ -1,4 +1,5 @@
 #include "Landscape.h"
+#include <math.h>
 
 namespace wargameEngine
 {

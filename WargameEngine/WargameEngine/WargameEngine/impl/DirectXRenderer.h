@@ -6,6 +6,15 @@
 #include <DirectXMath.h>
 #include "ShaderManagerDirectX.h"
 
+using wargameEngine::view::IVertexBuffer;
+using wargameEngine::Path;
+using wargameEngine::view::ICachedTexture;
+using wargameEngine::view::IOcclusionQuery;
+using wargameEngine::view::IViewport;
+using wargameEngine::view::IFrameBuffer;
+using wargameEngine::view::TextureManager;
+using wargameEngine::view::TextureMipMaps;
+
 struct sLightSource
 {
 	float diffuse[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -14,9 +23,10 @@ struct sLightSource
 	float pos[3] = { 0.0f, 0.0f, 0.0f };
 };
 
-class CDirectXRenderer : public IViewHelper
+class CDirectXRenderer : public wargameEngine::view::IViewHelper
 {
 public:
+
 	CDirectXRenderer(HWND hWnd = NULL);
 	~CDirectXRenderer();
 
@@ -40,7 +50,7 @@ public:
 	
 	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
 	void SetTexture(const Path&  texture, TextureSlot slot, int flags = 0) override;
-	void SetTexture(const Path&  texture, const std::vector<TeamColor> * teamcolor, int flags = 0) override;
+	void SetTexture(const Path&  texture, const std::vector<wargameEngine::model::TeamColor> * teamcolor, int flags = 0) override;
 	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 	void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
@@ -53,7 +63,7 @@ public:
 
 	std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
-	IShaderManager& GetShaderManager() override;
+	wargameEngine::view::IShaderManager& GetShaderManager() override;
 
 	void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
 	void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;

@@ -4,7 +4,7 @@
 #include "IScriptHandler.h"
 #include "controller/Controller.h"
 #include "model/Model.h"
-#include "view/IGameWindow.h"
+#include "view/IWindow.h"
 #include "view/IImageReader.h"
 #include "view/IModelReader.h"
 #include "view/ISoundPlayer.h"
@@ -59,4 +59,10 @@ void Application::Run(const Path& modulePath)
 	module.Load(modulePath);
 	Run(std::move(module));
 }
+
+wargameEngine::view::View& Application::GetView()
+{
+	return *m_view;
+}
+
 }

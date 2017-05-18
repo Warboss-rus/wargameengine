@@ -6,7 +6,12 @@
 
 class CShaderManagerOpenGLES;
 
-class COpenGLESRenderer : public IViewHelper
+using wargameEngine::view::IVertexBuffer;
+using wargameEngine::Path;
+using wargameEngine::view::ICachedTexture;
+using wargameEngine::view::TextureMipMaps;
+
+class COpenGLESRenderer : public wargameEngine::view::IViewHelper
 {
 public:
 	COpenGLESRenderer();
@@ -33,7 +38,7 @@ public:
 
 	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
 	void SetTexture(const Path& texture, TextureSlot slot, int flags = 0) override;
-	void SetTexture(const Path& texture, const std::vector<TeamColor>* teamcolor, int flags = 0) override;
+	void SetTexture(const Path& texture, const std::vector<wargameEngine::model::TeamColor>* teamcolor, int flags = 0) override;
 	void SetTexture(const ICachedTexture& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
 	void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
 	void RenderToTexture(std::function<void()> const& func, ICachedTexture& texture, unsigned int width, unsigned int height) override;
@@ -45,12 +50,12 @@ public:
 	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess) override;
 
 	std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = false) override;
-	std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
+	std::unique_ptr<wargameEngine::view::IOcclusionQuery> CreateOcclusionQuery() override;
 
 	std::string GetName() const override;
 	bool SupportsFeature(Feature feature) const override;
 
-	IShaderManager& GetShaderManager() override;
+	wargameEngine::view::IShaderManager& GetShaderManager() override;
 
 	//ITextureHelper
 	std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
@@ -64,11 +69,11 @@ public:
 
 	//IViewHelper
 
-	std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
-	void SetTextureManager(TextureManager& textureManager) override;
+	std::unique_ptr<wargameEngine::view::IFrameBuffer> CreateFramebuffer() const override;
+	void SetTextureManager(wargameEngine::view::TextureManager& textureManager) override;
 
-	void WindowCoordsToWorldVector(IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const override;
-	void WorldCoordsToWindowCoords(IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const override;
+	void WindowCoordsToWorldVector(wargameEngine::view::IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const override;
+	void WorldCoordsToWindowCoords(wargameEngine::view::IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const override;
 	void SetNumberOfLights(size_t count) override;
 	void SetUpLight(size_t index, CVector3f const& position, const float* ambient, const float* diffuse, const float* specular) override;
 	float GetMaximumAnisotropyLevel() const override;
@@ -88,14 +93,14 @@ public:
 	void BindVAO(unsigned vao, unsigned indexBuffer);
 
 private:
-	TextureManager* m_textureManager;
+	wargameEngine::view::TextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;
 	int m_viewport[4];
 	int m_version;
 	CMatrixManagerGLM m_matrixManager;
 	float m_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	;
-	std::unique_ptr<IShaderProgram> m_defaultProgram;
+	std::unique_ptr<wargameEngine::view::IShaderProgram> m_defaultProgram;
 	unsigned int m_vao;
 	unsigned int m_activeVao = 0;
 	unsigned int m_indexBuffer = 0;

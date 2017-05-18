@@ -35,6 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\WargameEngine\Application.cpp" />
     <ClCompile Include="..\..\WargameEngine\AsyncFileProvider.cpp" />
     <ClCompile Include="..\..\WargameEngine\controller\CommandChangeGlobalProperty.cpp" />
     <ClCompile Include="..\..\WargameEngine\controller\CommandChangeProperty.cpp" />
@@ -54,9 +55,10 @@
     <ClCompile Include="..\..\WargameEngine\controller\ScriptRegisterViewport.cpp" />
     <ClCompile Include="..\..\WargameEngine\LogWriter.cpp" />
     <ClCompile Include="..\..\WargameEngine\MemoryStream.cpp" />
+    <ClCompile Include="..\..\WargameEngine\model\BoundingBoxManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\Model.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\Landscape.cpp" />
-    <ClCompile Include="..\..\WargameEngine\model\MovementLimiter.cpp" />
+    <ClCompile Include="..\..\WargameEngine\controller\MovementLimiter.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\Object.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\ObjectGroup.cpp" />
     <ClCompile Include="..\..\WargameEngine\model\ParticleEffect.cpp" />
@@ -65,7 +67,8 @@
     <ClCompile Include="..\..\WargameEngine\OSSpecific.cpp" />
     <ClCompile Include="..\..\WargameEngine\Plugin.cpp" />
     <ClCompile Include="..\..\WargameEngine\PluginManager.cpp" />
-    <ClCompile Include="..\..\WargameEngine\Ruler.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\Image.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\Ruler.cpp" />
     <ClCompile Include="..\..\WargameEngine\ThreadPool.cpp" />
     <ClCompile Include="..\..\WargameEngine\UI\UIButton.cpp" />
     <ClCompile Include="..\..\WargameEngine\UI\UICheckBox.cpp" />
@@ -95,10 +98,12 @@
     <ClCompile Include="..\..\WargameEngine\view\SkyBox.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\TextureManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\TranslationManager.cpp" />
-    <ClCompile Include="..\..\WargameEngine\view\ViewportBase.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\Viewport.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\WBMModelFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\WargameEngine\Application.h" />
+    <ClInclude Include="..\..\WargameEngine\array_view.h" />
     <ClInclude Include="..\..\WargameEngine\AsyncFileProvider.h" />
     <ClInclude Include="..\..\WargameEngine\controller\CommandChangeGlobalProperty.h" />
     <ClInclude Include="..\..\WargameEngine\controller\CommandChangeProperty.h" />
@@ -112,8 +117,7 @@
     <ClInclude Include="..\..\WargameEngine\controller\CommandRotateObject.h" />
     <ClInclude Include="..\..\WargameEngine\controller\Controller.h" />
     <ClInclude Include="..\..\WargameEngine\controller\ICommand.h" />
-    <ClInclude Include="..\..\WargameEngine\controller\INetSocket.h" />
-    <ClInclude Include="..\..\WargameEngine\controller\IScriptHandler.h" />
+    <ClInclude Include="..\..\WargameEngine\IScriptHandler.h" />
     <ClInclude Include="..\..\WargameEngine\controller\IStateManager.h" />
     <ClInclude Include="..\..\WargameEngine\controller\Network.h" />
     <ClInclude Include="..\..\WargameEngine\controller\ScriptFunctionsProtocol.h" />
@@ -122,18 +126,20 @@
     <ClInclude Include="..\..\WargameEngine\controller\ScriptUIProtocol.h" />
     <ClInclude Include="..\..\WargameEngine\controller\ScriptViewportProtocol.h" />
     <ClInclude Include="..\..\WargameEngine\IMemoryStream.h" />
+    <ClInclude Include="..\..\WargameEngine\INetSocket.h" />
     <ClInclude Include="..\..\WargameEngine\IPhysicsEngine.h" />
     <ClInclude Include="..\..\WargameEngine\ITask.h" />
     <ClInclude Include="..\..\WargameEngine\LogWriter.h" />
     <ClInclude Include="..\..\WargameEngine\MemoryStream.h" />
     <ClInclude Include="..\..\WargameEngine\model\Animation.h" />
+    <ClInclude Include="..\..\WargameEngine\model\BoundingBoxManager.h" />
     <ClInclude Include="..\..\WargameEngine\model\IBaseObject.h" />
     <ClInclude Include="..\..\WargameEngine\model\Model.h" />
     <ClInclude Include="..\..\WargameEngine\model\IBoundingBoxManager.h" />
     <ClInclude Include="..\..\WargameEngine\model\IModel.h" />
     <ClInclude Include="..\..\WargameEngine\model\Landscape.h" />
     <ClInclude Include="..\..\WargameEngine\model\Light.h" />
-    <ClInclude Include="..\..\WargameEngine\model\MovementLimiter.h" />
+    <ClInclude Include="..\..\WargameEngine\controller\MovementLimiter.h" />
     <ClInclude Include="..\..\WargameEngine\model\Object.h" />
     <ClInclude Include="..\..\WargameEngine\model\ObjectGroup.h" />
     <ClInclude Include="..\..\WargameEngine\model\IObject.h" />
@@ -149,7 +155,8 @@
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_iterators.hpp" />
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp" />
-    <ClInclude Include="..\..\WargameEngine\Ruler.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Image.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Ruler.h" />
     <ClInclude Include="..\..\WargameEngine\Signal.h" />
     <ClInclude Include="..\..\WargameEngine\stb_image.h" />
     <ClInclude Include="..\..\WargameEngine\Task.h" />
@@ -174,7 +181,7 @@
     <ClInclude Include="..\..\WargameEngine\view\Camera.h" />
     <ClInclude Include="..\..\WargameEngine\view\ColladaModelFactory.h" />
     <ClInclude Include="..\..\WargameEngine\view\View.h" />
-    <ClInclude Include="..\..\WargameEngine\view\IGameWindow.h" />
+    <ClInclude Include="..\..\WargameEngine\view\IWindow.h" />
     <ClInclude Include="..\..\WargameEngine\view\IImageReader.h" />
     <ClInclude Include="..\..\WargameEngine\view\IInput.h" />
     <ClInclude Include="..\..\WargameEngine\view\IModelReader.h" />
@@ -199,7 +206,7 @@
     <ClInclude Include="..\..\WargameEngine\view\TranslationManager.h" />
     <ClInclude Include="..\..\WargameEngine\view\Vector2.h" />
     <ClInclude Include="..\..\WargameEngine\view\Vector3.h" />
-    <ClInclude Include="..\..\WargameEngine\view\ViewportBase.h" />
+    <ClInclude Include="..\..\WargameEngine\view\Viewport.h" />
     <ClInclude Include="..\..\WargameEngine\view\WBMModelFactory.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

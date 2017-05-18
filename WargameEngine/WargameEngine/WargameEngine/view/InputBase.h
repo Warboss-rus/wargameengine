@@ -7,7 +7,7 @@ namespace wargameEngine
 {
 namespace view
 {
-class CInputBase : public IInput
+class InputBase : public IInput
 {
 public:
 	signals::SignalConnection DoOnLMBDown(const MouseClickHandler& handler, int priority = 0, std::string const& tag = "") override;

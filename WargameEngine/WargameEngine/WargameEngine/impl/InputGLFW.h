@@ -4,7 +4,7 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 
-class CInputGLFW : public wargameEngine::view::CInputBase
+class CInputGLFW : public wargameEngine::view::InputBase
 {
 public:
 	using VirtualKey = wargameEngine::view::VirtualKey;

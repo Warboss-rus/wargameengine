@@ -172,17 +172,17 @@ bool CGvrGameWindow::EnableVRMode(bool, VRViewportFactory const&)
 	return true;
 }
 
-IInput& CGvrGameWindow::GetInput()
+wargameEngine::view::IInput& CGvrGameWindow::GetInput()
 {
 	return m_input;
 }
 
-IRenderer& CGvrGameWindow::GetRenderer()
+wargameEngine::view::IRenderer& CGvrGameWindow::GetRenderer()
 {
 	return m_renderer;
 }
 
-IViewHelper& CGvrGameWindow::GetViewHelper()
+wargameEngine::view::IViewHelper& CGvrGameWindow::GetViewHelper()
 {
 	return m_renderer;
 }

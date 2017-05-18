@@ -2,7 +2,7 @@
 #include <android/log.h>
 #include <dlfcn.h>
 #include "android_native_app_glue.h"
-#include "..\..\WargameEngine\view\View.h"
+#include "../../WargameEngine/Application.h"
 #ifdef SOUND_FMOD
 #include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
 #define SOUND_PLAYER_CLASS CSoundPlayerFMod
@@ -45,6 +45,9 @@
 
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "WargameEngineMobile", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "WargameEngineMobile", __VA_ARGS__))
+
+using namespace wargameEngine;
+using namespace view;
 
 /**
 * Our saved state data.
@@ -122,13 +125,14 @@ void android_main(struct android_app* state) {
 	memset(&engine, 0, sizeof(engine));
 	
 	const std::string storage = getenv("EXTERNAL_STORAGE");
-	sGameViewContext context;
-	if (context.module.name.empty())
+	wargameEngine::Context context;
+	wargameEngine::Module module;
+	if (module.name.empty())
 	{
-		context.module.script = "main.lua";
-		context.module.textures = "texture/";
-		context.module.models = "models/";
-		context.module.folder = storage + "/WargameEngine/";
+		module.script = "main.lua";
+		module.textures = "texture/";
+		module.models = "models/";
+		module.folder = storage + "/WargameEngine/";
 	}
 	try
 	{
@@ -175,5 +179,6 @@ void android_main(struct android_app* state) {
 	}
 	//context.window->LaunchMainLoop();
 	// loop waiting for stuff to do.
-	View view(&context);
+	Application app(std::move(context));
+	app.Run(std::move(module));
 }

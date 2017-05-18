@@ -6,7 +6,7 @@
 #include "SkyBox.h"
 #include "TextureManager.h"
 #include "TranslationManager.h"
-#include "ViewportBase.h"
+#include "Viewport.h"
 #include <memory>
 #include <string>
 
@@ -27,13 +27,13 @@ class Controller;
 
 namespace view
 {
-class IGameWindow;
+class IWindow;
 class ISoundPlayer;
 
 class View
 {
 public:
-	View(IGameWindow& m_window, ISoundPlayer& m_soundPlayer, ITextWriter& m_textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
+	View(IWindow& m_window, ISoundPlayer& m_soundPlayer, ITextWriter& m_textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
 		std::vector<std::unique_ptr<IImageReader>>& imageReaders, std::vector<std::unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager);
 	~View();
 
@@ -86,7 +86,7 @@ private:
 	View(View const&) = delete;
 	View& operator=(const View&) = delete;
 
-	IGameWindow& m_window;
+	IWindow& m_window;
 	IRenderer& m_renderer;
 	IViewHelper& m_viewHelper;
 	IInput& m_input;

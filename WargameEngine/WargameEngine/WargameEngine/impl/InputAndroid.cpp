@@ -81,12 +81,12 @@ int CInputAndroid::GetMouseY() const
 	return 0;//Return last touch position
 }
 
-bool CInputAndroid::IsKeyPressed(VirtualKey key) const
+bool CInputAndroid::IsKeyPressed(wargameEngine::view::VirtualKey key) const
 {
 	return false;
 }
 
-VirtualKey CInputAndroid::KeycodeToVirtualKey(int key)
+wargameEngine::view::VirtualKey CInputAndroid::KeycodeToVirtualKey(int key)
 {
-	return VirtualKey::KEY_UNKNOWN;
+	return wargameEngine::view::VirtualKey::KEY_UNKNOWN;
 }

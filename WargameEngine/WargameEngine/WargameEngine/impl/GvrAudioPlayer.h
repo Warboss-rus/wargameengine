@@ -3,7 +3,9 @@
 #include "vr/gvr/capi/include/gvr_audio.h"
 #include <map>
 
-class CGvrAudioPlayer : public ISoundPlayer
+using wargameEngine::Path;
+
+class CGvrAudioPlayer : public wargameEngine::view::ISoundPlayer
 {
 public:
 	CGvrAudioPlayer(std::unique_ptr<gvr::AudioApi> gvr_audio_api);

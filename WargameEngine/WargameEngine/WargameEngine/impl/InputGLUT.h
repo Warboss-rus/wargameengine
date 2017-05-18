@@ -3,7 +3,7 @@
 #include <set>
 #include "../view/InputBase.h"
 
-class CInputGLUT : public wargameEngine::view::CInputBase
+class CInputGLUT : public wargameEngine::view::InputBase
 {
 public:
 	CInputGLUT();
