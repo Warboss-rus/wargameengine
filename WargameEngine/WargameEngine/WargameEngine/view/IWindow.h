@@ -8,10 +8,10 @@ namespace wargameEngine
 {
 namespace view
 {
-class IGameWindow
+class IWindow
 {
 public:
-	virtual ~IGameWindow() {}
+	virtual ~IWindow() {}
 
 	virtual void LaunchMainLoop() = 0;
 	virtual void DoOnDrawScene(std::function<void()> const& handler) = 0;
