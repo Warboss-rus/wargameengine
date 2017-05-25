@@ -448,17 +448,17 @@ void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, in
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance /*= false*/, size_t offset) const
+void CShaderManagerOpenGLES::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, Format type, bool perInstance /*= false*/, size_t offset) const
 {
 	auto& glCache = reinterpret_cast<COpenGLESVertexAttribCache const&>(cache);
 	glCache.Bind();
 	int index = glGetAttribLocation(m_activeProgram, attribute.c_str());
 	if (index != -1)
 	{
-		if (type == IShaderManager::TYPE::FLOAT32)
+		if (type == IShaderManager::Format::Float32)
 			glVertexAttribPointer(index, elementSize, GL_FLOAT, GL_FALSE, 0, (void*)offset);
 		else
-			glVertexAttribIPointer(index, elementSize, type == IShaderManager::TYPE::SINT32 ? GL_INT : GL_UNSIGNED_INT, 0, (void*)offset);
+			glVertexAttribIPointer(index, elementSize, type == IShaderManager::Format::SInt32 ? GL_INT : GL_UNSIGNED_INT, 0, (void*)offset);
 		glEnableVertexAttribArray(index);
 		if (perInstance)
 			glVertexAttribDivisor(index, 1);

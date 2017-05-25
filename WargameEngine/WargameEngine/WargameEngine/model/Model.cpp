@@ -128,7 +128,7 @@ size_t Model::GetProjectileCount() const
 	return m_projectiles.size();
 }
 
-Projectile const& Model::GetProjectile(size_t index) const
+Projectile& Model::GetProjectile(size_t index)
 {
 	return m_projectiles[index];
 }
@@ -177,6 +177,16 @@ Light& Model::GetLight(size_t index)
 const std::vector<Light>& Model::GetLights() const
 {
 	return m_lights;
+}
+
+std::vector<IBaseObject*> Model::GetAllBaseObjects()
+{
+	std::vector<IBaseObject*> result;
+	result.reserve(m_objects.size() + m_staticObjects.size() + m_projectiles.size());
+	std::transform(m_objects.begin(), m_objects.end(), std::back_inserter(result), [](const std::shared_ptr<IObject>& obj) { return obj.get(); });
+	std::transform(m_staticObjects.begin(), m_staticObjects.end(), std::back_inserter(result), [](IBaseObject& obj) { return &obj; });
+	std::transform(m_projectiles.begin(), m_projectiles.end(), std::back_inserter(result), [](Projectile& obj) { return &obj; });
+	return result;
 }
 
 signals::SignalConnection Model::DoOnObjectCreation(std::function<void(IObject*)> const& handler)

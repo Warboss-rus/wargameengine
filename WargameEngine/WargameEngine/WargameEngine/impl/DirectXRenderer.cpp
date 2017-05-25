@@ -109,6 +109,11 @@ public:
 		m_texCoordOffset = texCoordOffset;
 	}
 
+	void AddVertexAttribute(const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance)
+	{
+		//TODO
+	}
+
 private:
 	CComPtr<ID3D11Buffer> m_pVertexBuffer;
 	CComPtr<ID3D11Buffer> m_pIndexBuffer;
@@ -146,7 +151,7 @@ public:
 	virtual void AssignTexture(ICachedTexture & texture, IRenderer::CachedTextureType type) override
 	{
 		auto& dxTexture = reinterpret_cast<CDirectXCachedTexture&>(texture);
-		if (type == IRenderer::CachedTextureType::DEPTH)
+		if (type == IRenderer::CachedTextureType::Depth)
 		{
 			m_depthStencilView = nullptr;
 
@@ -162,7 +167,7 @@ public:
 			m_renderTargetView = nullptr;
 
 			D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-			renderTargetViewDesc.Format = (type == IRenderer::CachedTextureType::RGBA || type == IRenderer::CachedTextureType::RENDER_TARGET) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_A8_UNORM;
+			renderTargetViewDesc.Format = (type == IRenderer::CachedTextureType::RGBA || type == IRenderer::CachedTextureType::RenderTarget) ? DXGI_FORMAT_R8G8B8A8_UNORM : DXGI_FORMAT_A8_UNORM;
 			renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			renderTargetViewDesc.Texture2D.MipSlice = 0;
 
@@ -191,7 +196,7 @@ public:
 		dev->CreateQuery(&desc, &m_query);
 	}
 
-	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override
+	virtual void Query(std::function<void() > const& handler) override
 	{
 		m_renderer->GetContext()->Begin(m_query);
 		handler();
@@ -362,10 +367,10 @@ void CDirectXRenderer::CreateBuffer(ID3D11Buffer ** bufferPtr, unsigned int elem
 }
 
 std::map<IRenderer::RenderMode, D3D11_PRIMITIVE_TOPOLOGY> renderModeMap = {
-	{ IRenderer::RenderMode::LINES, D3D11_PRIMITIVE_TOPOLOGY_LINELIST },
-	{ IRenderer::RenderMode::LINE_LOOP, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP },
-	{ IRenderer::RenderMode::TRIANGLES, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST },
-	{ IRenderer::RenderMode::TRIANGLE_STRIP, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP },
+	{ IRenderer::RenderMode::Lines, D3D11_PRIMITIVE_TOPOLOGY_LINELIST },
+	{ IRenderer::RenderMode::LineLoop, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP },
+	{ IRenderer::RenderMode::Triangles, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST },
+	{ IRenderer::RenderMode::TriangleStrip, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP },
 };
 
 void CDirectXRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
@@ -415,26 +420,32 @@ void CDirectXRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const
 	m_devcon->Draw(vertices.size(), 0);
 }
 
-void CDirectXRenderer::DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count)
+void CDirectXRenderer::DrawIndexed(IVertexBuffer& buffer, size_t count, size_t begin, size_t instances)
 {
 	UpdateMatrices();
 	reinterpret_cast<CDirectXVertexBuffer&>(buffer).Bind();
-	m_devcon->DrawIndexed(count, begin, 0);
-
+	if (instances > 1)
+	{
+		m_devcon->DrawIndexedInstanced(count, instances, begin, 0, 0);
+	}
+	else
+	{
+		m_devcon->DrawIndexed(count, begin, 0);
+	}
 }
 
-void CDirectXRenderer::DrawAll(IVertexBuffer& buffer, size_t count)
+void CDirectXRenderer::Draw(IVertexBuffer& buffer, size_t count, size_t begin, size_t instances)
 {
 	UpdateMatrices();
 	reinterpret_cast<CDirectXVertexBuffer&>(buffer).Bind();
-	m_devcon->Draw(count, 0);
-}
-
-void CDirectXRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount)
-{
-	UpdateMatrices();
-	reinterpret_cast<CDirectXVertexBuffer&>(buffer).Bind();
-	m_devcon->DrawInstanced(size, instanceCount, 0, 0);
+	if (instances > 1)
+	{
+		m_devcon->DrawInstanced(count, instances, begin, 0);
+	}
+	else
+	{
+		m_devcon->Draw(count, 0);
+	}
 }
 
 void CDirectXRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
@@ -442,9 +453,9 @@ void CDirectXRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int*
 	reinterpret_cast<CDirectXVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);
 }
 
-void CDirectXRenderer::ForceBindVertexBuffer(IVertexBuffer&)
+void CDirectXRenderer::AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance)
 {
-	//Do nothing
+	reinterpret_cast<CDirectXVertexBuffer&>(buffer).AddVertexAttribute(attribute, elementSize, count, type, values, perInstance);
 }
 
 void CDirectXRenderer::SetColor(const float * color)
@@ -508,8 +519,17 @@ void CDirectXRenderer::Scale(float scale)
 
 const float* CDirectXRenderer::GetViewMatrix() const
 {
-	m_modelViewMatrix = Store(DirectX::XMMatrixMultiply(Load(*m_modelMatrix), Load(m_viewMatrix)));
-	return m_modelViewMatrix.m[0];
+	return m_viewMatrix.m[0];
+}
+
+const float* CDirectXRenderer::GetModelMatrix() const
+{
+	return m_modelMatrix->m[0];
+}
+
+void CDirectXRenderer::SetModelMatrix(const float* matrix)
+{
+	memcpy(m_modelMatrix->m, matrix, sizeof(float) * 16);
 }
 
 void CDirectXRenderer::ResetViewMatrix()
@@ -534,23 +554,17 @@ void CDirectXRenderer::LookAt(CVector3f const& position, CVector3f const& direct
 	m_matricesChanged = true;
 }
 
-void CDirectXRenderer::SetTexture(const Path&  texture, const std::vector<model::TeamColor> * teamcolor, int flags /*= 0*/)
+void CDirectXRenderer::SetTexture(const Path& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
 {
-	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
-}
-
-void CDirectXRenderer::SetTexture(const Path&  texture, TextureSlot slot, int flags /*= 0*/)
-{
-	m_textureManager->SetTexture(texture, slot, nullptr, flags);
-}
-
-void CDirectXRenderer::SetTexture(const Path&  texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
-{
+	if (texture.empty())
+	{
+		return UnbindTexture();
+	}
 	if (forceLoadNow)
 	{
 		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
-	m_textureManager->SetTexture(texture, flags);
+	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
 
 void CDirectXRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)
@@ -607,11 +621,6 @@ std::unique_ptr<ICachedTexture> CDirectXRenderer::CreateTexture(const void * dat
 	auto tex = std::make_unique<CDirectXCachedTexture>();
 	CreateTexture(width, height, 0, data, &tex->m_texture, &tex->m_resourceView, 0, type);
 	return std::move(tex);
-}
-
-ICachedTexture* CDirectXRenderer::GetTexturePtr(std::wstring const& texture) const
-{
-	return m_textureManager->GetTexturePtr(texture);
 }
 
 void CDirectXRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, float shininess)
@@ -715,16 +724,16 @@ const float* CDirectXRenderer::GetProjectionMatrix() const
 	return *m_projectionMatrix.m;
 }
 
-void CDirectXRenderer::EnableDepthTest(bool enable)
+void CDirectXRenderer::EnableDepthTest(bool read, bool write)
 {
-	size_t index = enable ? 1 : 0;
+	size_t index = (read ? 1 : 0) + (write ? 2 : 0);
 	if (!m_depthState[index])
 	{
 		D3D11_DEPTH_STENCIL_DESC dsDesc;
 
-		dsDesc.DepthEnable = enable ? TRUE : FALSE;
-		dsDesc.DepthWriteMask = enable ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-		dsDesc.DepthFunc = enable ? D3D11_COMPARISON_LESS : D3D11_COMPARISON_ALWAYS;
+		dsDesc.DepthEnable = read ? TRUE : FALSE;
+		dsDesc.DepthWriteMask = write ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+		dsDesc.DepthFunc = read ? D3D11_COMPARISON_LESS : D3D11_COMPARISON_ALWAYS;
 
 		// Stencil test parameters
 		dsDesc.StencilEnable = FALSE;
@@ -774,6 +783,10 @@ void CDirectXRenderer::EnableBlending(bool enable)
 		}
 	}
 	m_devcon->OMSetBlendState(m_blendStates[index], NULL, 0xffffffff);
+}
+
+void CDirectXRenderer::EnableColorWrite(bool rgb, bool alpha)
+{
 }
 
 void CDirectXRenderer::SetUpViewport(unsigned int /*viewportX*/, unsigned int /*viewportY*/, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane /*= 1.0*/, float farPane /*= 1000.0*/)
@@ -1012,8 +1025,8 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.MipLevels = cubemap ? 1 : mipmaps.size() + 1;
 	desc.ArraySize = cubemap ? 6 : 1;
 	DXGI_FORMAT format = flags & TEXTURE_BGRA ? DXGI_FORMAT_B8G8R8A8_UNORM : DXGI_FORMAT_R8G8B8A8_UNORM;
-	if (type == CachedTextureType::DEPTH) format = DXGI_FORMAT_R32_TYPELESS;
-	if (type == CachedTextureType::ALPHA) format = DXGI_FORMAT_A8_UNORM;
+	if (type == CachedTextureType::Depth) format = DXGI_FORMAT_R32_TYPELESS;
+	if (type == CachedTextureType::Alpha) format = DXGI_FORMAT_A8_UNORM;
 	if (size)
 	{
 		static const std::map<int, DXGI_FORMAT> compressionMap = {
@@ -1029,8 +1042,8 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	if (type == CachedTextureType::RENDER_TARGET || flags & TEXTURE_BUILD_MIPMAPS) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
-	if (type == CachedTextureType::DEPTH)
+	if (type == CachedTextureType::RenderTarget || flags & TEXTURE_BUILD_MIPMAPS) desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+	if (type == CachedTextureType::Depth)
 	{
 		desc.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
 		desc.BindFlags &= ~D3D11_BIND_RENDER_TARGET;
@@ -1038,7 +1051,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = (flags & TEXTURE_BUILD_MIPMAPS ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0) | (cubemap ? D3D11_RESOURCE_MISC_TEXTURECUBE : 0);
 
-	int bpp = (type == CachedTextureType::ALPHA) ? 1 : 4;
+	int bpp = (type == CachedTextureType::Alpha) ? 1 : 4;
 
 	D3D11_SUBRESOURCE_DATA* texData = new D3D11_SUBRESOURCE_DATA[mipmaps.size() + 1];
 	texData[0].SysMemPitch = bpp * width;
@@ -1061,7 +1074,7 @@ void CDirectXRenderer::CreateTexture(unsigned int width, unsigned int height, in
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC rDesc;
 	ZeroMemory(&rDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-	rDesc.Format = (type == CachedTextureType::DEPTH) ? DXGI_FORMAT_R32_FLOAT : format;
+	rDesc.Format = (type == CachedTextureType::Depth) ? DXGI_FORMAT_R32_FLOAT : format;
 	rDesc.ViewDimension = cubemap ? D3D11_SRV_DIMENSION_TEXTURECUBE : D3D11_SRV_DIMENSION_TEXTURE2D;
 	rDesc.Texture2D.MostDetailedMip = 0;
 	rDesc.Texture2D.MipLevels = desc.MipLevels;

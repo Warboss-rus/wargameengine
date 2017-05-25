@@ -24,7 +24,7 @@ void CUIWindow::Draw(view::IRenderer& renderer) const
 	auto& theme = m_theme->window;
 	if (!m_cache)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
 	}
 	if (m_invalidated)
 	{
@@ -33,25 +33,25 @@ void CUIWindow::Draw(view::IRenderer& renderer) const
 			auto& theme = m_theme->window;
 			renderer.SetColor(theme.headerColor);
 			int headerHeight = static_cast<int>(theme.headerHeight * m_scale);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i(0, 0), { 0, headerHeight }, { GetWidth(), 0 }, { GetWidth(), headerHeight } }, {});
 			renderer.SetTexture(m_theme->texture);
 			int buttonSize = static_cast<int>(theme.buttonSize * m_scale);
 			int right = GetWidth() - buttonSize;
 			float* texCoord = theme.closeButtonTexCoord;
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i(right, 0), { right, buttonSize }, { GetWidth(), 0 }, { GetWidth(), buttonSize } },
 				{ CVector2f(texCoord[0], texCoord[1]), { texCoord[0], texCoord[3] }, { texCoord[2], texCoord[1] }, { texCoord[2], texCoord[3] } });
 			renderer.UnbindTexture();
 			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i(0, headerHeight), { GetWidth(), headerHeight }, { 0, GetHeight() }, { GetWidth(), GetHeight() }, }, {});
 			PrintText(renderer, m_textWriter, 0, 0, GetWidth() - buttonSize, headerHeight, m_headerText, theme.headerText, m_scale);
 
 		}, *m_cache, GetWidth(), GetHeight());
 	}
 	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(RenderMode::TriangleStrip,
 		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
 		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
 	renderer.Translate(0, theme.headerHeight, 0);

@@ -8,28 +8,23 @@ namespace wargameEngine
 {
 namespace view
 {
-ParticleSystem::ParticleSystem(IRenderer& renderer)
-	: m_renderer(renderer)
+void ParticleSystem::SetShaders(const Path& vertex, const Path& fragment, IRenderer& renderer)
 {
-}
-
-void ParticleSystem::SetShaders(const Path& vertex, const Path& fragment)
-{
-	if (m_renderer.SupportsFeature(IRenderer::Feature::INSTANSING))
+	if (renderer.SupportsFeature(IRenderer::Feature::Instancing))
 	{
-		m_shaderProgram = m_renderer.GetShaderManager().NewProgram(vertex, fragment);
+		m_shaderProgram = renderer.GetShaderManager().NewProgram(vertex, fragment);
 	}
 }
 
-void ParticleSystem::Draw(model::ParticleEffect const& particleEffect)
+void ParticleSystem::Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer)
 {
 	float modelview[4][4];
-	memcpy(modelview, m_renderer.GetViewMatrix(), sizeof(float) * 16);
-	m_renderer.PushMatrix();
-	m_renderer.Translate(particleEffect.GetPosition());
-	m_renderer.Scale(particleEffect.GetScale());
+	memcpy(modelview, renderer.GetViewMatrix(), sizeof(float) * 16);
+	renderer.PushMatrix();
+	renderer.Translate(particleEffect.GetPosition());
+	renderer.Scale(particleEffect.GetScale());
 	auto& model = m_models.at(particleEffect.GetEffectPath());
-	m_renderer.SetTexture(model.GetTexture());
+	renderer.SetTexture(model.GetTexture());
 
 	auto size = model.GetParticleSize();
 	auto textureFrameSize = CVector2f(1.0f, 1.0f) / model.GetTextureFrameSize();
@@ -49,7 +44,7 @@ void ParticleSystem::Draw(model::ParticleEffect const& particleEffect)
 
 	bool useTexCoordAttrib = model.HasDifferentTexCoords();
 	bool useColorAttrib = model.HasDifferentColors();
-	auto& shaderManager = m_renderer.GetShaderManager();
+	auto& shaderManager = renderer.GetShaderManager();
 	auto& particles = particleEffect.GetParticles();
 	size_t particlesCount = particles.size();
 
@@ -58,19 +53,18 @@ void ParticleSystem::Draw(model::ParticleEffect const& particleEffect)
 		shaderManager.PushProgram(*m_shaderProgram);
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
 		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
-		auto buffer = m_renderer.CreateVertexBuffer(reinterpret_cast<float*>(vertex), nullptr, reinterpret_cast<float*>(texCoord), 6, true);
-		m_renderer.ForceBindVertexBuffer(*buffer);
-		shaderManager.SetVertexAttribute("instancePosition", 4, particlesCount, particleEffect.GetPositionCache().data(), true);
+		auto buffer = renderer.CreateVertexBuffer(reinterpret_cast<float*>(vertex), nullptr, reinterpret_cast<float*>(texCoord), 6, true);
+		renderer.AddVertexAttribute(*buffer, "instancePosition", 4, particlesCount, IShaderManager::Format::Float32, particleEffect.GetPositionCache().data(), true);
 		if (useTexCoordAttrib)
 		{
-			shaderManager.SetVertexAttribute("instanceTexCoordPos", 2, particlesCount, particleEffect.GetTexCoordCache().data(), true);
+			renderer.AddVertexAttribute(*buffer, "instanceTexCoordPos", 2, particlesCount, IShaderManager::Format::Float32, particleEffect.GetTexCoordCache().data(), true);
 		}
 		if (useColorAttrib)
 		{
-			shaderManager.SetVertexAttribute("instanceColor", 4, particlesCount, particleEffect.GetColorCache().data(), true);
+			renderer.AddVertexAttribute(*buffer, "instanceColor", 4, particlesCount, IShaderManager::Format::Float32, particleEffect.GetColorCache().data(), true);
 		}
 
-		m_renderer.DrawInstanced(*buffer, 6, particlesCount);
+		renderer.Draw(*buffer, 6, 0, particlesCount);
 		static float empty[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		shaderManager.DisableVertexAttribute("instanceColor", 4, empty);
 		shaderManager.DisableVertexAttribute("instancePosition", 4, empty);
@@ -99,9 +93,9 @@ void ParticleSystem::Draw(model::ParticleEffect const& particleEffect)
 		}
 		if (useColorAttrib)
 			shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
-		m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
+		renderer.RenderArrays(IRenderer::RenderMode::Triangles, m_vertexBuffer, {}, m_texCoordBuffer2);
 	}
-	m_renderer.PopMatrix();
+	renderer.PopMatrix();
 }
 
 model::IParticleUpdater* ParticleSystem::GetParticleUpdater(const Path& path)

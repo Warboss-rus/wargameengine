@@ -182,11 +182,11 @@ VkFormat GetTextureFormat(IRenderer::CachedTextureType type, int flags)
 {
 	switch (type)
 	{
-	case IRenderer::CachedTextureType::ALPHA:
+	case IRenderer::CachedTextureType::Alpha:
 		return VK_FORMAT_R8_UNORM;
-	case IRenderer::CachedTextureType::DEPTH:
+	case IRenderer::CachedTextureType::Depth:
 		return VK_FORMAT_D32_SFLOAT;
-	case IRenderer::CachedTextureType::RENDER_TARGET:
+	case IRenderer::CachedTextureType::RenderTarget:
 		return VK_FORMAT_R8G8B8A8_UNORM;
 	case IRenderer::CachedTextureType::RGBA:
 		return (flags & TEXTURE_HAS_ALPHA)
@@ -566,9 +566,14 @@ const float* CVulkanRenderer::GetProjectionMatrix() const
 	return m_matrixManager.GetProjectionMatrix();
 }
 
-void CVulkanRenderer::EnableDepthTest(bool enable)
+void CVulkanRenderer::EnableDepthTest(bool read, bool write)
 {
-	//m_pipelineHelper.SetDepthParams(enable, enable);
+	//m_pipelineHelper.SetDepthParams(read, write);
+}
+
+void CVulkanRenderer::EnableColorWrite(bool rgb, bool alpha)
+{
+	m_pipelineHelper.SetColorWriteParams(rgb, alpha);
 }
 
 void CVulkanRenderer::EnableBlending(bool enable)
@@ -672,10 +677,10 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const&
 	memcpy(std::get<void*>(normalsInfo), normals.data(), normals.size() * sizeof(CVector3f));
 	memcpy(std::get<void*>(texCoordInfo), texCoords.data(), texCoords.size() * sizeof(CVector2f));
 	static const std::map<RenderMode, VkPrimitiveTopology> topologyMap = {
-		{ RenderMode::LINE_LOOP, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP },
-		{ RenderMode::LINES, VK_PRIMITIVE_TOPOLOGY_LINE_LIST },
-		{ RenderMode::TRIANGLE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP },
-		{ RenderMode::TRIANGLES, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST },
+		{ RenderMode::LineLoop, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP },
+		{ RenderMode::Lines, VK_PRIMITIVE_TOPOLOGY_LINE_LIST },
+		{ RenderMode::TriangleStrip, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP },
+		{ RenderMode::Triangles, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST },
 	};
 	BeforeDraw(topologyMap.at(mode));
 
@@ -696,31 +701,22 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const&
 	RenderArrays(mode, position, {}, texCoords);
 }
 
-void CVulkanRenderer::DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count)
+void CVulkanRenderer::DrawIndexed(IVertexBuffer& buffer, size_t count, size_t begin, size_t instances)
 {
 	if (count == 0)
 		return;
 	BeforeDraw(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 	reinterpret_cast<IVulkanVertexBuffer&>(buffer).Bind(*m_activeCommandBuffer);
-	vkCmdDrawIndexed(*m_activeCommandBuffer, count, 1, begin, 0, 0);
+	vkCmdDrawIndexed(*m_activeCommandBuffer, count, instances > 1 ? static_cast<uint32_t>(instances) : 1, static_cast<uint32_t>(begin), 0, 0);
 }
 
-void CVulkanRenderer::DrawAll(IVertexBuffer& buffer, size_t count)
+void CVulkanRenderer::Draw(IVertexBuffer& buffer, size_t count, size_t begin, size_t instances)
 {
 	if (count == 0)
 		return;
 	BeforeDraw(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 	reinterpret_cast<IVulkanVertexBuffer&>(buffer).Bind(*m_activeCommandBuffer);
-	vkCmdDraw(*m_activeCommandBuffer, count, 1, 0, 0);
-}
-
-void CVulkanRenderer::DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount)
-{
-	if (size == 0 || instanceCount == 0)
-		return;
-	BeforeDraw(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-	reinterpret_cast<IVulkanVertexBuffer&>(buffer).Bind(*m_activeCommandBuffer);
-	vkCmdDraw(*m_activeCommandBuffer, size, instanceCount, 0, 0);
+	vkCmdDraw(*m_activeCommandBuffer, count, (instances > 1 ? static_cast<uint32_t>(instances) : 1), static_cast<uint32_t>(begin), 0);
 }
 
 void CVulkanRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
@@ -732,9 +728,9 @@ void CVulkanRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* 
 	reinterpret_cast<IVulkanVertexBuffer&>(buffer).SetIndexBuffer(std::move(indexCache));
 }
 
-void CVulkanRenderer::ForceBindVertexBuffer(IVertexBuffer& buffer)
+void CVulkanRenderer::AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance /*= false*/)
 {
-	//Do nothing
+	//TODO:
 }
 
 void CVulkanRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a /*= UCHAR_MAX*/)
@@ -786,7 +782,17 @@ void CVulkanRenderer::Scale(float scale)
 
 const float* CVulkanRenderer::GetViewMatrix() const
 {
-	return m_matrixManager.GetModelViewMatrix();
+	return m_matrixManager.GetViewMatrix();
+}
+
+const float* CVulkanRenderer::GetModelMatrix() const
+{
+	return m_matrixManager.GetModelMatrix();
+}
+
+void CVulkanRenderer::SetModelMatrix(const float* matrix)
+{
+	m_matrixManager.SetModelMatrix(matrix);
 }
 
 void CVulkanRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
@@ -800,17 +806,7 @@ void CVulkanRenderer::SetTexture(const Path& texture, bool forceLoadNow /*= fals
 	{
 		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
-	m_textureManager->SetTexture(texture, flags);
-}
-
-void CVulkanRenderer::SetTexture(const Path& texture, TextureSlot slot, int flags /*= 0*/)
-{
-	m_textureManager->SetTexture(texture, slot, nullptr, flags);
-}
-
-void CVulkanRenderer::SetTexture(const Path& texture, const std::vector<model::TeamColor>* teamcolor, int flags /*= 0*/)
-{
-	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
+	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
 
 void CVulkanRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)
@@ -900,11 +896,6 @@ std::unique_ptr<ICachedTexture> CVulkanRenderer::CreateTexture(const void* data,
 		texture->Upload(data, *m_memoryManager, *m_serviceCommandBuffer);
 	}
 	return std::move(texture);
-}
-
-ICachedTexture* CVulkanRenderer::GetTexturePtr(const Path& texture) const
-{
-	return m_textureManager->GetTexturePtr(texture);
 }
 
 void CVulkanRenderer::SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess)
@@ -1221,7 +1212,7 @@ void CSwapchainWrapper::Init(VkSwapchainKHR swapchain, VkDevice device, VkExtent
 	m_format = format;
 
 	m_depthTexture = std::make_unique<CVulkanCachedTexture>(*renderer);
-	m_depthTexture->Init(m_extent.width, m_extent.height, renderer->GetMemoryManager(), IRenderer::CachedTextureType::DEPTH);
+	m_depthTexture->Init(m_extent.width, m_extent.height, renderer->GetMemoryManager(), IRenderer::CachedTextureType::Depth);
 }
 
 CSwapchainWrapper::~CSwapchainWrapper()
@@ -1275,14 +1266,14 @@ void CVulkanCachedTexture::Init(uint32_t width, uint32_t height, CVulkanMemoryMa
 		return;
 	m_format = GetTextureFormat(type, flags);
 	m_extent = { width, height, 1 };
-	m_components = type == IRenderer::CachedTextureType::ALPHA ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
-	m_usageFlags = type == IRenderer::CachedTextureType::DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : ((type == IRenderer::CachedTextureType::RENDER_TARGET ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | VK_IMAGE_USAGE_SAMPLED_BIT);
-	if(type != IRenderer::CachedTextureType::DEPTH) m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	m_components = type == IRenderer::CachedTextureType::Alpha ? 1 : (flags & TEXTURE_HAS_ALPHA ? 4 : 3);
+	m_usageFlags = type == IRenderer::CachedTextureType::Depth ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT : ((type == IRenderer::CachedTextureType::RenderTarget ? VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT : 0) | VK_IMAGE_USAGE_SAMPLED_BIT);
+	if(type != IRenderer::CachedTextureType::Depth) m_usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	std::tie(m_image, m_memory) = CreateTexture(true, memoryManager);
 
-	const VkComponentSwizzle swizzle = type == IRenderer::CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY;
-	const VkComponentMapping mapping = { swizzle, swizzle, swizzle, type == IRenderer::CachedTextureType::ALPHA ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_IDENTITY };
-	const VkImageAspectFlags aspectFlags = type == IRenderer::CachedTextureType::DEPTH ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+	const VkComponentSwizzle swizzle = type == IRenderer::CachedTextureType::Alpha ? VK_COMPONENT_SWIZZLE_ZERO : VK_COMPONENT_SWIZZLE_IDENTITY;
+	const VkComponentMapping mapping = { swizzle, swizzle, swizzle, type == IRenderer::CachedTextureType::Alpha ? VK_COMPONENT_SWIZZLE_R : VK_COMPONENT_SWIZZLE_IDENTITY };
+	const VkImageAspectFlags aspectFlags = type == IRenderer::CachedTextureType::Depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 	const VkImageViewCreateInfo image_view_create_info = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO, nullptr, 0, m_image, VK_IMAGE_VIEW_TYPE_2D, m_format,
 		mapping, { aspectFlags, 0, 1, 0, 1 } };
 	VkResult result = vkCreateImageView(m_device, &image_view_create_info, nullptr, &m_imageView);

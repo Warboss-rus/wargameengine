@@ -408,7 +408,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	if (!root)//No root
 	{
 		LogWriter::WriteLine("Cannot load model. No root.");
-		return std::make_unique<C3DModel>(dummyModel);
+		return std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 	}
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
@@ -767,7 +767,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	weightsIndexes.shrink_to_fit();
 	weights.shrink_to_fit();
 	doc->clear();
-	auto result = std::make_unique<C3DModel>(dummyModel);
+	auto result = std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
 	return result;

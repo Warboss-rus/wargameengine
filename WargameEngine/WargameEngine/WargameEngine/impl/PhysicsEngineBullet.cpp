@@ -43,7 +43,7 @@ public:
 	{
 		const float fcolor[] = { color.x(), color.y(), color.z(), 1.0f };
 		m_renderer.SetColor(fcolor);
-		m_renderer.RenderArrays(view::IRenderer::RenderMode::LINES, { ToVector3f(from), ToVector3f(to) }, {}, {});
+		m_renderer.RenderArrays(view::IRenderer::RenderMode::Lines, { ToVector3f(from), ToVector3f(to) }, {}, {});
 	}
 
 	virtual void drawContactPoint(const btVector3& /*PointOnB*/, const btVector3& /*normalOnB*/, btScalar /*distance*/, int /*lifeTime*/, const btVector3& /*color*/) override

@@ -12,6 +12,7 @@
 #include "../Utils.h"
 #include "ITextWriter.h"
 #include "ISoundPlayer.h"
+#include "Material.h"
 
 using namespace std;
 using namespace placeholders;
@@ -34,9 +35,8 @@ View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, 
 	, m_threadPool(threadPool)
 	, m_boundingManager(boundingManager)
 	, m_ui(m_textWriter)
-	, m_modelManager(m_renderer, m_boundingManager, asyncFileProvider)
+	, m_modelManager(m_boundingManager, asyncFileProvider)
 	, m_textureManager(m_viewHelper, asyncFileProvider)
-	, m_particles(m_renderer)
 {
 	m_viewHelper.SetTextureManager(m_textureManager);
 	for (auto& reader : imageReaders)
@@ -245,7 +245,7 @@ void View::DrawUI()
 	});
 }
 
-void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object, IRenderer & renderer, bool wireframe = true)
+void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object, IRenderer & renderer)
 {
 	renderer.UnbindTexture();
 	renderer.PushMatrix();
@@ -253,33 +253,12 @@ void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object
 	renderer.Rotate(object.GetRotations());
 	CVector3f min = bbox.max;
 	CVector3f max = bbox.min;
-	if (wireframe)
-	{
-		renderer.SetColor(0, 0, 255);
-		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
-		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
-		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
-		renderer.RenderArrays(IRenderer::RenderMode::LINE_LOOP, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
-		renderer.SetColor(0, 0, 0);
-	}
-	else
-	{
-		std::array<CVector3f, 24> vertices = {
-			//left
-			min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] },
-			{ min[0], max[1], min[2] }, { min[0], max[1], max[2] },{ min[0], min[1], max[2] },
-			//back
-			min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] },
-			{ min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] },
-			//right
-			CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max,
-			{ max[0], max[1], min[2] }, max, { max[0], min[1], max[2] },
-			//front
-			CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
-			{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
-		};
-		renderer.RenderArrays(IRenderer::RenderMode::TRIANGLES, vertices, {}, {});
-	}
+	renderer.SetColor(0, 0, 255);
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
+	renderer.SetColor(0, 0, 0);
 	renderer.PopMatrix();
 }
 
@@ -316,30 +295,35 @@ void View::Update()
 	auto& defaultCamera = m_viewports.front().GetCamera();
 	m_soundPlayer.SetListenerPosition(defaultCamera.GetPosition(), defaultCamera.GetDirection());
 	m_soundPlayer.Update();
+	CollectMeshes();
+	SortMeshes();
 	for (auto it = m_viewports.rbegin(); it != m_viewports.rend(); ++it)
 	{
-		m_currentViewport = &(*it);
-		m_currentViewport->Bind();
-		m_viewHelper.EnableBlending(!m_currentViewport->IsDepthOnly());
-		if (m_skybox && !m_currentViewport->IsDepthOnly())
+		auto& viewport = *it;
+		viewport.Bind();
+		m_viewHelper.EnableDepthTest(false, false);
+		if (m_skybox && !viewport.IsDepthOnly())
 		{
-			auto& camera = m_currentViewport->GetCamera();
-			m_skybox->Draw(-camera.GetPosition(), camera.GetScale());
+			auto& camera = viewport.GetCamera();
+			m_skybox->Draw(m_viewHelper, -camera.GetPosition(), camera.GetScale());
 		}
-		DrawObjects(m_currentViewport->IsDepthOnly());
-		if (!m_currentViewport->IsDepthOnly())
+		m_viewHelper.EnableBlending(!viewport.IsDepthOnly());
+		DrawMeshes(m_viewHelper, viewport, viewport.IsDepthOnly());
+		RunOcclusionQueries(m_model->GetAllBaseObjects(), viewport, m_viewHelper);
+		m_viewHelper.EnableDepthTest(false, false);
+		if (!viewport.IsDepthOnly())
 		{
 			DrawBoundingBox();
-			DrawRuler();
+			DrawRuler(viewport, m_viewHelper);
 			//m_physicsEngine.Draw();
 		}
-		if (m_currentViewport->DrawUI())
+		if (viewport.DrawUI())
 		{
 			DrawUI();
 		}
-		m_currentViewport->Unbind();
+		m_viewHelper.EnableDepthTest(true, true);
+		viewport.Unbind();
 	}
-	m_currentViewport = nullptr;
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	auto fps = 1.0f / std::chrono::duration<float>(currentTime - m_lastFrameTime).count();
 	m_lastFrameTime = currentTime;
@@ -348,17 +332,190 @@ void View::Update()
 	});
 }
 
-void View::DrawRuler()
+void View::DrawRuler(IViewport& viewport, IViewHelper& renderer)
 {
 	if (m_ruler.IsVisible())
 	{
 		m_renderer.SetColor(255, 255, 0);
-		m_renderer.RenderArrays(IRenderer::RenderMode::LINES, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
+		m_renderer.RenderArrays(IRenderer::RenderMode::Lines, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
 		m_renderer.SetColor(255, 255, 255);
-		DrawText3D(m_ruler.GetEnd(), ToWstring(m_ruler.GetDistance(), 2));
+		DrawText3D(m_ruler.GetEnd(), ToWstring(m_ruler.GetDistance(), 2), viewport, renderer);
 		m_renderer.SetColor(0, 0, 0);
 	}
 }
+
+bool IsOutsideFrustum(IViewHelper& viewHelper, IViewport& viewport, const model::IBaseObject* obj)
+{
+	int x(-1), y(-1);
+	viewHelper.WorldCoordsToWindowCoords(viewport, obj->GetCoords(), x, y);
+	return x < viewport.GetX() || x > viewport.GetX() + viewport.GetWidth() ||
+		y < viewport.GetY() || y > viewport.GetY() + viewport.GetHeight();
+}
+
+void View::CollectMeshes()
+{
+	m_meshesToDraw.clear();
+	auto notVisibleInFrustum = [this](const model::IBaseObject* obj) {
+		for (auto& viewport : m_viewports)
+		{
+			if (IsOutsideFrustum(m_viewHelper, viewport, obj))
+			{
+				return true;
+			}
+		}
+		return false;
+	};
+	std::vector<model::IBaseObject*> objects = m_model->GetAllBaseObjects();
+	objects.erase(std::remove_if(objects.begin(), objects.end(), notVisibleInFrustum), objects.end());
+	for (auto* object : objects)
+	{
+		m_renderer.PushMatrix();
+		m_renderer.Translate(object->GetCoords());
+		m_renderer.Rotate(object->GetRotations());
+		model::IObject* fullObject = object->GetFullObject();
+		m_modelManager.GetModelMeshes(object->GetPathToModel(), m_renderer, m_textureManager, fullObject, m_meshesToDraw);
+		if (fullObject)
+		{
+			size_t secondaryModels = fullObject->GetSecondaryModelsCount();
+			for (size_t j = 0; j < secondaryModels; ++j)
+			{
+				m_modelManager.GetModelMeshes(fullObject->GetSecondaryModel(j), m_renderer, m_textureManager, nullptr, m_meshesToDraw);
+			}
+		}
+		m_renderer.PopMatrix();
+	}
+}
+
+void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport, bool shadowOnly)
+{
+	renderer.EnableDepthTest(true, true);
+	auto& shaderManager = renderer.GetShaderManager();
+	if (!shadowOnly)
+	{
+		if (m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
+		currentViewport.SetUpShadowMap();
+		auto& lights = m_model->GetLights();
+		size_t lightsCount = lights.size();
+		renderer.SetNumberOfLights(lightsCount);
+		for (size_t i = 0; i < lightsCount; ++i)
+		{
+			auto& light = lights[i];
+			renderer.SetUpLight(i, light.GetPosition(), light.GetAmbient(), light.GetDiffuse(), light.GetSpecular());
+		}
+		static const std::string eyePosKey = "viewPos";
+		CVector3f viewPos = currentViewport.GetCamera().GetPosition();
+		shaderManager.SetUniformValue(eyePosKey, 3, 1, viewPos.ptr());
+	}
+
+	//Draw
+	DrawTable(shadowOnly);
+
+	ICachedTexture* texture = nullptr;
+	Material* material = nullptr;
+	Matrix4F prevMatrix;
+
+	for (const DrawableMesh& mesh : m_meshesToDraw)
+	{
+		if (mesh.shader && !shadowOnly)
+		{
+			shaderManager.PushProgram(*mesh.shader);
+		}
+		if (texture != mesh.texturePtr && !shadowOnly)
+		{
+			texture = mesh.texturePtr;
+			renderer.SetTexture(*mesh.texturePtr);
+		}
+		if (material != mesh.material && !shadowOnly)
+		{
+			material = mesh.material;
+			if (material)
+			{
+				renderer.SetMaterial(mesh.material->ambient, mesh.material->diffuse, mesh.material->specular, mesh.material->shininess);
+			}
+			else
+			{
+				constexpr float empty[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+				renderer.SetMaterial(empty, empty, empty, 0.0f);
+			}
+			if (material && !material->bumpMap.empty())
+			{
+				auto texturePtr = m_textureManager.GetTexturePtr(material->bumpMap);
+				m_renderer.SetTexture(*texturePtr, IRenderer::TextureSlot::Bump);
+			}
+			if (material && !material->specularMap.empty())
+			{
+				auto texturePtr = m_textureManager.GetTexturePtr(material->specularMap);
+				m_renderer.SetTexture(*texturePtr, IRenderer::TextureSlot::Specular);
+			}
+		}
+		if (mesh.modelMatrix != prevMatrix)
+		{
+			m_renderer.SetModelMatrix(mesh.modelMatrix);
+			prevMatrix = mesh.modelMatrix;
+		}
+		if (mesh.skeleton)
+		{
+			shaderManager.SetUniformValue("joints", 16, mesh.skeleton->size() / 16, mesh.skeleton->data());
+		}
+
+		auto buffer = mesh.buffer;
+		std::unique_ptr<IVertexBuffer> tempBuffer;
+		if (!buffer && tempBuffer)
+		{
+			tempBuffer = renderer.CreateVertexBuffer((const float*)mesh.tempBuffer->vertices.data(), (const float*)mesh.tempBuffer->normals.data(), (const float*)mesh.tempBuffer->texCoords, mesh.tempBuffer->vertices.size());
+			if (mesh.tempBuffer->indexes && mesh.tempBuffer->indexesCount > 0 && mesh.indexed)
+			{
+				renderer.SetIndexBuffer(*tempBuffer, mesh.tempBuffer->indexes, mesh.tempBuffer->indexesCount);
+			}
+			buffer = tempBuffer.get();
+		}
+
+		if (mesh.indexed)
+		{
+			renderer.DrawIndexed(*buffer, mesh.count, mesh.start);
+		}
+		else
+		{
+			renderer.Draw(*buffer, mesh.count, mesh.start);
+		}
+
+		if (mesh.skeleton)
+		{
+			shaderManager.SetUniformValue("joints", 16, 0, (const float*)nullptr);
+		}
+		if (mesh.shader && !shadowOnly)
+		{
+			shaderManager.PopProgram();
+		}
+	}
+
+	m_renderer.SetModelMatrix(Matrix4F());
+
+	if (!shadowOnly && m_shaderProgram)
+	{
+		shaderManager.PopProgram();
+	}
+	renderer.EnableDepthTest(true, false);
+	if (!shadowOnly)
+	{
+		for (size_t i = 0; i < m_model->GetProjectileCount(); i++)
+		{
+			model::Projectile const& projectile = m_model->GetProjectile(i);
+			renderer.PushMatrix();
+			renderer.Translate(projectile.GetCoords());
+			renderer.Rotate(projectile.GetRotations());
+			if (projectile.GetParticle())
+				m_particles.Draw(*projectile.GetParticle(), renderer);
+			renderer.PopMatrix();
+		}
+		for (size_t i = 0; i < m_model->GetParticleCount(); ++i)
+		{
+			model::ParticleEffect const& effect = m_model->GetParticleEffect(i);
+			m_particles.Draw(effect, renderer);
+		}
+	}
+}
+
 void View::DrawTable(bool shadowOnly)
 {
 	if (!m_tableBuffer)
@@ -400,7 +557,7 @@ void View::DrawTable(bool shadowOnly)
 	}
 	model::Landscape const& landscape = m_model->GetLandscape();
 	if (!shadowOnly)m_renderer.SetTexture(landscape.GetTexture());
-	m_renderer.DrawAll(*m_tableBuffer, m_tableBufferSize);
+	m_renderer.Draw(*m_tableBuffer, m_tableBufferSize);
 	if (!shadowOnly)//Don't draw decals because they don't cast shadows
 	{
 		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
@@ -410,7 +567,7 @@ void View::DrawTable(bool shadowOnly)
 			m_renderer.PushMatrix();
 			m_renderer.Translate(CVector3f(decal.x, decal.y, 0.0f));
 			m_renderer.Rotate(decal.rotation, CVector3f(0.0f, 0.0f, 1.0f));
-			m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, {
+			m_renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, {
 				CVector3f(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001f),
 				{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
 				{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001f },
@@ -421,114 +578,9 @@ void View::DrawTable(bool shadowOnly)
 	}
 }
 
-void View::DrawObjects(bool shadowOnly)
-{
-	m_viewHelper.EnableDepthTest(true);
-	auto& shaderManager = m_renderer.GetShaderManager();
-	if (!shadowOnly)
-	{
-		if (m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
-		m_currentViewport->SetUpShadowMap();
-		auto& lights = m_model->GetLights();
-		size_t lightsCount = lights.size();
-		m_viewHelper.SetNumberOfLights(lightsCount);
-		for (size_t i = 0; i < lightsCount; ++i)
-		{
-			auto& light = lights[i];
-			m_viewHelper.SetUpLight(i, light.GetPosition(), light.GetAmbient(), light.GetDiffuse(), light.GetSpecular());
-		}
-		static const std::string eyePosKey = "viewPos";
-		CVector3f viewPos = m_currentViewport->GetCamera().GetPosition();
-		m_renderer.GetShaderManager().SetUniformValue(eyePosKey, 3, 1, viewPos.ptr());
-	}
-	DrawTable(shadowOnly);
-	auto isVisibleInFrustum = [this](const model::IBaseObject* obj) {
-		int x(-1), y(-1);
-		m_viewHelper.WorldCoordsToWindowCoords(*m_currentViewport, obj->GetCoords(), x, y);
-		return x >= m_currentViewport->GetX() && x <= m_currentViewport->GetX() + m_currentViewport->GetWidth() &&
-			y >= m_currentViewport->GetY() && y <= m_currentViewport->GetY() + m_currentViewport->GetHeight();
-	};
-	size_t countObjects = m_model->GetObjectCount();
-	size_t staticObjectsCount = m_model->GetStaticObjectCount();
-	std::vector<model::IBaseObject*> objects;
-	objects.reserve(countObjects + staticObjectsCount);
-	for (size_t i = 0; i < countObjects; i++)
-	{
-		auto obj = m_model->Get3DObject(i).get();
-		if (isVisibleInFrustum(obj))
-		{
-			objects.push_back(obj);
-		}
-	};
-
-	for (size_t i = 0; i < staticObjectsCount; i++)
-	{
-		model::StaticObject& obj = m_model->GetStaticObject(i);
-		if (isVisibleInFrustum(&obj))
-		{
-			objects.push_back(&obj);
-		}
-	};
-	CVector3f cameraPos = m_currentViewport->GetCamera().GetPosition();
-	std::sort(objects.begin(), objects.end(), [&cameraPos](const model::IBaseObject* o1, const model::IBaseObject* o2) {
-		return (o1->GetCoords() - cameraPos).GetLength() < (o2->GetCoords() - cameraPos).GetLength();
-	});
-	for (auto& object : objects)
-	{
-		auto& query = m_currentViewport->GetOcclusionQuery(object);
-		bool queryResult = query.IsVisible();
-		query.Query([&] {
-			auto bounding = m_boundingManager.GetBounding(object->GetPathToModel());
-			if (queryResult || !bounding)
-			{
-				m_renderer.PushMatrix();
-				m_renderer.Translate(object->GetCoords());
-				m_renderer.Rotate(object->GetRotations());
-				model::IObject* fullObject = object->GetFullObject();
-				m_modelManager.DrawModel(object->GetPathToModel(), fullObject, shadowOnly);
-				if (fullObject)
-				{
-					size_t secondaryModels = fullObject->GetSecondaryModelsCount();
-					for (size_t j = 0; j < secondaryModels; ++j)
-					{
-						m_modelManager.DrawModel(fullObject->GetSecondaryModel(j), nullptr, shadowOnly);
-					}
-				}
-				m_renderer.PopMatrix();
-			}
-			else
-			{
-				DrawBBox(bounding.GetBox(), *object, m_renderer, false);
-			}
-		}, queryResult);
-	}
-	if (!shadowOnly && m_shaderProgram) shaderManager.PopProgram();
-	if (!shadowOnly)
-	{
-		for (size_t i = 0; i < m_model->GetProjectileCount(); i++)
-		{
-			model::Projectile const& projectile = m_model->GetProjectile(i);
-			m_renderer.PushMatrix();
-			m_renderer.Translate(projectile.GetCoords());
-			m_renderer.Rotate(projectile.GetRotations());
-			if (!projectile.GetPathToModel().empty())
-				m_modelManager.DrawModel(projectile.GetPathToModel(), nullptr, false);
-			if (projectile.GetParticle())
-				m_particles.Draw(*projectile.GetParticle());
-			m_renderer.PopMatrix();
-		}
-		for (size_t i = 0; i < m_model->GetParticleCount(); ++i)
-		{
-			model::ParticleEffect const& effect = m_model->GetParticleEffect(i);
-			m_particles.Draw(effect);
-		}
-	}
-	m_viewHelper.EnableDepthTest(false);
-}
-
 void View::CreateSkybox(float size, const Path& textureFolder)
 {
-	m_skybox = std::make_unique<SkyBox>(size, size, size, textureFolder, m_renderer, m_textureManager);
+	m_skybox = std::make_unique<SkyBox>(size, size, size, textureFolder, m_textureManager);
 }
 
 ModelManager& View::GetModelManager()
@@ -580,7 +632,7 @@ Viewport& View::CreateShadowMapViewport(int size, float angle, CVector3f const& 
 {
 	m_viewports.emplace_back(0, 0, size, size, angle, m_viewHelper, m_input, false, false);
 	auto& shadowMapViewport = m_viewports.back();
-	shadowMapViewport.AttachNewTexture(IRenderer::CachedTextureType::DEPTH, static_cast<int>(IRenderer::TextureSlot::eShadowMap));
+	shadowMapViewport.AttachNewTexture(IRenderer::CachedTextureType::Depth, static_cast<int>(IRenderer::TextureSlot::ShadowMap));
 	shadowMapViewport.GetCamera().Set(lightPosition);
 	shadowMapViewport.SetPolygonOffset(true, 2.0f, 500.0f);
 	shadowMapViewport.SetClippingPlanes(3.0, 300.0);
@@ -686,7 +738,7 @@ void View::Preload(const Path& image)
 			int width = 640;
 			int height = 480;
 			m_window.GetWindowSize(width, height);
-			m_renderer.RenderArrays(IRenderer::RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, height }, { width, 0 }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
+			m_renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector2i(0, 0), { 0, height }, { width, 0 }, { width, height } }, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
 			//glutSwapBuffers();
 		});
 	}
@@ -694,16 +746,16 @@ void View::Preload(const Path& image)
 	for (size_t i = 0; i < countObjects; i++)
 	{
 		shared_ptr<const model::IObject> object = m_model->Get3DObject(i);
-		m_modelManager.LoadIfNotExist(object->GetPathToModel());
+		m_modelManager.LoadIfNotExist(object->GetPathToModel(), m_textureManager);
 	}
 }
 
-void View::DrawText3D(CVector3f const& pos, wstring const& text)
+void View::DrawText3D(CVector3f const& pos, wstring const& text, IViewport& viewport, IViewHelper& renderer)
 {
-	m_viewHelper.DrawIn2D([&] {
+	renderer.DrawIn2D([&] {
 		int x, y;
-		m_viewHelper.WorldCoordsToWindowCoords(*m_currentViewport, pos, x, y);
-		m_textWriter.PrintText(m_renderer, x, y, "times.ttf", 24, text);
+		renderer.WorldCoordsToWindowCoords(viewport, pos, x, y);
+		m_textWriter.PrintText(renderer, x, y, "times.ttf", 24, text);
 	});
 }
 
@@ -726,12 +778,94 @@ void View::AddParticleEffect(const Path& effectPath, CVector3f const& position, 
 
 void View::SetSkyboxShaders(const Path& vertex, const Path& fragment)
 {
-	m_skybox->SetShaders(vertex, fragment);
+	m_skybox->SetShaders(vertex, fragment, m_renderer.GetShaderManager());
+}
+
+void View::PreloadModel(const Path& model)
+{
+	m_modelManager.LoadIfNotExist(model, m_textureManager);
 }
 
 void View::EnableGPUSkinning(bool enable)
 {
 	m_modelManager.EnableGPUSkinning(enable);
 }
+
+std::vector<float> GetBoundingVertices(const model::Bounding& bounding)
+{
+	std::vector<float> result;
+	if (bounding.type == model::Bounding::eType::Compound)
+	{
+		for (auto& child : bounding.GetCompound().items)
+		{
+			auto childVertices = GetBoundingVertices(child);
+			result.insert(result.end(), childVertices.begin(), childVertices.end());
+		}
+	}
+	if (bounding.type == model::Bounding::eType::Box)
+	{
+		auto& box = bounding.GetBox();
+		auto min = box.min;
+		auto max = box.max;
+		std::array<CVector3f, 24> vertices = {
+			//left
+			min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },
+			{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] },
+			//back
+			min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },
+			{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] },
+			//right
+			CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,
+			{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] },
+			//front
+			CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
+			{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
+		};
+		for (auto& vec : vertices)
+		{
+			result.push_back(vec.x);
+			result.push_back(vec.y);
+			result.push_back(vec.z);
+		}
+	}
+	return result;
+}
+
+void View::RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewport &currentViewport, IViewHelper& renderer)
+{
+	renderer.EnableColorWrite(false, false);
+	renderer.UnbindTexture();
+	for (auto object : objects)
+	{
+		if (IsOutsideFrustum(renderer, currentViewport, object))
+			continue;
+		auto& query = currentViewport.GetOcclusionQuery(object);
+		auto it = m_boundingCache.find(object->GetPathToModel());
+		if(it == m_boundingCache.end())
+		{
+			auto bounding = m_boundingManager.GetBounding(object->GetPathToModel());
+			auto vertices = GetBoundingVertices(bounding);
+			auto buffer = renderer.CreateVertexBuffer(vertices.data(), nullptr, nullptr, vertices.size() / 3, false);
+			it = m_boundingCache.emplace(std::make_pair(object->GetPathToModel(), std::make_pair(std::move(buffer), vertices.size() / 3))).first;
+		}
+		renderer.PushMatrix();
+		renderer.Translate(object->GetCoords());
+		renderer.Rotate(object->GetRotations());
+		query.Query([&renderer, it] {
+			renderer.Draw(*it->second.first, it->second.second);
+		});
+		renderer.PopMatrix();
+	}
+	renderer.EnableColorWrite(true, true);
+}
+
+void View::SortMeshes()
+{
+	std::sort(m_meshesToDraw.begin(), m_meshesToDraw.end(), [](const DrawableMesh& first, const DrawableMesh& second) {
+		return std::tie(first.shader, first.texturePtr, first.material, first.buffer)
+			< std::tie(second.shader, second.texturePtr, second.material, second.buffer);
+	});
+}
+
 }
 }

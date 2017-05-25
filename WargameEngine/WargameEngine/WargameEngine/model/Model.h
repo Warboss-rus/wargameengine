@@ -39,7 +39,7 @@ public:
 	std::map<std::wstring, std::wstring> const& GetAllProperties() const;
 	void AddProjectile(Projectile const& projectile);
 	size_t GetProjectileCount() const;
-	Projectile const& GetProjectile(size_t index) const;
+	Projectile& GetProjectile(size_t index);
 	void AddParticleEffect(const IParticleUpdater * updater, const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
 	size_t GetParticleCount() const;
 	ParticleEffect const& GetParticleEffect(size_t index) const;
@@ -52,6 +52,7 @@ public:
 	void RemoveLight(size_t index);
 	Light& GetLight(size_t index);
 	const std::vector<Light>& GetLights() const;
+	std::vector<IBaseObject*> GetAllBaseObjects();
 
 	signals::SignalConnection DoOnObjectCreation(std::function<void(IObject*)> const& handler);
 	signals::SignalConnection DoOnObjectRemove(std::function<void(IObject*)> const& handler);

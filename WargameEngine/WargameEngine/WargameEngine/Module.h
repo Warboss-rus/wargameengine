@@ -5,6 +5,8 @@ namespace wargameEngine
 {
 struct Module
 {
+	Module() = default;
+	Module(const Path& filename);
 	std::wstring name;
 	int version;
 	std::wstring author;
@@ -16,6 +18,5 @@ struct Module
 	Path models;
 	Path textures;
 	Path shaders;
-	void Load(Path const& filename);
 };
 }

@@ -26,7 +26,7 @@ void UIComboBox::Draw(view::IRenderer& renderer) const
 		realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
 	if (!m_cache)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), realHeight, CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), realHeight, CachedTextureType::RenderTarget);
 	}
 	if (m_invalidated)
 	{
@@ -35,12 +35,12 @@ void UIComboBox::Draw(view::IRenderer& renderer) const
 			auto& theme = m_theme->combobox;
 			int elementSize = static_cast<int>(theme.elementSize * m_scale);
 			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 
 			renderer.SetColor(m_theme->textfieldColor);
 			int borderSize = static_cast<int>(theme.borderSize * m_scale);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
+			renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
 
 			auto& textTheme = theme.text;
 			renderer.SetColor(textTheme.color);
@@ -53,7 +53,7 @@ void UIComboBox::Draw(view::IRenderer& renderer) const
 			renderer.SetTexture(m_theme->texture, true);
 			float* texCoords = m_expanded ? theme.expandedTexCoord : theme.texCoord;
 			int firstX = GetWidth() - static_cast<int>(GetHeight() * theme.buttonWidthCoeff);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i(firstX, 0), { firstX, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } },
 				{ CVector2f(texCoords), { texCoords[0], texCoords[3] }, { texCoords[2], texCoords[1] }, { texCoords[2], texCoords[3] } });
 
@@ -62,7 +62,7 @@ void UIComboBox::Draw(view::IRenderer& renderer) const
 				renderer.UnbindTexture();
 				renderer.SetColor(m_theme->textfieldColor);
 				int totalHeight = GetHeight() + elementSize * static_cast<int>(m_items.size());
-				renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, GetHeight()), { 0, totalHeight }, { GetWidth(), GetHeight() }, { GetWidth(), totalHeight } }, {});
+				renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(0, GetHeight()), { 0, totalHeight }, { GetWidth(), GetHeight() }, { GetWidth(), totalHeight } }, {});
 
 				for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 				{
@@ -81,7 +81,7 @@ void UIComboBox::Draw(view::IRenderer& renderer) const
 	}
 
 	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(RenderMode::TriangleStrip,
 		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, realHeight }, { GetWidth(), realHeight } },
 		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
 

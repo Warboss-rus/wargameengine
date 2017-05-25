@@ -12,8 +12,8 @@ namespace wargameEngine
 {
 namespace view
 {
-ModelManager::ModelManager(IRenderer & renderer, model::IBoundingBoxManager & bbmanager, AsyncFileProvider & asyncFileProvider)
-	:m_renderer(&renderer), m_bbManager(&bbmanager), m_asyncFileProvider(&asyncFileProvider), m_gpuSkinning(false)
+ModelManager::ModelManager(model::IBoundingBoxManager & bbmanager, AsyncFileProvider & asyncFileProvider)
+	: m_bbManager(&bbmanager), m_asyncFileProvider(&asyncFileProvider), m_gpuSkinning(false)
 {
 }
 
@@ -21,39 +21,38 @@ ModelManager::~ModelManager()
 {
 }
 
-void ModelManager::LoadIfNotExist(const Path& path)
+void ModelManager::LoadIfNotExist(const Path& path, TextureManager& textureManager)
 {
 	if (m_models.find(path) == m_models.end())
 	{
-		std::shared_ptr<C3DModel> model = std::make_shared<C3DModel>(m_bbManager->GetModelScale(path), m_bbManager->GetModelRotation(path));
-		m_models[path] = model;
+		auto& model = *m_models.emplace(std::make_pair(path, std::make_unique<C3DModel>(m_bbManager->GetModelScale(path), m_bbManager->GetModelRotation(path)))).first->second;
 		auto fullPath = m_asyncFileProvider->GetModelAbsolutePath(path);
-		m_asyncFileProvider->GetModelAsync(path, [=](void* data, size_t size) {
+		m_asyncFileProvider->GetModelAsync(path, [=, &model](void* data, size_t size) {
 			unsigned char* charData = reinterpret_cast<unsigned char*>(data);
 			for (auto& loader : m_modelReaders)
 			{
 				if (loader->ModelIsSupported(charData, size, fullPath))
 				{
-					auto mdl = loader->LoadModel(charData, size, *model, fullPath);
+					auto mdl = loader->LoadModel(charData, size, model, fullPath);
 					std::unique_lock<std::mutex> lk(m_mutex);
 					m_models[path] = std::move(mdl);
 					return;
 				}
 			}
 			throw std::runtime_error("Cannot load model " + to_string(path) + ". None of installed readers cannot load it");
-		}, [=]() {
-			m_models[path]->PreloadTextures(*m_renderer);
+		}, [=, &textureManager]() {
+			m_models[path]->PreloadTextures(textureManager);
 		}, [](std::exception const& e) {
 			LogWriter::WriteLine(e.what());
 		});
 	}
 }
 
-void ModelManager::DrawModel(const Path& path, model::IObject* object, bool vertexOnly)
+void ModelManager::GetModelMeshes(const Path& path, IRenderer & renderer, TextureManager& textureManager, model::IObject* object, std::vector<DrawableMesh>& meshesVec)
 {
-	LoadIfNotExist(path);
+	LoadIfNotExist(path, textureManager);
 	std::unique_lock<std::mutex> lk(m_mutex);
-	m_models[path]->Draw(*m_renderer, object, vertexOnly, m_gpuSkinning);
+	m_models[path]->GetMeshes(renderer, textureManager, object, m_gpuSkinning, meshesVec);
 }
 
 std::vector<std::string> ModelManager::GetAnimations(const Path& path)

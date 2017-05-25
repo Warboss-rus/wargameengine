@@ -62,7 +62,7 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char* data, size_
 		materials[key].texture = make_path(stream.ReadString());
 	}
 	materialManager = MaterialManager(materials);
-	auto result = std::make_unique<C3DModel>(dummyModel);
+	auto result = std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
 	return result;

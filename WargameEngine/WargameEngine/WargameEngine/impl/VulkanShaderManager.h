@@ -6,6 +6,9 @@
 #include "VulkanHelpers.h"
 #include "VulkanMemory.h"
 
+using wargameEngine::view::IShaderProgram;
+using wargameEngine::view::IVertexAttribCache;
+
 struct ShaderReflection
 {
 	struct UniformDescription
@@ -63,9 +66,9 @@ class CVulkanShaderManager : public wargameEngine::view::IShaderManager
 {
 public:
 	CVulkanShaderManager(CVulkanRenderer & renderer);
-	virtual std::unique_ptr<wargameEngine::view::IShaderProgram> NewProgram(const wargameEngine::Path& vertex, const wargameEngine::Path& fragment, const wargameEngine::Path& geometry) override;
-	virtual std::unique_ptr<wargameEngine::view::IShaderProgram> NewProgramSource(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
-	virtual void PushProgram(wargameEngine::view::IShaderProgram const& program) const override;
+	virtual std::unique_ptr<IShaderProgram> NewProgram(const wargameEngine::Path& vertex, const wargameEngine::Path& fragment, const wargameEngine::Path& geometry) override;
+	virtual std::unique_ptr<IShaderProgram> NewProgramSource(std::string const& vertex = "", std::string const& fragment = "", std::string const& geometry = "") override;
+	virtual void PushProgram(IShaderProgram const& program) const override;
 	virtual void PopProgram() const override;
 
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const override;
@@ -75,13 +78,13 @@ public:
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const float* values, bool perInstance = false) const override;
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const int* values, bool perInstance = false) const override;
 	virtual void SetVertexAttribute(std::string const& attribute, int elementSize, size_t count, const unsigned int* values, bool perInstance = false) const override;
-	virtual void SetVertexAttribute(std::string const& attribute, wargameEngine::view::IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const override;
+	virtual void SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, Format type, bool perInstance = false, size_t offset = 0) const override;
 
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const float* defaultValue) const override;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const int* defaultValue) const override;
 	virtual void DisableVertexAttribute(std::string const& attribute, int size, const unsigned int* defaultValue) const override;
 
-	virtual std::unique_ptr<wargameEngine::view::IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
+	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
 	void DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler);
 	void CommitUniforms(CVulkanSmartBuffer & buffer, bool force);

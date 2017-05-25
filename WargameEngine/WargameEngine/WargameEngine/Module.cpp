@@ -31,7 +31,8 @@ std::wstring GetParent(std::wstring const& path)
 }
 }
 
-void wargameEngine::Module::Load(Path const& filename)
+wargameEngine::Module::Module(Path const& filename)
+	:Module()
 {
 	std::wifstream iFile(filename);
 	std::wstring line;

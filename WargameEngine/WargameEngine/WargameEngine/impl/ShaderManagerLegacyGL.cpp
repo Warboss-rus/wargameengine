@@ -312,14 +312,14 @@ void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, in
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance /*= false*/, size_t offset/* = 0*/) const
+void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, Format type, bool perInstance /*= false*/, size_t offset/* = 0*/) const
 {
 	auto& glCache = reinterpret_cast<CLegacyGLVertexAttribCache const&>(cache);
 	glCache.Bind();
-	std::map<TYPE, GLenum> typeMap = {
-		{ TYPE::FLOAT32, GL_FLOAT },
-		{ TYPE::SINT32, GL_INT },
-		{ TYPE::UINT32, GL_UNSIGNED_INT },
+	std::map<Format, GLenum> typeMap = {
+		{ Format::Float32, GL_FLOAT },
+		{ Format::SInt32, GL_INT },
+		{ Format::UInt32, GL_UNSIGNED_INT },
 	};
 	SetVertexAttributeImpl(attribute, elementSize, count, (void*)offset, perInstance, typeMap.at(type));
 	glCache.UnBind();

@@ -366,16 +366,16 @@ void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int
 	SetVertexAttributeImpl(attribute, elementSize, count, format[elementSize - 1], perInstance, values);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t /*count*/, TYPE type, bool perInstance /*= false*/, size_t offset /*= 0*/) const
+void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t /*count*/, Format type, bool perInstance /*= false*/, size_t offset /*= 0*/) const
 {
 	auto& dxCache = reinterpret_cast<CVertexAttribCacheDirectX const&>(cache);
 	auto descIt = m_activeProgram->m_vertexAttributeDescriptions.find(attribute);
 	if (descIt != m_activeProgram->m_vertexAttributeDescriptions.end())
 	{
-		static const std::map<TYPE, std::array<DXGI_FORMAT, 4>> typeMap = {
-			{ TYPE::FLOAT32, { DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT } },
-			{ TYPE::SINT32, { DXGI_FORMAT_R32_SINT, DXGI_FORMAT_R32G32_SINT, DXGI_FORMAT_R32G32B32_SINT, DXGI_FORMAT_R32G32B32A32_SINT } },
-			{ TYPE::UINT32, {DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32G32_UINT, DXGI_FORMAT_R32G32B32_UINT, DXGI_FORMAT_R32G32B32A32_UINT } },
+		static const std::map<Format, std::array<DXGI_FORMAT, 4>> typeMap = {
+			{ Format::Float32, { DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT } },
+			{ Format::SInt32, { DXGI_FORMAT_R32_SINT, DXGI_FORMAT_R32G32_SINT, DXGI_FORMAT_R32G32B32_SINT, DXGI_FORMAT_R32G32B32A32_SINT } },
+			{ Format::UInt32, {DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32G32_UINT, DXGI_FORMAT_R32G32B32_UINT, DXGI_FORMAT_R32G32B32A32_UINT } },
 		};
 		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
 		desc.Format = typeMap.at(type).at(elementSize - 1);

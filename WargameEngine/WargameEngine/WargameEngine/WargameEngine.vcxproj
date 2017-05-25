@@ -302,6 +302,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="array_view.h" />
     <ClInclude Include="AsyncFileProvider.h" />
+    <ClInclude Include="view\DrawableMesh.h" />
     <ClInclude Include="INetSocket.h" />
     <ClInclude Include="IScriptHandler.h" />
     <ClInclude Include="controller\IStateManager.h" />

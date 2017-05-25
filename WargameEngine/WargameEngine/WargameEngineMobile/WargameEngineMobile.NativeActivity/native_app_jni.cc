@@ -32,7 +32,7 @@ struct NativeAppJni
 	NativeAppJni(gvr_context* gvr_context, std::unique_ptr<gvr::AudioApi> gvr_audio_api)
 	{
 		const std::string storage = getenv("EXTERNAL_STORAGE");
-		module.Load(storage + "/WargameEngine/test.module");
+		module = Module(storage + "/WargameEngine/test.module");
 		if (module.name.empty())
 		{
 			module.script = "main.lua";

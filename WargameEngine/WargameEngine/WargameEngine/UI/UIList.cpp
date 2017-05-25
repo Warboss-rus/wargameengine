@@ -21,26 +21,26 @@ void UIList::Draw(view::IRenderer& renderer) const
 	renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
 	}
 	if (m_invalidated)
 	{
 		renderer.RenderToTexture([this, &renderer]() {
 			renderer.UnbindTexture();
 			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 			renderer.SetColor(m_theme->textfieldColor);
 			auto& theme = m_theme->list;
 			int borderSize = static_cast<int>(theme.borderSize * m_scale);
 			int elementSize = static_cast<int>(theme.elementSize * m_scale);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
 			if (m_items.size() > 0)
 			{
 				renderer.SetColor(theme.selectionColor);
 				int intSelected = static_cast<int>(m_selected);
-				renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize + elementSize * intSelected), { borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * intSelected }, { GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) } }, {});
+				renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize, borderSize + elementSize * intSelected), { borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * intSelected }, { GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) } }, {});
 			}
 			renderer.SetColor(theme.text.color);
 			for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
@@ -53,7 +53,7 @@ void UIList::Draw(view::IRenderer& renderer) const
 		}, *m_cache, GetWidth(), GetHeight());
 	}
 	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(RenderMode::TriangleStrip,
 		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
 		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
 	UIElement::Draw(renderer);

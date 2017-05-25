@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 				LogWriter::WriteLine("Module filename expected");
 				return 1;
 			}
-			module.Load(Utf8ToWstring(argv[i]));
+			module = Module(Utf8ToWstring(argv[i]));
 		}
 	}
 	if (module.name.empty())

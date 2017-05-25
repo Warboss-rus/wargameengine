@@ -76,21 +76,6 @@ TextureManager::~TextureManager()
 {
 }
 
-void TextureManager::SetTexture(const Path& path, int flags)
-{
-	if (path.empty())
-	{
-		m_helper.UnbindTexture();
-		return;
-	}
-	auto pair = std::make_pair(path, std::vector<model::TeamColor>());
-	if (m_textures.find(pair) == m_textures.end())
-	{
-		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
-	}
-	m_helper.SetTexture(*m_textures[pair]);
-}
-
 std::unique_ptr<ICachedTexture> TextureManager::CreateCubemapTexture(const Path& right, const Path& left, const Path& back, const Path& front, const Path& top, const Path& bottom, int flags /*= 0*/)
 {
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
@@ -165,29 +150,14 @@ void TextureManager::RegisterImageReader(std::unique_ptr<IImageReader>&& reader)
 	m_imageReaders.push_back(std::move(reader));
 }
 
-ICachedTexture* TextureManager::GetTexturePtr(const Path& texture)
+ICachedTexture* TextureManager::GetTexturePtr(const Path& texture, const std::vector<model::TeamColor>* teamcolor, int flags)
 {
-	auto pair = std::pair<Path, std::vector<model::TeamColor>>(texture, std::vector<model::TeamColor>());
+	auto pair = std::pair<Path, std::vector<model::TeamColor>>(texture, teamcolor ? *teamcolor : std::vector<model::TeamColor>());
 	if (m_textures.find(pair) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(texture, pair.second, false);
+		m_textures[pair] = LoadTexture(texture, pair.second, false, flags);
 	}
 	return m_textures[pair].get();
-}
-
-void TextureManager::SetTexture(const Path& path, IRenderer::TextureSlot slot, const std::vector<model::TeamColor>* teamcolor, int flags)
-{
-	if (path.empty())
-	{
-		m_helper.UnbindTexture(slot);
-		return;
-	}
-	auto pair = std::make_pair(path, teamcolor ? *teamcolor : std::vector<model::TeamColor>());
-	if (m_textures.find(pair) == m_textures.end())
-	{
-		m_textures[pair] = LoadTexture(path, pair.second, false, flags);
-	}
-	m_helper.SetTexture(*m_textures[pair], slot);
 }
 
 void ApplyTeamcolor(Image& image, const Path& maskFile, unsigned char* color, const Path& fileName)

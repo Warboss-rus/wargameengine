@@ -112,6 +112,12 @@ void CVulkanPipelineManager::SetDepthParams(bool test, bool write)
 	m_currentKey.depthWrite = test;
 }
 
+void CVulkanPipelineManager::SetColorWriteParams(bool rgb, bool a)
+{
+	color_blend_attachment_state.colorWriteMask = (rgb ? VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT : 0) | (a ? VK_COLOR_COMPONENT_A_BIT : 0);
+	m_currentKey.colorWrite = color_blend_attachment_state.colorWriteMask;
+}
+
 void CVulkanPipelineManager::SetRenderPass(VkRenderPass pass)
 {
 	pipeline_create_info.renderPass = pass;

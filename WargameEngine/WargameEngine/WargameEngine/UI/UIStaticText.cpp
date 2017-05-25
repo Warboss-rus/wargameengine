@@ -20,7 +20,7 @@ void UIStaticText::Draw(view::IRenderer& renderer) const
 	renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
 	}
 	if (m_invalidated)
 	{
@@ -29,7 +29,7 @@ void UIStaticText::Draw(view::IRenderer& renderer) const
 		}, *m_cache, GetWidth(), GetHeight());
 	}
 	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(RenderMode::TriangleStrip,
 		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
 		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
 	UIElement::Draw(renderer);

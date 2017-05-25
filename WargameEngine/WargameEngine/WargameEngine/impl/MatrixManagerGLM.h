@@ -26,9 +26,10 @@ public:
 	void Scale(float scale);
 	void Rotate(float angle, const CVector3f& axis);
 	void Rotate(const CVector3f& rotations);
-	const float* GetModelViewMatrix() const;
+	const float* GetModelMatrix() const;
 	const float* GetProjectionMatrix() const;
 	const float* GetViewMatrix() const;
+	void SetModelMatrix(const float* matrix);
 	void ResetModelView();
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up, bool leftHanded = false);
 	void WindowCoordsToWorldVector(int x, int y, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, CVector3f & start, CVector3f & end) const;
@@ -45,10 +46,11 @@ private:
 	glm::mat4* m_modelMatrix;
 	glm::mat4 m_viewMatrix;
 	glm::mat4 m_projectionMatrix;
-	mutable bool m_matricesChanged = true;
+	mutable bool m_modelMatrixChanged = true;
+	mutable bool m_viewMatrixChanged = true;
+	mutable bool m_projectionMatrixChanged = true;
 	glm::mat4 m_savedViewMatrix;
 	glm::mat4 m_savedProjectionMatrix;
-	mutable glm::mat4 m_modelView;
 	std::vector<glm::mat4> m_vrViewMatrices;
 	bool m_2dMode = false;
 };

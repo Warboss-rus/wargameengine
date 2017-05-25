@@ -15,8 +15,6 @@ class IBaseObject;
 
 namespace view
 {
-class IViewHelper;
-class IOcclusionQuery;
 class IInput;
 
 class Viewport : public IViewport

@@ -38,19 +38,19 @@ void UIScrollBar::Draw(view::IRenderer& renderer) const
 	int buttonSize = scrollBegin;
 	renderer.UnbindTexture();
 	renderer.SetColor(theme.backgroundColor);
-	renderer.RenderArrays(view::IRenderer::RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
 	renderer.SetColor(theme.barColor);
-	renderer.RenderArrays(view::IRenderer::RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - scrollWidth, scrollBegin + intPos), { m_width, scrollBegin + intPos }, { m_width - scrollWidth, scrollBegin + intPos + scrollSize }, { m_width, scrollBegin + intPos + scrollSize } }, {});
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip, { CVector2i(m_width - scrollWidth, scrollBegin + intPos), { m_width, scrollBegin + intPos }, { m_width - scrollWidth, scrollBegin + intPos + scrollSize }, { m_width, scrollBegin + intPos + scrollSize } }, {});
 	renderer.SetColor(0, 0, 0);
 	renderer.SetTexture(m_theme->texture, true);
 	float* themeTexCoords = (m_upButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
 	std::vector<CVector2f> texCoords = { CVector2f(themeTexCoords), { themeTexCoords[2], themeTexCoords[1] }, { themeTexCoords[0], themeTexCoords[3] }, { themeTexCoords[2], themeTexCoords[3] } };
-	renderer.RenderArrays(view::IRenderer::RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip,
 		{ CVector2i(m_width - scrollWidth, 0), { m_width, 0 }, { m_width - scrollWidth, scrollBegin }, { m_width, scrollBegin } }, texCoords);
 
 	themeTexCoords = (m_downButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
 	texCoords = { CVector2f(themeTexCoords), { themeTexCoords[2], themeTexCoords[1] }, { themeTexCoords[0], themeTexCoords[3] }, { themeTexCoords[2], themeTexCoords[3] } };
-	renderer.RenderArrays(view::IRenderer::RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip,
 		{ CVector2i(m_width - scrollWidth, m_size), { m_width, m_size }, { m_width - scrollWidth, m_size - buttonSize }, { m_width, m_size - buttonSize } }, texCoords);
 }
 

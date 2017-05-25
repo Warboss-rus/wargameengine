@@ -55,9 +55,7 @@ void Application::Run(Module&& module)
 
 void Application::Run(const Path& modulePath)
 {
-	Module module;
-	module.Load(modulePath);
-	Run(std::move(module));
+	Run(Module(modulePath));
 }
 
 wargameEngine::view::View& Application::GetView()

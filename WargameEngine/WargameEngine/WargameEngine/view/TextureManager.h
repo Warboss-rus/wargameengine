@@ -18,14 +18,12 @@ class TextureManager
 public:
 	TextureManager(ITextureHelper & helper, AsyncFileProvider & asyncFileProvider);
 	~TextureManager();
-	void SetTexture(const Path& path, int flags = 0);
-	void SetTexture(const Path& path, IRenderer::TextureSlot slot, const std::vector<model::TeamColor>* teamcolor = nullptr, int flags = 0);
 	std::unique_ptr<ICachedTexture> CreateCubemapTexture(const Path& right, const Path& left, const Path& back, const Path& front, const Path& top, const Path& bottom, int flags = 0);
 	void SetAnisotropyLevel(float level);
 	void LoadTextureNow(const Path& path, const std::vector<model::TeamColor>* teamcolor = nullptr, int flags = 0);
 	void Reset();
 	void RegisterImageReader(std::unique_ptr<IImageReader>&& reader);
-	ICachedTexture* GetTexturePtr(const Path& texture);
+	ICachedTexture* GetTexturePtr(const Path& texture, const std::vector<model::TeamColor>* teamcolor = nullptr, int flags = 0);
 protected:
 	TextureManager(TextureManager const& other) = delete;
 private:

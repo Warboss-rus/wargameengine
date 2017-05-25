@@ -15,6 +15,15 @@ public:
 	virtual void AssignTexture(ICachedTexture& texture, IRenderer::CachedTextureType type) = 0;
 };
 
+class IOcclusionQuery
+{
+public:
+	virtual void Query(std::function<void()> const& handler) = 0;
+	virtual bool IsVisible() const = 0;
+
+	virtual ~IOcclusionQuery() {}
+};
+
 class TextureManager;
 class IViewport;
 
@@ -24,11 +33,13 @@ public:
 	virtual void WindowCoordsToWorldVector(IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const = 0;
 	virtual void WorldCoordsToWindowCoords(IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const = 0;
 	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const = 0;
+	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() = 0;
 	virtual void SetNumberOfLights(size_t count) = 0;
 	virtual void SetUpLight(size_t index, CVector3f const& position, const float* ambient, const float* diffuse, const float* specular) = 0;
 	virtual float GetMaximumAnisotropyLevel() const = 0;
 	virtual const float* GetProjectionMatrix() const = 0;
-	virtual void EnableDepthTest(bool enable) = 0;
+	virtual void EnableDepthTest(bool enableRead, bool enableWrite) = 0;
+	virtual void EnableColorWrite(bool rgb, bool alpha) = 0;
 	virtual void EnableBlending(bool enable) = 0;
 	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) = 0;
 	virtual void DrawIn2D(std::function<void()> const& drawHandler) = 0;

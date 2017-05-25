@@ -14,6 +14,7 @@ using wargameEngine::view::IViewport;
 using wargameEngine::view::IFrameBuffer;
 using wargameEngine::view::TextureManager;
 using wargameEngine::view::TextureMipMaps;
+using wargameEngine::view::IShaderManager;
 
 struct sLightSource
 {
@@ -31,12 +32,11 @@ public:
 	~CDirectXRenderer();
 
 	void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) override;
-	 void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) override;
-	void DrawIndexes(IVertexBuffer& buffer, size_t begin, size_t count) override;
-	void DrawAll(IVertexBuffer& buffer, size_t count) override;
-	void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
+	void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) override;
+	void DrawIndexed(IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) override;
+	void Draw(IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) override;
 	void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
-	void ForceBindVertexBuffer(IVertexBuffer& buffer) override;
+	void AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance = false) override;
 
 	void PushMatrix() override;
 	void PopMatrix() override;
@@ -46,16 +46,16 @@ public:
 	void Rotate(const CVector3f& angles) override;
 	void Scale(float scale) override;
 	const float* GetViewMatrix() const override;
+	const float* GetModelMatrix() const override;
+	void SetModelMatrix(const float* matrix) override;
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 	
 	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
-	void SetTexture(const Path&  texture, TextureSlot slot, int flags = 0) override;
-	void SetTexture(const Path&  texture, const std::vector<wargameEngine::model::TeamColor> * teamcolor, int flags = 0) override;
-	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
-	void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
+	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::Diffuse) override;
+	void UnbindTexture(TextureSlot slot = TextureSlot::Diffuse) override;
 	void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
 	std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
-	ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
+
 
 	void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) override;
 	void SetColor(const float * color) override;
@@ -63,7 +63,7 @@ public:
 
 	std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
 	std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
-	wargameEngine::view::IShaderManager& GetShaderManager() override;
+	IShaderManager& GetShaderManager() override;
 
 	void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
 	void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
@@ -72,8 +72,9 @@ public:
 	void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
 	float GetMaximumAnisotropyLevel() const override;
 	const float* GetProjectionMatrix() const override;
-	void EnableDepthTest(bool enable) override;
+	void EnableDepthTest(bool read, bool write) override;
 	void EnableBlending(bool enable) override;
+	void EnableColorWrite(bool rgb, bool alpha) override;
 	void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
 	void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	void ClearBuffers(bool color = true, bool depth = true) override;
@@ -114,7 +115,7 @@ private:
 	HWND m_hWnd;
 	TextureManager * m_textureManager;
 	CShaderManagerDirectX m_shaderManager;
-	CComPtr<ID3D11DepthStencilState> m_depthState[2];
+	CComPtr<ID3D11DepthStencilState> m_depthState[4];
 	CComPtr<ID3D11BlendState> m_blendStates[2];
 
 	CComPtr<ID3D11Buffer> m_vertexBuffer;
@@ -128,5 +129,4 @@ private:
 	DirectX::XMFLOAT4X4 m_projectionMatrix;
 	float m_anisotropyLevel = 0.0f;
 	bool m_matricesChanged = true;
-	mutable DirectX::XMFLOAT4X4 m_modelViewMatrix;
 };

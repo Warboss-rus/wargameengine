@@ -68,6 +68,22 @@ public:
 		}
 	}
 
+	void AddVertexAttribute(COpenGLRenderer& renderer, CShaderManagerOpenGL& shaderManager, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance = false)
+	{
+		if (m_vao)
+		{
+			Bind(renderer, shaderManager);
+			auto buffer = shaderManager.CreateVertexAttribCache(elementSize * count * sizeof(float), values);
+			shaderManager.SetVertexAttribute(attribute, *buffer, elementSize, count, type, perInstance, 0);
+		}
+		else
+		{
+			if (type == IShaderManager::Format::Float32) shaderManager.SetVertexAttribute(attribute, elementSize, count, (const float*)values, perInstance);
+			if (type == IShaderManager::Format::SInt32) shaderManager.SetVertexAttribute(attribute, elementSize, count, (const int*)values, perInstance);
+			if (type == IShaderManager::Format::UInt32) shaderManager.SetVertexAttribute(attribute, elementSize, count, (const unsigned*)values, perInstance);
+		}
+	}
+
 private:
 	GLuint m_vao = 0;
 	GLuint m_indexesBuffer = 0;
@@ -76,6 +92,7 @@ private:
 	const float* m_normals;
 	const float* m_texCoords;
 	size_t m_vertexCount;
+	vector<unique_ptr<IVertexAttribCache>> m_attribCaches;
 };
 
 class COpenGLFrameBuffer : public IFrameBuffer
@@ -107,19 +124,20 @@ public:
 	{
 		static const map<IRenderer::CachedTextureType, GLenum> typeMap = {
 			{ IRenderer::CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
-			{ IRenderer::CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
-			{ IRenderer::CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
+			{ IRenderer::CachedTextureType::RenderTarget, GL_COLOR_ATTACHMENT0 },
+			{ IRenderer::CachedTextureType::Alpha, GL_STENCIL_ATTACHMENT },
+			{ IRenderer::CachedTextureType::Depth, GL_DEPTH_ATTACHMENT }
 		};
 		const map<IRenderer::CachedTextureType, pair<GLboolean, string>> extensionMap = {
 			{ IRenderer::CachedTextureType::RGBA, { GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" } },
-			{ IRenderer::CachedTextureType::ALPHA, { GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" } },
-			{ IRenderer::CachedTextureType::DEPTH, { GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" } }
+			{ IRenderer::CachedTextureType::Alpha, { GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" } },
+			{ IRenderer::CachedTextureType::Depth, { GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" } }
 		};
 		if (!extensionMap.at(type).first)
 		{
 			throw runtime_error(extensionMap.at(type).second + " is not supported");
 		}
-		if (type == IRenderer::CachedTextureType::DEPTH)
+		if (type == IRenderer::CachedTextureType::Depth)
 		{
 			glDrawBuffer(GL_NONE);
 			glReadBuffer(GL_NONE);
@@ -146,25 +164,15 @@ public:
 	{
 		glDeleteQueries(1, &m_id);
 	}
-	void Query(function<void()> const& handler, bool renderToScreen) override
+	void Query(function<void()> const& handler) override
 	{
 		if (!m_id)
 		{
 			glGenQueries(1, &m_id);
 		}
-		if (!renderToScreen)
-		{
-			glDepthMask(GL_FALSE);
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		}
 		glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, m_id);
 		handler();
 		glEndQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE);
-		if (!renderToScreen)
-		{
-			glDepthMask(GL_TRUE);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		}
 	}
 
 	bool IsVisible() const override
@@ -195,10 +203,10 @@ private:
 };
 
 static const map<IRenderer::RenderMode, GLenum> renderModeMap = {
-	{ IRenderer::RenderMode::TRIANGLES, GL_TRIANGLES },
-	{ IRenderer::RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ IRenderer::RenderMode::LINES, GL_LINES },
-	{ IRenderer::RenderMode::LINE_LOOP, GL_LINE_LOOP } //
+	{ IRenderer::RenderMode::Triangles, GL_TRIANGLES },
+	{ IRenderer::RenderMode::TriangleStrip, GL_TRIANGLE_STRIP },
+	{ IRenderer::RenderMode::Lines, GL_LINES },
+	{ IRenderer::RenderMode::LineLoop, GL_LINE_LOOP } //
 };
 
 #ifdef _WINDOWS
@@ -293,25 +301,32 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const&
 	glDrawArrays(renderModeMap.at(mode), 0, static_cast<GLsizei>(vertices.size()));
 }
 
-void COpenGLRenderer::DrawIndexes(IVertexBuffer& vertexBuffer, size_t begin, size_t count)
+void COpenGLRenderer::DrawIndexed(IVertexBuffer& vertexBuffer, size_t count, size_t begin, size_t instances)
 {
 	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
 	m_matrixManager.UpdateMatrices(m_shaderManager);
-	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
+	if (instances > 1)
+	{
+		glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)), static_cast<GLsizei>(instances));
+	}
+	else
+	{
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
+	}
 }
 
-void COpenGLRenderer::DrawAll(IVertexBuffer& vertexBuffer, size_t count)
+void COpenGLRenderer::Draw(IVertexBuffer& vertexBuffer, size_t count, size_t begin, size_t instances)
 {
 	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
 	m_matrixManager.UpdateMatrices(m_shaderManager);
-	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
-}
-
-void COpenGLRenderer::DrawInstanced(IVertexBuffer& vertexBuffer, size_t size, size_t instanceCount)
-{
-	m_matrixManager.UpdateMatrices(m_shaderManager);
-	reinterpret_cast<COpenGLVertexBuffer&>(vertexBuffer).Bind(*this, m_shaderManager);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, static_cast<GLsizei>(size), static_cast<GLsizei>(instanceCount));
+	if (instances > 1)
+	{
+		glDrawArraysInstanced(GL_TRIANGLES, static_cast<GLsizei>(begin), static_cast<GLsizei>(count), static_cast<GLsizei>(instances));
+	}
+	else
+	{
+		glDrawArrays(GL_TRIANGLES, static_cast<GLsizei>(begin), static_cast<GLsizei>(count));
+	}
 }
 
 void COpenGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
@@ -324,9 +339,9 @@ void COpenGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* 
 	reinterpret_cast<COpenGLVertexBuffer&>(buffer).SetIndexBuffer(indexBuffer);
 }
 
-void COpenGLRenderer::ForceBindVertexBuffer(IVertexBuffer& buffer)
+void COpenGLRenderer::AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance)
 {
-	reinterpret_cast<COpenGLVertexBuffer&>(buffer).Bind(*this, m_shaderManager);
+	reinterpret_cast<COpenGLVertexBuffer&>(buffer).AddVertexAttribute(*this, m_shaderManager, attribute, elementSize, count, type, values, perInstance);
 }
 
 void COpenGLRenderer::PushMatrix()
@@ -337,7 +352,6 @@ void COpenGLRenderer::PushMatrix()
 void COpenGLRenderer::PopMatrix()
 {
 	m_matrixManager.PopMatrix();
-	m_matrixManager.UpdateMatrices(m_shaderManager);
 }
 
 void COpenGLRenderer::Translate(int dx, int dy, int dz)
@@ -367,7 +381,17 @@ void COpenGLRenderer::Rotate(const CVector3f& rotations)
 
 const float* COpenGLRenderer::GetViewMatrix() const
 {
-	return m_matrixManager.GetModelViewMatrix();
+	return m_matrixManager.GetViewMatrix();
+}
+
+const float* COpenGLRenderer::GetModelMatrix() const
+{
+	return m_matrixManager.GetModelMatrix();
+}
+
+void COpenGLRenderer::SetModelMatrix(const float* matrix)
+{
+	m_matrixManager.SetModelMatrix(matrix);
 }
 
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
@@ -377,21 +401,15 @@ void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& directi
 
 void COpenGLRenderer::SetTexture(const Path& texture, bool forceLoadNow, int flags)
 {
+	if (texture.empty())
+	{
+		return UnbindTexture();
+	}
 	if (forceLoadNow)
 	{
 		m_textureManager->LoadTextureNow(texture, nullptr, flags);
 	}
-	m_textureManager->SetTexture(texture, flags);
-}
-
-void COpenGLRenderer::SetTexture(const Path& texture, TextureSlot slot, int flags /*= 0*/)
-{
-	m_textureManager->SetTexture(texture, slot, nullptr, flags);
-}
-
-void COpenGLRenderer::SetTexture(const Path& texture, const vector<model::TeamColor>* teamcolor /*= nullptr*/, int flags /*= 0*/)
-{
-	m_textureManager->SetTexture(texture, TextureSlot::eDiffuse, teamcolor, flags);
+	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
 
 void COpenGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot)
@@ -414,10 +432,10 @@ void COpenGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot
 	}
 	else
 	{
-		if (slot != TextureSlot::eDiffuse)
+		if (slot != TextureSlot::Diffuse)
 			glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
 		glBindTexture(glTexture.GetType(), glTexture);
-		if (slot != TextureSlot::eDiffuse)
+		if (slot != TextureSlot::Diffuse)
 			glActiveTexture(GL_TEXTURE0);
 	}
 }
@@ -438,10 +456,10 @@ void COpenGLRenderer::UnbindTexture(TextureSlot slot)
 	}
 	else
 	{
-		if (slot != TextureSlot::eDiffuse)
+		if (slot != TextureSlot::Diffuse)
 			glActiveTexture(GL_TEXTURE0 + slotIndex);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		if (slot != TextureSlot::eDiffuse)
+		if (slot != TextureSlot::Diffuse)
 			glActiveTexture(GL_TEXTURE0);
 	}
 	m_currentTextures[slotIndex] = 0;
@@ -488,9 +506,9 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 	//tuple<format, internalFormat, type>
 	static const map<CachedTextureType, tuple<GLenum, GLenum, GLenum>> formatMap = {
 		{ CachedTextureType::RGBA, { GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
-		{ CachedTextureType::RENDER_TARGET, { GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
-		{ CachedTextureType::ALPHA, { GL_RED, GL_R8, GL_UNSIGNED_BYTE } },
-		{ CachedTextureType::DEPTH, { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_UNSIGNED_INT } }
+		{ CachedTextureType::RenderTarget, { GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::Alpha, { GL_RED, GL_R8, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::Depth, { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_UNSIGNED_INT } }
 	};
 
 	auto texture = make_unique<COpenGlCachedTexture>(GL_TEXTURE_2D, m_supportsDSA);
@@ -507,7 +525,7 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 			glTextureSubImage2D(glTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), get<0>(formatMap.at(type)), get<2>(formatMap.at(type)), data);
 		}
 
-		if (type == CachedTextureType::ALPHA)
+		if (type == CachedTextureType::Alpha)
 		{
 			GLint swizzleMask[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
 			glTextureParameteriv(glTexture, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
@@ -516,7 +534,7 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 		glTextureParameteri(glTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		if (type == CachedTextureType::DEPTH)
+		if (type == CachedTextureType::Depth)
 		{
 			glTextureParameteri(*texture, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 			glTextureParameteri(*texture, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
@@ -526,7 +544,7 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 	{
 		SetTexture(*texture);
 		glTexImage2D(GL_TEXTURE_2D, 0, get<1>(formatMap.at(type)), static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, get<0>(formatMap.at(type)), get<2>(formatMap.at(type)), data);
-		if (type == CachedTextureType::ALPHA)
+		if (type == CachedTextureType::Alpha)
 		{
 			GLint swizzleMask[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
 			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
@@ -535,18 +553,13 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		if (type == CachedTextureType::DEPTH)
+		if (type == CachedTextureType::Depth)
 		{
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 		}
 	}
 	return move(texture);
-}
-
-ICachedTexture* COpenGLRenderer::GetTexturePtr(wstring const& texture) const
-{
-	return m_textureManager->GetTexturePtr(texture);
 }
 
 void COpenGLRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
@@ -584,7 +597,7 @@ string COpenGLRenderer::GetName() const
 
 bool COpenGLRenderer::SupportsFeature(Feature feature) const
 {
-	if (feature == Feature::INSTANSING)
+	if (feature == Feature::Instancing)
 	{
 		return GLEW_VERSION_3_1 != GL_FALSE;
 	}
@@ -793,12 +806,23 @@ const float* COpenGLRenderer::GetProjectionMatrix() const
 	return m_matrixManager.GetProjectionMatrix();
 }
 
-void COpenGLRenderer::EnableDepthTest(bool enable)
+void COpenGLRenderer::EnableDepthTest(bool enableRead, bool enableWrite)
 {
-	if (enable)
+	if (enableRead)
+	{
 		glEnable(GL_DEPTH_TEST);
+	}
 	else
+	{
 		glDisable(GL_DEPTH_TEST);
+	}
+	glDepthMask(enableWrite ? GL_TRUE : GL_FALSE);
+}
+
+void COpenGLRenderer::EnableColorWrite(bool rgb, bool alpha)
+{
+	const GLboolean rgbMask = rgb ? GL_TRUE : GL_FALSE;
+	glColorMask(rgbMask, rgbMask, rgbMask, alpha ? GL_TRUE : GL_FALSE);
 }
 
 void COpenGLRenderer::EnableBlending(bool enable)

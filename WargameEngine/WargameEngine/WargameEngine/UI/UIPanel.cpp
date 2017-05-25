@@ -20,7 +20,7 @@ void UIPanel::Draw(view::IRenderer& renderer) const
 	renderer.Translate(GetX(), GetY(), 0);
 	renderer.UnbindTexture();
 	renderer.SetColor(m_theme->defaultColor);
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(RenderMode::TriangleStrip,
 		{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 	renderer.SetColor(0, 0, 0);
 	UIElement::Draw(renderer);

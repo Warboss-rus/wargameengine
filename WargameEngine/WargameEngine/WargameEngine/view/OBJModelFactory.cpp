@@ -280,7 +280,7 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char* data, size_
 		textureCoords.swap(tempTextureCoords);
 		normals.swap(tempNormals);
 	}
-	auto result = std::make_unique<C3DModel>(dummyModel);
+	auto result = std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
 	return result;

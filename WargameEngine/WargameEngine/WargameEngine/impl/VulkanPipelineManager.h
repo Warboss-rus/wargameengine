@@ -27,6 +27,7 @@ public:
 	void SetTopology(VkPrimitiveTopology topology);
 	void SetBlending(bool enable);
 	void SetDepthParams(bool test, bool write);
+	void SetColorWriteParams(bool rgb, bool a);
 	void SetRenderPass(VkRenderPass pass);
 	void Destroy();
 	void Init(VkDevice device);
@@ -68,7 +69,9 @@ private:
 		bool blending = false;
 		bool depthTest = false;
 		bool depthWrite = false;
-		bool operator<(Key const& other) const { return std::tie(program, descriptors, renderPass, topology, attribs, blending, depthTest, depthWrite) < std::tie(other.program, other.descriptors, other.renderPass, other.topology, other.attribs, other.blending, other.depthTest, other.depthWrite); }
+		VkColorComponentFlags colorWrite = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		bool operator<(Key const& other) const { return std::tie(program, descriptors, renderPass, topology, attribs, blending, depthTest, depthWrite, colorWrite) 
+			< std::tie(other.program, other.descriptors, other.renderPass, other.topology, other.attribs, other.blending, other.depthTest, other.depthWrite, other.colorWrite); }
 	};
 	Key m_currentKey;
 	std::map<Key, VkPipeline> m_pipelines;

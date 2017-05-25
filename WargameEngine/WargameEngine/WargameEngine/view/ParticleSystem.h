@@ -15,13 +15,11 @@ class IShaderProgram;
 class ParticleSystem
 {
 public:
-	ParticleSystem(IRenderer & renderer);
-	void SetShaders(const Path& vertex, const Path& fragment);
-	void Draw(model::ParticleEffect const& particleEffect);
+	void SetShaders(const Path& vertex, const Path& fragment, IRenderer& renderer);
+	void Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer);
 	model::IParticleUpdater* GetParticleUpdater(const Path& path);
 private:
 	std::map<Path, ParticleModel> m_models;
-	IRenderer & m_renderer;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::vector<CVector3f> m_vertexBuffer;
 	std::vector<CVector2f> m_texCoordBuffer2;

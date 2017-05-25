@@ -22,7 +22,7 @@ void UICheckBox::Draw(view::IRenderer& renderer) const
 	renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
 	}
 	if (m_invalidated)
 	{
@@ -31,14 +31,14 @@ void UICheckBox::Draw(view::IRenderer& renderer) const
 			auto& theme = m_theme->checkbox;
 			float* texCoords = m_state ? theme.checkedTexCoord : theme.texCoord;
 			int size = static_cast<int>(GetHeight() * theme.checkboxSizeCoeff);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+			renderer.RenderArrays(RenderMode::TriangleStrip,
 				{ CVector2i(0, 0), { 0, size }, { size, 0 }, { size, size } },
 				{ CVector2f(texCoords), { texCoords[0], texCoords[3] }, { texCoords[2], texCoords[1] }, { texCoords[2], texCoords[3] } });
 			PrintText(renderer, m_textWriter, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text, m_scale);
 		}, *m_cache, GetWidth(), GetHeight());
 	}
 	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(RenderMode::TriangleStrip,
 		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
 		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
 	UIElement::Draw(renderer);

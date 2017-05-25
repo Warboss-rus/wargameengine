@@ -2,22 +2,23 @@
 #include "IOpenGLRenderer.h"
 #include "ShaderManagerLegacyGL.h"
 
+using wargameEngine::view::IVertexBuffer;
+using wargameEngine::view::ICachedTexture;
+using wargameEngine::view::IShaderManager;
+
 class CLegacyGLRenderer : public IOpenGLRenderer
 {
 public:
-	using IVertexBuffer = wargameEngine::view::IVertexBuffer;
-	using ICachedTexture = wargameEngine::view::ICachedTexture;
 	using TextureMipMaps = wargameEngine::view::TextureMipMaps;
 
 	CLegacyGLRenderer();
 
 	virtual void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) override;
 	virtual void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) override;
-	virtual void DrawIndexes(wargameEngine::view::IVertexBuffer& buffer, size_t begin, size_t count) override;
-	virtual void DrawAll(IVertexBuffer& buffer, size_t count) override;
-	virtual void DrawInstanced(IVertexBuffer& buffer, size_t size, size_t instanceCount) override;
+	virtual void DrawIndexed(wargameEngine::view::IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) override;
+	virtual void Draw(IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) override;
 	virtual void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
-	virtual void ForceBindVertexBuffer(IVertexBuffer& buffer) override;
+	virtual void AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance = false) override;
 
 	virtual void PushMatrix() override;
 	virtual void PopMatrix() override;
@@ -27,17 +28,16 @@ public:
 	virtual void Rotate(const CVector3f& rotations) override;
 	virtual void Scale(float scale) override;
 	virtual const float* GetViewMatrix() const override;
+	virtual const float* GetModelMatrix() const override;
+	virtual void SetModelMatrix(const float* matrix) override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
 	virtual void SetTexture(const wargameEngine::Path& texture, bool forceLoadNow = false, int flags = 0) override;
-	virtual void SetTexture(const wargameEngine::Path& texture, TextureSlot slot, int flags = 0) override;
-	virtual void SetTexture(const wargameEngine::Path& texture, const std::vector<wargameEngine::model::TeamColor> * teamcolor, int flags = 0) override;
-	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::eDiffuse) override;
-	virtual void UnbindTexture(TextureSlot slot = TextureSlot::eDiffuse) override;
+	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::Diffuse) override;
+	virtual void UnbindTexture(TextureSlot slot = TextureSlot::Diffuse) override;
 
 	virtual void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
-	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
 
 	virtual void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) override;
 	virtual void SetColor(const float * color) override;
@@ -59,7 +59,8 @@ public:
 	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
 	virtual float GetMaximumAnisotropyLevel() const override;
 	virtual const float* GetProjectionMatrix() const override;
-	virtual void EnableDepthTest(bool enable) override;
+	virtual void EnableDepthTest(bool read, bool write) override;
+	virtual void EnableColorWrite(bool rgb, bool alpha) override;
 	virtual void EnableBlending(bool enable) override;
 	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
 	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;

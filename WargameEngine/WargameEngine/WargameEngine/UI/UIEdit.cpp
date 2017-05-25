@@ -24,25 +24,25 @@ void UIEdit::Draw(view::IRenderer& renderer) const
 	renderer.Translate(GetX(), GetY(), 0);
 	if (!m_cache)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RENDER_TARGET);
+		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
 	}
 	if (m_invalidated)
 	{
 		renderer.RenderToTexture([this, &renderer]() {
 			renderer.UnbindTexture();
 			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
+			renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
 			renderer.SetColor(m_theme->textfieldColor);
 			auto& theme = m_theme->edit;
 			auto& textTheme = theme.text;
 			int borderSize = theme.borderSize;
-			renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
+			renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
 			int fonty = (GetHeight() + textTheme.fontSize) / 2;
 			if (IsFocused(nullptr))
 			{
 				int cursorpos = borderSize + m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_pos));
 				renderer.SetColor(0, 0, 0);
-				renderer.RenderArrays(RenderMode::LINES, { CVector2i(cursorpos, fonty), { cursorpos, fonty - static_cast<int>(textTheme.fontSize) } }, {});
+				renderer.RenderArrays(RenderMode::Lines, { CVector2i(cursorpos, fonty), { cursorpos, fonty - static_cast<int>(textTheme.fontSize) } }, {});
 			}
 			if (m_pos != m_beginSelection)
 			{
@@ -50,13 +50,13 @@ void UIEdit::Draw(view::IRenderer& renderer) const
 				int selectionBegin = m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_beginSelection));
 				int selectionEnd = m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_pos));
 				int fontHeight = m_textWriter.GetStringHeight(textTheme.font, textTheme.fontSize, m_text);
-				renderer.RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(borderSize + selectionBegin, fonty), { borderSize + selectionBegin, fonty - fontHeight }, { borderSize + selectionEnd, fonty }, { borderSize + selectionEnd, fonty - fontHeight } }, {});
+				renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize + selectionBegin, fonty), { borderSize + selectionBegin, fonty - fontHeight }, { borderSize + selectionEnd, fonty }, { borderSize + selectionEnd, fonty - fontHeight } }, {});
 			}
 			PrintText(renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme, m_scale);
 		}, *m_cache, GetWidth(), GetHeight());
 	}
 	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
+	renderer.RenderArrays(RenderMode::TriangleStrip,
 		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
 		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
 

@@ -231,7 +231,7 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (model name)");
 		Path model = args.GetPath(1);
-		view.GetModelManager().LoadIfNotExist(model);
+		view.PreloadModel(model);
 		return nullptr;
 	});
 
@@ -244,7 +244,7 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 			fragment = fileProvider.GetShaderAbsolutePath(args.GetPath(2));
 		if (n > 3)
 			throw std::runtime_error("up to 2 argument expected (vertex shader, fragment shader)");
-		view.GetParticleSystem().SetShaders(vertex, fragment);
+		view.GetParticleSystem().SetShaders(vertex, fragment, view.GetRenderer());
 		return nullptr;
 	});
 

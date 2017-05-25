@@ -9,6 +9,7 @@
 #include "Viewport.h"
 #include <memory>
 #include <string>
+#include "DrawableMesh.h"
 
 namespace wargameEngine
 {
@@ -70,17 +71,21 @@ public:
 	bool EnableVRMode(bool enable, bool mirrorToScreen = true);
 	void AddParticleEffect(const Path& effectPath, CVector3f const& position, float scale, size_t maxParticles = 1000u);
 	void SetSkyboxShaders(const Path& vertex, const Path& fragment);
+	void PreloadModel(const Path& model);
 
 private:
 	void DrawTable(bool shadowOnly = false);
 	void DrawUI();
 	void Update();
-	void DrawRuler();
-	void DrawObjects(bool shadowOnly);
+	void DrawRuler(IViewport& viewport, IViewHelper& renderer);
+	void CollectMeshes();
+	void SortMeshes();
+	void DrawMeshes(IViewHelper& renderer, Viewport& currentViewport, bool shadowOnly);
+	void RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewport &currentViewport, IViewHelper& renderer);
 	void DrawBoundingBox();
 	void InitLandscape();
 	void InitInput();
-	void DrawText3D(CVector3f const& pos, std::wstring const& text);
+	void DrawText3D(CVector3f const& pos, std::wstring const& text, IViewport& viewport, IViewHelper& renderer);
 	void WindowCoordsToWorldCoords(int windowX, int windowY, float& worldX, float& worldY, float worldZ = 0);
 	void WindowCoordsToWorldVector(int x, int y, CVector3f& start, CVector3f& end);
 	View(View const&) = delete;
@@ -108,9 +113,10 @@ private:
 	std::unique_ptr<SkyBox> m_skybox;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;
-	size_t m_tableBufferSize;
-	Viewport* m_currentViewport;
+	size_t m_tableBufferSize = 0;
 	std::chrono::high_resolution_clock::time_point m_lastFrameTime;
+	std::vector<DrawableMesh> m_meshesToDraw;
+	std::map<Path, std::pair<std::unique_ptr<IVertexBuffer>, size_t>> m_boundingCache;
 };
 }
 }

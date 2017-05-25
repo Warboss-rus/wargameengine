@@ -562,5 +562,8 @@
     <ClInclude Include="view\IWindow.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="view\DrawableMesh.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

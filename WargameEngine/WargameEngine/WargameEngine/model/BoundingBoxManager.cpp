@@ -67,6 +67,7 @@ void BoundingBoxManager::LoadBoundingFromFile(const Path& path)
 	}
 	iFile.close();
 	Bounding bounding = compound.items.size() == 1 ? compound.items[0] : Bounding(compound);
+	bounding.scale = scale;
 	m_boundings.emplace(std::make_pair(path, ModelInfo{ bounding, scale, rotation }));
 }
 

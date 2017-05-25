@@ -16,7 +16,9 @@ CMatrixManagerGLM::CMatrixManagerGLM()
 
 void CMatrixManagerGLM::InvalidateMatrices() const
 {
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
+	m_viewMatrixChanged = true;
+	m_projectionMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::PushMatrix()
@@ -29,41 +31,41 @@ void CMatrixManagerGLM::PopMatrix()
 {
 	m_modelMatrices.pop_back();
 	m_modelMatrix = &m_modelMatrices.back();
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::Translate(float dx, float dy, float dz)
 {
 	if (fabs(dx) < FLT_EPSILON && fabs(dy) < FLT_EPSILON && fabs(dz) < FLT_EPSILON) return;
 	*m_modelMatrix = glm::translate(*m_modelMatrix, glm::vec3(dx, dy, dz));
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::Scale(float scale)
 {
 	if (fabs(scale - 1.0f) < FLT_EPSILON) return;
 	*m_modelMatrix = glm::scale(*m_modelMatrix, glm::vec3(scale, scale, scale));
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::Rotate(float angle, const CVector3f& axis)
 {
 	if (fabs(angle) < FLT_EPSILON) return;
 	*m_modelMatrix = glm::rotate(*m_modelMatrix, glm::radians(angle), glm::make_vec3(axis.ptr()));
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
 }
 
 
 void CMatrixManagerGLM::Rotate(const CVector3f& rotations)
 {
+	if ((fabs(rotations.x) < FLT_EPSILON) && (fabs(rotations.y) < FLT_EPSILON) && (fabs(rotations.z) < FLT_EPSILON)) return;
 	*m_modelMatrix *= glm::yawPitchRoll(glm::radians(rotations.x), glm::radians(rotations.y), glm::radians(rotations.z));
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
 }
 
-const float* CMatrixManagerGLM::GetModelViewMatrix() const
+const float* CMatrixManagerGLM::GetModelMatrix() const
 {
-	m_modelView = m_viewMatrix * *m_modelMatrix;
-	return glm::value_ptr(m_modelView);
+	return glm::value_ptr(*m_modelMatrix);
 }
 
 const float* CMatrixManagerGLM::GetProjectionMatrix() const
@@ -76,11 +78,18 @@ const float* CMatrixManagerGLM::GetViewMatrix() const
 	return glm::value_ptr(m_viewMatrix);
 }
 
+void CMatrixManagerGLM::SetModelMatrix(const float* matrix)
+{
+	*m_modelMatrix = glm::make_mat4(matrix);
+	m_modelMatrixChanged = true;
+}
+
 void CMatrixManagerGLM::ResetModelView()
 {
 	*m_modelMatrix = glm::mat4();
 	m_viewMatrix = glm::mat4();
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
+	m_viewMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up, bool leftHanded)
@@ -94,7 +103,8 @@ void CMatrixManagerGLM::LookAt(CVector3f const& position, CVector3f const& direc
 		m_viewMatrix = glm::lookAtRH(glm::make_vec3(position.ptr()), glm::make_vec3(direction.ptr()), glm::make_vec3(up.ptr()));
 	}
 	*m_modelMatrix = glm::mat4();
-	m_matricesChanged = true;
+	m_modelMatrixChanged = true;
+	m_viewMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::WindowCoordsToWorldVector(int x, int y, float viewportX, float viewportY, float viewportWidth, float viewportHeight, const float * viewMatrix, const float * projectionMatrix, CVector3f & start, CVector3f & end) const
@@ -130,23 +140,23 @@ void CMatrixManagerGLM::SetUpViewport(unsigned int viewportWidth, unsigned int v
 	{
 		m_projectionMatrix = glm::perspectiveFovRH<float>(glm::radians(viewingAngle), static_cast<float>(viewportWidth), static_cast<float>(viewportHeight), nearPane, farPane);
 	}
-	m_matricesChanged = true;
+	m_projectionMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::UpdateMatrices(wargameEngine::view::IShaderManager & shaderManager) const
 {
-	if (!m_matricesChanged) return;
+	if (!m_modelMatrixChanged && !m_viewMatrixChanged && !m_projectionMatrixChanged) return;
 	static const std::string mvpMatrixKey = "mvp_matrix";
 	static const std::string view_matrix_key = "view_matrix";
 	static const std::string model_matrix_key = "model_matrix";
 	static const std::string proj_matrix_key = "proj_matrix";
-	shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
-	shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
+	if (m_modelMatrixChanged) shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
+	if (m_projectionMatrixChanged) shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
 	if (m_vrViewMatrices.empty())
 	{
 		glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
 		shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
-		shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
+		if (m_viewMatrixChanged) shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
 	}
 	else
 	{
@@ -159,9 +169,11 @@ void CMatrixManagerGLM::UpdateMatrices(wargameEngine::view::IShaderManager & sha
 
 		}
 		shaderManager.SetUniformValue(mvpMatrixKey, 16, mvpMatrices.size(), glm::value_ptr(mvpMatrices.front()));
-		shaderManager.SetUniformValue(view_matrix_key, 16, viewMatrices.size(), glm::value_ptr(viewMatrices.front()));
+		if (m_viewMatrixChanged) shaderManager.SetUniformValue(view_matrix_key, 16, viewMatrices.size(), glm::value_ptr(viewMatrices.front()));
 	}
-	m_matricesChanged = false;
+	m_modelMatrixChanged = false;
+	m_viewMatrixChanged = false;
+	m_projectionMatrixChanged = false;
 }
 
 void CMatrixManagerGLM::SaveMatrices()
@@ -182,14 +194,14 @@ void CMatrixManagerGLM::RestoreMatrices()
 void CMatrixManagerGLM::SetOrthographicProjection(float left, float right, float bottom, float top)
 {
 	m_projectionMatrix = glm::ortho(left, right, bottom, top);
-	m_matricesChanged = true;
+	m_projectionMatrixChanged = true;
 	m_2dMode = true;
 }
 
 void CMatrixManagerGLM::SetProjectionMatrix(const float * matrix)
 {
 	m_projectionMatrix = glm::make_mat4(matrix);
-	m_matricesChanged = true;
+	m_projectionMatrixChanged = true;
 }
 
 void CMatrixManagerGLM::SetVrViewMatrices(std::vector<const float*> const& matrices)

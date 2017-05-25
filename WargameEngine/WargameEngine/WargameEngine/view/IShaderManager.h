@@ -44,13 +44,13 @@ public:
 
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const = 0;
 
-	enum class TYPE
+	enum class Format
 	{
-		FLOAT32,
-		SINT32,
-		UINT32
+		Float32,
+		SInt32,
+		UInt32
 	};
-	virtual void SetVertexAttribute(const std::string& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, TYPE type, bool perInstance = false, size_t offset = 0) const = 0;
+	virtual void SetVertexAttribute(const std::string& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, Format type, bool perInstance = false, size_t offset = 0) const = 0;
 };
 }
 }
