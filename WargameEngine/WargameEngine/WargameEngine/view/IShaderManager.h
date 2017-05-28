@@ -51,6 +51,9 @@ public:
 		UInt32
 	};
 	virtual void SetVertexAttribute(const std::string& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, Format type, bool perInstance = false, size_t offset = 0) const = 0;
+
+	virtual bool NeedsMVPMatrix() const = 0;
+	virtual void SetMatrices(const float* model = nullptr, const float* view = nullptr, const float* projection = nullptr, const float* mvp = nullptr, size_t multiviewCount = 1) = 0;
 };
 }
 }

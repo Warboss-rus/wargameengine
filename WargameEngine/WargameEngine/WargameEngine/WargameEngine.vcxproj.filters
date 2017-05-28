@@ -233,6 +233,9 @@
     <ClCompile Include="view\Viewport.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="view\PerfomanceMeter.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -563,6 +566,9 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\DrawableMesh.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\PerfomanceMeter.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>

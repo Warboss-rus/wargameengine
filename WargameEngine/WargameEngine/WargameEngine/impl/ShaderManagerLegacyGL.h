@@ -27,6 +27,9 @@ public:
 	virtual std::unique_ptr<wargameEngine::view::IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
 	virtual void SetVertexAttribute(std::string const& attribute, wargameEngine::view::IVertexAttribCache const& cache, int elementSize, size_t count, Format type, bool perInstance = false, size_t offset = 0) const override;
+
+	virtual bool NeedsMVPMatrix() const override;
+	virtual void SetMatrices(const float* model = nullptr, const float* view = nullptr, const float* projection = nullptr, const float* mvp = nullptr, size_t multiviewCount = 1);
 private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	void NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader);

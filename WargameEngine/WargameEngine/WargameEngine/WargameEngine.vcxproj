@@ -265,6 +265,7 @@
     <ClCompile Include="Plugin.cpp" />
     <ClCompile Include="PluginManager.cpp" />
     <ClCompile Include="view\Image.cpp" />
+    <ClCompile Include="view\PerfomanceMeter.cpp" />
     <ClCompile Include="view\Ruler.cpp" />
     <ClCompile Include="controller\ScriptRegisterViewport.cpp" />
     <ClCompile Include="view\InputBase.cpp" />
@@ -302,6 +303,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="array_view.h" />
     <ClInclude Include="AsyncFileProvider.h" />
+    <ClInclude Include="view\PerfomanceMeter.h" />
     <ClInclude Include="view\DrawableMesh.h" />
     <ClInclude Include="INetSocket.h" />
     <ClInclude Include="IScriptHandler.h" />

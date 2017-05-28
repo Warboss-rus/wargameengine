@@ -330,6 +330,16 @@ void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IV
 	glCache.UnBind();
 }
 
+bool CShaderManagerLegacyGL::NeedsMVPMatrix() const
+{
+	return false;
+}
+
+void CShaderManagerLegacyGL::SetMatrices(const float*, const float*, const float*, const float* mvp, size_t multiviewCount)
+{
+	//Not used with legacy GL
+}
+
 void CShaderManagerLegacyGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* defaultValue) const
 {
 	int index = glGetAttribLocation(m_programs.back(), attribute.c_str());

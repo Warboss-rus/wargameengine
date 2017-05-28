@@ -52,5 +52,6 @@ private:
 	glm::mat4 m_savedViewMatrix;
 	glm::mat4 m_savedProjectionMatrix;
 	std::vector<glm::mat4> m_vrViewMatrices;
+	mutable glm::mat4 m_vpMatrix;
 	bool m_2dMode = false;
 };

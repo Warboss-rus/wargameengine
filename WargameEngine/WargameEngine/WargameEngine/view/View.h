@@ -115,7 +115,6 @@ private:
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;
 	size_t m_tableBufferSize = 0;
-	std::chrono::high_resolution_clock::time_point m_lastFrameTime;
 	std::vector<DrawableMesh> m_meshesToDraw;
 	std::vector<DrawableMesh> m_nonDepthTestMeshes;
 	std::unordered_map<Path, std::pair<std::unique_ptr<IVertexBuffer>, size_t>> m_boundingCache;

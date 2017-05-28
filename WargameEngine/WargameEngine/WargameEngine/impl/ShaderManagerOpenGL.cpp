@@ -46,6 +46,10 @@ constexpr char MATERIAL_AMBIENT_KEY[] = "material.ambient";
 constexpr char MATERIAL_DIFFUSE_KEY[] = "material.diffuse";
 constexpr char MATERIAL_SPECULAR_KEY[] = "material.specular";
 constexpr char MATERIAL_SHINENESS_KEY[] = "material.shininess";
+constexpr char MVP_MATRIX_KEY[] = "mvp_matrix";
+constexpr char VIEW_MATRIX_KEY[] = "view_matrix";
+constexpr char MODEL_MATRIX_KEY[] = "model_matrix";
+constexpr char PROJ_MATRIX_KEY[] = "proj_matrix";
 
 class COpenGLShaderProgram : public IShaderProgram
 {
@@ -58,6 +62,10 @@ public:
 	int materialDiffuseLocation = -1;
 	int materialSpecularLocation = -1;
 	int materialShinenessLocation = -1;
+	int modelMatrixLocation = -1;
+	int viewMatrixLocation = -1;
+	int projectionMatrixLocation = -1;
+	int mvpMatrixLocation = -1;
 };
 
 class COpenGLVertexAttribCache : public IVertexAttribCache
@@ -191,6 +199,10 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(const Path& ver
 	program->materialDiffuseLocation = glGetUniformLocation(program->program, MATERIAL_DIFFUSE_KEY);
 	program->materialSpecularLocation = glGetUniformLocation(program->program, MATERIAL_SPECULAR_KEY);
 	program->materialShinenessLocation = glGetUniformLocation(program->program, MATERIAL_SHINENESS_KEY);
+	program->modelMatrixLocation = glGetUniformLocation(program->program, MODEL_MATRIX_KEY);
+	program->viewMatrixLocation = glGetUniformLocation(program->program, VIEW_MATRIX_KEY);
+	program->projectionMatrixLocation = glGetUniformLocation(program->program, PROJ_MATRIX_KEY);
+	program->mvpMatrixLocation = glGetUniformLocation(program->program, MVP_MATRIX_KEY);
 
 	return std::move(program);
 }
@@ -450,6 +462,33 @@ void CShaderManagerOpenGL::SetMaterial(const float* ambient, const float* diffus
 	glUniform4fv(glProgram.materialDiffuseLocation, 1, diffuse);
 	glUniform4fv(glProgram.materialSpecularLocation, 1, specular);
 	glUniform1f(glProgram.materialShinenessLocation, shininess);
+}
+
+bool CShaderManagerOpenGL::NeedsMVPMatrix() const
+{
+	auto& glProgram = reinterpret_cast<const COpenGLShaderProgram&>(*m_programs.back());
+	return glProgram.mvpMatrixLocation != -1;
+}
+
+void CShaderManagerOpenGL::SetMatrices(const float* model, const float* view, const float* projection, const float* mvp, size_t multiviewCount)
+{
+	auto& glProgram = reinterpret_cast<const COpenGLShaderProgram&>(*m_programs.back());
+	if (model && glProgram.modelMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.modelMatrixLocation, 1, false, model);
+	}
+	if (view && glProgram.viewMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.viewMatrixLocation, static_cast<GLsizei>(multiviewCount), false, view);
+	}
+	if (projection && glProgram.projectionMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.projectionMatrixLocation, 1, false, view);
+	}
+	if (mvp && glProgram.mvpMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.mvpMatrixLocation, static_cast<GLsizei>(multiviewCount), false, mvp);
+	}
 }
 
 void CShaderManagerOpenGL::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const

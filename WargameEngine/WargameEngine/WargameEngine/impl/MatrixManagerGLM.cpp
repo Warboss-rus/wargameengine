@@ -7,6 +7,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include "../view/IShaderManager.h"
 #include <float.h>
+#include <algorithm>
 
 CMatrixManagerGLM::CMatrixManagerGLM()
 {
@@ -146,30 +147,40 @@ void CMatrixManagerGLM::SetUpViewport(unsigned int viewportWidth, unsigned int v
 void CMatrixManagerGLM::UpdateMatrices(wargameEngine::view::IShaderManager & shaderManager) const
 {
 	if (!m_modelMatrixChanged && !m_viewMatrixChanged && !m_projectionMatrixChanged) return;
-	static const std::string mvpMatrixKey = "mvp_matrix";
-	static const std::string view_matrix_key = "view_matrix";
-	static const std::string model_matrix_key = "model_matrix";
-	static const std::string proj_matrix_key = "proj_matrix";
-	if (m_modelMatrixChanged) shaderManager.SetUniformValue(model_matrix_key, 16, 1, glm::value_ptr(*m_modelMatrix));
-	if (m_projectionMatrixChanged) shaderManager.SetUniformValue(proj_matrix_key, 16, 1, glm::value_ptr(m_projectionMatrix));
+	const float* model = m_modelMatrixChanged ? glm::value_ptr(*m_modelMatrix) : nullptr;
+	const float* projection = m_projectionMatrixChanged ? glm::value_ptr(m_projectionMatrix) : nullptr;
+	const float* view = nullptr;
+	const float* mvp = nullptr;
 	if (m_vrViewMatrices.empty())
 	{
-		glm::mat4 m = m_projectionMatrix * m_viewMatrix * *m_modelMatrix;
-		shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, glm::value_ptr(m));
-		if (m_viewMatrixChanged) shaderManager.SetUniformValue(view_matrix_key, 16, 1, glm::value_ptr(m_viewMatrix));
+		view = m_viewMatrixChanged ? glm::value_ptr(m_viewMatrix) : nullptr;
+		glm::mat4 mvpMat;
+		if (shaderManager.NeedsMVPMatrix())
+		{
+			if (m_projectionMatrixChanged || m_viewMatrixChanged)
+			{
+				m_vpMatrix = m_projectionMatrix * m_viewMatrix;
+			}
+			mvpMat = m_vpMatrix * *m_modelMatrix;
+			mvp = glm::value_ptr(mvpMat);
+		}
+		shaderManager.SetMatrices(model, view, projection, mvp, 1);
 	}
 	else
 	{
-		std::vector<glm::mat4> mvpMatrices;
-		std::vector<glm::mat4> viewMatrices;
+		const bool updateMvp = shaderManager.NeedsMVPMatrix();
+		static std::vector<glm::mat4> mvpMatrices;
+		static std::vector<glm::mat4> viewMatrices;
+		mvpMatrices.clear();
+		viewMatrices.clear();
 		for (auto& mat : m_vrViewMatrices)
 		{
-			viewMatrices.push_back(m_2dMode ? m_viewMatrix : m_viewMatrix * mat);
-			mvpMatrices.push_back(m_projectionMatrix * viewMatrices.back() * *m_modelMatrix);
-
+			if(m_viewMatrixChanged) viewMatrices.push_back(m_2dMode ? m_viewMatrix : m_viewMatrix * mat);
+			if(updateMvp) mvpMatrices.push_back(m_projectionMatrix * viewMatrices.back() * *m_modelMatrix);
 		}
-		shaderManager.SetUniformValue(mvpMatrixKey, 16, mvpMatrices.size(), glm::value_ptr(mvpMatrices.front()));
-		if (m_viewMatrixChanged) shaderManager.SetUniformValue(view_matrix_key, 16, viewMatrices.size(), glm::value_ptr(viewMatrices.front()));
+		view = !viewMatrices.empty() ? glm::value_ptr(viewMatrices.front()) : nullptr;
+		mvp = !mvpMatrices.empty() ? glm::value_ptr(mvpMatrices.front()) : nullptr;
+		shaderManager.SetMatrices(model, view, projection, mvp, std::max<size_t>({ viewMatrices.size(), mvpMatrices.size(), 1 }));
 	}
 	m_modelMatrixChanged = false;
 	m_viewMatrixChanged = false;

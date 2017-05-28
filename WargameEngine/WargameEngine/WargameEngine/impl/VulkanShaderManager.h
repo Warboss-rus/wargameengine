@@ -86,6 +86,9 @@ public:
 
 	virtual std::unique_ptr<IVertexAttribCache> CreateVertexAttribCache(size_t size, const void* value) const override;
 
+	bool NeedsMVPMatrix() const override;
+	void SetMatrices(const float* model = nullptr, const float* view = nullptr, const float* projection = nullptr, const float* mvp = nullptr, size_t multiviewCount = 1);
+
 	void DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler);
 	void CommitUniforms(CVulkanSmartBuffer & buffer, bool force);
 	const CVulkanShaderProgram* GetActiveProgram() const { return m_programsStack.back(); }

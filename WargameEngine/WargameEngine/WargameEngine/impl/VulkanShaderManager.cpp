@@ -201,6 +201,19 @@ std::unique_ptr<IVertexAttribCache> CVulkanShaderManager::CreateVertexAttribCach
 	return std::move(result);
 }
 
+bool CVulkanShaderManager::NeedsMVPMatrix() const
+{
+	return true;
+}
+
+void CVulkanShaderManager::SetMatrices(const float* model /*= nullptr*/, const float* view /*= nullptr*/, const float* projection /*= nullptr*/, const float* mvp /*= nullptr*/, size_t multiviewCount /*= 1*/)
+{
+	SetUniformValue("model_matrix", 16, 1, model);
+	SetUniformValue("proj_matrix", 16, 1, projection);
+	SetUniformValue("view_matrix", 16, multiviewCount, view);
+	SetUniformValue("mvp_matrix", 16, multiviewCount, mvp);
+}
+
 void CVulkanShaderManager::DoOnProgramChange(std::function<void(const CVulkanShaderProgram&)> const& handler)
 {
 	m_onProgramChange = handler;

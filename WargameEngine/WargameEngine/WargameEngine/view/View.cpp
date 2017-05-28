@@ -13,6 +13,7 @@
 #include "ITextWriter.h"
 #include "ISoundPlayer.h"
 #include "Material.h"
+#include "PerfomanceMeter.h"
 
 using namespace std;
 using namespace placeholders;
@@ -290,6 +291,7 @@ void View::DrawBoundingBox()
 
 void View::Update()
 {
+	PerfomanceMeter::Reset();
 	m_threadPool.Update();
 	m_controller->Update();
 	auto& defaultCamera = m_viewports.front().GetCamera();
@@ -324,11 +326,14 @@ void View::Update()
 		m_viewHelper.EnableDepthTest(true, true);
 		viewport.Unbind();
 	}
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	auto fps = 1.0f / std::chrono::duration<float>(currentTime - m_lastFrameTime).count();
-	m_lastFrameTime = currentTime;
-	m_viewHelper.DrawIn2D([this, fps] {
-		m_textWriter.PrintText(m_renderer, 1, 10, "times.ttf", 12, std::to_wstring(static_cast<int>(fps)));
+	m_viewHelper.DrawIn2D([this] {
+		PerfomanceMeter::ReportFrameEnd();
+		m_renderer.SetColor(255, 255, 0);
+		m_textWriter.PrintText(m_renderer, 1, 16, "times.ttf", 16, L"FPS" + std::to_wstring(PerfomanceMeter::GetFps()));
+		m_textWriter.PrintText(m_renderer, 1, 34, "times.ttf", 16, L"V" + std::to_wstring(PerfomanceMeter::GetVerticesDrawn()));
+		m_textWriter.PrintText(m_renderer, 1, 52, "times.ttf", 16, L"P" + std::to_wstring(PerfomanceMeter::GetPolygonsDrawn()));
+		m_textWriter.PrintText(m_renderer, 1, 70, "times.ttf", 16, L"DC" + std::to_wstring(PerfomanceMeter::GetDrawCalls()));
+		m_renderer.SetColor(0, 0, 0);
 	});
 }
 
@@ -855,7 +860,7 @@ void View::RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewpo
 			continue;
 		auto& query = currentViewport.GetOcclusionQuery(object);
 		auto it = m_boundingCache.find(object->GetPathToModel());
-		if(it == m_boundingCache.end())
+		if (it == m_boundingCache.end())
 		{
 			auto bounding = m_boundingManager.GetBounding(object->GetPathToModel());
 			auto vertices = GetBoundingVertices(bounding);
@@ -873,14 +878,16 @@ void View::RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewpo
 	renderer.EnableColorWrite(true, true);
 }
 
+bool MeshComparator(const DrawableMesh& first, const DrawableMesh& second) {
+	return std::tie(first.shader, first.texturePtr, first.buffer, first.material)
+		< std::tie(second.shader, second.texturePtr, second.buffer, second.material);
+};
+
 void View::SortMeshes()
 {
-	auto meshComparator = [](const DrawableMesh& first, const DrawableMesh& second) {
-		return std::tie(first.shader, first.texturePtr, first.material, first.buffer)
-			< std::tie(second.shader, second.texturePtr, second.material, second.buffer);
-	};
-	std::sort(m_meshesToDraw.begin(), m_meshesToDraw.end(), meshComparator);
-	std::sort(m_nonDepthTestMeshes.begin(), m_nonDepthTestMeshes.end(), meshComparator);
+	
+	std::sort(m_meshesToDraw.begin(), m_meshesToDraw.end(), MeshComparator);
+	std::sort(m_nonDepthTestMeshes.begin(), m_nonDepthTestMeshes.end(), MeshComparator);
 
 }
 

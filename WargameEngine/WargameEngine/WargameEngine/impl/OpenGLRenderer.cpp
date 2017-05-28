@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include "gl.h"
 #include <unordered_map>
+#include "../view/PerfomanceMeter.h"
 
 using namespace std;
 using namespace wargameEngine;
@@ -304,6 +305,7 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const&
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 	m_shaderManager.SetInputAttributes(vertices.data(), normals.empty() ? nullptr : normals.data(), texCoords.empty() ? nullptr : (float*)texCoords.data(), vertices.size(), 3);
 	glDrawArrays(RenderModeToGlEnum(mode), 0, static_cast<GLsizei>(vertices.size()));
+	PerfomanceMeter::ReportDraw(vertices.size(), mode);
 }
 
 void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
@@ -319,6 +321,7 @@ void COpenGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const&
 	}
 	m_shaderManager.SetInputAttributes(fvalues.data(), nullptr, texCoords.empty() ? nullptr : (float*)texCoords.data(), vertices.size(), 2);
 	glDrawArrays(RenderModeToGlEnum(mode), 0, static_cast<GLsizei>(vertices.size()));
+	PerfomanceMeter::ReportDraw(vertices.size(), mode);
 }
 
 void COpenGLRenderer::DrawIndexed(IVertexBuffer& vertexBuffer, size_t count, size_t begin, size_t instances)
@@ -333,6 +336,7 @@ void COpenGLRenderer::DrawIndexed(IVertexBuffer& vertexBuffer, size_t count, siz
 	{
 		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
 	}
+	PerfomanceMeter::ReportDraw(instances > 1 ? instances * count : count, RenderMode::Triangles);
 }
 
 void COpenGLRenderer::Draw(IVertexBuffer& vertexBuffer, size_t count, size_t begin, size_t instances)
@@ -347,6 +351,7 @@ void COpenGLRenderer::Draw(IVertexBuffer& vertexBuffer, size_t count, size_t beg
 	{
 		glDrawArrays(GL_TRIANGLES, static_cast<GLsizei>(begin), static_cast<GLsizei>(count));
 	}
+	PerfomanceMeter::ReportDraw(instances > 1 ? instances * count : count, RenderMode::Triangles);
 }
 
 void COpenGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)

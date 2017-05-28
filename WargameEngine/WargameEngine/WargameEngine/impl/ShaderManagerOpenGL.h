@@ -36,6 +36,9 @@ public:
 	void SetInputAttributes(const wargameEngine::view::IVertexAttribCache& cache, size_t vertexOffset, size_t normalOffset, size_t texCoordOffset, size_t stride);
 	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess);
 
+	bool NeedsMVPMatrix() const override;
+	void SetMatrices(const float* model = nullptr, const float* view = nullptr, const float* projection = nullptr, const float* mvp = nullptr, size_t multiviewCount = 1);
+
 private:
 	struct ShaderProgramCache
 	{

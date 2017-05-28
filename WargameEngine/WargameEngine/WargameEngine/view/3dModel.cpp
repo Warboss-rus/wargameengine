@@ -63,7 +63,7 @@ void C3DModel::GetModelMeshes(IRenderer& renderer, TextureManager& textureManage
 		}
 		Material* material = mesh.material;
 		ICachedTexture* texture = GetTexturePtr(material, replaceTextures, textureManager, teamcolor);
-		meshesVec.push_back(DrawableMesh{ nullptr, texture, material, vertexBuffer, modelMatrix, tempBuffer, skeleton, mesh.begin, mesh.end - mesh.begin, indexed });
+		meshesVec.emplace_back(DrawableMesh{ nullptr, texture, material, vertexBuffer, modelMatrix, tempBuffer, skeleton, mesh.begin, mesh.end - mesh.begin, indexed });
 	}
 }
 
