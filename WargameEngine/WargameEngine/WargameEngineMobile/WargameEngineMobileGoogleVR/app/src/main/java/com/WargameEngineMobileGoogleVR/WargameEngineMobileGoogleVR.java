@@ -6,7 +6,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
-import android.os.Vibrator;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,12 +13,13 @@ import android.view.InputDevice;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 import android.view.ScaleGestureDetector;
+import org.fmod.FMOD;
 
 public class WargameEngineMobileGoogleVR extends Activity
 {
   static {
     System.loadLibrary("gvr");
-    System.loadLibrary("gvr_audio");
+    System.loadLibrary("fmod"); 
     System.loadLibrary("WargameEngineMobile");
   }
 
@@ -61,6 +61,8 @@ public class WargameEngineMobileGoogleVR extends Activity
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+	org.fmod.FMOD.init(this);
 
 	mScaleDetector = new ScaleGestureDetector(getApplicationContext(), new ScaleListener());
 
@@ -171,6 +173,7 @@ public class WargameEngineMobileGoogleVR extends Activity
     // Destruction order is important; shutting down the GvrLayout will detach
     // the GLSurfaceView and stop the GL thread, allowing safe shutdown of
     // native resources from the UI thread.
+	org.fmod.FMOD.close();
     gvrLayout.shutdown();
 	nativeDestroyRenderer(nativeApp);
     nativeApp = 0;

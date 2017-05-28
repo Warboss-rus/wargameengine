@@ -28,8 +28,8 @@ private:
 	void PlayList(sPlaylist & list);
 
 	FMOD::System* m_system;
-	std::map<std::wstring, FMOD::Sound*> m_sounds;
-	std::map<std::wstring, FMOD::Sound*> m_sounds3d;
+	std::map<wargameEngine::Path, FMOD::Sound*> m_sounds;
+	std::map<wargameEngine::Path, FMOD::Sound*> m_sounds3d;
 	std::map<std::wstring, sPlaylist> m_playlists;
 	std::map<std::wstring, FMOD::Channel*> m_channels;
 };

@@ -150,10 +150,10 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -168,7 +168,7 @@
       <PreprocessorDefinitions>TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -264,7 +264,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\WargameEngine\impl\GvrAudioPlayer.h" />
     <ClInclude Include="..\..\WargameEngine\impl\GvrGameWindow.h" />
     <ClInclude Include="..\..\WargameEngine\impl\MatrixManagerGLM.h" />
     <ClInclude Include="..\..\WargameEngine\impl\micropather.h" />
@@ -276,12 +275,11 @@
     <ClInclude Include="..\..\WargameEngine\impl\InputAndroid.h" />
     <ClInclude Include="..\..\WargameEngine\impl\OpenGLESRenderer.h" />
     <ClInclude Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.h" />
-    <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.h" />
+    <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerFMod.h" />
     <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h" />
     <ClInclude Include="android_native_app_glue.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\WargameEngine\impl\GvrAudioPlayer.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\GvrGameWindow.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\MatrixManagerGLM.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\micropather.cpp" />
@@ -293,7 +291,7 @@
     <ClCompile Include="..\..\WargameEngine\impl\InputAndroid.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\OpenGLESRenderer.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\ShaderManagerOpenGLES.cpp" />
-    <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.cpp" />
+    <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerFMod.cpp" />
     <ClCompile Include="..\..\WargameEngine\impl\TextWriter.cpp" />
     <ClCompile Include="android_native_app_glue.c" />
     <ClCompile Include="main.cpp" />

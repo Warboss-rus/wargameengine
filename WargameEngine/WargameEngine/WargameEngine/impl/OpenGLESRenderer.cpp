@@ -464,7 +464,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void* dat
 	static const std::map<CachedTextureType, std::tuple<GLenum, GLenum, GLenum>> formatMap = {
 		{ CachedTextureType::RGBA, std::tuple<GLenum, GLenum, GLenum>{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
 		{ CachedTextureType::RenderTarget, std::tuple<GLenum, GLenum, GLenum>{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
-		{ CachedTextureType::Alpha, std::tuple<GLenum, GLenum, GLenum>{ GL_RED, GL_R8, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::Alpha, std::tuple<GLenum, GLenum, GLenum>{ GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE } },
 		{ CachedTextureType::Depth, std::tuple<GLenum, GLenum, GLenum>{ GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};
 	auto texture = std::make_unique<COpenGLESCachedTexture>();

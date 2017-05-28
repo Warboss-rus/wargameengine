@@ -44,6 +44,5 @@ repositories {
 dependencies {
 	compile 'com.google.vr:sdk-base:1.60.0'
     compile fileTree(dir: 'libs', include: ['*.jar'])
-	compile 'com.google.vr:sdk-audio:1.60.0'
     $(AarDependencies)
 }

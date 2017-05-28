@@ -175,7 +175,7 @@ void CMatrixManagerGLM::UpdateMatrices(wargameEngine::view::IShaderManager & sha
 		viewMatrices.clear();
 		for (auto& mat : m_vrViewMatrices)
 		{
-			if(m_viewMatrixChanged) viewMatrices.push_back(m_2dMode ? m_viewMatrix : m_viewMatrix * mat);
+			viewMatrices.push_back(m_2dMode ? m_viewMatrix : m_viewMatrix * mat);
 			if(updateMvp) mvpMatrices.push_back(m_projectionMatrix * viewMatrices.back() * *m_modelMatrix);
 		}
 		view = !viewMatrices.empty() ? glm::value_ptr(viewMatrices.front()) : nullptr;

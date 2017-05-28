@@ -12,7 +12,7 @@
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
 #include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
 #include "..\..\WargameEngine\impl\GvrGameWindow.h"
-#include "..\..\WargameEngine\impl\GvrAudioPlayer.h"
+#include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
 #include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
 
 using namespace wargameEngine;
@@ -29,7 +29,7 @@ struct NativeAppJni
 	Module module;
 	std::unique_ptr<Application> app;
 	CGvrGameWindow * window;
-	NativeAppJni(gvr_context* gvr_context, std::unique_ptr<gvr::AudioApi> gvr_audio_api)
+	NativeAppJni(gvr_context* gvr_context)
 	{
 		const std::string storage = getenv("EXTERNAL_STORAGE");
 		module = Module(storage + "/WargameEngine/test.module");
@@ -42,7 +42,7 @@ struct NativeAppJni
 		}
 		window = new CGvrGameWindow(gvr_context);
 		context.window.reset(window);
-		context.soundPlayer = std::make_unique<CGvrAudioPlayer>(std::move(gvr_audio_api));
+		context.soundPlayer = std::make_unique<CSoundPlayerFMod>();
 		context.textWriter = std::make_unique<CTextWriter>();
 		context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 		context.pathFinder = std::make_unique<CPathfindingMicroPather>();
@@ -76,11 +76,7 @@ extern "C" {
 
 JNI_METHOD(jlong, nativeCreateRenderer)(JNIEnv *env, jclass clazz, jobject class_loader, jobject android_context, jlong native_gvr_api)
 {
-  std::unique_ptr<gvr::AudioApi> audio_context(new gvr::AudioApi);
-  audio_context->Init(env, android_context, class_loader,
-                      GVR_AUDIO_RENDERING_BINAURAL_HIGH_QUALITY);
-
-  return jptr(new NativeAppJni(reinterpret_cast<gvr_context *>(native_gvr_api), std::move(audio_context)));
+  return jptr(new NativeAppJni(reinterpret_cast<gvr_context *>(native_gvr_api)));
 }
 
 JNI_METHOD(void, nativeDestroyRenderer)(JNIEnv *env, jclass clazz, jlong nativeRenderer) 

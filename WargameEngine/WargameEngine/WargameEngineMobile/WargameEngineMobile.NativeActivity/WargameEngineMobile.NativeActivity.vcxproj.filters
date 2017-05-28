@@ -31,12 +31,6 @@
     <ClInclude Include="..\..\WargameEngine\impl\TextWriter.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\WargameEngine\impl\GvrAudioPlayer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\WargameEngine\impl\GvrGameWindow.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -44,6 +38,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\impl\PathfindingMicroPather.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\impl\SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -84,12 +81,6 @@
     <ClCompile Include="native_app_jni.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerOpenSLES.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\WargameEngine\impl\GvrAudioPlayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\WargameEngine\impl\GvrGameWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -97,6 +88,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\WargameEngine\impl\PathfindingMicroPather.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\impl\SoundPlayerFMod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
