@@ -1,6 +1,6 @@
 #pragma once
 #include "IUI.h"
-#include <map>
+#include <unordered_map>
 #include "..\view\IRenderer.h"
 
 namespace wargameEngine
@@ -75,7 +75,7 @@ protected:
 	void AddChild(std::string const& name, std::shared_ptr<IUIElement> const& element);
 	virtual bool PointIsOnElement(int x, int y) const;
 
-	std::map<std::string, std::shared_ptr<IUIElement>> m_children;
+	std::unordered_map<std::string, std::shared_ptr<IUIElement>> m_children;
 	int m_x;
 	int m_y;
 	int m_height;

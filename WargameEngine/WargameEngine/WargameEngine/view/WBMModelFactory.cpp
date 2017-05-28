@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cstring>
 #include <cwctype>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <vector>
 
@@ -28,7 +28,7 @@ std::unique_ptr<C3DModel> CWBMModelFactory::LoadModel(unsigned char* data, size_
 	std::vector<sAnimation> animations;
 
 	ReadMemoryStream stream(reinterpret_cast<char*>(data));
-	std::map<std::string, Material> materials;
+	std::unordered_map<std::string, Material> materials;
 	stream.ReadUnsigned(); //version
 	size_t size = stream.ReadSizeT();
 	vertices.resize(size / sizeof(CVector3f));

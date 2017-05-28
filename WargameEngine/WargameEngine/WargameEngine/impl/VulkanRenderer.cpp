@@ -295,6 +295,30 @@ private:
 	VkDeviceSize m_offsets[3] = { 0, 0, 0 };
 	std::unique_ptr<CVulkanVertexAttribCache> m_indexCache;
 };
+
+VkPrimitiveTopology RenderModeToPrimitiveTopology(IRenderer::RenderMode mode)
+{
+	switch (mode)
+	{
+	case IRenderer::RenderMode::LineLoop: return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+	case IRenderer::RenderMode::Lines: return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+	case IRenderer::RenderMode::Triangles: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	case IRenderer::RenderMode::TriangleStrip: return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+	default: throw std::runtime_error("Unknown render mode");
+	}
+}
+
+template<class T>
+void FreeResourceType(std::deque<std::pair<T, int>>& resources, VkDevice device, VKAPI_ATTR void(VKAPI_CALL* deleter)(VkDevice, T, const VkAllocationCallbacks*), bool force)
+{
+	for (auto& res : resources)
+		--res.second;
+	while (!resources.empty() && (resources.front().second == 0 || force))
+	{
+		deleter(device, resources.front().first, nullptr);
+		resources.pop_front();
+	}
+}
 }
 
 CVulkanRenderer::CVulkanRenderer(const std::vector<const char*>& instanceExtensions)
@@ -676,13 +700,7 @@ void CVulkanRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const&
 	memcpy(std::get<void*>(vertexInfo), vertices.data(), vertices.size() * sizeof(CVector3f));
 	memcpy(std::get<void*>(normalsInfo), normals.data(), normals.size() * sizeof(CVector3f));
 	memcpy(std::get<void*>(texCoordInfo), texCoords.data(), texCoords.size() * sizeof(CVector2f));
-	static const std::map<RenderMode, VkPrimitiveTopology> topologyMap = {
-		{ RenderMode::LineLoop, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP },
-		{ RenderMode::Lines, VK_PRIMITIVE_TOPOLOGY_LINE_LIST },
-		{ RenderMode::TriangleStrip, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP },
-		{ RenderMode::Triangles, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST },
-	};
-	BeforeDraw(topologyMap.at(mode));
+	BeforeDraw(RenderModeToPrimitiveTopology(mode));
 
 	const VkBuffer buffers[] = { std::get<0>(vertexInfo), std::get<0>(normalsInfo), std::get<0>(texCoordInfo) };
 	const VkDeviceSize offsets[] = { std::get<1>(vertexInfo), std::get<1>(normalsInfo), std::get<1>(texCoordInfo) };
@@ -804,7 +822,7 @@ void CVulkanRenderer::SetTexture(const Path& texture, bool forceLoadNow /*= fals
 {
 	if (forceLoadNow)
 	{
-		m_textureManager->LoadTextureNow(texture, nullptr, flags);
+		m_textureManager->LoadTextureNow(texture, flags);
 	}
 	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
@@ -1090,18 +1108,6 @@ void CVulkanRenderer::InitFramebuffer(bool useDepth)
 	const VkResult result = vkCreateFramebuffer(m_device, &framebuffer_create_info, nullptr, &buffer);
 	LOG_VK_RESULT(result, "Failed to create framebuffer");
 	m_activeCommandBuffer->SetFrameBuffer(buffer);
-}
-
-template<class T>
-void FreeResourceType(std::deque<std::pair<T, int>>& resources, VkDevice device, VKAPI_ATTR void(VKAPI_CALL* deleter)(VkDevice, T, const VkAllocationCallbacks*), bool force)
-{
-	for (auto& res : resources)
-		--res.second;
-	while (!resources.empty() && (resources.front().second == 0 || force))
-	{
-		deleter(device, resources.front().first, nullptr);
-		resources.pop_front();
-	}
 }
 
 void CVulkanRenderer::FreeResources(bool force)

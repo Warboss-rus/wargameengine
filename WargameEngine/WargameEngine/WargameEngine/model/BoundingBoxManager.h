@@ -1,6 +1,6 @@
 #pragma once
 #include "IBoundingBoxManager.h"
-#include <map>
+#include <unordered_map>
 
 namespace wargameEngine
 {
@@ -28,7 +28,7 @@ private:
 	ModelInfo GetModelInfo(const Path& path);
 
 	AsyncFileProvider& m_fileProvider;
-	std::map<Path, ModelInfo> m_boundings;
+	std::unordered_map<Path, ModelInfo> m_boundings;
 };
 }
 }

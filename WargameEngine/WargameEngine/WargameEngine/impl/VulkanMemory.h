@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <tuple>
-#include <map>
+#include <unordered_map>
 #include "../view/IShaderManager.h"
 #include "VulkanHelpers.h"
 #include <deque>
@@ -46,7 +46,7 @@ private:
 	struct MemoryChunk
 	{
 		VkDeviceMemory memory;
-		std::map<VkDeviceSize, VkDeviceSize> freeMemory;
+		std::unordered_map<VkDeviceSize, VkDeviceSize> freeMemory;
 		uint32_t memoryTypeBits;
 		VkMemoryPropertyFlags usageFlags;
 	};

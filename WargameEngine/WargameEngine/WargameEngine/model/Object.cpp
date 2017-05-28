@@ -61,7 +61,7 @@ void Object::SetSelectable(bool selectable)
 	m_isSelectable = selectable;
 }
 
-std::map<std::wstring, std::wstring> const& Object::GetAllProperties() const
+std::unordered_map<std::wstring, std::wstring> const& Object::GetAllProperties() const
 {
 	return m_properties;
 }
@@ -157,7 +157,7 @@ void Object::ReplaceTexture(const Path& oldTexture, const Path& newTexture)
 	}
 }
 
-std::map<Path, Path> const& Object::GetReplaceTextures() const
+std::unordered_map<Path, Path> const& Object::GetReplaceTextures() const
 {
 	return m_replaceTextures;
 }

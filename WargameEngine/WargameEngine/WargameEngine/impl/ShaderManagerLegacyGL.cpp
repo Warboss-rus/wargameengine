@@ -74,6 +74,16 @@ GLuint CompileShaderFromFile(const Path& path, GLuint program, GLenum type)
 	iFile.close();
 	return CompileShader(shaderText, program, type);
 }
+GLenum FormatToGLEnum(IShaderManager::Format format)
+{
+	switch (format)
+	{
+	case IShaderManager::Format::Float32: return GL_FLOAT;
+	case IShaderManager::Format::SInt32: return GL_INT;
+	case IShaderManager::Format::UInt32: return GL_UNSIGNED_INT;
+	default: throw std::runtime_error("Unknown format");
+	}
+}
 }
 
 CShaderManagerLegacyGL::CShaderManagerLegacyGL()
@@ -316,12 +326,7 @@ void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IV
 {
 	auto& glCache = reinterpret_cast<CLegacyGLVertexAttribCache const&>(cache);
 	glCache.Bind();
-	std::map<Format, GLenum> typeMap = {
-		{ Format::Float32, GL_FLOAT },
-		{ Format::SInt32, GL_INT },
-		{ Format::UInt32, GL_UNSIGNED_INT },
-	};
-	SetVertexAttributeImpl(attribute, elementSize, count, (void*)offset, perInstance, typeMap.at(type));
+	SetVertexAttributeImpl(attribute, elementSize, count, (void*)offset, perInstance, FormatToGLEnum(type));
 	glCache.UnBind();
 }
 

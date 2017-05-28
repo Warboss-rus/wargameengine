@@ -3,7 +3,6 @@
 #include "../rapidxml/rapidxml.hpp"
 #include <fstream>
 #include <limits.h>
-#include <map>
 #include <string.h>
 #define _USE_MATH_DEFINES
 #include <algorithm>

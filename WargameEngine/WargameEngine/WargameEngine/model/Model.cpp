@@ -112,11 +112,10 @@ void Model::SetProperty(std::wstring const& key, std::wstring const& value)
 	m_properties[key] = value;
 }
 
-std::map<std::wstring, std::wstring> const&  Model::GetAllProperties() const
+std::unordered_map<std::wstring, std::wstring> const&  Model::GetAllProperties() const
 {
 	return m_properties;
 }
-
 
 void Model::AddProjectile(Projectile const& projectile)
 {

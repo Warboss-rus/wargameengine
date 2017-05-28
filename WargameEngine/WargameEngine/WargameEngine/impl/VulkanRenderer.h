@@ -4,7 +4,6 @@
 #include "VulkanHelpers.h"
 #include "VulkanShaderManager.h"
 #include <deque>
-#include <map>
 #include <vulkan/vulkan.h>
 #include "VulkanPipelineManager.h"
 

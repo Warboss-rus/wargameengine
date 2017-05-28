@@ -114,7 +114,7 @@ void CLegacyGLRenderer::SetTexture(const Path& texture, bool forceLoadNow, int f
 {
 	if (forceLoadNow)
 	{
-		m_textureManager->LoadTextureNow(texture, nullptr, flags);
+		m_textureManager->LoadTextureNow(texture, flags);
 	}
 	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }

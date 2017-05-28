@@ -46,7 +46,7 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 }
 
 void C3DModel::GetModelMeshes(IRenderer& renderer, TextureManager& textureManager, std::vector<DrawableMesh>& meshesVec, const std::set<std::string>* hideMeshes,
-	IVertexBuffer* vertexBuffer, const std::vector<model::TeamColor>* teamcolor, const std::map<Path, Path>* replaceTextures, 
+	IVertexBuffer* vertexBuffer, const std::vector<model::TeamColor>* teamcolor, const std::unordered_map<Path, Path>* replaceTextures, 
 	const std::shared_ptr<std::vector<float>>& skeleton, const std::shared_ptr<TempMeshBuffer>& tempBuffer) const
 {
 	renderer.PushMatrix();
@@ -240,7 +240,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 //returns if animations is ended
 void C3DModel::GetMeshesSkinned(IRenderer & renderer, TextureManager& textureManager, std::vector<DrawableMesh>& meshesVec, const std::set<std::string> * hideMeshes,
 	std::string const& animationToPlay, model::AnimationLoop loop, float time, bool gpuSkinning, const std::vector<model::TeamColor> * teamcolor, 
-	const std::map<Path, Path> * replaceTextures)
+	const std::unordered_map<Path, Path> * replaceTextures)
 {
 	const auto jointMatrices = std::make_shared<std::vector<float>>(CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time));
 	if (gpuSkinning)
@@ -337,7 +337,7 @@ std::vector<std::string> C3DModel::GetAnimations() const
 	return result;
 }
 
-ICachedTexture* C3DModel::GetTexturePtr(Material* material, const std::map<Path, Path>* replaceTextures, TextureManager &textureManager, const std::vector<model::TeamColor>* teamcolor) const
+ICachedTexture* C3DModel::GetTexturePtr(Material* material, const std::unordered_map<Path, Path>* replaceTextures, TextureManager &textureManager, const std::vector<model::TeamColor>* teamcolor) const
 {
 	if (material && !material->texture.empty())
 	{

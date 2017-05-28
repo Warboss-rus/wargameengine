@@ -3,8 +3,8 @@
 #include "IViewHelper.h"
 #include "IViewport.h"
 #include "Matrix4.h"
-#include <map>
 #include <vector>
+#include <unordered_map>
 
 namespace wargameEngine
 {
@@ -67,7 +67,7 @@ private:
 	float m_nearPane = 1.0f;
 	float m_farPane = 1000.0f;
 	IViewport* m_shadowMapViewport = nullptr;
-	std::map<const model::IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
+	std::unordered_map<const model::IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
 	std::unique_ptr<IFrameBuffer> m_FBO;
 	std::vector<std::unique_ptr<ICachedTexture>> m_textures;
 	bool m_depthOnly;

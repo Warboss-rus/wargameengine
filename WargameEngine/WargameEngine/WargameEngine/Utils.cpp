@@ -25,7 +25,7 @@ std::string WStringToUtf8(std::wstring const& str)
 	return result;
 }
 
-std::wstring ReplaceAll(std::wstring const& text, std::map<std::wstring, std::wstring> const& replaceMap)
+std::wstring ReplaceAll(std::wstring const& text, std::unordered_map<std::wstring, std::wstring> const& replaceMap)
 {
 	std::wstring result = text;
 	for (auto& p : replaceMap)

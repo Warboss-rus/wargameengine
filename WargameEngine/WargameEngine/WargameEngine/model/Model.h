@@ -2,7 +2,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include "../Signal.h"
 #include "IModel.h"
 #include "IObject.h"
@@ -36,7 +36,7 @@ public:
 	StaticObject& GetStaticObject(size_t index);
 	virtual void SetProperty(std::wstring const& key, std::wstring const& value) override;
 	virtual std::wstring GetProperty(std::wstring const& key) const override;
-	std::map<std::wstring, std::wstring> const& GetAllProperties() const;
+	std::unordered_map<std::wstring, std::wstring> const& GetAllProperties() const;
 	void AddProjectile(Projectile const& projectile);
 	size_t GetProjectileCount() const;
 	Projectile& GetProjectile(size_t index);
@@ -68,7 +68,7 @@ private:
 	std::vector<Projectile> m_projectiles;
 	std::vector<ParticleEffect> m_particleEffects;
 	std::shared_ptr<IObject> m_selectedObject;
-	std::map<std::wstring, std::wstring> m_properties;
+	std::unordered_map<std::wstring, std::wstring> m_properties;
 	Landscape m_landscape;
 	std::vector<Light> m_lights;
 	signals::Signal<void, IObject *> m_onObjectCreation;

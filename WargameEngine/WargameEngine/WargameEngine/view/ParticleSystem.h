@@ -1,5 +1,5 @@
 #pragma once
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <vector>
 #include "ParticleModel.h"
@@ -19,7 +19,7 @@ public:
 	void Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer);
 	model::IParticleUpdater* GetParticleUpdater(const Path& path);
 private:
-	std::map<Path, ParticleModel> m_models;
+	std::unordered_map<Path, ParticleModel> m_models;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::vector<CVector3f> m_vertexBuffer;
 	std::vector<CVector2f> m_texCoordBuffer2;

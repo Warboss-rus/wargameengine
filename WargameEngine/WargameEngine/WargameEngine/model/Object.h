@@ -20,7 +20,7 @@ public:
 	std::wstring const GetProperty(std::wstring const& key) const override;
 	bool IsSelectable() const override;
 	void SetSelectable(bool selectable) override;
-	std::map<std::wstring, std::wstring> const& GetAllProperties() const override;
+	std::unordered_map<std::wstring, std::wstring> const& GetAllProperties() const override;
 	void PlayAnimation(std::string const& animation, AnimationLoop loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
@@ -34,21 +34,21 @@ public:
 	std::vector<TeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
 	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
-	std::map<Path, Path> const& GetReplaceTextures() const override;
+	std::unordered_map<Path, Path> const& GetReplaceTextures() const override;
 	bool IsGroup() const override;
 	IObject* GetFullObject() override;
 
 private:
 	std::vector<Path> m_secondaryModels;
 	std::set<std::string> m_hiddenMeshes;
-	std::map<std::wstring, std::wstring> m_properties;
+	std::unordered_map<std::wstring, std::wstring> m_properties;
 	bool m_isSelectable;
 	std::string m_animation;
 	std::chrono::microseconds m_animationTime;
 	AnimationLoop m_animationLoop = AnimationLoop::HoldEnd;
 	float m_animationSpeed = 1.0f;
 	std::vector<TeamColor> m_teamColor;
-	std::map<Path, Path> m_replaceTextures;
+	std::unordered_map<Path, Path> m_replaceTextures;
 };
 }
 }

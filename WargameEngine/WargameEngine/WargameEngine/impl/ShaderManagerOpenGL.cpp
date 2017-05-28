@@ -154,6 +154,11 @@ void CShaderManagerOpenGL::PopProgram() const
 		m_onProgramChange();
 }
 
+const IShaderProgram* CShaderManagerOpenGL::GetCurrentProgram() const
+{
+	return m_programs.back();
+}
+
 std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(const Path& vertex, const Path& fragment, const Path& geometry)
 {
 	if (!GLEW_ARB_shader_objects)

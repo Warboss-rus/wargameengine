@@ -13,6 +13,7 @@ public:
 	std::unique_ptr<wargameEngine::view::IShaderProgram> NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */) override;
 	void PushProgram(wargameEngine::view::IShaderProgram const& shaderProgram) const override;
 	void PopProgram() const override;
+	const wargameEngine::view::IShaderProgram* GetCurrentProgram() const;
 
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const float* value) const override;
 	virtual void SetUniformValue(std::string const& uniform, int elementSize, size_t count, const int* value) const override;

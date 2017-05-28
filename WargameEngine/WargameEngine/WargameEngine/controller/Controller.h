@@ -11,10 +11,11 @@
 #include <atomic>
 #include <deque>
 #include <functional>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <thread>
 #include <vector>
+#include <map>
 
 namespace wargameEngine
 {
@@ -117,7 +118,7 @@ private:
 	void RotateObject(std::shared_ptr<model::IObject> const& obj, float deltaRot);
 	size_t BBoxlos(CVector3f const& origin, model::Bounding* target, model::IObject* shooter, model::IObject* targetObject);
 	CVector3f RayToPoint(CVector3f const& begin, CVector3f const& end, float z = 0);
-	static void PackProperties(std::map<std::wstring, std::wstring> const& properties, IWriteMemoryStream& stream);
+	static void PackProperties(std::unordered_map<std::wstring, std::wstring> const& properties, IWriteMemoryStream& stream);
 
 	model::Model& m_model;
 	IPhysicsEngine& m_physicsEngine;
@@ -142,7 +143,7 @@ private:
 	signals::ExclusiveSignal<int, int, double, double> m_onGamepadAxis;
 	MouseButtonCallback m_lmbCallback;
 	MouseButtonCallback m_rmbCallback;
-	std::map<model::IObject*, std::shared_ptr<ObjectDecorator>> m_objectDecorators;
+	std::unordered_map<model::IObject*, std::shared_ptr<ObjectDecorator>> m_objectDecorators;
 
 	std::thread m_controllerThread;
 	std::atomic_bool m_destroyThread;

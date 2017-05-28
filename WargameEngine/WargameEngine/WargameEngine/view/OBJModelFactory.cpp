@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cwctype>
 #include <fstream>
-#include <map>
+#include <unordered_map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -49,9 +49,9 @@ FaceIndex ParseFaceIndex(std::string const& str)
 	return res;
 }
 
-std::map<std::string, Material> LoadMTL(const Path& path)
+std::unordered_map<std::string, Material> LoadMTL(const Path& path)
 {
-	std::map<std::string, Material> materials;
+	std::unordered_map<std::string, Material> materials;
 	std::ifstream iFile(path);
 	if (!iFile.good())
 	{
@@ -141,7 +141,7 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char* data, size_
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
-	std::map<std::string, unsigned int> faces;
+	std::unordered_map<std::string, unsigned int> faces;
 	std::vector<unsigned int> indexes;
 	MaterialManager materialManager;
 	std::vector<sMesh> meshes;

@@ -40,7 +40,7 @@ public:
 	std::wstring const GetProperty(std::wstring const& key) const override;
 	bool IsSelectable() const override;
 	void SetSelectable(bool selectable) override;
-	std::map<std::wstring, std::wstring> const& GetAllProperties() const override;
+	std::unordered_map<std::wstring, std::wstring> const& GetAllProperties() const override;
 	bool CastsShadow() const override;
 	void PlayAnimation(std::string const& animation, AnimationLoop loop, float speed) override;
 	std::string GetAnimation() const override;
@@ -55,7 +55,7 @@ public:
 	std::vector<TeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
 	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
-	std::map<Path, Path> const& GetReplaceTextures() const override;
+	std::unordered_map<Path, Path> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
 	virtual IObject* GetFullObject() override;
 	virtual signals::SignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) override;

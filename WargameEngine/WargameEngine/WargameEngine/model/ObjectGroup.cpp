@@ -227,7 +227,7 @@ void ObjectGroup::SetSelectable(bool selectable)
 	}
 }
 
-std::map<std::wstring, std::wstring> const& ObjectGroup::GetAllProperties() const
+std::unordered_map<std::wstring, std::wstring> const& ObjectGroup::GetAllProperties() const
 {
 	return m_children[0]->GetAllProperties();
 }
@@ -332,11 +332,11 @@ std::vector<TeamColor> const& ObjectGroup::GetTeamColor() const
 	return m_children[m_current]->GetTeamColor();
 }
 
-std::map<Path, Path> const& ObjectGroup::GetReplaceTextures() const
+std::unordered_map<Path, Path> const& ObjectGroup::GetReplaceTextures() const
 {
 	if (m_children.empty())
 	{
-		static std::map<Path, Path> dummy;
+		static std::unordered_map<Path, Path> dummy;
 		return dummy;
 	}
 	return m_children[m_current]->GetReplaceTextures();

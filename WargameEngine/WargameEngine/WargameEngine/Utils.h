@@ -2,7 +2,7 @@
 #include "Typedefs.h"
 #include <vector>
 #include <fstream>
-#include <map>
+#include <unordered_map>
 
 namespace wargameEngine
 {
@@ -12,7 +12,7 @@ std::vector<char> ReadFile(const Path& path);
 void WriteFile(const Path& path, const char* data, size_t size);
 void WriteFile(const Path& path, std::vector<char> const& data);
 std::wstring ToWstring(double value, size_t precision = 0);
-std::wstring ReplaceAll(const std::wstring& text, const std::map<std::wstring, std::wstring>& replaceMap);
+std::wstring ReplaceAll(const std::wstring& text, const std::unordered_map<std::wstring, std::wstring>& replaceMap);
 std::string to_string(const Path& path);
 std::wstring to_wstring(const Path& path);
 

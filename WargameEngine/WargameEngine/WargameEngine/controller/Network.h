@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include <map>
 #include <string>
 #include <functional>
 #include "../INetSocket.h"
+#include <unordered_map>
 
 namespace wargameEngine
 {
@@ -44,7 +44,7 @@ private:
 	void* GetAddress(void* obj);
 	SocketFactory m_socketFactory;
 	std::unique_ptr<INetSocket> m_socket;
-	std::map<void*, void*> m_translator;
+	std::unordered_map<void*, void*> m_translator;
 	bool m_host;
 	size_t m_netRecievedSize;
 	size_t m_netTotalSize;

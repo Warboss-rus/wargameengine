@@ -3,7 +3,7 @@
 #include "Animation.h"
 #include "TeamColor.h"
 #include <chrono>
-#include <map>
+#include <unordered_map>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,7 +22,7 @@ public:
 	virtual std::wstring const GetProperty(std::wstring const& key) const = 0;
 	virtual bool IsSelectable() const = 0;
 	virtual void SetSelectable(bool selectable) = 0;
-	virtual std::map<std::wstring, std::wstring> const& GetAllProperties() const = 0;
+	virtual std::unordered_map<std::wstring, std::wstring> const& GetAllProperties() const = 0;
 	virtual void PlayAnimation(std::string const& animation, AnimationLoop loop = AnimationLoop::NonLooping, float speed = 1.0f) = 0;
 	virtual std::string GetAnimation() const = 0;
 	virtual float GetAnimationTime() const = 0;
@@ -36,7 +36,7 @@ public:
 	virtual std::vector<TeamColor> const& GetTeamColor() const = 0;
 	virtual void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) = 0;
 	virtual void ReplaceTexture(const Path& oldTexture, const Path& newTexture) = 0;
-	virtual std::map<Path, Path> const& GetReplaceTextures() const = 0;
+	virtual std::unordered_map<Path, Path> const& GetReplaceTextures() const = 0;
 	virtual bool IsGroup() const = 0;
 };
 }

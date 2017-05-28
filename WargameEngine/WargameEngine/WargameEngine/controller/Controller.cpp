@@ -388,7 +388,7 @@ void Controller::SetSelectionCallback(std::function<void()> const& onSelect)
 	m_selectionCallback = onSelect;
 }
 
-void Controller::PackProperties(std::map<std::wstring, std::wstring> const& properties, IWriteMemoryStream& stream)
+void Controller::PackProperties(std::unordered_map<std::wstring, std::wstring> const& properties, IWriteMemoryStream& stream)
 {
 	stream.WriteSizeT(properties.size());
 	for (auto i = properties.begin(); i != properties.end(); ++i)

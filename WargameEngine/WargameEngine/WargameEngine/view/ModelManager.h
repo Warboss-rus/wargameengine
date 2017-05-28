@@ -1,4 +1,4 @@
-#include <map>
+#include <unordered_map>
 #include <set>
 #include <memory>
 #include <vector>
@@ -35,7 +35,7 @@ public:
 	void RegisterModelReader(std::unique_ptr<IModelReader> && reader);
 	void Reset();
 private:
-	std::map<Path, std::unique_ptr<C3DModel>> m_models;
+	std::unordered_map<Path, std::unique_ptr<C3DModel>> m_models;
 	std::vector<std::unique_ptr<IModelReader>> m_modelReaders;
 	model::IBoundingBoxManager * m_bbManager;
 	AsyncFileProvider * m_asyncFileProvider;

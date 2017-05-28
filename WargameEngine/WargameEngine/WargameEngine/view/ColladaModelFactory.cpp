@@ -1,7 +1,7 @@
 #include "ColladaModelFactory.h"
 #include "3dModel.h"
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include "../LogWriter.h"
 #include <algorithm>
@@ -121,7 +121,7 @@ void LoadAnimations(xml_node<> * element, vector<sJoint> const& joints, vector<s
 	xml_node<>* animation = element->first_node("animation");
 	while (animation)
 	{
-		map<string, xml_node<>*> sources;//Parse sources;
+		unordered_map<string, xml_node<>*> sources;//Parse sources;
 		xml_node<>* source = animation->first_node("source");
 		while (source != NULL)
 		{
@@ -202,7 +202,7 @@ void LoadAnimations(xml_node<> * element, vector<sJoint> const& joints, vector<s
 	}
 }
 
-void LoadVisualScenes(xml_node<>* library_visual_scenes, map<string, string> &materialTranslator, vector<sJoint> & joints)
+void LoadVisualScenes(xml_node<>* library_visual_scenes, unordered_map<string, string> &materialTranslator, vector<sJoint> & joints)
 {
 	xml_node<>* scene = library_visual_scenes->first_node("visual_scene");
 	while (scene)
@@ -241,7 +241,7 @@ void LoadVisualScenes(xml_node<>* library_visual_scenes, map<string, string> &ma
 	}
 }
 
-void LoadMaterials(xml_node<>* library_materials, map<string, string> &materialTranslator)
+void LoadMaterials(xml_node<>* library_materials, unordered_map<string, string> &materialTranslator)
 {
 	xml_node<>* material = library_materials->first_node("material");
 	while (material)
@@ -265,7 +265,7 @@ void LoadMaterials(xml_node<>* library_materials, map<string, string> &materialT
 	}
 }
 
-void LoadPhongModel(xml_node<>* phong, Material &material, map<string, string>& imageTranslator, xml_node<>* common)
+void LoadPhongModel(xml_node<>* phong, Material &material, unordered_map<string, string>& imageTranslator, xml_node<>* common)
 {
 	xml_node<>* ambient = phong->first_node("ambient");
 	if (ambient)
@@ -315,7 +315,7 @@ void LoadPhongModel(xml_node<>* phong, Material &material, map<string, string>& 
 	}
 }
 
-void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageTranslator, map<string, string> &materialTranslator, MaterialManager & materialManager)
+void LoadEffectsLibrary(xml_node<>* library_effects, unordered_map<string, string>& imageTranslator, unordered_map<string, string> &materialTranslator, MaterialManager & materialManager)
 {
 	xml_node<>* effect = library_effects->first_node("effect");
 	while (effect)
@@ -421,7 +421,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	std::vector<float> weights;
 	std::vector<sJoint> joints;
 	std::vector<sAnimation> animations;
-	map<string, string> imageTranslator;
+	unordered_map<string, string> imageTranslator;
 	//Process textures
 	xml_node<>* library_images = root->first_node("library_images");
 	if (library_images)
@@ -437,7 +437,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 			image = image->next_sibling("image");
 		}
 	}
-	map<string, string> materialTranslator;
+	unordered_map<string, string> materialTranslator;
 	//Materials step 1: Nodes to materials
 	xml_node<>* library_visual_scenes = root->first_node("library_visual_scenes");
 	if (library_visual_scenes)
@@ -469,10 +469,10 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 		LogWriter::WriteLine("Model loading warning. No effects found.");
 	}
 	//Animation step1: Process weights
-	map<string, vector<unsigned int>> weightCount;
-	map<string, vector<unsigned int>> weightIndexes;
-	map<string, vector<float>> tempWeights;
-	map<string, vector<float>> bindShapeMatrices;
+	unordered_map<string, vector<unsigned int>> weightCount;
+	unordered_map<string, vector<unsigned int>> weightIndexes;
+	unordered_map<string, vector<float>> tempWeights;
+	unordered_map<string, vector<float>> bindShapeMatrices;
 	xml_node<>* controllerLib = root->first_node("library_controllers");
 	if (controllerLib)
 	{
@@ -484,7 +484,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 			{
 				bindShapeMatrices[skin->first_attribute("source")->value() + 1] = GetValues<float>(skin->first_node("bind_shape_matrix"));
 				string geometryId = skin->first_attribute("source")->value() + 1;
-				map<string, xml_node<>*> sources;
+				unordered_map<string, xml_node<>*> sources;
 				xml_node<> * source = skin->first_node("source");
 				while (source)
 				{
@@ -617,7 +617,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 		while (mesh != NULL)//Parse a mesh
 		{
 			indexOffset = vertices.size();
-			map<string, xml_node<>*> sources;//Parse sources;
+			unordered_map<string, xml_node<>*> sources;//Parse sources;
 			xml_node<>* source = mesh->first_node("source");
 			while (source != NULL)
 			{

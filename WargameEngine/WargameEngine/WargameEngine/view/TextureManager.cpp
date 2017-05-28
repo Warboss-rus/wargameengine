@@ -131,12 +131,11 @@ void TextureManager::SetAnisotropyLevel(float level)
 	m_anisotropyLevel = level;
 }
 
-void TextureManager::LoadTextureNow(const Path& path, const std::vector<model::TeamColor>* teamcolor /*= nullptr*/, int flags)
+void TextureManager::LoadTextureNow(const Path& path, int flags)
 {
-	auto pair = std::pair<Path, std::vector<model::TeamColor>>(path, (teamcolor) ? *teamcolor : std::vector<model::TeamColor>());
-	if (m_textures.find(pair) == m_textures.end())
+	if (m_textures.find(path) == m_textures.end())
 	{
-		m_textures[pair] = LoadTexture(path, pair.second, true, flags);
+		m_textures.emplace(std::make_pair(path,LoadTexture(path, std::vector<model::TeamColor>(), true, flags)));
 	}
 }
 
@@ -152,12 +151,22 @@ void TextureManager::RegisterImageReader(std::unique_ptr<IImageReader>&& reader)
 
 ICachedTexture* TextureManager::GetTexturePtr(const Path& texture, const std::vector<model::TeamColor>* teamcolor, int flags)
 {
-	auto pair = std::pair<Path, std::vector<model::TeamColor>>(texture, teamcolor ? *teamcolor : std::vector<model::TeamColor>());
-	if (m_textures.find(pair) == m_textures.end())
+	if (teamcolor)
 	{
-		m_textures[pair] = LoadTexture(texture, pair.second, false, flags);
+		auto pair = std::pair<Path, std::vector<model::TeamColor>>(texture, *teamcolor);
+		auto it = m_teamcolorTextures.find(pair);
+		if (it == m_teamcolorTextures.end())
+		{
+			it = m_teamcolorTextures.emplace(std::make_pair(pair, LoadTexture(texture, pair.second, false, flags))).first;
+		}
+		return it->second.get();
 	}
-	return m_textures[pair].get();
+	auto it = m_textures.find(texture);
+	if (it == m_textures.end())
+	{
+		it = m_textures.emplace(texture, LoadTexture(texture, std::vector<model::TeamColor>(), false, flags)).first;
+	}
+	return it->second.get();
 }
 
 void ApplyTeamcolor(Image& image, const Path& maskFile, unsigned char* color, const Path& fileName)

@@ -5,7 +5,7 @@
 #include "DrawableMesh.h"
 #include "MaterialManager.h"
 #include "Vector3.h"
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <set>
 #include <string>
@@ -77,13 +77,13 @@ public:
 
 private:
 	void GetModelMeshes(IRenderer& renderer, TextureManager& textureManager, std::vector<DrawableMesh>& meshesVec, const std::set<std::string>* hideMeshes,
-		IVertexBuffer* vertexBuffer, const std::vector<model::TeamColor>* teamcolor, const std::map<Path, Path>* replaceTextures,
+		IVertexBuffer* vertexBuffer, const std::vector<model::TeamColor>* teamcolor, const std::unordered_map<Path, Path>* replaceTextures,
 		const std::shared_ptr<std::vector<float>>& skeleton, const std::shared_ptr<TempMeshBuffer>& tempBuffer) const;
-	ICachedTexture* GetTexturePtr(Material* material, const std::map<Path, Path>* replaceTextures, TextureManager& textureManager, const std::vector<model::TeamColor>* teamcolor) const;
+	ICachedTexture* GetTexturePtr(Material* material, const std::unordered_map<Path, Path>* replaceTextures, TextureManager& textureManager, const std::vector<model::TeamColor>* teamcolor) const;
 	void CalculateGPUWeights(IRenderer& renderer);
 	void GetMeshesSkinned(IRenderer& renderer, TextureManager& textureManager, std::vector<DrawableMesh>& meshesVec, const std::set<std::string>* hideMeshes,
 		std::string const& animationToPlay, model::AnimationLoop loop, float time, bool gpuSkinning, const std::vector<model::TeamColor>* teamcolor = nullptr,
-		const std::map<Path, Path>* replaceTextures = nullptr);
+		const std::unordered_map<Path, Path>* replaceTextures = nullptr);
 
 	std::vector<CVector3f> m_vertices;
 	std::vector<CVector2f> m_textureCoords;

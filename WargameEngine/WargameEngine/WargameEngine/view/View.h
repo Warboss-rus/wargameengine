@@ -74,13 +74,14 @@ public:
 	void PreloadModel(const Path& model);
 
 private:
-	void DrawTable(bool shadowOnly = false);
+	void CollectTableMeshes();
 	void DrawUI();
 	void Update();
 	void DrawRuler(IViewport& viewport, IViewHelper& renderer);
 	void CollectMeshes();
 	void SortMeshes();
-	void DrawMeshes(IViewHelper& renderer, Viewport& currentViewport, bool shadowOnly);
+	void DrawMeshes(IViewHelper& renderer, Viewport& currentViewport);
+	void DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>& list, bool shadowOnly);
 	void RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewport &currentViewport, IViewHelper& renderer);
 	void DrawBoundingBox();
 	void InitLandscape();
@@ -116,7 +117,8 @@ private:
 	size_t m_tableBufferSize = 0;
 	std::chrono::high_resolution_clock::time_point m_lastFrameTime;
 	std::vector<DrawableMesh> m_meshesToDraw;
-	std::map<Path, std::pair<std::unique_ptr<IVertexBuffer>, size_t>> m_boundingCache;
+	std::vector<DrawableMesh> m_nonDepthTestMeshes;
+	std::unordered_map<Path, std::pair<std::unique_ptr<IVertexBuffer>, size_t>> m_boundingCache;
 };
 }
 }

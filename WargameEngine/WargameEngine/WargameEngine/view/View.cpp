@@ -308,8 +308,8 @@ void View::Update()
 			m_skybox->Draw(m_viewHelper, -camera.GetPosition(), camera.GetScale());
 		}
 		m_viewHelper.EnableBlending(!viewport.IsDepthOnly());
-		DrawMeshes(m_viewHelper, viewport, viewport.IsDepthOnly());
-		RunOcclusionQueries(m_model->GetAllBaseObjects(), viewport, m_viewHelper);
+		DrawMeshes(m_viewHelper, viewport);
+		//RunOcclusionQueries(m_model->GetAllBaseObjects(), viewport, m_viewHelper);
 		m_viewHelper.EnableDepthTest(false, false);
 		if (!viewport.IsDepthOnly())
 		{
@@ -355,6 +355,8 @@ bool IsOutsideFrustum(IViewHelper& viewHelper, IViewport& viewport, const model:
 void View::CollectMeshes()
 {
 	m_meshesToDraw.clear();
+	m_nonDepthTestMeshes.clear();
+	CollectTableMeshes();
 	auto notVisibleInFrustum = [this](const model::IBaseObject* obj) {
 		for (auto& viewport : m_viewports)
 		{
@@ -386,8 +388,9 @@ void View::CollectMeshes()
 	}
 }
 
-void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport, bool shadowOnly)
+void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport)
 {
+	const bool shadowOnly = currentViewport.IsDepthOnly();
 	renderer.EnableDepthTest(true, true);
 	auto& shaderManager = renderer.GetShaderManager();
 	if (!shadowOnly)
@@ -408,13 +411,46 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport, bool sha
 	}
 
 	//Draw
-	DrawTable(shadowOnly);
+	DrawMeshesList(renderer, m_meshesToDraw, shadowOnly);
+	if (!shadowOnly && m_shaderProgram)
+	{
+		shaderManager.PopProgram();
+	}
+	if (!shadowOnly)
+	{
+		renderer.EnableDepthTest(true, false);
+		DrawMeshesList(renderer, m_nonDepthTestMeshes, shadowOnly);
+	}
 
+	if (!shadowOnly)
+	{
+		for (size_t i = 0; i < m_model->GetProjectileCount(); i++)
+		{
+			model::Projectile const& projectile = m_model->GetProjectile(i);
+			renderer.PushMatrix();
+			renderer.Translate(projectile.GetCoords());
+			renderer.Rotate(projectile.GetRotations());
+			if (projectile.GetParticle())
+				m_particles.Draw(*projectile.GetParticle(), renderer);
+			renderer.PopMatrix();
+		}
+		for (size_t i = 0; i < m_model->GetParticleCount(); ++i)
+		{
+			model::ParticleEffect const& effect = m_model->GetParticleEffect(i);
+			m_particles.Draw(effect, renderer);
+		}
+	}
+}
+
+void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>& list, bool shadowOnly)
+{
+	auto& shaderManager = renderer.GetShaderManager();
+	renderer.UnbindTexture();
 	ICachedTexture* texture = nullptr;
 	Material* material = nullptr;
 	Matrix4F prevMatrix;
 
-	for (const DrawableMesh& mesh : m_meshesToDraw)
+	for (const DrawableMesh& mesh : list)
 	{
 		if (mesh.shader && !shadowOnly)
 		{
@@ -460,7 +496,7 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport, bool sha
 
 		auto buffer = mesh.buffer;
 		std::unique_ptr<IVertexBuffer> tempBuffer;
-		if (!buffer && tempBuffer)
+		if (!buffer && mesh.tempBuffer)
 		{
 			tempBuffer = renderer.CreateVertexBuffer((const float*)mesh.tempBuffer->vertices.data(), (const float*)mesh.tempBuffer->normals.data(), (const float*)mesh.tempBuffer->texCoords, mesh.tempBuffer->vertices.size());
 			if (mesh.tempBuffer->indexes && mesh.tempBuffer->indexesCount > 0 && mesh.indexed)
@@ -488,35 +524,10 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport, bool sha
 			shaderManager.PopProgram();
 		}
 	}
-
 	m_renderer.SetModelMatrix(Matrix4F());
-
-	if (!shadowOnly && m_shaderProgram)
-	{
-		shaderManager.PopProgram();
-	}
-	renderer.EnableDepthTest(true, false);
-	if (!shadowOnly)
-	{
-		for (size_t i = 0; i < m_model->GetProjectileCount(); i++)
-		{
-			model::Projectile const& projectile = m_model->GetProjectile(i);
-			renderer.PushMatrix();
-			renderer.Translate(projectile.GetCoords());
-			renderer.Rotate(projectile.GetRotations());
-			if (projectile.GetParticle())
-				m_particles.Draw(*projectile.GetParticle(), renderer);
-			renderer.PopMatrix();
-		}
-		for (size_t i = 0; i < m_model->GetParticleCount(); ++i)
-		{
-			model::ParticleEffect const& effect = m_model->GetParticleEffect(i);
-			m_particles.Draw(effect, renderer);
-		}
-	}
 }
 
-void View::DrawTable(bool shadowOnly)
+void View::CollectTableMeshes()
 {
 	if (!m_tableBuffer)
 	{
@@ -556,25 +567,28 @@ void View::DrawTable(bool shadowOnly)
 		m_tableBufferSize = vertex.size();
 	}
 	model::Landscape const& landscape = m_model->GetLandscape();
-	if (!shadowOnly)m_renderer.SetTexture(landscape.GetTexture());
-	m_renderer.Draw(*m_tableBuffer, m_tableBufferSize);
-	if (!shadowOnly)//Don't draw decals because they don't cast shadows
+	m_meshesToDraw.push_back({nullptr, m_textureManager.GetTexturePtr(landscape.GetTexture()), nullptr, m_tableBuffer.get(), Matrix4F(), nullptr, nullptr, 0, m_tableBufferSize, false});
+
+	for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 	{
-		for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
-		{
-			model::Decal const& decal = landscape.GetDecal(i);
-			m_renderer.SetTexture(decal.texture);
-			m_renderer.PushMatrix();
-			m_renderer.Translate(CVector3f(decal.x, decal.y, 0.0f));
-			m_renderer.Rotate(decal.rotation, CVector3f(0.0f, 0.0f, 1.0f));
-			m_renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, {
-				CVector3f(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001f),
-				{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
-				{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001f },
-				{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001f }
-			}, {}, { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f } });
-			m_renderer.PopMatrix();
-		}
+		model::Decal const& decal = landscape.GetDecal(i);
+		m_renderer.SetTexture(decal.texture);
+		m_renderer.PushMatrix();
+		m_renderer.Translate(CVector3f(decal.x, decal.y, 0.0f));
+		m_renderer.Rotate(decal.rotation, CVector3f(0.0f, 0.0f, 1.0f));
+		Matrix4F mat = m_renderer.GetModelMatrix();
+		m_renderer.PopMatrix();
+		std::vector<CVector3f> vertices = {
+			CVector3f(-decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y - decal.depth / 2) + 0.001f),
+			{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
+			{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001f },
+			{ -decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x - decal.width / 2, decal.y + decal.depth / 2) + 0.001f },
+			{ decal.width / 2, -decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y - decal.depth / 2) + 0.001f },
+			{ decal.width / 2, decal.depth / 2, landscape.GetHeight(decal.x + decal.width / 2, decal.y + decal.depth / 2) + 0.001f }
+		};
+		static const CVector2f texCoords[] = { CVector2f(0.0f, 0.0f), { 0.0f, 1.0f }, { 1.0f, 0.0f }, { 0.0f, 1.0f },{ 1.0f, 0.0f },{ 1.0f, 1.0f } };
+		auto temp = std::make_shared<TempMeshBuffer>(TempMeshBuffer{ vertices, std::vector<CVector3f>(), texCoords, nullptr, 0 });
+		m_nonDepthTestMeshes.push_back(DrawableMesh{nullptr, m_textureManager.GetTexturePtr(decal.texture), nullptr, nullptr, mat, std::move(temp), nullptr, 0, 6, false});
 	}
 }
 
@@ -861,10 +875,13 @@ void View::RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewpo
 
 void View::SortMeshes()
 {
-	std::sort(m_meshesToDraw.begin(), m_meshesToDraw.end(), [](const DrawableMesh& first, const DrawableMesh& second) {
+	auto meshComparator = [](const DrawableMesh& first, const DrawableMesh& second) {
 		return std::tie(first.shader, first.texturePtr, first.material, first.buffer)
 			< std::tie(second.shader, second.texturePtr, second.material, second.buffer);
-	});
+	};
+	std::sort(m_meshesToDraw.begin(), m_meshesToDraw.end(), meshComparator);
+	std::sort(m_nonDepthTestMeshes.begin(), m_nonDepthTestMeshes.end(), meshComparator);
+
 }
 
 }

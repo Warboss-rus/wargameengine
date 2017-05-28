@@ -18,7 +18,7 @@ void MaterialManager::AddMaterial(std::string const& name, Material const& mater
 	m_materials[name] = material;
 }
 
-void MaterialManager::InsertMaterials(std::map<std::string, Material> const& materials)
+void MaterialManager::InsertMaterials(std::unordered_map<std::string, Material> const& materials)
 {
 	m_materials.insert(materials.begin(), materials.end());
 }
