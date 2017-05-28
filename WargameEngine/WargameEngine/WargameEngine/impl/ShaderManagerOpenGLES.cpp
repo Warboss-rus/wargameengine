@@ -10,6 +10,23 @@
 using namespace wargameEngine;
 using namespace view;
 
+class COpenGLESShaderProgram : public IShaderProgram
+{
+public:
+	unsigned int program;
+	int vertexAttribLocation = -1;
+	int normalAttribLocation = -1;
+	int texCoordAttribLocation = -1;
+	int materialAmbientLocation = -1;
+	int materialDiffuseLocation = -1;
+	int materialSpecularLocation = -1;
+	int materialShinenessLocation = -1;
+	int modelMatrixLocation = -1;
+	int viewMatrixLocation = -1;
+	int projectionMatrixLocation = -1;
+	int mvpMatrixLocation = -1;
+};
+
 namespace
 {
 constexpr char defaultVertexShader[] = "\
@@ -41,18 +58,10 @@ constexpr char MATERIAL_AMBIENT_KEY[] = "material.ambient";
 constexpr char MATERIAL_DIFFUSE_KEY[] = "material.diffuse";
 constexpr char MATERIAL_SPECULAR_KEY[] = "material.specular";
 constexpr char MATERIAL_SHINENESS_KEY[] = "material.shininess";
-class COpenGLESShaderProgram : public IShaderProgram
-{
-public:
-	unsigned int program;
-	int vertexAttribLocation = -1;
-	int normalAttribLocation = -1;
-	int texCoordAttribLocation = -1;
-	int materialAmbientLocation = -1;
-	int materialDiffuseLocation = -1;
-	int materialSpecularLocation = -1;
-	int materialShinenessLocation = -1;
-};
+constexpr char MVP_MATRIX_KEY[] = "mvp_matrix";
+constexpr char VIEW_MATRIX_KEY[] = "view_matrix";
+constexpr char MODEL_MATRIX_KEY[] = "model_matrix";
+constexpr char PROJ_MATRIX_KEY[] = "proj_matrix";
 
 class COpenGLESVertexAttribCache : public IVertexAttribCache
 {
@@ -155,14 +164,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgram(const Path& v
 	{
 		LogWriter::WriteLine("Geomerty shaders are not supported in openGL ES");
 	}
-	NewProgramImpl(program->program, vertexShader, framgentShader);
-	program->vertexAttribLocation = glGetAttribLocation(program->program, VERTEX_ATTRIB_NAME);
-	program->normalAttribLocation = glGetAttribLocation(program->program, NORMAL_ATTRIB_NAME);
-	program->texCoordAttribLocation = glGetAttribLocation(program->program, TEXCOORD_ATTRIB_NAME);
-	program->materialAmbientLocation = glGetUniformLocation(program->program, MATERIAL_AMBIENT_KEY);
-	program->materialDiffuseLocation = glGetUniformLocation(program->program, MATERIAL_DIFFUSE_KEY);
-	program->materialSpecularLocation = glGetUniformLocation(program->program, MATERIAL_SPECULAR_KEY);
-	program->materialShinenessLocation = glGetUniformLocation(program->program, MATERIAL_SHINENESS_KEY);
+	NewProgramImpl(program.get(), vertexShader, framgentShader);
 
 	return std::move(program);
 }
@@ -178,15 +180,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGLES::NewProgramSource(std::st
 	{
 		LogWriter::WriteLine("Geomerty shaders are not supported in openGL ES");
 	}
-	NewProgramImpl(program->program, vertexShader, framgentShader);
-
-	program->vertexAttribLocation = glGetAttribLocation(program->program, VERTEX_ATTRIB_NAME);
-	program->normalAttribLocation = glGetAttribLocation(program->program, NORMAL_ATTRIB_NAME);
-	program->texCoordAttribLocation = glGetAttribLocation(program->program, TEXCOORD_ATTRIB_NAME);
-	program->materialAmbientLocation = glGetUniformLocation(program->program, MATERIAL_AMBIENT_KEY);
-	program->materialDiffuseLocation = glGetUniformLocation(program->program, MATERIAL_DIFFUSE_KEY);
-	program->materialSpecularLocation = glGetUniformLocation(program->program, MATERIAL_SPECULAR_KEY);
-	program->materialShinenessLocation = glGetUniformLocation(program->program, MATERIAL_SHINENESS_KEY);
+	NewProgramImpl(program.get(), vertexShader, framgentShader);
 
 	return std::move(program);
 }
@@ -377,6 +371,38 @@ void CShaderManagerOpenGLES::SetMaterial(const float* ambient, const float* diff
 	glUniform1f(glProgram.materialShinenessLocation, shininess);
 }
 
+const IShaderProgram* CShaderManagerOpenGLES::GetCurrentProgram() const
+{
+	return m_programs.back();
+}
+
+bool CShaderManagerOpenGLES::NeedsMVPMatrix() const
+{
+	auto& glProgram = reinterpret_cast<const COpenGLESShaderProgram&>(*m_programs.back());
+	return glProgram.mvpMatrixLocation != -1;
+}
+
+void CShaderManagerOpenGLES::SetMatrices(const float* model, const float* view, const float* projection, const float* mvp, size_t multiviewCount)
+{
+	auto& glProgram = reinterpret_cast<const COpenGLESShaderProgram&>(*m_programs.back());
+	if (model && glProgram.modelMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.modelMatrixLocation, 1, false, model);
+	}
+	if (view && glProgram.viewMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.viewMatrixLocation, static_cast<GLsizei>(multiviewCount), false, view);
+	}
+	if (projection && glProgram.projectionMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.projectionMatrixLocation, 1, false, view);
+	}
+	if (mvp && glProgram.mvpMatrixLocation != -1)
+	{
+		glUniformMatrix4fv(glProgram.mvpMatrixLocation, static_cast<GLsizei>(multiviewCount), false, mvp);
+	}
+}
+
 void CShaderManagerOpenGLES::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const
 {
 	auto& programCache = GetProgramCache();
@@ -493,41 +519,42 @@ void CShaderManagerOpenGLES::DisableVertexAttribute(std::string const& attribute
 	glVertexAttribI4uiv(index, defaultValue);
 }
 
-void CShaderManagerOpenGLES::NewProgramImpl(unsigned prgm, unsigned vertexShader, unsigned framgentShader)
+void CShaderManagerOpenGLES::NewProgramImpl(COpenGLESShaderProgram* programPtr, unsigned vertexShader, unsigned framgentShader)
 {
-	glLinkProgram(prgm);
+	unsigned program = programPtr->program;
+	glLinkProgram(program);
 	GLint isLinked = 0;
-	glGetProgramiv(prgm, GL_LINK_STATUS, &isLinked);
+	glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
 	if (isLinked != GL_TRUE)
 	{
 		char buffer[1000];
 		int size = 0;
-		glGetProgramInfoLog(prgm, 1000, &size, buffer);
+		glGetProgramInfoLog(program, 1000, &size, buffer);
 		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
 	}
-	glUseProgram(prgm);
-	int unfrm = glGetUniformLocation(prgm, "mainTexture");
+	glUseProgram(program);
+	int unfrm = glGetUniformLocation(program, "mainTexture");
 	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(prgm, "cubemapTexture");
+	unfrm = glGetUniformLocation(program, "cubemapTexture");
 	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(prgm, "shadowMap");
+	unfrm = glGetUniformLocation(program, "shadowMap");
 	glUniform1i(unfrm, 1);
-	unfrm = glGetUniformLocation(prgm, "specular");
+	unfrm = glGetUniformLocation(program, "specular");
 	glUniform1i(unfrm, 2);
-	unfrm = glGetUniformLocation(prgm, "bump");
+	unfrm = glGetUniformLocation(program, "bump");
 	glUniform1i(unfrm, 3);
 	if (vertexShader)
 	{
-		glDetachShader(prgm, vertexShader);
+		glDetachShader(program, vertexShader);
 		glDeleteShader(vertexShader);
 	}
 	if (framgentShader)
 	{
-		glDetachShader(prgm, framgentShader);
+		glDetachShader(program, framgentShader);
 		glDeleteShader(framgentShader);
 	}
 	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	unfrm = glGetAttribLocation(prgm, "weights");
+	unfrm = glGetAttribLocation(program, "weights");
 	if (unfrm >= 0)
 	{
 		glVertexAttrib4fv(unfrm, def);
@@ -536,4 +563,16 @@ void CShaderManagerOpenGLES::NewProgramImpl(unsigned prgm, unsigned vertexShader
 	{
 		glUseProgram(m_activeProgram);
 	}
+
+	programPtr->vertexAttribLocation = glGetAttribLocation(program, VERTEX_ATTRIB_NAME);
+	programPtr->normalAttribLocation = glGetAttribLocation(program, NORMAL_ATTRIB_NAME);
+	programPtr->texCoordAttribLocation = glGetAttribLocation(program, TEXCOORD_ATTRIB_NAME);
+	programPtr->materialAmbientLocation = glGetUniformLocation(program, MATERIAL_AMBIENT_KEY);
+	programPtr->materialDiffuseLocation = glGetUniformLocation(program, MATERIAL_DIFFUSE_KEY);
+	programPtr->materialSpecularLocation = glGetUniformLocation(program, MATERIAL_SPECULAR_KEY);
+	programPtr->materialShinenessLocation = glGetUniformLocation(program, MATERIAL_SHINENESS_KEY);
+	programPtr->modelMatrixLocation = glGetUniformLocation(program, MODEL_MATRIX_KEY);
+	programPtr->viewMatrixLocation = glGetUniformLocation(program, VIEW_MATRIX_KEY);
+	programPtr->projectionMatrixLocation = glGetUniformLocation(program, PROJ_MATRIX_KEY);
+	programPtr->mvpMatrixLocation = glGetUniformLocation(program, MVP_MATRIX_KEY);
 }

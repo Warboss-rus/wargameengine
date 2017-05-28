@@ -391,6 +391,23 @@ void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVe
 	}
 }
 
+bool CShaderManagerDirectX::NeedsMVPMatrix() const
+{
+	return false;
+}
+
+void CShaderManagerDirectX::SetMatrices(const float* model /*= nullptr*/, const float* view /*= nullptr*/, const float* projection /*= nullptr*/, const float* mvp /*= nullptr*/, size_t /*multiviewCount = 1*/)
+{
+	static const std::string mvpMatrixKey = "mvp_matrix";
+	static const std::string viewMatrixKey = "view_matrix";
+	static const std::string modelMatrixKey = "model_matrix";
+	static const std::string projMatrixKey = "proj_matrix";
+	SetUniformValue(mvpMatrixKey, 16, 1, mvp);
+	SetUniformValue(viewMatrixKey, 16, 1, view);
+	SetUniformValue(modelMatrixKey, 16, 1, model);
+	SetUniformValue(projMatrixKey, 16, 1, projection);
+}
+
 void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const
 {
 	if (!buffer || totalSize > m_activeProgram->m_vertexAttributeBufferSizes.at(attribute))

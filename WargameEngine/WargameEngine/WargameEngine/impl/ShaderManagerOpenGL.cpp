@@ -10,6 +10,23 @@
 using namespace wargameEngine;
 using namespace view;
 
+class COpenGLShaderProgram : public IShaderProgram
+{
+public:
+	unsigned int program;
+	int vertexAttribLocation = -1;
+	int normalAttribLocation = -1;
+	int texCoordAttribLocation = -1;
+	int materialAmbientLocation = -1;
+	int materialDiffuseLocation = -1;
+	int materialSpecularLocation = -1;
+	int materialShinenessLocation = -1;
+	int modelMatrixLocation = -1;
+	int viewMatrixLocation = -1;
+	int projectionMatrixLocation = -1;
+	int mvpMatrixLocation = -1;
+};
+
 namespace
 {
 constexpr char defaultVertexShader[] = "\
@@ -50,23 +67,6 @@ constexpr char MVP_MATRIX_KEY[] = "mvp_matrix";
 constexpr char VIEW_MATRIX_KEY[] = "view_matrix";
 constexpr char MODEL_MATRIX_KEY[] = "model_matrix";
 constexpr char PROJ_MATRIX_KEY[] = "proj_matrix";
-
-class COpenGLShaderProgram : public IShaderProgram
-{
-public:
-	unsigned int program;
-	int vertexAttribLocation = -1;
-	int normalAttribLocation = -1;
-	int texCoordAttribLocation = -1;
-	int materialAmbientLocation = -1;
-	int materialDiffuseLocation = -1;
-	int materialSpecularLocation = -1;
-	int materialShinenessLocation = -1;
-	int modelMatrixLocation = -1;
-	int viewMatrixLocation = -1;
-	int projectionMatrixLocation = -1;
-	int mvpMatrixLocation = -1;
-};
 
 class COpenGLVertexAttribCache : public IVertexAttribCache
 {
@@ -190,25 +190,14 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgram(const Path& ver
 			geometryShader = CompileShaderFromFile(geometry, program->program, GL_GEOMETRY_SHADER);
 		}
 	}
-	NewProgramImpl(program->program, vertexShader, framgentShader, geometryShader);
-
-	program->vertexAttribLocation = glGetAttribLocation(program->program, VERTEX_ATTRIB_NAME);
-	program->normalAttribLocation = glGetAttribLocation(program->program, NORMAL_ATTRIB_NAME);
-	program->texCoordAttribLocation = glGetAttribLocation(program->program, TEXCOORD_ATTRIB_NAME);
-	program->materialAmbientLocation = glGetUniformLocation(program->program, MATERIAL_AMBIENT_KEY);
-	program->materialDiffuseLocation = glGetUniformLocation(program->program, MATERIAL_DIFFUSE_KEY);
-	program->materialSpecularLocation = glGetUniformLocation(program->program, MATERIAL_SPECULAR_KEY);
-	program->materialShinenessLocation = glGetUniformLocation(program->program, MATERIAL_SHINENESS_KEY);
-	program->modelMatrixLocation = glGetUniformLocation(program->program, MODEL_MATRIX_KEY);
-	program->viewMatrixLocation = glGetUniformLocation(program->program, VIEW_MATRIX_KEY);
-	program->projectionMatrixLocation = glGetUniformLocation(program->program, PROJ_MATRIX_KEY);
-	program->mvpMatrixLocation = glGetUniformLocation(program->program, MVP_MATRIX_KEY);
+	NewProgramImpl(program.get(), vertexShader, framgentShader, geometryShader);
 
 	return std::move(program);
 }
 
-void CShaderManagerOpenGL::NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader, unsigned geometryShader)
+void CShaderManagerOpenGL::NewProgramImpl(COpenGLShaderProgram* programPtr, unsigned vertexShader, unsigned framgentShader, unsigned geometryShader)
 {
+	unsigned program = programPtr->program;
 	glLinkProgram(program);
 	GLint isLinked = 0;
 	glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
@@ -245,6 +234,18 @@ void CShaderManagerOpenGL::NewProgramImpl(unsigned program, unsigned vertexShade
 	{
 		glUseProgram(m_activeProgram);
 	}
+
+	programPtr->vertexAttribLocation = glGetAttribLocation(program, VERTEX_ATTRIB_NAME);
+	programPtr->normalAttribLocation = glGetAttribLocation(program, NORMAL_ATTRIB_NAME);
+	programPtr->texCoordAttribLocation = glGetAttribLocation(program, TEXCOORD_ATTRIB_NAME);
+	programPtr->materialAmbientLocation = glGetUniformLocation(program, MATERIAL_AMBIENT_KEY);
+	programPtr->materialDiffuseLocation = glGetUniformLocation(program, MATERIAL_DIFFUSE_KEY);
+	programPtr->materialSpecularLocation = glGetUniformLocation(program, MATERIAL_SPECULAR_KEY);
+	programPtr->materialShinenessLocation = glGetUniformLocation(program, MATERIAL_SHINENESS_KEY);
+	programPtr->modelMatrixLocation = glGetUniformLocation(program, MODEL_MATRIX_KEY);
+	programPtr->viewMatrixLocation = glGetUniformLocation(program, VIEW_MATRIX_KEY);
+	programPtr->projectionMatrixLocation = glGetUniformLocation(program, PROJ_MATRIX_KEY);
+	programPtr->mvpMatrixLocation = glGetUniformLocation(program, MVP_MATRIX_KEY);
 }
 
 std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */)
@@ -265,15 +266,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerOpenGL::NewProgramSource(std::stri
 			geometryShader = CompileShader(geometry, program->program, GL_GEOMETRY_SHADER);
 		}
 	}
-	NewProgramImpl(program->program, vertexShader, framgentShader, geometryShader);
-
-	program->vertexAttribLocation = glGetAttribLocation(program->program, VERTEX_ATTRIB_NAME);
-	program->normalAttribLocation = glGetAttribLocation(program->program, NORMAL_ATTRIB_NAME);
-	program->texCoordAttribLocation = glGetAttribLocation(program->program, TEXCOORD_ATTRIB_NAME);
-	program->materialAmbientLocation = glGetUniformLocation(program->program, MATERIAL_AMBIENT_KEY);
-	program->materialDiffuseLocation = glGetUniformLocation(program->program, MATERIAL_DIFFUSE_KEY);
-	program->materialSpecularLocation = glGetUniformLocation(program->program, MATERIAL_SPECULAR_KEY);
-	program->materialShinenessLocation = glGetUniformLocation(program->program, MATERIAL_SHINENESS_KEY);
+	NewProgramImpl(program.get(), vertexShader, framgentShader, geometryShader);
 
 	return std::move(program);
 }

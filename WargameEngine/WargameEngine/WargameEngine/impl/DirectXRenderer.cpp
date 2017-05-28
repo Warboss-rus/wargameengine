@@ -562,7 +562,7 @@ void CDirectXRenderer::SetTexture(const Path& texture, bool forceLoadNow /*= fal
 	}
 	if (forceLoadNow)
 	{
-		m_textureManager->LoadTextureNow(texture, nullptr, flags);
+		m_textureManager->LoadTextureNow(texture, flags);
 	}
 	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
@@ -909,15 +909,8 @@ DirectX::XMFLOAT4X4 Transpose(DirectX::XMFLOAT4X4 const& m)
 void CDirectXRenderer::UpdateMatrices()
 {
 	if (!m_matricesChanged) return;
-	static const std::string mvpMatrixKey = "mvp_matrix";
-	static const std::string viewMatrixKey = "view_matrix";
-	static const std::string modelMatrixKey = "model_matrix";
-	static const std::string projMatrixKey = "proj_matrix";
 	auto mvp_matrix = Store(DirectX::XMMatrixTranspose(DirectX::XMMatrixMultiply(DirectX::XMMatrixMultiply(Load(*m_modelMatrix), Load(m_viewMatrix)), Load(m_projectionMatrix))));
-	m_shaderManager.SetUniformValue(mvpMatrixKey, 16, 1, *mvp_matrix.m);
-	m_shaderManager.SetUniformValue(viewMatrixKey, 16, 1, *Transpose(m_viewMatrix).m);
-	m_shaderManager.SetUniformValue(modelMatrixKey, 16, 1, *Transpose(*m_modelMatrix).m);
-	m_shaderManager.SetUniformValue(projMatrixKey, 16, 1, *Transpose(m_projectionMatrix).m);
+	m_shaderManager.SetMatrices(*Transpose(*m_modelMatrix).m, *Transpose(m_viewMatrix).m, *Transpose(m_projectionMatrix).m, *mvp_matrix.m);
 	m_matricesChanged = false;
 }
 

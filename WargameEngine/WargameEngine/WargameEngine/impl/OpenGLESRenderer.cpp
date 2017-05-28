@@ -5,6 +5,7 @@
 #include "../view/TextureManager.h"
 #include <GLES2/gl2ext.h> //GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT
 #include <GLES3/gl3.h>
+#include "../view/PerfomanceMeter.h"
 
 using namespace std;
 using namespace wargameEngine;
@@ -29,7 +30,7 @@ private:
 class COpenGLESVertexBuffer : public IVertexBuffer
 {
 public:
-	COpenGLESVertexBuffer(COpenGLESRenderer& renderer, CShaderManagerOpenGLES& shaderMan, const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = true)
+	COpenGLESVertexBuffer(CShaderManagerOpenGLES& shaderMan, const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = true)
 	{
 		if (temp)
 		{
@@ -40,32 +41,29 @@ public:
 		}
 		else
 		{
-			glGenVertexArrays(1, &m_vao);
-			renderer.BindVAO(m_vao, m_indexesBuffer);
-			constexpr size_t vertexOffset = 0;
-			const size_t normalOffset = vertexOffset + (vertex ? 3 : 0);
-			const size_t texCoordOffset = normalOffset + (normals ? 3 : 0);
-			const size_t stride = texCoordOffset + 2;
-			vector<float> data(size * stride);
+			m_offsets[0] = 0;
+			m_offsets[1] = m_offsets[0] + (vertex ? 3 : 0);
+			m_offsets[2] = m_offsets[0] + (vertex ? 3 : 0) + (normals ? 3 : 0);
+			m_stride = (vertex ? 3 : 0) + (normals ? 3 : 0) + (texcoords ? 2 : 0);
+			vector<float> data(size * m_stride);
 			for (size_t i = 0; i < size; ++i)
 			{
 				if (vertex)
-					memcpy(data.data() + i * stride + vertexOffset, vertex + i * 3, sizeof(float) * 3);
+					memcpy(data.data() + i * m_stride + m_offsets[0], vertex + i * 3, sizeof(float) * 3);
 				if (normals)
-					memcpy(data.data() + i * stride + normalOffset, normals + i * 3, sizeof(float) * 3);
+					memcpy(data.data() + i * m_stride + m_offsets[1], normals + i * 3, sizeof(float) * 3);
 				if (texcoords)
-					memcpy(data.data() + i * stride + texCoordOffset, texcoords + i * 2, sizeof(float) * 2);
+					memcpy(data.data() + i * m_stride + m_offsets[2], texcoords + i * 2, sizeof(float) * 2);
 			}
 			m_buffer = shaderMan.CreateVertexAttribCache(data.size() * sizeof(float), data.data());
-			shaderMan.SetInputAttributes(*m_buffer, 0, normalOffset * sizeof(float), texCoordOffset * sizeof(float), stride * sizeof(float));
 		}
 	}
 	~COpenGLESVertexBuffer()
 	{
 		if (m_indexesBuffer)
 			glDeleteBuffers(1, &m_indexesBuffer);
-		if (m_vao)
-			glDeleteVertexArrays(1, &m_vao);
+		for(auto& pr : m_vaos)
+			glDeleteVertexArrays(1, &pr.second);
 	}
 
 	void SetIndexBuffer(GLuint indexBuffer)
@@ -74,16 +72,30 @@ public:
 	}
 	void Bind(COpenGLESRenderer& renderer, CShaderManagerOpenGLES& shaderManager) const
 	{
-		renderer.BindVAO(m_vao, m_indexesBuffer);
-		if (!m_vao)
+		if (!m_buffer)
 		{
+			renderer.BindVAO(0, m_indexesBuffer);
 			shaderManager.SetInputAttributes(m_vertex, m_normals, m_texCoords, m_vertexCount, 3);
+		}
+		else
+		{
+			auto program = shaderManager.GetCurrentProgram();
+			auto it = m_vaos.find(program);
+			if (it == m_vaos.end())
+			{
+				GLuint vao;
+				glGenVertexArrays(1, &vao);
+				renderer.BindVAO(vao, m_indexesBuffer);
+				shaderManager.SetInputAttributes(*m_buffer, m_offsets[0] * sizeof(float), m_offsets[1] * sizeof(float), m_offsets[2] * sizeof(float), m_stride * sizeof(float));
+				it = m_vaos.emplace(std::make_pair(program, vao)).first;
+			}
+			renderer.BindVAO(it->second, m_indexesBuffer);
 		}
 	}
 
 	void AddVertexAttribute(COpenGLESRenderer& renderer, CShaderManagerOpenGLES& shaderManager, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance = false)
 	{
-		if (m_vao)
+		if (m_buffer)
 		{
 			Bind(renderer, shaderManager);
 			auto buffer = shaderManager.CreateVertexAttribCache(elementSize * count * sizeof(float), values);
@@ -98,7 +110,7 @@ public:
 	}
 
 private:
-	GLuint m_vao = 0;
+	mutable std::unordered_map<const IShaderProgram*, GLuint> m_vaos;
 	GLuint m_indexesBuffer = 0;
 	std::unique_ptr<IVertexAttribCache> m_buffer;
 	const float* m_vertex;
@@ -106,6 +118,8 @@ private:
 	const float* m_texCoords;
 	size_t m_vertexCount;
 	vector<unique_ptr<IVertexAttribCache>> m_attribCaches;
+	size_t m_offsets[3] = { 0, 0, 0 };
+	size_t m_stride = 0;
 };
 
 class COpenGLESFrameBuffer : public IFrameBuffer
@@ -196,12 +210,17 @@ private:
 	GLuint m_id = 0;
 };
 
-static const map<IRenderer::RenderMode, GLenum> renderModeMap = {
-	{ IRenderer::RenderMode::Triangles, GL_TRIANGLES },
-	{ IRenderer::RenderMode::TriangleStrip, GL_TRIANGLE_STRIP },
-	{ IRenderer::RenderMode::Lines, GL_LINES },
-	{ IRenderer::RenderMode::LineLoop, GL_LINE_LOOP } //
-};
+GLenum RenderModeToGlEnum(IRenderer::RenderMode mode)
+{
+	switch (mode)
+	{
+	case IRenderer::RenderMode::LineLoop: return GL_LINE_LOOP;
+	case IRenderer::RenderMode::Lines: return GL_LINES;
+	case IRenderer::RenderMode::Triangles: return GL_TRIANGLES;
+	case IRenderer::RenderMode::TriangleStrip: return GL_TRIANGLE_STRIP;
+	default: throw std::runtime_error("Unknown render mode");
+	}
+}
 
 #ifdef _WINDOWS
 void APIENTRY ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/, const GLchar* message, const void* /*userParam*/)
@@ -241,7 +260,8 @@ void COpenGLESRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> cons
 	BindVAO(m_vao, 0);
 	m_matrixManager.UpdateMatrices(m_shaderManager);
 	m_shaderManager.SetInputAttributes(vertices.data(), normals.empty() ? nullptr : normals.data(), texCoords.empty() ? nullptr : (float*)texCoords.data(), vertices.size(), 3);
-	glDrawArrays(renderModeMap.at(mode), 0, static_cast<GLsizei>(vertices.size()));
+	glDrawArrays(RenderModeToGlEnum(mode), 0, static_cast<GLsizei>(vertices.size()));
+	PerfomanceMeter::ReportDraw(vertices.size(), mode);
 }
 
 void COpenGLESRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
@@ -256,7 +276,8 @@ void COpenGLESRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> cons
 		fvalues.push_back(static_cast<float>(v.y));
 	}
 	m_shaderManager.SetInputAttributes(fvalues.data(), nullptr, texCoords.empty() ? nullptr : (float*)texCoords.data(), vertices.size(), 2);
-	glDrawArrays(renderModeMap.at(mode), 0, static_cast<GLsizei>(vertices.size()));
+	glDrawArrays(RenderModeToGlEnum(mode), 0, static_cast<GLsizei>(vertices.size()));
+	PerfomanceMeter::ReportDraw(vertices.size(), mode);
 }
 
 void COpenGLESRenderer::DrawIndexed(IVertexBuffer& vertexBuffer, size_t count, size_t begin, size_t instances)
@@ -271,6 +292,7 @@ void COpenGLESRenderer::DrawIndexed(IVertexBuffer& vertexBuffer, size_t count, s
 	{
 		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, reinterpret_cast<void*>(begin * sizeof(unsigned int)));
 	}
+	PerfomanceMeter::ReportDraw(instances > 1 ? instances * count : count, RenderMode::Triangles);
 }
 
 void COpenGLESRenderer::Draw(IVertexBuffer& vertexBuffer, size_t count, size_t begin, size_t instances)
@@ -285,6 +307,7 @@ void COpenGLESRenderer::Draw(IVertexBuffer& vertexBuffer, size_t count, size_t b
 	{
 		glDrawArrays(GL_TRIANGLES, static_cast<GLsizei>(begin), static_cast<GLsizei>(count));
 	}
+	PerfomanceMeter::ReportDraw(instances > 1 ? instances * count : count, RenderMode::Triangles);
 }
 
 void COpenGLESRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
@@ -365,7 +388,7 @@ void COpenGLESRenderer::SetTexture(const Path& texture, bool forceLoadNow, int f
 	}
 	if (forceLoadNow)
 	{
-		m_textureManager->LoadTextureNow(texture, nullptr, flags);
+		m_textureManager->LoadTextureNow(texture, flags);
 	}
 	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
@@ -441,7 +464,7 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void* dat
 	static const std::map<CachedTextureType, std::tuple<GLenum, GLenum, GLenum>> formatMap = {
 		{ CachedTextureType::RGBA, std::tuple<GLenum, GLenum, GLenum>{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
 		{ CachedTextureType::RenderTarget, std::tuple<GLenum, GLenum, GLenum>{ GL_RGBA, GL_RGBA8, GL_UNSIGNED_BYTE } },
-		{ CachedTextureType::Alpha, std::tuple<GLenum, GLenum, GLenum>{ GL_ALPHA, GL_ALPHA, GL_UNSIGNED_BYTE } },
+		{ CachedTextureType::Alpha, std::tuple<GLenum, GLenum, GLenum>{ GL_RED, GL_R8, GL_UNSIGNED_BYTE } },
 		{ CachedTextureType::Depth, std::tuple<GLenum, GLenum, GLenum>{ GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, GL_UNSIGNED_INT } }
 	};
 	auto texture = std::make_unique<COpenGLESCachedTexture>();
@@ -480,7 +503,7 @@ void COpenGLESRenderer::SetMaterial(const float* ambient, const float* diffuse, 
 
 std::unique_ptr<IVertexBuffer> COpenGLESRenderer::CreateVertexBuffer(const float* vertex, const float* normals, const float* texcoords, size_t size, bool temp)
 {
-	return std::make_unique<COpenGLESVertexBuffer>(*this, m_shaderManager, vertex, normals, texcoords, size, temp);
+	return std::make_unique<COpenGLESVertexBuffer>(m_shaderManager, vertex, normals, texcoords, size, temp);
 }
 
 std::unique_ptr<IOcclusionQuery> COpenGLESRenderer::CreateOcclusionQuery()

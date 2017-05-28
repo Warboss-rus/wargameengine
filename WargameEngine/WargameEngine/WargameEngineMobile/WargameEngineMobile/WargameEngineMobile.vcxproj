@@ -68,6 +68,7 @@
     <ClCompile Include="..\..\WargameEngine\Plugin.cpp" />
     <ClCompile Include="..\..\WargameEngine\PluginManager.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\Image.cpp" />
+    <ClCompile Include="..\..\WargameEngine\view\PerfomanceMeter.cpp" />
     <ClCompile Include="..\..\WargameEngine\view\Ruler.cpp" />
     <ClCompile Include="..\..\WargameEngine\ThreadPool.cpp" />
     <ClCompile Include="..\..\WargameEngine\UI\UIButton.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_iterators.hpp" />
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_print.hpp" />
     <ClInclude Include="..\..\WargameEngine\rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="..\..\WargameEngine\view\DrawableMesh.h" />
     <ClInclude Include="..\..\WargameEngine\view\Image.h" />
     <ClInclude Include="..\..\WargameEngine\view\Ruler.h" />
     <ClInclude Include="..\..\WargameEngine\Signal.h" />

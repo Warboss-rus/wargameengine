@@ -4,6 +4,8 @@
 #include <map>
 #include <vector>
 
+class COpenGLShaderProgram;
+
 class CShaderManagerOpenGL : public wargameEngine::view::IShaderManager
 {
 public:
@@ -37,7 +39,7 @@ public:
 	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, const float shininess);
 
 	bool NeedsMVPMatrix() const override;
-	void SetMatrices(const float* model = nullptr, const float* view = nullptr, const float* projection = nullptr, const float* mvp = nullptr, size_t multiviewCount = 1);
+	void SetMatrices(const float* model = nullptr, const float* view = nullptr, const float* projection = nullptr, const float* mvp = nullptr, size_t multiviewCount = 1) override;
 
 private:
 	struct ShaderProgramCache
@@ -50,7 +52,7 @@ private:
 	void SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t count, const void* values, bool perInstance, unsigned int format) const;
 	ShaderProgramCache& GetProgramCache() const;
 	int GetUniformLocation(std::string const& uniform) const;
-	void NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader, unsigned geometryShader);
+	void NewProgramImpl(COpenGLShaderProgram* programPtr, unsigned vertexShader, unsigned framgentShader, unsigned geometryShader);
 
 	mutable std::vector<const wargameEngine::view::IShaderProgram*> m_programs;
 	mutable unsigned int m_activeProgram = 0;

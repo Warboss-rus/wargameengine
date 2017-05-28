@@ -228,6 +228,9 @@
     <ClCompile Include="..\..\WargameEngine\view\Viewport.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\WargameEngine\view\PerfomanceMeter.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\WargameEngine\AsyncFileProvider.h">
@@ -547,6 +550,9 @@
     </ClInclude>
     <ClInclude Include="..\..\WargameEngine\IScriptHandler.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\WargameEngine\view\DrawableMesh.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

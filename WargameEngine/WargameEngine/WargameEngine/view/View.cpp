@@ -464,7 +464,10 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 		if (texture != mesh.texturePtr && !shadowOnly)
 		{
 			texture = mesh.texturePtr;
-			renderer.SetTexture(*mesh.texturePtr);
+			if (texture)
+			{
+				renderer.SetTexture(*texture);
+			}
 		}
 		if (material != mesh.material && !shadowOnly)
 		{
@@ -885,10 +888,8 @@ bool MeshComparator(const DrawableMesh& first, const DrawableMesh& second) {
 
 void View::SortMeshes()
 {
-	
 	std::sort(m_meshesToDraw.begin(), m_meshesToDraw.end(), MeshComparator);
 	std::sort(m_nonDepthTestMeshes.begin(), m_nonDepthTestMeshes.end(), MeshComparator);
-
 }
 
 }
