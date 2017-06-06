@@ -33,6 +33,10 @@ void ApplyTeamcolor(Image& image, const Path& maskFile, unsigned char* color, co
 std::unique_ptr<ICachedTexture> TextureManager::LoadTexture(const Path& path, std::vector<model::TeamColor> const& teamcolor, bool now, int flags)
 {
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
+	if (path.empty())
+	{
+		return std::move(tex);
+	}
 	ICachedTexture& texRef = *tex;
 	sReaderParameters params;
 	params.flipBmp = m_helper.ForceFlipBMP();

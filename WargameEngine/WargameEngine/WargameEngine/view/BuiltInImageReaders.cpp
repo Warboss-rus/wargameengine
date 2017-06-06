@@ -518,14 +518,14 @@ Image CStbImageReader::ReadImage(unsigned char* data, size_t size, const Path& /
 	std::vector<unsigned char> uncompressedData(height * width * bpp * sizeof(unsigned char));
 	for (int y = 0; y < height; ++y)
 	{
-		memcpy(&uncompressedData[y * width * 4], &newData[(height - y - 1) * width * 4], sizeof(unsigned char) * 4 * width);
+		memcpy(&uncompressedData[y * width * bpp], &newData[(height - y - 1) * width * bpp], sizeof(unsigned char) * bpp * width);
 	}
 	stbi_image_free(newData);
 	if (params.flipBmp)
 	{
-		FlipImage(uncompressedData.data(), width, height, static_cast<unsigned short>(bpp), false, TEXTURE_HAS_ALPHA);
+		FlipImage(uncompressedData.data(), width, height, static_cast<unsigned short>(bpp), false, bpp != 3 ? TEXTURE_HAS_ALPHA : 0);
 	}
-	return Image(std::move(uncompressedData), width, height, static_cast<unsigned short>(bpp * 8), TEXTURE_HAS_ALPHA);
+	return Image(std::move(uncompressedData), width, height, static_cast<unsigned short>(bpp * 8), bpp != 3 ? TEXTURE_HAS_ALPHA : 0);
 }
 }
 }

@@ -90,6 +90,25 @@ std::string to_string( T value ) {
     return os.str();
 }
 
+#ifdef TO_STRING_HACK
+#include <stdlib.h>
+namespace std
+{
+template <typename T>
+inline
+std::string to_string(T value)
+{
+    return ::to_string(value);
+}
+}
+
+inline double atof(const char *begin)
+{
+    char *_Eptr;
+    return strtof(begin, &_Eptr);
+}
+#endif
+
 inline
 float ai_strtof( const char *begin, const char *end ) {
     if ( nullptr == begin ) {

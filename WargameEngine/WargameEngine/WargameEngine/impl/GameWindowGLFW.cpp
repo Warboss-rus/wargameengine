@@ -11,8 +11,6 @@
 #include "../Utils.h"
 #include "../LogWriter.h"
 #include "../view/IViewport.h"
-#define _USE_MATH_DEFINES
-#include <math.h>
 #include "../view/Matrix4.h"
 #ifndef RENDERER_NO_LEGACY
 #include "LegacyOpenGLRenderer.h"

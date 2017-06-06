@@ -81,7 +81,7 @@ private:
 	void CollectMeshes();
 	void SortMeshes();
 	void DrawMeshes(IViewHelper& renderer, Viewport& currentViewport);
-	void DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>& list, bool shadowOnly);
+	void DrawMeshesList(IViewHelper &renderer, const MeshList& list, bool shadowOnly);
 	void RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewport &currentViewport, IViewHelper& renderer);
 	void DrawBoundingBox();
 	void InitLandscape();
@@ -115,8 +115,8 @@ private:
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;
 	size_t m_tableBufferSize = 0;
-	std::vector<DrawableMesh> m_meshesToDraw;
-	std::vector<DrawableMesh> m_nonDepthTestMeshes;
+	MeshList m_meshesToDraw;
+	MeshList m_nonDepthTestMeshes;
 	std::unordered_map<Path, std::pair<std::unique_ptr<IVertexBuffer>, size_t>> m_boundingCache;
 };
 }

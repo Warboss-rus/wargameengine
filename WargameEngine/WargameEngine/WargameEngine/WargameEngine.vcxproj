@@ -303,6 +303,9 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="array_view.h" />
     <ClInclude Include="AsyncFileProvider.h" />
+    <ClInclude Include="math\vec2.h" />
+    <ClInclude Include="math\vec3.h" />
+    <ClInclude Include="math\vec4.h" />
     <ClInclude Include="view\PerfomanceMeter.h" />
     <ClInclude Include="view\DrawableMesh.h" />
     <ClInclude Include="INetSocket.h" />

@@ -45,7 +45,12 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_animations.swap(animations);
 }
 
-void C3DModel::GetModelMeshes(IRenderer& renderer, TextureManager& textureManager, std::vector<DrawableMesh>& meshesVec, const std::set<std::string>* hideMeshes,
+void C3DModel::SetVertexColors(std::vector<math::vec4>&& colors)
+{
+	m_vertexColors = std::move(colors);
+}
+
+void C3DModel::GetModelMeshes(IRenderer& renderer, TextureManager& textureManager, MeshList& meshesVec, const std::set<std::string>* hideMeshes,
 	IVertexBuffer* vertexBuffer, const std::vector<model::TeamColor>* teamcolor, const std::unordered_map<Path, Path>* replaceTextures, 
 	const std::shared_ptr<std::vector<float>>& skeleton, const std::shared_ptr<TempMeshBuffer>& tempBuffer) const
 {
@@ -63,7 +68,7 @@ void C3DModel::GetModelMeshes(IRenderer& renderer, TextureManager& textureManage
 		}
 		Material* material = mesh.material;
 		ICachedTexture* texture = GetTexturePtr(material, replaceTextures, textureManager, teamcolor);
-		meshesVec.emplace_back(DrawableMesh{ nullptr, texture, material, vertexBuffer, modelMatrix, tempBuffer, skeleton, mesh.begin, mesh.end - mesh.begin, indexed });
+		meshesVec.emplace_back(DrawableMesh{ nullptr, texture, material, vertexBuffer, modelMatrix * mesh.meshTransform, tempBuffer, skeleton, mesh.begin, mesh.end - mesh.begin, indexed });
 	}
 }
 
@@ -238,7 +243,7 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 }
 
 //returns if animations is ended
-void C3DModel::GetMeshesSkinned(IRenderer & renderer, TextureManager& textureManager, std::vector<DrawableMesh>& meshesVec, const std::set<std::string> * hideMeshes,
+void C3DModel::GetMeshesSkinned(IRenderer & renderer, TextureManager& textureManager, MeshList& meshesVec, const std::set<std::string> * hideMeshes,
 	std::string const& animationToPlay, model::AnimationLoop loop, float time, bool gpuSkinning, const std::vector<model::TeamColor> * teamcolor, 
 	const std::unordered_map<Path, Path> * replaceTextures)
 {
@@ -277,7 +282,7 @@ void C3DModel::GetMeshesSkinned(IRenderer & renderer, TextureManager& textureMan
 	}
 }
 
-void C3DModel::GetMeshes(IRenderer & renderer, TextureManager& textureManager, model::IObject* object, bool gpuSkinning, std::vector<DrawableMesh>& meshesVec)
+void C3DModel::GetMeshes(IRenderer & renderer, TextureManager& textureManager, model::IObject* object, bool gpuSkinning, MeshList& meshesVec)
 {
 	if (!m_vertexBuffer && !m_vertices.empty())
 	{
@@ -285,6 +290,10 @@ void C3DModel::GetMeshes(IRenderer & renderer, TextureManager& textureManager, m
 		if (!m_indexes.empty())
 		{
 			renderer.SetIndexBuffer(*m_vertexBuffer, m_indexes.data(), m_indexes.size());
+		}
+		if (!m_vertexColors.empty())
+		{
+			renderer.AddVertexAttribute(*m_vertexBuffer, "VertexColor", 4, m_vertexColors.size(), IShaderManager::Format::Float32, m_vertexColors.data());
 		}
 		if (!m_weightsCount.empty())
 		{

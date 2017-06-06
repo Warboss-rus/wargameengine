@@ -34,6 +34,13 @@ struct DrawableMesh
 	size_t start = 0;
 	size_t count = 0;
 	bool indexed = false;
+
+	DrawableMesh(const DrawableMesh& other) = delete;
+	DrawableMesh(DrawableMesh&& other) = default;
+	DrawableMesh& operator=(const DrawableMesh& other) = delete;
+	DrawableMesh& operator=(DrawableMesh&& other) = default;
 };
+
+using MeshList = std::vector<DrawableMesh>;
 }
 }

@@ -16,7 +16,8 @@ struct CAssimpModelLoader::Impl
 public:
 	std::unique_ptr<C3DModel> LoadModel(unsigned char * data, size_t size, const C3DModel & dummyModel)
 	{
-		const aiScene* scene = m_importer.ReadFileFromMemory(data, size,
+		Importer importer;
+		const aiScene* scene = importer.ReadFileFromMemory(data, size,
 			aiProcess_CalcTangentSpace |
 			aiProcess_Triangulate |
 			aiProcess_JoinIdenticalVertices |
@@ -24,14 +25,16 @@ public:
 			aiProcess_LimitBoneWeights |
 			aiProcess_GenUVCoords | 
 			aiProcess_TransformUVCoords |
+			aiProcess_PreTransformVertices | //TODO: remove, use mesh matrices instead
 			aiProcess_OptimizeMeshes);
 		if (!scene) throw std::runtime_error("Cannot process model");
 
-		std::unique_ptr<C3DModel> result = std::make_unique<C3DModel>(dummyModel);
+		std::unique_ptr<C3DModel> result = std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 		MaterialManager materialManager;
 		std::vector<CVector3f> vertices;
 		std::vector<CVector3f> normals;
 		std::vector<CVector2f> texCoords;
+		std::vector<math::vec4> colors;
 		std::vector<unsigned int> indices;
 		std::vector<sMesh> meshes;
 		std::vector<std::string> materialNames;
@@ -43,6 +46,7 @@ public:
 		bool hasNormals = false;
 		bool hasTexCoords = false;
 		bool hasWeights = false;
+		bool hasColors = false;
 
 		if (scene->HasMaterials())
 		{
@@ -80,6 +84,12 @@ public:
 						texCoords[j + verticesOffset] = CVector2f(tc.x, tc.y);
 					}
 					hasTexCoords = true;
+				}
+				if (mesh->HasVertexColors(0))
+				{
+					colors.resize(verticesOffset + verticesCount);
+					memcpy(colors.data() + verticesOffset, mesh->mColors[0], sizeof(aiColor4D));
+					hasColors = true;
 				}
 				size_t indicesOffset = indices.size();
 				size_t indicesCount = 0;
@@ -151,7 +161,7 @@ public:
 			}
 		}
 
-		ProcessNodes(scene->mRootNode);
+		ProcessNodes(scene->mRootNode, meshes);
 
 		if (!hasNormals)
 		{
@@ -169,27 +179,21 @@ public:
 		weights.shrink_to_fit();
 		weightsIndices.shrink_to_fit();
 
-		m_importer.FreeScene();
-
 		result->SetModel(vertices, texCoords, normals, indices, materialManager, meshes);
 		if (hasWeights)
 		{
 			result->SetAnimation(weightsCount, weightsIndices, weights, skeleton, animations);
 		}
+		if (hasColors)
+		{
+			result->SetVertexColors(std::move(colors));
+		}
 		return result;
 	}
 
-	bool ModelIsSupported(unsigned char * data, size_t size)
+	bool ModelIsSupported(unsigned char *, size_t)
 	{
-		const aiScene* scene(m_importer.ReadFileFromMemory(data, size, 0));
-		const bool result = scene;
-		if (!result)
-		{
-			auto error = m_importer.GetErrorString();
-			LogWriter::WriteLine(error);
-		}
-		m_importer.FreeScene();
-		return result;
+		return true;
 	}
 
 private:
@@ -219,17 +223,20 @@ private:
 		return std::make_pair(name.C_Str(), mat);
 	}
 
-	void ProcessNodes(aiNode * node)
+	void ProcessNodes(aiNode * node, std::vector<sMesh>& meshes)
 	{
+		array_view<unsigned> meshesView(node->mMeshes, node->mNumMeshes);
+		for (unsigned meshIndex : meshesView)
+		{
+			memcpy(meshes[meshIndex].meshTransform, &node->mTransformation.a1, sizeof(Matrix4F));
+		}
 		//set skeleton parentNode indices based on nodes hierarchy
 		array_view<aiNode*> childNodes(node->mChildren, node->mNumChildren);
 		for (aiNode* child : childNodes)
 		{
-			ProcessNodes(child);
+			ProcessNodes(child, meshes);
 		}
 	}
-
-	Importer m_importer;
 };
 
 CAssimpModelLoader::CAssimpModelLoader()

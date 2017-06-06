@@ -14,6 +14,7 @@
 #include "..\..\WargameEngine\impl\GvrGameWindow.h"
 #include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
 #include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
+#include "../../WargameEngine/impl/AssimpModelLoader.h"
 
 using namespace wargameEngine;
 using namespace view;
@@ -58,6 +59,7 @@ struct NativeAppJni
 		context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 		context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 		context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
+		context.modelReaders.push_back(std::make_unique<CAssimpModelLoader>());
 	}
 };
 

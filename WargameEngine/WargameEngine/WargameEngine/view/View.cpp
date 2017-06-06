@@ -373,6 +373,7 @@ void View::CollectMeshes()
 		return false;
 	};
 	std::vector<model::IBaseObject*> objects = m_model->GetAllBaseObjects();
+	m_meshesToDraw.reserve(objects.size() * 10);
 	objects.erase(std::remove_if(objects.begin(), objects.end(), notVisibleInFrustum), objects.end());
 	for (auto* object : objects)
 	{
@@ -492,6 +493,10 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 				m_renderer.SetTexture(*texturePtr, IRenderer::TextureSlot::Specular);
 			}
 		}
+		if (!texture && mesh.material)
+		{
+			m_renderer.SetColor(mesh.material->diffuse);
+		}
 		if (mesh.modelMatrix != prevMatrix)
 		{
 			m_renderer.SetModelMatrix(mesh.modelMatrix);
@@ -521,6 +526,10 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 		else
 		{
 			renderer.Draw(*buffer, mesh.count, mesh.start);
+		}
+		if (!texture && mesh.material)
+		{
+			m_renderer.SetColor(0, 0, 0);
 		}
 
 		if (mesh.skeleton)

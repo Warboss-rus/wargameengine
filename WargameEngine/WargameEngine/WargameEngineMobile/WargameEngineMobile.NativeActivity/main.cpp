@@ -19,6 +19,9 @@
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
 #include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
 #include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
+#ifdef HAS_ASSIMP
+#include "../../WargameEngine/impl/AssimpModelLoader.h"
+#endif
 #ifdef RENDERER_VULKAN
 #include "..\..\WargameEngine\impl\GameWindowAndroidVulkan.h"
 #define WINDOW_CLASS CGameWindowAndroidVulkan
@@ -166,6 +169,9 @@ void android_main(struct android_app* state) {
 	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
+#ifdef HAS_ASSIMP
+	context.modelReaders.push_back(std::make_unique<CAssimpModelLoader>());
+#endif
 
 	state->userData = &engine;
 	state->onAppCmd = engine_handle_cmd;

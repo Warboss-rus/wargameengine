@@ -36,6 +36,9 @@
     <Filter Include="Source Files\view\Readers">
       <UniqueIdentifier>{3277a43f-59f5-4307-943b-4083e49616d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{3ffd6a23-935f-48f5-9e65-9cb732f69f27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UI\UIButton.cpp">
@@ -570,6 +573,15 @@
     </ClInclude>
     <ClInclude Include="view\PerfomanceMeter.h">
       <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vec4.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vec3.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vec2.h">
+      <Filter>Source Files\math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

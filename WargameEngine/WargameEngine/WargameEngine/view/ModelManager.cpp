@@ -48,7 +48,7 @@ void ModelManager::LoadIfNotExist(const Path& path, TextureManager& textureManag
 	}
 }
 
-void ModelManager::GetModelMeshes(const Path& path, IRenderer & renderer, TextureManager& textureManager, model::IObject* object, std::vector<DrawableMesh>& meshesVec)
+void ModelManager::GetModelMeshes(const Path& path, IRenderer & renderer, TextureManager& textureManager, model::IObject* object, MeshList& meshesVec)
 {
 	LoadIfNotExist(path, textureManager);
 	std::unique_lock<std::mutex> lk(m_mutex);

@@ -93,7 +93,7 @@ void CSoundPlayerFMod::PlaySoundPlaylist(std::wstring const& name, std::vector<P
 	for (auto file : files)
 	{
 		FMOD::Sound* sound;
-		auto result = m_system->createStream(to_string(file).c_str(), FMOD_2D, NULL, &sound);
+		m_system->createStream(to_string(file).c_str(), FMOD_2D, NULL, &sound);
 		playlist.sounds.push_back(sound);
 	}
 	PlayList(playlist);

@@ -104,16 +104,7 @@
     <ClCompile Include="..\..\..\assimp\code\IFCMaterial.cpp" />
     <ClCompile Include="..\..\..\assimp\code\IFCOpenings.cpp" />
     <ClCompile Include="..\..\..\assimp\code\IFCProfile.cpp" />
-    <ClCompile Include="..\..\..\assimp\code\IFCReaderGen.cpp">
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x86'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|ARM'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x86'"> /bigobj %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
+    <ClCompile Include="..\..\..\assimp\code\IFCReaderGen.cpp" />
     <ClCompile Include="..\..\..\assimp\code\IFCUtil.cpp" />
     <ClCompile Include="..\..\..\assimp\code\Importer.cpp" />
     <ClCompile Include="..\..\..\assimp\code\ImporterRegistry.cpp" />
@@ -598,8 +589,9 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
-      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -608,6 +600,9 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -616,8 +611,9 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
-      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
@@ -626,6 +622,9 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -634,9 +633,13 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
-      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </ClCompile>
+    <Lib />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile>
@@ -644,6 +647,9 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -652,8 +658,9 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
-      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -662,6 +669,9 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
+      <PreprocessorDefinitions>OPENDDL_NO_USE_CPP11;ASSIMP_BUILD_NO_EXPORT;ASSIMP_BUILD_NO_BLEND_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_OWN_ZLIB;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPENDDLPARSER_BUILD;assimp_EXPORTS;TO_STRING_HACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\assimp\.;..\..\..\assimp\project;..\..\..\assimp\include;..\..\..\assimp\contrib\zlib;..\..\..\assimp\project\contrib\zlib;..\..\..\assimp\code\..\contrib\rapidjson\include;..\..\..\assimp\code\..\contrib\openddlparser\include;..\..\..\assimp\code\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -202,4 +202,12 @@ public:
 	};
 };
 
+template<class T>
+Matrix4T<T> operator*(const Matrix4T<T>& first, const Matrix4T<T>& second)
+{
+	auto result = first;
+	result *= second;
+	return result;
+}
+
 typedef Matrix4T<float> Matrix4F;

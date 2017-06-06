@@ -28,7 +28,7 @@ class ModelManager
 public:
 	ModelManager(model::IBoundingBoxManager & bbmanager, AsyncFileProvider & asyncFileProvider);
 	~ModelManager();
-	void GetModelMeshes(const Path& path, IRenderer & renderer, TextureManager& textureManager, model::IObject* object, std::vector<DrawableMesh>& meshesVec);
+	void GetModelMeshes(const Path& path, IRenderer & renderer, TextureManager& textureManager, model::IObject* object, MeshList& meshesVec);
 	void LoadIfNotExist(const Path& path, TextureManager& textureManager);
 	std::vector<std::string> GetAnimations(const Path& path);
 	void EnableGPUSkinning(bool enable);
