@@ -1,0 +1,3 @@
+box -1 -1 0 1 1 2
+scale 0.2
+rotationY 90

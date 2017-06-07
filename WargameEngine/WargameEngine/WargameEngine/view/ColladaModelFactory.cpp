@@ -700,13 +700,13 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 					//temp
 					size_t oldSize = vertices.size();
 					vertices.resize(oldSize + vert.size() / 3);
-					memcpy(&vertices[oldSize], vert.data(), vert.size() * sizeof(float));
+					memcpy(vertices.data() + oldSize, vert.data(), vert.size() * sizeof(float));
 					oldSize = normals.size();
 					normals.resize(oldSize + normal.size() / 3);
-					memcpy(&normals[oldSize], normal.data(), normal.size() * sizeof(float));
+					memcpy(normals.data() + oldSize, normal.data(), normal.size() * sizeof(float));
 					oldSize = textureCoords.size();
 					textureCoords.resize(oldSize + texcoord.size() / 2);
-					memcpy(&textureCoords[oldSize], texcoord.data(), texcoord.size() * sizeof(float));
+					memcpy(textureCoords.data() + oldSize, texcoord.data(), texcoord.size() * sizeof(float));
 					vector<unsigned int>& weightCountPtr = weightCount[meshId];
 					weightsCount.insert(weightsCount.end(), weightCountPtr.begin(), weightCountPtr.end());
 					vector<unsigned int>& weightIndex = weightIndexes[meshId];

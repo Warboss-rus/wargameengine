@@ -12,5 +12,14 @@ else
 	SetSkyboxShaders("openGL/skybox.vsh", "openGL/skybox.fsh")
 end
 EnableGPUSkinning()
-CreateLandscape(60, 30, "Green_Grass.jpg")
-Object:New("Roller Coaster.fbx", 0, 0, 0)
+CreateLandscape(30, 60, "Green_Grass.bmp")
+Object:New("beast124.obj", 0, 0, 0)
+--Object:New("Cart_dims.dae", 0, 0, 0)
+
+PlaySoundPlaylist("cart_sounds", {
+	"sound/costerupstart.aiff", 
+	"sound/coasterupmiddle.aiff", 
+	"sound/coasterupend.aiff", 
+	"sound/rollercoastermiddle.aiff",
+	"sound/rollercoasterfadeout.aiff",
+	}, 1.0, false, true)

@@ -109,6 +109,7 @@ void C3DModel::CalculateGPUWeights(IRenderer & renderer)
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
 {
+	if (!matrix) return;
 	float result[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	for (int i = 0; i < 4; i++)
 	{
