@@ -588,9 +588,9 @@ void Controller::ObjectGoTo(std::shared_ptr<model::IObject> const& object, float
 	m_commandHandler.AddNewGoTo(GetDecorator(object), x, y, speed, animation, animationSpeed);
 }
 
-void Controller::ObjectMovePath(std::shared_ptr<model::IObject> const& object, const std::vector<MovePathNode>& path, bool repeat)
+void Controller::ObjectMovePath(std::shared_ptr<model::IObject> const& object, const std::vector<MovePathNode>& path)
 {
-	GetDecorator(object)->MovePath(path, repeat);
+	GetDecorator(object)->MovePath(path);
 }
 
 void Controller::SetMovementLimiter(std::shared_ptr<model::IObject> const& object, std::unique_ptr<IMoveLimiter>&& limiter)
@@ -657,7 +657,7 @@ void ObjectDecorator::GoTo(CVector3f const& coords, float speed, std::string con
 	m_object->PlayAnimation(animation, model::AnimationLoop::Looping, animationSpeed);
 }
 
-void ObjectDecorator::MovePath(const std::vector<MovePathNode>& path, bool repeat)
+void ObjectDecorator::MovePath(const std::vector<MovePathNode>& path)
 {
 	m_movePath.assign(path.begin(), path.end());
 	m_movePathDuration = std::chrono::duration<float>();
@@ -707,10 +707,12 @@ void ObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 			return;
 		}
 		const auto& begin = m_movePath.front();
-		const auto& end = m_movePath.back();
+		const auto& end = m_movePath[1];
 		const float interpolationCoeff = (m_movePathDuration.count() - begin.timePoint) / (end.timePoint - begin.timePoint);
-		m_object->SetCoords(end.position * interpolationCoeff + begin.position * (1.0f - interpolationCoeff));
-		m_object->SetRotations(end.rotation * interpolationCoeff + begin.rotation * (1.0f - interpolationCoeff));
+		auto position = end.position * interpolationCoeff + begin.position * (1.0f - interpolationCoeff);
+		auto rotation = end.rotation * interpolationCoeff + begin.rotation * (1.0f - interpolationCoeff);
+		m_object->SetCoords(position);
+		m_object->SetRotations(rotation);
 	}
 }
 }

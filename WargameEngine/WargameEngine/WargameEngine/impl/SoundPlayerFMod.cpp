@@ -20,6 +20,11 @@ void CSoundPlayerFMod::Init()
 
 void CSoundPlayerFMod::Play(std::wstring const& channelName, Path const& file, float volume /*= 1.0f*/)
 {
+	StopChannel(channelName);
+	if (file.empty())
+	{
+		return;
+	}
 	if (m_sounds.find(file) == m_sounds.end())
 	{
 		FMOD::Sound* sound;
@@ -46,6 +51,11 @@ FMOD_VECTOR Vector3dToFMODVector(CVector3f const& vec)
 
 void CSoundPlayerFMod::PlaySoundPosition(std::wstring const& channelName, Path const& file, CVector3f const& position, float volume /*= 1.0f*/)
 {
+	StopChannel(channelName);
+	if (file.empty())
+	{
+		return;
+	}
 	if (m_sounds3d.find(file) == m_sounds3d.end())
 	{
 		FMOD::Sound* sound;

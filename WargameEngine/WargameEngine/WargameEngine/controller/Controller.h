@@ -44,7 +44,7 @@ public:
 	ObjectDecorator(std::shared_ptr<model::IObject> const& object);
 	~ObjectDecorator();
 	void GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed);
-	void MovePath(const std::vector<MovePathNode>& path, bool repeat);
+	void MovePath(const std::vector<MovePathNode>& path);
 	void SetLimiter(std::unique_ptr<IMoveLimiter>&& limiter);
 	model::IObject* GetObject();
 	void Update(std::chrono::duration<float> timeSinceLastUpdate);
@@ -98,7 +98,7 @@ public:
 	void SetObjectProperty(std::shared_ptr<model::IObject> const& obj, std::wstring const& key, std::wstring const& value);
 	void PlayObjectAnimation(std::shared_ptr<model::IObject> const& object, std::string const& animation, model::AnimationLoop loopMode, float speed);
 	void ObjectGoTo(std::shared_ptr<model::IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed);
-	void ObjectMovePath(std::shared_ptr<model::IObject> const& object, const std::vector<MovePathNode>& path, bool repeat);
+	void ObjectMovePath(std::shared_ptr<model::IObject> const& object, const std::vector<MovePathNode>& path);
 	void SetMovementLimiter(std::shared_ptr<model::IObject> const& object, std::unique_ptr<IMoveLimiter>&& limiter);
 	CommandHandler& GetCommandHandler();
 	Network& GetNetwork();

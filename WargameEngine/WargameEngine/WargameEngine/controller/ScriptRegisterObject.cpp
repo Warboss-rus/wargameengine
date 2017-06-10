@@ -399,8 +399,8 @@ void RegisterObject(IScriptHandler& handler, Controller& controller, model::Mode
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, MOVE_PATH, [&](void* instance, IArguments const& args) {
-		if (args.GetCount() != 5)
-			throw std::runtime_error("5 argument expected(positionList, rotationList, timePointList, interpolation, repeat)");
+		if (args.GetCount() != 4)
+			throw std::runtime_error("4 argument expected(positionList, rotationList, timePointList, interpolation)");
 		model::IObject* object = reinterpret_cast<model::IObject*>(instance);
 		if (!object)
 			throw std::runtime_error("should be called with a valid instance");
@@ -415,8 +415,7 @@ void RegisterObject(IScriptHandler& handler, Controller& controller, model::Mode
 			path[i].rotation = { rotations[i * 3], rotations[i * 3 + 1], rotations[i * 3 + 2] };
 			path[i].timePoint = timestamps[i];
 		}
-		const bool repeat = args.GetBool(5);
-		controller.ObjectMovePath(model.Get3DObject(object), path, repeat);
+		controller.ObjectMovePath(model.Get3DObject(object), path);
 		return nullptr;
 	});
 
