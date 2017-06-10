@@ -133,6 +133,10 @@
 //Replaces one texture that object has with another one.
 #define REPLACE_TEXTURE L"ReplaceTexture"
 
+//void L"MovePath"(array<float> positionList, array<float> rotationList, array<float> timePointList, string interpolation)
+//Moves object along the path using specified interpolation
+#define MOVE_PATH L"MovePath"
+
 /*PROPERTIES*/
 
 //double x

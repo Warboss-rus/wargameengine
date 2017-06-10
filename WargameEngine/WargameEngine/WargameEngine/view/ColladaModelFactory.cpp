@@ -609,10 +609,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	{
 		sMesh m;
 		string meshId = geometryElement->first_attribute("id")->value();
-		if (geometryElement->first_attribute("name"))
-			m.name = geometryElement->first_attribute("name")->value();
-		else
-			m.name = meshId;
+		m.name = geometryElement->first_attribute("name") ? m.name = geometryElement->first_attribute("name")->value() : meshId;
 		xml_node<>* mesh = geometryElement->first_node("mesh");
 		while (mesh != NULL)//Parse a mesh
 		{
@@ -762,6 +759,14 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 			mesh = mesh->next_sibling("mesh");
 		}
 		geometryElement = geometryElement->next_sibling("geometry");
+	}
+	if (!textureCoords.empty() && textureCoords.size() < vertices.size())
+	{
+		textureCoords.resize(vertices.size());
+	}
+	if (!normals.empty() && normals.size() < vertices.size())
+	{
+		normals.resize(vertices.size());
 	}
 	weightsCount.shrink_to_fit();
 	weightsIndexes.shrink_to_fit();

@@ -398,6 +398,28 @@ void RegisterObject(IScriptHandler& handler, Controller& controller, model::Mode
 		return nullptr;
 	});
 
+	handler.RegisterMethod(CLASS_OBJECT, MOVE_PATH, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 5)
+			throw std::runtime_error("5 argument expected(positionList, rotationList, timePointList, interpolation, repeat)");
+		model::IObject* object = reinterpret_cast<model::IObject*>(instance);
+		if (!object)
+			throw std::runtime_error("should be called with a valid instance");
+		const auto positions = args.GetFloatArray(1);
+		const auto rotations = args.GetFloatArray(2);
+		const auto timestamps = args.GetFloatArray(3);
+		const size_t count = std::min({ positions.size() / 3, rotations.size() / 3, timestamps.size() });
+		std::vector<MovePathNode> path(count);
+		for (size_t i = 0; i < count; ++i)
+		{
+			path[i].position = { positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2] };
+			path[i].rotation = { rotations[i * 3], rotations[i * 3 + 1], rotations[i * 3 + 2] };
+			path[i].timePoint = timestamps[i];
+		}
+		const bool repeat = args.GetBool(5);
+		controller.ObjectMovePath(model.Get3DObject(object), path, repeat);
+		return nullptr;
+	});
+
 	handler.RegisterProperty(CLASS_OBJECT, PROPERTY_X, [&](void* instance, IArguments const& args) {
 		if (args.GetCount() != 1) throw std::runtime_error("1 value expected(x)");
 		model::IObject* object = reinterpret_cast<model::IObject *>(instance);

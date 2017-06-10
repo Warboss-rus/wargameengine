@@ -31,12 +31,20 @@ namespace controller
 {
 class IMoveLimiter;
 
+struct MovePathNode
+{
+	CVector3f position;
+	CVector3f rotation;
+	float timePoint = 0.0f;
+};
+
 class ObjectDecorator
 {
 public:
 	ObjectDecorator(std::shared_ptr<model::IObject> const& object);
 	~ObjectDecorator();
 	void GoTo(CVector3f const& coords, float speed, std::string const& animation, float animationSpeed);
+	void MovePath(const std::vector<MovePathNode>& path, bool repeat);
 	void SetLimiter(std::unique_ptr<IMoveLimiter>&& limiter);
 	model::IObject* GetObject();
 	void Update(std::chrono::duration<float> timeSinceLastUpdate);
@@ -48,6 +56,8 @@ private:
 	std::unique_ptr<IMoveLimiter> m_limiter;
 	signals::ScopedConnection m_positionChangeConnection;
 	signals::ScopedConnection m_rotationChangeConnection;
+	std::deque<MovePathNode> m_movePath;
+	std::chrono::duration<float> m_movePathDuration;
 };
 
 class Controller : public IStateManager
@@ -88,6 +98,7 @@ public:
 	void SetObjectProperty(std::shared_ptr<model::IObject> const& obj, std::wstring const& key, std::wstring const& value);
 	void PlayObjectAnimation(std::shared_ptr<model::IObject> const& object, std::string const& animation, model::AnimationLoop loopMode, float speed);
 	void ObjectGoTo(std::shared_ptr<model::IObject> const& object, float x, float y, float speed, std::string const& animation, float animationSpeed);
+	void ObjectMovePath(std::shared_ptr<model::IObject> const& object, const std::vector<MovePathNode>& path, bool repeat);
 	void SetMovementLimiter(std::shared_ptr<model::IObject> const& object, std::unique_ptr<IMoveLimiter>&& limiter);
 	CommandHandler& GetCommandHandler();
 	Network& GetNetwork();

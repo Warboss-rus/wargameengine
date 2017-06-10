@@ -246,12 +246,13 @@ void View::DrawUI()
 	});
 }
 
-void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object, IRenderer & renderer)
+void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object, IRenderer & renderer, float scale)
 {
 	renderer.UnbindTexture();
 	renderer.PushMatrix();
 	renderer.Translate(object.GetCoords());
 	renderer.Rotate(object.GetRotations());
+	renderer.Scale(scale);
 	CVector3f min = bbox.max;
 	CVector3f max = bbox.min;
 	renderer.SetColor(0, 0, 255);
@@ -277,14 +278,14 @@ void View::DrawBoundingBox()
 				if (object)
 				{
 					auto bbox = m_boundingManager.GetBounding(object->GetPathToModel());
-					DrawBBox(bbox.GetBox(), *object, m_renderer);
+					DrawBBox(bbox.GetBox(), *object, m_renderer, bbox.scale);
 				}
 			}
 		}
 		else
 		{
 			auto bbox = m_boundingManager.GetBounding(object->GetPathToModel());
-			DrawBBox(bbox.GetBox(), *object, m_renderer);
+			DrawBBox(bbox.GetBox(), *object, m_renderer, bbox.scale);
 		}
 	}
 }

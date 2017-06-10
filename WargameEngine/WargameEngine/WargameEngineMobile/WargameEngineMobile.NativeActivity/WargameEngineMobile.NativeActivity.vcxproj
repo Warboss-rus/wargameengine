@@ -165,7 +165,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;m;gvr;fmod</LibraryDependencies>
@@ -180,10 +180,10 @@
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -196,10 +196,10 @@
       <ExceptionHandling>Enabled</ExceptionHandling>
       <DebugInformationFormat>None</DebugInformationFormat>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -211,10 +211,10 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -226,10 +226,10 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -241,10 +241,10 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -256,10 +256,10 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TO_STRING_HACK;HAS_ASSIMP;SOUND_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;OpenSLES;m;gvr;gvr_audio</LibraryDependencies>
+      <LibraryDependencies>%(LibraryDependencies);GLESv1_CM;EGL;GLESv2;GLESv3;z;m;gvr;fmod</LibraryDependencies>
       <AdditionalLibraryDirectories>..\..\..\FMod\lib\android\$(TargetArchAbi);..\..\..\gvr-android-sdk\libraries\libs\$(TargetArchAbi);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

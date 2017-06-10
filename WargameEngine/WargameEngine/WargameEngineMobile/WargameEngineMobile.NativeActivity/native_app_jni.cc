@@ -33,7 +33,7 @@ struct NativeAppJni
 	NativeAppJni(gvr_context* gvr_context)
 	{
 		const std::string storage = getenv("EXTERNAL_STORAGE");
-		module = Module(storage + "/WargameEngine/test.module");
+		module = Module(storage + "/WargameEngine/Roller_coaster.module");
 		if (module.name.empty())
 		{
 			module.script = "main.lua";

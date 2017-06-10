@@ -1,6 +1,8 @@
 #include "GvrGameWindow.h"
 #include <glm\gtc\type_ptr.hpp>
 #include <glm\gtc\matrix_transform.hpp>
+#include <glm\gtx\matrix_decompose.hpp>
+#include <glm\gtx\quaternion.hpp>
 
 static const std::string defaultMultiviewVertexShader = "\
 #version 300 es\n\
@@ -65,6 +67,23 @@ void CGvrGameWindow::Init()
 	}
 }
 
+glm::mat4 FixHeadMatrix(const float* src)
+{
+	auto result = glm::make_mat4(src);
+	glm::vec3 scale;
+	glm::quat rotation;
+	glm::vec3 translation;
+	glm::vec3 skew;
+	glm::vec4 perspective;
+	glm::decompose(result, scale, rotation, translation, skew, perspective);
+	rotation = glm::conjugate(rotation);
+	std::swap(rotation.z, rotation.y);
+	result = glm::toMat4(rotation);
+	//todo: apply other components
+
+	return glm::transpose(result);
+}
+
 void CGvrGameWindow::Draw()
 {
 	m_viewport_list.SetToRecommendedBufferViewports();
@@ -81,14 +100,12 @@ void CGvrGameWindow::Draw()
 	}
 	gvr::Frame frame = m_swapchain.AcquireFrame();
 	gvr::Mat4f head_matrix = m_gvr_api->GetHeadSpaceFromStartSpaceRotation(m_gvr_api->GetTimePointNow());
-	m_input.OnHeadRotation(0, head_matrix.m[0]);
+	auto hm = FixHeadMatrix(head_matrix.m[0]);
+	m_input.OnHeadRotation(0, glm::value_ptr(hm));
 	glm::mat4 left_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_LEFT_EYE).m[0]);
 	glm::mat4 right_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_RIGHT_EYE).m[0]);
 
 	frame.BindBuffer(0);
-	m_renderer.DisableClear(false);
-	m_renderer.ClearBuffers();
-	m_renderer.DisableClear(true);
 	if (m_multiview)
 	{
 		m_renderer.SetVrViewMatrices({ glm::value_ptr(glm::transpose(left_eye_matrix)), glm::value_ptr(glm::transpose(right_eye_matrix)) });
@@ -96,6 +113,9 @@ void CGvrGameWindow::Draw()
 	}
 	else
 	{
+		m_renderer.DisableClear(false);
+		m_renderer.ClearBuffers();
+		m_renderer.DisableClear(true);
 		m_viewport_list.GetBufferViewport(GVR_LEFT_EYE, &m_viewport_left);
 		auto vrRect = m_viewport_left.GetSourceUv();
 		m_renderer.SetVrViewport(vrRect.left, vrRect.bottom, vrRect.right - vrRect.left, vrRect.top - vrRect.bottom, 0.0f);

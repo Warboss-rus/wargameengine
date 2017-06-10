@@ -140,7 +140,7 @@ public:
 			lua_rawgeti(m_lua_state, index + m_diff, ++n);
 			if (lua_isnil(m_lua_state, -1))
 				break;
-			result.push_back(GetFloat(-1));
+			result.push_back(GetFloat(-1 - m_diff));
 			lua_pop(m_lua_state, 1);
 		}
 		lua_pop(m_lua_state, 1);

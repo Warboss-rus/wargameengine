@@ -23,7 +23,7 @@ Controller::Controller(model::Model& model, IScriptHandler& scriptHandler, IPhys
 	, m_scriptHandler(scriptHandler)
 	, m_pathFinder(pathFinder)
 {
-	m_model.DoOnObjectCreation(std::bind(&IPhysicsEngine::AddDynamicObject, &m_physicsEngine, std::placeholders::_1, 1.0));
+	m_model.DoOnObjectCreation(std::bind(&IPhysicsEngine::AddDynamicObject, &m_physicsEngine, std::placeholders::_1, 0.0));
 	m_model.DoOnObjectRemove(std::bind(&IPhysicsEngine::RemoveObject, &m_physicsEngine, std::placeholders::_1));
 	m_destroyThread = false;
 }
@@ -588,6 +588,11 @@ void Controller::ObjectGoTo(std::shared_ptr<model::IObject> const& object, float
 	m_commandHandler.AddNewGoTo(GetDecorator(object), x, y, speed, animation, animationSpeed);
 }
 
+void Controller::ObjectMovePath(std::shared_ptr<model::IObject> const& object, const std::vector<MovePathNode>& path, bool repeat)
+{
+	GetDecorator(object)->MovePath(path, repeat);
+}
+
 void Controller::SetMovementLimiter(std::shared_ptr<model::IObject> const& object, std::unique_ptr<IMoveLimiter>&& limiter)
 {
 	GetDecorator(object)->SetLimiter(std::move(limiter));
@@ -652,6 +657,12 @@ void ObjectDecorator::GoTo(CVector3f const& coords, float speed, std::string con
 	m_object->PlayAnimation(animation, model::AnimationLoop::Looping, animationSpeed);
 }
 
+void ObjectDecorator::MovePath(const std::vector<MovePathNode>& path, bool repeat)
+{
+	m_movePath.assign(path.begin(), path.end());
+	m_movePathDuration = std::chrono::duration<float>();
+}
+
 void ObjectDecorator::SetLimiter(std::unique_ptr<IMoveLimiter>&& limiter)
 {
 	m_limiter = std::move(limiter);
@@ -664,21 +675,42 @@ model::IObject* ObjectDecorator::GetObject()
 
 void ObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 {
-	if (fabs(m_goSpeed) < DBL_EPSILON)
+	if (fabs(m_goSpeed) >= DBL_EPSILON)
 	{
-		return;
+		CVector3f dir = m_goTarget - m_object->GetCoords();
+		dir.Normalize();
+		m_object->SetRotation(static_cast<float>(atan2(dir.y, dir.x) * 180.0f / (float)M_PI));
+		dir = dir * timeSinceLastUpdate.count() * m_goSpeed;
+		if (dir.GetLength() > (m_goTarget - m_object->GetCoords()).GetLength())
+			dir = (m_goTarget - m_object->GetCoords());
+		m_object->Move(dir.x, dir.y, dir.z);
+		if ((m_object->GetCoords() - m_goTarget).GetLength() < 0.0001)
+		{
+			m_goSpeed = 0.0;
+			m_object->PlayAnimation("", model::AnimationLoop::NonLooping, 0.0f);
+		}
 	}
-	CVector3f dir = m_goTarget - m_object->GetCoords();
-	dir.Normalize();
-	m_object->SetRotation(static_cast<float>(atan2(dir.y, dir.x) * 180.0f / (float)M_PI));
-	dir = dir * timeSinceLastUpdate.count() * m_goSpeed;
-	if (dir.GetLength() > (m_goTarget - m_object->GetCoords()).GetLength())
-		dir = (m_goTarget - m_object->GetCoords());
-	m_object->Move(dir.x, dir.y, dir.z);
-	if ((m_object->GetCoords() - m_goTarget).GetLength() < 0.0001)
+	if (!m_movePath.empty())
 	{
-		m_goSpeed = 0.0;
-		m_object->PlayAnimation("", model::AnimationLoop::NonLooping, 0.0f);
+		m_movePathDuration += timeSinceLastUpdate;
+		if (m_movePathDuration.count() < m_movePath.front().timePoint)
+		{
+			return;
+		}
+		while (m_movePath.size() > 1 && m_movePathDuration.count() > m_movePath[1].timePoint)
+		{
+			m_movePath.pop_front();
+		}
+		if (m_movePath.size() < 2)
+		{
+			m_movePath.clear();
+			return;
+		}
+		const auto& begin = m_movePath.front();
+		const auto& end = m_movePath.back();
+		const float interpolationCoeff = (m_movePathDuration.count() - begin.timePoint) / (end.timePoint - begin.timePoint);
+		m_object->SetCoords(end.position * interpolationCoeff + begin.position * (1.0f - interpolationCoeff));
+		m_object->SetRotations(end.rotation * interpolationCoeff + begin.rotation * (1.0f - interpolationCoeff));
 	}
 }
 }
