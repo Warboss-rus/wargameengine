@@ -1,4 +1,5 @@
 #include "PerfomanceMeter.h"
+#include <fstream>
 
 namespace wargameEngine
 {
@@ -10,8 +11,12 @@ void PerfomanceMeter::ReportFrameEnd()
 {
 	auto instance = GetInstance();
 	auto currentTime = std::chrono::high_resolution_clock::now();
-	instance->m_fps = static_cast<size_t>(1.0f / std::chrono::duration<float>(currentTime - instance->m_lastFrameTime).count());
+	instance->m_fps = 1.0f / std::chrono::duration<float>(currentTime - instance->m_lastFrameTime).count();
 	instance->m_lastFrameTime = currentTime;
+	if (instance->m_benchmark)
+	{
+		instance->m_fpsHistory.push_back(instance->m_fps);
+	}
 }
 
 size_t GetPolygons(size_t verticesCount, IRenderer::RenderMode mode)
@@ -63,7 +68,30 @@ long long PerfomanceMeter::GetDrawCalls()
 
 size_t PerfomanceMeter::GetFps()
 {
-	return GetInstance()->m_fps;
+	return static_cast<size_t>(abs(GetInstance()->m_fps));
+}
+
+void PerfomanceMeter::StartBenchmark()
+{
+	GetInstance()->m_benchmark = true;
+	GetInstance()->m_fpsHistory.clear();
+}
+
+void PerfomanceMeter::EndBenchmark(const Path& resultPath)
+{
+	auto instance = GetInstance();
+	if (instance->m_benchmark)
+	{
+		instance->m_benchmark = false;
+		auto& fpsHistory = instance->m_fpsHistory;
+		std::ofstream file(resultPath);
+		for (auto fps : fpsHistory)
+		{
+			file << fps << std::endl;
+		}
+		file.close();
+		fpsHistory.clear();
+	}
 }
 
 wargameEngine::view::PerfomanceMeter* PerfomanceMeter::GetInstance()

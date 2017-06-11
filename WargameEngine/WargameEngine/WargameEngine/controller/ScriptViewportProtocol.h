@@ -62,6 +62,14 @@
 //Attaches camera to object so it will follow object's position and rotation
 #define CAMERA_ATTACH_TO_OBJECT L"CameraAttachToObject"
 
+//void Viewport:CameraResetInput()
+//Removes all input methods from the camera
+#define CAMERA_RESET_INPUT L"CameraResetInput"
+
+//void Viewport:CameraAttachKeyboardMouse
+//Attaches the camera input to keyboard and mouse
+#define CAMERA_ATTACH_KEYBOARD_MOUSE L"CameraAttachKeyboardMouse"
+
 //Object Viewport:GetCamera()
 //returns the camera object
 #define GET_CAMERA L"GetCamera"

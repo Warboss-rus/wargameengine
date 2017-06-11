@@ -6,6 +6,7 @@
 #include "../Utils.h"
 #include "../view/ISoundPlayer.h"
 #include "../view/View.h"
+#include "../view/PerfomanceMeter.h"
 #include "Controller.h"
 #include "Network.h"
 #include "ScriptFunctionsProtocol.h"
@@ -458,6 +459,21 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 			throw std::runtime_error("1 or 2 arguments expected(enable, mirror to screen");
 		bool mirrorToScreen = args.GetCount() == 2 ? args.GetBool(2) : true;
 		return view.EnableVRMode(args.GetBool(1), mirrorToScreen);
+	});
+
+	handler.RegisterFunction(START_BENCHMARK, [&](IArguments const& args) {
+		if (args.GetCount() != 0)
+			throw std::runtime_error("no arguments expected");
+		view::PerfomanceMeter::StartBenchmark();
+		return 0;
+	});
+
+	handler.RegisterFunction(STOP_BENCHMARK, [&](IArguments const& args) {
+		if (args.GetCount() != 1)
+			throw std::runtime_error("1 argument expected - filepath");
+		const auto path = args.GetPath(1);
+		view::PerfomanceMeter::EndBenchmark(fileProvider.GetAbsolutePath(path));
+		return 0;
 	});
 }
 

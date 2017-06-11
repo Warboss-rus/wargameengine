@@ -148,7 +148,22 @@ void RegisterViewport(IScriptHandler& handler, view::View& view)
 		auto object = reinterpret_cast<model::IObject*>(args.GetClassInstance(1));
 		CVector3f offset(args.GetFloat(2), args.GetFloat(3), args.GetFloat(4));
 		camera.AttachToObject(object, offset);
-		camera.ResetInput();
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, CAMERA_RESET_INPUT, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 0)
+			throw std::runtime_error("no arguments expected ()");
+		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
+		viewport->GetCamera().ResetInput();
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, CAMERA_ATTACH_KEYBOARD_MOUSE, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 0)
+			throw std::runtime_error("no arguments expected ()");
+		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
+		viewport->GetCamera().AttachToKeyboardMouse();
 		return nullptr;
 	});
 

@@ -36,6 +36,7 @@ function End()
 		Start()
 	else
 		PlaySound("cart_sounds", "", 0.0)
+		StopBenchmark("benchmark.csv")
 	end
 end
 
@@ -176,6 +177,7 @@ function Start()
 		47.5, 48, 48.5, 49, 49.5, 50, 50.5, 51, 51.5, 51.5, 52.5, 53, 53.5, 54, 54.5, 55, 55.5, 56, 56.5, 56.5, 57.5, 58.5, 60, 60.5, 61.5, 70, 70.5, 72, 73, 74}
 	
 	cart:MovePath(positions, rotations, timestamps, "spline3")
+	StartBenchmark()
 end
 
 function StartLoop()
@@ -195,10 +197,12 @@ function Camera()
 		Viewport:CameraFirstPerson()
 		Viewport:CameraAttachToObject(cart, 0, 0, 2)
 		Viewport:SetCameraTarget(1, 0, 2)
+		Viewport:CameraResetInput()
 	else
 		Viewport:CameraAttachToObject(nil, 0, 0, 0)
 		Viewport:CameraStrategy(30, 60, 5, 0.5)
 		Viewport:SetCameraPosition(-10, 0, 10)
+		Viewport:CameraAttachKeyboardMouse()
 	end
 end
 

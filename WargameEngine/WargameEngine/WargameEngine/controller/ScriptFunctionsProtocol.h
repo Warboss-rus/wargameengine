@@ -110,6 +110,10 @@
 
 #define ENABLE_VR L"EnableVR"
 
+#define START_BENCHMARK L"StartBenchmark"
+
+#define STOP_BENCHMARK L"StopBenchmark"
+
 /*CONTROLLER*/
 
 #define LOAD_MODULE L"LoadModule"
