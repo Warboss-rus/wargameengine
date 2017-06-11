@@ -1,7 +1,9 @@
 apply plugin: 'com.android.model.$(ConfigurationType)'
 
 model {
-    android {
+	def signConf
+
+	android {
         compileSdkVersion = $(AndroidAPILevelNumber)
         buildToolsVersion = "$(AndroidBuildToolsVersion)"
 
@@ -14,10 +16,21 @@ model {
         }
     }
 
+	android.signingConfigs {
+		create("release") {
+			storeFile = file('my-release-key.keystore')
+			storePassword = "my_password"
+			keyAlias = "my-key-alias"
+			keyPassword = "my_password"
+			signConf = it
+		}
+	}
+
     android.buildTypes {
         release {
             minifyEnabled = false
             proguardFiles.add(file('proguard-rules.txt'))
+			signingConfig = signConf
         }
     }
 

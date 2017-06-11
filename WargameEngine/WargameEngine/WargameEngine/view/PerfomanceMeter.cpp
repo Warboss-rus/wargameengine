@@ -68,7 +68,7 @@ long long PerfomanceMeter::GetDrawCalls()
 
 size_t PerfomanceMeter::GetFps()
 {
-	return static_cast<size_t>(abs(GetInstance()->m_fps));
+	return static_cast<size_t>(fabs(GetInstance()->m_fps));
 }
 
 void PerfomanceMeter::StartBenchmark()

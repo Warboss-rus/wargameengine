@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="D:\wargameengine\WargameEngine\WargameEngine\WargameEngineMobile\WargameEngineMobileGoogleVR\app\build\intermediates\exploded-aar\com.google.vr\sdk-base\1.60.0\jars\classes.jar"
+        jumboMode="false"
+        revision="24.0.3"
+        sha1="dce54455e26adb512010659a21a73c43218f8d3e">
+        <dex dex="D:\wargameengine\WargameEngine\WargameEngine\WargameEngineMobile\WargameEngineMobileGoogleVR\app\build\intermediates\pre-dexed\arm8\debug\com.google.vr-sdk-base-1.60.0_da5d49585bfe7634201800797eb44d8917d4727e.jar" />
+    </item>
+    <item
+        jar="C:\Users\Urgak\.gradle\caches\modules-2\files-2.1\com.google.protobuf.nano\protobuf-javanano\3.1.0\5110f05deac8f15244897b3f70e9ce413468771d\protobuf-javanano-3.1.0.jar"
+        jumboMode="false"
+        revision="24.0.3"
+        sha1="5110f05deac8f15244897b3f70e9ce413468771d">
+        <dex dex="D:\wargameengine\WargameEngine\WargameEngine\WargameEngineMobile\WargameEngineMobileGoogleVR\app\build\intermediates\pre-dexed\arm8\debug\protobuf-javanano-3.1.0_e8f7e90d991b25379d02617f1d44830a92832ba7.jar" />
+    </item>
+    <item
+        jar="D:\wargameengine\WargameEngine\WargameEngine\WargameEngineMobile\WargameEngineMobileGoogleVR\app\build\intermediates\exploded-aar\com.google.vr\sdk-common\1.60.0\jars\classes.jar"
+        jumboMode="false"
+        revision="24.0.3"
+        sha1="136918c2d04b9577fa13a821aa2df5b0618fe627">
+        <dex dex="D:\wargameengine\WargameEngine\WargameEngine\WargameEngineMobile\WargameEngineMobileGoogleVR\app\build\intermediates\pre-dexed\arm8\debug\com.google.vr-sdk-common-1.60.0_dfe874f53f73ed4e34a4adf3cbee33b6f9534ce7.jar" />
+    </item>
+    <item
+        jar="D:\wargameengine\WargameEngine\WargameEngine\WargameEngineMobile\WargameEngineMobileGoogleVR\app\libs\fmod.jar"
+        jumboMode="false"
+        revision="24.0.3"
+        sha1="d671153351741ed7470e52794d2acf53e4190ab6">
+        <dex dex="D:\wargameengine\WargameEngine\WargameEngine\WargameEngineMobile\WargameEngineMobileGoogleVR\app\build\intermediates\pre-dexed\arm8\debug\fmod_3a9ba76cacbc4e339b79b991cbfd7c917b8ffa4f.jar" />
+    </item>
+
+</items>
