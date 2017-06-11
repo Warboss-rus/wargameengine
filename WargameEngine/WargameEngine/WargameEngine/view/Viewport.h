@@ -51,6 +51,8 @@ public:
 	void SetShadowViewport(IViewport* viewport) { m_shadowMapViewport = viewport; }
 	void SetUpShadowMap() const;
 	IViewport* GetShadowViewport() const { return m_shadowMapViewport; }
+	bool NeedsFrustumCulling() const { return m_frustumCulling; }
+	void EnableFrustumCulling(bool enable) { m_frustumCulling = enable; }
 
 private:
 	Camera m_camera;
@@ -72,6 +74,7 @@ private:
 	std::vector<std::unique_ptr<ICachedTexture>> m_textures;
 	bool m_depthOnly;
 	bool m_resize;
+	bool m_frustumCulling = true;
 };
 }
 }

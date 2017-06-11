@@ -1,6 +1,7 @@
 AddLight()
 SetLightPosition(1, 0, 0, 30)
 CreateSkybox(10, "skybox")
+Viewport:EnableFrustumCulling(false)
 if(GetRendererName() == "DirectX11") then
 elseif(GetRendererName() == "OpenGLES") then
 	SetSkyboxShaders("GLES/skybox_multiview.vsh", "GLES/skybox.fsh")
@@ -192,8 +193,12 @@ function Camera()
 	firstPerson = not firstPerson
 	if(firstPerson) then
 		Viewport:CameraFirstPerson()
+		Viewport:CameraAttachToObject(cart, 0, 0, 2)
+		Viewport:SetCameraTarget(1, 0, 2)
 	else
+		Viewport:CameraAttachToObject(nil, 0, 0, 0)
 		Viewport:CameraStrategy(30, 60, 5, 0.5)
+		Viewport:SetCameraPosition(-10, 0, 10)
 	end
 end
 

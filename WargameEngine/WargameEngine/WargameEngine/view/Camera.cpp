@@ -3,6 +3,13 @@
 #define _USE_MATH_DEFINES
 #include "Matrix4.h"
 #include <math.h>
+#include "..\model\IObject.h"
+#pragma warning(push)
+#pragma warning(disable: 4201)
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm\gtc\type_ptr.hpp>
+#include <glm\gtx\euler_angles.hpp>
+#pragma warning(pop)
 
 namespace wargameEngine
 {
@@ -43,6 +50,23 @@ CVector3f operator*(const CVector3f& vect, const Matrix4F& matrix)
 	}
 	return CVector3f(result);
 }
+
+float radians(float val)
+{
+	return val * PI / 180.0f;
+}
+
+float degress(float val)
+{
+	return val * 180.0f / PI;
+}
+
+CVector3f RotateVector(const CVector3f& vec, const CVector3f& rotations)
+{
+	const glm::mat4 rotationMatrix = glm::eulerAngleXYZ(radians(rotations.x), radians(rotations.y), -radians(rotations.z));
+	const glm::vec4 result = glm::vec4(vec.x, vec.y, vec.z, 1.0f) * rotationMatrix;
+	return CVector3f(glm::value_ptr(result));
+}
 }
 
 Camera::Camera(IInput& input)
@@ -57,20 +81,32 @@ Camera::~Camera()
 
 CVector3f Camera::GetPosition() const
 {
+	auto position = m_position;
+	if (m_attachedObject)
+	{
+		auto offset = RotateVector(m_position, m_attachedObject->GetRotations());
+		position = m_attachedObject->GetCoords() + offset;
+	}
 	if (m_vrDevice != -1)
 	{
-		return m_position * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
+		position = position * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
 	}
-	return m_position;
+	return position;
 }
 
 CVector3f Camera::GetDirection() const
 {
+	auto target = m_target;
+	if (m_attachedObject)
+	{
+		auto offset = RotateVector(m_target, m_attachedObject->GetRotations());
+		target = m_attachedObject->GetCoords() + offset;
+	}
 	if (m_vrDevice != -1)
 	{
-		return m_target * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
+		return target * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
 	}
-	return m_target;
+	return target;
 }
 
 CVector3f Camera::GetUpVector() const
@@ -94,14 +130,29 @@ void Camera::Set(const CVector3f& position, const CVector3f& target /*= CVector3
 	m_up = up;
 }
 
+void Camera::SetPosition(const CVector3f& position)
+{
+	m_position = position;
+}
+
+void Camera::SetTarget(const CVector3f& target)
+{
+	m_target = target;
+}
+
+void Camera::SetUpVector(const CVector3f& upVec)
+{
+	m_up = upVec;
+}
+
 void Camera::Rotate(float dx, float dy, float dz)
 {
 	auto deltaVec = m_target - m_position;
 	float r = deltaVec.GetLength();
 	auto t = atan2(deltaVec.y, deltaVec.x);
 	auto p = acos(deltaVec.z / deltaVec.GetLength());
-	t += dx * PI / 180.0f;
-	p += dz * PI / 180.0f;
+	t += radians(dx);
+	p += radians(dz);
 	deltaVec.x = r * sin(p) * cos(t);
 	deltaVec.y = r * sin(p) * sin(t);
 	deltaVec.z = r * cos(p);
@@ -127,7 +178,7 @@ void Camera::Translate(float dx, float dy, float dz)
 	auto t = atan2(deltaVec.y, deltaVec.x);
 	auto p = acos(deltaVec.z / deltaVec.GetLength());
 	CVector3f delta(dx, dy, dz);
-	delta.x = dx * sin(t) + dy * cos(t);
+	delta.x = -dx * sin(t) + dy * cos(t);
 	delta.y = dx * cos(t) + dy * sin(t);
 	TranslateAbsolute(delta);
 }
@@ -256,6 +307,12 @@ void Camera::AttachToGamepad(size_t gamepadIndex)
 void Camera::AttachToVR(size_t deviceIndex)
 {
 	m_vrDevice = deviceIndex;
+}
+
+void Camera::AttachToObject(model::IObject* object, const CVector3f& offset)
+{
+	m_attachedObject = object;
+	m_position = offset;
 }
 
 void Camera::ResetInput()

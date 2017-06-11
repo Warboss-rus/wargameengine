@@ -6,6 +6,11 @@
 
 namespace wargameEngine
 {
+namespace model
+{
+class IObject;
+}
+
 namespace view
 {
 class IInput;
@@ -32,6 +37,9 @@ public:
 	const float GetScale() const;
 
 	void Set(const CVector3f& position, const CVector3f& target = CVector3f(), const CVector3f& up = CVector3f(0.0f, 0.0f, 1.0f));
+	void SetPosition(const CVector3f& position);
+	void SetTarget(const CVector3f& target);
+	void SetUpVector(const CVector3f& upVec);
 	void Rotate(float dx, float dy, float dz);
 	void Translate(float dx, float dy, float dz);
 	void TranslateAbsolute(const CVector3f& delta);
@@ -45,6 +53,7 @@ public:
 	void AttachToKeyboardMouse();
 	void AttachToGamepad(size_t gamepadIndex);
 	void AttachToVR(size_t deviceIndex);
+	void AttachToObject(model::IObject* object, const CVector3f& offset);
 	void ResetInput();
 
 private:
@@ -52,6 +61,7 @@ private:
 	CVector3f m_position = { 0.0f, -10.0f, 10.0f };
 	CVector3f m_target = { 0.0f, 0.0f, 0.0f };
 	CVector3f m_up = { 0.0f, 0.0f, 1.0f };
+	model::IObject* m_attachedObject = nullptr;
 	float m_scale = 1.0f;
 	Mode m_cameraMode = Mode::THIRD_PERSON;
 	float m_minTransX = -100.0f;

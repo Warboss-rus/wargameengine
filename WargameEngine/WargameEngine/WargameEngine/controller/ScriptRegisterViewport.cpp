@@ -79,6 +79,14 @@ void RegisterViewport(IScriptHandler& handler, view::View& view)
 		return nullptr;
 	});
 
+	handler.RegisterMethod(CLASS_VIEWPORT, ENABLE_FRUSTUM_CULLING, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 1)
+			throw std::runtime_error("1 argument expected (enable)");
+		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
+		viewport->EnableFrustumCulling(args.GetBool(1));
+		return nullptr;
+	});
+
 	handler.RegisterMethod(CLASS_VIEWPORT, CAMERA_STRATEGY, [&](void* instance, IArguments const& args) {
 		if (args.GetCount() != 4)
 			throw std::runtime_error("4 argument expected (max trans x, max trans y, max scale, min scale)");
@@ -99,6 +107,48 @@ void RegisterViewport(IScriptHandler& handler, view::View& view)
 		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
 		viewport->GetCamera().SetCameraMode(view::Camera::Mode::FIRST_PERSON);
 		viewport->GetCamera().Set(CVector3f(), CVector3f(0.0f, 1.0f, 0.0f));
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, SET_CAMERA_POSITION, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 3)
+			throw std::runtime_error("3 argument expected (x, y, z)");
+		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
+		auto& camera = viewport->GetCamera();
+		CVector3f pos(args.GetFloat(1), args.GetFloat(2), args.GetFloat(3));
+		camera.SetPosition(pos);
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, SET_CAMERA_TARGET, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 3)
+			throw std::runtime_error("3 argument expected (x, y, z)");
+		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
+		auto& camera = viewport->GetCamera();
+		CVector3f target(args.GetFloat(1), args.GetFloat(2), args.GetFloat(3));
+		camera.SetTarget(target);
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, SET_CAMERA_UP_VECTOR, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 3)
+			throw std::runtime_error("3 argument expected (x, y, z)");
+		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
+		auto& camera = viewport->GetCamera();
+		CVector3f up(args.GetFloat(1), args.GetFloat(2), args.GetFloat(3));
+		camera.SetUpVector(up);
+		return nullptr;
+	});
+
+	handler.RegisterMethod(CLASS_VIEWPORT, CAMERA_ATTACH_TO_OBJECT, [&](void* instance, IArguments const& args) {
+		if (args.GetCount() != 4)
+			throw std::runtime_error("4 argument expected (object, offsetX, offsetY, offsetZ)");
+		auto viewport = instance ? static_cast<view::Viewport*>(instance) : &view.GetViewport(0);
+		auto& camera = viewport->GetCamera();
+		auto object = reinterpret_cast<model::IObject*>(args.GetClassInstance(1));
+		CVector3f offset(args.GetFloat(2), args.GetFloat(3), args.GetFloat(4));
+		camera.AttachToObject(object, offset);
+		camera.ResetInput();
 		return nullptr;
 	});
 

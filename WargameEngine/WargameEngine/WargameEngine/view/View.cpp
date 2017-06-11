@@ -366,12 +366,12 @@ void View::CollectMeshes()
 	auto notVisibleInFrustum = [this](const model::IBaseObject* obj) {
 		for (auto& viewport : m_viewports)
 		{
-			if (IsOutsideFrustum(m_viewHelper, viewport, obj))
+			if (!viewport.NeedsFrustumCulling() || !IsOutsideFrustum(m_viewHelper, viewport, obj))
 			{
-				return true;
+				return false;
 			}
 		}
-		return false;
+		return true;
 	};
 	std::vector<model::IBaseObject*> objects = m_model->GetAllBaseObjects();
 	m_meshesToDraw.reserve(objects.size() * 10);
