@@ -4,12 +4,6 @@
 #include "Matrix4.h"
 #include <math.h>
 #include "..\model\IObject.h"
-#pragma warning(push)
-#pragma warning(disable: 4201)
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
-#include <glm\gtx\euler_angles.hpp>
-#pragma warning(pop)
 
 namespace wargameEngine
 {
@@ -61,11 +55,19 @@ float degress(float val)
 	return val * 180.0f / PI;
 }
 
-CVector3f RotateVector(const CVector3f& vec, const CVector3f& rotations)
+CVector3f RotateVector(CVector3f vec, const CVector3f& rotations)
 {
-	const glm::mat4 rotationMatrix = glm::eulerAngleXYZ(radians(rotations.x), radians(rotations.y), -radians(rotations.z));
-	const glm::vec4 result = glm::vec4(vec.x, vec.y, vec.z, 1.0f) * rotationMatrix;
-	return CVector3f(glm::value_ptr(result));
+	const CVector3f radRot(radians(rotations.x), radians(rotations.y) * (rotations.z > 0.0f ? -1.0f : 1.0f), radians(rotations.z));
+	CVector3f result = vec;
+	result.z = vec.z * cos(radRot.y) - vec.x * sin(radRot.y);
+	result.x = vec.z * sin(radRot.y) + vec.x * cos(radRot.y);
+	vec = result;
+	result.x = vec.x * cos(radRot.z) - vec.y * sin(radRot.z);
+	result.y = vec.x * sin(radRot.z) + vec.y * cos(radRot.z);
+	vec = result;
+	result.y = vec.y * cos(radRot.x) - vec.z * sin(radRot.x);
+	result.z = vec.y * sin(radRot.x) + vec.z * cos(radRot.x);
+	return result;
 }
 }
 
@@ -318,7 +320,7 @@ void Camera::AttachToObject(model::IObject* object, const CVector3f& offset)
 void Camera::ResetInput()
 {
 	m_inputConnections.clear();
-	m_vrDevice = -1;
+	//m_vrDevice = -1;
 }
 }
 }
