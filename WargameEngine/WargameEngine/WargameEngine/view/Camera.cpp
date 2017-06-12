@@ -89,10 +89,6 @@ CVector3f Camera::GetPosition() const
 		auto offset = RotateVector(m_position, m_attachedObject->GetRotations());
 		position = m_attachedObject->GetCoords() + offset;
 	}
-	if (m_vrDevice != -1)
-	{
-		position = position * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
-	}
 	return position;
 }
 
@@ -106,7 +102,8 @@ CVector3f Camera::GetDirection() const
 	}
 	if (m_vrDevice != -1)
 	{
-		return target * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
+		const auto position = GetPosition();
+		target = position + (target - position) * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
 	}
 	return target;
 }
