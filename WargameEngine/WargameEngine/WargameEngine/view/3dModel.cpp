@@ -68,7 +68,15 @@ void C3DModel::GetModelMeshes(IRenderer& renderer, TextureManager& textureManage
 		}
 		Material* material = mesh.material;
 		ICachedTexture* texture = GetTexturePtr(material, replaceTextures, textureManager, teamcolor);
-		meshesVec.emplace_back(DrawableMesh{ nullptr, texture, material, vertexBuffer, modelMatrix * mesh.meshTransform, tempBuffer, skeleton, mesh.begin, mesh.end - mesh.begin, indexed });
+		auto& prev = meshesVec.back();
+		if (prev.buffer == vertexBuffer && material == prev.material && texture == prev.texturePtr && prev.start + prev.count == mesh.begin)
+		{
+			prev.count += mesh.end - mesh.begin;
+		}
+		else
+		{
+			meshesVec.emplace_back(DrawableMesh{ nullptr, texture, material, vertexBuffer, modelMatrix * mesh.meshTransform, tempBuffer, skeleton, mesh.begin, mesh.end - mesh.begin, indexed });
+		}
 	}
 }
 

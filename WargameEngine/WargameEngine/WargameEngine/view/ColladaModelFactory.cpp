@@ -739,6 +739,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 								MultiplyVectorToMatrix(vertex, bindShapeMatrices[meshId].data());
 								vertices.push_back(vertex);
 								normals.push_back(CVector3f(&normal[currentIndexes[normalOffset] * 3]));
+								if(currentIndexes[texcoordOffset] * texCoordStride < texcoord.size())
 								textureCoords.push_back(CVector2f(&texcoord[currentIndexes[texcoordOffset] * texCoordStride]));
 								indexes.push_back(static_cast<unsigned>(vertices.size() - 1));
 								if (controllerLib)
