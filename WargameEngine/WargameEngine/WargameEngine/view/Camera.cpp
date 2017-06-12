@@ -55,15 +55,22 @@ float degress(float val)
 	return val * 180.0f / PI;
 }
 
+float normalizeDegree(float degree)
+{
+	while (degree > 180.0f) degree -= 360.0f;
+	while (degree < -180.0f) degree += 360.0f;
+	return degree;
+}
+
 CVector3f RotateVector(CVector3f vec, const CVector3f& rotations)
 {
-	const CVector3f radRot(radians(rotations.x), radians(rotations.y) * (rotations.z > 0.0f ? -1.0f : 1.0f), radians(rotations.z));
+	const CVector3f radRot(radians(normalizeDegree(rotations.y)), radians(normalizeDegree(rotations.x)), radians(normalizeDegree(rotations.z)));
 	CVector3f result = vec;
-	result.z = vec.z * cos(radRot.y) - vec.x * sin(radRot.y);
-	result.x = vec.z * sin(radRot.y) + vec.x * cos(radRot.y);
-	vec = result;
 	result.x = vec.x * cos(radRot.z) - vec.y * sin(radRot.z);
 	result.y = vec.x * sin(radRot.z) + vec.y * cos(radRot.z);
+	vec = result;
+	result.z = vec.z * cos(radRot.y) - vec.x * sin(radRot.y);
+	result.x = vec.z * sin(radRot.y) + vec.x * cos(radRot.y);
 	vec = result;
 	result.y = vec.y * cos(radRot.x) - vec.z * sin(radRot.x);
 	result.z = vec.y * sin(radRot.x) + vec.z * cos(radRot.x);

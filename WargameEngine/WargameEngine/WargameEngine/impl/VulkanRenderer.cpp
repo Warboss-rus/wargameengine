@@ -737,6 +737,21 @@ void CVulkanRenderer::Draw(IVertexBuffer& buffer, size_t count, size_t begin, si
 	vkCmdDraw(*m_activeCommandBuffer, count, (instances > 1 ? static_cast<uint32_t>(instances) : 1), static_cast<uint32_t>(begin), 0);
 }
 
+void CVulkanRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed)
+{
+	for (auto& indirect : indirectList)
+	{
+		if (indexed)
+		{
+			DrawIndexed(buffer, indirect.count, indirect.start, indirect.instances);
+		}
+		else
+		{
+			Draw(buffer, indirect.count, indirect.start, indirect.instances);
+		}
+	}
+}
+
 void CVulkanRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
 {
 	if (!indexPtr || indexesSize == 0)

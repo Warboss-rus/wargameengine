@@ -4,8 +4,9 @@
 #include "../view/IViewport.h"
 #include "../view/TextureManager.h"
 #include <GLES2/gl2ext.h> //GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT
-#include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 #include "../view/PerfomanceMeter.h"
+#include <algorithm>
 
 using namespace std;
 using namespace wargameEngine;
@@ -308,6 +309,74 @@ void COpenGLESRenderer::Draw(IVertexBuffer& vertexBuffer, size_t count, size_t b
 		glDrawArrays(GL_TRIANGLES, static_cast<GLsizei>(begin), static_cast<GLsizei>(count));
 	}
 	PerfomanceMeter::ReportDraw(instances > 1 ? instances * count : count, RenderMode::Triangles);
+}
+
+typedef struct {
+	GLuint count;
+	GLuint primCount;
+	GLuint firstIndex;
+	GLuint baseVertex;
+	GLuint baseInstance;
+} DrawElementsIndirectCommand;
+
+typedef  struct {
+	GLuint  count;
+	GLuint  primCount;
+	GLuint  first;
+	GLuint  baseInstance;
+} DrawArraysIndirectCommand;
+
+void COpenGLESRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed)
+{
+	if (m_version > 3 && indirectList.size() > 5)
+	{
+		reinterpret_cast<COpenGLESVertexBuffer&>(buffer).Bind(*this, m_shaderManager);
+		m_matrixManager.UpdateMatrices(m_shaderManager);
+		if (!m_drawIndirectBuffer)
+		{
+			glGenBuffers(1, &m_drawIndirectBuffer);
+		}
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_drawIndirectBuffer);
+		if (indexed)
+		{
+			std::vector<DrawElementsIndirectCommand> commands;
+			std::transform(indirectList.begin(), indirectList.end(), std::back_inserter(commands), [](const IndirectDraw& indirect) {
+				return DrawElementsIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0, 0 };
+			});
+			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawElementsIndirectCommand), commands.data(), GL_STREAM_DRAW);
+			for (size_t i = 0; i < indirectList.size(); ++i)
+			{
+				glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)(i * sizeof(DrawElementsIndirectCommand)));
+			}
+		}
+		else
+		{
+			std::vector<DrawArraysIndirectCommand> commands;
+			std::transform(indirectList.begin(), indirectList.end(), std::back_inserter(commands), [](const IndirectDraw& indirect) {
+				return DrawArraysIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0 };
+			});
+			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawArraysIndirectCommand), commands.data(), GL_STREAM_DRAW);
+			glDrawArraysIndirect(GL_TRIANGLES, 0);
+		}
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		PerfomanceMeter::ReportDraw(std::accumulate(indirectList.begin(), indirectList.end(), 0, [](size_t sum, const IndirectDraw& command) {
+			return sum += command.count * command.instances;
+		}), RenderMode::Triangles);
+	}
+	else
+	{
+		for (auto& indirect : indirectList)
+		{
+			if (indexed)
+			{
+				DrawIndexed(buffer, indirect.count, indirect.start, indirect.instances);
+			}
+			else
+			{
+				Draw(buffer, indirect.count, indirect.start, indirect.instances);
+			}
+		}
+	}
 }
 
 void COpenGLESRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)

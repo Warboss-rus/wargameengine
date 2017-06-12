@@ -477,6 +477,69 @@ void CLegacyGLRenderer::Draw(IVertexBuffer& buffer, size_t count, size_t begin, 
 	}
 }
 
+typedef struct {
+	unsigned count;
+	unsigned primCount;
+	unsigned firstIndex;
+	unsigned baseVertex;
+	unsigned baseInstance;
+} DrawElementsIndirectCommand;
+
+typedef  struct {
+	GLuint  count;
+	GLuint  primCount;
+	GLuint  first;
+	GLuint  baseInstance;
+} DrawArraysIndirectCommand;
+
+void CLegacyGLRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed)
+{
+	if (GL_ARB_draw_indirect && indirectList.size() > 5)
+	{
+		reinterpret_cast<CLegacyGLVertexBuffer&>(buffer).Bind();
+		GLuint drawIndirectBuffer;
+		glGenBuffers(1, &drawIndirectBuffer);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, drawIndirectBuffer);
+		if (indexed)
+		{
+			std::vector<DrawElementsIndirectCommand> commands;
+			std::transform(indirectList.begin(), indirectList.end(), std::back_inserter(commands), [](const IndirectDraw& indirect) {
+				return DrawElementsIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0, 0 };
+			});
+			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawElementsIndirectCommand), commands.data(), GL_STREAM_DRAW);
+			for (size_t i = 0; i < indirectList.size(); ++i)
+			{
+				glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)(i * sizeof(DrawElementsIndirectCommand)));
+			}
+		}
+		else
+		{
+			std::vector<DrawArraysIndirectCommand> commands;
+			std::transform(indirectList.begin(), indirectList.end(), std::back_inserter(commands), [](const IndirectDraw& indirect) {
+				return DrawArraysIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0 };
+			});
+			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawArraysIndirectCommand), commands.data(), GL_STREAM_DRAW);
+			glDrawArraysIndirect(GL_TRIANGLES, 0);
+		}
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		glDeleteBuffers(1, &drawIndirectBuffer);
+	}
+	else
+	{
+		for (auto& indirect : indirectList)
+		{
+			if (indexed)
+			{
+				DrawIndexed(buffer, indirect.count, indirect.start, indirect.instances);
+			}
+			else
+			{
+				Draw(buffer, indirect.count, indirect.start, indirect.instances);
+			}
+		}
+	}
+}
+
 void CLegacyGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
 {
 	reinterpret_cast<CLegacyGLVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);

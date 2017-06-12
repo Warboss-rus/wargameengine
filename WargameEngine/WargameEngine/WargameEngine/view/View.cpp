@@ -457,8 +457,18 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 	Material* material = nullptr;
 	Matrix4F prevMatrix;
 
-	for (const DrawableMesh& mesh : list)
+	static std::vector<IRenderer::IndirectDraw> multiDrawList;
+
+	for (auto it = list.begin(); it != list.end(); ++it)
 	{
+		const DrawableMesh& mesh = *it;
+		const auto next = it + 1;
+		if (next != list.cend() && next->buffer == mesh.buffer && next->texturePtr == mesh.texturePtr && next->material == mesh.material && !next->tempBuffer)
+		{
+			multiDrawList.push_back({ mesh.start, mesh.count, 1 });
+			continue;
+		}
+
 		if (mesh.shader && !shadowOnly)
 		{
 			shaderManager.PushProgram(*mesh.shader);
@@ -520,14 +530,24 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 			buffer = tempBuffer.get();
 		}
 
-		if (mesh.indexed)
+		if (!multiDrawList.empty())
 		{
-			renderer.DrawIndexed(*buffer, mesh.count, mesh.start);
+			multiDrawList.push_back({ mesh.start, mesh.count, 1 });
+			m_renderer.DrawIndirect(*buffer, multiDrawList, mesh.indexed);
+			multiDrawList.clear();
 		}
 		else
 		{
-			renderer.Draw(*buffer, mesh.count, mesh.start);
+			if (mesh.indexed)
+			{
+				renderer.DrawIndexed(*buffer, mesh.count, mesh.start);
+			}
+			else
+			{
+				renderer.Draw(*buffer, mesh.count, mesh.start);
+			}
 		}
+
 		if (!texture && mesh.material)
 		{
 			m_renderer.SetColor(0, 0, 0);
@@ -543,6 +563,7 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 		}
 	}
 	m_renderer.SetModelMatrix(Matrix4F());
+	multiDrawList.clear();
 }
 
 void View::CollectTableMeshes()

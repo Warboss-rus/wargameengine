@@ -57,10 +57,18 @@ public:
 		Instancing,
 	};
 
+	struct IndirectDraw
+	{
+		size_t start;
+		size_t count;
+		size_t instances;
+	};
+
 	virtual void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) = 0;
 	virtual void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) = 0;
 	virtual void Draw(IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) = 0;
 	virtual void DrawIndexed(IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) = 0;
+	virtual void DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed) = 0;
 	virtual void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) = 0;
 	virtual void AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance = false) = 0;
 
