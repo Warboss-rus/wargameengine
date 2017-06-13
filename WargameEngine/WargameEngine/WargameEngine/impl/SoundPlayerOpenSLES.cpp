@@ -3,6 +3,8 @@
 #include <android/asset_manager.h>
 #include "../LogWriter.h"
 
+using namespace wargameEngine;
+
 void CSoundPlayerOpenSLES::Init()
 {
 	const SLInterfaceID pIDs[1] = { SL_IID_ENGINE };
@@ -51,7 +53,7 @@ ResourseDescriptor loadResourceDescriptor(const char* path) {
 	return resourceDescriptor;
 }
 
-void CSoundPlayerOpenSLES::Play(std::wstring const& channel, std::wstring const& file, float volume /*= 1.0f*/)
+void CSoundPlayerOpenSLES::Play(const std::wstring& channel, const Path& file, float volume /*= 1.0f*/)
 {
 	ResourseDescriptor resourceDescriptor = loadResourceDescriptor("myMusic.mp3");
 	SLDataLocator_AndroidFD locatorIn = {
@@ -85,24 +87,24 @@ void CSoundPlayerOpenSLES::Play(std::wstring const& channel, std::wstring const&
 	(*player)->SetPlayState(player, SL_PLAYSTATE_PLAYING);
 }
 
-void CSoundPlayerOpenSLES::PlaySoundPosition(std::wstring const& channel, std::wstring const& file, CVector3f const& position, float volume /*= 1.0f*/)
+void CSoundPlayerOpenSLES::PlaySoundPosition(const std::wstring& channel, const Path& file, const CVector3f& position, float volume /*= 1.0f*/)
 {
 	Play(channel, file, volume);
 }
 
-void CSoundPlayerOpenSLES::PlaySoundPlaylist(std::wstring const& name, std::vector<std::wstring> const& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
+void CSoundPlayerOpenSLES::PlaySoundPlaylist(const std::wstring& name, const std::vector<Path>& files, float volume /*= 1.0f*/, bool shuffle /*= false*/, bool repeat /*= false*/)
 {
 }
 
-void CSoundPlayerOpenSLES::SetListenerPosition(CVector3f const& position, CVector3f const& center)
+void CSoundPlayerOpenSLES::SetListenerPosition(const CVector3f& position, const CVector3f& center)
 {
 }
 
-void CSoundPlayerOpenSLES::PauseChannel(std::wstring const& name, bool pause)
+void CSoundPlayerOpenSLES::PauseChannel(const std::wstring& name, bool pause)
 {
 }
 
-void CSoundPlayerOpenSLES::StopChannel(std::wstring const& name)
+void CSoundPlayerOpenSLES::StopChannel(const std::wstring& name)
 {
 }
 

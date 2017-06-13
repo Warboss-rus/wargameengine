@@ -1,0 +1,5533 @@
+# Max2Mtl Version 4.0 Mar 10th, 2001
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__35
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID466
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture.jpg
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__45
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID466
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture.jpg
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__55
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__65
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__75
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__85
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID122
+Ka  0.6 0.6 0.6
+Kd  0.5 0.5 0.5
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__95
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__105
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__115
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID157
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__125
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID122
+Ka  0.6 0.6 0.6
+Kd  0.5 0.5 0.5
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__135
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID157
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__145
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__155
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__165
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__175
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__185
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID157
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__195
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__205
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_3-MultiMaterial (3) to come 
+#
+newmtl Material__215
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub group_3-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__225
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__235
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__245
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__255
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__265
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__275
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__285
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__295
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID122
+Ka  0.6 0.6 0.6
+Kd  0.5 0.5 0.5
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__305
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__315
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__325
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID157
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__335
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID122
+Ka  0.6 0.6 0.6
+Kd  0.5 0.5 0.5
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__345
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID157
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__355
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__365
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__375
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__385
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__395
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID157
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__405
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__415
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_3-MultiMaterial (3) to come 
+#
+newmtl Material__425
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID96
+Ka  0.6 0.6 0.6
+Kd  0.4 0.4 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub group_3-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__435
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__445
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__455
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID6
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__465
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID54
+Ka  0.6 0.6 0.6
+Kd  0.3 0.3 0.3
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID49
+Ka  0.6 0.6 0.6
+Kd  1.0 0.4 0.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID485
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Blue1.jpg
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__475
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+newmtl ID485
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Blue1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__485
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID485
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Blue1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__495
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+newmtl ID485
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Blue1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__505
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID485
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Blue1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__515
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__525
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__535
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__545
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__555
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__565
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__575
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__585
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1505
+Ka  0.6 0.6 0.6
+Kd  0.2 0.3 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__595
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__605
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__615
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1178
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd __Metal_Rough__copy4.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__625
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__635
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__645
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1178
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd __Metal_Rough__copy4.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__655
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1505
+Ka  0.6 0.6 0.6
+Kd  0.2 0.3 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__665
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__675
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__685
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1586
+Ka  0.6 0.6 0.6
+Kd  1.0 1.0 1.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__695
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1586
+Ka  0.6 0.6 0.6
+Kd  1.0 1.0 1.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__705
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__715
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID597
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__725
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID612
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd orangeBreaklight.jpg
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__735
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__745
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID730
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd redBreaklight.jpg
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__755
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__765
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__775
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID864
+Ka  0.6 0.6 0.6
+Kd  0.1 0.1 0.1
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__785
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__795
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__805
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__815
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__825
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__835
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__845
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID864
+Ka  0.6 0.6 0.6
+Kd  0.1 0.1 0.1
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_14-MultiMaterial (3) to come 
+#
+newmtl Material__855
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub group_14-MultiMaterial done 
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__865
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__875
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID969
+Ka  0.6 0.6 0.6
+Kd  0.1 0.1 0.1
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__885
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID980
+Ka  0.6 0.6 0.6
+Kd  0.3 0.6 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_16-MultiMaterial (3) to come 
+#
+newmtl Material__895
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub group_16-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__905
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__915
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__925
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_20-MultiMaterial (3) to come 
+#
+newmtl Material__935
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub group_20-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__945
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__955
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__965
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__975
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_21-MultiMaterial (3) to come 
+#
+newmtl Material__985
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub group_21-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__995
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1005
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1015
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID1138
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd HEADLIGHT1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1025
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID1151
+Ka  0.6 0.6 0.6
+Kd  1.0 1.0 1.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1035
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1178
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd __Metal_Rough__copy4.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1045
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1055
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1065
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID466
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture.jpg
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (17) to come 
+#
+newmtl Material__1075
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID466
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture.jpg
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1221
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_1.jpg
+#
+newmtl ID1226
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_2.jpg
+#
+newmtl ID1231
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_3.jpg
+#
+newmtl ID1236
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_4.jpg
+#
+newmtl ID1241
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_5.jpg
+#
+newmtl ID1246
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_6.jpg
+#
+newmtl ID1251
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_7.jpg
+#
+newmtl ID1256
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_8.jpg
+#
+newmtl ID1261
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_9.jpg
+#
+newmtl ID1266
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_10.jpg
+#
+newmtl ID1271
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_11.jpg
+#
+newmtl ID1276
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_12.jpg
+#
+newmtl ID1281
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_13.jpg
+#
+newmtl ID1286
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_14.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1092
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1102
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1112
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1330
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1122
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1132
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1142
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1152
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1162
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1172
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1330
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1192
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1202
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1212
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1222
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1232
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1242
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1252
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1262
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1505
+Ka  0.6 0.6 0.6
+Kd  0.2 0.3 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1272
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1282
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1292
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1178
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd __Metal_Rough__copy4.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1302
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1312
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1322
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1178
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd __Metal_Rough__copy4.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1332
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1505
+Ka  0.6 0.6 0.6
+Kd  0.2 0.3 0.4
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1342
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1352
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1362
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1586
+Ka  0.6 0.6 0.6
+Kd  1.0 1.0 1.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1372
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1586
+Ka  0.6 0.6 0.6
+Kd  1.0 1.0 1.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1382
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1392
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID597
+Ka  0.6 0.6 0.6
+Kd  0.7 0.7 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1402
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID612
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd orangeBreaklight.jpg
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1412
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1422
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID730
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd redBreaklight.jpg
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1432
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1442
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1452
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID864
+Ka  0.6 0.6 0.6
+Kd  0.1 0.1 0.1
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1462
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1472
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1482
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1492
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1502
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1512
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1522
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID864
+Ka  0.6 0.6 0.6
+Kd  0.1 0.1 0.1
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_14-MultiMaterial (3) to come 
+#
+newmtl Material__1532
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub group_14-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1542
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1552
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID891
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1562
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID980
+Ka  0.6 0.6 0.6
+Kd  0.3 0.6 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_16-MultiMaterial (3) to come 
+#
+newmtl Material__1572
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub group_16-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1592
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1602
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_20-MultiMaterial (3) to come 
+#
+newmtl Material__1612
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub group_20-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1622
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1632
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1642
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1652
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1016
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd material_3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub group_21-MultiMaterial (3) to come 
+#
+newmtl Material__1662
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub group_21-MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1672
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1682
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID498
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny_.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1692
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID1138
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd HEADLIGHT1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1702
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID582
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Metal_Corrogated_Shiny__0.jpg
+#
+newmtl ID1151
+Ka  0.6 0.6 0.6
+Kd  1.0 1.0 1.0
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1712
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1178
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd __Metal_Rough__copy4.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1722
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1732
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID949
+Ka  0.6 0.6 0.6
+Kd  0.2 0.2 0.2
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1742
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID466
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture.jpg
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (17) to come 
+#
+newmtl Material__1752
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID466
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture.jpg
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1221
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_1.jpg
+#
+newmtl ID1226
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_2.jpg
+#
+newmtl ID1231
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_3.jpg
+#
+newmtl ID1236
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_4.jpg
+#
+newmtl ID1241
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_5.jpg
+#
+newmtl ID1246
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_6.jpg
+#
+newmtl ID1251
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_7.jpg
+#
+newmtl ID1256
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_8.jpg
+#
+newmtl ID1261
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_9.jpg
+#
+newmtl ID1266
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_10.jpg
+#
+newmtl ID1271
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_11.jpg
+#
+newmtl ID1276
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_12.jpg
+#
+newmtl ID1281
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_13.jpg
+#
+newmtl ID1286
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd metal_texture_14.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1769
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID577
+Ka  0.6 0.6 0.6
+Kd  0.8 0.8 0.8
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1779
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID511
+Ka  0.6 0.6 0.6
+Kd  0.3 0.5 0.7
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1789
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1330
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1799
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1809
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1819
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1829
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1839
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1301
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat3.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# Multi/Sub -MultiMaterial (3) to come 
+#
+newmtl Material__1849
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#
+newmtl ID1339
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leather2.jpg
+#
+newmtl ID1330
+Ka  0.6 0.6 0.6
+Kd  0.6 0.6 0.6
+Ks  0.9 0.9 0.9
+d  1.0
+Ns  0.0
+illum 2
+#map_Kd Leatherseat1.jpg
+#
+# Multi/Sub -MultiMaterial done 
+#
+# EOF

@@ -1,8 +1,10 @@
 #pragma once
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
+namespace wargameEngine
+{
 class ITask;
 
 class ThreadPool
@@ -24,8 +26,8 @@ public:
 	void CancelAll();
 	//Task internal functions
 	void AddTask(std::shared_ptr<ITask> task);
-	void RemoveTask(ITask * task);
-	void WaitForTask(ITask & task);
+	void RemoveTask(ITask* task);
+	void WaitForTask(ITask& task);
 	size_t AddTimedCallback(CallbackHandler const& func, unsigned int time, bool repeat = false, bool executeSkipped = false);
 	void RemoveTimedCallback(size_t index);
 	enum flags
@@ -36,6 +38,8 @@ public:
 		FLAG_FAST_FUNCTION = 2
 	};
 	struct Impl;
+
 private:
 	std::unique_ptr<Impl> m_pImpl;
 };
+}

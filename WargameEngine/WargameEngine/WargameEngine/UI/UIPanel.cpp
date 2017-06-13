@@ -1,17 +1,30 @@
 #include "UIPanel.h"
-#include "UITheme.h"
 #include "../view/IRenderer.h"
+#include "UITheme.h"
 
-void CUIPanel::Draw() const
+namespace wargameEngine
 {
-	if(!m_visible)
+namespace ui
+{
+
+UIPanel::UIPanel(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter)
+	: UIElement(x, y, height, width, parent, textWriter)
+{
+}
+
+void UIPanel::Draw(view::IRenderer& renderer) const
+{
+	if (!m_visible)
 		return;
-	m_renderer.PushMatrix();
-	m_renderer.Translate(GetX(), GetY(), 0);
-	m_renderer.SetColor(m_theme->defaultColor);
-	m_renderer.RenderArrays(RenderMode::TRIANGLE_STRIP,
-	{ CVector2i(0, 0), { 0, GetHeight() },{ GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
-	m_renderer.SetColor(0.0f,0.0f,0.0f);
-	CUIElement::Draw();
-	m_renderer.PopMatrix();
+	renderer.PushMatrix();
+	renderer.Translate(GetX(), GetY(), 0);
+	renderer.UnbindTexture();
+	renderer.SetColor(m_theme->defaultColor);
+	renderer.RenderArrays(RenderMode::TriangleStrip,
+		{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
+	renderer.SetColor(0, 0, 0);
+	UIElement::Draw(renderer);
+	renderer.PopMatrix();
+}
+}
 }

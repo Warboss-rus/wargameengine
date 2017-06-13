@@ -1,19 +1,25 @@
-#include "ObjectInterface.h"
+#include "IObject.h"
 #include <memory>
 #include <vector>
 
-class IGameModel;
+namespace wargameEngine
+{
+namespace model
+{
+class IModel;
 
-class CObjectGroup : public IObject
+class ObjectGroup : public IObject
 {
 public:
-	CObjectGroup(IGameModel & model);
-	std::wstring GetPathToModel() const override;
+	ObjectGroup(IModel & model);
+	Path GetPathToModel() const override;
 	void Move(float dx, float dy, float dz) override;
 	void SetCoords(float x, float y, float z) override;
 	void SetCoords(CVector3f const& coords) override;
 	void Rotate(float rotation) override;
 	void SetRotation(float rotation) override;
+	void SetRotations(const CVector3f& rotations) override;
+	CVector3f GetRotations() const override;
 	float GetX() const override;
 	float GetY() const override;
 	float GetZ() const override;
@@ -34,30 +40,31 @@ public:
 	std::wstring const GetProperty(std::wstring const& key) const override;
 	bool IsSelectable() const override;
 	void SetSelectable(bool selectable) override;
-	void SetMovementLimiter(IMoveLimiter * limiter) override;
-	std::map<std::wstring, std::wstring> const& GetAllProperties() const override;
+	std::unordered_map<std::wstring, std::wstring> const& GetAllProperties() const override;
 	bool CastsShadow() const override;
-	void PlayAnimation(std::string const& animation, eAnimationLoopMode loop, float speed) override;
+	void PlayAnimation(std::string const& animation, AnimationLoop loop, float speed) override;
 	std::string GetAnimation() const override;
 	float GetAnimationTime() const override;
-	void AddSecondaryModel(std::wstring const& model) override;
-	void RemoveSecondaryModel(std::wstring const& model) override;
+	void AddSecondaryModel(const Path& model) override;
+	void RemoveSecondaryModel(const Path& model) override;
 	size_t GetSecondaryModelsCount() const override;
-	std::wstring GetSecondaryModel(size_t index) const override;
-	eAnimationLoopMode GetAnimationLoop() const override;
+	Path GetSecondaryModel(size_t index) const override;
+	AnimationLoop GetAnimationLoop() const override;
 	float GetAnimationSpeed() const override;
-	void Update(long long timeSinceLastUpdate) override;
-	std::vector<sTeamColor> const& GetTeamColor() const override;
+	void Update(std::chrono::microseconds timeSinceLastUpdate) override;
+	std::vector<TeamColor> const& GetTeamColor() const override;
 	void ApplyTeamColor(std::wstring const& suffix, unsigned char r, unsigned char g, unsigned char b) override;
-	void ReplaceTexture(std::wstring const& oldTexture, std::wstring const& newTexture) override;
-	std::map<std::wstring, std::wstring> const& GetReplaceTextures() const override;
+	void ReplaceTexture(const Path& oldTexture, const Path& newTexture) override;
+	std::unordered_map<Path, Path> const& GetReplaceTextures() const override;
 	virtual bool IsGroup() const override;
 	virtual IObject* GetFullObject() override;
-	virtual CSignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) override;
-	virtual CSignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) override;
+	virtual signals::SignalConnection DoOnCoordsChange(CoordsSignal::Slot const& handler) override;
+	virtual signals::SignalConnection DoOnRotationChange(RotationSignal::Slot const& handler) override;
 private:
 	std::vector<std::shared_ptr<IObject>> m_children;
 	size_t m_current;
 	const std::set<std::string> empty;
-	IGameModel & m_model;
+	IModel & m_model;
 };
+}
+}

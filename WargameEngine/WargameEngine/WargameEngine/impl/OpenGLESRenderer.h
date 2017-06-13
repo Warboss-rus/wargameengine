@@ -1,97 +1,110 @@
 #pragma once
 #include "../view/IViewHelper.h"
-#include <glm/mat4x4.hpp>
-#include <vector>
+#include "MatrixManagerGLM.h"
 #include "ShaderManagerOpenGLES.h"
+#include <vector>
 
-class CShaderManagerOpenGLES;
+using wargameEngine::view::IVertexBuffer;
+using wargameEngine::view::IShaderManager;
+using wargameEngine::view::ICachedTexture;
+using wargameEngine::view::TextureMipMaps;
 
-class COpenGLESRenderer : public IViewHelper
+class COpenGLESRenderer : public wargameEngine::view::IViewHelper
 {
 public:
 	COpenGLESRenderer();
+	~COpenGLESRenderer();
 
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords) override;
-	virtual void RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords) override;
+	//IRenderer
+	void RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords) override;
+	void RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords) override;
+	void DrawIndexed(IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) override;
+	void Draw(IVertexBuffer& buffer, size_t count, size_t begin = 0, size_t instances = 0) override;
+	void DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed) override;
+	void SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize) override;
+	void AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance = false) override;
 
-	virtual void PushMatrix() override;
-	virtual void PopMatrix() override;
-	virtual void Translate(const float dx, const float dy, const float dz) override;
-	virtual void Translate(const double dx, const double dy, const double dz) override;
-	virtual void Translate(const int dx, const int dy, const int dz) override;
-	virtual void Rotate(const double angle, const double x, const double y, const double z) override;
-	virtual void SetColor(const float r, const float g, const float b, const float a = 1.0f) override;
-	virtual void SetColor(const int r, const int g, const int b, const int a = UCHAR_MAX) override;
-	virtual void SetColor(const float * color) override;
-	virtual void SetColor(const int * color) override;
-	virtual void Scale(const double scale) override;
-	virtual void GetViewMatrix(float * matrix) const override;
-	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
+	void PushMatrix() override;
+	void PopMatrix() override;
+	void Translate(const CVector3f& delta) override;
+	void Translate(int dx, int dy, int dz = 0) override;
+	void Rotate(float angle, const CVector3f& axis) override;
+	void Rotate(const CVector3f& rotations) override;
+	void Scale(float scale) override;
+	const float* GetViewMatrix() const override;
+	const float* GetModelMatrix() const override;
+	void SetModelMatrix(const float* matrix) override;
+	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
-	virtual void SetTexture(std::wstring const& texture, bool forceLoadNow = false, int flags = 0) override;
+	void SetTexture(const wargameEngine::Path& texture, bool forceLoadNow = false, int flags = 0) override;
+	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::Diffuse) override;
+	void UnbindTexture(TextureSlot slot = TextureSlot::Diffuse) override;
+	void RenderToTexture(std::function<void()> const& func, ICachedTexture& texture, unsigned int width, unsigned int height) override;
+	std::unique_ptr<ICachedTexture> CreateTexture(const void* data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
 
-	virtual void SetTexture(std::wstring const& texture, TextureSlot slot, int flags = 0) override;
+	void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) override;
+	void SetColor(const float* color) override;
+	void SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess) override;
 
-	virtual void SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor, int flags = 0) override;
+	std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float* vertex = nullptr, const float* normals = nullptr, const float* texcoords = nullptr, size_t size = 0, bool temp = false) override;
+	std::unique_ptr<wargameEngine::view::IOcclusionQuery> CreateOcclusionQuery() override;
 
-	virtual std::unique_ptr<ICachedTexture> RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height) override;
-	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
-	virtual ICachedTexture* GetTexturePtr(std::wstring const& texture) const override;
+	std::string GetName() const override;
+	bool SupportsFeature(Feature feature) const override;
 
-	virtual void SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess) override;
+	wargameEngine::view::IShaderManager& GetShaderManager() override;
 
-	virtual std::unique_ptr<IDrawingList> CreateDrawingList(std::function<void() > const& func) override;
+	//ITextureHelper
+	std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
+	void SetTextureAnisotropy(float value = 1.0f) override;
+	void UploadTexture(ICachedTexture& texture, unsigned char* data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	void UploadCompressedTexture(ICachedTexture& texture, unsigned char* data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
+	void UploadCubemap(ICachedTexture& texture, TextureMipMaps const& sides, unsigned short bpp, int flags) override;
+	bool Force32Bits() const override;
+	bool ForceFlipBMP() const override;
+	bool ConvertBgra() const override;
 
-	virtual std::unique_ptr<IVertexBuffer> CreateVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = false) override;
+	//IViewHelper
 
-	virtual std::unique_ptr<IFrameBuffer> CreateFramebuffer() const override;
+	std::unique_ptr<wargameEngine::view::IFrameBuffer> CreateFramebuffer() const override;
+	void SetTextureManager(wargameEngine::view::TextureManager& textureManager) override;
 
-	virtual std::unique_ptr<IOcclusionQuery> CreateOcclusionQuery() override;
-
-	virtual IShaderManager& GetShaderManager() override;
-
-	virtual void SetTextureManager(CTextureManager & textureManager) override;
-
-	virtual void WindowCoordsToWorldVector(IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
-	virtual void WorldCoordsToWindowCoords(IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
-	virtual void SetNumberOfLights(size_t count) override;
-	virtual void SetUpLight(size_t index, CVector3f const& position, const float * ambient, const float * diffuse, const float * specular) override;
-	virtual float GetMaximumAnisotropyLevel() const override;
-	virtual void GetProjectionMatrix(float * matrix) const override;
-	virtual void EnableDepthTest(bool enable) override;
-	virtual void EnableBlending(bool enable) override;
-	virtual void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
-	virtual void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
-	virtual void ClearBuffers(bool color = true, bool depth = true) override;
-	virtual void DrawIn2D(std::function<void()> const& drawHandler) override;
-
-	virtual void ActivateTextureSlot(TextureSlot slot) override;
-	virtual void UnbindTexture() override;
-	virtual std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap = false) override;
-	virtual void SetTextureAnisotropy(float value = 1.0f) override;
-	virtual void UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
-	virtual void UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps = TextureMipMaps()) override;
-	virtual void UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short bpp, int flags) override;
-	virtual bool Force32Bits() const override;
-	virtual bool ForceFlipBMP() const override;
-	virtual bool ConvertBgra() const override;
-	virtual bool SupportsFeature(Feature feature) const override;
-	virtual std::string GetName() const override;
+	void WindowCoordsToWorldVector(wargameEngine::view::IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const override;
+	void WorldCoordsToWindowCoords(wargameEngine::view::IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const override;
+	void SetNumberOfLights(size_t count) override;
+	void SetUpLight(size_t index, CVector3f const& position, const float* ambient, const float* diffuse, const float* specular) override;
+	float GetMaximumAnisotropyLevel() const override;
+	const float* GetProjectionMatrix() const override;
+	void EnableDepthTest(bool enableRead, bool enableWrite) override;
+	void EnableColorWrite(bool rgb, bool alpha) override;
+	void EnableBlending(bool enable) override;
+	void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
+	void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
+	void ClearBuffers(bool color = true, bool depth = true) override;
+	void DrawIn2D(std::function<void()> const& drawHandler) override;
 
 	void SetVersion(int version);
 	void Init(int width, int height);
+	void SetVrViewport(float x, float y, float width, float height, float fov);
+	void SetVrViewMatrices(std::vector<const float*> const& matrices);
+	void DisableClear(bool disable);
+	void BindVAO(unsigned vao, unsigned indexBuffer);
 
 private:
-	void UpdateUniforms() const;
-	void ResetViewMatrix();
-	CTextureManager* m_textureManager;
+	wargameEngine::view::TextureManager* m_textureManager;
 	CShaderManagerOpenGLES m_shaderManager;
+	int m_viewport[4];
 	int m_version;
-	std::vector<glm::mat4> m_modelMatrices;
-	glm::mat4 * m_modelMatrix;
-	glm::mat4 m_viewMatrix;
-	glm::mat4 m_projectionMatrix;
-	float m_color[4];
-	std::unique_ptr<IShaderProgram> m_defaultProgram;
+	CMatrixManagerGLM m_matrixManager;
+	float m_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	;
+	std::unique_ptr<wargameEngine::view::IShaderProgram> m_defaultProgram;
 	unsigned int m_vao;
+	unsigned int m_activeVao = 0;
+	unsigned int m_indexBuffer = 0;
+	unsigned int m_drawIndirectBuffer = 0;
+	float m_vrViewport[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	float m_vrFovOverride = 0.0f;
+	std::vector<unsigned> m_currentTextures;
+	bool m_disableClear = false;
 };

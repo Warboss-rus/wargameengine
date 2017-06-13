@@ -15,6 +15,8 @@ function Init()
 	Viewport:SetShadowMapViewport(Viewport:CreateShadowMapViewport(4096, 65, 0, 0, 50))
 	if(GetRendererName() == "DirectX11") then
 		SetShaders("directX11/per_pixel.hlsl", "directX11/per_pixel.hlsl")
+	elseif(GetRendererName() == "Vulkan") then
+		--do nothing
 	elseif(GetRendererName() == "OpenGLES") then
 		SetShaders("GLES/per_pixel_shadow.vsh", "GLES/per_pixel_shadow.fsh")
 		UI:SetScale(2)
@@ -630,7 +632,7 @@ function LoadMap(filename)
 		elseif(splitted[1] == "skybox") then
 			CreateSkybox(80, splitted[2])
 		elseif(splitted[1] == "table") then
-			CreateTable(60, 30, splitted[2])
+			CreateLandscape(60, 30, splitted[2])
 		end
 	end
 end

@@ -1,7 +1,14 @@
 #pragma once
 
-enum class eAnimationLoopMode {
-	NONLOOPING,
-	LOOPING,
-	HOLDEND
+namespace wargameEngine
+{
+namespace model
+{
+enum class AnimationLoop
+{
+	NonLooping,
+	Looping,
+	HoldEnd
 };
+}
+}

@@ -9,6 +9,7 @@
 #include "..\Utils.h"
 #include <algorithm>
 #include <iterator>
+#include <array>
 
 static const std::string defaultShader = "\
 #define NUMBEROFLIGHTS 1\n\
@@ -56,8 +57,11 @@ PixelInputType VShader( float3 Pos : POSITION, float2 texCoords : TEXCOORD, floa
 float4 PShader( PixelInputType input) : SV_TARGET\
 {\
 	float4 tex = shaderTexture.Sample(SampleType, input.tex);\
-	return tex + Color;\
+	return float4(tex.xyz + Color.xyz, tex.a * Color.a);\
 }";
+
+using namespace wargameEngine;
+using namespace view;
 
 class CShaderManagerDirectX::CDirectXShaderProgram : public IShaderProgram
 {
@@ -71,7 +75,6 @@ public:
 class CVertexAttribCacheDirectX : public IVertexAttribCache
 {
 public:
-	CVertexAttribCacheDirectX(int elementSize, DXGI_FORMAT format) : m_elementSize(elementSize), m_format(format) {}
 	ID3D11Buffer* GetBuffer() const
 	{
 		return m_pBuffer;
@@ -80,12 +83,8 @@ public:
 	{
 		return &m_pBuffer;
 	}
-	int GetElementSize() const { return m_elementSize; }
-	DXGI_FORMAT GetFormat() const { return m_format; }
 private:
 	CComPtr<ID3D11Buffer> m_pBuffer;
-	int m_elementSize;
-	DXGI_FORMAT m_format;
 };
 
 CShaderManagerDirectX::CShaderManagerDirectX(CDirectXRenderer * render)
@@ -185,7 +184,7 @@ CShaderManagerDirectX::sConstantBuffer* CShaderManagerDirectX::FindBuffer(std::s
 	return nullptr;
 }
 
-std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(std::wstring const& vertex /*= ""*/, std::wstring const& fragment /*= ""*/, std::wstring const& geometry /*= ""*/)
+std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(const Path& vertex /*= ""*/, const Path& fragment /*= ""*/, const Path& geometry /*= ""*/)
 {
 	ProgramCacheKey key = std::make_tuple(vertex, fragment, geometry);
 	auto it = m_programsCache.find(key);
@@ -212,6 +211,40 @@ std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgram(std::wstring c
 		}
 
 		
+		if (program.m_VS) ReflectConstantBuffers(program.m_VS, program, 0);
+		if (PS) ReflectConstantBuffers(PS, program, 1);
+		if (GS) ReflectConstantBuffers(GS, program, 1);
+	}
+	return std::make_unique<CDirectXShaderProgram>(&it->second);
+}
+
+std::unique_ptr<IShaderProgram> CShaderManagerDirectX::NewProgramSource(const std::string& vertex /*= ""*/, const std::string& fragment /*= ""*/, const std::string& geometry /*= ""*/)
+{
+	SourceProgramCacheKey key = std::make_tuple(vertex, fragment, geometry);
+	auto it = m_sourceProgramCache.find(key);
+	if (it == m_sourceProgramCache.end())
+	{
+		it = m_sourceProgramCache.emplace(std::make_pair(key, CDirectXShaderProgramImpl())).first;
+		auto& program = it->second;
+		CComPtr<ID3D10Blob> PS, GS;
+		CompileShader(L"", "VShader", "vs_4_0", vertex, &program.m_VS);
+		CompileShader(L"", "PShader", "ps_4_0", fragment, &PS);
+		if (!geometry.empty()) CompileShader(L"", "GShader", "gs_4_0", geometry, &GS);
+
+		if (program.m_VS)
+		{
+			m_dev->CreateVertexShader(program.m_VS->GetBufferPointer(), program.m_VS->GetBufferSize(), NULL, &program.pVS);
+		}
+		if (PS)
+		{
+			m_dev->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &program.pPS);
+		}
+		if (GS)
+		{
+			m_dev->CreateGeometryShader(GS->GetBufferPointer(), GS->GetBufferSize(), NULL, &program.pGS);
+		}
+
+
 		if (program.m_VS) ReflectConstantBuffers(program.m_VS, program, 0);
 		if (PS) ReflectConstantBuffers(PS, program, 1);
 		if (GS) ReflectConstantBuffers(GS, program, 1);
@@ -307,30 +340,11 @@ void CShaderManagerDirectX::SetVertexAttributeImpl(std::string const& attribute,
 	}
 }
 
-std::unique_ptr<IVertexAttribCache> CShaderManagerDirectX::CreateVertexAttribCache(int elementSize, size_t count, const float* value) const
+std::unique_ptr<IVertexAttribCache> CShaderManagerDirectX::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	static const DXGI_FORMAT format[] = { DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT };
-	auto result = std::make_unique<CVertexAttribCacheDirectX>(elementSize, format[elementSize - 1]);
-	CreateBuffer(result->GetBufferPtr(), elementSize * count * sizeof(float));
-	CopyBufferData(result->GetBuffer(), value, elementSize * count * sizeof(float));
-	return std::move(result);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerDirectX::CreateVertexAttribCache(int elementSize, size_t count, const int* value) const
-{
-	static const DXGI_FORMAT format[] = { DXGI_FORMAT_R32_SINT, DXGI_FORMAT_R32G32_SINT, DXGI_FORMAT_R32G32B32_SINT, DXGI_FORMAT_R32G32B32A32_SINT };
-	auto result = std::make_unique<CVertexAttribCacheDirectX>(elementSize, format[elementSize - 1]);
-	CreateBuffer(result->GetBufferPtr(), elementSize * count * sizeof(float));
-	CopyBufferData(result->GetBuffer(), value, elementSize * count * sizeof(float));
-	return std::move(result);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerDirectX::CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const
-{
-	static const DXGI_FORMAT format[] = { DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32G32_UINT, DXGI_FORMAT_R32G32B32_UINT, DXGI_FORMAT_R32G32B32A32_UINT };
-	auto result = std::make_unique<CVertexAttribCacheDirectX>(elementSize, format[elementSize - 1]);
-	CreateBuffer(result->GetBufferPtr(), elementSize * count * sizeof(float));
-	CopyBufferData(result->GetBuffer(), value, elementSize * count * sizeof(float));
+	auto result = std::make_unique<CVertexAttribCacheDirectX>();
+	CreateBuffer(result->GetBufferPtr(), size);
+	CopyBufferData(result->GetBuffer(), value, size);
 	return std::move(result);
 }
 
@@ -352,24 +366,46 @@ void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, int
 	SetVertexAttributeImpl(attribute, elementSize, count, format[elementSize - 1], perInstance, values);
 }
 
-void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+void CShaderManagerDirectX::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t /*count*/, Format type, bool perInstance /*= false*/, size_t offset /*= 0*/) const
 {
 	auto& dxCache = reinterpret_cast<CVertexAttribCacheDirectX const&>(cache);
 	auto descIt = m_activeProgram->m_vertexAttributeDescriptions.find(attribute);
 	if (descIt != m_activeProgram->m_vertexAttributeDescriptions.end())
 	{
+		static const std::map<Format, std::array<DXGI_FORMAT, 4>> typeMap = {
+			{ Format::Float32, { DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT } },
+			{ Format::SInt32, { DXGI_FORMAT_R32_SINT, DXGI_FORMAT_R32G32_SINT, DXGI_FORMAT_R32G32B32_SINT, DXGI_FORMAT_R32G32B32A32_SINT } },
+			{ Format::UInt32, {DXGI_FORMAT_R32_UINT, DXGI_FORMAT_R32G32_UINT, DXGI_FORMAT_R32G32B32_UINT, DXGI_FORMAT_R32G32B32A32_UINT } },
+		};
 		D3D11_INPUT_ELEMENT_DESC& desc = descIt->second;
-		desc.Format = dxCache.GetFormat();
+		desc.Format = typeMap.at(type).at(elementSize - 1);
 		if (perInstance)
 		{
 			desc.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
 			desc.InstanceDataStepRate = 1;
 		}
-		unsigned int stride = sizeof(float) * dxCache.GetElementSize();
-		unsigned int offset = 0;
+		unsigned int stride = sizeof(float) * elementSize;
+		UINT uintOffset = static_cast<UINT>(offset);
 		auto buffer = dxCache.GetBuffer();
-		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer, &stride, &offset);
+		m_render->GetContext()->IASetVertexBuffers(desc.InputSlot, 1, &buffer, &stride, &uintOffset);
 	}
+}
+
+bool CShaderManagerDirectX::NeedsMVPMatrix() const
+{
+	return false;
+}
+
+void CShaderManagerDirectX::SetMatrices(const float* model /*= nullptr*/, const float* view /*= nullptr*/, const float* projection /*= nullptr*/, const float* mvp /*= nullptr*/, size_t /*multiviewCount = 1*/)
+{
+	static const std::string mvpMatrixKey = "mvp_matrix";
+	static const std::string viewMatrixKey = "view_matrix";
+	static const std::string modelMatrixKey = "model_matrix";
+	static const std::string projMatrixKey = "proj_matrix";
+	SetUniformValue(mvpMatrixKey, 16, 1, mvp);
+	SetUniformValue(viewMatrixKey, 16, 1, view);
+	SetUniformValue(modelMatrixKey, 16, 1, model);
+	SetUniformValue(projMatrixKey, 16, 1, projection);
 }
 
 void CShaderManagerDirectX::MakeSureBufferCanFitData(CComPtr<ID3D11Buffer> & buffer, size_t totalSize, std::string const& attribute) const
@@ -422,6 +458,9 @@ void CShaderManagerDirectX::DoOnProgramChange(std::function<void()> const& handl
 
 void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT texCoordFormat, DXGI_FORMAT normalFormat) const
 {
+	auto tuple = std::make_tuple(vertexFormat, texCoordFormat, normalFormat);
+	if (tuple == m_lastInputLayout) return;
+	m_lastInputLayout = tuple;
 	// create the input layout object
 	std::vector<D3D11_INPUT_ELEMENT_DESC> ied;
 	m_activeProgram->m_vertexAttributeDescriptions["POSITION"].Format = vertexFormat;
@@ -434,8 +473,6 @@ void CShaderManagerDirectX::SetInputLayout(DXGI_FORMAT vertexFormat, DXGI_FORMAT
 	
 	InputLayoutDesc key;
 	std::transform(ied.begin(), ied.end(), std::back_inserter(key), [](D3D11_INPUT_ELEMENT_DESC const& desc) {return std::make_pair(desc.SemanticName, desc.Format);});
-	if (key == m_lastInputLayout) return;
-	m_lastInputLayout = key;
 	auto it = m_inputLayouts.find(key);
 	if(it == m_inputLayouts.end())
 	{

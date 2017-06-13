@@ -1,15 +1,18 @@
 #include "PluginManager.h"
 #include "LogWriter.h"
 #include "OSSpecific.h"
+#include "Utils.h"
 
-void CPluginManager::LoadPlugin(std::wstring const& file)
+namespace wargameEngine
 {
-	CPlugin plugin(file);
+void PluginManager::LoadPlugin(const Path& file)
+{
+	Plugin plugin(file);
 	PluginGetTypeFunction typeFunc = reinterpret_cast<PluginGetTypeFunction>(plugin.GetFunction("GetType"));
 	PluginGetClassFunction instanceFunc = reinterpret_cast<PluginGetClassFunction>(plugin.GetFunction("GetClass"));
 	if (!typeFunc || !instanceFunc)
 	{
-		LogWriter::WriteLine(L"A plugin " + file + L" don't have a GetType and GetClass functions.");
+		LogWriter::WriteLine("A plugin " + to_string(file) + " don't have a GetType and GetClass functions.");
 		return;
 	}
 	std::string type = typeFunc();
@@ -33,11 +36,12 @@ void CPluginManager::LoadPlugin(std::wstring const& file)
 	m_plugins.push_back(plugin);
 }
 
-void CPluginManager::LoadFolder(std::wstring const& folder, bool recursive)
+void PluginManager::LoadFolder(const Path& folder, bool recursive)
 {
-	std::vector<std::wstring> files = GetFiles(folder, L"*.dll", recursive);
+	std::vector<Path> files = GetFiles(folder, make_path(L"*.dll"), recursive);
 	for (size_t i = 0; i < files.size(); ++i)
 	{
 		LoadPlugin(files[i]);
 	}
+}
 }

@@ -1,13 +1,6 @@
 #include "LegacyOpenGLRenderer.h"
 #include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#ifdef _WINDOWS
-#include <Windows.h>
-#endif
-#include <GL/gl.h>
-#endif
+#include "gl.h"
 #include "../LogWriter.h"
 #include "../view/TextureManager.h"
 #include "ShaderManagerOpenGL.h"
@@ -15,29 +8,28 @@
 #include "../view/IViewport.h"
 
 using namespace std;
-
-class COpenGLDrawingList : public IDrawingList
-{
-public:
-	COpenGLDrawingList(unsigned int id);
-	~COpenGLDrawingList();
-
-	virtual void Draw() const override;
-private:
-	unsigned int m_id;
-};
+using namespace wargameEngine;
+using namespace view;
 
 class CLegacyGLVertexBuffer : public IVertexBuffer
 {
 public:
 	CLegacyGLVertexBuffer(const float * vertex = nullptr, const float * normals = nullptr, const float * texcoords = nullptr, size_t size = 0, bool temp = true);
 	~CLegacyGLVertexBuffer();
-	virtual void Bind() const override;
-	virtual void SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize) override;
-	virtual void DrawIndexes(size_t begin, size_t count) override;
-	virtual void DrawAll(size_t count) override;
-	virtual void DrawInstanced(size_t size, size_t instanceCount) override;
-	virtual void UnBind() const override;
+	void Bind() const;
+	void SetIndexBuffer(const unsigned int * indexPtr, size_t indexesSize);
+	void DrawIndexed(size_t begin, size_t count, size_t instances) const
+	{
+		if (instances > 1)
+		{
+			glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin, instances);
+		}
+		else
+		{
+			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
+		}
+	}
+
 private:
 	const float * m_vertex = NULL;
 	const float * m_normals = NULL;
@@ -56,7 +48,7 @@ public:
 	~CLegacyGLFrameBuffer();
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
-	virtual void AssignTexture(ICachedTexture & texture, CachedTextureType type) override;
+	virtual void AssignTexture(ICachedTexture & texture, IRenderer::CachedTextureType type) override;
 private:
 	unsigned int m_id;
 };
@@ -72,21 +64,11 @@ public:
 	{
 		glDeleteQueries(1, &m_id);
 	}
-	virtual void Query(std::function<void() > const& handler, bool renderToScreen) override
+	virtual void Query(std::function<void() > const& handler) override
 	{
-		if (!renderToScreen)
-		{
-			glDepthMask(GL_FALSE);
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-		}
 		glBeginQuery(GL_ANY_SAMPLES_PASSED, m_id);
 		handler();
 		glEndQuery(GL_ANY_SAMPLES_PASSED);
-		if (!renderToScreen)
-		{
-			glDepthMask(GL_TRUE);
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-		}
 	}
 
 	virtual bool IsVisible() const override
@@ -115,31 +97,41 @@ private:
 	GLuint m_id = 0;
 };
 
-void CLegacyGLRenderer::SetTexture(std::wstring const& texture, bool forceLoadNow, int flags)
+class CLegacyGlCachedTexture : public ICachedTexture
+{
+public:
+	CLegacyGlCachedTexture(unsigned int type);
+	~CLegacyGlCachedTexture();
+
+	operator unsigned int() const { return m_id; }
+	unsigned GetType() const { return m_type; }
+private:
+	unsigned int m_id;
+	unsigned int m_type;
+};
+
+void CLegacyGLRenderer::SetTexture(const Path& texture, bool forceLoadNow, int flags)
 {
 	if (forceLoadNow)
 	{
-		m_textureManager->LoadTextureNow(texture, nullptr, flags);
+		m_textureManager->LoadTextureNow(texture, flags);
 	}
-	m_textureManager->SetTexture(texture, nullptr, flags);
+	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
 
-void CLegacyGLRenderer::SetTexture(std::wstring const& texture, TextureSlot slot, int flags /*= 0*/)
+void CLegacyGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)
 {
-	m_textureManager->SetTexture(texture, slot, flags);
+	if (slot != TextureSlot::Diffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
+	auto& glTexture = reinterpret_cast<CLegacyGlCachedTexture const&>(texture);
+	glBindTexture(glTexture.GetType(), glTexture);
+	if (slot != TextureSlot::Diffuse) glActiveTexture(GL_TEXTURE0);
 }
 
-void CLegacyGLRenderer::SetTexture(std::wstring const& texture, const std::vector<sTeamColor> * teamcolor /*= nullptr*/, int flags /*= 0*/)
-{
-	m_textureManager->SetTexture(texture, teamcolor, flags);
-}
-
-static const map<RenderMode, GLenum> renderModeMap = {
-	{ RenderMode::TRIANGLES, GL_TRIANGLES },
-	{ RenderMode::TRIANGLE_STRIP, GL_TRIANGLE_STRIP },
-	{ RenderMode::RECTANGLES, GL_QUADS },
-	{ RenderMode::LINES, GL_LINES },
-	{ RenderMode::LINE_LOOP, GL_LINE_LOOP }
+static const map<IRenderer::RenderMode, GLenum> renderModeMap = {
+	{ IRenderer::RenderMode::Triangles, GL_TRIANGLES },
+	{ IRenderer::RenderMode::TriangleStrip, GL_TRIANGLE_STRIP },
+	{ IRenderer::RenderMode::Lines, GL_LINES },
+	{ IRenderer::RenderMode::LineLoop, GL_LINE_LOOP }
 };
 
 void Bind(const void* vertices, const void* normals, const void* texCoords, GLenum vertexType, GLenum normalType, GLenum texCoordType, int vertexAxesCount)
@@ -149,23 +141,29 @@ void Bind(const void* vertices, const void* normals, const void* texCoords, GLen
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(vertexAxesCount, vertexType, 0, vertices);
 	}
+	else
+	{
+		glDisableClientState(GL_VERTEX_ARRAY);
+	}
 	if (normals)
 	{
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glNormalPointer(normalType, 0, normals);
+	}
+	else
+	{
+		glDisableClientState(GL_NORMAL_ARRAY);
 	}
 	if (texCoords)
 	{
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(2, texCoordType, 0, texCoords);
 	}
-}
-
-void Unbind()
-{
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
+	else
+	{
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 }
 
 CLegacyGLRenderer::CLegacyGLRenderer()
@@ -180,25 +178,16 @@ CLegacyGLRenderer::CLegacyGLRenderer()
 	glewInit();
 }
 
-void CLegacyGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector3f> const& vertices, std::vector<CVector3f> const& normals, std::vector<CVector2f> const& texCoords)
+void CLegacyGLRenderer::RenderArrays(RenderMode mode, array_view<CVector3f> const& vertices, array_view<CVector3f> const& normals, array_view<CVector2f> const& texCoords)
 {
 	Bind(vertices.data(), normals.data(), texCoords.data(), GL_FLOAT, GL_FLOAT, GL_FLOAT, 3);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();
 }
 
-void CLegacyGLRenderer::RenderArrays(RenderMode mode, std::vector<CVector2i> const& vertices, std::vector<CVector2f> const& texCoords)
+void CLegacyGLRenderer::RenderArrays(RenderMode mode, array_view<CVector2i> const& vertices, array_view<CVector2f> const& texCoords)
 {
-	/*Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_INT, GL_FLOAT, 2);
+	Bind(vertices.data(), NULL, texCoords.data(), GL_INT, GL_FLOAT, GL_FLOAT, 2);
 	glDrawArrays(renderModeMap.at(mode), 0, vertices.size());
-	Unbind();*/
-	glBegin(renderModeMap.at(mode));
-	for (size_t i = 0; i < vertices.size(); ++i)
-	{
-		if (i < texCoords.size()) glTexCoord2f(texCoords[i].x, texCoords[i].y);
-		glVertex2i(vertices[i].x, vertices[i].y);
-	}
-	glEnd();
 }
 
 void CLegacyGLRenderer::PushMatrix()
@@ -211,34 +200,49 @@ void CLegacyGLRenderer::PopMatrix()
 	glPopMatrix();
 }
 
-void CLegacyGLRenderer::Translate(const int dx, const int dy, const int dz)
+void CLegacyGLRenderer::Translate(int dx, int dy, int dz)
 {
 	glTranslated(static_cast<double>(dx), static_cast<double>(dy), static_cast<double>(dz));
 }
 
-void CLegacyGLRenderer::Translate(const double dx, const double dy, const double dz)
+void CLegacyGLRenderer::Translate(const CVector3f& delta)
 {
-	glTranslated(dx, dy, dz);
+	glTranslatef(delta.x, delta.y, delta.z);
 }
 
-void CLegacyGLRenderer::Translate(const float dx, const float dy, const float dz)
+void CLegacyGLRenderer::Scale(float scale)
 {
-	glTranslatef(dx, dy, dz);
+	glScalef(scale, scale, scale);
 }
 
-void CLegacyGLRenderer::Scale(double scale)
+void CLegacyGLRenderer::Rotate(float angle, const CVector3f& axis)
 {
-	glScaled(scale, scale, scale);
+	glRotatef(angle, axis.x, axis.y, axis.z);
 }
 
-void CLegacyGLRenderer::Rotate(double angle, double x, double y, double z)
+void CLegacyGLRenderer::Rotate(const CVector3f& rotations)
 {
-	glRotated(angle, x, y, z);
+	glRotatef(rotations.x, 1.0f, 0.0f, 0.0f);
+	glRotatef(rotations.y, 0.0f, 1.0f, 0.0f);
+	glRotatef(rotations.z, 0.0f, 0.0f, 1.0f);
 }
 
-void CLegacyGLRenderer::GetViewMatrix(float * matrix) const
+const float* CLegacyGLRenderer::GetViewMatrix() const
 {
-	glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
+	glGetFloatv(GL_MODELVIEW_MATRIX, m_matrix);
+	return m_matrix;
+}
+
+const float* CLegacyGLRenderer::GetModelMatrix() const
+{
+	glGetFloatv(GL_MODELVIEW_MATRIX, m_matrix);
+	return m_matrix;
+}
+
+void CLegacyGLRenderer::SetModelMatrix(const float* matrix)
+{
+	glLoadIdentity();
+	glMultMatrixf(matrix);
 }
 
 void CLegacyGLRenderer::ResetViewMatrix()
@@ -251,33 +255,23 @@ void CLegacyGLRenderer::LookAt(CVector3f const& position, CVector3f const& direc
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
 }
 
-void CLegacyGLRenderer::SetColor(const float r, const float g, const float b, const float a)
+void CLegacyGLRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	glColor4f(r, g, b, a);
-}
-
-void CLegacyGLRenderer::SetColor(const int r, const int g, const int b, const int a)
-{
-	glColor4i(r, g, b, a);
+	glColor4ub(r, g, b, a);
 }
 
 void CLegacyGLRenderer::SetColor(const float * color)
 {
-	glColor3fv(color);
+	glColor4fv(color);
 }
 
-void CLegacyGLRenderer::SetColor(const int * color)
-{
-	glColor3iv(color);
-}
-
-std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function<void() > const& func, unsigned int width, unsigned int height)
+void CLegacyGLRenderer::RenderToTexture(std::function<void() > const& func, ICachedTexture & tex, unsigned int width, unsigned int height)
 {
 	//set up texture
 	GLint prevTexture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevTexture);
-	auto texture = std::make_unique<CLegacyGlCachedTexture>(GL_TEXTURE_2D);
-	texture->Bind();
+	auto texture = reinterpret_cast<CLegacyGlCachedTexture&>(tex);
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
@@ -291,7 +285,7 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function
 	GLuint framebuffer = 0;
 	glGenFramebuffers(1, &framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *texture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -320,43 +314,29 @@ std::unique_ptr<ICachedTexture> CLegacyGLRenderer::RenderToTexture(std::function
 	glBindFramebuffer(GL_FRAMEBUFFER, prevBuffer);
 	glBindTexture(GL_TEXTURE_2D, prevTexture);
 	glDeleteFramebuffers(1, &framebuffer);
-	return move(texture);
 }
 
 std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type)
 {
 	static const std::map<CachedTextureType, GLenum> typeMap = {
 		{ CachedTextureType::RGBA, GL_RGBA },
-		{ CachedTextureType::ALPHA, GL_ALPHA },
-		{ CachedTextureType::DEPTH, GL_DEPTH_COMPONENT }
+		{ CachedTextureType::RenderTarget, GL_RGBA },
+		{ CachedTextureType::Alpha, GL_ALPHA },
+		{ CachedTextureType::Depth, GL_DEPTH_COMPONENT }
 	};
 	auto texture = std::make_unique<CLegacyGlCachedTexture>(GL_TEXTURE_2D);
-	texture->Bind();
+	SetTexture(*texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, typeMap.at(type), width, height, 0, typeMap.at(type), GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE_EXT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
-	if (type == CachedTextureType::DEPTH)
+	if (type == CachedTextureType::Depth)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	}
 	return move(texture);
-}
-
-ICachedTexture* CLegacyGLRenderer::GetTexturePtr(std::wstring const& texture) const
-{
-	return m_textureManager->GetTexturePtr(texture);
-}
-
-std::unique_ptr<IDrawingList> CLegacyGLRenderer::CreateDrawingList(std::function<void() > const& func)
-{
-	unsigned int list = glGenLists(1);
-	glNewList(list, GL_COMPILE);
-	func();
-	glEndList();
-	return std::make_unique<COpenGLDrawingList>(list);
 }
 
 std::unique_ptr<IVertexBuffer> CLegacyGLRenderer::CreateVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
@@ -374,12 +354,12 @@ IShaderManager& CLegacyGLRenderer::GetShaderManager()
 	return m_shaderManager;
 }
 
-void CLegacyGLRenderer::SetTextureManager(CTextureManager & textureManager)
+void CLegacyGLRenderer::SetTextureManager(TextureManager & textureManager)
 {
 	m_textureManager = &textureManager;
 }
 
-void CLegacyGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, const float shininess)
+void CLegacyGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, float shininess)
 {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diffuse);
@@ -396,36 +376,6 @@ CLegacyGlCachedTexture::CLegacyGlCachedTexture(unsigned int type)
 CLegacyGlCachedTexture::~CLegacyGlCachedTexture()
 {
 	glDeleteTextures(1, &m_id);
-}
-
-void CLegacyGlCachedTexture::Bind() const
-{
-	glBindTexture(m_type, m_id);
-}
-
-void CLegacyGlCachedTexture::UnBind() const
-{
-	glBindTexture(m_type, 0);
-}
-
-CLegacyGlCachedTexture::operator unsigned int() const
-{
-	return m_id;
-}
-
-COpenGLDrawingList::COpenGLDrawingList(unsigned int id)
-	:m_id(id)
-{
-}
-
-COpenGLDrawingList::~COpenGLDrawingList()
-{
-	glDeleteLists(m_id, 1);
-}
-
-void COpenGLDrawingList::Draw() const
-{
-	glCallList(m_id);
 }
 
 CLegacyGLVertexBuffer::CLegacyGLVertexBuffer(const float * vertex, const float * normals, const float * texcoords, size_t size, bool temp)
@@ -462,7 +412,6 @@ CLegacyGLVertexBuffer::CLegacyGLVertexBuffer(const float * vertex, const float *
 
 CLegacyGLVertexBuffer::~CLegacyGLVertexBuffer()
 {
-	UnBind();
 	glDeleteBuffers(4, &m_vertexBuffer);
 }
 
@@ -493,7 +442,7 @@ void CLegacyGLVertexBuffer::Bind() const
 	glBindBuffer(GL_ARRAY_BUFFER, NULL);
 }
 
-void CLegacyGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t indexesSize)
+void CLegacyGLVertexBuffer::SetIndexBuffer(const unsigned int * indexPtr, size_t indexesSize)
 {
 	if ((m_vertexBuffer || m_normalsBuffer || m_texCoordBuffer) && indexPtr)
 	{
@@ -508,27 +457,97 @@ void CLegacyGLVertexBuffer::SetIndexBuffer(unsigned int * indexPtr, size_t index
 	}
 }
 
-void CLegacyGLVertexBuffer::DrawIndexes(size_t begin, size_t count)
+void CLegacyGLRenderer::DrawIndexed(IVertexBuffer& buffer, size_t begin, size_t count, size_t instances)
 {
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, m_indexesBuffer ? reinterpret_cast<void*>(begin * sizeof(unsigned int)) : m_indexes + begin);
+	auto& glBuffer = reinterpret_cast<const CLegacyGLVertexBuffer&>(buffer);
+	glBuffer.Bind();
+	glBuffer.DrawIndexed(begin, count, instances);
 }
 
-void CLegacyGLVertexBuffer::DrawAll(size_t count)
+void CLegacyGLRenderer::Draw(IVertexBuffer& buffer, size_t count, size_t begin, size_t instances)
 {
-	glDrawArrays(GL_TRIANGLES, 0, count);
+	reinterpret_cast<const CLegacyGLVertexBuffer&>(buffer).Bind();
+	if (instances > 1)
+	{
+		glDrawArraysInstanced(GL_TRIANGLES, begin, count, instances);
+	}
+	else
+	{
+		glDrawArrays(GL_TRIANGLES, begin, count);
+	}
 }
 
-void CLegacyGLVertexBuffer::DrawInstanced(size_t size, size_t instanceCount)
+typedef struct {
+	unsigned count;
+	unsigned primCount;
+	unsigned firstIndex;
+	unsigned baseVertex;
+	unsigned baseInstance;
+} DrawElementsIndirectCommand;
+
+typedef  struct {
+	GLuint  count;
+	GLuint  primCount;
+	GLuint  first;
+	GLuint  baseInstance;
+} DrawArraysIndirectCommand;
+
+void CLegacyGLRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed)
 {
-	glDrawArraysInstanced(GL_TRIANGLES, 0, size, instanceCount);
+	if (GL_ARB_draw_indirect && indirectList.size() > 5)
+	{
+		reinterpret_cast<CLegacyGLVertexBuffer&>(buffer).Bind();
+		GLuint drawIndirectBuffer;
+		glGenBuffers(1, &drawIndirectBuffer);
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, drawIndirectBuffer);
+		if (indexed)
+		{
+			std::vector<DrawElementsIndirectCommand> commands;
+			std::transform(indirectList.begin(), indirectList.end(), std::back_inserter(commands), [](const IndirectDraw& indirect) {
+				return DrawElementsIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0, 0 };
+			});
+			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawElementsIndirectCommand), commands.data(), GL_STREAM_DRAW);
+			for (size_t i = 0; i < indirectList.size(); ++i)
+			{
+				glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)(i * sizeof(DrawElementsIndirectCommand)));
+			}
+		}
+		else
+		{
+			std::vector<DrawArraysIndirectCommand> commands;
+			std::transform(indirectList.begin(), indirectList.end(), std::back_inserter(commands), [](const IndirectDraw& indirect) {
+				return DrawArraysIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0 };
+			});
+			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawArraysIndirectCommand), commands.data(), GL_STREAM_DRAW);
+			glDrawArraysIndirect(GL_TRIANGLES, 0);
+		}
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+		glDeleteBuffers(1, &drawIndirectBuffer);
+	}
+	else
+	{
+		for (auto& indirect : indirectList)
+		{
+			if (indexed)
+			{
+				DrawIndexed(buffer, indirect.count, indirect.start, indirect.instances);
+			}
+			else
+			{
+				Draw(buffer, indirect.count, indirect.start, indirect.instances);
+			}
+		}
+	}
 }
 
-void CLegacyGLVertexBuffer::UnBind() const
+void CLegacyGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
 {
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+	reinterpret_cast<CLegacyGLVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);
+}
+
+void CLegacyGLRenderer::AddVertexAttribute(IVertexBuffer& buffer, const std::string& attribute, int elementSize, size_t count, IShaderManager::Format type, const void* values, bool perInstance /*= false*/)
+{
+
 }
 
 std::vector<double> Matrix2DoubleArray(Matrix4F const& matrix)
@@ -606,17 +625,25 @@ float CLegacyGLRenderer::GetMaximumAnisotropyLevel() const
 	return aniso;
 }
 
-void CLegacyGLRenderer::GetProjectionMatrix(float * matrix) const
+const float* CLegacyGLRenderer::GetProjectionMatrix() const
 {
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	glGetFloatv(GL_PROJECTION_MATRIX, m_matrix);
+	return m_matrix;
 }
 
-void CLegacyGLRenderer::EnableDepthTest(bool enable)
+void CLegacyGLRenderer::EnableDepthTest(bool read, bool write)
 {
-	if(enable)
+	if(read)
 		glEnable(GL_DEPTH_TEST);
 	else
 		glDisable(GL_DEPTH_TEST);
+	glDepthMask(write ? GL_TRUE : GL_FALSE);
+}
+
+void CLegacyGLRenderer::EnableColorWrite(bool rgb, bool alpha)
+{
+	const GLboolean rgbMask = rgb ? GL_TRUE : GL_FALSE;
+	glColorMask(rgbMask, rgbMask, rgbMask, alpha ? GL_TRUE : GL_FALSE);
 }
 
 void CLegacyGLRenderer::EnableBlending(bool enable)
@@ -659,15 +686,12 @@ void CLegacyGLRenderer::ClearBuffers(bool color, bool depth)
 	glClear(mask);
 }
 
-void CLegacyGLRenderer::ActivateTextureSlot(TextureSlot slot)
-{
-	glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
-	glEnable(GL_TEXTURE_2D);
-}
 
-void CLegacyGLRenderer::UnbindTexture()
+void CLegacyGLRenderer::UnbindTexture(TextureSlot slot)
 {
+	if (slot != TextureSlot::Diffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
 	glBindTexture(GL_TEXTURE_2D, 0);
+	if (slot != TextureSlot::Diffuse) glActiveTexture(GL_TEXTURE0);
 }
 
 std::unique_ptr<ICachedTexture> CLegacyGLRenderer::CreateEmptyTexture(bool cubemap)
@@ -685,7 +709,7 @@ void CLegacyGLRenderer::SetTextureAnisotropy(float value)
 
 void CLegacyGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, unsigned short bpp, int flags, TextureMipMaps const& mipmaps)
 {
-	texture.Bind();
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE_EXT : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -710,7 +734,7 @@ void CLegacyGLRenderer::UploadTexture(ICachedTexture & texture, unsigned char * 
 
 void CLegacyGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsigned char * data, size_t width, size_t height, size_t size, int flags, TextureMipMaps const& mipmaps)
 {
-	texture.Bind();
+	SetTexture(texture);
 	if (!GLEW_EXT_texture_compression_s3tc)
 	{
 		LogWriter::WriteLine("Compressed textures are not supported");
@@ -742,7 +766,7 @@ void CLegacyGLRenderer::UploadCompressedTexture(ICachedTexture & texture, unsign
 
 void CLegacyGLRenderer::UploadCubemap(ICachedTexture & texture, TextureMipMaps const& sides, unsigned short, int flags)
 {
-	texture.Bind();
+	SetTexture(texture);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -780,7 +804,7 @@ std::string CLegacyGLRenderer::GetName() const
 
 bool CLegacyGLRenderer::SupportsFeature(Feature feature) const
 {
-	if (feature == Feature::INSTANSING)
+	if (feature == Feature::Instancing)
 	{
 		return GLEW_ARB_draw_instanced && GLEW_ARB_instanced_arrays;
 	}
@@ -854,23 +878,25 @@ void CLegacyGLFrameBuffer::UnBind() const
 	glBindFramebuffer(GL_FRAMEBUFFER, NULL);
 }
 
-void CLegacyGLFrameBuffer::AssignTexture(ICachedTexture & texture, CachedTextureType type)
+void CLegacyGLFrameBuffer::AssignTexture(ICachedTexture & texture, IRenderer::CachedTextureType type)
 {
-	static const std::map<CachedTextureType, GLenum> typeMap = {
-		{ CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
-		{ CachedTextureType::ALPHA, GL_STENCIL_ATTACHMENT },
-		{ CachedTextureType::DEPTH, GL_DEPTH_ATTACHMENT }
+	static const std::map<IRenderer::CachedTextureType, GLenum> typeMap = {
+		{ IRenderer::CachedTextureType::RGBA, GL_COLOR_ATTACHMENT0 },
+		{ IRenderer::CachedTextureType::RenderTarget, GL_COLOR_ATTACHMENT0 },
+		{ IRenderer::CachedTextureType::Alpha, GL_STENCIL_ATTACHMENT },
+		{ IRenderer::CachedTextureType::Depth, GL_DEPTH_ATTACHMENT }
 	};
-	const std::map<CachedTextureType, pair<GLboolean, string>> extensionMap = {
-		{ CachedTextureType::RGBA, {GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" }},
-		{ CachedTextureType::ALPHA, {GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" }},
-		{ CachedTextureType::DEPTH, {GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" }}
+	const std::map<IRenderer::CachedTextureType, pair<GLboolean, string>> extensionMap = {
+		{ IRenderer::CachedTextureType::RGBA, {GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" }},
+		{ IRenderer::CachedTextureType::RenderTarget,{ GLEW_ARB_color_buffer_float, "GL_ARB_color_buffer_float" } },
+		{ IRenderer::CachedTextureType::Alpha, {GLEW_ARB_stencil_texturing, "GL_ARB_stencil_texturing" }},
+		{ IRenderer::CachedTextureType::Depth, {GLEW_ARB_depth_buffer_float, "GL_ARB_depth_buffer_float" }}
 	};
 	if (!extensionMap.at(type).first)
 	{
 		throw std::runtime_error(extensionMap.at(type).second + " is not supported");
 	}
-	if (type == CachedTextureType::DEPTH)
+	if (type == IRenderer::CachedTextureType::Depth)
 	{
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);

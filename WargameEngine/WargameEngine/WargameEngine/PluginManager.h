@@ -1,11 +1,15 @@
 #include "Plugin.h"
 #include <vector>
 
-class CPluginManager
+namespace wargameEngine
+{
+class PluginManager
 {
 public:
-	void LoadPlugin(std::wstring const& plugin);
-	void LoadFolder(std::wstring const& folder, bool recursive);
+	void LoadPlugin(const Path& plugin);
+	void LoadFolder(const Path& folder, bool recursive);
+
 private:
-	std::vector<CPlugin> m_plugins;
+	std::vector<Plugin> m_plugins;
 };
+}

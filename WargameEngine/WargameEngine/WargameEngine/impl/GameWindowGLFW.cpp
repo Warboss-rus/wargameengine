@@ -1,6 +1,7 @@
 #include "GameWindowGLFW.h"
-#ifdef VULKAN_API
-#define GLFW_INCLUDE_VULKAN
+#define RENDERER_NO_VULKAN
+#ifndef RENDERER_NO_VULKAN
+#include "VulkanRenderer.h"
 #endif
 #include <GLFW/glfw3.h>
 #define VR_API_EXPORT
@@ -10,15 +11,13 @@
 #include "../Utils.h"
 #include "../LogWriter.h"
 #include "../view/IViewport.h"
-#define _USE_MATH_DEFINES
-#include <math.h>
 #include "../view/Matrix4.h"
+#ifndef RENDERER_NO_LEGACY
 #include "LegacyOpenGLRenderer.h"
-
-static CGameWindowGLFW* g_instance = nullptr;
-bool CGameWindowGLFW::m_visible = true;
+#endif
 
 using namespace vr;
+using namespace wargameEngine;
 
 void LogVRError(HmdError result, std::string const& prefix = "OVR error. ")
 {
@@ -28,27 +27,36 @@ void LogVRError(HmdError result, std::string const& prefix = "OVR error. ")
 	}
 }
 
-void CGameWindowGLFW::OnChangeState(GLFWwindow * /*window*/, int state)
+void CGameWindowGLFW::OnChangeState(GLFWwindow * window, int state)
 {
-	m_visible = (state == GLFW_VISIBLE);
+	auto instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window));
+	instance->m_visible = (state == GLFW_VISIBLE);
 }
 
-void CGameWindowGLFW::OnReshape(GLFWwindow * /*window*/, int width, int height)
+void CGameWindowGLFW::OnReshape(GLFWwindow * window, int width, int height)
 {
-	if (g_instance->m_onResize)
+	auto instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window));
+	if (instance->m_onResize)
 	{
-		g_instance->m_onResize(width, height);
+		instance->m_onResize(width, height);
 	}
+#ifndef RENDERER_NO_VULKAN
+	if (instance->m_vulkanRenderer)
+	{
+		reinterpret_cast<CVulkanRenderer&>(*instance->m_renderer).Resize();
+	}
+#endif
 }
 
 void CGameWindowGLFW::OnShutdown(GLFWwindow * window)
 {
-	if (g_instance->m_onShutdown)
+	auto instance = reinterpret_cast<CGameWindowGLFW*>(glfwGetWindowUserPointer(window));
+	if (instance->m_onShutdown)
 	{
-		g_instance->m_onShutdown();
+		instance->m_onShutdown();
 	}
 	glfwDestroyWindow(window);
-	g_instance->m_window = nullptr;
+	instance->m_window = nullptr;
 }
 
 Matrix4F ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
@@ -60,30 +68,6 @@ Matrix4F ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t &matPose)
 		matPose.m[0][3], matPose.m[1][3], matPose.m[2][3], 1.0f
 	};
 	return matrixObj;
-}
-
-void GetRotation(Matrix4F const& matrix, double& Yaw, double& Pitch, double& Roll)
-{
-	if (matrix.m_union._11 == 1.0f)
-	{
-		Yaw = atan2f(matrix.m_union._13, matrix.m_union._34);
-		Pitch = 0;
-		Roll = 0;
-
-	}
-	else if (matrix.m_union._11 == -1.0f)
-	{
-		Yaw = atan2f(matrix.m_union._13, matrix.m_union._34);
-		Pitch = 0;
-		Roll = 0;
-	}
-	else
-	{
-
-		Yaw = atan2(-matrix.m_union._31, matrix.m_union._11);
-		Pitch = asin(matrix.m_union._21);
-		Roll = atan2(-matrix.m_union._23, matrix.m_union._22);
-	}
 }
 
 void CGameWindowGLFW::LaunchMainLoop()
@@ -103,28 +87,56 @@ void CGameWindowGLFW::LaunchMainLoop()
 					if (m_rTrackedDevicePose[i].bPoseIsValid)
 					{
 						auto matrix = ConvertSteamVRMatrixToMatrix4(m_rTrackedDevicePose[i].mDeviceToAbsoluteTracking);
-						double x, y, z;
-						GetRotation(matrix, z, y, x);
-						m_input->SetHeadRotation(i, static_cast<float>(-x * 180 / M_PI), static_cast<float>(y * 180 / M_PI), static_cast<float>(z * 180 / M_PI));
+						m_input->SetHeadRotation(i, matrix);
 					}
 				}
 			}
-			g_instance->m_input->UpdateControllers();
-			if (g_instance->m_onDraw)
+			m_input->UpdateControllers();
+#ifndef RENDERER_NO_VULKAN
+			if (m_vulkanRenderer)
 			{
-				g_instance->m_onDraw();
+				auto* renderer = reinterpret_cast<CVulkanRenderer*>(m_renderer.get());
+				renderer->AcquireImage();
+				m_onDraw();
+				renderer->Present();
+			}
+			else 
+#endif
+			if (m_onDraw)
+			{
+				m_onDraw();
 			}
 			if (compositor)
 			{
+#ifndef RENDERER_NO_VULKAN
+				vr::VRVulkanTextureData_t textureData[2];
+#endif
 				for (int i = 0; i < 2; ++i)
 				{
-					unsigned int t = reinterpret_cast<const COpenGlCachedTexture&>(*m_eyeTextures[i]);
-					const vr::Texture_t tex = { reinterpret_cast<void*>(t), TextureType_OpenGL, ColorSpace_Gamma };
-					 compositor->Submit(vr::EVREye(i), &tex);
+					vr::Texture_t tex;
+					if (m_vulkanRenderer)
+					{
+#ifndef RENDERER_NO_VULKAN
+						tex.eType = vr::ETextureType::TextureType_Vulkan;
+						auto& t = reinterpret_cast<const CVulkanCachedTexture&>(*m_eyeTextures[i]);
+						textureData[i].m_nFormat = t.GetFormat();
+						textureData[i].m_nImage = t;
+						//TODO: fill the structure
+						tex.handle = reinterpret_cast<void*>(&textureData[i]);
+#endif
+					}
+					else
+					{
+						tex.eType = vr::ETextureType::TextureType_OpenGL;
+						unsigned int t = reinterpret_cast<const COpenGlCachedTexture&>(*m_eyeTextures[i]);
+						tex.handle = reinterpret_cast<void*>(t);
+					}
+					tex.eColorSpace = vr::EColorSpace::ColorSpace_Gamma;
+					compositor->Submit(vr::EVREye(i), &tex);
 				}
 				compositor->PostPresentHandoff();
 			}
-			glfwSwapBuffers(g_instance->m_window);
+			glfwSwapBuffers(m_window);
 		}
 		glfwPollEvents();
 	}
@@ -142,12 +154,9 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	{
 		return;
 	}
-#ifdef VULKAN_API
-	VkSurfaceKHR surface;
-	VkResult err = glfwCreateWindowSurface(instance, window, NULL, &surface);
-#else
+	m_input = std::make_unique<CInputGLFW>(m_window);
 	glfwMakeContextCurrent(m_window);
-#endif
+	glfwSetWindowUserPointer(m_window, this);
 
 	glfwSetWindowSizeCallback(m_window, &OnReshape);
 	glfwSetKeyCallback(m_window, &CInputGLFW::OnKeyboard);
@@ -157,18 +166,52 @@ void CGameWindowGLFW::CreateNewWindow(GLFWmonitor * monitor /*= NULL*/)
 	glfwSetScrollCallback(m_window, &CInputGLFW::OnScroll);
 	glfwSetWindowCloseCallback(m_window, &CGameWindowGLFW::OnShutdown);
 	glfwSetWindowIconifyCallback(m_window, &OnChangeState);
+	glfwSetJoystickCallback(&CInputGLFW::JoystickCallback);
 }
 
 CGameWindowGLFW::CGameWindowGLFW()
 {
-	g_instance = this;
-
 	glfwInit();
-#ifdef VULKAN_API
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-#endif
 
-	//Try 3.3 core first
+#ifndef RENDERER_NO_VULKAN
+	//Try Vulkan first
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	try
+	{
+		if (!glfwVulkanSupported())
+		{
+			throw std::runtime_error("Vulkan is not supported");
+		}
+		std::vector<const char*> instanceExtensions = {
+#ifdef _DEBUG
+			VK_EXT_DEBUG_REPORT_EXTENSION_NAME
+#endif
+		};
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		for (uint32_t i = 0; i < glfwExtensionCount; ++i)
+		{
+			instanceExtensions.push_back(glfwExtensions[i]);
+		}
+		auto renderer = std::make_unique<CVulkanRenderer>(instanceExtensions);
+		CreateNewWindow();
+		VkSurfaceKHR surface;
+		VkResult result = glfwCreateWindowSurface(renderer->GetInstance(), m_window, nullptr, &surface);
+		if (result)
+		{
+			throw std::runtime_error("Cannot get window surface");
+		}
+		renderer->SetSurface(surface);
+		m_renderer = std::move(renderer);
+		m_vulkanRenderer = true;
+		return;
+	}
+	catch (...)
+	{
+	}
+#endif
+	//Then try 3.3 core first
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -187,6 +230,7 @@ CGameWindowGLFW::CGameWindowGLFW()
 
 	//If it fails, try 3.1 any (3.1 is required for instanced rendering)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
 
 	try
@@ -198,14 +242,13 @@ CGameWindowGLFW::CGameWindowGLFW()
 	catch (...)
 	{
 	}
-
+#ifndef RENDERER_NO_LEGACY
 	//lastly create legacy 2.0 context
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_FALSE);
 	CreateNewWindow();
 	m_renderer = std::make_unique<CLegacyGLRenderer>();
+#endif
 }
 
 CGameWindowGLFW::~CGameWindowGLFW()
@@ -280,8 +323,8 @@ bool CGameWindowGLFW::EnableVRMode(bool enable, VRViewportFactory const& viewpor
 				return false;
 			}
 			auto viewports = viewportFactory(width, height);
-			m_eyeTextures.push_back(&viewports.first.GetTexture());
-			m_eyeTextures.push_back(&viewports.second.GetTexture());
+			m_eyeTextures.push_back(&viewports.first.GetTexture(0));
+			m_eyeTextures.push_back(&viewports.second.GetTexture(0));
 		}
 		else
 		{
@@ -296,18 +339,17 @@ bool CGameWindowGLFW::EnableVRMode(bool enable, VRViewportFactory const& viewpor
 	return true;
 }
 
-IInput& CGameWindowGLFW::ResetInput()
+view::IInput& CGameWindowGLFW::GetInput()
 {
-	m_input = std::make_unique<CInputGLFW>(m_window);
 	return *m_input;
 }
 
-IRenderer& CGameWindowGLFW::GetRenderer()
+view::IRenderer& CGameWindowGLFW::GetRenderer()
 {
 	return *m_renderer;
 }
 
-IViewHelper& CGameWindowGLFW::GetViewHelper()
+view::IViewHelper& CGameWindowGLFW::GetViewHelper()
 {
 	return *m_renderer;
 }

@@ -1,4 +1,8 @@
-#include<string>
-#include<vector>
+#include "Typedefs.h"
+#include <vector>
 
-std::vector<std::wstring> GetFiles(std::wstring const& path, std::wstring const& mask, bool recursive);
+namespace wargameEngine
+{
+//TODO: replace with filesystem based function, move to Utils
+std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive);
+}

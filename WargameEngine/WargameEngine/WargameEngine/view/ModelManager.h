@@ -1,33 +1,46 @@
-#include <map>
+#include <unordered_map>
 #include <set>
 #include <memory>
 #include <vector>
 #include <mutex>
+#include "../Typedefs.h"
+#include "DrawableMesh.h"
 
+namespace wargameEngine
+{
+class AsyncFileProvider;
+
+namespace model
+{
 class IObject;
-class IRenderer;
 class IBoundingBoxManager;
-class CAsyncFileProvider;
+}
+
+namespace view
+{
+class IRenderer;
 class IModelReader;
 class C3DModel;
+class TextureManager;
 
-class CModelManager
+class ModelManager
 {
 public:
-	CModelManager(IRenderer & renderer, IBoundingBoxManager & bbmanager, CAsyncFileProvider & asyncFileProvider);
-	~CModelManager();
-	void DrawModel(std::wstring const& path, IObject* object, bool vertexOnly = false);
-	void LoadIfNotExist(std::wstring const& path);
-	std::vector<std::string> GetAnimations(std::wstring const& path);
+	ModelManager(model::IBoundingBoxManager & bbmanager, AsyncFileProvider & asyncFileProvider);
+	~ModelManager();
+	void GetModelMeshes(const Path& path, IRenderer & renderer, TextureManager& textureManager, model::IObject* object, MeshList& meshesVec);
+	void LoadIfNotExist(const Path& path, TextureManager& textureManager);
+	std::vector<std::string> GetAnimations(const Path& path);
 	void EnableGPUSkinning(bool enable);
 	void RegisterModelReader(std::unique_ptr<IModelReader> && reader);
 	void Reset();
 private:
-	std::map<std::wstring, std::shared_ptr<C3DModel>> m_models;
+	std::unordered_map<Path, std::unique_ptr<C3DModel>> m_models;
 	std::vector<std::unique_ptr<IModelReader>> m_modelReaders;
-	IRenderer * m_renderer;
-	IBoundingBoxManager * m_bbManager;
-	CAsyncFileProvider * m_asyncFileProvider;
+	model::IBoundingBoxManager * m_bbManager;
+	AsyncFileProvider * m_asyncFileProvider;
 	std::mutex m_mutex;
 	bool m_gpuSkinning;
 };
+}
+}

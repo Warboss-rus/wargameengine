@@ -1,0 +1,61 @@
+apply plugin: 'com.android.model.$(ConfigurationType)'
+
+model {
+	def signConf
+
+	android {
+        compileSdkVersion = $(AndroidAPILevelNumber)
+        buildToolsVersion = "$(AndroidBuildToolsVersion)"
+
+        defaultConfig.with {
+            $(ApplicationId)
+            minSdkVersion.apiLevel = 24
+            targetSdkVersion.apiLevel = 24
+			versionCode = 1
+            versionName = "1.0"
+        }
+    }
+
+	android.signingConfigs {
+		create("release") {
+			storeFile = file('my-release-key.keystore')
+			storePassword = "my_password"
+			keyAlias = "my-key-alias"
+			keyPassword = "my_password"
+			signConf = it
+		}
+	}
+
+    android.buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.add(file('proguard-rules.txt'))
+			signingConfig = signConf
+        }
+    }
+
+    android.productFlavors {
+        create("arm7") {
+            ndk.abiFilters.add("armeabi-v7a")
+        }
+        create("arm8") {
+            ndk.abiFilters.add("arm64-v8a")
+        }
+        create("x86") {
+            ndk.abiFilters.add("x86")
+        }
+        create("all")
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+	compile 'com.google.vr:sdk-base:1.60.0'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    $(AarDependencies)
+}

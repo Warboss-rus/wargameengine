@@ -1,78 +1,78 @@
 #include "InputBase.h"
 
-void CInputBase::DoOnLMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+using namespace signals;
+
+namespace wargameEngine
 {
-	m_onLMBDown.Connect(handler, priority, tag);
+namespace view
+{
+SignalConnection InputBase::DoOnLMBDown(const MouseClickHandler& handler, int priority /*= 0*/, std::string const& tag)
+{
+	return m_onLMBDown.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnLMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnLMBUp(const MouseClickHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onLMBUp.Connect(handler, priority, tag);
+	return m_onLMBUp.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnRMBDown(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnRMBDown(const MouseClickHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onRMBDown.Connect(handler, priority, tag);
+	return m_onRMBDown.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnRMBUp(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnRMBUp(const MouseClickHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onRMBUp.Connect(handler, priority, tag);
+	return m_onRMBUp.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnMouseWheelUp(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnMouseWheel(const MouseWheelHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onWheelUp.Connect(handler, priority, tag);
+	return m_onWheel.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnMouseWheelDown(std::function<bool() > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnKeyDown(const KeyboardHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onWheelDown.Connect(handler, priority, tag);
+	return m_onKeyDown.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnKeyDown(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnKeyUp(const KeyboardHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onKeyDown.Connect(handler, priority, tag);
+	return m_onKeyUp.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnKeyUp(std::function<bool(int key, int modifiers) > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnCharacter(const CharacterHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onKeyUp.Connect(handler, priority, tag);
+	return m_onCharacter.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnCharacter(std::function<bool(wchar_t character) > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnMouseMove(const MouseMoveHandler& handler, int priority /*= 0*/, std::string const& tag)
 {
-	m_onCharacter.Connect(handler, priority, tag);
+	return m_onMouseMove.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnMouseMove(std::function<bool(int, int) > const& handler, int priority /*= 0*/, std::string const& tag)
+SignalConnection InputBase::DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
 {
-	m_onMouseMove.Connect(handler, priority, tag);
+	return m_onGamepadButton.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnGamepadButtonStateChange(std::function<bool(int gamepadIndex, int buttonIndex, bool newState)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+SignalConnection InputBase::DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
 {
-	m_onGamepadButton.Connect(handler, priority, tag);
+	return m_onGamepadAxis.Connect(handler, priority, tag);
 }
 
-void CInputBase::DoOnGamepadAxisChange(std::function<bool(int gamepadIndex, int axisIndex, double horizontal, double vertical)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
+const float* InputBase::GetHeadTrackingMatrix(size_t deviceIndex) const
 {
-	m_onGamepadAxis.Connect(handler, priority, tag);
+	return m_headTrackings.at(deviceIndex);
 }
 
-void CInputBase::DoOnHeadRotationChange(std::function<bool(int deviceIndex, float x, float y, float z)> const& handler, int priority /*= 0*/, std::string const& tag /*= ""*/)
-{
-	m_onHeadRotation.Connect(handler, priority, tag);
-}
-
-void CInputBase::DeleteAllSignalsByTag(std::string const& tag)
+void InputBase::DeleteAllSignalsByTag(std::string const& tag)
 {
 	m_onLMBDown.RemoveByTag(tag);
 	m_onLMBUp.RemoveByTag(tag);
 	m_onRMBDown.RemoveByTag(tag);
 	m_onRMBUp.RemoveByTag(tag);
-	m_onWheelUp.RemoveByTag(tag);
-	m_onWheelDown.RemoveByTag(tag);
+	m_onWheel.RemoveByTag(tag);
 	m_onKeyDown.RemoveByTag(tag);
 	m_onKeyUp.RemoveByTag(tag);
 	m_onCharacter.RemoveByTag(tag);
@@ -81,67 +81,110 @@ void CInputBase::DeleteAllSignalsByTag(std::string const& tag)
 	m_onGamepadAxis.RemoveByTag(tag);
 }
 
-void CInputBase::OnLMBDown(int x, int y)
+
+void InputBase::Reset()
+{
+	m_onLMBDown.Reset();
+	m_onLMBUp.Reset();
+	m_onRMBDown.Reset();
+	m_onRMBUp.Reset();
+	m_onWheel.Reset();
+	m_onKeyDown.Reset();
+	m_onKeyUp.Reset();
+	m_onCharacter.Reset();
+	m_onMouseMove.Reset();
+	m_onGamepadButton.Reset();
+	m_onGamepadAxis.Reset();
+}
+
+
+bool InputBase::IsLMBPressed() const
+{
+	return m_lmbDown;
+}
+
+
+bool InputBase::IsRMBPressed() const
+{
+	return m_rmbDown;
+}
+
+void InputBase::OnLMBDown(int x, int y)
 {
 	m_onLMBDown(x, y);
+	m_prevX = x;
+	m_prevY = y;
+	m_lmbDown = true;
 }
 
-void CInputBase::OnLMBUp(int x, int y)
+void InputBase::OnLMBUp(int x, int y)
 {
 	m_onLMBUp(x, y);
+	m_prevX = x;
+	m_prevY = y;
+	m_lmbDown = false;
 }
 
-void CInputBase::OnRMBDown(int x, int y)
+void InputBase::OnRMBDown(int x, int y)
 {
 	m_onRMBDown(x, y);
+	m_prevX = x;
+	m_prevY = y;
+	m_rmbDown = true;
 }
 
-void CInputBase::OnRMBUp(int x, int y)
+void InputBase::OnRMBUp(int x, int y)
 {
 	m_onRMBUp(x, y);
+	m_prevX = x;
+	m_prevY = y;
+	m_rmbDown = false;
 }
 
-void CInputBase::OnMouseWheelDown()
+void InputBase::OnMouseWheel(float delta)
 {
-	m_onWheelDown();
+	m_onWheel(delta);
 }
 
-void CInputBase::OnMouseWheelUp()
+void InputBase::OnKeyDown(VirtualKey key, int nativeKey)
 {
-	m_onWheelUp();
+	m_onKeyDown(key, nativeKey);
 }
 
-void CInputBase::OnKeyDown(int key, int mods)
+void InputBase::OnKeyUp(VirtualKey key, int nativeKey)
 {
-	m_onKeyDown(key, mods);
+	m_onKeyUp(key, nativeKey);
 }
 
-void CInputBase::OnKeyUp(int key, int mods)
-{
-	m_onKeyUp(key, mods);
-}
-
-void CInputBase::OnCharacter(wchar_t character)
+void InputBase::OnCharacter(wchar_t character)
 {
 	m_onCharacter(character);
 }
 
-void CInputBase::OnMouseMove(int x, int y)
+void InputBase::OnMouseMove(int x, int y)
 {
-	m_onMouseMove(x, y);
+	m_onMouseMove(x, y, x - m_prevX, y - m_prevY);
+	m_prevX = x;
+	m_prevY = y;
 }
 
-void CInputBase::OnGamepadButton(int gamepadIndex, int buttonIndex, bool newState)
+void InputBase::OnGamepadButton(int gamepadIndex, int buttonIndex, bool newState)
 {
 	m_onGamepadButton(gamepadIndex, buttonIndex, newState);
 }
 
-void CInputBase::OnGamepadAxis(int gamepadIndex, int axisIndex, double horizontal, double vertical)
+void InputBase::OnGamepadAxis(int gamepadIndex, int axisIndex, double horizontal, double vertical)
 {
 	m_onGamepadAxis(gamepadIndex, axisIndex, horizontal, vertical);
 }
 
-void CInputBase::OnHeadRotation(int deviceIndex, float x, float y, float z)
+void InputBase::OnHeadRotation(size_t deviceIndex, const float* data)
 {
-	m_onHeadRotation(deviceIndex, x, y, z);
+	if (deviceIndex + 1 > m_headTrackings.size())
+	{
+		m_headTrackings.resize(deviceIndex + 1);
+	}
+	m_headTrackings[deviceIndex] = data;
+}
+}
 }

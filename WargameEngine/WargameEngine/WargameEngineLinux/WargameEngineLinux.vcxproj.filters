@@ -72,9 +72,6 @@
     <ClCompile Include="..\WargameEngine\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\WargameEngine\view\ViewportBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\WargameEngine\UI\UIButton.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
@@ -114,13 +111,7 @@
     <ClCompile Include="..\WargameEngine\UI\UIWindow.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\WargameEngine\view\OffscreenViewport.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
     <ClCompile Include="..\WargameEngine\view\3dModel.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="..\WargameEngine\view\GameView.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\WargameEngine\view\MaterialManager.cpp">
@@ -136,9 +127,6 @@
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\WargameEngine\view\TranslationManager.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="..\WargameEngine\view\Viewport.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="..\WargameEngine\view\ParticleModel.cpp">
@@ -171,9 +159,6 @@
     <ClCompile Include="..\WargameEngine\view\CameraStrategy.cpp">
       <Filter>Source Files\view\Cameras</Filter>
     </ClCompile>
-    <ClCompile Include="..\WargameEngine\model\Particle.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
     <ClCompile Include="..\WargameEngine\model\Landscape.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -181,9 +166,6 @@
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="..\WargameEngine\model\Object.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
-    <ClCompile Include="..\WargameEngine\model\GameModel.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
     <ClCompile Include="..\WargameEngine\model\MovementLimiter.cpp">
@@ -196,9 +178,6 @@
       <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="..\WargameEngine\controller\CommandHandler.cpp">
-      <Filter>Source Files\controller</Filter>
-    </ClCompile>
-    <ClCompile Include="..\WargameEngine\controller\GameController.cpp">
       <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="..\WargameEngine\controller\CommandGoTo.cpp">
@@ -269,6 +248,21 @@
     </ClCompile>
     <ClCompile Include="..\WargameEngine\impl\GameWindowGLFW.cpp">
       <Filter>Source Files\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WargameEngine\model\Model.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WargameEngine\controller\Controller.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WargameEngine\view\View.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WargameEngine\model\ParticleEffect.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WargameEngine\view\Viewport.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -365,9 +359,6 @@
     <ClInclude Include="..\WargameEngine\view\InputBase.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="..\WargameEngine\view\OffscreenViewport.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\WargameEngine\view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -384,9 +375,6 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\view\IShaderManager.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WargameEngine\view\IGameWindow.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\view\ISoundPlayer.h">
@@ -422,9 +410,6 @@
     <ClInclude Include="..\WargameEngine\view\3dModel.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="..\WargameEngine\view\GameView.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\WargameEngine\view\Material.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
@@ -438,12 +423,6 @@
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\view\TextureManager.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WargameEngine\view\Viewport.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WargameEngine\view\ViewportBase.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\view\ParticleModel.h">
@@ -479,22 +458,13 @@
     <ClInclude Include="..\WargameEngine\model\Light.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\WargameEngine\model\Particle.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="..\WargameEngine\model\Animation.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\model\IBoundingBoxManager.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\WargameEngine\model\IGameModel.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="..\WargameEngine\model\Landscape.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WargameEngine\model\ObjectStatic.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\model\Projectile.h">
@@ -512,12 +482,6 @@
     <ClInclude Include="..\WargameEngine\model\ObjectGroup.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\WargameEngine\model\ObjectInterface.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WargameEngine\model\GameModel.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="..\WargameEngine\controller\INetSocket.h">
       <Filter>Source Files\controller</Filter>
     </ClInclude>
@@ -531,9 +495,6 @@
       <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\controller\CommandHandler.h">
-      <Filter>Source Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="..\WargameEngine\controller\GameController.h">
       <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="..\WargameEngine\controller\CommandGoTo.h">
@@ -619,6 +580,36 @@
     </ClInclude>
     <ClInclude Include="..\WargameEngine\impl\TextWriter.h">
       <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\impl\gl.h">
+      <Filter>Source Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\model\IObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\model\BaseObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\model\Model.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\controller\Controller.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\view\View.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\model\IModel.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\model\ParticleEffect.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\view\Viewport.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\view\IWindow.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

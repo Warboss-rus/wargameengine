@@ -1,24 +1,21 @@
-#include <string>
+#include "../Typedefs.h"
 
+namespace wargameEngine
+{
+namespace view
+{
 class ICachedTexture;
 
-struct sMaterial
+struct Material
 {
-	sMaterial()
-	{
-		for(unsigned int i = 0; i < 3; ++i)
-		{
-			ambient[i] = 0.2f;
-			diffuse[i] = 0.8f;
-			specular[i] = 0.0f;
-		}
-	}
-	float ambient[3];
-	float diffuse[3];
-	float specular[3];
+	float ambient[4] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	float diffuse[4] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	float specular[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	float shininess = 0.0f;
-	std::wstring texture;
-	std::wstring specularMap;
-	std::wstring bumpMap;
+	Path texture;
+	Path specularMap;
+	Path bumpMap;
 	ICachedTexture* texturePtr = nullptr;
 };
+}
+}

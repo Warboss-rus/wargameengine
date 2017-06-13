@@ -1,13 +1,22 @@
 #include "UIScrollBar.h"
 #include "../view/IRenderer.h"
 
-CUIScrollBar::CUIScrollBar(std::shared_ptr<CUITheme> theme, IRenderer & renderer)
-	: m_position(0.0f), m_mousePos(0), m_pressed(false), m_upButtonPressed(false), m_downButtonPressed(false), m_theme(theme), m_renderer(&renderer)
+namespace wargameEngine
+{
+namespace ui
+{
+UIScrollBar::UIScrollBar(std::shared_ptr<UITheme> theme)
+	: m_position(0.0f)
+	, m_mousePos(0)
+	, m_pressed(false)
+	, m_upButtonPressed(false)
+	, m_downButtonPressed(false)
+	, m_theme(theme)
 {
 	Update(0, 0, 0, 0);
 }
 
-void CUIScrollBar::Update(int size, int contentSize, int width, int step)
+void UIScrollBar::Update(int size, int contentSize, int width, int step)
 {
 	m_size = size;
 	m_contentSize = contentSize;
@@ -16,9 +25,10 @@ void CUIScrollBar::Update(int size, int contentSize, int width, int step)
 	m_step = step;
 }
 
-void CUIScrollBar::Draw() const
+void UIScrollBar::Draw(view::IRenderer& renderer) const
 {
-	if (m_size >= m_contentSize) return;
+	if (m_size >= m_contentSize)
+		return;
 	auto& theme = m_theme->sbar;
 	int scrollBegin = static_cast<int>(theme.buttonSize * m_scale);
 	int scrollEnd = m_size - static_cast<int>(theme.buttonSize * m_scale);
@@ -26,29 +36,28 @@ void CUIScrollBar::Draw() const
 	int intPos = static_cast<int>(m_position);
 	int scrollWidth = static_cast<int>(theme.width * m_scale);
 	int buttonSize = scrollBegin;
-	m_renderer->SetTexture(L"");
-	m_renderer->SetColor(0.5f, 0.5f, 0.5f);
-	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
-	m_renderer->SetColor(0.75f, 0.75f, 0.75f);
-	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP, { CVector2i(m_width -scrollWidth, scrollBegin + intPos),{ m_width, scrollBegin + intPos },
-	{ m_width - scrollWidth, scrollBegin + intPos + scrollSize },{ m_width, scrollBegin + intPos + scrollSize } }, {});
-	m_renderer->SetColor(0, 0, 0);
-	m_renderer->SetTexture(m_theme->texture, true);
-	float * themeTexCoords = (m_upButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
-	std::vector<CVector2f> texCoords = { CVector2f(themeTexCoords),{ themeTexCoords[2], themeTexCoords[1] },{ themeTexCoords[0], themeTexCoords[3] },{ themeTexCoords[2], themeTexCoords[3] } };
-	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP,
-	{ CVector2i(m_width - scrollWidth, 0), { m_width, 0 }, { m_width - scrollWidth, scrollBegin }, { m_width, scrollBegin } }, texCoords);
-	
-	themeTexCoords = (m_downButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
-	texCoords = { CVector2f(themeTexCoords),{ themeTexCoords[2], themeTexCoords[1] },{ themeTexCoords[0], themeTexCoords[3] },{ themeTexCoords[2], themeTexCoords[3] } };
-	m_renderer->RenderArrays(RenderMode::TRIANGLE_STRIP,
-	{ CVector2i(m_width - scrollWidth, m_size), { m_width, m_size }, { m_width - scrollWidth, m_size - buttonSize }, { m_width, m_size - buttonSize } }, texCoords);
+	renderer.UnbindTexture();
+	renderer.SetColor(theme.backgroundColor);
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
+	renderer.SetColor(theme.barColor);
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip, { CVector2i(m_width - scrollWidth, scrollBegin + intPos), { m_width, scrollBegin + intPos }, { m_width - scrollWidth, scrollBegin + intPos + scrollSize }, { m_width, scrollBegin + intPos + scrollSize } }, {});
+	renderer.SetColor(0, 0, 0);
+	renderer.SetTexture(m_theme->texture, true);
+	float* themeTexCoords = (m_upButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
+	std::vector<CVector2f> texCoords = { CVector2f(themeTexCoords), { themeTexCoords[2], themeTexCoords[1] }, { themeTexCoords[0], themeTexCoords[3] }, { themeTexCoords[2], themeTexCoords[3] } };
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip,
+		{ CVector2i(m_width - scrollWidth, 0), { m_width, 0 }, { m_width - scrollWidth, scrollBegin }, { m_width, scrollBegin } }, texCoords);
 
+	themeTexCoords = (m_downButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
+	texCoords = { CVector2f(themeTexCoords), { themeTexCoords[2], themeTexCoords[1] }, { themeTexCoords[0], themeTexCoords[3] }, { themeTexCoords[2], themeTexCoords[3] } };
+	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip,
+		{ CVector2i(m_width - scrollWidth, m_size), { m_width, m_size }, { m_width - scrollWidth, m_size - buttonSize }, { m_width, m_size - buttonSize } }, texCoords);
 }
 
-bool CUIScrollBar::LeftMouseButtonDown(int x, int y)
+bool UIScrollBar::LeftMouseButtonDown(int x, int y)
 {
-	if (!IsOnElement(x, y)) return false;
+	if (!IsOnElement(x, y))
+		return false;
 	int buttonSize = static_cast<int>(m_theme->sbar.buttonSize * m_scale);
 	if (y < buttonSize)
 	{
@@ -65,27 +74,28 @@ bool CUIScrollBar::LeftMouseButtonDown(int x, int y)
 	return true;
 }
 
-bool CUIScrollBar::LeftMouseButtonUp(int x, int y)
+bool UIScrollBar::LeftMouseButtonUp(int x, int y)
 {
 	m_upButtonPressed = false;
 	m_downButtonPressed = false;
 	m_pressed = false;
 	int buttonSize = static_cast<int>(m_theme->sbar.buttonSize);
-	if (!IsOnElement(x, y)) return false;
+	if (!IsOnElement(x, y))
+		return false;
 	int scrollSize = static_cast<int>(m_size * ((float)m_size / (float)m_contentSize));
-	if (y < buttonSize && m_upButtonPressed)//Up Button pressed
+	if (y < buttonSize && m_upButtonPressed) //Up Button pressed
 	{
 		m_position -= (float)m_step * (m_size - 2 * buttonSize) / (float)m_contentSize;
-	} 
-	else if (y > m_size - buttonSize && m_downButtonPressed)//Down Button pressed
+	}
+	else if (y > m_size - buttonSize && m_downButtonPressed) //Down Button pressed
 	{
 		m_position += (float)m_step * (m_size - 2 * buttonSize) / (float)m_contentSize;
 	}
-	else if (y < m_position || y > m_position + scrollSize)//Outside bar click
+	else if (y < m_position || y > m_position + scrollSize) //Outside bar click
 	{
 		m_position = static_cast<float>(y - buttonSize - scrollSize / 2);
 	}
-	else if(m_pressed) //Dragging
+	else if (m_pressed) //Dragging
 	{
 		m_position += y - m_mousePos;
 	}
@@ -93,36 +103,43 @@ bool CUIScrollBar::LeftMouseButtonUp(int x, int y)
 	{
 		return false;
 	}
-	if(m_position < 0) m_position = 0;
-	if(m_position > m_size - scrollSize) m_position = static_cast<float>(m_size - scrollSize);
+	if (m_position < 0)
+		m_position = 0;
+	if (m_position > m_size - scrollSize)
+		m_position = static_cast<float>(m_size - scrollSize);
 	return true;
 }
 
-bool CUIScrollBar::OnMouseMove(int, int y)
+bool UIScrollBar::OnMouseMove(int, int y)
 {
 	if (m_pressed)
 	{
 		m_position += y - m_mousePos;
-		if (m_position < 0) m_position = 0;
+		if (m_position < 0)
+			m_position = 0;
 		int scrollSize = static_cast<int>(m_size * ((float)m_size / (float)m_contentSize));
-		if (m_position > m_size - scrollSize) m_position = static_cast<float>(m_size - scrollSize);
+		if (m_position > m_size - scrollSize)
+			m_position = static_cast<float>(m_size - scrollSize);
 		m_mousePos = y;
 	}
 	return m_pressed;
 }
 
-bool CUIScrollBar::IsOnElement(int x, int y) const
+bool UIScrollBar::IsOnElement(int x, int y) const
 {
-	if (m_size >= m_contentSize) return false;
+	if (m_size >= m_contentSize)
+		return false;
 	return (x >= m_width - static_cast<int>(m_theme->sbar.width * m_scale) && x <= m_width && y >= 0.0f && y <= m_size);
 }
 
-int CUIScrollBar::GetPosition() const 
-{ 
-	return static_cast<int>(m_position * m_contentSize / (m_size - 2 * m_theme->sbar.buttonSize * m_scale)); 
+int UIScrollBar::GetPosition() const
+{
+	return static_cast<int>(m_position * m_contentSize / (m_size - 2 * m_theme->sbar.buttonSize * m_scale));
 }
 
-void CUIScrollBar::SetScale(float scale)
+void UIScrollBar::SetScale(float scale)
 {
 	m_scale = scale;
+}
+}
 }

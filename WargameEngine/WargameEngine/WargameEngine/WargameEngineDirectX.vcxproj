@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -30,45 +30,46 @@
     <ProjectGuid>{91DC047A-7EA8-45CA-9AD7-FA663C09CCDF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WargameEngineDirectX</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -95,30 +96,30 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
-    <IncludePath>..\..\freetype-2.6\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -228,7 +229,7 @@
     <ProjectReference Include="..\..\bullet\build3\vs2010\LinearMath.vcxproj">
       <Project>{e57afbbf-8c5b-4d44-973d-d304dc6245c8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
+    <ProjectReference Include="..\..\freetype2\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\LUA\LUA.vcxproj">
@@ -239,7 +240,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="impl\micropather.cpp" />
     <ClCompile Include="impl\NetSocket.cpp" />
+    <ClCompile Include="impl\PathfindingMicroPather.cpp" />
     <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
@@ -251,7 +254,9 @@
     <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\micropather.h" />
     <ClInclude Include="impl\NetSocket.h" />
+    <ClInclude Include="impl\PathfindingMicroPather.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />
     <ClInclude Include="impl\ScriptHandlerLua.h" />
     <ClInclude Include="impl\SoundPlayerFMod.h" />

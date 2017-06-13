@@ -1,12 +1,15 @@
 #include "ThreadPool.h"
-#include "LogWriter.h"
-#include <mutex>
-#include <deque>
-#include <vector>
 #include "ITask.h"
+#include "LogWriter.h"
 #include <algorithm>
 #include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <thread>
+#include <vector>
 
+namespace wargameEngine
+{
 struct ThreadPool::Impl
 {
 	struct sRunFunc
@@ -25,6 +28,7 @@ struct ThreadPool::Impl
 		long long lastTriggerTime;
 		size_t index;
 	};
+
 public:
 	void QueueFunc(sRunFunc const& func)
 	{
@@ -66,15 +70,15 @@ public:
 		m_conditional.notify_one();
 	}
 
-	void RemoveTask(ITask * task)
+	void RemoveTask(ITask* task)
 	{
 		std::lock_guard<std::mutex> lk(m_tasksMutex);
-		auto it = std::find_if(m_tasks.begin(), m_tasks.end(), [task](std::shared_ptr<ITask> const& taskptr) {return taskptr.get() == task;});
+		auto it = std::find_if(m_tasks.begin(), m_tasks.end(), [task](std::shared_ptr<ITask> const& taskptr) { return taskptr.get() == task; });
 		if (it != m_tasks.end())
 		{
 			m_tasks.erase(it);
 		}
-		auto it2 = std::find_if(m_storedTasks.begin(), m_storedTasks.end(), [task](std::shared_ptr<ITask> const& taskptr) {return taskptr.get() == task;});
+		auto it2 = std::find_if(m_storedTasks.begin(), m_storedTasks.end(), [task](std::shared_ptr<ITask> const& taskptr) { return taskptr.get() == task; });
 		if (it2 != m_storedTasks.end())
 		{
 			m_storedTasks.erase(it2);
@@ -89,11 +93,14 @@ public:
 		}
 		while (!m_callbacks.empty())
 		{
-			if (m_callbacks.front()) m_callbacks.front()();
+			if (m_callbacks.front())
+				m_callbacks.front()();
 			bool last = m_callbacks.size() == 1;
-			if (last) m_callbackMutex.lock();
+			if (last)
+				m_callbackMutex.lock();
 			m_callbacks.pop_front();
-			if (last) m_callbackMutex.unlock();
+			if (last)
+				m_callbackMutex.unlock();
 		}
 		UpdateTimedCallbacks();
 	}
@@ -172,10 +179,10 @@ public:
 
 	void RemoveTimedCallback(size_t index)
 	{
-		m_timedCallbacks.erase(std::find_if(m_timedCallbacks.begin(), m_timedCallbacks.end(), [=](std::deque<sTimedCallback>::value_type& callback) {return callback.index == index;}));
+		m_timedCallbacks.erase(std::find_if(m_timedCallbacks.begin(), m_timedCallbacks.end(), [=](std::deque<sTimedCallback>::value_type& callback) { return callback.index == index; }));
 	}
 
-	void WaitForTask(ITask & task)
+	void WaitForTask(ITask& task)
 	{
 		for (;;)
 		{
@@ -186,7 +193,8 @@ public:
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				Update();
-			} break;
+			}
+			break;
 			case ITask::TaskState::COMPLETED:
 			case ITask::TaskState::READY_FOR_DISPOSE:
 			case ITask::TaskState::CANCELLED:
@@ -240,7 +248,6 @@ public:
 				}
 			}
 		}
-		
 	}
 
 	std::deque<FunctionHandler> m_callbacks;
@@ -260,7 +267,7 @@ public:
 };
 
 ThreadPool::ThreadPool()
-	:m_pImpl(std::make_unique<Impl>())
+	: m_pImpl(std::make_unique<Impl>())
 {
 }
 
@@ -299,12 +306,12 @@ void ThreadPool::AddTask(std::shared_ptr<ITask> task)
 	m_pImpl->AddTask(task);
 }
 
-void ThreadPool::RemoveTask(ITask * task)
+void ThreadPool::RemoveTask(ITask* task)
 {
 	m_pImpl->RemoveTask(task);
 }
 
-void ThreadPool::WaitForTask(ITask & task)
+void ThreadPool::WaitForTask(ITask& task)
 {
 	m_pImpl->WaitForTask(task);
 }
@@ -317,4 +324,5 @@ size_t ThreadPool::AddTimedCallback(CallbackHandler const& func, unsigned int ti
 void ThreadPool::RemoveTimedCallback(size_t index)
 {
 	m_pImpl->RemoveTimedCallback(index);
+}
 }

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -30,46 +30,46 @@
     <ProjectGuid>{C76D278D-0186-4B57-802C-1ADCFCDA7D80}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WargameEngineGLFW</RootNamespace>
-    <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -96,31 +96,31 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\glfw\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -134,7 +134,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -148,7 +148,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -165,7 +165,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -182,7 +182,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
@@ -200,7 +200,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
@@ -216,7 +216,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>fmod_vc.lib;opengl32.lib;glu32.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -229,7 +229,7 @@
     <ProjectReference Include="..\..\bullet\build3\vs2010\LinearMath.vcxproj">
       <Project>{e57afbbf-8c5b-4d44-973d-d304dc6245c8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
+    <ProjectReference Include="..\..\freetype2\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\glew\build\vc12\glew_static.vcxproj">
@@ -244,16 +244,26 @@
     <ProjectReference Include="..\..\openvr\openvr_api.vcxproj">
       <Project>{ce6e0fb8-b46d-3437-8ba4-3f45e47732c4}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\SPIRV-Cross\msvc\SPIRV-Cross.vcxproj">
+      <Project>{977e3701-1a21-4425-b7e5-6bdf5ea062cd}</Project>
+    </ProjectReference>
     <ProjectReference Include="WargameEngine.vcxproj">
       <Project>{525b45ef-5fb2-495e-8f33-27363e097e50}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="impl\LegacyOpenGLRenderer.cpp" />
+    <ClCompile Include="impl\MatrixManagerGLM.cpp" />
+    <ClCompile Include="impl\micropather.cpp" />
     <ClCompile Include="impl\NetSocket.cpp" />
+    <ClCompile Include="impl\PathfindingMicroPather.cpp" />
     <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="impl\ShaderManagerLegacyGL.cpp" />
+    <ClCompile Include="impl\VulkanMemory.cpp" />
+    <ClCompile Include="impl\VulkanPipelineManager.cpp" />
+    <ClCompile Include="impl\VulkanRenderer.cpp" />
+    <ClCompile Include="impl\VulkanShaderManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="impl\SoundPlayerFMod.cpp" />
     <ClCompile Include="impl\GameWindowGLFW.cpp" />
@@ -263,9 +273,13 @@
     <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\gl.h" />
     <ClInclude Include="impl\IOpenGLRenderer.h" />
     <ClInclude Include="impl\LegacyOpenGLRenderer.h" />
+    <ClInclude Include="impl\MatrixManagerGLM.h" />
+    <ClInclude Include="impl\micropather.h" />
     <ClInclude Include="impl\NetSocket.h" />
+    <ClInclude Include="impl\PathfindingMicroPather.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />
     <ClInclude Include="impl\ScriptHandlerLua.h" />
     <ClInclude Include="impl\ShaderManagerLegacyGL.h" />
@@ -275,6 +289,11 @@
     <ClInclude Include="impl\OpenGLRenderer.h" />
     <ClInclude Include="impl\ShaderManagerOpenGL.h" />
     <ClInclude Include="impl\TextWriter.h" />
+    <ClInclude Include="impl\VulkanHelpers.h" />
+    <ClInclude Include="impl\VulkanMemory.h" />
+    <ClInclude Include="impl\VulkanPipelineManager.h" />
+    <ClInclude Include="impl\VulkanRenderer.h" />
+    <ClInclude Include="impl\VulkanShaderManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

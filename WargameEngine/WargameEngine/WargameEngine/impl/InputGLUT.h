@@ -1,18 +1,17 @@
 #pragma once
 #include <memory>
+#include <set>
 #include "../view/InputBase.h"
 
-class IObject;
-
-class CInputGLUT : public CInputBase
+class CInputGLUT : public wargameEngine::view::InputBase
 {
 public:
 	CInputGLUT();
-	virtual void EnableCursor(bool enable = true) override;
-	virtual int GetModifiers() const override;
-	virtual int GetMouseX() const override;
-	virtual int GetMouseY() const override;
-	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
+	void EnableCursor(bool enable = true) override;
+	int GetMouseX() const override;
+	int GetMouseY() const override;
+	int GetModifiers() const override;
+	bool IsKeyPressed(wargameEngine::view::VirtualKey key) const override;
 
 	static void OnSpecialKeyPress(int key, int x, int y);
 	static void OnSpecialKeyRelease(int key, int x, int y);
@@ -21,11 +20,12 @@ public:
 	static void OnKeyboardUp(unsigned char key, int x, int y);
 	static void OnPassiveMouseMove(int x, int y);
 	static void MouseMoveCallback(int x, int y);
-
 	static void OnJoystick(unsigned int buttonMask, int x, int y, int z);
 private:
+	static wargameEngine::view::VirtualKey KeycodeToVirtualKey(int key);
 	static CInputGLUT * m_instance;
 	bool m_cursorEnabled = true;
 	unsigned int m_joystickButtons = 0;
 	int m_joystickAxes[3] = {0, 0, 0};
+	std::set<wargameEngine::view::VirtualKey> m_pressedKeys;
 };

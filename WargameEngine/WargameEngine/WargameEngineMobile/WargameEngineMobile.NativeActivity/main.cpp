@@ -1,8 +1,15 @@
 #include <unistd.h>
 #include <android/log.h>
+#include <dlfcn.h>
 #include "android_native_app_glue.h"
-#include "..\..\WargameEngine\view\GameView.h"
+#include "../../WargameEngine/Application.h"
+#ifdef SOUND_FMOD
+#include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
+#define SOUND_PLAYER_CLASS CSoundPlayerFMod
+#else
 #include "..\..\WargameEngine\impl\SoundPlayerOpenSLES.h"
+#define SOUND_PLAYER_CLASS CSoundPlayerOpenSLES
+#endif
 #include "..\..\WargameEngine\impl\TextWriter.h"
 #include "..\..\WargameEngine\impl\ScriptHandlerLua.h"
 #include "..\..\WargameEngine\impl\NetSocket.h"
@@ -10,8 +17,18 @@
 #include "..\..\WargameEngine\view\OBJModelFactory.h"
 #include "..\..\WargameEngine\view\ColladaModelFactory.h"
 #include "..\..\WargameEngine\view\WBMModelFactory.h"
-#include "..\..\WargameEngine\impl\GameWindowAndroid.h"
 #include "..\..\WargameEngine\impl\PhysicsEngineBullet.h"
+#include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
+#ifdef HAS_ASSIMP
+#include "../../WargameEngine/impl/AssimpModelLoader.h"
+#endif
+#ifdef RENDERER_VULKAN
+#include "..\..\WargameEngine\impl\GameWindowAndroidVulkan.h"
+#define WINDOW_CLASS CGameWindowAndroidVulkan
+#else
+#include "..\..\WargameEngine\impl\GameWindowAndroid.h"
+#define WINDOW_CLASS CGameWindowAndroid
+#endif
 /*
 * Copyright (C) 2010 The Android Open Source Project
 *
@@ -32,6 +49,9 @@
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "WargameEngineMobile", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "WargameEngineMobile", __VA_ARGS__))
 
+using namespace wargameEngine;
+using namespace view;
+
 /**
 * Our saved state data.
 */
@@ -46,7 +66,7 @@ struct engine {
 	struct android_app* app;
 
 	struct saved_state state;
-	CGameWindowAndroid * window;
+	WINDOW_CLASS * window;
 };
 
 /**
@@ -107,22 +127,38 @@ void android_main(struct android_app* state) {
 	struct engine engine;
 	memset(&engine, 0, sizeof(engine));
 	
-	sGameViewContext context;
-	if (context.module.name.empty())
+	const std::string storage = getenv("EXTERNAL_STORAGE");
+	wargameEngine::Context context;
+	wargameEngine::Module module;
+	if (module.name.empty())
 	{
-		context.module.script = L"main.lua";
-		context.module.textures = L"texture/";
-		context.module.models = L"models/";
-		context.module.folder = L"/sdcard/WargameEngine/";
+		module.script = "main.lua";
+		module.textures = "texture/";
+		module.models = "models/";
+		module.folder = storage + "/WargameEngine/";
 	}
-	context.window = std::make_unique<CGameWindowAndroid>(state);
-	context.soundPlayer = std::make_unique<CSoundPlayerOpenSLES>();
-	context.textWriter = std::make_unique<CTextWriter>(context.window->GetRenderer());
+	try
+	{
+#ifdef RENDERER_VULKAN
+		dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
+#endif
+		context.window = std::make_unique<WINDOW_CLASS>(state);
+	}
+	catch (std::exception const& e)
+	{
+		std::string ex = e.what();
+		LOGW(("Cannot create vulkan renderer: " + ex).c_str());
+	}
+#ifdef SOUND_FMOD
+	void* lib = dlopen("libfmod.so", RTLD_NOW | RTLD_LOCAL);
+	lib = dlopen("libfmodL.so", RTLD_NOW | RTLD_LOCAL);
+#endif
+	context.soundPlayer = std::make_unique<SOUND_PLAYER_CLASS>();
+	context.textWriter = std::make_unique<CTextWriter>();
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
-	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation("/sdcard/WargameEngine/");
-	context.scriptHandlerFactory = []() {
-		return std::make_unique<CScriptHandlerLua>();
-	};
+	static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
+	context.scriptHandler = std::make_unique<CScriptHandlerLua>();
+	context.pathFinder = std::make_unique<CPathfindingMicroPather>();
 	context.socketFactory = []() {
 		return std::make_unique<CNetSocket>();
 	};
@@ -133,11 +169,14 @@ void android_main(struct android_app* state) {
 	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
+#ifdef HAS_ASSIMP
+	context.modelReaders.push_back(std::make_unique<CAssimpModelLoader>());
+#endif
 
 	state->userData = &engine;
 	state->onAppCmd = engine_handle_cmd;
 	state->onInputEvent = engine_handle_input;
-	engine.window = reinterpret_cast<CGameWindowAndroid*>(context.window.get());
+	engine.window = reinterpret_cast<WINDOW_CLASS*>(context.window.get());
 	engine.app = state;
 
 	if (state->savedState != NULL) {
@@ -146,5 +185,6 @@ void android_main(struct android_app* state) {
 	}
 	//context.window->LaunchMainLoop();
 	// loop waiting for stuff to do.
-	CGameView view(&context);
+	Application app(std::move(context));
+	app.Run(std::move(module));
 }

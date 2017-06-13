@@ -21,6 +21,8 @@
 #include "../LogWriter.h"
 #include <cstring>
 
+using namespace wargameEngine;
+
 void LogError()
 {
         int wsError = GET_ERROR;

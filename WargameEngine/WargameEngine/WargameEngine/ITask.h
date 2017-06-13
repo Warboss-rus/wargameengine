@@ -1,6 +1,8 @@
 #pragma once
-#include <thread>
+#include "ThreadPool.h"
 
+namespace wargameEngine
+{
 class ThreadPool;
 
 class ITask
@@ -20,10 +22,12 @@ public:
 	};
 
 	virtual const TaskState GetState() const = 0;
+
 private:
 	virtual void Execute() = 0;
 	virtual void Queue() = 0;
 
 	friend struct ThreadPool::Impl;
-	friend void WaitForTask(ITask & task);
+	friend void WaitForTask(ITask& task);
 };
+}

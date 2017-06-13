@@ -1,31 +1,30 @@
 #include "ParticleSystem.h"
 #include "IRenderer.h"
+#include "IShaderManager.h"
 
 using namespace std;
 
-CParticleSystem::CParticleSystem(IRenderer & renderer)
-	:m_renderer(renderer)
+namespace wargameEngine
 {
-}
-
-void CParticleSystem::SetShaders(std::wstring const& vertex, std::wstring const& fragment)
+namespace view
 {
-	if (m_renderer.SupportsFeature(Feature::INSTANSING))
+void ParticleSystem::SetShaders(const Path& vertex, const Path& fragment, IRenderer& renderer)
+{
+	if (renderer.SupportsFeature(IRenderer::Feature::Instancing))
 	{
-		m_shaderProgram = m_renderer.GetShaderManager().NewProgram(vertex, fragment);
+		m_shaderProgram = renderer.GetShaderManager().NewProgram(vertex, fragment);
 	}
 }
 
-void CParticleSystem::Draw(CParticleEffect const& particleEffect)
+void ParticleSystem::Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer)
 {
 	float modelview[4][4];
-	m_renderer.GetViewMatrix(&modelview[0][0]);
-	m_renderer.PushMatrix();
-	CVector3f const & coords = particleEffect.GetPosition();
-	m_renderer.Translate(coords.x, coords.y, coords.z);
-	m_renderer.Scale(particleEffect.GetScale());
+	memcpy(modelview, renderer.GetViewMatrix(), sizeof(float) * 16);
+	renderer.PushMatrix();
+	renderer.Translate(particleEffect.GetPosition());
+	renderer.Scale(particleEffect.GetScale());
 	auto& model = m_models.at(particleEffect.GetEffectPath());
-	m_renderer.SetTexture(model.GetTexture());
+	renderer.SetTexture(model.GetTexture());
 
 	auto size = model.GetParticleSize();
 	auto textureFrameSize = CVector2f(1.0f, 1.0f) / model.GetTextureFrameSize();
@@ -45,7 +44,7 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 
 	bool useTexCoordAttrib = model.HasDifferentTexCoords();
 	bool useColorAttrib = model.HasDifferentColors();
-	auto& shaderManager = m_renderer.GetShaderManager();
+	auto& shaderManager = renderer.GetShaderManager();
 	auto& particles = particleEffect.GetParticles();
 	size_t particlesCount = particles.size();
 
@@ -54,31 +53,30 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 		shaderManager.PushProgram(*m_shaderProgram);
 		CVector3f vertex[] = { p0, p1, p3, p1, p3, p2 };
 		CVector2f texCoord[] = { t0, t1, t3, t1, t3, t2 };
-		auto buffer = m_renderer.CreateVertexBuffer(reinterpret_cast<float*>(vertex), nullptr, reinterpret_cast<float*>(texCoord), 6, true);
-		buffer->Bind();
-		shaderManager.SetVertexAttribute("instancePosition", 4, particlesCount, particleEffect.GetPositionCache().data(), true);
+		auto buffer = renderer.CreateVertexBuffer(reinterpret_cast<float*>(vertex), nullptr, reinterpret_cast<float*>(texCoord), 6, true);
+		renderer.AddVertexAttribute(*buffer, "instancePosition", 4, particlesCount, IShaderManager::Format::Float32, particleEffect.GetPositionCache().data(), true);
 		if (useTexCoordAttrib)
 		{
-			shaderManager.SetVertexAttribute("instanceTexCoordPos", 2, particlesCount, particleEffect.GetTexCoordCache().data(), true);
+			renderer.AddVertexAttribute(*buffer, "instanceTexCoordPos", 2, particlesCount, IShaderManager::Format::Float32, particleEffect.GetTexCoordCache().data(), true);
 		}
 		if (useColorAttrib)
 		{
-			shaderManager.SetVertexAttribute("instanceColor", 4, particlesCount, particleEffect.GetColorCache().data(), true);
+			renderer.AddVertexAttribute(*buffer, "instanceColor", 4, particlesCount, IShaderManager::Format::Float32, particleEffect.GetColorCache().data(), true);
 		}
 
-		buffer->DrawInstanced(6, particlesCount);
+		renderer.Draw(*buffer, 6, 0, particlesCount);
 		static float empty[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		shaderManager.DisableVertexAttribute("instanceColor", 4, empty);
 		shaderManager.DisableVertexAttribute("instancePosition", 4, empty);
 		shaderManager.DisableVertexAttribute("instanceTexCoordPos", 2, empty);
-		buffer->UnBind();
 		shaderManager.PopProgram();
 	}
 	else
 	{
 		m_vertexBuffer.resize(particlesCount * 6);
 		m_texCoordBuffer2.resize(particlesCount * 6);
-		if (useColorAttrib) m_colorBuffer.resize(particlesCount * 4 * 6);
+		if (useColorAttrib)
+			m_colorBuffer.resize(particlesCount * 4 * 6);
 		size_t arrIndex = 0;
 		for (auto& particle : particles)
 		{
@@ -86,24 +84,27 @@ void CParticleSystem::Draw(CParticleEffect const& particleEffect)
 			float scale = *particle.m_scale;
 			CVector2f tc(particle.m_texCoord);
 			m_vertexBuffer.insert(m_vertexBuffer.end(), { p0 * scale + pos, p1 * scale + pos, p2 * scale + pos, p1 * scale + pos, p2 * scale + pos, p3 * scale + pos });
-			if (useTexCoordAttrib) m_texCoordBuffer2.insert(m_texCoordBuffer2.end(), { t0 + tc, t1 + tc, t2 + tc, t1 + tc, t2 + tc, t3 + tc });
-			if (useColorAttrib) 
-				for(int i = 0; i < 6; ++i)
+			if (useTexCoordAttrib)
+				m_texCoordBuffer2.insert(m_texCoordBuffer2.end(), { t0 + tc, t1 + tc, t2 + tc, t1 + tc, t2 + tc, t3 + tc });
+			if (useColorAttrib)
+				for (int i = 0; i < 6; ++i)
 					memcpy(m_colorBuffer.data() + arrIndex * 24 + i * 4, particle.m_color, sizeof(float) * 4);
 			++arrIndex;
 		}
-		if(useColorAttrib) shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
-		m_renderer.RenderArrays(RenderMode::TRIANGLES, m_vertexBuffer, {}, m_texCoordBuffer2);
+		if (useColorAttrib)
+			shaderManager.SetVertexAttribute("color", 4, m_colorBuffer.size() / 4, m_colorBuffer.data());
+		renderer.RenderArrays(IRenderer::RenderMode::Triangles, m_vertexBuffer, {}, m_texCoordBuffer2);
 	}
-	m_renderer.SetTexture(L"");
-	m_renderer.PopMatrix();
+	renderer.PopMatrix();
 }
 
-IParticleUpdater* CParticleSystem::GetParticleUpdater(std::wstring const& path)
+model::IParticleUpdater* ParticleSystem::GetParticleUpdater(const Path& path)
 {
 	if (m_models.find(path) == m_models.end())
 	{
-		m_models.emplace(path, CParticleModel(path));
+		m_models.emplace(path, ParticleModel(path));
 	}
 	return &m_models.at(path);
+}
+}
 }

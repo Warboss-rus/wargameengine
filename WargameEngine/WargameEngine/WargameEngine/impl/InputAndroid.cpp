@@ -33,9 +33,32 @@ void CInputAndroid::HandleInput(AInputEvent* event)
 		switch (AInputEvent_getSource(event))
 		{
 		case AINPUT_SOURCE_KEYBOARD:
-			OnKeyDown(AKeyEvent_getKeyCode(event), 0);
+			OnKeyDown(KeycodeToVirtualKey(AKeyEvent_getKeyCode(event)), AKeyEvent_getKeyCode(event));
 		}
 	}
+}
+
+void CInputAndroid::HandleMotionEvent(int action, float x, float y)
+{
+	m_lastX = x;
+	m_lastY = y;
+	action &= AMOTION_EVENT_ACTION_MASK;
+	switch (action) {
+	case AMOTION_EVENT_ACTION_DOWN:
+		OnLMBDown(m_lastX, m_lastY);
+		break;
+	case AMOTION_EVENT_ACTION_UP:
+		OnLMBUp(m_lastX, m_lastY);
+		break;
+	case AMOTION_EVENT_ACTION_MOVE:
+		OnMouseMove(m_lastX, m_lastY);
+		break;
+	}
+}
+
+void CInputAndroid::HandleZoom(float delta)
+{
+	OnMouseWheel(delta);
 }
 
 void CInputAndroid::EnableCursor(bool enable /*= true*/)
@@ -58,7 +81,12 @@ int CInputAndroid::GetMouseY() const
 	return 0;//Return last touch position
 }
 
-VirtualKey CInputAndroid::KeycodeToVirtualKey(int key) const
+bool CInputAndroid::IsKeyPressed(wargameEngine::view::VirtualKey key) const
 {
-	return KEY_UNKNOWN;
+	return false;
+}
+
+wargameEngine::view::VirtualKey CInputAndroid::KeycodeToVirtualKey(int key)
+{
+	return wargameEngine::view::VirtualKey::KEY_UNKNOWN;
 }

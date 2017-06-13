@@ -2,17 +2,18 @@
 #include <memory>
 #include <functional>
 
-class ICamera;
+namespace wargameEngine
+{
+namespace view
+{
 class ICachedTexture;
-class IOcclusionQuery;
-class IBaseObject;
 
 class IViewport
 {
 public:
 	virtual ~IViewport() {}
 
-	virtual const ICachedTexture & GetTexture(size_t index) const= 0;
+	virtual const ICachedTexture & GetTexture(size_t index) const = 0;
 
 	virtual const float* GetProjectionMatrix() const = 0;
 	virtual const float* GetViewMatrix() const = 0;
@@ -22,3 +23,5 @@ public:
 	virtual int GetWidth() const = 0;
 	virtual int GetHeight() const = 0;
 };
+}
+}

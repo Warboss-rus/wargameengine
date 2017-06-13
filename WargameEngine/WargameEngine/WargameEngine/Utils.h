@@ -1,19 +1,29 @@
 #pragma once
-#include <string>
+#include "Typedefs.h"
 #include <vector>
 #include <fstream>
-#include <map>
+#include <unordered_map>
 
+namespace wargameEngine
+{
 std::wstring Utf8ToWstring(std::string const& str);
 std::string WStringToUtf8(std::wstring const& str);
-std::vector<char> ReadFile(std::wstring const& path);
-void WriteFile(std::wstring const& path, const char* data, size_t size);
-void WriteFile(std::wstring const& path, std::vector<char> const& data);
-long long GetCurrentTimeLL();
+std::vector<char> ReadFile(const Path& path);
+void WriteFile(const Path& path, const char* data, size_t size);
+void WriteFile(const Path& path, std::vector<char> const& data);
 std::wstring ToWstring(double value, size_t precision = 0);
-void OpenFile(std::wifstream & stream, std::wstring const& path, std::ios::openmode mode = std::ios::in);
-void OpenFile(std::ifstream & stream, std::wstring const& path, std::ios::openmode mode = std::ios::in);
-std::wstring ReplaceAll(std::wstring const& text, std::map<std::wstring, std::wstring> const& replaceMap);
+std::wstring ReplaceAll(const std::wstring& text, const std::unordered_map<std::wstring, std::wstring>& replaceMap);
+std::string to_string(const Path& path);
+std::wstring to_wstring(const Path& path);
+
+#ifdef _WINDOWS
+inline Path make_path(const std::wstring& p) { return p; }
+inline Path make_path(const std::string& p) { return Utf8ToWstring(p); }
+#else
+inline Path make_path(const std::wstring& p) { return WStringToUtf8(p); }
+inline Path make_path(const std::string& p) { return p; }
+#endif
+}
 
 #ifdef TO_STRING_HACK
 #include <sstream>

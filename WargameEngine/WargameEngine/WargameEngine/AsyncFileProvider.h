@@ -1,33 +1,38 @@
 #pragma once
-#include <string>
+#include "Typedefs.h"
 #include <functional>
 
+namespace wargameEngine
+{
 class ThreadPool;
-struct sModule;
+struct Module;
 
-class CAsyncFileProvider
+class AsyncFileProvider
 {
 public:
-	CAsyncFileProvider(ThreadPool & threadPool);
-	void SetModule(sModule const& module);
 	typedef std::function<void(void*, size_t)> ProcessHandler;
 	typedef std::function<void()> CompletionHandler;
 	typedef std::function<void(std::exception const&)> ErrorHandler;
-	void GetTextureAsync(std::wstring const& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler(), bool now = false);
-	void GetModelAsync(std::wstring const& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler());
-	std::wstring GetModelAbsolutePath(std::wstring const& path) const;
-	std::wstring GetTextureAbsolutePath(std::wstring const& path) const;
-	std::wstring GetScriptAbsolutePath(std::wstring const& path) const;
-	std::wstring GetShaderAbsolutePath(std::wstring const& path) const;
-	std::wstring GetAbsolutePath(std::wstring const& path) const;
+
+	AsyncFileProvider(ThreadPool& threadPool);
+	void SetModule(Module const& module);
+	void GetTextureAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler(), bool now = false);
+	void GetModelAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler = ErrorHandler());
+	Path GetModelAbsolutePath(const Path& path) const;
+	Path GetTextureAbsolutePath(const Path& path) const;
+	Path GetScriptAbsolutePath(const Path& path) const;
+	Path GetShaderAbsolutePath(const Path& path) const;
+	Path GetAbsolutePath(const Path& path) const;
+
 private:
-	ThreadPool & m_threadPool;
-	std::wstring m_workingDir;
-	std::wstring m_moduleDir;
-	std::wstring m_textureDir;
-	std::wstring m_modelDir;
-	std::wstring m_scriptDir;
-	std::wstring m_shaderDir;
+	ThreadPool& m_threadPool;
+	Path m_workingDir;
+	Path m_moduleDir;
+	Path m_textureDir;
+	Path m_modelDir;
+	Path m_scriptDir;
+	Path m_shaderDir;
 };
 
-std::wstring AppendPath(std::wstring const& oldPath, std::wstring const& newPath);
+Path AppendPath(const Path& oldPath, const Path& newPath);
+}

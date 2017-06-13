@@ -36,14 +36,11 @@
     <Filter Include="Source Files\view\Readers">
       <UniqueIdentifier>{3277a43f-59f5-4307-943b-4083e49616d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\view\Cameras">
-      <UniqueIdentifier>{4e8f5037-83f9-460d-9a61-afa6cd100b7b}</UniqueIdentifier>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{3ffd6a23-935f-48f5-9e65-9cb732f69f27}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Ruler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="UI\UIButton.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
@@ -57,9 +54,6 @@
       <Filter>Source Files\UI</Filter>
     </ClCompile>
     <ClCompile Include="view\3dModel.cpp">
-      <Filter>Source Files\view</Filter>
-    </ClCompile>
-    <ClCompile Include="view\GameView.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
     <ClCompile Include="view\MaterialManager.cpp">
@@ -92,12 +86,6 @@
     <ClCompile Include="UI\UIComboBox.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="model\GameModel.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
-    <ClCompile Include="model\MovementLimiter.cpp">
-      <Filter>Source Files\model</Filter>
-    </ClCompile>
     <ClCompile Include="model\ObjectGroup.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -118,9 +106,6 @@
     </ClCompile>
     <ClCompile Include="OSSpecific.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="controller\GameController.cpp">
-      <Filter>Source Files\controller</Filter>
     </ClCompile>
     <ClCompile Include="model\Object.cpp">
       <Filter>Source Files\model</Filter>
@@ -212,28 +197,46 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view\InputBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="controller\ScriptRegisterViewport.cpp">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClCompile>
-    <ClCompile Include="view\CameraFirstPerson.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
+    <ClCompile Include="view\InputBase.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="view\CameraStrategy.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
+    <ClCompile Include="view\Camera.cpp">
+      <Filter>Source Files\view</Filter>
     </ClCompile>
-    <ClCompile Include="view\FixedCamera.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
+    <ClCompile Include="Application.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="view\MirrorCamera.cpp">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClCompile>
-    <ClCompile Include="model\Particle.cpp">
+    <ClCompile Include="model\Model.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
-    <ClCompile Include="view\ViewportBase.cpp">
+    <ClCompile Include="controller\Controller.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="view\View.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Ruler.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="model\ParticleEffect.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="controller\MovementLimiter.cpp">
+      <Filter>Source Files\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="model\BoundingBoxManager.cpp">
+      <Filter>Source Files\model</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Image.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\Viewport.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\PerfomanceMeter.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
   </ItemGroup>
@@ -268,9 +271,6 @@
     <ClInclude Include="PluginManager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Ruler.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Task.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -278,9 +278,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandHandler.h">
-      <Filter>Source Files\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\GameController.h">
       <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="controller\CommandChangeGlobalProperty.h">
@@ -307,25 +304,13 @@
     <ClInclude Include="controller\ICommand.h">
       <Filter>Source Files\controller\commands</Filter>
     </ClInclude>
-    <ClInclude Include="model\GameModel.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="model\Landscape.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\MovementLimiter.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="model\Object.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="model\ObjectGroup.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\ObjectInterface.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="model\ObjectStatic.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="model\Projectile.h">
@@ -371,12 +356,6 @@
       <Filter>Source Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="view\3dModel.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\GameView.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ICamera.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\IRenderer.h">
@@ -427,16 +406,10 @@
     <ClInclude Include="controller\CommandGoTo.h">
       <Filter>Source Files\controller\commands</Filter>
     </ClInclude>
-    <ClInclude Include="model\IGameModel.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
     <ClInclude Include="model\IBoundingBoxManager.h">
       <Filter>Source Files\model</Filter>
     </ClInclude>
     <ClInclude Include="view\IShaderManager.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
-    <ClInclude Include="view\IGameWindow.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
     <ClInclude Include="view\IViewHelper.h">
@@ -457,9 +430,6 @@
     <ClInclude Include="view\ITextWriter.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="controller\IScriptHandler.h">
-      <Filter>Source Files\controller</Filter>
-    </ClInclude>
     <ClInclude Include="controller\ScriptRegisterFunctions.h">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClInclude>
@@ -477,9 +447,6 @@
     </ClInclude>
     <ClInclude Include="controller\ScriptUIProtocol.h">
       <Filter>Source Files\controller\functionRegisters</Filter>
-    </ClInclude>
-    <ClInclude Include="controller\INetSocket.h">
-      <Filter>Source Files\controller</Filter>
     </ClInclude>
     <ClInclude Include="model\Animation.h">
       <Filter>Source Files\model</Filter>
@@ -529,29 +496,92 @@
     <ClInclude Include="controller\ScriptViewportProtocol.h">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClInclude>
-    <ClInclude Include="view\CameraFirstPerson.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="view\CameraStrategy.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="view\FixedCamera.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
-    <ClInclude Include="view\MirrorCamera.h">
-      <Filter>Source Files\view\Cameras</Filter>
-    </ClInclude>
     <ClInclude Include="IPhysicsEngine.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="model\Particle.h">
-      <Filter>Source Files\model</Filter>
-    </ClInclude>
-    <ClInclude Include="view\ViewportBase.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="model\Light.h">
       <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="array_view.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Camera.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="Typedefs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model\IObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\IBaseObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="model\BaseObject.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="IPathfinding.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model\Model.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\Controller.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="view\View.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="model\IModel.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Ruler.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="model\ParticleEffect.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="IScriptHandler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INetSocket.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Image.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="controller\MovementLimiter.h">
+      <Filter>Source Files\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="model\BoundingBoxManager.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="view\PluginModelLoader.h">
+      <Filter>Source Files\view\Readers</Filter>
+    </ClInclude>
+    <ClInclude Include="view\Viewport.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\IWindow.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\DrawableMesh.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="view\PerfomanceMeter.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vec4.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vec3.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vec2.h">
+      <Filter>Source Files\math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

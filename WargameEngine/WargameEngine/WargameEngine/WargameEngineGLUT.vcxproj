@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -18,26 +18,26 @@
     <ProjectGuid>{2F8D8554-D588-48AB-A183-88D376423755}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>WargameEngineGLUT</RootNamespace>
-    <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
@@ -55,18 +55,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\freeglut\include;..\..\freetype-2.6\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -129,7 +129,7 @@
     <ProjectReference Include="..\..\bullet\build3\vs2010\LinearMath.vcxproj">
       <Project>{e57afbbf-8c5b-4d44-973d-d304dc6245c8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\freetype-2.6\builds\windows\vc2010\freetype.vcxproj">
+    <ProjectReference Include="..\..\freetype2\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\glew\build\vc12\glew_static.vcxproj">
@@ -143,7 +143,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="impl\MatrixManagerGLM.cpp" />
+    <ClCompile Include="impl\micropather.cpp" />
     <ClCompile Include="impl\NetSocket.cpp" />
+    <ClCompile Include="impl\PathfindingMicroPather.cpp" />
     <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="main.cpp" />
@@ -155,7 +158,11 @@
     <ClCompile Include="impl\TextWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="impl\gl.h" />
+    <ClInclude Include="impl\MatrixManagerGLM.h" />
+    <ClInclude Include="impl\micropather.h" />
     <ClInclude Include="impl\NetSocket.h" />
+    <ClInclude Include="impl\PathfindingMicroPather.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />
     <ClInclude Include="impl\ScriptHandlerLua.h" />
     <ClInclude Include="impl\SoundPlayerFMod.h" />

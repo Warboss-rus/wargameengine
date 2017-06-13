@@ -1,17 +1,16 @@
 #include "ShaderManagerLegacyGL.h"
 #include <map>
 #include <GL/glew.h>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#ifdef _WINDOWS
-#include <Windows.h>
-#endif
-#include <GL/gl.h>
-#endif
+#include "gl.h"
 #include <fstream>
 #include "../LogWriter.h"
 #include "../Module.h"
+
+using namespace wargameEngine;
+using namespace view;
+
+namespace
+{
 
 class COpenGLShaderProgram : public IShaderProgram
 {
@@ -19,18 +18,16 @@ public:
 	unsigned int program;
 };
 
-class COpenGLVertexAttribCache : public IVertexAttribCache
+class CLegacyGLVertexAttribCache : public IVertexAttribCache
 {
 public:
-	COpenGLVertexAttribCache(int elementSize, size_t count, const void* data, GLenum format)
-		:m_elementSize(elementSize)
-		,m_format(format)
+	CLegacyGLVertexAttribCache(size_t size, const void* data)
 	{
 		glGenBuffers(1, &m_cache);
 		glBindBuffer(GL_ARRAY_BUFFER, m_cache);
-		glBufferData(GL_ARRAY_BUFFER, count * elementSize * sizeof(float), data, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
 	}
-	~COpenGLVertexAttribCache()
+	~CLegacyGLVertexAttribCache()
 	{
 		glDeleteBuffers(1, &m_cache);
 	}
@@ -42,13 +39,52 @@ public:
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
-	int GetElementSize() const { return m_elementSize; }
-	GLenum GetFormat() const { return m_format; }
 private:
 	GLuint m_cache;
-	const int m_elementSize;
-	const GLenum m_format;
 };
+
+GLuint CompileShader(const std::string& shaderText, GLuint program, GLenum type)
+{
+	GLuint shader = glCreateShader(type);
+	glAttachShader(program, shader);
+	GLcharARB const * text = shaderText.c_str();
+	glShaderSource(shader, 1, &text, NULL);
+	glCompileShader(shader);
+	GLint compileStatus;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
+	if (compileStatus != GL_TRUE)
+	{
+		char buffer[1000];
+		int size = 0;
+		glGetShaderInfoLog(shader, 1000, &size, buffer);
+		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
+	}
+	return shader;
+}
+
+GLuint CompileShaderFromFile(const Path& path, GLuint program, GLenum type)
+{
+	std::string shaderText;
+	std::string line;
+	std::ifstream iFile(path);
+	while (std::getline(iFile, line))
+	{
+		shaderText += line + '\n';
+	}
+	iFile.close();
+	return CompileShader(shaderText, program, type);
+}
+GLenum FormatToGLEnum(IShaderManager::Format format)
+{
+	switch (format)
+	{
+	case IShaderManager::Format::Float32: return GL_FLOAT;
+	case IShaderManager::Format::SInt32: return GL_INT;
+	case IShaderManager::Format::UInt32: return GL_UNSIGNED_INT;
+	default: throw std::runtime_error("Unknown format");
+	}
+}
+}
 
 CShaderManagerLegacyGL::CShaderManagerLegacyGL()
 {
@@ -68,34 +104,7 @@ void CShaderManagerLegacyGL::PopProgram() const
 	glUseProgram(m_programs.back());
 }
 
-GLuint CompileShader(std::wstring const& path, GLuint program, GLenum type)
-{
-	std::string shaderText;
-	std::string line;
-	std::ifstream iFile(path);
-	while(std::getline(iFile, line))
-	{
-		shaderText += line + '\n';
-	}
-	iFile.close();
-	GLuint shader = glCreateShader(type);
-	glAttachShader(program, shader);
-	GLcharARB const * text = shaderText.c_str();
-	glShaderSource(shader, 1, &text, NULL);
-	glCompileShader(shader);
-	GLint compileStatus;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
-	if (compileStatus != GL_TRUE)
-	{
-		char buffer[1000];
-		int size = 0;
-		glGetShaderInfoLog(shader, 1000, &size, buffer);
-		LogWriter::WriteLine(std::string("Shader error: ") + buffer);
-	}
-	return shader;
-}
-
-std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring const& vertex, std::wstring const& fragment, std::wstring const& geometry)
+std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(const Path& vertex, const Path& fragment, const Path& geometry)
 {
 	if (!GLEW_ARB_shader_objects)
 	{
@@ -113,7 +122,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring 
 		}
 		else
 		{
-			vertexShader = CompileShader(vertex, program->program, GL_VERTEX_SHADER);
+			vertexShader = CompileShaderFromFile(vertex, program->program, GL_VERTEX_SHADER);
 		}
 	}
 	if(!fragment.empty())
@@ -124,7 +133,7 @@ std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring 
 		}
 		else
 		{
-			framgentShader = CompileShader(fragment, program->program, GL_FRAGMENT_SHADER);
+			framgentShader = CompileShaderFromFile(fragment, program->program, GL_FRAGMENT_SHADER);
 		}
 	}
 	if(!geometry.empty())
@@ -135,27 +144,81 @@ std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgram(std::wstring 
 		}
 		else
 		{
+			geometryShader = CompileShaderFromFile(geometry, program->program, GL_GEOMETRY_SHADER);
+		}
+	}
+	NewProgramImpl(program->program, vertexShader, framgentShader);
+
+	return std::move(program);
+}
+
+void CShaderManagerLegacyGL::NewProgramImpl(unsigned program, unsigned vertexShader, unsigned framgentShader)
+{
+	glBindAttribLocation(program, 9, "weights");
+	glBindAttribLocation(program, 10, "weightIndices");
+	glLinkProgram(program);
+	glUseProgram(program);
+	int unfrm = glGetUniformLocation(program, "texture");
+	glUniform1i(unfrm, 0);
+	unfrm = glGetUniformLocation(program, "shadowMap");
+	glUniform1i(unfrm, 1);
+	unfrm = glGetUniformLocation(program, "specular");
+	glUniform1i(unfrm, 2);
+	unfrm = glGetUniformLocation(program, "bump");
+	glUniform1i(unfrm, 3);
+	glDetachShader(program, vertexShader);
+	glDeleteShader(vertexShader);
+	glDetachShader(program, framgentShader);
+	glDeleteShader(framgentShader);
+	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	glVertexAttrib4fv(glGetAttribLocation(program, "weights"), def);
+}
+
+std::unique_ptr<IShaderProgram> CShaderManagerLegacyGL::NewProgramSource(std::string const& vertex /* = "" */, std::string const& fragment /* = "" */, std::string const& geometry /* = "" */)
+{
+	if (!GLEW_ARB_shader_objects)
+	{
+		LogWriter::WriteLine("Shader objects(GL_ARB_shader_objects) are not supported");
+		return nullptr;
+	}
+	std::unique_ptr<COpenGLShaderProgram> program = std::make_unique<COpenGLShaderProgram>();
+	program->program = glCreateProgram();
+	GLuint vertexShader(0), framgentShader(0), geometryShader(0);
+	if (!vertex.empty())
+	{
+		if (!GLEW_ARB_vertex_shader)
+		{
+			LogWriter::WriteLine("Vertex Shaders(GL_ARB_vertex_shader) are not supported");
+		}
+		else
+		{
+			vertexShader = CompileShader(vertex, program->program, GL_VERTEX_SHADER);
+		}
+	}
+	if (!fragment.empty())
+	{
+		if (!GLEW_ARB_fragment_shader)
+		{
+			LogWriter::WriteLine("Fragment Shaders(GL_ARB_fragment_shader) are not supported");
+		}
+		else
+		{
+			framgentShader = CompileShader(fragment, program->program, GL_FRAGMENT_SHADER);
+		}
+	}
+	if (!geometry.empty())
+	{
+		if (!GLEW_ARB_geometry_shader4)
+		{
+			LogWriter::WriteLine("Geometry Shaders(GL_ARB_geometry_shader4) are not supported");
+		}
+		else
+		{
 			geometryShader = CompileShader(geometry, program->program, GL_GEOMETRY_SHADER);
 		}
 	}
-	glBindAttribLocation(program->program, 9, "weights");
-	glBindAttribLocation(program->program, 10, "weightIndices");
-	glLinkProgram(program->program);
-	glUseProgram(program->program);
-	int unfrm = glGetUniformLocation(program->program, "texture");
-	glUniform1i(unfrm, 0);
-	unfrm = glGetUniformLocation(program->program, "shadowMap");
-	glUniform1i(unfrm, 1);
-	unfrm = glGetUniformLocation(program->program, "specular");
-	glUniform1i(unfrm, 2);
-	unfrm = glGetUniformLocation(program->program, "bump");
-	glUniform1i(unfrm, 3);
-	glDetachShader(program->program, vertexShader);
-	glDeleteShader(vertexShader);
-	glDetachShader(program->program, framgentShader);
-	glDeleteShader(framgentShader);
-	float def[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	glVertexAttrib4fv(glGetAttribLocation(program->program, "weights"), def);
+	NewProgramImpl(program->program, vertexShader, framgentShader);
+
 	return std::move(program);
 }
 
@@ -228,19 +291,9 @@ void CShaderManagerLegacyGL::SetUniformValue(std::string const& uniform, int ele
 	}
 }
 
-std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(int elementSize, size_t count, const float* value) const
+std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(size_t size, const void* value) const
 {
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_FLOAT);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(int elementSize, size_t count, const int* value) const
-{
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_INT);
-}
-
-std::unique_ptr<IVertexAttribCache> CShaderManagerLegacyGL::CreateVertexAttribCache(int elementSize, size_t count, const unsigned int* value) const
-{
-	return std::make_unique<COpenGLVertexAttribCache>(elementSize, count, value, GL_UNSIGNED_INT);
+	return std::make_unique<CLegacyGLVertexAttribCache>(size, value);
 }
 
 void CShaderManagerLegacyGL::SetVertexAttributeImpl(std::string const& attribute, int elementSize, size_t /*count*/, const void* values, bool perInstance, unsigned int format) const
@@ -269,12 +322,22 @@ void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, in
 	SetVertexAttributeImpl(attribute, elementSize, count, values, perInstance, GL_UNSIGNED_INT);
 }
 
-void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, bool perInstance /*= false*/) const
+void CShaderManagerLegacyGL::SetVertexAttribute(std::string const& attribute, IVertexAttribCache const& cache, int elementSize, size_t count, Format type, bool perInstance /*= false*/, size_t offset/* = 0*/) const
 {
-	auto& glCache = reinterpret_cast<COpenGLVertexAttribCache const&>(cache);
+	auto& glCache = reinterpret_cast<CLegacyGLVertexAttribCache const&>(cache);
 	glCache.Bind();
-	SetVertexAttributeImpl(attribute, glCache.GetElementSize(), 0, NULL, perInstance, glCache.GetFormat());
+	SetVertexAttributeImpl(attribute, elementSize, count, (void*)offset, perInstance, FormatToGLEnum(type));
 	glCache.UnBind();
+}
+
+bool CShaderManagerLegacyGL::NeedsMVPMatrix() const
+{
+	return false;
+}
+
+void CShaderManagerLegacyGL::SetMatrices(const float*, const float*, const float*, const float* mvp, size_t multiviewCount)
+{
+	//Not used with legacy GL
 }
 
 void CShaderManagerLegacyGL::DisableVertexAttribute(std::string const& attribute, int /*size*/, const float* defaultValue) const

@@ -8,6 +8,8 @@
 #include "../Utils.h"
 #include "../LogWriter.h"
 
+using namespace wargameEngine::view;
+
 static CGameWindowGLUT* g_instance = nullptr;
 bool CGameWindowGLUT::m_visible = true;
 
@@ -47,9 +49,8 @@ void CGameWindowGLUT::OnShutdown()
 	}
 }
 
-IInput& CGameWindowGLUT::ResetInput()
+IInput& CGameWindowGLUT::GetInput()
 {
-	m_input = std::make_unique<CInputGLUT>();
 	return *m_input;
 }
 
@@ -129,7 +130,7 @@ void CGameWindowGLUT::ResizeWindow(int width, int height)
 
 void CGameWindowGLUT::SetTitle(std::wstring const& title)
 {
-	glutSetWindowTitle(WStringToUtf8(title).c_str());
+	glutSetWindowTitle(wargameEngine::WStringToUtf8(title).c_str());
 }
 
 void CGameWindowGLUT::ToggleFullscreen()

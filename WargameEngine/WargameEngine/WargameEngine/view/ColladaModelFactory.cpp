@@ -1,7 +1,7 @@
 #include "ColladaModelFactory.h"
 #include "3dModel.h"
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include "../LogWriter.h"
 #include <algorithm>
@@ -9,11 +9,18 @@
 #include "../rapidxml/rapidxml.hpp"
 #include <sstream>
 #include <numeric>
+#include <cwctype>
 #include "../Utils.h"
 
 using namespace std;
 using namespace rapidxml;
 
+namespace wargameEngine
+{
+namespace view
+{
+namespace
+{
 template<class T>
 vector<T> GetValues(xml_node<>* data)
 {
@@ -114,7 +121,7 @@ void LoadAnimations(xml_node<> * element, vector<sJoint> const& joints, vector<s
 	xml_node<>* animation = element->first_node("animation");
 	while (animation)
 	{
-		map<string, xml_node<>*> sources;//Parse sources;
+		unordered_map<string, xml_node<>*> sources;//Parse sources;
 		xml_node<>* source = animation->first_node("source");
 		while (source != NULL)
 		{
@@ -195,7 +202,7 @@ void LoadAnimations(xml_node<> * element, vector<sJoint> const& joints, vector<s
 	}
 }
 
-void LoadVisualScenes(xml_node<>* library_visual_scenes, map<string, string> &materialTranslator, vector<sJoint> & joints)
+void LoadVisualScenes(xml_node<>* library_visual_scenes, unordered_map<string, string> &materialTranslator, vector<sJoint> & joints)
 {
 	xml_node<>* scene = library_visual_scenes->first_node("visual_scene");
 	while (scene)
@@ -234,7 +241,7 @@ void LoadVisualScenes(xml_node<>* library_visual_scenes, map<string, string> &ma
 	}
 }
 
-void LoadMaterials(xml_node<>* library_materials, map<string, string> &materialTranslator)
+void LoadMaterials(xml_node<>* library_materials, unordered_map<string, string> &materialTranslator)
 {
 	xml_node<>* material = library_materials->first_node("material");
 	while (material)
@@ -258,7 +265,7 @@ void LoadMaterials(xml_node<>* library_materials, map<string, string> &materialT
 	}
 }
 
-void LoadPhongModel(xml_node<>* phong, sMaterial &material, map<string, string>& imageTranslator, xml_node<>* common)
+void LoadPhongModel(xml_node<>* phong, Material &material, unordered_map<string, string>& imageTranslator, xml_node<>* common)
 {
 	xml_node<>* ambient = phong->first_node("ambient");
 	if (ambient)
@@ -283,8 +290,8 @@ void LoadPhongModel(xml_node<>* phong, sMaterial &material, map<string, string>&
 		if (texture)
 		{
 			string image = texture->first_attribute("texture")->value();
-			material.texture = Utf8ToWstring(imageTranslator[GetImagePath(image, common)]);
-			if (material.texture.size() > 7 && ((material.texture.substr(0, 7) == L"file://" || material.texture.substr(0, 7) == L"file:\\\\")))
+			material.texture = make_path(imageTranslator[GetImagePath(image, common)]);
+			if (material.texture.size() > 7 && ((material.texture.substr(0, 7) == make_path(L"file://") || material.texture.substr(0, 7) == make_path(L"file:\\\\"))))
 			{
 				material.texture.erase(0, 8);
 			}
@@ -308,12 +315,12 @@ void LoadPhongModel(xml_node<>* phong, sMaterial &material, map<string, string>&
 	}
 }
 
-void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageTranslator, map<string, string> &materialTranslator, CMaterialManager & materialManager)
+void LoadEffectsLibrary(xml_node<>* library_effects, unordered_map<string, string>& imageTranslator, unordered_map<string, string> &materialTranslator, MaterialManager & materialManager)
 {
 	xml_node<>* effect = library_effects->first_node("effect");
 	while (effect)
 	{
-		sMaterial material;
+		Material material;
 		xml_node<>* common = effect->first_node("profile_COMMON");
 		if (common)
 		{
@@ -321,7 +328,7 @@ void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageT
 			while (technique)
 			{
 				string sid = technique->first_attribute("sid")->value();
-				transform(sid.begin(), sid.end(), sid.begin(), ::tolower);
+				transform(sid.begin(), sid.end(), sid.begin(), [](char c) {return static_cast<char>(::tolower(c)); });
 				if (sid == "common" || sid == "standard")
 				{
 					xml_node<>* phong = technique->first_node("phong");
@@ -341,7 +348,7 @@ void LoadEffectsLibrary(xml_node<>* library_effects, map<string, string>& imageT
 			if (technique && string(technique->first_attribute("profile")->value()) == "FCOLLADA")
 			{
 				xml_node<>* userProperties = technique->first_node("user_properties");
-				if (userProperties) material.texture = Utf8ToWstring(userProperties->value());
+				if (userProperties) material.texture = make_path(userProperties->value());
 			}
 		}
 		for (auto i = materialTranslator.begin(); i != materialTranslator.end(); ++i)
@@ -387,8 +394,9 @@ void LoadAnimationClips(xml_node<>* clipsLib, std::vector<sAnimation> & animatio
 		clip = clip->next_sibling("animation_clip");
 	}
 }
+}
 
-std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, size_t size, C3DModel const& dummyModel, std::wstring const& /*filePath*/)
+std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, size_t size, C3DModel const& dummyModel, const Path& /*filePath*/)
 {
 	std::vector<char> normalizedData;
 	normalizedData.resize(size);
@@ -400,20 +408,20 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	if (!root)//No root
 	{
 		LogWriter::WriteLine("Cannot load model. No root.");
-		return std::make_unique<C3DModel>(dummyModel);
+		return std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 	}
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
 	std::vector<unsigned int> indexes;
-	CMaterialManager materialManager;
+	MaterialManager materialManager;
 	std::vector<sMesh> meshes;
 	std::vector<unsigned int> weightsCount;
 	std::vector<unsigned int> weightsIndexes;
 	std::vector<float> weights;
 	std::vector<sJoint> joints;
 	std::vector<sAnimation> animations;
-	map<string, string> imageTranslator;
+	unordered_map<string, string> imageTranslator;
 	//Process textures
 	xml_node<>* library_images = root->first_node("library_images");
 	if (library_images)
@@ -429,7 +437,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 			image = image->next_sibling("image");
 		}
 	}
-	map<string, string> materialTranslator;
+	unordered_map<string, string> materialTranslator;
 	//Materials step 1: Nodes to materials
 	xml_node<>* library_visual_scenes = root->first_node("library_visual_scenes");
 	if (library_visual_scenes)
@@ -461,10 +469,10 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 		LogWriter::WriteLine("Model loading warning. No effects found.");
 	}
 	//Animation step1: Process weights
-	map<string, vector<unsigned int>> weightCount;
-	map<string, vector<unsigned int>> weightIndexes;
-	map<string, vector<float>> tempWeights;
-	map<string, vector<float>> bindShapeMatrices;
+	unordered_map<string, vector<unsigned int>> weightCount;
+	unordered_map<string, vector<unsigned int>> weightIndexes;
+	unordered_map<string, vector<float>> tempWeights;
+	unordered_map<string, vector<float>> bindShapeMatrices;
 	xml_node<>* controllerLib = root->first_node("library_controllers");
 	if (controllerLib)
 	{
@@ -476,7 +484,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 			{
 				bindShapeMatrices[skin->first_attribute("source")->value() + 1] = GetValues<float>(skin->first_node("bind_shape_matrix"));
 				string geometryId = skin->first_attribute("source")->value() + 1;
-				map<string, xml_node<>*> sources;
+				unordered_map<string, xml_node<>*> sources;
 				xml_node<> * source = skin->first_node("source");
 				while (source)
 				{
@@ -513,8 +521,8 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 					{
 						string fl;
 						sstream >> fl;
-						auto it = find_if(joints.begin(), joints.end(), [&](sJoint const& joint) {return joint.bone == fl;});
-						if(it != joints.end())
+						auto it = find_if(joints.begin(), joints.end(), [&](sJoint const& joint) {return joint.bone == fl; });
+						if (it != joints.end())
 						{
 							memcpy(it->invBindMatrix, &inv[index * 16], sizeof(float) * 16);
 						}
@@ -601,15 +609,12 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 	{
 		sMesh m;
 		string meshId = geometryElement->first_attribute("id")->value();
-		if (geometryElement->first_attribute("name"))
-			m.name = geometryElement->first_attribute("name")->value();
-		else
-			m.name = meshId;
+		m.name = geometryElement->first_attribute("name") ? m.name = geometryElement->first_attribute("name")->value() : meshId;
 		xml_node<>* mesh = geometryElement->first_node("mesh");
 		while (mesh != NULL)//Parse a mesh
 		{
 			indexOffset = vertices.size();
-			map<string, xml_node<>*> sources;//Parse sources;
+			unordered_map<string, xml_node<>*> sources;//Parse sources;
 			xml_node<>* source = mesh->first_node("source");
 			while (source != NULL)
 			{
@@ -663,7 +668,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 								else if (inputType == "TEXCOORD")
 								{
 									texcoord = GetValues<float>(sources[vertEntry->first_attribute("source")->value()]);
-									
+
 								}
 								vertEntry = vertEntry->next_sibling("input");
 							}
@@ -692,13 +697,13 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 					//temp
 					size_t oldSize = vertices.size();
 					vertices.resize(oldSize + vert.size() / 3);
-					memcpy(&vertices[oldSize], vert.data(), vert.size() * sizeof(float));
+					memcpy(vertices.data() + oldSize, vert.data(), vert.size() * sizeof(float));
 					oldSize = normals.size();
 					normals.resize(oldSize + normal.size() / 3);
-					memcpy(&normals[oldSize], normal.data(), normal.size() * sizeof(float));
+					memcpy(normals.data() + oldSize, normal.data(), normal.size() * sizeof(float));
 					oldSize = textureCoords.size();
 					textureCoords.resize(oldSize + texcoord.size() / 2);
-					memcpy(&textureCoords[oldSize], texcoord.data(), texcoord.size() * sizeof(float));
+					memcpy(textureCoords.data() + oldSize, texcoord.data(), texcoord.size() * sizeof(float));
 					vector<unsigned int>& weightCountPtr = weightCount[meshId];
 					weightsCount.insert(weightsCount.end(), weightCountPtr.begin(), weightCountPtr.end());
 					vector<unsigned int>& weightIndex = weightIndexes[meshId];
@@ -734,6 +739,7 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 								MultiplyVectorToMatrix(vertex, bindShapeMatrices[meshId].data());
 								vertices.push_back(vertex);
 								normals.push_back(CVector3f(&normal[currentIndexes[normalOffset] * 3]));
+								if(currentIndexes[texcoordOffset] * texCoordStride < texcoord.size())
 								textureCoords.push_back(CVector2f(&texcoord[currentIndexes[texcoordOffset] * texCoordStride]));
 								indexes.push_back(static_cast<unsigned>(vertices.size() - 1));
 								if (controllerLib)
@@ -755,20 +761,30 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 		}
 		geometryElement = geometryElement->next_sibling("geometry");
 	}
+	if (!textureCoords.empty() && textureCoords.size() < vertices.size())
+	{
+		textureCoords.resize(vertices.size());
+	}
+	if (!normals.empty() && normals.size() < vertices.size())
+	{
+		normals.resize(vertices.size());
+	}
 	weightsCount.shrink_to_fit();
 	weightsIndexes.shrink_to_fit();
 	weights.shrink_to_fit();
 	doc->clear();
-	auto result = std::make_unique<C3DModel>(dummyModel);
+	auto result = std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
 	return result;
 }
 
-bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& filePath) const
+bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, const Path& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
-	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
-	std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-	return extension == L"dae";
+	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
+	return extension == make_path(L"dae");
+}
+}
 }

@@ -9,6 +9,9 @@
 #pragma warning(pop)
 #endif
 
+using namespace wargameEngine;
+using namespace view;
+
 CInputGLUT* CInputGLUT::m_instance = nullptr;
 static const int SCROLL_UP = 3;
 static const int SCROLL_DOWN = 4;
@@ -60,12 +63,12 @@ void CInputGLUT::OnMouse(int button, int state, int x, int y)
 	case SCROLL_UP:
 		if (state == GLUT_UP)
 		{
-			m_instance->OnMouseWheelUp();
+			m_instance->OnMouseWheel(1.0f);
 		}break;
 	case SCROLL_DOWN:
 		if (state == GLUT_UP)
 		{
-			m_instance->OnMouseWheelDown();
+			m_instance->OnMouseWheel(-1.0f);
 		}break;
 	}
 }
@@ -77,12 +80,12 @@ bool HasModifier(int modifier)
 
 void CInputGLUT::OnKeyboard(unsigned char key, int /*x*/, int /*y*/)
 {
-	m_instance->OnKeyDown(key, ::GetModifiers());
+	m_instance->OnKeyDown(KeycodeToVirtualKey(key), static_cast<int>(key));
 }
 
 void CInputGLUT::OnKeyboardUp(unsigned char key, int , int)
 {
-	m_instance->OnKeyUp(key, ::GetModifiers());
+	m_instance->OnKeyUp(KeycodeToVirtualKey(key), key);
 	if (key >= 32 && key != 127)
 	{
 		wchar_t str;
@@ -124,12 +127,12 @@ void CInputGLUT::EnableCursor(bool enable /*= true*/)
 
 void CInputGLUT::OnSpecialKeyPress(int key, int /*x*/, int /*y*/)
 {
-	m_instance->OnKeyDown(key, ::GetModifiers());
+	m_instance->OnKeyDown(KeycodeToVirtualKey(key), key);
 }
 
 void CInputGLUT::OnSpecialKeyRelease(int key, int, int)
 {
-	m_instance->OnKeyUp(key, ::GetModifiers());
+	m_instance->OnKeyUp(KeycodeToVirtualKey(key), key);
 }
 
 void CInputGLUT::OnPassiveMouseMove(int x, int y)
@@ -196,23 +199,28 @@ int CInputGLUT::GetMouseY() const
 	return g_lastMouseY;
 }
 
-VirtualKey CInputGLUT::KeycodeToVirtualKey(int key) const
+VirtualKey CInputGLUT::KeycodeToVirtualKey(int key)
 {
 	static const std::map<int, VirtualKey> virtualKeys = {
-		{8, KEY_BACKSPACE},
-		{GLUT_KEY_LEFT, KEY_LEFT },
-		{GLUT_KEY_UP, KEY_UP },
-		{GLUT_KEY_RIGHT, KEY_RIGHT },
-		{GLUT_KEY_DOWN, KEY_DOWN },
-		{GLUT_KEY_HOME, KEY_HOME },
-		{GLUT_KEY_END, KEY_END },
-		{127, KEY_DELETE },
+		{8, VirtualKey::KEY_BACKSPACE},
+		{GLUT_KEY_LEFT, VirtualKey::KEY_LEFT },
+		{GLUT_KEY_UP, VirtualKey::KEY_UP },
+		{GLUT_KEY_RIGHT, VirtualKey::KEY_RIGHT },
+		{GLUT_KEY_DOWN, VirtualKey::KEY_DOWN },
+		{GLUT_KEY_HOME, VirtualKey::KEY_HOME },
+		{GLUT_KEY_END, VirtualKey::KEY_END },
+		{127, VirtualKey::KEY_DELETE },
 	};
 	auto it = virtualKeys.find(key);
-	return it == virtualKeys.end() ? KEY_UNKNOWN : it->second;
+	return it == virtualKeys.end() ? VirtualKey::KEY_UNKNOWN : it->second;
 }
 
 int CInputGLUT::GetModifiers() const
 {
 	return ::GetModifiers();
+}
+
+bool CInputGLUT::IsKeyPressed(VirtualKey key) const
+{
+	return m_pressedKeys.find(key) != m_pressedKeys.end();
 }

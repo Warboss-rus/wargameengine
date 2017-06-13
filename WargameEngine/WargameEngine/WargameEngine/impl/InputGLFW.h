@@ -4,18 +4,18 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 
-class IObject;
-
-class CInputGLFW : public CInputBase
+class CInputGLFW : public wargameEngine::view::InputBase
 {
 public:
+	using VirtualKey = wargameEngine::view::VirtualKey;
+
 	CInputGLFW(GLFWwindow * window);
 
-	virtual void EnableCursor(bool enable = true) override;
-	virtual int GetMouseX() const override;
-	virtual int GetMouseY() const override;
-	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
-	virtual int GetModifiers() const override;
+	void EnableCursor(bool enable = true) override;
+	int GetMouseX() const override;
+	int GetMouseY() const override;
+	int GetModifiers() const override;
+	bool IsKeyPressed(VirtualKey key) const override;
 
 	static void OnMouse(GLFWwindow* window, int button, int action, int mods);
 	static void OnScroll(GLFWwindow* window, double xoffset, double yoffset);
@@ -24,10 +24,11 @@ public:
 	static void MouseMoveCallback(GLFWwindow* window, double xpos, double ypos);
 	static void JoystickCallback(int joy, int event);
 	void UpdateControllers();
-	void SetHeadRotation(int deviceIndex, float x, float y, float z);
+	void SetHeadRotation(size_t deviceIndex, const float* matrix);
 private:
+	static VirtualKey KeycodeToVirtualKey(int key);
 	GLFWwindow * m_window;
-	static CInputGLFW * m_instance;
+
 	bool m_cursorEnabled = true;
 	struct sControllerState
 	{
@@ -37,4 +38,6 @@ private:
 	std::vector<sControllerState> m_gamepadStates;
 	int m_modifiers = 0;
 	std::vector<int> m_activeJoysticks;
+	int m_prevX;
+	int m_prevY;
 };

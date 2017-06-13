@@ -2,16 +2,21 @@
 #include "android\input.h"
 #include "../view/InputBase.h"
 
-class CInputAndroid : public CInputBase
+class CInputAndroid : public wargameEngine::view::InputBase
 {
 public:
 	void HandleInput(AInputEvent* event);
+	void HandleMotionEvent(int action, float x, float y);
+	void HandleZoom(float delta);
 
-	virtual void EnableCursor(bool enable = true) override;
-	virtual int GetModifiers() const override;
-	virtual int GetMouseX() const override;
-	virtual int GetMouseY() const override;
-	virtual VirtualKey KeycodeToVirtualKey(int key) const override;
+	void EnableCursor(bool enable = true) override;
+	int GetModifiers() const override;
+	int GetMouseX() const override;
+	int GetMouseY() const override;
+	bool IsKeyPressed(wargameEngine::view::VirtualKey key) const override;
+
 private:
+	static wargameEngine::view::VirtualKey KeycodeToVirtualKey(int key);
+
 	int m_lastX, m_lastY;
 };

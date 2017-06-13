@@ -3,28 +3,27 @@
 #include "IRenderer.h"
 #include <float.h>
 #include "Matrix4.h"
-#include <algorithm>
+#include "IShaderManager.h"
+#include "TextureManager.h"
 
-C3DModel::C3DModel(double scale, double rotateX, double rotateY, double rotateZ):m_scale(scale), m_rotation(rotateX, rotateY, rotateZ), m_count(0) {}
-
-C3DModel::C3DModel(C3DModel const& other)
-	: m_vertices(other.m_vertices), m_textureCoords(other.m_textureCoords), m_normals(other.m_normals), m_indexes(other.m_indexes), m_weightsCount(other.m_weightsCount)
-	, m_weightsIndexes(other.m_weightsIndexes), m_weights(other.m_weights), m_skeleton(other.m_skeleton)
-	, m_animations(other.m_animations), m_meshes(other.m_meshes), m_materials(other.m_materials), m_scale(other.m_scale), m_rotation(other.m_rotation), m_count(other.m_count)
+namespace wargameEngine
 {
-}
+namespace view
+{
+
+C3DModel::C3DModel(float scale, const CVector3f& rotations) :m_scale(scale), m_rotation(rotations), m_count(0) {}
 
 C3DModel::~C3DModel()
 {
 }
 
 void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f> & textureCoords, std::vector<CVector3f> & normals, std::vector<unsigned int> & indexes,
-	CMaterialManager & materials, std::vector<sMesh> & meshes)
+	MaterialManager & materials, std::vector<sMesh> & meshes)
 {
 	m_vertices.swap(vertices);
 	m_textureCoords.swap(textureCoords);
 	m_normals.swap(normals);
-	m_count = (indexes.empty())?vertices.size():indexes.size();
+	m_count = (indexes.empty()) ? vertices.size() : indexes.size();
 	m_indexes.swap(indexes);
 	std::swap(m_materials, materials);
 	m_meshes.swap(meshes);
@@ -35,9 +34,6 @@ void C3DModel::SetModel(std::vector<CVector3f> & vertices, std::vector<CVector2f
 		mesh.material = m_materials.GetMaterial(mesh.materialName);
 		mesh.end = (i == m_meshes.size() - 1) ? m_indexes.size() + 1 : m_meshes[i + 1].begin;
 	}
-	std::sort(m_meshes.begin(), m_meshes.end(), [](sMesh const& first, sMesh const& second) {
-		return first.materialName < second.materialName;
-	});
 }
 
 void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector<unsigned int> & weightIndexes, std::vector<float> & weights, std::vector<sJoint> & skeleton, std::vector<sAnimation> & animations)
@@ -49,82 +45,39 @@ void C3DModel::SetAnimation(std::vector<unsigned int> & weightCount, std::vector
 	m_animations.swap(animations);
 }
 
-void SetMaterial(IRenderer & renderer, sMaterial * material, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures = nullptr)
+void C3DModel::SetVertexColors(std::vector<math::vec4>&& colors)
 {
-	if(!material)
-	{
-		renderer.SetTexture(L"");
-		return;
-	}
-	sMaterial& mat = *material;
-	renderer.SetMaterial(mat.ambient, mat.diffuse, mat.specular, mat.shininess);
-	if (!replaceTextures && !teamcolor)
-	{
-		if (!mat.texturePtr)
-		{
-			mat.texturePtr = renderer.GetTexturePtr(mat.texture);
-		}
-		mat.texturePtr->Bind();
-	}
-	else 
-	{
-		std::wstring texture = material->texture;
-		if (replaceTextures && replaceTextures->find(texture) != replaceTextures->end())
-		{
-			texture = replaceTextures->at(texture);
-		}
-		renderer.SetTexture(texture, teamcolor);
-	}
-	if (!mat.specularMap.empty()) renderer.SetTexture(mat.specularMap, TextureSlot::eSpecular);
-	if (!mat.bumpMap.empty()) renderer.SetTexture(mat.bumpMap, TextureSlot::eBump);
+	m_vertexColors = std::move(colors);
 }
 
-void C3DModel::DrawModel(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, IVertexBuffer & vertexBuffer,
-	bool useGPUskinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
+void C3DModel::GetModelMeshes(IRenderer& renderer, TextureManager& textureManager, MeshList& meshesVec, const std::set<std::string>* hideMeshes,
+	IVertexBuffer* vertexBuffer, const std::vector<model::TeamColor>* teamcolor, const std::unordered_map<Path, Path>* replaceTextures, 
+	const std::shared_ptr<std::vector<float>>& skeleton, const std::shared_ptr<TempMeshBuffer>& tempBuffer) const
 {
-	auto& shaderManager = renderer.GetShaderManager();
-	vertexBuffer.Bind();
-	if (useGPUskinning && m_skeleton.size() > 0)
-	{
-		shaderManager.SetVertexAttribute("weights", *m_weightsCache);
-		shaderManager.SetVertexAttribute("weightIndices", *m_weightIndiciesCache);
-	}
 	renderer.PushMatrix();
-	renderer.Rotate(m_rotation.x, 1.0, 0.0, 0.0);//causes transparent models
-	renderer.Rotate(m_rotation.y, 0.0, 1.0, 0.0);
-	renderer.Rotate(m_rotation.z, 0.0, 0.0, 1.0); 
+	renderer.Rotate(m_rotation);
 	renderer.Scale(m_scale);
-	if (!m_indexes.empty()) //Draw by meshes;
+	const Matrix4F modelMatrix = renderer.GetModelMatrix();
+	renderer.PopMatrix();
+	const bool indexed = !m_indexes.empty();
+	for (const sMesh& mesh : m_meshes)
 	{
-		sMaterial * material = nullptr;
-		for (size_t i = 0; i < m_meshes.size(); ++i)
+		if (hideMeshes && hideMeshes->find(mesh.name) != hideMeshes->end())
 		{
-			sMesh& mesh = m_meshes[i];
-			if (hideMeshes && hideMeshes->find(mesh.name) != hideMeshes->end())
-			{
-				continue;
-			}
-			if (!vertexOnly && mesh.material != material)
-			{
-				material = mesh.material;
-				SetMaterial(renderer, material, teamcolor, replaceTextures);
-			}
-			vertexBuffer.DrawIndexes(mesh.begin, mesh.end - mesh.begin);
+			continue;
+		}
+		Material* material = mesh.material;
+		ICachedTexture* texture = GetTexturePtr(material, replaceTextures, textureManager, teamcolor);
+		auto& prev = meshesVec.back();
+		if (prev.buffer == vertexBuffer && material == prev.material && texture == prev.texturePtr && prev.start + prev.count == mesh.begin)
+		{
+			prev.count += mesh.end - mesh.begin;
+		}
+		else
+		{
+			meshesVec.emplace_back(DrawableMesh{ nullptr, texture, material, vertexBuffer, modelMatrix * mesh.meshTransform, tempBuffer, skeleton, mesh.begin, mesh.end - mesh.begin, indexed });
 		}
 	}
-	else //Draw in a row
-	{
-		vertexBuffer.DrawAll(m_count);
-	}
-	if (useGPUskinning)
-	{
-		float def[] = { 0.0f };
-		shaderManager.DisableVertexAttribute("weights", 1, def);
-		int idef = 0;
-		shaderManager.DisableVertexAttribute("weightIndices", 1, &idef);
-	}
-	vertexBuffer.UnBind();
-	renderer.PopMatrix();
 }
 
 //GPU skinning is limited to 4 weights per vertex (no more, no less). So we will add some empty weights if there is less or delete exceeding if there is more
@@ -158,18 +111,19 @@ void C3DModel::CalculateGPUWeights(IRenderer & renderer)
 			gpuWeight[i * 4 + j] /= sum;
 		}
 	}
-	m_weightsCache = renderer.GetShaderManager().CreateVertexAttribCache(4, gpuWeight.size() / 4, gpuWeight.data());
-	m_weightIndiciesCache = renderer.GetShaderManager().CreateVertexAttribCache(4, gpuWeightIndexes.size() / 4, gpuWeightIndexes.data());
+	renderer.AddVertexAttribute(*m_vertexBuffer, "weights", 4, gpuWeight.size() / 4, IShaderManager::Format::Float32, gpuWeight.data());
+	renderer.AddVertexAttribute(*m_vertexBuffer, "weightIndices", 4, gpuWeightIndexes.size() / 4, IShaderManager::Format::SInt32, gpuWeightIndexes.data());
 }
 
 void MultiplyVectorToMatrix(CVector3f & vect, float * matrix)
 {
+	if (!matrix) return;
 	float result[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			result[i] += matrix[i * 4 + j] * ((j == 3)?1.0f:vect[j]);
+			result[i] += matrix[i * 4 + j] * ((j == 3) ? 1.0f : vect[j]);
 		}
 	}
 	if (fabs(result[3]) > FLT_EPSILON)
@@ -218,10 +172,8 @@ void InterpolateMatrices(float * m1, const float * m2, float t)//works bad if ma
 	}
 }
 
-std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, eAnimationLoopMode loop, 
-	float time, bool & animationIsEnded)
+std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, std::vector<sAnimation> const& animations, std::string const& animationToPlay, model::AnimationLoop loop, float time)
 {
-	animationIsEnded = false;
 	//copy all matrices
 	std::vector<float> jointMatrices;
 	jointMatrices.resize(skeleton.size() * 16);
@@ -241,17 +193,13 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 				AddAllChildren(animations, i, animsToPlay);
 				if (time > animations[i].duration)
 				{
-					if (loop == eAnimationLoopMode::LOOPING)
+					if (loop == model::AnimationLoop::Looping)
 					{
 						time = fmod(time, animations[i].duration);
 					}
-					else if (loop == eAnimationLoopMode::HOLDEND)
+					else if (loop == model::AnimationLoop::HoldEnd)
 					{
 						time = animations[i].duration;
-					}
-					else
-					{
-						animationIsEnded = true;
 					}
 				}
 				break;
@@ -304,26 +252,21 @@ std::vector<float> CalculateJointMatrices(std::vector<sJoint> const& skeleton, s
 }
 
 //returns if animations is ended
-bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * hideMeshes, bool vertexOnly, std::string const& animationToPlay, eAnimationLoopMode loop, float time, 
-	bool gpuSkinning, const std::vector<sTeamColor> * teamcolor, const std::map<std::wstring, std::wstring> * replaceTextures)
+void C3DModel::GetMeshesSkinned(IRenderer & renderer, TextureManager& textureManager, MeshList& meshesVec, const std::set<std::string> * hideMeshes,
+	std::string const& animationToPlay, model::AnimationLoop loop, float time, bool gpuSkinning, const std::vector<model::TeamColor> * teamcolor, 
+	const std::unordered_map<Path, Path> * replaceTextures)
 {
-	bool result;
-	std::vector<float> jointMatrices = CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time, result);
+	const auto jointMatrices = std::make_shared<std::vector<float>>(CalculateJointMatrices(m_skeleton, m_animations, animationToPlay, loop, time));
 	if (gpuSkinning)
 	{
-		if (!m_weightsCache)
-		{
-			CalculateGPUWeights(renderer);
-		}
-		renderer.GetShaderManager().SetUniformValue("joints", 16, m_skeleton.size(), jointMatrices.data());
-		DrawModel(renderer, hideMeshes, vertexOnly, *m_vertexBuffer, true, teamcolor, replaceTextures);
+		return GetModelMeshes(renderer, textureManager, meshesVec, hideMeshes, m_vertexBuffer.get(), teamcolor, replaceTextures, jointMatrices, nullptr);
 	}
 	else
 	{
 		std::vector<CVector3f> vertices;
 		std::vector<CVector3f> normals;
 		vertices.resize(m_vertices.size());
-		normals.resize(m_normals.size());
+		normals.reserve(m_normals.size() * 3);
 		size_t k = 0;
 		for (size_t i = 0; i < m_vertices.size(); ++i)
 		{
@@ -333,29 +276,38 @@ bool C3DModel::DrawSkinned(IRenderer & renderer, const std::set<std::string> * h
 				CVector3f vertex = m_vertices[i];
 				sJoint * joint = &m_skeleton[m_weightsIndexes[k]];
 				MultiplyVectorToMatrix(vertex, joint->invBindMatrix);
-				MultiplyVectorToMatrix(vertex, &jointMatrices[m_weightsIndexes[k] * 16]);
+				MultiplyVectorToMatrix(vertex, &(*jointMatrices)[m_weightsIndexes[k] * 16]);
 				vertex *= m_weights[k];
 				vertices[i] += vertex;
 				CVector3f normal = m_normals[i];
 				MultiplyVectorToMatrix(normal, joint->invBindMatrix);
-				MultiplyVectorToMatrix(normal, &jointMatrices[m_weightsIndexes[k] * 16]);
+				MultiplyVectorToMatrix(normal, &(*jointMatrices)[m_weightsIndexes[k] * 16]);
 				normal *= m_weights[k];
-				normals[i] += normal;
+				normals[i] = normal;
 			}
 		}
-		auto vertexBuffer = renderer.CreateVertexBuffer(&vertices.data()->x, &normals.data()->x, &m_textureCoords.data()->x, vertices.size(), true);
-		vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
-		DrawModel(renderer, hideMeshes, vertexOnly, *vertexBuffer, false, teamcolor, replaceTextures);
+		auto tempVertices = std::make_shared<TempMeshBuffer>(TempMeshBuffer{vertices, normals, m_textureCoords.data(), m_indexes.data(), m_indexes.size()});
+		return GetModelMeshes(renderer, textureManager, meshesVec, hideMeshes, m_vertexBuffer.get(), teamcolor, replaceTextures, nullptr, tempVertices);
 	}
-	return result;
 }
 
-void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool gpuSkinning)
+void C3DModel::GetMeshes(IRenderer & renderer, TextureManager& textureManager, model::IObject* object, bool gpuSkinning, MeshList& meshesVec)
 {
-	if (!m_vertexBuffer)
+	if (!m_vertexBuffer && !m_vertices.empty())
 	{
 		m_vertexBuffer = renderer.CreateVertexBuffer(&m_vertices.data()->x, &m_normals.data()->x, &m_textureCoords.data()->x, m_vertices.size(), false);
-		m_vertexBuffer->SetIndexBuffer(m_indexes.data(), m_indexes.size());
+		if (!m_indexes.empty())
+		{
+			renderer.SetIndexBuffer(*m_vertexBuffer, m_indexes.data(), m_indexes.size());
+		}
+		if (!m_vertexColors.empty())
+		{
+			renderer.AddVertexAttribute(*m_vertexBuffer, "VertexColor", 4, m_vertexColors.size(), IShaderManager::Format::Float32, m_vertexColors.data());
+		}
+		if (!m_weightsCount.empty())
+		{
+			CalculateGPUWeights(renderer);
+		}
 	}
 
 	auto* hiddenMeshes = (object && !object->GetHiddenMeshes().empty()) ? &object->GetHiddenMeshes() : nullptr;
@@ -363,31 +315,33 @@ void C3DModel::Draw(IRenderer & renderer, IObject* object, bool vertexOnly, bool
 	auto* replaceTextures = (object && !object->GetReplaceTextures().empty()) ? &object->GetReplaceTextures() : nullptr;
 	if (!m_weightsCount.empty() && object)//object needs to be skinned
 	{
-		if (object->GetAnimation().empty())//no animation is playing, default pose
-		{
-			DrawSkinned(renderer, hiddenMeshes, vertexOnly, "", eAnimationLoopMode::NONLOOPING, 0.0f, gpuSkinning, teamcolor, replaceTextures);
-		}
-		else//animation is playing, full computation
-		{
-			if (DrawSkinned(renderer, hiddenMeshes, vertexOnly, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(),
-				gpuSkinning, teamcolor, replaceTextures))
-			{
-				object->PlayAnimation("");
-			}
-		}
+		return GetMeshesSkinned(renderer, textureManager, meshesVec, hiddenMeshes, object->GetAnimation(), object->GetAnimationLoop(), object->GetAnimationTime() / object->GetAnimationSpeed(),
+			gpuSkinning, teamcolor, replaceTextures);
 	}
 	else//static object
 	{
-		DrawModel(renderer, hiddenMeshes, vertexOnly, *m_vertexBuffer, false, teamcolor, replaceTextures);
+		return GetModelMeshes(renderer, textureManager, meshesVec, hiddenMeshes, m_vertexBuffer.get(), teamcolor, replaceTextures, nullptr, nullptr);
 	}
 }
 
-void C3DModel::PreloadTextures(IRenderer & renderer) const
+float C3DModel::GetScale() const
+{
+	return m_scale;
+}
+
+CVector3f C3DModel::GetRotation() const
+{
+	return m_rotation;
+}
+
+void C3DModel::PreloadTextures(TextureManager& textureManager) const
 {
 	for (size_t i = 0; i < m_meshes.size(); ++i)
 	{
-		if (m_meshes[i].material) continue;
-		renderer.SetTexture(m_meshes[i].material->texture);
+		if (m_meshes[i].material)
+		{
+			textureManager.GetTexturePtr(m_meshes[i].material->texture);
+		}
 	}
 }
 
@@ -399,4 +353,28 @@ std::vector<std::string> C3DModel::GetAnimations() const
 		result.push_back(m_animations[i].id);
 	}
 	return result;
+}
+
+ICachedTexture* C3DModel::GetTexturePtr(Material* material, const std::unordered_map<Path, Path>* replaceTextures, TextureManager &textureManager, const std::vector<model::TeamColor>* teamcolor) const
+{
+	if (material && !material->texture.empty())
+	{
+		if (replaceTextures && replaceTextures->find(material->texture) != replaceTextures->end())
+		{
+			return textureManager.GetTexturePtr(replaceTextures->at(material->texture), teamcolor);
+		}
+		if (teamcolor)
+		{
+			return textureManager.GetTexturePtr(material->texture, teamcolor);
+		}
+		if (!material->texturePtr)
+		{
+			material->texturePtr = textureManager.GetTexturePtr(material->texture);
+		}
+		return material->texturePtr;
+	}
+	return nullptr;
+}
+
+}
 }

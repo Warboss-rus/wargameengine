@@ -1,16 +1,23 @@
 #include "OBJModelFactory.h"
-#include "IRenderer.h"
-#include "3dModel.h"
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <map>
-#include <vector>
-#include "../LogWriter.h"
-#include <algorithm>
 #include "../AsyncFileProvider.h"
+#include "../LogWriter.h"
 #include "../Utils.h"
+#include "3dModel.h"
+#include "IRenderer.h"
+#include <algorithm>
+#include <cwctype>
+#include <fstream>
+#include <unordered_map>
+#include <sstream>
+#include <string>
+#include <vector>
 
+namespace wargameEngine
+{
+namespace view
+{
+namespace
+{
 struct FaceIndex
 {
 	size_t vertex;
@@ -42,24 +49,23 @@ FaceIndex ParseFaceIndex(std::string const& str)
 	return res;
 }
 
-std::map<std::string, sMaterial> LoadMTL(std::wstring const& path)
+std::unordered_map<std::string, Material> LoadMTL(const Path& path)
 {
-	std::map<std::string, sMaterial> materials;
-	std::ifstream iFile;
-	OpenFile(iFile, path);
+	std::unordered_map<std::string, Material> materials;
+	std::ifstream iFile(path);
 	if (!iFile.good())
 	{
 		iFile.close();
-		LogWriter::WriteLine(L"Error loading MTL " + path);
+		LogWriter::WriteLine("Error loading MTL " + to_string(path));
 		return materials;
 	}
 	std::string line;
 	std::string type;
 	float dvalue;
-	sMaterial * lastMaterial = NULL;
+	Material* lastMaterial = NULL;
 	while (std::getline(iFile, line))
 	{
-		if (line.empty() || line[0] == '#')//Empty line or commentary
+		if (line.empty() || line[0] == '#') //Empty line or commentary
 			continue;
 
 		std::istringstream lineStream(line);
@@ -68,7 +74,7 @@ std::map<std::string, sMaterial> LoadMTL(std::wstring const& path)
 		if (type == "newmtl") //name
 		{
 			lineStream >> type;
-			materials[type] = sMaterial();
+			materials[type] = Material();
 			lastMaterial = &materials[type];
 		}
 
@@ -105,38 +111,39 @@ std::map<std::string, sMaterial> LoadMTL(std::wstring const& path)
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->texture = Utf8ToWstring(texture);
+			lastMaterial->texture = make_path(texture);
 		}
 		if ((type == "map_bump" || type == "bump") && lastMaterial) //bump texture
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->bumpMap = Utf8ToWstring(texture);
+			lastMaterial->bumpMap = make_path(texture);
 		}
 		if (type == "map_specular" && lastMaterial) //custom specular map extension
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->texture = Utf8ToWstring(texture);
+			lastMaterial->texture = make_path(texture);
 		}
 	}
 	iFile.close();
 	return materials;
 }
+}
 
-std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size_t /*size*/, C3DModel const& dummyModel, std::wstring const& filePath)
+std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char* data, size_t /*size*/, const C3DModel& dummyModel, const Path& filePath)
 {
-	auto slashPos = filePath.find_last_of(L"\\/");
-	std::wstring parentPath = slashPos == filePath.npos ? filePath : filePath.substr(0, slashPos);
+	auto slashPos = filePath.find_last_of(make_path(L"\\/"));
+	Path parentPath = slashPos == filePath.npos ? filePath : filePath.substr(0, slashPos);
 	std::vector<CVector3f> tempVertices;
 	std::vector<CVector2f> tempTextureCoords;
 	std::vector<CVector3f> tempNormals;
 	std::vector<CVector3f> vertices;
 	std::vector<CVector2f> textureCoords;
 	std::vector<CVector3f> normals;
-	std::map<std::string, unsigned int> faces;
+	std::unordered_map<std::string, unsigned int> faces;
 	std::vector<unsigned int> indexes;
-	CMaterialManager materialManager;
+	MaterialManager materialManager;
 	std::vector<sMesh> meshes;
 	std::vector<unsigned int> weightsCount;
 	std::vector<unsigned int> weightsIndexes;
@@ -151,13 +158,13 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 	bool useFaces = false;
 	bool useNormals = false;
 	bool useUVs = false;
-	while(iFile.good())
+	while (iFile.good())
 	{
 		iFile >> type;
-		if(type.empty() || type[0] == '#')//Empty line or commentary
+		if (type.empty() || type[0] == '#') //Empty line or commentary
 			continue;
 
-		if(type == "v")// Vertex
+		if (type == "v") // Vertex
 		{
 			iFile >> p3.x;
 			iFile >> p3.y;
@@ -165,14 +172,14 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 			tempVertices.push_back(p3);
 		}
 
-		if(type == "vt")// Texture coords
+		if (type == "vt") // Texture coords
 		{
 			useUVs = true;
 			iFile >> p2.x;
 			iFile >> p2.y;
 			tempTextureCoords.push_back(p2);
 		}
-		if(type == "vn")// Normals
+		if (type == "vn") // Normals
 		{
 			useNormals = true;
 			iFile >> p3.x;
@@ -180,22 +187,22 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 			iFile >> p3.z;
 			tempNormals.push_back(p3);
 		}
-		if(type == "f")// faces
+		if (type == "f") // faces
 		{
 			useFaces = true;
-			for(unsigned int i = 0; i < 3; ++i)
+			for (unsigned int i = 0; i < 3; ++i)
 			{
 				std::string index3;
 				iFile >> index3;
-				if(faces.find(index3) != faces.end()) //This vertex/texture coord/normal already exist
+				if (faces.find(index3) != faces.end()) //This vertex/texture coord/normal already exist
 				{
 					indexes.push_back(faces[index3]);
 				}
-				else//New vertex/texcoord/normal
+				else //std::make_unique<vertex/texcoord/normal
 				{
-					FaceIndex faceIndex  = ParseFaceIndex(index3);
+					FaceIndex faceIndex = ParseFaceIndex(index3);
 					vertices.push_back(tempVertices[faceIndex.vertex - 1]);
-					if(faceIndex.textureCoord != 0)
+					if (faceIndex.textureCoord != 0)
 					{
 						textureCoords.push_back(tempTextureCoords[faceIndex.textureCoord - 1]);
 					}
@@ -203,7 +210,7 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 					{
 						textureCoords.push_back(CVector2f());
 					}
-					if(faceIndex.normal != 0)
+					if (faceIndex.normal != 0)
 					{
 						normals.push_back(tempNormals[faceIndex.normal - 1]);
 					}
@@ -216,7 +223,7 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 				}
 			}
 		}
-		if(type == "mtllib")//Load materials file
+		if (type == "mtllib") //Load materials file
 		{
 			std::string mtlPath;
 			iFile >> mtlPath;
@@ -224,13 +231,13 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 			{
 				mtlPath = mtlPath.substr(2);
 			}
-			materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, Utf8ToWstring(mtlPath))));
+			materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, make_path(mtlPath))));
 		}
-		if(type == "usemtl")//apply material
+		if (type == "usemtl") //apply material
 		{
 			iFile >> mesh.materialName;
 			mesh.begin = indexes.size();
-			if(!meshes.empty() && mesh.begin == meshes.back().begin)
+			if (!meshes.empty() && mesh.begin == meshes.back().begin)
 			{
 				meshes.back() = mesh;
 			}
@@ -239,16 +246,16 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 				meshes.push_back(mesh);
 			}
 		}
-		if(type == "g")//apply material
+		if (type == "g") //apply material
 		{
 			std::string name;
 			iFile.get();
 			std::getline(iFile, name);
-			if(!name.empty())
+			if (!name.empty())
 			{
 				mesh.name = name;
 				mesh.begin = indexes.size();
-				if(!meshes.empty() && mesh.begin == meshes.back().begin)
+				if (!meshes.empty() && mesh.begin == meshes.back().begin)
 				{
 					meshes.back() = mesh;
 				}
@@ -259,30 +266,32 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char * data, size
 			}
 		}
 	}
-	if(!useNormals)
+	if (!useNormals)
 	{
 		tempNormals.clear();
 	}
-	if(!useUVs)
+	if (!useUVs)
 	{
 		tempTextureCoords.clear();
 	}
-	if(!useFaces)
+	if (!useFaces)
 	{
 		vertices.swap(tempVertices);
 		textureCoords.swap(tempTextureCoords);
 		normals.swap(tempNormals);
 	}
-	auto result = std::make_unique<C3DModel>(dummyModel);
+	auto result = std::make_unique<C3DModel>(dummyModel.GetScale(), dummyModel.GetRotation());
 	result->SetModel(vertices, textureCoords, normals, indexes, materialManager, meshes);
 	result->SetAnimation(weightsCount, weightsIndexes, weights, joints, animations);
 	return result;
 }
 
-bool CObjModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, std::wstring const& filePath) const
+bool CObjModelFactory::ModelIsSupported(unsigned char* /*data*/, size_t /*size*/, const Path& filePath) const
 {
 	size_t dotCoord = filePath.find_last_of('.') + 1;
-	std::wstring extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
-	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
-	return extension == L"obj";
+	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
+	return extension == make_path(L"obj");
+}
+}
 }

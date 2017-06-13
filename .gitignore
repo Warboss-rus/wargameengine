@@ -4,7 +4,7 @@ Debug
 dist
 .dep.inc
 Thumbs.db
-/WargameEngine/freetype-2.6/objs
+/WargameEngine/freetype2/objs
 *.sdf
 *.user
 *.suo
@@ -24,4 +24,8 @@ Thumbs.db
 *.ipch
 /WargameEngine/bullet/bin
 /WargameEngine/bullet/build3/vs2010/obj
-/WargameEngine/bullet/build3/vs2010/*.db
+*.db
+/WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/app/build
+.workspace
+/WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/.gradle
+/WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/build/intermediates/dex-cache/cache.xml

@@ -2,19 +2,27 @@
 #include <string>
 #include <memory>
 
+namespace wargameEngine
+{
+namespace model
+{
 class IObject;
-class IGameModel;
+class IModel;
+}
 
+namespace controller
+{
 class CCommandDeleteObject : public ICommand
 {
 public:
-	CCommandDeleteObject(std::shared_ptr<IObject> object, IGameModel& model);
-	CCommandDeleteObject(IReadMemoryStream & stream, IGameModel& model);
+	CCommandDeleteObject(std::shared_ptr<model::IObject> object, model::IModel& model);
+	CCommandDeleteObject(IReadMemoryStream & stream, model::IModel& model);
 	void Execute();
 	void Rollback();
 	void Serialize(IWriteMemoryStream & stream) const;
 private:
-	std::shared_ptr<IObject> m_pObject;
-	IGameModel& m_model;
+	std::shared_ptr<model::IObject> m_pObject;
+	model::IModel& m_model;
 };
-
+}
+}

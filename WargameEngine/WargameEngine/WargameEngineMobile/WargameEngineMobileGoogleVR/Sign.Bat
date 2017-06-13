@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Android\android-sdk\build-tools\24.0.3\apksigner.bat" sign --ks app\my-release-key.keystore --out ARM64\Release\WargameEngineMobileGoogleVRSigned.apk ARM64\Release\WargameEngineMobileGoogleVR.apk
