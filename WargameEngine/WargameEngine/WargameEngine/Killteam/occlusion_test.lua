@@ -39,7 +39,7 @@ local objectList = {
 	"SM_Melta.wbm",
 	"Terminator_SB+PF.wbm",
 }
-local count = 30
+local count = 50
 for i = 1, count do
 	local x = -count / 2 + i - 0.5
 	for j = 1, count do

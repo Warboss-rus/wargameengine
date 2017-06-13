@@ -449,6 +449,18 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport)
 	}
 }
 
+bool operator==(const Matrix4F& first, const Matrix4F& second)
+{
+	for (size_t i = 0; i < 16; ++i)
+	{
+		if (fabs(first[i] - second[i]) > FLT_EPSILON)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>& list, bool shadowOnly)
 {
 	auto& shaderManager = renderer.GetShaderManager();
@@ -463,7 +475,7 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 	{
 		const DrawableMesh& mesh = *it;
 		const auto next = it + 1;
-		if (next != list.cend() && next->buffer == mesh.buffer && next->texturePtr == mesh.texturePtr && next->material == mesh.material && !next->tempBuffer)
+		if (next != list.cend() && next->buffer == mesh.buffer && next->texturePtr == mesh.texturePtr && next->material == mesh.material && !next->tempBuffer && next->modelMatrix == mesh.modelMatrix)
 		{
 			multiDrawList.push_back({ mesh.start, mesh.count, 1 });
 			continue;

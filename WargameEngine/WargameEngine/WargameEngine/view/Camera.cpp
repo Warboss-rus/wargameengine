@@ -117,11 +117,16 @@ CVector3f Camera::GetDirection() const
 
 CVector3f Camera::GetUpVector() const
 {
+	auto up = m_up;
+	if (m_attachedObject)
+	{
+		up = RotateVector(up, m_attachedObject->GetRotations());
+	}
 	if (m_vrDevice != -1)
 	{
-		return m_up * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
+		up = up * Matrix4F(m_input->GetHeadTrackingMatrix(m_vrDevice));
 	}
-	return m_up;
+	return up;
 }
 
 const float Camera::GetScale() const
