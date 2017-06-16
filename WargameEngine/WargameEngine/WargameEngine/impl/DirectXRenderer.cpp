@@ -448,6 +448,21 @@ void CDirectXRenderer::Draw(IVertexBuffer& buffer, size_t count, size_t begin, s
 	}
 }
 
+void CDirectXRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed)
+{
+	for (auto& indirect : indirectList)
+	{
+		if (indexed)
+		{
+			DrawIndexed(buffer, indirect.count, indirect.start, indirect.instances);
+		}
+		else
+		{
+			Draw(buffer, indirect.count, indirect.start, indirect.instances);
+		}
+	}
+}
+
 void CDirectXRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* indexPtr, size_t indexesSize)
 {
 	reinterpret_cast<CDirectXVertexBuffer&>(buffer).SetIndexBuffer(indexPtr, indexesSize);

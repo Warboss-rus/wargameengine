@@ -373,9 +373,16 @@ void COpenGLRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<Indir
 				return DrawElementsIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0, 0 };
 			});
 			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawElementsIndirectCommand), commands.data(), GL_STREAM_DRAW);
-			for (size_t i = 0; i < indirectList.size(); ++i)
+			if (GL_ARB_multi_draw_indirect)
 			{
-				glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)(i * sizeof(DrawElementsIndirectCommand)));
+				glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, indirectList.size(), sizeof(DrawElementsIndirectCommand));
+			}
+			else
+			{
+				for (size_t i = 0; i < indirectList.size(); ++i)
+				{
+					glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)(i * sizeof(DrawElementsIndirectCommand)));
+				}
 			}
 		}
 		else
@@ -385,7 +392,17 @@ void COpenGLRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<Indir
 				return DrawArraysIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0 };
 			});
 			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawArraysIndirectCommand), commands.data(), GL_STREAM_DRAW);
-			glDrawArraysIndirect(GL_TRIANGLES, 0);
+			if (GL_ARB_multi_draw_indirect)
+			{
+				glMultiDrawArraysIndirect(GL_TRIANGLES, NULL, indirectList.size(), sizeof(DrawArraysIndirectCommand));
+			}
+			else
+			{
+				for (size_t i = 0; i < indirectList.size(); ++i)
+				{
+					glDrawArraysIndirect(GL_TRIANGLES, (void*)(i * sizeof(DrawArraysIndirectCommand)));
+				}
+			}
 		}
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 		PerfomanceMeter::ReportDraw(std::accumulate(indirectList.begin(), indirectList.end(), 0, [](size_t sum, const IndirectDraw& command) {

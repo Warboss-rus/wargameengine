@@ -356,7 +356,10 @@ void COpenGLESRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<Ind
 				return DrawArraysIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0 };
 			});
 			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawArraysIndirectCommand), commands.data(), GL_STREAM_DRAW);
-			glDrawArraysIndirect(GL_TRIANGLES, 0);
+			for (size_t i = 0; i < indirectList.size(); ++i)
+			{
+				glDrawArraysIndirect(GL_TRIANGLES, (void*)(i * sizeof(DrawArraysIndirectCommand)));
+			}
 		}
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 		PerfomanceMeter::ReportDraw(std::accumulate(indirectList.begin(), indirectList.end(), 0, [](size_t sum, const IndirectDraw& command) {
