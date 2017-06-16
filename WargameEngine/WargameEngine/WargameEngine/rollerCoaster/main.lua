@@ -1,7 +1,14 @@
 AddLight()
 SetLightPosition(1, 0, 0, 30)
 CreateSkybox(10, "skybox")
+AddLight()
+SetLightPosition(1, 0, 0, 50)
+SetLightDiffuse(1, 1, 1, 1, 1)
+SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
+SetLightSpecular(1, 1, 1, 1, 1)
 Viewport:EnableFrustumCulling(false)
+SetAnisotropy(16)
+--Viewport:SetShadowMapViewport(Viewport:CreateShadowMapViewport(4096, 65, 0, 0, 50))
 if(GetRendererName() == "DirectX11") then
 elseif(GetRendererName() == "OpenGLES") then
 	SetSkyboxShaders("GLES/skybox_multiview.vsh", "GLES/skybox.fsh")

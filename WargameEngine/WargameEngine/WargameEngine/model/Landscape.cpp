@@ -12,8 +12,8 @@ Landscape::Landscape()
 	, m_pointsPerWidth(2)
 	, m_pointsPerDepth(2)
 	, m_stretchTexture(false)
-	, m_horizontalTextureScale(2.0)
-	, m_verticalTextureScale(2.0)
+	, m_horizontalTextureScale(5.0)
+	, m_verticalTextureScale(5.0)
 {
 	m_heights.resize(4);
 	for (size_t i = 0; i < 4; ++i)

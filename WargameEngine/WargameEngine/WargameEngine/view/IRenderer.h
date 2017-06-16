@@ -16,13 +16,13 @@ namespace view
 class ICachedTexture
 {
 public:
-	virtual ~ICachedTexture() {}
+	virtual ~ICachedTexture() = default;
 };
 
 class IVertexBuffer
 {
 public:
-	virtual ~IVertexBuffer() {}
+	virtual ~IVertexBuffer() = default;
 };
 
 class IRenderer

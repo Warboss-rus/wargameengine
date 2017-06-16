@@ -744,8 +744,9 @@ void COpenGLRenderer::UploadTexture(ICachedTexture& texture, unsigned char* data
 		glTextureParameteri(glTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTextureParameteri(glTexture, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTextureParameteri(glTexture, GL_TEXTURE_BASE_LEVEL, 0);
-		glTextureParameteri(glTexture, GL_TEXTURE_MAX_LEVEL, static_cast<GLsizei>(mipmaps.size()));
-		glTextureStorage2D(glTexture, 1, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA8 : GL_RGB8, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+		int mipmapCount = mipmaps.empty() ? (int)log2(width) + 1 : static_cast<GLsizei>(mipmaps.size()) + 1;
+		glTextureParameteri(glTexture, GL_TEXTURE_MAX_LEVEL, mipmapCount);
+		glTextureStorage2D(glTexture, mipmapCount, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA8 : GL_RGB8, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 		glTextureSubImage2D(glTexture, 0, 0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), format, GL_UNSIGNED_BYTE, data);
 		if (flags & TEXTURE_BUILD_MIPMAPS)
 		{

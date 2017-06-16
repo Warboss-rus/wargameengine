@@ -329,7 +329,6 @@ void Camera::AttachToObject(model::IObject* object, const CVector3f& offset)
 void Camera::ResetInput()
 {
 	m_inputConnections.clear();
-	m_input->DeleteAllSignalsByTag(CAMERA_TAG);
 	//m_vrDevice = -1;
 }
 }
