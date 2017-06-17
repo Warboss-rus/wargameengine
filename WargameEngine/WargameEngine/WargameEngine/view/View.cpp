@@ -61,7 +61,7 @@ View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, 
 		m_ui.Resize(height, width);
 		for (auto& viewport : m_viewports)
 		{
-			viewport.Resize(width, height);
+			viewport->Resize(width, height);
 		}
 	});
 	m_window.DoOnShutdown([this] {
@@ -74,19 +74,14 @@ View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, 
 #endif
 }
 
-View::~View()
-{
-	m_viewports.clear();
-}
-
 void View::Init(model::Model& model, controller::Controller& controller)
 {
 	m_ui.ClearChildren();
 	m_viewports.clear();
 	int width, height;
 	m_window.GetWindowSize(width, height);
-	m_viewports.emplace_back(0, 0, width, height, 60.0f, m_viewHelper, m_input, true, true);
-	m_viewports.front().GetCamera().SetLimits(100.0f, 100.0f, 100.0f, 0.5f, 2.8f);
+	m_viewports.emplace_back(std::make_unique<view::Viewport>(0, 0, width, height, 60.0f, m_viewHelper, m_input, true, true));
+	m_viewports.front()->GetCamera().SetLimits(100.0f, 100.0f, 100.0f, 0.5f, 2.8f);
 
 	m_model = &model;
 	m_controller = &controller;
@@ -94,7 +89,7 @@ void View::Init(model::Model& model, controller::Controller& controller)
 	ClearResources();
 	InitLandscape();
 	InitInput();
-	m_viewports.front().GetCamera().AttachToKeyboardMouse();
+	m_viewports.front()->GetCamera().AttachToKeyboardMouse();
 	m_soundPlayer.Init();
 }
 
@@ -118,9 +113,9 @@ void View::WindowCoordsToWorldVector(int x, int y, CVector3f & start, CVector3f 
 {
 	for (auto& viewport : m_viewports)
 	{
-		if (viewport.PointIsInViewport(x, y))
+		if (viewport->PointIsInViewport(x, y))
 		{
-			m_viewHelper.WindowCoordsToWorldVector(viewport, x, y, start, end);
+			m_viewHelper.WindowCoordsToWorldVector(*viewport, x, y, start, end);
 			return;
 		}
 	}
@@ -295,14 +290,14 @@ void View::Update()
 	PerfomanceMeter::Reset();
 	m_threadPool.Update();
 	m_controller->Update();
-	auto& defaultCamera = m_viewports.front().GetCamera();
+	auto& defaultCamera = m_viewports.front()->GetCamera();
 	m_soundPlayer.SetListenerPosition(defaultCamera.GetPosition(), defaultCamera.GetDirection());
 	m_soundPlayer.Update();
 	CollectMeshes();
 	SortMeshes();
 	for (auto it = m_viewports.rbegin(); it != m_viewports.rend(); ++it)
 	{
-		auto& viewport = *it;
+		auto& viewport = **it;
 		viewport.Bind();
 		m_viewHelper.EnableDepthTest(false, false);
 		if (m_skybox && !viewport.IsDepthOnly())
@@ -366,7 +361,7 @@ void View::CollectMeshes()
 	auto notVisibleInFrustum = [this](const model::IBaseObject* obj) {
 		for (auto& viewport : m_viewports)
 		{
-			if (!viewport.NeedsFrustumCulling() || !IsOutsideFrustum(m_viewHelper, viewport, obj))
+			if (!viewport->NeedsFrustumCulling() || !IsOutsideFrustum(m_viewHelper, *viewport, obj))
 			{
 				return false;
 			}
@@ -516,7 +511,7 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 				m_renderer.SetTexture(*texturePtr, IRenderer::TextureSlot::Specular);
 			}
 		}
-		if (!texture && mesh.material)
+		if (!texture && mesh.material && !shadowOnly)
 		{
 			m_renderer.SetColor(mesh.material->diffuse);
 		}
@@ -525,7 +520,7 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 			m_renderer.SetModelMatrix(mesh.modelMatrix);
 			prevMatrix = mesh.modelMatrix;
 		}
-		if (mesh.skeleton)
+		if (mesh.skeleton && !shadowOnly)
 		{
 			shaderManager.SetUniformValue("joints", 16, mesh.skeleton->size() / 16, mesh.skeleton->data());
 		}
@@ -695,8 +690,8 @@ void View::ResizeWindow(int height, int width)
 
 Viewport& View::CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition)
 {
-	m_viewports.emplace_back(0, 0, size, size, angle, m_viewHelper, m_input, false, false);
-	auto& shadowMapViewport = m_viewports.back();
+	m_viewports.emplace_back(std::make_unique<view::Viewport>(0, 0, size, size, angle, m_viewHelper, m_input, false, false));
+	auto& shadowMapViewport = *m_viewports.back();
 	shadowMapViewport.AttachNewTexture(IRenderer::CachedTextureType::Depth, static_cast<int>(IRenderer::TextureSlot::ShadowMap));
 	shadowMapViewport.GetCamera().Set(lightPosition);
 	shadowMapViewport.SetPolygonOffset(true, 2.0f, 500.0f);
@@ -709,7 +704,7 @@ void View::DisableShadowMap(Viewport& viewport)
 	auto shadowMapViewport = viewport.GetShadowViewport();
 	for (auto it = m_viewports.begin(); it != m_viewports.end(); ++it)
 	{
-		if (&*it == shadowMapViewport)
+		if (it->get() == shadowMapViewport)
 		{
 			m_viewports.erase(it);
 			break;
@@ -772,20 +767,20 @@ size_t View::GetViewportCount() const
 
 Viewport& View::GetViewport(size_t index /*= 0*/)
 {
-	return m_viewports[index];
+	return *m_viewports[index];
 }
 
-Viewport& View::AddViewport(Viewport&& viewport)
+Viewport& View::AddViewport(std::unique_ptr<Viewport>&& viewport)
 {
 	m_viewports.emplace_back(std::move(viewport));
-	return m_viewports.back();
+	return *m_viewports.back();
 }
 
 void View::RemoveViewport(IViewport * viewportPtr)
 {
 	for (auto it = m_viewports.begin(); it != m_viewports.end(); ++it)
 	{
-		if (&*it == viewportPtr)
+		if (it->get() == viewportPtr)
 		{
 			m_viewports.erase(it);
 			return;
@@ -827,10 +822,10 @@ void View::DrawText3D(CVector3f const& pos, wstring const& text, IViewport& view
 bool View::EnableVRMode(bool enable, bool mirrorToScreen)
 {
 	auto viewportFactory = [this](unsigned int width, unsigned int height) {
-		Viewport first(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
-		first.AttachNewTexture(IRenderer::CachedTextureType::RGBA);
-		Viewport second(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
-		second.AttachNewTexture(IRenderer::CachedTextureType::RGBA);
+		auto first = std::make_unique<Viewport>(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
+		first->AttachNewTexture(IRenderer::CachedTextureType::RGBA);
+		auto second = std::make_unique<Viewport>(0, 0, width, height, 65.0f, m_viewHelper, m_input, false, false);
+		second->AttachNewTexture(IRenderer::CachedTextureType::RGBA);
 		return std::pair<IViewport&, IViewport&>(AddViewport(std::move(first)), AddViewport(std::move(second)));
 	};
 	return m_window.EnableVRMode(enable, viewportFactory);

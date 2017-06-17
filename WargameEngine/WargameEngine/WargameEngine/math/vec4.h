@@ -7,24 +7,10 @@ namespace math
 template<class T>
 struct vec4T
 {
-	union
-	{
-		T values[4] = {0, 0, 0, 0};
-		struct 
-		{
-			T x;
-			T y;
-			T z;
-			T w;
-		};
-		struct
-		{
-			T r;
-			T g;
-			T b;
-			T a;
-		};
-	};
+	T x = 0;
+	T y = 0;
+	T z = 0;
+	T w = 0;
 };
 
 using vec4 = vec4T<float>;

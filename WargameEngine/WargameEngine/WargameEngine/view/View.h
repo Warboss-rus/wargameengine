@@ -36,7 +36,6 @@ class View
 public:
 	View(IWindow& m_window, ISoundPlayer& m_soundPlayer, ITextWriter& m_textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
 		std::vector<std::unique_ptr<IImageReader>>& imageReaders, std::vector<std::unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager);
-	~View();
 
 	void Init(model::Model& model, controller::Controller& controller);
 	void CreateSkybox(float size, const Path& textureFolder);
@@ -55,7 +54,7 @@ public:
 
 	size_t GetViewportCount() const;
 	Viewport& GetViewport(size_t index = 0);
-	Viewport& AddViewport(Viewport&& viewport);
+	Viewport& AddViewport(std::unique_ptr<Viewport>&& viewport);
 	Viewport& CreateShadowMapViewport(int size, float angle, CVector3f const& lightPosition);
 	void RemoveViewport(IViewport* viewport);
 
@@ -110,7 +109,7 @@ private:
 	model::Model* m_model;
 	controller::Controller* m_controller;
 	ui::UIElement m_ui;
-	std::vector<Viewport> m_viewports;
+	std::vector<std::unique_ptr<Viewport>> m_viewports;
 	std::unique_ptr<SkyBox> m_skybox;
 	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;

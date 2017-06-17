@@ -18,7 +18,7 @@ void RegisterViewport(IScriptHandler& handler, view::View& view)
 		int height = args.GetInt(3);
 		float fieldOfView = args.GetFloat(4);
 		bool resize = (args.GetCount() > 5) ? args.GetBool(5) : false;
-		return FunctionArgument(&view.AddViewport(view::Viewport(x, y, width, height, fieldOfView, view.GetViewHelper(), view.GetInput(), true, resize)), CLASS_VIEWPORT);
+		return FunctionArgument(&view.AddViewport(std::make_unique<view::Viewport>(x, y, width, height, fieldOfView, view.GetViewHelper(), view.GetInput(), true, resize)), CLASS_VIEWPORT);
 	});
 	handler.RegisterMethod(CLASS_VIEWPORT, NEW_OFFSCREEN_VIEWPORT, [&](void*, IArguments const& args) {
 		if (args.GetCount() != 4)
@@ -27,8 +27,8 @@ void RegisterViewport(IScriptHandler& handler, view::View& view)
 		int height = args.GetInt(2);
 		float fieldOfView = args.GetFloat(3);
 		int textureSlot = args.GetInt(4);
-		view::Viewport viewport(0, 0, width, height, fieldOfView, view.GetViewHelper(), view.GetInput(), false, false);
-		viewport.AttachNewTexture(view::IRenderer::CachedTextureType::RGBA, textureSlot);
+		auto viewport = std::make_unique<view::Viewport>(0, 0, width, height, fieldOfView, view.GetViewHelper(), view.GetInput(), false, false);
+		viewport->AttachNewTexture(view::IRenderer::CachedTextureType::RGBA, textureSlot);
 		return FunctionArgument(&view.AddViewport(std::move(viewport)), CLASS_VIEWPORT);
 	});
 

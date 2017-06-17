@@ -2,23 +2,28 @@ AddLight()
 SetLightPosition(1, 0, 0, 30)
 CreateSkybox(10, "skybox")
 AddLight()
-SetLightPosition(1, 0, 0, 50)
+SetLightPosition(1, -20, -10, 50)
 SetLightDiffuse(1, 1, 1, 1, 1)
 SetLightAmbient(1, 0.5, 0.5, 0.5, 1)
 SetLightSpecular(1, 1, 1, 1, 1)
 Viewport:EnableFrustumCulling(false)
-SetAnisotropy(16)
---Viewport:SetShadowMapViewport(Viewport:CreateShadowMapViewport(4096, 65, 0, 0, 50))
+local shadowSize = 2048
+local anisotropy = 16
 if(GetRendererName() == "DirectX11") then
 elseif(GetRendererName() == "OpenGLES") then
 	SetSkyboxShaders("GLES/skybox_multiview.vsh", "GLES/skybox.fsh")
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
+	anisotropy = 4
+	shadowSize = 1024
 elseif(GetRendererName() == "Vulkan") then
 	--do nothing
 else
 	SetSkyboxShaders("openGL/skybox.vsh", "openGL/skybox.fsh")
+	SetShaders("openGL/shadow.vsh", "openGL/shadow.fsh")
 end
+SetAnisotropy(anisotropy)
+Viewport:SetShadowMapViewport(Viewport:CreateShadowMapViewport(shadowSize, 65, -30, 30, 50))
 EnableGPUSkinning()
 CreateLandscape(30, 60, "Green_Grass.bmp")
 Object:New("beast124.obj", 0, 0, 0)
