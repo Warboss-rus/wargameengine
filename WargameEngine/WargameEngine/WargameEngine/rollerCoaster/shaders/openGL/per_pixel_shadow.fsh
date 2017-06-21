@@ -28,6 +28,7 @@ in vec3 v_normal;
 in vec4 v_lpos;
 in vec3 v_pos;
 in vec2 v_texcoord;
+in mat4 v_viewMat;
 
 out vec4 fragColor;
 
@@ -62,7 +63,7 @@ void main()
 	{
 		shadow += textureProj(shadowMap, v_lpos + poissonDisk[i]/50.0);
 	}
-	shadow = clamp(shadow / 4.0, 0.4, 1.0);
+	shadow = clamp(shadow / 4.0, 0.1, 1.0);
 	
 	vec4 tex = texture(mainTexture, v_texcoord);
 	float alpha = tex.w * color.w;
@@ -72,7 +73,8 @@ void main()
 	for(int i = 0; i < min(lightsCount, NUM_LIGHTS); ++i)
 	{
 		// calculate diffuse lighting
-		vec3 lightDir = normalize(lights[i].pos - v_pos);
+		vec4 lightPos = vec4(lights[i].pos, 1.0) * v_viewMat;
+		vec3 lightDir = normalize(lightPos.xyz - v_pos);
 		
 		vec4 ambientColor = lights[i].ambient * material.ambient;
 		

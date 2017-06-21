@@ -45,8 +45,6 @@ public:
 	TranslationManager& GetTranslationManager();
 	Ruler& GetRuler();
 	IRenderer& GetRenderer();
-	void NewShaderProgram(const Path& vertex, const Path& fragment, const Path& geometry);
-	IShaderProgram const& GetShaderProgram() const;
 	ThreadPool& GetThreadPool();
 	IViewHelper& GetViewHelper();
 	IInput& GetInput();
@@ -111,7 +109,6 @@ private:
 	ui::UIElement m_ui;
 	std::vector<std::unique_ptr<Viewport>> m_viewports;
 	std::unique_ptr<SkyBox> m_skybox;
-	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::unique_ptr<IVertexBuffer> m_tableBuffer;
 	size_t m_tableBufferSize = 0;
 	MeshList m_meshesToDraw;

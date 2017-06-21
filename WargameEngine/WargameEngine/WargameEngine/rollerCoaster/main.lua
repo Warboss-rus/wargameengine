@@ -12,6 +12,7 @@ local anisotropy = 16
 if(GetRendererName() == "DirectX11") then
 elseif(GetRendererName() == "OpenGLES") then
 	SetSkyboxShaders("GLES/skybox_multiview.vsh", "GLES/skybox.fsh")
+	SetShaders("GLES/shadow_multiview.vsh", "GLES/shadow.fsh")
 	UI:SetScale(2)
 	Viewport:EnableTouchMode()
 	anisotropy = 4
@@ -218,6 +219,6 @@ function Camera()
 	end
 end
 
-UI:NewButton("ButtonLoop", 10, 10, 50, 200, "Start loop", StartLoop)
-UI:NewButton("ButtonBenchmark", 230, 10, 50, 200, "Benchmark", Benchmark)
-UI:NewButton("ButtonCamera", 450, 10, 50, 200, "Camera mode", Camera)
+UI:NewButton("ButtonLoop", 10, 10, 50, 190, "Start loop", StartLoop)
+UI:NewButton("ButtonBenchmark", 220, 10, 50, 190, "Benchmark", Benchmark)
+UI:NewButton("ButtonCamera", 430, 10, 50, 190, "Camera mode", Camera)

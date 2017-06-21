@@ -67,7 +67,7 @@ void CGvrGameWindow::Init()
 	}
 }
 
-glm::mat4 FixHeadMatrix(const float* src)
+glm::mat4 FixHeadMatrix(const float* src, glm::vec3& rot)
 {
 	auto result = glm::make_mat4(src);
 	glm::vec3 scale;
@@ -79,6 +79,7 @@ glm::mat4 FixHeadMatrix(const float* src)
 	rotation = glm::conjugate(rotation);
 	std::swap(rotation.z, rotation.y);
 	result = glm::toMat4(rotation);
+	rot = glm::eulerAngles(rotation);
 	//todo: apply other components
 
 	return glm::transpose(result);
@@ -100,8 +101,10 @@ void CGvrGameWindow::Draw()
 	}
 	gvr::Frame frame = m_swapchain.AcquireFrame();
 	gvr::Mat4f head_matrix = m_gvr_api->GetHeadSpaceFromStartSpaceRotation(m_gvr_api->GetTimePointNow());
-	auto hm = FixHeadMatrix(head_matrix.m[0]);
+	glm::vec3 headRotations;
+	auto hm = FixHeadMatrix(head_matrix.m[0], headRotations);
 	m_input.OnHeadRotation(0, glm::value_ptr(hm));
+	m_input.OnHeadRotation(0, CVector3f(headRotations.x, headRotations.y, headRotations.z));
 	glm::mat4 left_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_LEFT_EYE).m[0]);
 	glm::mat4 right_eye_matrix = glm::make_mat4(m_gvr_api->GetEyeFromHeadMatrix(GVR_RIGHT_EYE).m[0]);
 

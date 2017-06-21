@@ -22,6 +22,7 @@ public:
 	signals::SignalConnection DoOnGamepadButtonStateChange(const GamepadButtonHandler& handler, int priority = 0, std::string const& tag = "") override;
 	signals::SignalConnection DoOnGamepadAxisChange(const GamepadAxisHandler& handler, int priority = 0, std::string const& tag = "") override;
 	const float* GetHeadTrackingMatrix(size_t deviceIndex) const override;
+	CVector3f GetHeadTrackingRotations(size_t deviceIndex) const override;
 	void DeleteAllSignalsByTag(std::string const& tag) override;
 	void Reset() override;
 
@@ -29,6 +30,7 @@ public:
 	bool IsRMBPressed() const override;
 
 	void OnHeadRotation(size_t deviceIndex, const float* data);
+	void OnHeadRotation(size_t deviceIndex, const CVector3f& data);
 
 protected:
 	void OnLMBDown(int x, int y);
@@ -56,6 +58,7 @@ private:
 	signals::ExclusiveSignal<int, int, bool> m_onGamepadButton;
 	signals::ExclusiveSignal<int, int, double, double> m_onGamepadAxis;
 	std::vector<Matrix4F> m_headTrackings;
+	std::vector<CVector3f> m_headRotations;
 	int m_prevX = 0;
 	int m_prevY = 0;
 	bool m_lmbDown = false;

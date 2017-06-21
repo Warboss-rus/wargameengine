@@ -260,7 +260,7 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 			geometry = fileProvider.GetShaderAbsolutePath(args.GetPath(3));
 		if (n > 3)
 			throw std::runtime_error("up to 3 argument expected (vertex shader, fragment shader, geometry shader)");
-		view.NewShaderProgram(vertex, fragment, geometry);
+		view.GetViewport(0).SetShaders(vertex, fragment, geometry);
 		return nullptr;
 	});
 
@@ -283,9 +283,17 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		std::string name = args.GetStr(1);
 		int value = args.GetInt(2);
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
-		shaderManager.PushProgram(view.GetShaderProgram());
-		shaderManager.SetUniformValue(name, 1, 1, &value);
-		shaderManager.PopProgram();
+		const size_t viewportsCount = view.GetViewportCount();
+		for (size_t i = 0; i < viewportsCount; ++i)
+		{
+			auto shaderProgram = view.GetViewport(i).GetShaderProgram();
+			if (shaderProgram)
+			{
+				shaderManager.PushProgram(*shaderProgram);
+				shaderManager.SetUniformValue(name, 1, 1, &value);
+				shaderManager.PopProgram();
+			}
+		}
 		return nullptr;
 	});
 
@@ -295,9 +303,17 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		std::string name = args.GetStr(1);
 		float value = args.GetFloat(2);
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
-		shaderManager.PushProgram(view.GetShaderProgram());
-		shaderManager.SetUniformValue(name, 1, 1, &value);
-		shaderManager.PopProgram();
+		const size_t viewportsCount = view.GetViewportCount();
+		for (size_t i = 0; i < viewportsCount; ++i)
+		{
+			auto shaderProgram = view.GetViewport(i).GetShaderProgram();
+			if (shaderProgram)
+			{
+				shaderManager.PushProgram(*shaderProgram);
+				shaderManager.SetUniformValue(name, 1, 1, &value);
+				shaderManager.PopProgram();
+			}
+		}
 		return nullptr;
 	});
 
@@ -310,9 +326,17 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		if (value.size() < count)
 			throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
-		shaderManager.PushProgram(view.GetShaderProgram());
-		shaderManager.SetUniformValue(name, 1, count, &value[0]);
-		shaderManager.PopProgram();
+		const size_t viewportsCount = view.GetViewportCount();
+		for (size_t i = 0; i < viewportsCount; ++i)
+		{
+			auto shaderProgram = view.GetViewport(i).GetShaderProgram();
+			if (shaderProgram)
+			{
+				shaderManager.PushProgram(*shaderProgram);
+				shaderManager.SetUniformValue(name, 1, count, &value[0]);
+				shaderManager.PopProgram();
+			}
+		}
 		return nullptr;
 	});
 
@@ -325,9 +349,17 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		if (value.size() < count * 2)
 			throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
-		shaderManager.PushProgram(view.GetShaderProgram());
-		shaderManager.SetUniformValue(name, 2, count, &value[0]);
-		shaderManager.PopProgram();
+		const size_t viewportsCount = view.GetViewportCount();
+		for (size_t i = 0; i < viewportsCount; ++i)
+		{
+			auto shaderProgram = view.GetViewport(i).GetShaderProgram();
+			if (shaderProgram)
+			{
+				shaderManager.PushProgram(*shaderProgram);
+				shaderManager.SetUniformValue(name, 2, count, &value[0]);
+				shaderManager.PopProgram();
+			}
+		}
 		return nullptr;
 	});
 
@@ -340,9 +372,17 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		if (value.size() < count * 3)
 			throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
-		shaderManager.PushProgram(view.GetShaderProgram());
-		shaderManager.SetUniformValue(name, 3, count, &value[0]);
-		shaderManager.PopProgram();
+		const size_t viewportsCount = view.GetViewportCount();
+		for (size_t i = 0; i < viewportsCount; ++i)
+		{
+			auto shaderProgram = view.GetViewport(i).GetShaderProgram();
+			if (shaderProgram)
+			{
+				shaderManager.PushProgram(*shaderProgram);
+				shaderManager.SetUniformValue(name, 3, count, &value[0]);
+				shaderManager.PopProgram();
+			}
+		}
 		return nullptr;
 	});
 
@@ -355,9 +395,17 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		if (value.size() < count * 4)
 			throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
-		shaderManager.PushProgram(view.GetShaderProgram());
-		shaderManager.SetUniformValue(name, 4, count, &value[0]);
-		shaderManager.PopProgram();
+		const size_t viewportsCount = view.GetViewportCount();
+		for (size_t i = 0; i < viewportsCount; ++i)
+		{
+			auto shaderProgram = view.GetViewport(i).GetShaderProgram();
+			if (shaderProgram)
+			{
+				shaderManager.PushProgram(*shaderProgram);
+				shaderManager.SetUniformValue(name, 4, count, &value[0]);
+				shaderManager.PopProgram();
+			}
+		}
 		return nullptr;
 	});
 
@@ -370,9 +418,17 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		if (value.size() < count * 16)
 			throw std::runtime_error("Not enough elements in the array");
 		auto& shaderManager = view.GetRenderer().GetShaderManager();
-		shaderManager.PushProgram(view.GetShaderProgram());
-		shaderManager.SetUniformValue(name, 16, count, &value[0]);
-		shaderManager.PopProgram();
+		const size_t viewportsCount = view.GetViewportCount();
+		for (size_t i = 0; i < viewportsCount; ++i)
+		{
+			auto shaderProgram = view.GetViewport(i).GetShaderProgram();
+			if (shaderProgram)
+			{
+				shaderManager.PushProgram(*shaderProgram);
+				shaderManager.SetUniformValue(name, 16, count, &value[0]);
+				shaderManager.PopProgram();
+			}
+		}
 		return nullptr;
 	});
 

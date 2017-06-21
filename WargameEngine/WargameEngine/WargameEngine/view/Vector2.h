@@ -40,6 +40,10 @@ public:
 		return &x;
 	}
 
+	T const* ptr() const throw()
+	{
+		return &x;
+	}
 
 	/*
 	Масштабирование вектора

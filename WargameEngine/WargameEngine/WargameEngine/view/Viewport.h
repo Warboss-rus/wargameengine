@@ -53,6 +53,8 @@ public:
 	IViewport* GetShadowViewport() const { return m_shadowMapViewport; }
 	bool NeedsFrustumCulling() const { return m_frustumCulling; }
 	void EnableFrustumCulling(bool enable) { m_frustumCulling = enable; }
+	IShaderProgram* GetShaderProgram() const { return m_shaderProgram.get(); }
+	void SetShaders(const Path& vertexShader = Path(), const Path& fragmentShader = Path(), const Path& geometryShader = Path());
 
 private:
 	Camera m_camera;
@@ -71,6 +73,7 @@ private:
 	IViewport* m_shadowMapViewport = nullptr;
 	std::unordered_map<const model::IBaseObject*, std::unique_ptr<IOcclusionQuery>> m_occlusionQueries;
 	std::unique_ptr<IFrameBuffer> m_FBO;
+	std::unique_ptr<IShaderProgram> m_shaderProgram;
 	std::vector<std::unique_ptr<ICachedTexture>> m_textures;
 	bool m_depthOnly;
 	bool m_resize;

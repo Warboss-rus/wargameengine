@@ -2,6 +2,7 @@
 #include "..\Signal.h"
 #include "KeyDefines.h"
 #include <functional>
+#include "Vector3.h"
 
 namespace wargameEngine
 {
@@ -46,6 +47,7 @@ public:
 	virtual void Reset() = 0;
 	virtual void DeleteAllSignalsByTag(std::string const& tag) = 0;
 	virtual const float* GetHeadTrackingMatrix(size_t deviceIndex) const = 0;
+	virtual CVector3f GetHeadTrackingRotations(size_t deviceIndex) const = 0;
 
 	virtual ~IInput() {}
 };

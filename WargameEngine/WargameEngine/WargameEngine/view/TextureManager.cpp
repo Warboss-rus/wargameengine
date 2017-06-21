@@ -35,7 +35,7 @@ std::unique_ptr<ICachedTexture> TextureManager::LoadTexture(const Path& path, st
 	std::unique_ptr<ICachedTexture> tex = m_helper.CreateEmptyTexture();
 	if (path.empty())
 	{
-		return std::move(tex);
+		return tex;
 	}
 	ICachedTexture& texRef = *tex;
 	sReaderParameters params;

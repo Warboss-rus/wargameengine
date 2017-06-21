@@ -66,6 +66,11 @@ const float* InputBase::GetHeadTrackingMatrix(size_t deviceIndex) const
 	return m_headTrackings.at(deviceIndex);
 }
 
+CVector3f InputBase::GetHeadTrackingRotations(size_t deviceIndex) const
+{
+	return m_headRotations.at(deviceIndex);
+}
+
 void InputBase::DeleteAllSignalsByTag(std::string const& tag)
 {
 	m_onLMBDown.RemoveByTag(tag);
@@ -186,5 +191,15 @@ void InputBase::OnHeadRotation(size_t deviceIndex, const float* data)
 	}
 	m_headTrackings[deviceIndex] = data;
 }
+
+void InputBase::OnHeadRotation(size_t deviceIndex, const CVector3f& data)
+{
+	if (deviceIndex + 1 > m_headRotations.size())
+	{
+		m_headRotations.resize(deviceIndex + 1);
+	}
+	m_headRotations[deviceIndex] = data;
+}
+
 }
 }

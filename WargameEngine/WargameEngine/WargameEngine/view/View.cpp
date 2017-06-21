@@ -395,9 +395,9 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport)
 	const bool shadowOnly = currentViewport.IsDepthOnly();
 	renderer.EnableDepthTest(true, true);
 	auto& shaderManager = renderer.GetShaderManager();
+	if (currentViewport.GetShaderProgram()) shaderManager.PushProgram(*currentViewport.GetShaderProgram());
 	if (!shadowOnly)
 	{
-		if (m_shaderProgram)shaderManager.PushProgram(*m_shaderProgram);
 		currentViewport.SetUpShadowMap();
 		auto& lights = m_model->GetLights();
 		size_t lightsCount = lights.size();
@@ -414,7 +414,7 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport)
 
 	//Draw
 	DrawMeshesList(renderer, m_meshesToDraw, shadowOnly);
-	if (!shadowOnly && m_shaderProgram)
+	if (currentViewport.GetShaderProgram())
 	{
 		shaderManager.PopProgram();
 	}
@@ -460,6 +460,8 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 {
 	auto& shaderManager = renderer.GetShaderManager();
 	renderer.UnbindTexture();
+	Material emptyMaterial;
+	renderer.SetMaterial(emptyMaterial.ambient, emptyMaterial.diffuse, emptyMaterial.specular, emptyMaterial.shininess);
 	ICachedTexture* texture = nullptr;
 	Material* material = nullptr;
 	Matrix4F prevMatrix;
@@ -497,8 +499,7 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 			}
 			else
 			{
-				constexpr float empty[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-				renderer.SetMaterial(empty, empty, empty, 0.0f);
+				renderer.SetMaterial(emptyMaterial.ambient, emptyMaterial.diffuse, emptyMaterial.specular, emptyMaterial.shininess);
 			}
 			if (material && !material->bumpMap.empty())
 			{
@@ -586,30 +587,37 @@ void View::CollectTableMeshes()
 		float ystep = landscape.GetDepth() / (landscape.GetPointsPerDepth() - 1);
 		vector<CVector3f> vertex;
 		vector<CVector2f> texCoord;
+		vector<CVector3f> normals;
 		for (float x = x1; x <= x2 - xstep; x += xstep)
 		{
 			for (float y = y1; y <= y2 - ystep; y += ystep)
 			{
 				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x, y, landscape.GetHeight(x, y) });
+				normals.push_back({ 0, 0, 1 });
 
 				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x + xstep, y, landscape.GetHeight(x + xstep, y) });
+				normals.push_back({ 0, 0, 1 });
 
 				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x, y + ystep, landscape.GetHeight(x, y + ystep) });
+				normals.push_back({ 0, 0, 1 });
 
 				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x + xstep, y, landscape.GetHeight(x + xstep, y) });
+				normals.push_back({ 0, 0, 1 });
 
 				texCoord.push_back({ (x + x2) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x, y + ystep, landscape.GetHeight(x, y + ystep) });
+				normals.push_back({ 0, 0, 1 });
 
 				texCoord.push_back({ (x + x2 + xstep) / landscape.GetHorizontalTextureScale(), (y + y2 + ystep) / landscape.GetVerticalTextureScale() });
 				vertex.push_back({ x + xstep, y + ystep, landscape.GetHeight(x + xstep, y + ystep) });
+				normals.push_back({ 0, 0, 1 });
 			}
 		}
-		m_tableBuffer = m_renderer.CreateVertexBuffer(vertex.data()->ptr(), nullptr, &texCoord.data()->x, vertex.size());
+		m_tableBuffer = m_renderer.CreateVertexBuffer(vertex.data()->ptr(), normals.data()->ptr(), texCoord.data()->ptr(), vertex.size());
 		m_tableBufferSize = vertex.size();
 	}
 	model::Landscape const& landscape = m_model->GetLandscape();
@@ -673,16 +681,6 @@ IRenderer& View::GetRenderer()
 	return m_renderer;
 }
 
-void View::NewShaderProgram(const Path& vertex, const Path& fragment, const Path& geometry)
-{
-	m_shaderProgram = m_renderer.GetShaderManager().NewProgram(vertex, fragment, geometry);
-}
-
-IShaderProgram const& View::GetShaderProgram() const
-{
-	return *m_shaderProgram;
-}
-
 void View::ResizeWindow(int height, int width)
 {
 	m_window.ResizeWindow(width, height);
@@ -696,6 +694,7 @@ Viewport& View::CreateShadowMapViewport(int size, float angle, CVector3f const& 
 	shadowMapViewport.GetCamera().Set(lightPosition);
 	shadowMapViewport.SetPolygonOffset(true, 2.0f, 500.0f);
 	shadowMapViewport.SetClippingPlanes(3.0, 300.0);
+	shadowMapViewport.SetShaders();
 	return shadowMapViewport;
 }
 

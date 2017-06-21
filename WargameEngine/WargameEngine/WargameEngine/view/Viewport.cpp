@@ -165,5 +165,11 @@ void Viewport::SetUpShadowMap() const
 		m_renderer->GetShaderManager().SetUniformValue("lightMatrix", 16, 1, lightMatrix);
 	}
 }
+
+void Viewport::SetShaders(const Path& vertexShader /*= Path()*/, const Path& fragmentShader /*= Path()*/, const Path& geometryShader /*= Path()*/)
+{
+	m_shaderProgram = m_renderer->GetShaderManager().NewProgram(vertexShader, fragmentShader, geometryShader);
+}
+
 }
 }

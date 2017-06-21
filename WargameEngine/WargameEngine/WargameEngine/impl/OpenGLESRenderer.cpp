@@ -140,12 +140,13 @@ public:
 
 	void Bind() const override
 	{
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_prevId);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 	}
 
 	void UnBind() const override
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_prevId);
 	}
 
 	void AssignTexture(ICachedTexture& texture, IRenderer::CachedTextureType type) override
@@ -172,6 +173,7 @@ public:
 
 private:
 	GLuint m_id;
+	mutable GLint m_prevId;
 };
 
 class COpenGLESOcclusionQuery : public IOcclusionQuery
