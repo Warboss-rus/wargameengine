@@ -689,9 +689,7 @@ CVector3f InterpolateRotation(const CVector3f& first, const CVector3f& second, f
 
 CVector3f InterpolateSpline(const CVector3f& first, const CVector3f& second, const CVector3f& third, const CVector3f& forth, float coeff)
 {
-	auto toglmvec = [](const CVector3f& vec) { return glm::vec3(vec.x, vec.y, vec.z); };
-	glm::vec3 result = glm::catmullRom(toglmvec(first), toglmvec(second), toglmvec(third), toglmvec(forth), coeff);
-	return CVector3f(result.x, result.y, result.z);
+	return glm::catmullRom(first, second, third, forth, coeff);
 }
 
 void ObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)

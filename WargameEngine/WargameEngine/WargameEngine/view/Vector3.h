@@ -12,6 +12,8 @@ class CVector3
 public:
 	T x, y, z;
 
+	using value_type = T;
+
 	/*
 	Конструктор по умолчанию
 	*/

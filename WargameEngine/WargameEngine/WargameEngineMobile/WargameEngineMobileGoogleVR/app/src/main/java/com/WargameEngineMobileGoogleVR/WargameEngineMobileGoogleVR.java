@@ -189,13 +189,13 @@ public class WargameEngineMobileGoogleVR extends Activity
 
   @Override
   public boolean dispatchKeyEvent(KeyEvent event) {
-    // Avoid accidental volume key presses while the phone is in the VR headset.
+    /*// Avoid accidental volume key presses while the phone is in the VR headset.
     if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
         || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
       return true;
-    }
+    }*/
 	if (((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) && (event.getRepeatCount() == 0)) {
-		
+		nativeOnGamepadButtonEvent(nativeApp, event.getAction(), event.getKeyCode());
 	}
     return super.dispatchKeyEvent(event);
   }
