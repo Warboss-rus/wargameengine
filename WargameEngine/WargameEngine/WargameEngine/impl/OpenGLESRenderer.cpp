@@ -4,7 +4,7 @@
 #include "../view/IViewport.h"
 #include "../view/TextureManager.h"
 #include <GLES2/gl2ext.h> //GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT
-#include <GLES3/gl31.h>
+#include <GLES3/gl32.h>
 #include "../view/PerfomanceMeter.h"
 #include <algorithm>
 
@@ -140,13 +140,13 @@ public:
 
 	void Bind() const override
 	{
-		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_prevId);
+		glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_prevFrameBuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 	}
 
 	void UnBind() const override
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, m_prevId);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_prevFrameBuffer);
 	}
 
 	void AssignTexture(ICachedTexture& texture, IRenderer::CachedTextureType type) override
@@ -161,7 +161,6 @@ public:
 		{
 			GLenum buffers[] = { GL_NONE };
 			glDrawBuffers(1, buffers);
-			glReadBuffer(GL_NONE);
 		}
 		glFramebufferTexture2D(GL_FRAMEBUFFER, typeMap.at(type), GL_TEXTURE_2D, (COpenGLESCachedTexture&)texture, 0);
 		auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -173,7 +172,7 @@ public:
 
 private:
 	GLuint m_id;
-	mutable GLint m_prevId;
+	mutable GLint m_prevFrameBuffer;
 };
 
 class COpenGLESOcclusionQuery : public IOcclusionQuery
@@ -552,6 +551,8 @@ std::unique_ptr<ICachedTexture> COpenGLESRenderer::CreateTexture(const void* dat
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 	return move(texture);
 }
@@ -772,8 +773,16 @@ void COpenGLESRenderer::EnableBlending(bool enable)
 
 void COpenGLESRenderer::SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane, float farPane)
 {
-	m_matrixManager.SetUpViewport(viewportWidth * m_vrViewport[2], viewportHeight * m_vrViewport[3], m_vrFovOverride > 0.00001f ? m_vrFovOverride : viewingAngle, nearPane, farPane);
-	glViewport(viewportX + m_vrViewport[0] * viewportWidth, viewportY + m_vrViewport[1] * viewportHeight, viewportWidth * m_vrViewport[2], viewportHeight * m_vrViewport[3]);
+	if (m_shadowViewport)
+	{
+		m_matrixManager.SetUpViewport(viewportWidth, viewportHeight, viewingAngle, nearPane, farPane);
+		glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+	}
+	else
+	{
+		m_matrixManager.SetUpViewport(viewportWidth * m_vrViewport[2], viewportHeight * m_vrViewport[3], m_vrFovOverride > 0.00001f ? m_vrFovOverride : viewingAngle, nearPane, farPane);
+		glViewport(viewportX + m_vrViewport[0] * viewportWidth, viewportY + m_vrViewport[1] * viewportHeight, viewportWidth * m_vrViewport[2], viewportHeight * m_vrViewport[3]);
+	}
 	m_viewport[0] = viewportX;
 	m_viewport[1] = viewportY;
 	m_viewport[2] = viewportWidth;
@@ -792,6 +801,8 @@ void COpenGLESRenderer::EnablePolygonOffset(bool enable, float factor /*= 0.0f*/
 		glPolygonOffset(0.0f, 0.0f);
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
+	m_shadowViewport = enable;
+	m_matrixManager.DisableVRMode(enable);
 }
 
 void COpenGLESRenderer::ClearBuffers(bool color, bool depth)
@@ -804,6 +815,11 @@ void COpenGLESRenderer::ClearBuffers(bool color, bool depth)
 		if (depth)
 			mask |= GL_DEPTH_BUFFER_BIT;
 		glClear(mask);
+	}
+	int err = glGetError();
+	if (err != 0)
+	{
+		LogWriter::WriteLine(L"error");
 	}
 }
 
@@ -825,7 +841,7 @@ void COpenGLESRenderer::SetVersion(int version)
 
 void COpenGLESRenderer::Init(int width, int height)
 {
-#if not defined(NDEBUG) and defined(GL_ES_VERSION_3_2)
+#if defined(GL_ES_VERSION_3_2)
 	glDebugMessageCallback(ErrorCallback, nullptr);
 #endif
 	glDepthFunc(GL_LESS);

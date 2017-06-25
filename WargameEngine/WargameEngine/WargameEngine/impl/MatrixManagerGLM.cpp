@@ -151,7 +151,7 @@ void CMatrixManagerGLM::UpdateMatrices(wargameEngine::view::IShaderManager & sha
 	const float* projection = m_projectionMatrixChanged ? glm::value_ptr(m_projectionMatrix) : nullptr;
 	const float* view = nullptr;
 	const float* mvp = nullptr;
-	if (m_vrViewMatrices.empty())
+	if (m_vrViewMatrices.empty() || m_disableVRMode)
 	{
 		view = m_viewMatrixChanged ? glm::value_ptr(m_viewMatrix) : nullptr;
 		glm::mat4 mvpMat;
@@ -222,4 +222,9 @@ void CMatrixManagerGLM::SetVrViewMatrices(std::vector<const float*> const& matri
 	{
 		m_vrViewMatrices.push_back(glm::make_mat4(mat));
 	}
+}
+
+void CMatrixManagerGLM::DisableVRMode(bool disable)
+{
+	m_disableVRMode = disable;
 }

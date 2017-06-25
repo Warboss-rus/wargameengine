@@ -28,4 +28,14 @@ void LogWriter::WriteLine(std::wstring const& line)
 {
 	WriteLine(WStringToUtf8(line));
 }
+
+void LogWriter::SetLogLocation(Path const& path)
+{
+	time_t t = time(0);
+	struct tm* now = localtime(&t);
+	char date[30];
+	strftime(date, sizeof(date), "%x.%H-%M-%S_log.txt", now);
+	filename = to_string(path) + date;
+}
+
 }
