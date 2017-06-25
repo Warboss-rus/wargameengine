@@ -4,6 +4,10 @@
 #include "Matrix4.h"
 #include <math.h>
 #include "..\model\IObject.h"
+#pragma warning(push)
+#pragma warning(disable: 4201)
+#include <glm\gtx\euler_angles.hpp>
+#pragma warning(pop)
 
 namespace wargameEngine
 {
@@ -55,16 +59,10 @@ float degress(float val)
 	return val * 180.0f / PI;
 }
 
-float normalizeDegree(float degree)
+CVector3f RotateVector(const CVector3f& vec, const CVector3f& rotations)
 {
-	while (degree > 180.0f) degree -= 360.0f;
-	while (degree < -180.0f) degree += 360.0f;
-	return degree;
-}
-
-CVector3f RotateVector(CVector3f vec, const CVector3f& rotations)
-{
-	const CVector3f radRot(radians(normalizeDegree(rotations.y)), radians(normalizeDegree(rotations.x)), radians(normalizeDegree(rotations.z)));
+#if 0
+	const CVector3f radRot(radians(rotations.x), radians(rotations.y), radians(rotations.z));
 	CVector3f result = vec;
 	result.x = vec.x * cos(radRot.z) - vec.y * sin(radRot.z);
 	result.y = vec.x * sin(radRot.z) + vec.y * cos(radRot.z);
@@ -75,6 +73,12 @@ CVector3f RotateVector(CVector3f vec, const CVector3f& rotations)
 	result.y = vec.y * cos(radRot.x) - vec.z * sin(radRot.x);
 	result.z = vec.y * sin(radRot.x) + vec.z * cos(radRot.x);
 	return result;
+#else
+	auto rotationsMat = glm::yawPitchRoll(glm::radians(rotations.x), glm::radians(rotations.y), glm::radians(rotations.z));
+	glm::vec4 result(vec.x, vec.y, vec.z, 1.0f);
+	result = rotationsMat * result;
+	return CVector3f(result.x, result.y, result.z);
+#endif
 }
 }
 

@@ -281,8 +281,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <IncludePath>..\..\..\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <IncludePath>..\..\..\glm;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <IncludePath>..\..\..\glm;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <IncludePath>..\..\..\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>

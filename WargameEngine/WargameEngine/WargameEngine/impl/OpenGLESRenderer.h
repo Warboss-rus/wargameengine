@@ -107,4 +107,5 @@ private:
 	float m_vrFovOverride = 0.0f;
 	std::vector<unsigned> m_currentTextures;
 	bool m_disableClear = false;
+	bool m_shadowViewport = false;
 };

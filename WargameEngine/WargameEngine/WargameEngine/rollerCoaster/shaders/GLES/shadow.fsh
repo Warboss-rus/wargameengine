@@ -1,6 +1,6 @@
 #version 300 es
-uniform sampler2D mainTexture;
-uniform sampler2DShadow shadowMap;
+uniform lowp sampler2D mainTexture;
+uniform highp sampler2DShadow shadowMap;
 uniform vec4 color;
 
 in vec4 v_lpos;

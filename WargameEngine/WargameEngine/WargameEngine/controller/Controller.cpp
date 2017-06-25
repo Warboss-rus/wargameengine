@@ -11,6 +11,11 @@
 #include "ScriptRegisterFunctions.h"
 #include <float.h>
 #include <math.h>
+#pragma warning(push)
+#pragma warning(disable: 4201)
+#include <glm\gtx\quaternion.hpp>
+#include <glm\gtx\spline.hpp>
+#pragma warning(pop)
 
 namespace wargameEngine
 {
@@ -673,6 +678,22 @@ model::IObject* ObjectDecorator::GetObject()
 	return m_object.get();
 }
 
+CVector3f InterpolateRotation(const CVector3f& first, const CVector3f& second, float coeff)
+{
+	glm::quat firstQ(glm::vec3(glm::radians(first.x), glm::radians(first.y), glm::radians(first.z)));
+	glm::quat secondQ(glm::vec3(glm::radians(second.x), glm::radians(second.y), glm::radians(second.z)));
+	glm::quat resultq = glm::slerp(firstQ, secondQ, coeff);
+	glm::vec3 result = glm::eulerAngles(resultq);
+	return CVector3f(glm::degrees(result.x), glm::degrees(result.y), glm::degrees(result.z));
+}
+
+CVector3f InterpolateSpline(const CVector3f& first, const CVector3f& second, const CVector3f& third, const CVector3f& forth, float coeff)
+{
+	auto toglmvec = [](const CVector3f& vec) { return glm::vec3(vec.x, vec.y, vec.z); };
+	glm::vec3 result = glm::catmullRom(toglmvec(first), toglmvec(second), toglmvec(third), toglmvec(forth), coeff);
+	return CVector3f(result.x, result.y, result.z);
+}
+
 void ObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 {
 	if (fabs(m_goSpeed) >= DBL_EPSILON)
@@ -697,20 +718,21 @@ void ObjectDecorator::Update(std::chrono::duration<float> timeSinceLastUpdate)
 		{
 			return;
 		}
-		while (m_movePath.size() > 1 && m_movePathDuration.count() > m_movePath[1].timePoint)
-		{
-			m_movePath.pop_front();
-		}
-		if (m_movePath.size() < 2)
+		size_t index = 0;
+		for (index = 0; index < m_movePath.size() && m_movePathDuration.count() > m_movePath[index].timePoint; ++index);
+		--index;
+		if (index > (m_movePath.size() - 2))
 		{
 			m_movePath.clear();
 			return;
 		}
-		const auto& begin = m_movePath.front();
-		const auto& end = m_movePath[1];
+		const auto& begin = m_movePath[index];
+		const auto& end = m_movePath[index + 1];
+		const auto& beforeBegin = (index == 0) ? begin : m_movePath[index - 1];
+		const auto& afterEnd = (index + 3 > m_movePath.size()) ? end : m_movePath[index + 2];
 		const float interpolationCoeff = (m_movePathDuration.count() - begin.timePoint) / (end.timePoint - begin.timePoint);
-		auto position = end.position * interpolationCoeff + begin.position * (1.0f - interpolationCoeff);
-		auto rotation = end.rotation * interpolationCoeff + begin.rotation * (1.0f - interpolationCoeff);
+		auto position = InterpolateSpline(beforeBegin.position, begin.position, end.position, afterEnd.position, interpolationCoeff);
+		auto rotation = InterpolateRotation(begin.rotation, end.rotation, interpolationCoeff);
 		m_object->SetCoords(position);
 		m_object->SetRotations(rotation);
 	}

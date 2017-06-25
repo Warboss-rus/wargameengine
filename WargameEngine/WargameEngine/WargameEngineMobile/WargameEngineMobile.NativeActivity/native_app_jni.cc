@@ -15,6 +15,7 @@
 #include "..\..\WargameEngine\impl\SoundPlayerFMod.h"
 #include "..\..\WargameEngine\impl\PathfindingMicroPather.h"
 #include "../../WargameEngine/impl/AssimpModelLoader.h"
+#include "../../WargameEngine/LogWriter.h"
 
 using namespace wargameEngine;
 using namespace view;
@@ -48,6 +49,7 @@ struct NativeAppJni
 		context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 		context.pathFinder = std::make_unique<CPathfindingMicroPather>();
 		static_cast<CTextWriter*>(context.textWriter.get())->AddFontLocation(storage + "/WargameEngine/");
+		LogWriter::SetLogLocation(storage + "/WargameEngine/");
 		context.scriptHandler = std::make_unique<CScriptHandlerLua>();
 		context.socketFactory = []() {
 			return std::make_unique<CNetSocket>();
