@@ -1,11 +1,18 @@
 #pragma once
-#include <string>
+#include <filesystem>
 
 namespace wargameEngine
 {
-#ifdef _WINDOWS
-using Path = std::wstring;
-#else
-using Path = std::string;
-#endif
+using Path = std::experimental::filesystem::path;
+}
+
+namespace std
+{
+template<> struct hash<wargameEngine::Path>
+{
+	size_t operator()(const wargameEngine::Path& p) const
+	{
+		return std::experimental::filesystem::hash_value(p);
+	}
+};
 }

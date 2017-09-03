@@ -335,7 +335,7 @@ bool CShaderManagerLegacyGL::NeedsMVPMatrix() const
 	return false;
 }
 
-void CShaderManagerLegacyGL::SetMatrices(const float*, const float*, const float*, const float* mvp, size_t multiviewCount)
+void CShaderManagerLegacyGL::SetMatrices(const float*, const float*, const float*, const float*, size_t)
 {
 	//Not used with legacy GL
 }

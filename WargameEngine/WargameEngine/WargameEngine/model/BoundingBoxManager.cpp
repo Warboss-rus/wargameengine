@@ -32,7 +32,7 @@ CVector3f BoundingBoxManager::GetModelRotation(const Path& path)
 void BoundingBoxManager::LoadBoundingFromFile(const Path& path)
 {
 	Path absolutePath = m_fileProvider.GetModelAbsolutePath(path);
-	Path boundingPath = absolutePath.substr(0, absolutePath.find_last_of('.')) + make_path(L".txt");
+	Path boundingPath = Path(absolutePath).replace_extension(".txt");
 	std::ifstream iFile(boundingPath);
 	Bounding::Compound compound;
 	float scale = 1.0f;

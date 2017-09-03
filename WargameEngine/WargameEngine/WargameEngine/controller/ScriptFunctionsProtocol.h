@@ -4,166 +4,166 @@
 
 //void CreateLandscape(float width, float height, string texture)
 //Creates a new landscape with given size and texture
-#define CREATE_LANDSCAPE L"CreateLandscape"
+constexpr char CREATE_LANDSCAPE[] = "CreateLandscape";
 
 //string GetGlobalProperty(string key)
 //Returns a global property value by given key. If no such property is present returns an empty string.
-#define GET_GLOBAL_PROPERTY L"GetGlobalProperty"
+constexpr char GET_GLOBAL_PROPERTY[] = "GetGlobalProperty";
 
 //void SetGlobalProperty(string key, string value)
 //Sets a global property value.
-#define SET_GLOBAL_PROPERTY L"SetGlobalProperty"
+constexpr char SET_GLOBAL_PROPERTY[] = "SetGlobalProperty";
 
-//void NewDeval (string decal, double x, double y, double rotation, double width, double height)
+//void NewDecal (string decal, double x, double y, double rotation, double width, double height)
 //Creates a new decal with given texture, place and size. Decals do not have bounding boxes, but they are part of game model, so they are synchronized across network.
-#define NEW_DECAL L"NewDecal"
+constexpr char NEW_DECAL[] = "NewDecal";
 
 //void NewStaticObject(string model, double x, double y, double rotation)
 //Creates a new static object with given model and positions. Static objects have bounding boxes, but they cannot be selected, moved or deleted. They are part of game model.
-#define NEW_STATIC_OBJECT L"NewStaticObject"
+constexpr char NEW_STATIC_OBJECT[] = "NewStaticObject";
 
 //void AddLight()
 //Adds a new light to the scene
-#define ADD_LIGHT L"AddLight"
+constexpr char ADD_LIGHT[] = "AddLight";
 
 //void RemoveLight(int index)
 //Removes light by its index
-#define REMOVE_LIGHT L"RemoveLight"
+constexpr char REMOVE_LIGHT[] = "RemoveLight";
 
 //void SetLightPosition(int index, double x, double y, double z)
 //Changes the position of light source
-#define SET_LIGHT_SOURCE_POSITION L"SetLightPosition"
+constexpr char SET_LIGHT_SOURCE_POSITION[] = "SetLightPosition";
 
 //void SetLightPosition(int index, double r, double g, double a, double a)
 //Changes the ambient color of light source
-#define SET_LIGHT_SOURCE_AMBIENT L"SetLightAmbient"
+constexpr char SET_LIGHT_SOURCE_AMBIENT[] = "SetLightAmbient";
 
 //void SetLightPosition(int index, double r, double g, double a, double a)
 //Changes the diffuse color of light source
-#define SET_LIGHT_SOURCE_DIFFUSE L"SetLightDiffuse"
+constexpr char SET_LIGHT_SOURCE_DIFFUSE[] = "SetLightDiffuse";
 
 //void SetLightPosition(int index, double r, double g, double a, double a)
 //Changes the specular color of light source
-#define SET_LIGHT_SOURCE_SPECULAR L"SetLightSpecular"
+constexpr char SET_LIGHT_SOURCE_SPECULAR[] = "SetLightSpecular";
 
 /*VIEW*/
 
 //void CreateSkybox(double size, string textureFolder)
 //Create a sky box with a given size and textures
-#define CREATE_SKYBOX L"CreateSkybox"
+constexpr char CREATE_SKYBOX[] = "CreateSkybox";
 
-#define ENABLE_RULER L"Ruler"
+constexpr char ENABLE_RULER[] = "Ruler";
 
-#define RESIZE_WINDOW L"ResizeWindow"
+constexpr char RESIZE_WINDOW[] = "ResizeWindow";
 
-#define ENABLE_MSAA L"EnableMSAA"
+constexpr char ENABLE_MSAA[] = "EnableMSAA";
 
-#define DISABLE_MSAA L"DisableMSAA"
+constexpr char DISABLE_MSAA[] = "DisableMSAA";
 
-#define SET_ANISOTROPY_LEVEL L"SetAnisotropy"
+constexpr char SET_ANISOTROPY_LEVEL[] = "SetAnisotropy";
 
-#define GET_MAX_ANISOTROPY L"GetMaxAnisotropy"
+constexpr char GET_MAX_ANISOTROPY[] = "GetMaxAnisotropy";
 
-#define ENABLE_GPU_SKINNING L"EnableGPUSkinning"
+constexpr char ENABLE_GPU_SKINNING[] = "EnableGPUSkinning";
 
-#define DISABLE_GPU_SKINNING L"DisableGPUSkinning"
+constexpr char DISABLE_GPU_SKINNING[] = "DisableGPUSkinning";
 
-#define CLEAR_RESOURCES L"ClearResources"
+constexpr char CLEAR_RESOURCES[] = "ClearResources";
 
-#define SET_WINDOW_TITLE L"SetWindowTitle"
+constexpr char SET_WINDOW_TITLE[] = "SetWindowTitle";
 
-#define PRELOAD L"Preload"
+constexpr char PRELOAD[] = "Preload";
 
-#define PRELOAD_MODEL L"PreloadModel"
+constexpr char PRELOAD_MODEL[] = "PreloadMode";
 
-#define SET_PARTICLE_SYSTEM_SHADERS L"SetParticleSystemShaders"
+constexpr char SET_PARTICLE_SYSTEM_SHADERS[] = "SetParticleSystemShaders";
 
-#define SET_SHADERS L"SetShaders"
+constexpr char SET_SHADERS[] = "SetShaders";
 
-#define SET_SKYBOX_SHADERS L"SetSkyboxShaders"
+constexpr char SET_SKYBOX_SHADERS[] = "SetSkyboxShaders";
 
-#define UNIFORM_1I L"Uniform1i"
+constexpr char UNIFORM_1I[] = "Uniform1i";
 
-#define UNIFORM_1F L"Uniform1f"
+constexpr char UNIFORM_1F[] = "Uniform1f";
 
-#define UNIFORM_1FV L"Uniform1fv"
+constexpr char UNIFORM_1FV[] = "Uniform1fv";
 
-#define UNIFORM_2FV L"Uniform2fv"
+constexpr char UNIFORM_2FV[] = "Uniform2fv";
 
-#define UNIFORM_3FV L"Uniform3fv"
+constexpr char UNIFORM_3FV[] = "Uniform3fv";
 
-#define UNIFORM_4FV L"Uniform4fv"
+constexpr char UNIFORM_4FV[] = "Uniform4fv";
 
-#define UNIFORM_MATRIX4V L"UniformMatrix4fv"
+constexpr char UNIFORM_MATRIX4V[] = "UniformMatrix4fv";
 
-#define NEW_PARTICLE_EFFECT L"NewParticleEffect"
+constexpr char NEW_PARTICLE_EFFECT[] = "NewParticleEffect";
 
-#define NEW_PARTICLE_TRACER L"NewParticleTracer"
+constexpr char NEW_PARTICLE_TRACER[] = "NewParticleTracer";
 
-#define PLAY_SOUND L"PlaySound"
+constexpr char PLAY_SOUND[] = "PlaySound";
 
-#define PLAY_SOUND_POSITION L"PlaySoundPosition"
+constexpr char PLAY_SOUND_POSITION[] = "PlaySoundPosition";
 
-#define PLAY_SOUND_PLAYLIST L"PlaySoundPlaylist"
+constexpr char PLAY_SOUND_PLAYLIST[] = "PlaySoundPlaylist";
 
-#define GET_RENDERER_NAME L"GetRendererName"
+constexpr char GET_RENDERER_NAME[] = "GetRendererName";
 
-#define ENABLE_VR L"EnableVR"
+constexpr char ENABLE_VR[] = "EnableVR";
 
-#define START_BENCHMARK L"StartBenchmark"
+constexpr char START_BENCHMARK[] = "StartBenchmark";
 
-#define STOP_BENCHMARK L"StopBenchmark"
+constexpr char STOP_BENCHMARK[] = "StopBenchmark";
 
 /*CONTROLLER*/
 
-#define LOAD_MODULE L"LoadModule"
+constexpr char LOAD_MODULE[] = "LoadModule";
 
-#define GET_FILES_LIST L"GetFilesList"
+constexpr char GET_FILES_LIST[] = "GetFilesList";
 
-#define PRINT L"print"
+constexpr char PRINT[] = "print";
 
-#define RUN_SCRIPT L"RunScript"
+constexpr char RUN_SCRIPT[] = "RunScript";
 
-#define SET_SELECTION_CALLBACK L"SetSelectionCallback"
+constexpr char SET_SELECTION_CALLBACK[] = "SetSelectionCallback";
 
-#define SET_UPDATE_CALLBACK L"SetUpdateCallback"
+constexpr char SET_UPDATE_CALLBACK[] = "SetUpdateCallback";
 
-#define SET_ON_STATE_RECEIVED_CALLBACK L"SetOnStateRecievedCallback"
+constexpr char SET_ON_STATE_RECEIVED_CALLBACK[] = "SetOnStateRecievedCallback";
 
-#define SET_ON_STRING_RECEIVED_CALLBACK L"SetOnStringRecievedCallback"
+constexpr char SET_ON_STRING_RECEIVED_CALLBACK[] = "SetOnStringRecievedCallback";
 
-#define SET_TIMED_CALLBACK L"SetTimedCallback"
+constexpr char SET_TIMED_CALLBACK[] = "SetTimedCallback";
 
-#define DELETE_TIMED_CALLBACK L"DeleteTimedCallback"
+constexpr char DELETE_TIMED_CALLBACK[] = "DeleteTimedCallback";
 
-#define SET_LMB_CALLBACK L"SetLMBCallback"
+constexpr char SET_LMB_CALLBACK[] = "SetLMBCallback";
 
-#define SET_RMB_CALLBACK L"SetRMBCallback"
+constexpr char SET_RMB_CALLBACK[] = "SetRMBCallback";
 
-#define BIND_KEY L"BindKey"
+constexpr char BIND_KEY[] = "BindKey";
 
-#define UNDO L"Undo"
+constexpr char UNDO[] = "Undo";
 
-#define REDO L"Redo"
+constexpr char REDO[] = "Redo";
 
-#define LINE_OF_SIGHT L"LoS"
+constexpr char LINE_OF_SIGHT[] = "LoS";
 
-#define BEGIN_ACTION_COMPOUND L"BeginActionCompound"
+constexpr char BEGIN_ACTION_COMPOUND[] = "BeginActionCompound";
 
-#define END_ACTION_COMPOUND L"EndActionCompound"
+constexpr char END_ACTION_COMPOUND[] = "EndActionCompound";
 
-#define NET_HOST L"NetHost"
+constexpr char NET_HOST[] = "NetHost";
 
-#define NET_CLIENT L"NetClient"
+constexpr char NET_CLIENT[] = "NetClient";
 
-#define NET_SEND_MESSAGE L"NetSendMessage"
+constexpr char NET_SEND_MESSAGE[] = "NetSendMessage";
 
-#define SAVE_GAME L"SaveGame"
+constexpr char SAVE_GAME[] = "SaveGame";
 
-#define LOAD_GAME L"LoadGame"
+constexpr char LOAD_GAME[] = "LoadGame";
 
-#define GET_ABSOLUTE_PATH L"GetAbsolutePath"
+constexpr char GET_ABSOLUTE_PATH[] = "GetAbsolutePath";
 
-#define SET_GAMEPAD_BUTTONS_CALLBACK L"SetGamepadButtonsCallback"
+constexpr char SET_GAMEPAD_BUTTONS_CALLBACK[] = "SetGamepadButtonsCallback";
 
-#define SET_GAMEPAD_AXIS_CALLBACK L"SetGamepadAxisCallback"
+constexpr char SET_GAMEPAD_AXIS_CALLBACK[] = "SetGamepadAxisCallback";

@@ -34,5 +34,5 @@ private:
 	Path m_shaderDir;
 };
 
-Path AppendPath(const Path& oldPath, const Path& newPath);
+std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive);
 }

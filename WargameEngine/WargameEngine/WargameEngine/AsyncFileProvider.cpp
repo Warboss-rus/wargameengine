@@ -74,82 +74,18 @@ AsyncFileProvider::AsyncFileProvider(ThreadPool& threadPool)
 {
 }
 
-std::vector<Path> SplitPath(const Path& path)
-{
-	std::vector<Path> pathElements;
-	size_t begin = 0;
-	for (size_t i = 0; i < path.size(); ++i)
-	{
-		if (path[i] == '/' || path[i] == '\\')
-		{
-			pathElements.push_back(path.substr(begin, i - begin));
-			begin = i + 1;
-		}
-	}
-	if (begin < path.size())
-	{
-		pathElements.push_back(path.substr(begin));
-	}
-	return pathElements;
-}
-
-Path MakePath(std::vector<Path> const& parts)
-{
-	Path result;
-	for (auto& part : parts)
-	{
-		if (!result.empty())
-		{
-			result += '/';
-		}
-		result += part;
-	}
-	return result;
-}
-
-bool IsAbsolute(const Path& firstPart)
-{
-	if (firstPart.empty())
-		return true; //Linux absolute path
-	if (firstPart.size() == 2 && firstPart[0] >= 'A' && firstPart[0] <= 'Z' && firstPart[1] == ':')
-		return true; //Windows drive letter
-	return false;
-}
-
-Path AppendPath(const Path& oldPath, const Path& newPath)
-{
-	auto newParts = SplitPath(newPath);
-	if (newParts.size() > 0 && IsAbsolute(newParts[0])) //absolute path
-	{
-		return MakePath(newParts);
-	}
-	auto existringParts = SplitPath(oldPath);
-	for (auto& part : newParts)
-	{
-		if (part == make_path(L"..") && !existringParts.empty())
-		{
-			existringParts.pop_back();
-		}
-		else
-		{
-			existringParts.push_back(part);
-		}
-	}
-	return MakePath(existringParts);
-}
-
 void AsyncFileProvider::SetModule(Module const& module)
 {
 	m_moduleDir = module.folder;
-	m_textureDir = AppendPath(m_moduleDir, module.textures);
-	m_modelDir = AppendPath(m_moduleDir, module.models);
+	m_textureDir = m_moduleDir / module.textures;
+	m_modelDir = m_moduleDir / module.models;
 	m_scriptDir = m_moduleDir;
-	m_shaderDir = AppendPath(m_moduleDir, module.shaders);
+	m_shaderDir = m_moduleDir / module.shaders;
 }
 
 void AsyncFileProvider::GetTextureAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler, bool now)
 {
-	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(AppendPath(m_textureDir, path), processHandler, m_threadPool);
+	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(m_textureDir / path, processHandler, m_threadPool);
 	readTask->AddOnCompleteHandler(completionHandler);
 	readTask->AddOnFailHandler(errorHandler);
 	m_threadPool.AddTask(readTask);
@@ -161,7 +97,7 @@ void AsyncFileProvider::GetTextureAsync(const Path& path, ProcessHandler const& 
 
 void AsyncFileProvider::GetModelAsync(const Path& path, ProcessHandler const& processHandler, CompletionHandler const& completionHandler, ErrorHandler const& errorHandler /*= ErrorHandler()*/)
 {
-	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(AppendPath(m_modelDir, path), processHandler, m_threadPool);
+	std::shared_ptr<AsyncReadTask> readTask = std::make_shared<AsyncReadTask>(m_modelDir / path, processHandler, m_threadPool);
 	readTask->AddOnCompleteHandler(completionHandler);
 	readTask->AddOnFailHandler(errorHandler);
 	m_threadPool.AddTask(readTask);
@@ -169,26 +105,82 @@ void AsyncFileProvider::GetModelAsync(const Path& path, ProcessHandler const& pr
 
 Path AsyncFileProvider::GetModelAbsolutePath(const Path& path) const
 {
-	return AppendPath(m_modelDir, path);
+	return m_modelDir / path;
 }
 
 Path AsyncFileProvider::GetTextureAbsolutePath(const Path& path) const
 {
-	return AppendPath(m_textureDir, path);
+	return m_textureDir / path;
 }
 
 Path AsyncFileProvider::GetScriptAbsolutePath(const Path& path) const
 {
-	return AppendPath(m_scriptDir, path);
+	return m_scriptDir / path;
 }
 
 Path AsyncFileProvider::GetShaderAbsolutePath(const Path& path) const
 {
-	return AppendPath(m_shaderDir, path);
+	return m_shaderDir / path;
 }
 
 Path AsyncFileProvider::GetAbsolutePath(const Path& path) const
 {
-	return AppendPath(m_moduleDir, path);
+	return m_moduleDir / path;
+}
+
+bool match(char const* needle, char const* haystack)
+{
+	for (; *needle != '\0'; ++needle)
+	{
+		switch (*needle)
+		{
+		case '?':
+			++haystack;
+			break;
+		case '*':
+		{
+			size_t max = strlen(haystack);
+			if (needle[1] == '\0' || max == 0)
+				return true;
+			for (size_t i = 0; i < max; i++)
+				if (match(needle + 1, haystack + i))
+					return true;
+			return false;
+		}
+		default:
+			if (*haystack != *needle)
+				return false;
+			++haystack;
+		}
+	}
+	return *haystack == '\0';
+}
+
+namespace fs = std::experimental::filesystem;
+
+std::vector<Path> GetFiles(const Path& path, const Path& mask, bool recursive)
+{
+	std::vector<Path> result;
+	Path absolutePath = fs::absolute(path);
+	auto process = [&result, &mask, &absolutePath](auto it) {
+		for (const fs::directory_entry& p : it)
+		{
+			auto& path = p.path();
+			if (fs::is_regular_file(path) && match(mask.string().c_str(), path.string().c_str()))
+			{
+				result.push_back(path.filename());
+			}
+		}
+	};
+	if(recursive)
+	{
+		process(fs::recursive_directory_iterator(absolutePath));
+	}
+	else
+	{
+		process(fs::directory_iterator(absolutePath));
+	}
+	std::sort(result.begin(), result.end());
+	return result;
 }
 }

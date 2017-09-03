@@ -104,9 +104,6 @@
     <ClCompile Include="ThreadPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OSSpecific.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="model\Object.cpp">
       <Filter>Source Files\model</Filter>
     </ClCompile>
@@ -115,9 +112,6 @@
     </ClCompile>
     <ClCompile Include="model\Landscape.cpp">
       <Filter>Source Files\model</Filter>
-    </ClCompile>
-    <ClCompile Include="Plugin.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PluginManager.cpp">
       <Filter>Source Files</Filter>
@@ -260,12 +254,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Module.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OSSpecific.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Plugin.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="PluginManager.h">
@@ -582,6 +570,9 @@
     </ClInclude>
     <ClInclude Include="math\vec2.h">
       <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="IPlugin.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

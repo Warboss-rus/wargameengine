@@ -35,7 +35,7 @@ void LogWriter::SetLogLocation(Path const& path)
 	struct tm* now = localtime(&t);
 	char date[30];
 	strftime(date, sizeof(date), "%x.%H-%M-%S_log.txt", now);
-	filename = to_string(path) + date;
+	filename = path.string() + date;
 }
 
 }

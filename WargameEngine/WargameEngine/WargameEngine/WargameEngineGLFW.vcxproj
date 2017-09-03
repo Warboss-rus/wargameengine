@@ -97,29 +97,29 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Lib32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Lib32;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Lib32;$(LibraryPath)</LibraryPath>
     <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLFW\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
-    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\FMod\lib;$(VULKAN_SDK)\Lib;$(LibraryPath)</LibraryPath>
     <IncludePath>..\..\glfw\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\openvr\headers;..\..\bullet\src;..\..\glm;..\..\LUA;$(VULKAN_SDK)\Include;..\..\SPIRV-Cross;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -130,6 +130,7 @@
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -144,6 +145,8 @@
       <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -159,6 +162,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -176,6 +180,8 @@
       </PrecompiledHeader>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -194,6 +200,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -210,6 +217,8 @@
       </PrecompiledHeader>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;GLFW;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -258,6 +267,7 @@
     <ClCompile Include="impl\NetSocket.cpp" />
     <ClCompile Include="impl\PathfindingMicroPather.cpp" />
     <ClCompile Include="impl\PhysicsEngineBullet.cpp" />
+    <ClCompile Include="impl\Plugin.cpp" />
     <ClCompile Include="impl\ScriptHandlerLua.cpp" />
     <ClCompile Include="impl\ShaderManagerLegacyGL.cpp" />
     <ClCompile Include="impl\VulkanMemory.cpp" />
@@ -281,6 +291,7 @@
     <ClInclude Include="impl\NetSocket.h" />
     <ClInclude Include="impl\PathfindingMicroPather.h" />
     <ClInclude Include="impl\PhysicsEngineBullet.h" />
+    <ClInclude Include="impl\Plugin.h" />
     <ClInclude Include="impl\ScriptHandlerLua.h" />
     <ClInclude Include="impl\ShaderManagerLegacyGL.h" />
     <ClInclude Include="impl\SoundPlayerFMod.h" />

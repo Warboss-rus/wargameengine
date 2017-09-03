@@ -56,7 +56,7 @@ std::unordered_map<std::string, Material> LoadMTL(const Path& path)
 	if (!iFile.good())
 	{
 		iFile.close();
-		LogWriter::WriteLine("Error loading MTL " + to_string(path));
+		LogWriter::WriteLine("Error loading MTL " + path.string());
 		return materials;
 	}
 	std::string line;
@@ -111,19 +111,19 @@ std::unordered_map<std::string, Material> LoadMTL(const Path& path)
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->texture = make_path(texture);
+			lastMaterial->texture = texture;
 		}
 		if ((type == "map_bump" || type == "bump") && lastMaterial) //bump texture
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->bumpMap = make_path(texture);
+			lastMaterial->bumpMap = texture;
 		}
 		if (type == "map_specular" && lastMaterial) //custom specular map extension
 		{
 			std::string texture;
 			lineStream >> texture;
-			lastMaterial->texture = make_path(texture);
+			lastMaterial->texture = texture;
 		}
 	}
 	iFile.close();
@@ -133,8 +133,6 @@ std::unordered_map<std::string, Material> LoadMTL(const Path& path)
 
 std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char* data, size_t /*size*/, const C3DModel& dummyModel, const Path& filePath)
 {
-	auto slashPos = filePath.find_last_of(make_path(L"\\/"));
-	Path parentPath = slashPos == filePath.npos ? filePath : filePath.substr(0, slashPos);
 	std::vector<CVector3f> tempVertices;
 	std::vector<CVector2f> tempTextureCoords;
 	std::vector<CVector3f> tempNormals;
@@ -231,7 +229,7 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char* data, size_
 			{
 				mtlPath = mtlPath.substr(2);
 			}
-			materialManager.InsertMaterials(LoadMTL(AppendPath(parentPath, make_path(mtlPath))));
+			materialManager.InsertMaterials(LoadMTL(filePath.parent_path() / mtlPath));
 		}
 		if (type == "usemtl") //apply material
 		{
@@ -288,10 +286,10 @@ std::unique_ptr<C3DModel> CObjModelFactory::LoadModel(unsigned char* data, size_
 
 bool CObjModelFactory::ModelIsSupported(unsigned char* /*data*/, size_t /*size*/, const Path& filePath) const
 {
-	size_t dotCoord = filePath.find_last_of('.') + 1;
-	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	size_t dotCoord = filePath.native().find_last_of('.') + 1;
+	Path::string_type extension = filePath.native().substr(dotCoord, filePath.native().length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
-	return extension == make_path(L"obj");
+	return extension == L"obj";
 }
 }
 }

@@ -25,7 +25,7 @@ CCommandCreateObject::CCommandCreateObject(IReadMemoryStream & stream, model::IM
 	float rotation = stream.ReadFloat();
 	std::string path = stream.ReadString();
 	bool shadow = stream.ReadBool();
-	m_pObject = std::make_shared<model::Object>(make_path(path), CVector3f{ x, y, z }, rotation, shadow);
+	m_pObject = std::make_shared<model::Object>(path, CVector3f{ x, y, z }, rotation, shadow);
 }
 
 void CCommandCreateObject::Execute()
@@ -46,7 +46,7 @@ void CCommandCreateObject::Serialize(IWriteMemoryStream & stream) const
 	stream.WriteFloat(m_pObject->GetY());
 	stream.WriteFloat(m_pObject->GetZ());
 	stream.WriteFloat(m_pObject->GetRotation());
-	stream.WriteString(to_string(m_pObject->GetPathToModel()));
+	stream.WriteString(m_pObject->GetPathToModel().string());
 	stream.WriteBool(m_pObject->CastsShadow());
 }
 }

@@ -391,11 +391,11 @@ void CVulkanRenderer::SetSurface(VkSurfaceKHR surface)
 	m_renderPass = CreateRenderPass(m_swapchain.GetFormat(), m_swapchain.GetDepthTexture().GetFormat());
 	m_renderPass.SetDevice(m_device);
 #ifdef TO_STRING_HACK
-	const Path shaderLocation = make_path("/sdcard/WargameEngine/Killteam/shaders/Vulkan/");
+	const Path shaderLocation = "/sdcard/WargameEngine/Killteam/shaders/Vulkan";
 #else
-	const Path shaderLocation = make_path(L"Killteam/shaders/Vulkan/");
+	const Path shaderLocation = L"Killteam/shaders/Vulkan";
 #endif
-	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation + make_path("vert.spv"), shaderLocation + make_path("frag.spv"), Path());
+	m_defaultProgram = m_shaderManager.NewProgram(shaderLocation / "vert.spv", shaderLocation / "frag.spv", Path());
 	m_shaderManager.PushProgram(*m_defaultProgram);
 	m_pipelineHelper.SetShaderProgram(*reinterpret_cast<CVulkanShaderProgram*>(m_defaultProgram.get()));
 	m_pipelineHelper.SetVertexAttributes({

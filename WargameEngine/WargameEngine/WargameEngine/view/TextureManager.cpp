@@ -56,7 +56,7 @@ std::unique_ptr<ICachedTexture> TextureManager::LoadTexture(const Path& path, st
 					{
 						for (auto& color : teamcolor)
 						{
-							ApplyTeamcolor(*img, make_path(color.suffix), const_cast<unsigned char*>(color.color), m_asyncFileProvider.GetTextureAbsolutePath(path));
+							ApplyTeamcolor(*img, color.suffix, const_cast<unsigned char*>(color.color), m_asyncFileProvider.GetTextureAbsolutePath(path));
 						}
 					}
 					return;
@@ -175,11 +175,11 @@ ICachedTexture* TextureManager::GetTexturePtr(const Path& texture, const std::ve
 
 void ApplyTeamcolor(Image& image, const Path& maskFile, unsigned char* color, const Path& fileName)
 {
-	Path path = fileName.substr(0, fileName.find_last_of('.')) + maskFile + make_path(L".bmp");
+	Path path = fileName.native().substr(0, fileName.native().find_last_of('.')) + maskFile.native() + L".bmp";
 	std::vector<char> maskData = ReadFile(path);
 	if (maskData.empty())
 	{
-		LogWriter::WriteLine(L"Texture manager: Cannot open mask file " + to_wstring(path));
+		LogWriter::WriteLine("Texture manager: Cannot open mask file " + path.string());
 		return;
 	}
 	ReadMemoryStream stream(maskData.data());
@@ -193,7 +193,7 @@ void ApplyTeamcolor(Image& image, const Path& maskFile, unsigned char* color, co
 	}
 	if (maskbpp != 8)
 	{
-		LogWriter::WriteLine(L"Texture manager: Mask file is not greyscale " + to_wstring(path));
+		LogWriter::WriteLine("Texture manager: Mask file is not greyscale " + path.string());
 		return;
 	}
 	for (size_t x = 0; x < image.GetWidth(); ++x)

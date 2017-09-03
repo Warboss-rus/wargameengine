@@ -46,7 +46,7 @@ void RegisterViewport(IScriptHandler& handler, view::View& view)
 	handler.RegisterMethod(CLASS_VIEWPORT, VIEWPORT_COUNT, [&](void*, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
-		return static_cast<int>(view.GetViewportCount());
+		return static_cast<long long>(view.GetViewportCount());
 	});
 
 	handler.RegisterMethod(CLASS_VIEWPORT, GET_VIEWPORT, [&](void*, IArguments const& args) {

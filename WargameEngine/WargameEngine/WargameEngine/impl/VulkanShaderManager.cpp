@@ -48,7 +48,7 @@ VkShaderModule CompileShader(const Path& filename, VkDevice device, ShaderReflec
 	VkShaderModuleCreateInfo shaderModuleCreateInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, 0, code.size(), reinterpret_cast<const uint32_t*>(code.data()) };
 	VkShaderModule shaderModule;
 	VkResult result = vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &shaderModule);
-	LOG_VK_RESULT(result, L"Cannot create shader module for " + to_wstring(filename));
+	LOG_VK_RESULT(result, "Cannot create shader module for " + filename.string());
 	return shaderModule;
 }
 

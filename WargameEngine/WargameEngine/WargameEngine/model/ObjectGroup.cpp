@@ -15,7 +15,7 @@ ObjectGroup::ObjectGroup(IModel & model) :m_current(0), m_model(model)
 
 Path ObjectGroup::GetPathToModel() const
 {
-	if (m_children.empty()) return make_path(L"");
+	if (m_children.empty()) return Path();
 	return m_children[m_current]->GetPathToModel();
 }
 

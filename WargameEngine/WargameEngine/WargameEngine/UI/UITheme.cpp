@@ -15,7 +15,7 @@ namespace wargameEngine
 namespace ui
 {
 UITheme::UITheme()
-	: texture(make_path(L"g2Default.png"))
+	: texture(L"g2Default.png")
 {
 	button.text.aligment = Text::Aligment::center;
 }
@@ -68,11 +68,11 @@ void UITheme::Load(const Path& filename)
 	xml_node<>* theme = doc->first_node();
 	if (!theme)
 	{
-		LogWriter::WriteLine(to_string(filename) + " is not a valid theme file");
+		LogWriter::WriteLine(filename.string() + " is not a valid theme file");
 		return;
 	}
 	if (theme->first_attribute("texture"))
-		texture = make_path(theme->first_attribute("texture")->value());
+		texture = theme->first_attribute("texture")->value();
 	if (theme->first_attribute("defaultColor"))
 		GetValues(defaultColor, theme->first_attribute("defaultColor")->value(), 3);
 	if (theme->first_attribute("textfieldColor"))

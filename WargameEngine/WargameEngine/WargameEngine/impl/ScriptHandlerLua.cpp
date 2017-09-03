@@ -58,7 +58,7 @@ public:
 
 	virtual Path GetPath(int index) const override
 	{
-		return make_path(GetStr(index));
+		return GetStr(index);
 	}
 
 	virtual int GetInt(int index) const override
@@ -233,57 +233,81 @@ void PushLuaArray(lua_State* L, std::vector<T> const& arr, std::function<void(T 
 	}
 }
 
-int CScriptHandlerLua::PushReturnValue(lua_State* L, FunctionArgument const& arg)
+class ReturnValueVisitor
 {
-	switch (arg.type)
+public:
+	lua_State* L;
+
+	int operator()(std::monostate)
 	{
-	case FunctionArgument::Type::BOOLEAN:
-		lua_pushboolean(L, *static_cast<bool*>(arg.data.get()));
-		break;
-	case FunctionArgument::Type::INT:
-		lua_pushinteger(L, *static_cast<int*>(arg.data.get()));
-		break;
-	case FunctionArgument::Type::FLOAT:
-		lua_pushnumber(L, *static_cast<float*>(arg.data.get()));
-		break;
-	case FunctionArgument::Type::DOUBLE:
-		lua_pushnumber(L, *static_cast<double*>(arg.data.get()));
-		break;
-	case FunctionArgument::Type::STRING:
-		lua_pushstring(L, static_cast<std::string*>(arg.data.get())->c_str());
-		break;
-	case FunctionArgument::Type::WSTRING:
-	{
-		auto wstr = static_cast<std::wstring*>(arg.data.get());
-		lua_pushstring(L, WStringToUtf8(*wstr).c_str());
+		lua_pushnil(L);
+		return 0;
 	}
-	break;
-	case FunctionArgument::Type::CLASS_INSTANCE:
+
+	int operator()(std::nullptr_t)
 	{
-		auto inst = static_cast<FunctionArgument::ClassInstance*>(arg.data.get());
-		CScriptHandlerLua::NewClassInstance(L, inst->ptr, WStringToUtf8(inst->className));
+		lua_pushnil(L);
+		return 0;
 	}
-	break;
-	case FunctionArgument::Type::ARRAY:
-		PushLuaArray<FunctionArgument>(L, *static_cast<std::vector<FunctionArgument>*>(arg.data.get()), [L](FunctionArgument const& arg) { PushReturnValue(L, arg); });
-		break;
-	case FunctionArgument::Type::MAP:
+
+	int operator()(bool value)
 	{
-		auto arr = static_cast<std::map<std::string, FunctionArgument>*>(arg.data.get());
-		lua_createtable(L, static_cast<int>(arr->size()), 0);
-		for (auto& pair : *arr)
+		lua_pushboolean(L, value);
+		return 1;
+	}
+
+	int operator()(long long value)
+	{
+		lua_pushinteger(L, value);
+		return 1;
+	}
+
+	int operator()(double value)
+	{
+		lua_pushnumber(L, value);
+		return 1;
+	}
+
+	int operator()(const std::string& value)
+	{
+		lua_pushstring(L, value.c_str());
+		return 1;
+	}
+
+	int operator()(const std::wstring& value)
+	{
+		lua_pushstring(L, WStringToUtf8(value).c_str());
+		return 1;
+	}
+
+	int operator()(const FunctionArgument::ClassInstance& instance)
+	{
+		return CScriptHandlerLua::NewClassInstance(L, instance.ptr, instance.className);
+	}
+
+	int operator()(const std::vector<FunctionArgument>& value)
+	{
+		PushLuaArray<FunctionArgument>(L, value, [this](FunctionArgument const& arg) { std::visit(*this, arg.GetVariant()); });
+		return 1;
+	}
+
+	int operator()(const std::map<std::string, FunctionArgument>& value)
+	{
+		lua_createtable(L, static_cast<int>(value.size()), 0);
+		for (auto& pair : value)
 		{
 			lua_pushstring(L, pair.first.c_str());
-			PushReturnValue(L, pair.second);
+			std::visit(*this, pair.second.GetVariant());
 			lua_rawset(L, -3);
 		}
+		return 1;
 	}
-	break;
-	default:
-		lua_pushnil(L);
-		break;
-	}
-	return arg.type == FunctionArgument::Type::TNULL ? 0 : 1;
+};
+
+int CScriptHandlerLua::PushReturnValue(lua_State* L, FunctionArgument const& arg)
+{
+	ReturnValueVisitor visitor{ L };
+	return std::visit(visitor, arg.GetVariant());
 }
 
 CScriptHandlerLua::CScriptHandlerLua()
@@ -312,7 +336,7 @@ void CScriptHandlerLua::Reset()
 
 void CScriptHandlerLua::RunScript(const Path& path)
 {
-	int result = luaL_dofile(m_lua_state, to_string(path).c_str());
+	int result = luaL_dofile(m_lua_state, path.string().c_str());
 	if (result && lua_isstring(m_lua_state, -1))
 	{
 		const char* err = lua_tostring(m_lua_state, -1);
@@ -334,69 +358,67 @@ void CScriptHandlerLua::CallFunctionImpl(FunctionArguments const& arguments, lua
 	}
 }
 
-void CScriptHandlerLua::CallFunction(const std::wstring& funcName, const FunctionArguments& arguments)
+void CScriptHandlerLua::CallFunction(const std::string& funcName, const FunctionArguments& arguments)
 {
-	lua_getglobal(m_lua_state, WStringToUtf8(funcName).c_str());
+	lua_getglobal(m_lua_state, funcName.c_str());
 	CallFunctionImpl(arguments, m_lua_state);
 }
 
-void CScriptHandlerLua::RegisterConstant(const std::wstring& name, FunctionArgument const& value)
+void CScriptHandlerLua::RegisterConstant(const std::string& name, FunctionArgument const& value)
 {
 	PushReturnValue(m_lua_state, value);
-	lua_setglobal(m_lua_state, WStringToUtf8(name).c_str());
+	lua_setglobal(m_lua_state, name.c_str());
 }
 
-void CScriptHandlerLua::RegisterFunction(const std::wstring& name, FunctionHandler const& handler)
+void CScriptHandlerLua::RegisterFunction(const std::string& name, FunctionHandler const& handler)
 {
-	m_functions.emplace(WStringToUtf8(name), handler);
+	m_functions.emplace(name, handler);
 	lua_pushlightuserdata(m_lua_state, this); //Stack: userdata
-	lua_pushstring(m_lua_state, WStringToUtf8(name).c_str()); //Stack: userdata, string
+	lua_pushstring(m_lua_state, name.c_str()); //Stack: userdata, string
 	lua_pushcclosure(m_lua_state, &FunctionCallee, 2); //Stack: CFunction
-	lua_setglobal(m_lua_state, WStringToUtf8(name).c_str()); //Stack:
+	lua_setglobal(m_lua_state, name.c_str()); //Stack:
 }
 
-void CScriptHandlerLua::RegisterMethod(const std::wstring& className, const std::wstring& methodName, MethodHandler const& handler)
+void CScriptHandlerLua::RegisterMethod(const std::string& className, const std::string& methodName, MethodHandler const& handler)
 {
-	std::string classNameStr = WStringToUtf8(className);
+	std::string classNameStr = className;
 	if (m_classes.find(classNameStr) == m_classes.end())
 	{
 		RegisterClass(classNameStr);
 	}
 	auto& cl = m_classes[classNameStr];
-	cl.methods.emplace(WStringToUtf8(methodName), handler);
+	cl.methods.emplace(methodName, handler);
 
 	lua_getglobal(m_lua_state, classNameStr.c_str()); //Stack: metatable
 	int index = lua_gettop(m_lua_state);
-	lua_pushstring(m_lua_state, WStringToUtf8(methodName).c_str()); //Stack: metatable, string
+	lua_pushstring(m_lua_state, methodName.c_str()); //Stack: metatable, string
 	lua_pushlightuserdata(m_lua_state, this); //Stack: metatable, string, userdata
 	lua_pushstring(m_lua_state, classNameStr.c_str()); //Stack: metatable, string, userdata, string
-	lua_pushstring(m_lua_state, WStringToUtf8(methodName).c_str()); //Stack: metatable, string, userdata, string, string
+	lua_pushstring(m_lua_state, methodName.c_str()); //Stack: metatable, string, userdata, string, string
 	lua_pushcclosure(m_lua_state, &MethodCallee, 3); //Stack: metatable, string, CFunction
 	lua_rawset(m_lua_state, index); //Stack: metatable
 	lua_pop(m_lua_state, 1);
 }
 
-void CScriptHandlerLua::RegisterProperty(const std::wstring& className, const std::wstring& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler)
+void CScriptHandlerLua::RegisterProperty(const std::string& className, const std::string& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler)
 {
-	std::string classNameStr = WStringToUtf8(className);
-	if (m_classes.find(classNameStr) == m_classes.end())
+	if (m_classes.find(className) == m_classes.end())
 	{
-		RegisterClass(classNameStr);
+		RegisterClass(className);
 	}
-	auto& cl = m_classes[classNameStr];
-	cl.getters.emplace(WStringToUtf8(propertyName), getterHandler);
-	cl.setters.emplace(WStringToUtf8(propertyName), setterHandler);
+	auto& cl = m_classes[className];
+	cl.getters.emplace(propertyName, getterHandler);
+	cl.setters.emplace(propertyName, setterHandler);
 }
 
-void CScriptHandlerLua::RegisterProperty(const std::wstring& className, const std::wstring& propertyName, GetterHandler const& getterHandler)
+void CScriptHandlerLua::RegisterProperty(const std::string& className, const std::string& propertyName, GetterHandler const& getterHandler)
 {
-	std::string classNameStr = WStringToUtf8(className);
-	if (m_classes.find(classNameStr) == m_classes.end())
+	if (m_classes.find(className) == m_classes.end())
 	{
-		RegisterClass(classNameStr);
+		RegisterClass(className);
 	}
-	auto& cl = m_classes[classNameStr];
-	cl.getters.emplace(WStringToUtf8(propertyName), getterHandler);
+	auto& cl = m_classes[className];
+	cl.getters.emplace(propertyName, getterHandler);
 }
 
 int CScriptHandlerLua::FunctionCallee(lua_State* L)

@@ -63,7 +63,7 @@ private:
 class Controller : public IStateManager
 {
 public:
-	typedef std::function<bool(std::shared_ptr<model::IObject> const& obj, std::wstring const& type, double x, double y, double z)> MouseButtonCallback;
+	typedef std::function<bool(std::shared_ptr<model::IObject> const& obj, std::string const& type, double x, double y, double z)> MouseButtonCallback;
 
 	Controller(model::Model& model, IScriptHandler& scriptHandler, IPhysicsEngine& physicsEngine, IPathfinding& pathFinder, model::IBoundingBoxManager& boundingManager);
 	~Controller();

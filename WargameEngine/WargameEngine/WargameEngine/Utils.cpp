@@ -40,24 +40,6 @@ std::wstring ReplaceAll(std::wstring const& text, std::unordered_map<std::wstrin
 	return result;
 }
 
-std::string to_string(const Path& path)
-{
-#ifdef _WINDOWS
-	return WStringToUtf8(path);
-#else
-	return path;
-#endif
-}
-
-std::wstring to_wstring(const Path& path)
-{
-#ifdef _WINDOWS
-	return path;
-#else
-	return Utf8ToWstring(path);
-#endif
-}
-
 std::vector<char> ReadFile(const Path& path)
 {
 	std::vector<char> result;

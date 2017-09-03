@@ -68,10 +68,6 @@ View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, 
 		m_threadPool.CancelAll();
 		m_textWriter.Reset();
 	});
-
-#ifdef _DEBUG
-	//m_physicsEngine->EnableDebugDraw(*m_renderer);
-#endif
 }
 
 void View::Init(model::Model& model, controller::Controller& controller)

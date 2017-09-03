@@ -1,6 +1,6 @@
 #pragma once
 #include "IModelReader.h"
-#include "..\Plugin.h"
+#include "..\IPlugin.h"
 #include "3dModel.h"
 
 namespace wargameEngine
@@ -11,7 +11,7 @@ class PluginModelLoader : public IModelReader
 {
 public:
 
-	PluginModelLoader(std::unique_ptr<Plugin>&& plugin)
+	PluginModelLoader(std::unique_ptr<IPlugin>&& plugin)
 		: m_plugin(std::move(plugin))
 	{
 		m_reader = reinterpret_cast<New>(m_plugin->GetFunction("New"))();
@@ -35,7 +35,7 @@ private:
 	typedef IModelReader* (*New)();
 	typedef void(*Delete)(IModelReader*);
 
-	std::unique_ptr<Plugin> m_plugin;
+	std::unique_ptr<IPlugin> m_plugin;
 	IModelReader * m_reader;
 };
 }

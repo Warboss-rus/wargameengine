@@ -11,12 +11,12 @@ SkyBox::SkyBox(float width, float height, float length, const Path& imageFolder,
 	, m_width(width)
 	, m_length(length)
 {
-	m_images[0] = imageFolder + make_path("/right.bmp");
-	m_images[1] = imageFolder + make_path(L"/left.bmp");
-	m_images[2] = imageFolder + make_path(L"/back.bmp");
-	m_images[3] = imageFolder + make_path(L"/front.bmp");
-	m_images[4] = imageFolder + make_path(L"/top.bmp");
-	m_images[5] = imageFolder + make_path(L"/bottom.bmp");
+	m_images[0] = imageFolder / "right.bmp";
+	m_images[1] = imageFolder / L"left.bmp";
+	m_images[2] = imageFolder / L"back.bmp";
+	m_images[3] = imageFolder / L"front.bmp";
+	m_images[4] = imageFolder / L"top.bmp";
+	m_images[5] = imageFolder / L"bottom.bmp";
 	m_texture = texMan.CreateCubemapTexture(m_images[0], m_images[1], m_images[2], m_images[3], m_images[4], m_images[5], TextureFlags::TEXTURE_NO_WRAP);
 }
 

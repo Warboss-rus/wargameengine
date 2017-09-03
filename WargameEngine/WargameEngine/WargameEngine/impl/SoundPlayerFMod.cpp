@@ -28,7 +28,7 @@ void CSoundPlayerFMod::Play(std::wstring const& channelName, Path const& file, f
 	if (m_sounds.find(file) == m_sounds.end())
 	{
 		FMOD::Sound* sound;
-		m_system->createSound(to_string(file).c_str(), FMOD_2D | FMOD_CREATESAMPLE, NULL, &sound);
+		m_system->createSound(file.string().c_str(), FMOD_2D | FMOD_CREATESAMPLE, NULL, &sound);
 		m_sounds[file] = sound;
 	}
 	FMOD::Channel* channel;
@@ -59,7 +59,7 @@ void CSoundPlayerFMod::PlaySoundPosition(std::wstring const& channelName, Path c
 	if (m_sounds3d.find(file) == m_sounds3d.end())
 	{
 		FMOD::Sound* sound;
-		m_system->createSound(to_string(file).c_str(), FMOD_3D | FMOD_CREATESAMPLE, NULL, &sound);
+		m_system->createSound(file.string().c_str(), FMOD_3D | FMOD_CREATESAMPLE, NULL, &sound);
 		m_sounds3d[file] = sound;
 	}
 	FMOD::Channel* channel;
@@ -103,7 +103,7 @@ void CSoundPlayerFMod::PlaySoundPlaylist(std::wstring const& name, std::vector<P
 	for (auto file : files)
 	{
 		FMOD::Sound* sound;
-		m_system->createStream(to_string(file).c_str(), FMOD_2D, NULL, &sound);
+		m_system->createStream(file.string().c_str(), FMOD_2D, NULL, &sound);
 		playlist.sounds.push_back(sound);
 	}
 	PlayList(playlist);

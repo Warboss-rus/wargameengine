@@ -39,7 +39,7 @@ void ModelManager::LoadIfNotExist(const Path& path, TextureManager& textureManag
 					return;
 				}
 			}
-			throw std::runtime_error("Cannot load model " + to_string(path) + ". None of installed readers cannot load it");
+			throw std::runtime_error("Cannot load model " + path.string() + ". None of installed readers cannot load it");
 		}, [=, &textureManager]() {
 			m_models[path]->PreloadTextures(textureManager);
 		}, [](std::exception const& e) {

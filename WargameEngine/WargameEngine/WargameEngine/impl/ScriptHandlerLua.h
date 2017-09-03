@@ -12,12 +12,12 @@ public:
 
 	void Reset() override;
 	void RunScript(const wargameEngine::Path& path) override;
-	void CallFunction(const std::wstring& funcName, const wargameEngine::FunctionArguments& arguments = wargameEngine::FunctionArguments()) override;
-	void RegisterConstant(const std::wstring& name, wargameEngine::FunctionArgument const& value) override;
-	void RegisterFunction(const std::wstring& name, FunctionHandler const& handler) override;
-	void RegisterMethod(const std::wstring& className, const std::wstring& methodName, MethodHandler const& handler) override;
-	void RegisterProperty(const std::wstring& className, const std::wstring& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) override;
-	void RegisterProperty(const std::wstring& className, const std::wstring& propertyName, GetterHandler const& getterHandler) override;
+	void CallFunction(const std::string& funcName, const wargameEngine::FunctionArguments& arguments = wargameEngine::FunctionArguments()) override;
+	void RegisterConstant(const std::string& name, wargameEngine::FunctionArgument const& value) override;
+	void RegisterFunction(const std::string& name, FunctionHandler const& handler) override;
+	void RegisterMethod(const std::string& className, const std::string& methodName, MethodHandler const& handler) override;
+	void RegisterProperty(const std::string& className, const std::string& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) override;
+	void RegisterProperty(const std::string& className, const std::string& propertyName, GetterHandler const& getterHandler) override;
 
 	static void* GetUserData(lua_State* L, int index);
 	static void CallFunctionImpl(const wargameEngine::FunctionArguments& arguments, lua_State* lua_state);
@@ -43,4 +43,6 @@ private:
 	};
 	static int GetClassAndInstance(lua_State* L, void** instance, sLuaClass** classPtr);
 	std::map<std::string, sLuaClass> m_classes;
+
+	friend class ReturnValueVisitor;
 };

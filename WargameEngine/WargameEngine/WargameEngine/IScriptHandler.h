@@ -7,11 +7,48 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <variant>
 
 namespace wargameEngine
 {
-struct FunctionArgument;
-typedef std::vector<FunctionArgument> FunctionArguments;
+
+class FunctionArgument
+{
+public:
+	struct ClassInstance
+	{
+		ClassInstance(void* ptr, const std::string& className)
+			: ptr(ptr)
+			, className(className)
+		{
+		}
+		void* ptr;
+		std::string className;
+	};
+	using Data = std::variant<std::monostate, std::nullptr_t, bool, long long, double, std::string, std::wstring, ClassInstance, std::vector<FunctionArgument>>;
+
+	FunctionArgument() = default;
+	FunctionArgument(std::nullptr_t) {}
+	FunctionArgument(bool data) : m_data(data) {}
+	FunctionArgument(long long data) : m_data(data) {}
+	FunctionArgument(int data) : m_data(static_cast<long long>(data)) {}
+	FunctionArgument(unsigned long long data) : m_data(static_cast<long long>(data)) {}
+	FunctionArgument(unsigned int data) : m_data(static_cast<long long>(data)) {}
+	FunctionArgument(float data) : m_data(data) {}
+	FunctionArgument(double data) : m_data(data) {}
+	FunctionArgument(const std::string& data) : m_data(data) {}
+	FunctionArgument(const std::wstring& data) : m_data(data) {}
+	FunctionArgument(const Path& data) : m_data(data.native()) {}
+	FunctionArgument(void* ptr, const std::string& className) : m_data(ClassInstance(ptr, className)) {}
+	FunctionArgument(const std::vector<FunctionArgument>& data) : m_data(data) {}
+
+	const Data& GetVariant() const { return m_data; }
+	Data& GetVariant() { return m_data; }
+
+private:
+	Data m_data;
+};
+using FunctionArguments = std::vector<FunctionArgument>;
 
 class IArguments
 {
@@ -45,88 +82,6 @@ public:
 	virtual bool IsNil(int index) const = 0;
 };
 
-struct FunctionArgument
-{
-	FunctionArgument()
-		: type(Type::TNULL)
-	{
-	}
-	FunctionArgument(std::nullptr_t)
-		: type(Type::TNULL)
-	{
-	}
-	FunctionArgument(bool value)
-		: type(Type::BOOLEAN)
-		, data(std::make_shared<bool>(value))
-	{
-	}
-	FunctionArgument(int value)
-		: type(Type::INT)
-		, data(std::make_shared<int>(value))
-	{
-	}
-	FunctionArgument(float value)
-		: type(Type::FLOAT)
-		, data(std::make_shared<float>(value))
-	{
-	}
-	FunctionArgument(double value)
-		: type(Type::DOUBLE)
-		, data(std::make_shared<double>(value))
-	{
-	}
-	FunctionArgument(std::string value)
-		: type(Type::STRING)
-		, data(std::make_shared<std::string>(value))
-	{
-	}
-	FunctionArgument(std::wstring value)
-		: type(Type::WSTRING)
-		, data(std::make_shared<std::wstring>(value))
-	{
-	}
-	FunctionArgument(void* ptr, std::wstring const& className)
-		: type(Type::CLASS_INSTANCE)
-		, data(std::make_shared<ClassInstance>(ptr, className))
-	{
-	}
-	FunctionArgument(std::vector<FunctionArgument> const& arr)
-		: type(Type::ARRAY)
-		, data(std::make_shared<std::vector<FunctionArgument>>(arr))
-	{
-	}
-	FunctionArgument(std::map<std::wstring, FunctionArgument> const& map)
-		: type(Type::MAP)
-		, data(std::make_shared<std::map<std::wstring, FunctionArgument>>(map))
-	{
-	}
-
-	enum class Type
-	{
-		TNULL,
-		BOOLEAN,
-		INT,
-		FLOAT,
-		DOUBLE,
-		STRING,
-		WSTRING,
-		CLASS_INSTANCE,
-		ARRAY,
-		MAP
-	} type;
-	struct ClassInstance
-	{
-		ClassInstance(void* ptr, std::wstring const& className)
-			: ptr(ptr)
-			, className(className)
-		{
-		}
-		void* ptr;
-		std::wstring className;
-	};
-	std::shared_ptr<void> data;
-};
-
 template<class T>
 std::vector<FunctionArgument> TransformVector(std::vector<T> const& src)
 {
@@ -147,11 +102,11 @@ public:
 
 	virtual void Reset() = 0;
 	virtual void RunScript(const Path& path) = 0;
-	virtual void CallFunction(std::wstring const& funcName, FunctionArguments const& arguments = FunctionArguments()) = 0;
-	virtual void RegisterConstant(std::wstring const& name, FunctionArgument const& value) = 0;
-	virtual void RegisterFunction(std::wstring const& name, FunctionHandler const& handler) = 0;
-	virtual void RegisterMethod(std::wstring const& className, std::wstring const& methodName, MethodHandler const& handler) = 0;
-	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) = 0;
-	virtual void RegisterProperty(std::wstring const& className, std::wstring const& propertyName, GetterHandler const& getterHandler) = 0;
+	virtual void CallFunction(const std::string& funcName, FunctionArguments const& arguments = FunctionArguments()) = 0;
+	virtual void RegisterConstant(const std::string& name, FunctionArgument const& value) = 0;
+	virtual void RegisterFunction(const std::string& name, FunctionHandler const& handler) = 0;
+	virtual void RegisterMethod(const std::string& className, const std::string& methodName, MethodHandler const& handler) = 0;
+	virtual void RegisterProperty(const std::string& className, const std::string& propertyName, SetterHandler const& setterHandler, GetterHandler const& getterHandler) = 0;
+	virtual void RegisterProperty(const std::string& className, const std::string& propertyName, GetterHandler const& getterHandler) = 0;
 };
 }

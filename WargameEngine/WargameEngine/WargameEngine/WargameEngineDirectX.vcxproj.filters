@@ -47,6 +47,9 @@
     <ClCompile Include="impl\PathfindingMicroPather.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="impl\Plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\DirectXRenderer.h">
@@ -80,6 +83,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\PathfindingMicroPather.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\Plugin.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

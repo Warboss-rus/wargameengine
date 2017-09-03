@@ -290,10 +290,10 @@ void LoadPhongModel(xml_node<>* phong, Material &material, unordered_map<string,
 		if (texture)
 		{
 			string image = texture->first_attribute("texture")->value();
-			material.texture = make_path(imageTranslator[GetImagePath(image, common)]);
-			if (material.texture.size() > 7 && ((material.texture.substr(0, 7) == make_path(L"file://") || material.texture.substr(0, 7) == make_path(L"file:\\\\"))))
+			material.texture = imageTranslator[GetImagePath(image, common)];
+			if (material.texture.native().size() > 7 && ((material.texture.native().substr(0, 7) == L"file://" || material.texture.native().substr(0, 7) == L"file:\\\\")))
 			{
-				material.texture.erase(0, 8);
+				material.texture = material.texture.native().substr(7);
 			}
 		}
 	}
@@ -348,7 +348,7 @@ void LoadEffectsLibrary(xml_node<>* library_effects, unordered_map<string, strin
 			if (technique && string(technique->first_attribute("profile")->value()) == "FCOLLADA")
 			{
 				xml_node<>* userProperties = technique->first_node("user_properties");
-				if (userProperties) material.texture = make_path(userProperties->value());
+				if (userProperties) material.texture = userProperties->value();
 			}
 		}
 		for (auto i = materialTranslator.begin(); i != materialTranslator.end(); ++i)
@@ -781,10 +781,10 @@ std::unique_ptr<C3DModel> CColladaModelFactory::LoadModel(unsigned char * data, 
 
 bool CColladaModelFactory::ModelIsSupported(unsigned char * /*data*/, size_t /*size*/, const Path& filePath) const
 {
-	size_t dotCoord = filePath.find_last_of('.') + 1;
-	Path extension = filePath.substr(dotCoord, filePath.length() - dotCoord);
+	size_t dotCoord = filePath.native().find_last_of('.') + 1;
+	Path::string_type extension = filePath.native().substr(dotCoord, filePath.native().length() - dotCoord);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
-	return extension == make_path(L"dae");
+	return extension == L"dae";
 }
 }
 }

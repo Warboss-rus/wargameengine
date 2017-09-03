@@ -143,7 +143,7 @@ bool Controller::OnLeftMouseUp(CVector3f const& begin, CVector3f const& end, int
 {
 	auto selected = m_model.GetSelectedObject();
 	auto pos = RayToPoint(begin, end);
-	if (m_lmbCallback && m_lmbCallback(GetNearestObject(begin, end), L"Object", pos.x, pos.y, pos.z))
+	if (m_lmbCallback && m_lmbCallback(GetNearestObject(begin, end), "Object", pos.x, pos.y, pos.z))
 	{
 		m_selectedObjectBeginCoords.reset();
 		m_selectionRectangleBegin.reset();
@@ -188,7 +188,7 @@ bool Controller::OnRightMouseUp(CVector3f const& begin, CVector3f const& end, in
 	auto object = m_model.GetSelectedObject();
 	float rot = object ? object->GetRotation() : 0.0f;
 	auto point = RayToPoint(begin, end);
-	if (m_rmbCallback && m_rmbCallback(GetNearestObject(begin, end), L"Object", point.x, point.y, point.z))
+	if (m_rmbCallback && m_rmbCallback(GetNearestObject(begin, end), "Object", point.x, point.y, point.z))
 	{
 		m_rotationPosBegin.reset();
 		return true;
@@ -414,7 +414,7 @@ void Controller::SerializeState(IWriteMemoryStream& stream, bool hasAdresses /*=
 		stream.WriteFloat(object->GetY());
 		stream.WriteFloat(object->GetZ());
 		stream.WriteFloat(object->GetRotation());
-		stream.WriteString(to_string(object->GetPathToModel()));
+		stream.WriteString(object->GetPathToModel().string());
 		if (hasAdresses)
 		{
 			stream.WritePointer(object);
@@ -434,7 +434,7 @@ void Controller::LoadState(IReadMemoryStream& stream, bool hasAdresses)
 		float y = stream.ReadFloat();
 		float z = stream.ReadFloat();
 		float rotation = stream.ReadFloat();
-		Path path = make_path(stream.ReadString());
+		Path path = stream.ReadString();
 		std::shared_ptr<model::IObject> object = std::make_shared<model::Object>(path, CVector3f{ x, y, z }, rotation);
 		m_model.AddObject(object);
 		if (hasAdresses)

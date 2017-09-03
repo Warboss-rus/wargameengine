@@ -218,8 +218,8 @@ private:
 		memcpy(mat.diffuse, &diffuse, sizeof(float) * 3);
 		memcpy(mat.specular, &specular, sizeof(float) * 3);
 		mat.shininess = shineness;
-		mat.texture = make_path(mainTexture.C_Str());
-		mat.specularMap = make_path(specularMap.C_Str());
+		mat.texture = mainTexture.C_Str();
+		mat.specularMap = specularMap.C_Str();
 		return std::make_pair(name.C_Str(), mat);
 	}
 

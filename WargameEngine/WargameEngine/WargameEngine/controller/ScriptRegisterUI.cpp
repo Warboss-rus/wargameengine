@@ -26,7 +26,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		std::wstring text = args.GetWStr(6);
 		auto callback = args.GetFunction(7);
 		IUIElement* button = c->AddNewButton(name, x, y, height, width, transMan.GetTranslation(text), std::bind(callback, FunctionArguments()));
-		return FunctionArgument(button, L"UI");
+		return FunctionArgument(button, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_STATIC_TEXT, [&, uiRoot](void* instance, IArguments const& args) {
@@ -40,7 +40,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		int width = args.GetInt(5);
 		std::wstring caption = args.GetWStr(6);
 		IUIElement* text = c->AddNewStaticText(name, x, y, height, width, transMan.GetTranslation(caption));
-		return FunctionArgument(text, L"UI");
+		return FunctionArgument(text, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_PANEL, [&, uiRoot](void* instance, IArguments const& args) {
@@ -53,7 +53,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement* panel = c->AddNewPanel(name, x, y, height, width);
-		return FunctionArgument(panel, L"UI");
+		return FunctionArgument(panel, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_CHECKBOX, [&, uiRoot](void* instance, IArguments const& args) {
@@ -68,7 +68,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		std::wstring caption = args.GetWStr(6);
 		bool state = args.GetBool(7);
 		IUIElement* checkbox = c->AddNewCheckBox(name, x, y, height, width, transMan.GetTranslation(caption), state);
-		return FunctionArgument(checkbox, L"UI");
+		return FunctionArgument(checkbox, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_COMBOBOX, [&, uiRoot](void* instance, IArguments const& args) {
@@ -81,7 +81,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement* listbox = c->AddNewComboBox(name, x, y, height, width);
-		return FunctionArgument(listbox, L"UI");
+		return FunctionArgument(listbox, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_EDIT, [&, uiRoot](void* instance, IArguments const& args) {
@@ -95,7 +95,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		int width = args.GetInt(5);
 		std::wstring caption = args.GetWStr(6);
 		IUIElement* edit = c->AddNewEdit(name, x, y, height, width, transMan.GetTranslation(caption));
-		return FunctionArgument(edit, L"UI");
+		return FunctionArgument(edit, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_LIST, [&, uiRoot](void* instance, IArguments const& args) {
@@ -108,7 +108,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement* listbox = c->AddNewList(name, x, y, height, width);
-		return FunctionArgument(listbox, L"UI");
+		return FunctionArgument(listbox, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_RADIOGROUP, [&, uiRoot](void* instance, IArguments const& args) {
@@ -121,7 +121,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		IUIElement* listbox = c->AddNewRadioGroup(name, x, y, height, width);
-		return FunctionArgument(listbox, L"UI");
+		return FunctionArgument(listbox, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, NEW_WINDOW, [&, uiRoot](void* instance, IArguments const& args) {
@@ -135,7 +135,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		bool modal = args.GetBool(5);
 		modal;
 		IUIElement* panel = c->AddNewWindow(name, height, width, transMan.GetTranslation(header));
-		return FunctionArgument(panel, L"UI");
+		return FunctionArgument(panel, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, GET_CHILD, [&, uiRoot](void* instance, IArguments const& args) {
@@ -143,7 +143,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 			throw std::runtime_error("1 argument expected (childname)");
 		IUIElement* c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
 		std::string name = args.GetStr(1);
-		return FunctionArgument(c->GetChildByName(name), L"UI");
+		return FunctionArgument(c->GetChildByName(name), CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, SET_VISIBLE, [&, uiRoot](void* instance, IArguments const& args) {
@@ -211,14 +211,14 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement* c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		return static_cast<int>(c->GetSelectedIndex() + 1);
+		return c->GetSelectedIndex() + 1;
 	});
 
 	handler.RegisterMethod(CLASS_UI, GET_ITEMS_COUNT, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
 		IUIElement* c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		return (int)c->GetItemsCount();
+		return c->GetItemsCount();
 	});
 
 	handler.RegisterMethod(CLASS_UI, GET_ITEM, [&, uiRoot](void* instance, IArguments const& args) {
@@ -261,7 +261,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
 		IUIElement* c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		std::wstring func = args.GetWStr(1);
+		const std::string func = args.GetStr(1);
 		std::function<void()> function;
 		if (!func.empty())
 		{
@@ -277,7 +277,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (funcName)");
 		IUIElement* c = instance ? reinterpret_cast<IUIElement*>(instance) : uiRoot;
-		std::wstring func = args.GetWStr(1);
+		const std::string func = args.GetStr(1);
 		std::function<void()> function;
 		if (!func.empty())
 		{
@@ -301,7 +301,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 	handler.RegisterMethod(CLASS_UI, GET, [&, uiRoot](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no arguments expected");
-		return FunctionArgument(uiRoot, L"UI");
+		return FunctionArgument(uiRoot, CLASS_UI);
 	});
 
 	handler.RegisterMethod(CLASS_UI, CLEAR_CHILDREN, [&, uiRoot](void* instance, IArguments const& args) {

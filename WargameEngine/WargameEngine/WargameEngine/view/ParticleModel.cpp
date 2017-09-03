@@ -155,7 +155,7 @@ ParticleModel::ParticleModel(const Path& file)
 	xml_node<>* texture = root->first_node("texture");
 	if (texture)
 	{
-		m_texture = make_path(texture->first_attribute("path")->value());
+		m_texture = texture->first_attribute("path")->value();
 		m_textureFrameSize = GetVector2f(texture->first_attribute("frameSize")->value());
 	}
 	xml_node<>* particle = root->first_node("particle");

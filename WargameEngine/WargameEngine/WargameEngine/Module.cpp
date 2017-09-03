@@ -14,21 +14,6 @@ std::wstring RemoveSpaces(std::wstring const& str)
 		return L"";
 	return str.substr(begin, end - begin + 1);
 }
-
-std::wstring AddSlash(std::wstring const& str)
-{
-	if (!str.empty() && str.back() != '/' && str.back() != '\\')
-	{
-		return str + L'/';
-	}
-	return str;
-}
-
-std::wstring GetParent(std::wstring const& path)
-{
-	auto pos = path.find_last_of(L'/');
-	return pos == path.npos ? L"" : path.substr(0, pos + 1);
-}
 }
 
 wargameEngine::Module::Module(Path const& filename)
@@ -59,15 +44,15 @@ wargameEngine::Module::Module(Path const& filename)
 		else if (key == L"Playable")
 			playable = std::stoi(value.c_str()) != 0;
 		else if (key == L"Folder")
-			folder = make_path(AddSlash(GetParent(to_wstring(filename)) + value));
+			folder = filename.parent_path() / value;
 		else if (key == L"Script")
-			script = make_path(value);
+			script = value;
 		else if (key == L"Models")
-			models = make_path(AddSlash(value));
+			models = value;
 		else if (key == L"Textures")
-			textures = make_path(AddSlash(value));
+			textures = value;
 		else if (key == L"Shaders")
-			shaders = make_path(AddSlash(value));
+			shaders = value;
 	}
 
 	iFile.close();

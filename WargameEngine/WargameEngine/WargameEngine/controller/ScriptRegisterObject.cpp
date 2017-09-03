@@ -24,14 +24,14 @@ void RegisterObject(IScriptHandler& handler, Controller& controller, model::Mode
 		float y = args.GetFloat(3);
 		float rotation = args.GetFloat(4);
 		std::shared_ptr<model::IObject> object = controller.CreateObject(model, x, y, rotation);
-		return FunctionArgument(object.get(), L"Object");
+		return FunctionArgument(object.get(), CLASS_OBJECT);
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_SELECTED_OBJECT, [&](void* /*instance*/, IArguments const& args) {
 		if (args.GetCount() != 0)
 			throw std::runtime_error("no argument expected");
 		model::IObject* object = model.GetSelectedObject().get();
-		return FunctionArgument(object, L"Object");
+		return FunctionArgument(object, CLASS_OBJECT);
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, GET_COUNT, [&](void* /*instance*/, IArguments const& args) {
@@ -46,7 +46,7 @@ void RegisterObject(IScriptHandler& handler, Controller& controller, model::Mode
 		size_t index = args.GetSizeT(1);
 		if (index > model.GetObjectCount())
 			return FunctionArgument();
-		return FunctionArgument(model.Get3DObject(index - 1).get(), L"Object");
+		return FunctionArgument(model.Get3DObject(index - 1).get(), CLASS_OBJECT);
 	});
 
 	handler.RegisterMethod(CLASS_OBJECT, DELETE_OBJECT, [&](void* instance, IArguments const& args) {
@@ -225,7 +225,7 @@ void RegisterObject(IScriptHandler& handler, Controller& controller, model::Mode
 		{
 			if (args.GetCount() != 3)
 				throw std::runtime_error("3 arguments expected(moveLimiterType, functionName)");
-			std::wstring functionName = args.GetWStr(1);
+			const std::string functionName = args.GetStr(1);
 			auto function = [&, functionName](CVector3f& position, CVector3f& rotation, const CVector3f& oldPosition, const CVector3f& oldRotation) {
 				auto vector3FConvert = [](CVector3f const& vec) {
 					return std::vector<FunctionArgument>{ vec.x, vec.y, vec.z };
@@ -291,8 +291,8 @@ void RegisterObject(IScriptHandler& handler, Controller& controller, model::Mode
 		{
 			model::ObjectGroup* group = (model::ObjectGroup*)object;
 			if (index > group->GetCount())
-				FunctionArgument(NULL, L"Object");
-			FunctionArgument(group->GetChild(index - 1).get(), L"Object");
+				FunctionArgument(NULL, CLASS_OBJECT);
+			FunctionArgument(group->GetChild(index - 1).get(), CLASS_OBJECT);
 		}
 		return nullptr;
 	});

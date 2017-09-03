@@ -335,9 +335,9 @@ Image CBmpImageReader::ReadImage(unsigned char* data, size_t /*size*/, const Pat
 
 bool CTgaImageReader::ImageIsSupported(unsigned char* data, size_t size, const Path& filePath) const
 {
-	Path extension = filePath.substr(filePath.find_last_of('.') + 1);
+	std::wstring extension = filePath.wstring().substr(filePath.native().find_last_of('.') + 1);
 	std::transform(extension.begin(), extension.end(), extension.begin(), std::towlower);
-	return extension == make_path("tga") && (size > 2) && (data[2] == 2 || data[2] == 10); //non-rgb texture
+	return extension == L"tga" && (size > 2) && (data[2] == 2 || data[2] == 10); //non-rgb texture
 }
 
 Image CTgaImageReader::ReadImage(unsigned char* data, size_t /*size*/, const Path& /*filePath*/, sReaderParameters const& params)

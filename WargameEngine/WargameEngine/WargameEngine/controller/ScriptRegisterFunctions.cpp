@@ -1,7 +1,6 @@
 #include "ScriptRegisterFunctions.h"
 #include "../AsyncFileProvider.h"
 #include "../LogWriter.h"
-#include "../OSSpecific.h"
 #include "../ThreadPool.h"
 #include "../Utils.h"
 #include "../view/ISoundPlayer.h"
@@ -495,7 +494,7 @@ void RegisterViewFunctions(IScriptHandler& handler, view::View& view, AsyncFileP
 		std::vector<Path> paths;
 		for (auto& file : files)
 		{
-			paths.push_back(fileProvider.GetAbsolutePath(make_path(file)));
+			paths.push_back(fileProvider.GetAbsolutePath(file));
 		}
 		float volume = n > 2 ? args.GetFloat(3) : 1.0f;
 		bool shuffle = n > 3 ? args.GetBool(4) : false;
@@ -616,8 +615,8 @@ void RegisterControllerFunctions(IScriptHandler& handler, Controller& controller
 			throw std::runtime_error("2 argument expected (function name, disable default behavior)");
 		auto func = args.GetFunction(1);
 		bool disable = args.GetBool(2);
-		auto callback = [=](std::shared_ptr<model::IObject> obj, std::wstring const& type, double x, double y, double z) {
-			FunctionArgument instance(obj.get(), L"Object");
+		auto callback = [=](std::shared_ptr<model::IObject> obj, std::string const& type, double x, double y, double z) {
+			FunctionArgument instance(obj.get(), "Object");
 			func({ instance, type, x, y, z });
 			return disable;
 		};
@@ -630,7 +629,7 @@ void RegisterControllerFunctions(IScriptHandler& handler, Controller& controller
 			throw std::runtime_error("2 argument expected (function name, disable default behavior)");
 		auto func = args.GetFunction(1);
 		bool disable = args.GetBool(2);
-		auto callback = [=](std::shared_ptr<model::IObject> obj, std::wstring const& type, double x, double y, double z) {
+		auto callback = [=](std::shared_ptr<model::IObject> obj, std::string const& type, double x, double y, double z) {
 			FunctionArgument instance(nullptr /*obj.get()*/, type);
 			func({ instance, x, y, z });
 			return disable;
@@ -732,7 +731,7 @@ void RegisterControllerFunctions(IScriptHandler& handler, Controller& controller
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 arguments expected (relative path)");
 		Path path = args.GetPath(1);
-		return fileProvider.GetAbsolutePath(path);
+		return fileProvider.GetAbsolutePath(path).native();
 	});
 
 	handler.RegisterFunction(SET_GAMEPAD_BUTTONS_CALLBACK, [&](IArguments const& args) {

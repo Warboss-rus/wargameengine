@@ -35,7 +35,7 @@ void Application::Run(Module&& module)
 	m_view->Init(*m_model, *m_controller);
 	m_controller->Init(*m_view, m_context.socketFactory, m_asyncFileProvider.GetScriptAbsolutePath(m_module.script), m_asyncFileProvider);
 
-	m_context.scriptHandler->RegisterFunction(L"LoadModule", [this](IArguments const& args){
+	m_context.scriptHandler->RegisterFunction("LoadModule", [this](IArguments const& args){
 		if (args.GetCount() != 1)
 			throw std::runtime_error("1 argument expected (module file)");
 		Path module = m_asyncFileProvider.GetAbsolutePath(args.GetPath(1));

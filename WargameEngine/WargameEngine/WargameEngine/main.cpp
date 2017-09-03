@@ -27,11 +27,12 @@
 #include "impl/PathfindingMicroPather.h"
 #include "Utils.h"
 #include "view/PluginModelLoader.h"
+#include "impl/Plugin.h"
 
 using namespace wargameEngine;
 using namespace view;
 
-std::unique_ptr<Plugin> TryLoadPlugin(const Path& path)
+std::unique_ptr<IPlugin> TryLoadPlugin(const Path& path)
 {
 	try
 	{
@@ -92,7 +93,7 @@ int main(int argc, char* argv[])
 	context.modelReaders.push_back(std::make_unique<CObjModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CColladaModelFactory>());
 	context.modelReaders.push_back(std::make_unique<CWBMModelFactory>());
-	auto assimpPlugin = TryLoadPlugin(make_path("AssimpPlugin.dll"));
+	auto assimpPlugin = TryLoadPlugin("AssimpPlugin.dll");
 	if (assimpPlugin)
 	{
 		context.modelReaders.push_back(std::make_unique<PluginModelLoader>(std::move(assimpPlugin)));
