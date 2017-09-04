@@ -218,41 +218,46 @@ public:
 		return result;
 	}
 
-	void AddBounding(const Path& modelName, Bounding const& bounding)
+	std::unique_ptr<btCollisionShape> MakeShape(const Bounding& bounding)
 	{
-		std::function<std::unique_ptr<btCollisionShape>(Bounding const&)> processShape = [&processShape, this](Bounding const& bounding)->std::unique_ptr<btCollisionShape> {
-			if (bounding.type == Bounding::eType::Box)
+		btScalar scale = static_cast<btScalar>(bounding.scale);
+		return std::visit([this, scale](auto&& boundingItem)->std::unique_ptr<btCollisionShape> {
+			using T = std::decay_t<decltype(boundingItem)>;
+			if constexpr (std::is_same_v<T, model::Bounding::Compound>)
 			{
-				auto& box = bounding.GetBox();
-				CVector3f halfSize = (box.max - box.min) / 2;
-				CVector3f boxCenter = (box.max + box.min) / 2 * bounding.scale;
-				auto shape = std::make_unique<btBoxShape>(ToBtVector3(halfSize));
-				m_shapeOffset[shape.get()] = boxCenter;
-				btScalar btScale = static_cast<btScalar>(bounding.scale);
-				shape->setLocalScaling(btVector3(btScale, btScale, btScale));
-				return std::move(shape);
-			}
-			else if (bounding.type == Bounding::eType::Compound)
-			{
-				auto& compound = bounding.GetCompound();
 				auto shape = std::make_unique<btCompoundShape>();
-				for (auto& child : compound.items)
+				const std::vector<Bounding>& items = boundingItem.items;
+				for (size_t i = 0; i < items.size(); ++i)
 				{
-					auto childShape = processShape(child);
+					auto childShape = MakeShape(items[i]);
 					btTransform transform;
 					transform.setIdentity();
 					transform.setOrigin(ToBtVector3(m_shapeOffset[childShape.get()]));
 					shape->addChildShape(transform, childShape.get());
 					m_childCollisionShapes.push_back(std::move(childShape));
 				}
-				btScalar btScale = static_cast<btScalar>(bounding.scale);
-				shape->setLocalScaling(btVector3(btScale, btScale, btScale));
+				shape->setLocalScaling(btVector3(scale, scale, scale));
 				return std::move(shape);
 			}
-			return nullptr;
-		};
-		
-		m_collisionShapes[modelName] = processShape(bounding);
+			else if constexpr(std::is_same_v<T, model::Bounding::Box>)
+			{
+				CVector3f halfSize = (boundingItem.max - boundingItem.min) / 2;
+				CVector3f boxCenter = (boundingItem.max + boundingItem.min) / 2 * scale;
+				auto shape = std::make_unique<btBoxShape>(ToBtVector3(halfSize));
+				m_shapeOffset[shape.get()] = boxCenter;
+				shape->setLocalScaling(btVector3(scale, scale, scale));
+				return std::move(shape);
+			}
+			else
+			{
+				static_assert(std::false_type::value, "unknown bounding type");
+			}
+		}, bounding.data);
+	}
+
+	void AddBounding(const Path& modelName, Bounding const& bounding)
+	{		
+		m_collisionShapes[modelName] = MakeShape(bounding);
 	}
 
 	void RemoveDynamicObject(IBaseObject * objectToRemove)
@@ -334,7 +339,7 @@ public:
 			return Bounding();
 		}
 		auto offset = it2->second;
-		return Bounding::Box{ ToVector3f(min) + offset, ToVector3f(max) + offset };
+		return Bounding{ Bounding::Box{ ToVector3f(min) + offset, ToVector3f(max) + offset } };
 	}
 private:
 	static btTransform GetObjectTransform(IBaseObject * object, CVector3f const& shapeOffset)

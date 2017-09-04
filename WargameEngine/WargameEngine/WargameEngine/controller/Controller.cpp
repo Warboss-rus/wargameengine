@@ -346,36 +346,37 @@ void Controller::SelectObject(const float* begin, const float* end, bool add, bo
 
 size_t Controller::BBoxlos(CVector3f const& origin, model::Bounding* target, model::IObject* shooter, model::IObject* targetObject)
 {
-	size_t result = 0;
-	size_t total = 0;
-	if (target->type == model::Bounding::eType::Compound)
-	{
-		model::Bounding::Compound compound = target->GetCompound();
-		for (size_t i = 0; i < compound.items.size(); ++i)
+	return std::visit([&](auto&& boundingItem)->size_t {
+		using T = std::decay_t<decltype(boundingItem)>;
+		size_t result = 0;
+		size_t total = 0;
+		if constexpr(std::is_same_v<T, model::Bounding::Compound>)
 		{
-			result += BBoxlos(origin, &compound.items[i], shooter, targetObject);
-		}
-		result /= compound.items.size();
-		total = 100;
-	}
-	else
-	{
-		model::Bounding::Box const& tarBox = target->GetBox();
-		CVector3f dir;
-		for (dir.x = tarBox.min[0] + targetObject->GetX(); dir.x < tarBox.max[0] + targetObject->GetX(); dir.x += (tarBox.max[0] - tarBox.min[0]) / 10.0f + 0.0001f)
-		{
-			for (dir.y = tarBox.min[1] + targetObject->GetY(); dir.y < tarBox.max[1] + targetObject->GetY(); dir.y += (tarBox.max[1] - tarBox.min[1]) / 10.0f + 0.0001f)
+			for (size_t i = 0; i < boundingItem.items.size(); ++i)
 			{
-				for (dir.z = tarBox.min[2] + targetObject->GetZ(); dir.z < tarBox.max[2] + targetObject->GetZ(); dir.z += (tarBox.max[2] - tarBox.min[2]) / 10.0f + 0.0001f)
+				result += BBoxlos(origin, &boundingItem.items[i], shooter, targetObject);
+			}
+			result /= boundingItem.items.size();
+			total = 100;
+		}
+		else if constexpr(std::is_same_v<T, model::Bounding::Box>)
+		{
+			CVector3f dir;
+			for (dir.x = boundingItem.min[0] + targetObject->GetX(); dir.x < boundingItem.max[0] + targetObject->GetX(); dir.x += (boundingItem.max[0] - boundingItem.min[0]) / 10.0f + 0.0001f)
+			{
+				for (dir.y = boundingItem.min[1] + targetObject->GetY(); dir.y < boundingItem.max[1] + targetObject->GetY(); dir.y += (boundingItem.max[1] - boundingItem.min[1]) / 10.0f + 0.0001f)
 				{
-					total++;
-					if (!m_physicsEngine.CastRay(origin, dir, { shooter, targetObject }).success)
-						result++;
+					for (dir.z = boundingItem.min[2] + targetObject->GetZ(); dir.z < boundingItem.max[2] + targetObject->GetZ(); dir.z += (boundingItem.max[2] - boundingItem.min[2]) / 10.0f + 0.0001f)
+					{
+						total++;
+						if (!m_physicsEngine.CastRay(origin, dir, { shooter, targetObject }).success)
+							result++;
+					}
 				}
 			}
 		}
-	}
-	return result * 100 / total;
+		return result * 100 / total;
+	}, target->data);
 }
 
 size_t Controller::GetLineOfSight(model::IObject* shooter, model::IObject* target)

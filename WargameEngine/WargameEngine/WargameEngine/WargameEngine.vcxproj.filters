@@ -574,5 +574,8 @@
     <ClInclude Include="IPlugin.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="model\Bounding.h">
+      <Filter>Source Files\model</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

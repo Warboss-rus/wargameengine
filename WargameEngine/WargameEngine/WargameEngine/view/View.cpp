@@ -24,6 +24,7 @@ namespace view
 {
 
 static const string g_controllerTag = "controller";
+template<class T> struct always_false : std::false_type {};
 
 View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
 	vector<unique_ptr<IImageReader>>& imageReaders, vector<unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager)
@@ -247,12 +248,34 @@ void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object
 	CVector3f min = bbox.max;
 	CVector3f max = bbox.min;
 	renderer.SetColor(0, 0, 255);
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min, { min[0], max[1], min[2] }, { min[0], max[1], max[2] }, { min[0], min[1], max[2] } }, {}, {});//Left
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min, { min[0], min[1], max[2] }, { max[0], min[1], max[2] }, { max[0], min[1], min[2] } }, {}, {});//Back
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(max[0], min[1], min[2]), { max[0], max[1], min[2] }, max, { max[0], min[1], max[2] } }, {}, {});//Right
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(min[0], max[1], min[2]), { min[0], max[1], max[2] }, max, { max[0], max[1], min[2] } }, {}, {}); //Front
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] } }, {}, {});//Left
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] } }, {}, {});//Back
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] } }, {}, {});//Right
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] } }, {}, {}); //Front
 	renderer.SetColor(0, 0, 0);
 	renderer.PopMatrix();
+}
+
+void DrawBBox(model::Bounding const& bounding, model::IBaseObject const& object, IRenderer & renderer)
+{
+	std::visit([&](auto&& boundingItem)->void {
+		using T = std::decay_t<decltype(boundingItem)>;
+		if constexpr (std::is_same_v<T, model::Bounding::Compound>)
+		{
+			for (const auto& item : boundingItem.items)
+			{
+				DrawBBox(item, object, renderer);
+			}
+		}
+		else if constexpr(std::is_same_v<T, model::Bounding::Box>)
+		{
+			DrawBBox(boundingItem, object, renderer, bounding.scale);
+		}
+		else
+		{
+			static_assert(std::false_type::value, "unknown bounding type");
+		}
+	}, bounding.data);
 }
 
 void View::DrawBoundingBox()
@@ -269,14 +292,14 @@ void View::DrawBoundingBox()
 				if (object)
 				{
 					auto bbox = m_boundingManager.GetBounding(object->GetPathToModel());
-					DrawBBox(bbox.GetBox(), *object, m_renderer, bbox.scale);
+					DrawBBox(bbox, *object, m_renderer);
 				}
 			}
 		}
 		else
 		{
 			auto bbox = m_boundingManager.GetBounding(object->GetPathToModel());
-			DrawBBox(bbox.GetBox(), *object, m_renderer, bbox.scale);
+			DrawBBox(bbox, *object, m_renderer);
 		}
 	}
 }
@@ -848,42 +871,48 @@ void View::EnableGPUSkinning(bool enable)
 
 std::vector<float> GetBoundingVertices(const model::Bounding& bounding)
 {
-	std::vector<float> result;
-	if (bounding.type == model::Bounding::eType::Compound)
-	{
-		for (auto& child : bounding.GetCompound().items)
+	return std::visit([](auto&& boundingItem)->std::vector<float> {
+		using T = std::decay_t<decltype(boundingItem)>;
+		std::vector<float> result;
+		if constexpr (std::is_same_v<T, model::Bounding::Compound>)
 		{
-			auto childVertices = GetBoundingVertices(child);
-			result.insert(result.end(), childVertices.begin(), childVertices.end());
+			for (const auto& item : boundingItem.items)
+			{
+				auto childVertices = GetBoundingVertices(item);
+				result.insert(result.end(), childVertices.begin(), childVertices.end());
+			}
 		}
-	}
-	if (bounding.type == model::Bounding::eType::Box)
-	{
-		auto& box = bounding.GetBox();
-		auto min = box.min;
-		auto max = box.max;
-		std::array<CVector3f, 24> vertices = {
-			//left
-			min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },
-			{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] },
-			//back
-			min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },
-			{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] },
-			//right
-			CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,
-			{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] },
-			//front
-			CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
-			{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
-		};
-		for (auto& vec : vertices)
+		else if constexpr (std::is_same_v<T, model::Bounding::Box>)
 		{
-			result.push_back(vec.x);
-			result.push_back(vec.y);
-			result.push_back(vec.z);
+			auto min = boundingItem.min;
+			auto max = boundingItem.max;
+			std::array<CVector3f, 24> vertices = {
+				//left
+				min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },
+				{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] },
+				//back
+				min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },
+				{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] },
+				//right
+				CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,
+				{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] },
+				//front
+				CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
+				{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
+			};
+			for (auto& vec : vertices)
+			{
+				result.push_back(vec.x);
+				result.push_back(vec.y);
+				result.push_back(vec.z);
+			}
 		}
-	}
-	return result;
+		else
+		{
+			static_assert(std::always_false<T>::value, "unknown bounding type");
+		}
+		return result;
+	}, bounding.data);
 }
 
 void View::RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewport &currentViewport, IViewHelper& renderer)

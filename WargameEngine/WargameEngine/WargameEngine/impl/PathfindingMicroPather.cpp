@@ -143,37 +143,43 @@ private:
 
 	std::vector<size_t> GetAffectedCells(const model::Bounding& bounding, const CVector3f& position, const CVector3f& rotation) const
 	{
-		std::vector<size_t> result;
-		if (bounding.type == model::Bounding::eType::Compound)
-		{
-			auto& compound = bounding.GetCompound().items;
-			for (auto& item : compound)
+		return std::visit([&](auto&& boundingItem)->std::vector<size_t> {
+			std::vector<size_t> result;
+			using T = std::decay_t<decltype(boundingItem)>;
+			if constexpr (std::is_same_v<T, model::Bounding::Compound>)
 			{
-				std::vector<size_t> subResult = GetAffectedCells(item, position, rotation);
-				result.insert(result.end(), subResult.begin(), subResult.end());
-			}
-		}
-		else if (bounding.type == model::Bounding::eType::Box)
-		{
-			//TODO: rotate bbox
-			auto& box = bounding.GetBox();
-			const float left = box.min[0] + position.x;
-			const float right = box.max[0] + position.x;
-			const float top = box.min[1] + position.y;
-			const float bottom = box.max[1] + position.y;
-			const size_t ileft = static_cast<size_t>(round((left + m_width / 2) * m_horizontalResolution / m_width));
-			const size_t iright = static_cast<size_t>(round((right + m_width / 2) * m_horizontalResolution / m_width));
-			const size_t itop = static_cast<size_t>(round((top + m_height / 2) * m_verticalResolution / m_height));
-			const size_t ibottom = static_cast<size_t>(round((bottom + m_height / 2) * m_verticalResolution / m_height));
-			for (size_t i = ileft; i <= iright; ++i)
-			{
-				for (size_t j = itop; j <= ibottom; ++j)
+				auto& items = boundingItem.items;
+				for (size_t i = 0; i < items.size(); ++i)
 				{
-					result.push_back(j * m_horizontalResolution + i);
+					std::vector<size_t> subResult = GetAffectedCells(items[i], position, rotation);
+					result.insert(result.end(), subResult.begin(), subResult.end());
 				}
 			}
-		}
-		return result;
+			else if constexpr(std::is_same_v<T, model::Bounding::Box>)
+			{
+				//TODO: rotate bbox
+				const float left = boundingItem.min[0] + position.x;
+				const float right = boundingItem.max[0] + position.x;
+				const float top = boundingItem.min[1] + position.y;
+				const float bottom = boundingItem.max[1] + position.y;
+				const size_t ileft = static_cast<size_t>(round((left + m_width / 2) * m_horizontalResolution / m_width));
+				const size_t iright = static_cast<size_t>(round((right + m_width / 2) * m_horizontalResolution / m_width));
+				const size_t itop = static_cast<size_t>(round((top + m_height / 2) * m_verticalResolution / m_height));
+				const size_t ibottom = static_cast<size_t>(round((bottom + m_height / 2) * m_verticalResolution / m_height));
+				for (size_t i = ileft; i <= iright; ++i)
+				{
+					for (size_t j = itop; j <= ibottom; ++j)
+					{
+						result.push_back(j * m_horizontalResolution + i);
+					}
+				}
+			}
+			else
+			{
+				static_assert(std::false_type::value, "unknown bounding type");
+			}
+			return result;
+		}, bounding.data);
 	}
 
 	void* PositionToIndex(const CVector3f& position) const

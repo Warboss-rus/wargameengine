@@ -46,7 +46,7 @@ void BoundingBoxManager::LoadBoundingFromFile(const Path& path)
 			CVector3f min, max;
 			iFile >> min.x >> min.y >> min.z >> max.x >> max.y >> max.z;
 			Bounding::Box box{ min, max };
-			compound.items.push_back(Bounding(box));
+			compound.items.push_back(Bounding{ box });
 		}
 		if (line == "scale")
 		{
@@ -66,7 +66,7 @@ void BoundingBoxManager::LoadBoundingFromFile(const Path& path)
 		}
 	}
 	iFile.close();
-	Bounding bounding = compound.items.size() == 1 ? compound.items[0] : Bounding(compound);
+	Bounding bounding = compound.items.size() == 1 ? compound.items[0] : Bounding{ compound };
 	bounding.scale = scale;
 	m_boundings.emplace(std::make_pair(path, ModelInfo{ bounding, scale, rotation }));
 }

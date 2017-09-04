@@ -29,3 +29,4 @@ Thumbs.db
 .workspace
 /WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/.gradle
 /WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/build/intermediates/dex-cache/cache.xml
+/WargameEngine/WargameEngine/WargameEngineMobile/WargameEngineMobileGoogleVR/app/src/main/jniLibs
