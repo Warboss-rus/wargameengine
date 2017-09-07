@@ -372,10 +372,9 @@ void CScriptHandlerLua::RegisterConstant(const std::string& name, FunctionArgume
 
 void CScriptHandlerLua::RegisterFunction(const std::string& name, FunctionHandler const& handler)
 {
-	m_functions.emplace(name, handler);
-	lua_pushlightuserdata(m_lua_state, this); //Stack: userdata
-	lua_pushstring(m_lua_state, name.c_str()); //Stack: userdata, string
-	lua_pushcclosure(m_lua_state, &FunctionCallee, 2); //Stack: CFunction
+	auto ptr = m_functions.emplace(name, std::make_unique<FunctionHandler>(handler)).first->second.get();
+	lua_pushlightuserdata(m_lua_state, ptr); //Stack: userdata
+	lua_pushcclosure(m_lua_state, &FunctionCallee, 1); //Stack: CFunction
 	lua_setglobal(m_lua_state, name.c_str()); //Stack:
 }
 
@@ -387,15 +386,13 @@ void CScriptHandlerLua::RegisterMethod(const std::string& className, const std::
 		RegisterClass(classNameStr);
 	}
 	auto& cl = m_classes[classNameStr];
-	cl.methods.emplace(methodName, handler);
+	auto ptr = cl.methods.emplace(methodName, std::make_unique<MethodHandler>(handler)).first->second.get();
 
 	lua_getglobal(m_lua_state, classNameStr.c_str()); //Stack: metatable
 	int index = lua_gettop(m_lua_state);
 	lua_pushstring(m_lua_state, methodName.c_str()); //Stack: metatable, string
-	lua_pushlightuserdata(m_lua_state, this); //Stack: metatable, string, userdata
-	lua_pushstring(m_lua_state, classNameStr.c_str()); //Stack: metatable, string, userdata, string
-	lua_pushstring(m_lua_state, methodName.c_str()); //Stack: metatable, string, userdata, string, string
-	lua_pushcclosure(m_lua_state, &MethodCallee, 3); //Stack: metatable, string, CFunction
+	lua_pushlightuserdata(m_lua_state, ptr); //Stack: metatable, string, userdata
+	lua_pushcclosure(m_lua_state, &MethodCallee, 1); //Stack: metatable, string, CFunction
 	lua_rawset(m_lua_state, index); //Stack: metatable
 	lua_pop(m_lua_state, 1);
 }
@@ -423,21 +420,15 @@ void CScriptHandlerLua::RegisterProperty(const std::string& className, const std
 
 int CScriptHandlerLua::FunctionCallee(lua_State* L)
 {
-	auto ptr = static_cast<CScriptHandlerLua*>(lua_touserdata(L, lua_upvalueindex(1)));
+	auto ptr = static_cast<FunctionHandler*>(lua_touserdata(L, lua_upvalueindex(1)));
 	if (!ptr)
 	{
-		return luaL_error(L, "Cannot get handler instance. Stack is probably corrupted.");
+		return luaL_error(L, "Cannot get function pointer. Stack is probably corrupted.");
 	}
-	std::string funcName = lua_tostring(L, lua_upvalueindex(2));
 	CLuaArguments args(L);
-	auto func = ptr->m_functions.find(funcName);
-	if (func == ptr->m_functions.end() || !func->second)
-	{
-		return luaL_error(L, ("Handler for function " + funcName + " is not found").c_str());
-	}
 	try
 	{
-		return PushReturnValue(L, func->second(args));
+		return PushReturnValue(L, (*ptr)(args));
 	}
 	catch (std::exception const& e)
 	{
@@ -447,29 +438,20 @@ int CScriptHandlerLua::FunctionCallee(lua_State* L)
 
 int CScriptHandlerLua::MethodCallee(lua_State* L)
 {
-	void* instance;
-	sLuaClass* cl;
-	int result = GetClassAndInstance(L, &instance, &cl);
-	if (result)
-		return result;
-
-	std::string methodName = lua_tostring(L, lua_upvalueindex(3));
-	auto method = cl->methods.find(methodName);
-	if (method != cl->methods.end() && method->second)
+	void* instance = GetUserData(L, 1);
+	auto ptr = static_cast<MethodHandler*>(lua_touserdata(L, lua_upvalueindex(1)));
+	if (!ptr)
 	{
-		try
-		{
-			CLuaArguments args(L, 1);
-			return PushReturnValue(L, method->second(instance, args));
-		}
-		catch (std::exception const& e)
-		{
-			return luaL_error(L, e.what());
-		}
+		return luaL_error(L, "Cannot get method pointer. Stack is probably corrupted.");
 	}
-	else
+	try
 	{
-		return luaL_error(L, ("Cannot find method " + methodName + " of class " + lua_tostring(L, lua_upvalueindex(2))).c_str());
+		CLuaArguments args(L, 1);
+		return PushReturnValue(L, (*ptr)(instance, args));
+	}
+	catch (std::exception const& e)
+	{
+		return luaL_error(L, e.what());
 	}
 }
 

@@ -34,10 +34,10 @@ private:
 	void RegisterClass(std::string const& className);
 
 	lua_State* m_lua_state;
-	std::map<std::string, FunctionHandler> m_functions;
+	std::map<std::string, std::unique_ptr<FunctionHandler>> m_functions;
 	struct sLuaClass
 	{
-		std::map<std::string, MethodHandler> methods;
+		std::map<std::string, std::unique_ptr<MethodHandler>> methods;
 		std::map<std::string, SetterHandler> setters;
 		std::map<std::string, GetterHandler> getters;
 	};
