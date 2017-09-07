@@ -1,5 +1,5 @@
 #include "UIScrollBar.h"
-#include "../view/IRenderer.h"
+#include "IUIRenderer.h"
 
 namespace wargameEngine
 {
@@ -25,7 +25,7 @@ void UIScrollBar::Update(int size, int contentSize, int width, int step)
 	m_step = step;
 }
 
-void UIScrollBar::Draw(view::IRenderer& renderer) const
+void UIScrollBar::Draw(IUIRenderer& renderer) const
 {
 	if (m_size >= m_contentSize)
 		return;
@@ -36,22 +36,12 @@ void UIScrollBar::Draw(view::IRenderer& renderer) const
 	int intPos = static_cast<int>(m_position);
 	int scrollWidth = static_cast<int>(theme.width * m_scale);
 	int buttonSize = scrollBegin;
-	renderer.UnbindTexture();
-	renderer.SetColor(theme.backgroundColor);
-	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip, { CVector2i(m_width - scrollWidth, scrollBegin), { m_width, scrollBegin }, { m_width - scrollWidth, scrollEnd }, { m_width, scrollEnd } }, {});
-	renderer.SetColor(theme.barColor);
-	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip, { CVector2i(m_width - scrollWidth, scrollBegin + intPos), { m_width, scrollBegin + intPos }, { m_width - scrollWidth, scrollBegin + intPos + scrollSize }, { m_width, scrollBegin + intPos + scrollSize } }, {});
-	renderer.SetColor(0, 0, 0);
-	renderer.SetTexture(m_theme->texture, true);
+	renderer.DrawRect({ m_width - scrollWidth, scrollBegin, m_width, scrollEnd }, theme.backgroundColor);
+	renderer.DrawRect({ m_width - scrollWidth, scrollBegin + intPos, m_width, scrollBegin + intPos + scrollSize }, theme.barColor);
 	float* themeTexCoords = (m_upButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
-	std::vector<CVector2f> texCoords = { CVector2f(themeTexCoords), { themeTexCoords[2], themeTexCoords[1] }, { themeTexCoords[0], themeTexCoords[3] }, { themeTexCoords[2], themeTexCoords[3] } };
-	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip,
-		{ CVector2i(m_width - scrollWidth, 0), { m_width, 0 }, { m_width - scrollWidth, scrollBegin }, { m_width, scrollBegin } }, texCoords);
-
+	renderer.DrawTexturedRect({ m_width - scrollWidth, 0, m_width, scrollBegin }, themeTexCoords, m_theme->texture);
 	themeTexCoords = (m_downButtonPressed) ? theme.pressedTexCoord : theme.texCoord;
-	texCoords = { CVector2f(themeTexCoords), { themeTexCoords[2], themeTexCoords[1] }, { themeTexCoords[0], themeTexCoords[3] }, { themeTexCoords[2], themeTexCoords[3] } };
-	renderer.RenderArrays(view::IRenderer::RenderMode::TriangleStrip,
-		{ CVector2i(m_width - scrollWidth, m_size), { m_width, m_size }, { m_width - scrollWidth, m_size - buttonSize }, { m_width, m_size - buttonSize } }, texCoords);
+	renderer.DrawTexturedRect({ m_width - scrollWidth, m_size, m_width, m_size - buttonSize }, themeTexCoords, m_theme->texture);
 }
 
 bool UIScrollBar::LeftMouseButtonDown(int x, int y)

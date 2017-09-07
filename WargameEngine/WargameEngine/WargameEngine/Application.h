@@ -13,6 +13,7 @@ class IScriptHandler;
 class INetSocket;
 class IPhysicsEngine;
 class IPathfinding;
+class ITextRasterizer;
 
 namespace model
 {
@@ -27,7 +28,6 @@ namespace view
 class View;
 class IWindow;
 class ISoundPlayer;
-class ITextWriter;
 class IImageReader;
 class IModelReader;
 }
@@ -36,7 +36,7 @@ struct Context
 {
 	std::unique_ptr<view::IWindow> window;
 	std::unique_ptr<view::ISoundPlayer> soundPlayer;
-	std::unique_ptr<view::ITextWriter> textWriter;
+	std::unique_ptr<ITextRasterizer> textRasterizer;
 	std::unique_ptr<IPhysicsEngine> physicsEngine;
 	std::unique_ptr<IScriptHandler> scriptHandler;
 	std::unique_ptr<IPathfinding> pathFinder;

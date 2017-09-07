@@ -188,7 +188,7 @@
     <ClInclude Include="..\WargameEngine\impl\ScriptHandlerLua.h" />
     <ClInclude Include="..\WargameEngine\impl\ShaderManagerOpenGL.h" />
     <ClInclude Include="..\WargameEngine\impl\SoundPlayerFMod.h" />
-    <ClInclude Include="..\WargameEngine\impl\TextWriter.h" />
+    <ClInclude Include="..\WargameEngine\impl\FreeTypeTextRasterizer.h" />
     <ClInclude Include="..\WargameEngine\IPhysicsEngine.h" />
     <ClInclude Include="..\WargameEngine\ITask.h" />
     <ClInclude Include="..\WargameEngine\LogWriter.h" />

@@ -1,14 +1,14 @@
-#include "UIElement.h"
+#include "UICachedElement.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-class UICheckBox : public UIElement
+class UICheckBox : public UICachedElement
 {
 public:
-	UICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement* parent, view::ITextWriter& textWriter);
-	void Draw(view::IRenderer& renderer) const override;
+	UICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement* parent);
+	void DoPaint(IUIRenderer& renderer) const override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	bool LeftMouseButtonDown(int x, int y) override;
 	void SetState(bool state) override;

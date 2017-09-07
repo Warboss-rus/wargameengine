@@ -38,9 +38,6 @@
     <ClCompile Include="impl\SoundPlayerFMod.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="impl\TextWriter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="impl\micropather.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="impl\Plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="impl\FreeTypeTextRasterizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -76,9 +76,6 @@
     <ClInclude Include="impl\SoundPlayerFMod.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="impl\TextWriter.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="impl\micropather.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -86,6 +83,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="impl\Plugin.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\FreeTypeTextRasterizer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,67 +1,41 @@
 #include "UIEdit.h"
-#include "../view/IRenderer.h"
-#include "../view/ITextWriter.h"
-#include "../view/KeyDefines.h"
-#include "UIText.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-UIEdit::UIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent, view::ITextWriter& textWriter)
-	: UIElement(x, y, height, width, parent, textWriter)
+UIEdit::UIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent)
+	: UICachedElement(x, y, height, width, parent)
 	, m_text(text)
 	, m_pos(0)
 	, m_beginSelection(0)
 {
 }
 
-void UIEdit::Draw(view::IRenderer& renderer) const
+void UIEdit::DoPaint(IUIRenderer& renderer) const
 {
-	if (!m_visible)
-		return;
-	renderer.PushMatrix();
-	renderer.Translate(GetX(), GetY(), 0);
-	if (!m_cache)
-	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
-	}
-	if (m_invalidated)
-	{
-		renderer.RenderToTexture([this, &renderer]() {
-			renderer.UnbindTexture();
-			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
-			renderer.SetColor(m_theme->textfieldColor);
-			auto& theme = m_theme->edit;
-			auto& textTheme = theme.text;
-			int borderSize = theme.borderSize;
-			renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
-			int fonty = (GetHeight() + textTheme.fontSize) / 2;
-			if (IsFocused(nullptr))
-			{
-				int cursorpos = borderSize + m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_pos));
-				renderer.SetColor(0, 0, 0);
-				renderer.RenderArrays(RenderMode::Lines, { CVector2i(cursorpos, fonty), { cursorpos, fonty - static_cast<int>(textTheme.fontSize) } }, {});
-			}
-			if (m_pos != m_beginSelection)
-			{
-				renderer.SetColor(theme.selectionColor);
-				int selectionBegin = m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_beginSelection));
-				int selectionEnd = m_textWriter.GetStringWidth(textTheme.font, textTheme.fontSize, m_text.substr(0, m_pos));
-				int fontHeight = m_textWriter.GetStringHeight(textTheme.font, textTheme.fontSize, m_text);
-				renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize + selectionBegin, fonty), { borderSize + selectionBegin, fonty - fontHeight }, { borderSize + selectionEnd, fonty }, { borderSize + selectionEnd, fonty - fontHeight } }, {});
-			}
-			PrintText(renderer, m_textWriter, borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize, m_text, textTheme, m_scale);
-		}, *m_cache, GetWidth(), GetHeight());
-	}
-	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TriangleStrip,
-		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
-		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
+	renderer.DrawRect({ 0, 0, GetWidth(), GetHeight() }, m_theme->defaultColor);
 
-	UIElement::Draw(renderer);
-	renderer.PopMatrix();
+	auto& theme = m_theme->edit;
+	auto& textTheme = theme.text;
+	int borderSize = theme.borderSize;
+	renderer.DrawRect({ borderSize, borderSize, GetWidth() - borderSize, GetHeight() - borderSize }, m_theme->textfieldColor);
+
+	int fonty = (GetHeight() + textTheme.fontSize) / 2;
+	if (IsFocused(nullptr))
+	{
+		int cursorpos = borderSize + renderer.GetStringWidth(m_text.substr(0, m_pos), textTheme.font, textTheme.fontSize);
+		constexpr float color[] = { 0, 0, 0 };
+		renderer.DrawLine({ cursorpos, fonty }, { cursorpos, fonty - static_cast<int>(textTheme.fontSize) }, color);
+	}
+	if (m_pos != m_beginSelection)
+	{
+		int selectionBegin = renderer.GetStringWidth(m_text.substr(0, m_beginSelection), textTheme.font, textTheme.fontSize);
+		int selectionEnd = renderer.GetStringWidth(m_text.substr(0, m_pos), textTheme.font, textTheme.fontSize);
+		int fontHeight = renderer.GetStringHeight(m_text, textTheme.font, textTheme.fontSize);
+		renderer.DrawRect({ borderSize + selectionBegin, fonty - fontHeight, borderSize + selectionEnd, fonty }, theme.selectionColor);
+	}
+	renderer.DrawText({ borderSize, borderSize, m_width - 2 * borderSize, m_height - 2 * borderSize }, m_text, textTheme, m_scale);
 }
 
 bool UIEdit::OnCharacterInput(wchar_t key)
@@ -202,7 +176,7 @@ void UIEdit::SetCursorPos(int x)
 {
 	int pos = x - GetX();
 	auto& text = m_theme->edit.text;
-	if (pos > m_textWriter.GetStringWidth(text.font, text.fontSize, m_text))
+	if (pos > 0)//m_textWriter.GetStringWidth(text.font, text.fontSize, m_text))
 	{
 		m_pos = m_text.size();
 		return;
@@ -212,7 +186,7 @@ void UIEdit::SetCursorPos(int x)
 	while (begin < end - 1)
 	{
 		size_t divider = (end + begin) / 2;
-		if (m_textWriter.GetStringWidth(text.font, text.fontSize, m_text.substr(0, divider)) > pos)
+		if (/*m_textWriter.GetStringWidth(text.font, text.fontSize, m_text.substr(0, divider))*/0 > pos)
 		{
 			end = divider;
 		}

@@ -1,13 +1,11 @@
 #include "UIComboBox.h"
-#include "../view/IRenderer.h"
-#include "UIText.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-UIComboBox::UIComboBox(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter)
-	: UIElement(x, y, height, width, parent, textWriter)
+UIComboBox::UIComboBox(int x, int y, int height, int width, IUIElement* parent)
+	: UICachedElement(x, y, height, width, parent)
 	, m_selected(-1)
 	, m_expanded(false)
 	, m_pressed(false)
@@ -15,78 +13,41 @@ UIComboBox::UIComboBox(int x, int y, int height, int width, IUIElement* parent, 
 {
 }
 
-void UIComboBox::Draw(view::IRenderer& renderer) const
+void UIComboBox::DoPaint(IUIRenderer& renderer) const
 {
-	if (!m_visible)
-		return;
-	renderer.PushMatrix();
-	renderer.Translate(GetX(), GetY(), 0);
 	int realHeight = GetHeight();
 	if (m_expanded)
 		realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
-	if (!m_cache)
+	
+	auto& theme = m_theme->combobox;
+	int elementSize = static_cast<int>(theme.elementSize * m_scale);
+	renderer.DrawRect({ 0, 0, GetWidth(), GetHeight() }, m_theme->defaultColor);
+	int borderSize = static_cast<int>(theme.borderSize * m_scale);
+	renderer.DrawRect({ borderSize, borderSize, GetWidth() - borderSize, GetHeight() - borderSize }, m_theme->textfieldColor);
+
+	if (m_selected >= 0)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), realHeight, CachedTextureType::RenderTarget);
-	}
-	if (m_invalidated)
-	{
-		renderer.RenderToTexture([this, &renderer]() {
-			renderer.UnbindTexture();
-			auto& theme = m_theme->combobox;
-			int elementSize = static_cast<int>(theme.elementSize * m_scale);
-			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i{ 0, 0 }, { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
-
-			renderer.SetColor(m_theme->textfieldColor);
-			int borderSize = static_cast<int>(theme.borderSize * m_scale);
-			renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
-
-			auto& textTheme = theme.text;
-			renderer.SetColor(textTheme.color);
-			if (m_selected >= 0)
-			{
-				PrintText(renderer, m_textWriter, borderSize, borderSize, GetWidth(), GetHeight(), m_items[m_selected], textTheme, m_scale);
-			}
-
-			renderer.SetColor(0, 0, 0);
-			renderer.SetTexture(m_theme->texture, true);
-			float* texCoords = m_expanded ? theme.expandedTexCoord : theme.texCoord;
-			int firstX = GetWidth() - static_cast<int>(GetHeight() * theme.buttonWidthCoeff);
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i(firstX, 0), { firstX, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } },
-				{ CVector2f(texCoords), { texCoords[0], texCoords[3] }, { texCoords[2], texCoords[1] }, { texCoords[2], texCoords[3] } });
-
-			if (m_expanded)
-			{
-				renderer.UnbindTexture();
-				renderer.SetColor(m_theme->textfieldColor);
-				int totalHeight = GetHeight() + elementSize * static_cast<int>(m_items.size());
-				renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(0, GetHeight()), { 0, totalHeight }, { GetWidth(), GetHeight() }, { GetWidth(), totalHeight } }, {});
-
-				for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
-				{
-					if (GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight)
-						break;
-					PrintText(renderer, m_textWriter, borderSize, GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition(), GetWidth(), elementSize, m_items[i], textTheme, m_scale);
-				}
-				renderer.SetColor(0, 0, 0);
-
-				renderer.PushMatrix();
-				renderer.Translate(0, GetHeight(), 0);
-				m_scrollbar.Draw(renderer);
-				renderer.PopMatrix();
-			}
-		}, *m_cache, GetWidth(), realHeight);
+		renderer.DrawText({ borderSize, borderSize, GetWidth() - borderSize, GetHeight() - borderSize }, m_items[m_selected], theme.text, m_scale);
 	}
 
-	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TriangleStrip,
-		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, realHeight }, { GetWidth(), realHeight } },
-		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
+	const float* texCoords = m_expanded ? theme.expandedTexCoord : theme.texCoord;
+	int firstX = GetWidth() - static_cast<int>(GetHeight() * theme.buttonWidthCoeff);
+	renderer.DrawTexturedRect({ firstX, 0, GetWidth(), GetHeight() }, texCoords, m_theme->texture);
 
-	UIElement::Draw(renderer);
-	renderer.PopMatrix();
+	if (m_expanded)
+	{
+		renderer.Translate(0, GetHeight());
+		renderer.DrawRect({ 0, 0, GetWidth(), elementSize * static_cast<int>(m_items.size()) }, m_theme->textfieldColor);
+
+		for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
+		{
+			if (GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight)
+				break;
+			renderer.DrawText({ borderSize, elementSize * static_cast<int>(i) - m_scrollbar.GetPosition(), GetWidth() - borderSize, elementSize * static_cast<int>(i + 1) - m_scrollbar.GetPosition() }, m_items[i], theme.text, m_scale);
+		}
+		m_scrollbar.Draw(renderer);
+		renderer.Restore();
+	}
 }
 
 bool UIComboBox::LeftMouseButtonDown(int x, int y)

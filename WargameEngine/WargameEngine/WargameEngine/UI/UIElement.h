@@ -1,23 +1,17 @@
 #pragma once
 #include "IUI.h"
 #include <unordered_map>
-#include "..\view\IRenderer.h"
+#include "IUIRenderer.h"
 
 namespace wargameEngine
 {
-namespace view
-{
-class ITextWriter;
-}
-
 namespace ui
 {
 class UIElement : public IUIElement
 {
 public:
-	UIElement(view::ITextWriter& textWriter);
-	~UIElement();
-	void Draw(view::IRenderer& renderer) const override;
+	UIElement() = default;
+	void Draw(IUIRenderer& renderer) const override;
 	IUIElement* GetChildByName(std::string const& name) override;
 	void DeleteChild(std::string const& name) override;
 	void DeleteChild(IUIElement* element) override;
@@ -49,7 +43,7 @@ public:
 	void Resize(int windowHeight, int windowWidth) override;
 	void SetOnChangeCallback(std::function<void()> const& onChange) override;
 	void SetOnClickCallback(std::function<void()> const& onClick) override;
-	void SetBackgroundImage(std::string const& image) override;
+	void SetBackgroundImage(Path const& image) override;
 	void SetState(bool state) override;
 	bool GetState() const override;
 	void Invalidate(bool resetTexture = false) const override;
@@ -68,18 +62,17 @@ public:
 	IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) override;
 
 protected:
-	using CachedTextureType = view::IRenderer::CachedTextureType;
-	using RenderMode = view::IRenderer::RenderMode;
+	using CachedTexture = IUIRenderer::CachedTexture;
 
-	UIElement(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter);
+	UIElement(int x, int y, int height, int width, IUIElement* parent);
 	void AddChild(std::string const& name, std::shared_ptr<IUIElement> const& element);
 	virtual bool PointIsOnElement(int x, int y) const;
 
 	std::unordered_map<std::string, std::shared_ptr<IUIElement>> m_children;
-	int m_x;
-	int m_y;
-	int m_height;
-	int m_width;
+	int m_x = 0;
+	int m_y = 0;
+	int m_height = 640;
+	int m_width = 640;
 	int m_windowHeight = 640;
 	int m_windowWidth = 640;
 	int m_uiWidth = 600;
@@ -88,12 +81,11 @@ protected:
 	bool m_visible = true;
 	mutable bool m_invalidated = true;
 	mutable bool m_childrenInvalidated = true;
-	IUIElement* m_parent;
+	IUIElement* m_parent = nullptr;
 	IUIElement* m_focused = nullptr;
 	std::shared_ptr<UITheme> m_theme;
-	view::ITextWriter& m_textWriter;
-	mutable std::unique_ptr<view::ICachedTexture> m_cache;
-	mutable std::unique_ptr<view::ICachedTexture> m_childrenCache;
+	mutable CachedTexture m_cache;
+	mutable CachedTexture m_childrenCache;
 };
 }
 }

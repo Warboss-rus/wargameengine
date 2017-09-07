@@ -1,15 +1,15 @@
-#include "UIElement.h"
+#include "UICachedElement.h"
 #include <vector>
 
 namespace wargameEngine
 {
 namespace ui
 {
-class UIRadioGroup : public UIElement
+class UIRadioGroup : public UICachedElement
 {
 public:
-	UIRadioGroup(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter);
-	void Draw(view::IRenderer& renderer) const override;
+	UIRadioGroup(int x, int y, int height, int width, IUIElement* parent);
+	void DoPaint(IUIRenderer& renderer) const override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	void AddItem(std::wstring const& str) override;
 	void DeleteItem(size_t index) override;

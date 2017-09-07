@@ -280,7 +280,7 @@
     <ClCompile Include="impl\InputGLFW.cpp" />
     <ClCompile Include="impl\OpenGLRenderer.cpp" />
     <ClCompile Include="impl\ShaderManagerOpenGL.cpp" />
-    <ClCompile Include="impl\TextWriter.cpp" />
+    <ClCompile Include="impl\FreeTypeTextRasterizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\gl.h" />
@@ -299,7 +299,7 @@
     <ClInclude Include="impl\InputGLFW.h" />
     <ClInclude Include="impl\OpenGLRenderer.h" />
     <ClInclude Include="impl\ShaderManagerOpenGL.h" />
-    <ClInclude Include="impl\TextWriter.h" />
+    <ClInclude Include="impl\FreeTypeTextRasterizer.h" />
     <ClInclude Include="impl\VulkanHelpers.h" />
     <ClInclude Include="impl\VulkanMemory.h" />
     <ClInclude Include="impl\VulkanPipelineManager.h" />

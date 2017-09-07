@@ -8,7 +8,7 @@
 #include "view/IImageReader.h"
 #include "view/IModelReader.h"
 #include "view/ISoundPlayer.h"
-#include "view/ITextWriter.h"
+#include "ITextRasterizer.h"
 #include "view/View.h"
 
 namespace wargameEngine
@@ -18,7 +18,7 @@ Application::Application(Context&& context)
 	, m_asyncFileProvider(m_threadPool)
 	, m_boundingBoxManager(m_asyncFileProvider)
 {
-	m_view = std::make_unique<view::View>(*m_context.window, *m_context.soundPlayer, *m_context.textWriter, m_threadPool, m_asyncFileProvider,
+	m_view = std::make_unique<view::View>(*m_context.window, *m_context.soundPlayer, *m_context.textRasterizer, m_threadPool, m_asyncFileProvider,
 		m_context.imageReaders, m_context.modelReaders, m_boundingBoxManager);
 }
 

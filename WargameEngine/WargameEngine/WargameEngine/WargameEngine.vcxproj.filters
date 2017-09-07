@@ -74,9 +74,6 @@
     <ClCompile Include="UI\UIEdit.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
-    <ClCompile Include="UI\UIText.cpp">
-      <Filter>Source Files\UI</Filter>
-    </ClCompile>
     <ClCompile Include="UI\UITheme.cpp">
       <Filter>Source Files\UI</Filter>
     </ClCompile>
@@ -233,6 +230,15 @@
     <ClCompile Include="view\PerfomanceMeter.cpp">
       <Filter>Source Files\view</Filter>
     </ClCompile>
+    <ClCompile Include="UI\UICachedElement.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="view\UIRenderer.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="view\TextWriter.cpp">
+      <Filter>Source Files\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rapidxml\rapidxml.hpp">
@@ -335,9 +341,6 @@
       <Filter>Source Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UIStaticText.h">
-      <Filter>Source Files\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\UIText.h">
       <Filter>Source Files\UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\UITheme.h">
@@ -576,6 +579,21 @@
     </ClInclude>
     <ClInclude Include="model\Bounding.h">
       <Filter>Source Files\model</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\IUIRenderer.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\UICachedElement.h">
+      <Filter>Source Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="view\UIRenderer.h">
+      <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="ITextRasterizer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view\TextWriter.h">
+      <Filter>Source Files\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

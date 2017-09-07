@@ -1,51 +1,27 @@
 #include "UIRadioGroup.h"
-#include "../view/IRenderer.h"
-#include "UIText.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-UIRadioGroup::UIRadioGroup(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter)
-	: UIElement(x, y, height, width, parent, textWriter)
+UIRadioGroup::UIRadioGroup(int x, int y, int height, int width, IUIElement* parent)
+	: UICachedElement(x, y, height, width, parent)
 	, m_selected(0)
 {
 }
 
-void UIRadioGroup::Draw(view::IRenderer& renderer) const
+void UIRadioGroup::DoPaint(IUIRenderer& renderer) const
 {
-	if (!m_visible)
-		return;
-	renderer.PushMatrix();
-	renderer.Translate(GetX(), GetY(), 0);
-	if (!m_cache)
+	for (size_t i = 0; i < m_items.size(); ++i)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
+		auto& theme = m_theme->radiogroup;
+		int buttonSize = static_cast<int>(theme.buttonSize);
+		int y = static_cast<int>(theme.elementSize * i + (theme.elementSize - buttonSize) / 2);
+		const float* texCoord = (i == m_selected) ? theme.selectedTexCoord : theme.texCoord;
+		renderer.DrawTexturedRect({ 0, y, buttonSize, y + buttonSize }, texCoord, m_theme->texture);
+		int intSize = static_cast<int>(theme.elementSize);
+		renderer.DrawText({ static_cast<int>(buttonSize) + 1, intSize * static_cast<int>(i), GetWidth(), intSize * static_cast<int>(i + 1) }, m_items[i], m_theme->text, m_scale);
 	}
-	if (m_invalidated)
-	{
-		renderer.RenderToTexture([this, &renderer]() {
-			for (size_t i = 0; i < m_items.size(); ++i)
-			{
-				renderer.SetTexture(m_theme->texture, true);
-				auto& theme = m_theme->radiogroup;
-				int buttonSize = static_cast<int>(theme.buttonSize);
-				int y = static_cast<int>(theme.elementSize * i + (theme.elementSize - buttonSize) / 2);
-				float* texCoord = (i == m_selected) ? theme.selectedTexCoord : theme.texCoord;
-				renderer.RenderArrays(RenderMode::TriangleStrip,
-					{ CVector2i(0, y), { 0, y + buttonSize }, { buttonSize, y }, { buttonSize, y + buttonSize } },
-					{ CVector2f(texCoord), { texCoord[0], texCoord[3] }, { texCoord[2], texCoord[1] }, { texCoord[2], texCoord[3] } });
-				int intSize = static_cast<int>(theme.elementSize);
-				PrintText(renderer, m_textWriter, static_cast<int>(buttonSize) + 1, intSize * static_cast<int>(i), GetWidth(), intSize, m_items[i], m_theme->text, m_scale);
-			}
-		}, *m_cache, GetWidth(), GetHeight());
-	}
-	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TriangleStrip,
-		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
-		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
-	UIElement::Draw(renderer);
-	renderer.PopMatrix();
 }
 
 bool UIRadioGroup::LeftMouseButtonUp(int x, int y)

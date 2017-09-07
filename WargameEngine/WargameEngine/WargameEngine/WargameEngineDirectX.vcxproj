@@ -261,7 +261,7 @@
     <ClCompile Include="impl\GameWindowDirectX.cpp" />
     <ClCompile Include="impl\InputDirectX.cpp" />
     <ClCompile Include="impl\ShaderManagerDirectX.cpp" />
-    <ClCompile Include="impl\TextWriter.cpp" />
+    <ClCompile Include="impl\FreeTypeTextRasterizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\micropather.h" />
@@ -275,7 +275,7 @@
     <ClInclude Include="impl\GameWindowDirectX.h" />
     <ClInclude Include="impl\InputDirectX.h" />
     <ClInclude Include="impl\ShaderManagerDirectX.h" />
-    <ClInclude Include="impl\TextWriter.h" />
+    <ClInclude Include="impl\FreeTypeTextRasterizer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

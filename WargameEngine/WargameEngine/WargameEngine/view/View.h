@@ -10,11 +10,13 @@
 #include <memory>
 #include <string>
 #include "DrawableMesh.h"
+#include "TextWriter.h"
 
 namespace wargameEngine
 {
 class ThreadPool;
 class AsyncFileProvider;
+class ITextRasterizer;
 
 namespace model
 {
@@ -34,7 +36,7 @@ class ISoundPlayer;
 class View
 {
 public:
-	View(IWindow& m_window, ISoundPlayer& m_soundPlayer, ITextWriter& m_textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
+	View(IWindow& window, ISoundPlayer& soundPlayer, ITextRasterizer& textRasterizer, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
 		std::vector<std::unique_ptr<IImageReader>>& imageReaders, std::vector<std::unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager);
 
 	void Init(model::Model& model, controller::Controller& controller);
@@ -94,7 +96,7 @@ private:
 	IViewHelper& m_viewHelper;
 	IInput& m_input;
 	ISoundPlayer& m_soundPlayer;
-	ITextWriter& m_textWriter;
+	TextWriter m_textWriter;
 	ThreadPool& m_threadPool;
 	model::IBoundingBoxManager & m_boundingManager;
 

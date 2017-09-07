@@ -159,7 +159,7 @@
     <ClCompile Include="impl\InputGLUT.cpp" />
     <ClCompile Include="impl\OpenGLRenderer.cpp" />
     <ClCompile Include="impl\ShaderManagerOpenGL.cpp" />
-    <ClCompile Include="impl\TextWriter.cpp" />
+    <ClCompile Include="impl\FreeTypeTextRasterizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="impl\gl.h" />
@@ -175,7 +175,7 @@
     <ClInclude Include="impl\InputGLUT.h" />
     <ClInclude Include="impl\OpenGLRenderer.h" />
     <ClInclude Include="impl\ShaderManagerOpenGL.h" />
-    <ClInclude Include="impl\TextWriter.h" />
+    <ClInclude Include="impl\FreeTypeTextRasterizer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

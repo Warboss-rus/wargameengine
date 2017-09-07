@@ -578,9 +578,6 @@
     <ClInclude Include="..\WargameEngine\impl\SoundPlayerFMod.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
-    <ClInclude Include="..\WargameEngine\impl\TextWriter.h">
-      <Filter>Source Files\impl</Filter>
-    </ClInclude>
     <ClInclude Include="..\WargameEngine\impl\gl.h">
       <Filter>Source Files\impl</Filter>
     </ClInclude>
@@ -610,6 +607,9 @@
     </ClInclude>
     <ClInclude Include="..\WargameEngine\view\IWindow.h">
       <Filter>Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WargameEngine\impl\FreeTypeTextRasterizer.h">
+      <Filter>Source Files\impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

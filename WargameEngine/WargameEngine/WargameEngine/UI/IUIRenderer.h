@@ -1,0 +1,61 @@
+#pragma once
+#include "..\Typedefs.h"
+#include "UITheme.h"
+#include <functional>
+
+namespace wargameEngine
+{
+namespace ui
+{
+template<class T>
+struct RectT
+{
+	T left;
+	T top;
+	T right;
+	T bottom;
+
+	RectT(const T* data)
+		: left(data[0]), top(data[1]), right(data[2]), bottom(data[3])
+	{}
+	RectT(T left, T top, T right, T bottom)
+		: left(left), top(top), right(right), bottom(bottom)
+	{}
+};
+
+struct Point
+{
+	int x;
+	int y;
+};
+
+class ICachedTexture
+{
+public:
+	virtual ~ICachedTexture() = default;
+};
+
+using RectI = RectT<int>;
+using RectF = RectT<float>;
+
+class IUIRenderer
+{
+public:
+	using CachedTexture = std::unique_ptr<ICachedTexture>;
+
+	virtual ~IUIRenderer() = default;
+
+	virtual void Translate(int x, int y) = 0;
+	virtual void Restore() = 0;
+	virtual void DrawTexturedRect(const RectI& rect, const RectF& texCoords, const Path& texture) = 0;
+	virtual void DrawRect(const RectI& rect, const float* color) = 0;
+	virtual void DrawLine(Point a, Point b, const float* color) = 0;
+	virtual void DrawText(const RectI& rect, std::wstring const& str, UITheme::Text const& theme, float scale) = 0;
+	virtual CachedTexture CreateTexture(int width, int height) = 0;
+	virtual void RenderToTexture(CachedTexture& texture, const std::function<void()>& handler) = 0;
+	virtual void DrawCachedTexture(const CachedTexture& texture) = 0;
+	virtual int GetStringWidth(const std::wstring& text, const std::string& font, unsigned fontSize) const = 0;
+	virtual int GetStringHeight(const std::wstring& text, const std::string& font, unsigned fontSize) const = 0;
+};
+}
+}

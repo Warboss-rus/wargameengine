@@ -19,7 +19,7 @@
 #define WINDOW_CLASS CGameWindowGLUT
 #endif
 #include "impl/SoundPlayerFMod.h"
-#include "impl/TextWriter.h"
+#include "impl/FreeTypeTextRasterizer.h"
 #include "impl/ScriptHandlerLua.h"
 #include "impl/PhysicsEngineBullet.h"
 #include "impl/NetSocket.h"
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 	}
 	context.window = std::make_unique<WINDOW_CLASS>();
 	context.soundPlayer = std::make_unique<CSoundPlayerFMod>();
-	context.textWriter = std::make_unique<CTextWriter>();
+	context.textRasterizer = std::make_unique<FreeTypeTextRasterizer>();
 	context.physicsEngine = std::make_unique<CPhysicsEngineBullet>();
 	context.scriptHandler = std::make_unique<CScriptHandlerLua>();
 	context.pathFinder = std::make_unique<CPathfindingMicroPather>();

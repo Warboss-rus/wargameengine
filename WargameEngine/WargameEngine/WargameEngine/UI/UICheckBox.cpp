@@ -1,48 +1,24 @@
 #include "UICheckBox.h"
-#include "../view/IRenderer.h"
-#include "UIText.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-UICheckBox::UICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement* parent, view::ITextWriter& textWriter)
-	: UIElement(x, y, height, width, parent, textWriter)
+UICheckBox::UICheckBox(int x, int y, int height, int width, std::wstring const& text, bool initState, IUIElement* parent)
+	: UICachedElement(x, y, height, width, parent)
 	, m_text(text)
 	, m_state(initState)
 	, m_pressed(false)
 {
 }
 
-void UICheckBox::Draw(view::IRenderer& renderer) const
+void UICheckBox::DoPaint(IUIRenderer& renderer) const
 {
-	if (!m_visible)
-		return;
-	renderer.PushMatrix();
-	renderer.Translate(GetX(), GetY(), 0);
-	if (!m_cache)
-	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
-	}
-	if (m_invalidated)
-	{
-		renderer.RenderToTexture([this, &renderer]() {
-			renderer.SetTexture(m_theme->texture, true);
-			auto& theme = m_theme->checkbox;
-			float* texCoords = m_state ? theme.checkedTexCoord : theme.texCoord;
-			int size = static_cast<int>(GetHeight() * theme.checkboxSizeCoeff);
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i(0, 0), { 0, size }, { size, 0 }, { size, size } },
-				{ CVector2f(texCoords), { texCoords[0], texCoords[3] }, { texCoords[2], texCoords[1] }, { texCoords[2], texCoords[3] } });
-			PrintText(renderer, m_textWriter, static_cast<int>(size) + 1, 0, GetWidth(), GetHeight(), m_text, m_theme->text, m_scale);
-		}, *m_cache, GetWidth(), GetHeight());
-	}
-	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TriangleStrip,
-		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
-		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
-	UIElement::Draw(renderer);
-	renderer.PopMatrix();
+	auto& theme = m_theme->checkbox;
+	float* texCoords = m_state ? theme.checkedTexCoord : theme.texCoord;
+	int size = static_cast<int>(GetHeight() * theme.checkboxSizeCoeff);
+	renderer.DrawTexturedRect(RectI{ 0, 0, size, size }, texCoords, m_theme->texture);
+	renderer.DrawText(RectI{ static_cast<int>(size) + 1, 0, GetWidth(), GetHeight() }, m_text, m_theme->text, m_scale);
 }
 
 bool UICheckBox::LeftMouseButtonUp(int x, int y)

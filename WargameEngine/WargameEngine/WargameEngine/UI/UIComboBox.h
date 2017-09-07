@@ -1,4 +1,4 @@
-#include "UIElement.h"
+#include "UICachedElement.h"
 #include "UIScrollBar.h"
 #include <vector>
 
@@ -6,11 +6,11 @@ namespace wargameEngine
 {
 namespace ui
 {
-class UIComboBox : public UIElement
+class UIComboBox : public UICachedElement
 {
 public:
-	UIComboBox(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter);
-	void Draw(view::IRenderer& renderer) const override;
+	UIComboBox(int x, int y, int height, int width, IUIElement* parent);
+	void DoPaint(IUIRenderer& renderer) const override;
 	bool LeftMouseButtonDown(int x, int y) override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	void OnMouseMove(int x, int y) override;

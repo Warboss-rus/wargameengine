@@ -1,16 +1,16 @@
 #pragma once
-#include "UIElement.h"
+#include "UICachedElement.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-class CUIWindow : public UIElement
+class CUIWindow : public UICachedElement
 {
 public:
-	CUIWindow(int width, int height, std::wstring const& headerText, IUIElement* parent, view::ITextWriter& textWriter);
+	CUIWindow(int width, int height, std::wstring const& headerText, IUIElement* parent);
 
-	void Draw(view::IRenderer& renderer) const override;
+	void DoPaint(IUIRenderer& renderer) const override;
 	bool LeftMouseButtonDown(int x, int y) override;
 	bool LeftMouseButtonUp(int x, int y) override;
 	void OnMouseMove(int x, int y) override;

@@ -1,63 +1,36 @@
 #include "UIList.h"
-#include "../view/IRenderer.h"
-#include "UIText.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-UIList::UIList(int x, int y, int height, int width, IUIElement* parent, view::ITextWriter& textWriter)
-	: UIElement(x, y, height, width, parent, textWriter)
+UIList::UIList(int x, int y, int height, int width, IUIElement* parent)
+	: UICachedElement(x, y, height, width, parent)
 	, m_selected(0)
 	, m_scrollbar(m_theme)
 {
 }
 
-void UIList::Draw(view::IRenderer& renderer) const
+void UIList::DoPaint(IUIRenderer& renderer) const
 {
-	if (!m_visible)
-		return;
-	renderer.PushMatrix();
-	renderer.Translate(GetX(), GetY(), 0);
-	if (!m_cache)
+	renderer.DrawRect({ 0, 0, GetWidth(), GetHeight() }, m_theme->defaultColor);
+	auto& theme = m_theme->list;
+	int borderSize = static_cast<int>(theme.borderSize * m_scale);
+	int elementSize = static_cast<int>(theme.elementSize * m_scale);
+	renderer.DrawRect({ borderSize, borderSize, GetWidth() - borderSize, GetHeight() - borderSize }, m_theme->textfieldColor);
+	if (m_items.size() > 0)
 	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
+		int intSelected = static_cast<int>(m_selected);
+		renderer.DrawRect({ borderSize, borderSize + elementSize * intSelected, GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, theme.selectionColor);
 	}
-	if (m_invalidated)
+	for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 	{
-		renderer.RenderToTexture([this, &renderer]() {
-			renderer.UnbindTexture();
-			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i(0, 0), { 0, GetHeight() }, { GetWidth(), 0 }, { GetWidth(), GetHeight() } }, {});
-			renderer.SetColor(m_theme->textfieldColor);
-			auto& theme = m_theme->list;
-			int borderSize = static_cast<int>(theme.borderSize * m_scale);
-			int elementSize = static_cast<int>(theme.elementSize * m_scale);
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i(borderSize, borderSize), { borderSize, GetHeight() - borderSize }, { GetWidth() - borderSize, borderSize }, { GetWidth() - borderSize, GetHeight() - borderSize } }, {});
-			if (m_items.size() > 0)
-			{
-				renderer.SetColor(theme.selectionColor);
-				int intSelected = static_cast<int>(m_selected);
-				renderer.RenderArrays(RenderMode::TriangleStrip, { CVector2i(borderSize, borderSize + elementSize * intSelected), { borderSize, 2 * borderSize + elementSize * (intSelected + 1) }, { GetWidth() - borderSize, borderSize + elementSize * intSelected }, { GetWidth() - borderSize, 2 * borderSize + elementSize * (intSelected + 1) } }, {});
-			}
-			renderer.SetColor(theme.text.color);
-			for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
-			{
-				if (borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize) > GetHeight())
-					break;
-				PrintText(renderer, m_textWriter, borderSize, borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize), GetWidth(), static_cast<int>(theme.text.fontSize * m_scale), m_items[i], theme.text, m_scale);
-			}
-			m_scrollbar.Draw(renderer);
-		}, *m_cache, GetWidth(), GetHeight());
+		if (borderSize + elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize) > GetHeight())
+			break;
+		int y = elementSize * (static_cast<int>(i) - m_scrollbar.GetPosition() / elementSize);
+		renderer.DrawText({ borderSize, borderSize + y, GetWidth() - borderSize, borderSize + y + static_cast<int>(theme.text.fontSize * m_scale) }, m_items[i], theme.text, m_scale);
 	}
-	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TriangleStrip,
-		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
-		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
-	UIElement::Draw(renderer);
-	renderer.PopMatrix();
+	m_scrollbar.Draw(renderer);
 }
 
 bool UIList::LeftMouseButtonDown(int x, int y)

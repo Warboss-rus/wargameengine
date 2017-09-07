@@ -4,19 +4,16 @@
 
 namespace wargameEngine
 {
-namespace view
-{
-class IRenderer;
-}
-
 namespace ui
 {
+class IUIRenderer;
+
 class UIScrollBar
 {
 public:
 	UIScrollBar(std::shared_ptr<UITheme> theme);
 	void Update(int size, int contentSize, int width, int step);
-	void Draw(view::IRenderer& renderer) const;
+	void Draw(IUIRenderer& renderer) const;
 	bool LeftMouseButtonDown(int x, int y);
 	bool LeftMouseButtonUp(int x, int y);
 	bool OnMouseMove(int x, int y);

@@ -14,6 +14,7 @@
 #include "ISoundPlayer.h"
 #include "Material.h"
 #include "PerfomanceMeter.h"
+#include "UIRenderer.h"
 
 using namespace std;
 using namespace placeholders;
@@ -26,17 +27,16 @@ namespace view
 static const string g_controllerTag = "controller";
 template<class T> struct always_false : std::false_type {};
 
-View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextWriter& textWriter, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
+View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextRasterizer& textRasterizer, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
 	vector<unique_ptr<IImageReader>>& imageReaders, vector<unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager)
 	: m_window(window)
 	, m_renderer(m_window.GetRenderer())
 	, m_viewHelper(m_window.GetViewHelper())
 	, m_input(m_window.GetInput())
 	, m_soundPlayer(soundPlayer)
-	, m_textWriter(textWriter)
+	, m_textWriter(textRasterizer)
 	, m_threadPool(threadPool)
 	, m_boundingManager(boundingManager)
-	, m_ui(m_textWriter)
 	, m_modelManager(m_boundingManager, asyncFileProvider)
 	, m_textureManager(m_viewHelper, asyncFileProvider)
 {
@@ -234,7 +234,8 @@ void View::DrawUI()
 {
 	m_renderer.SetColor(0, 0, 0);
 	m_viewHelper.DrawIn2D([this] {
-		m_ui.Draw(m_renderer);
+		UIRenderer uiRenderer(m_renderer, m_textWriter, m_textureManager);
+		m_ui.Draw(uiRenderer);
 	});
 }
 

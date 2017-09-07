@@ -1,26 +1,22 @@
 #pragma once
 #include "..\view\KeyDefines.h"
 #include <functional>
-#include <memory>
 #include <string>
 #include <vector>
+#include "..\Typedefs.h"
 
 namespace wargameEngine
 {
-namespace view
-{
-class IRenderer;
-}
-
 namespace ui
 {
 struct UITheme;
+class IUIRenderer;
 
 class IUIElement
 {
 public:
 	virtual ~IUIElement() {}
-	virtual void Draw(view::IRenderer& renderer) const = 0;
+	virtual void Draw(IUIRenderer& renderer) const = 0;
 	virtual IUIElement* GetChildByName(std::string const& name) = 0;
 	virtual void DeleteChild(std::string const& name) = 0;
 	virtual void DeleteChild(IUIElement* element) = 0;
@@ -51,7 +47,7 @@ public:
 	virtual void Resize(int windowHeight, int windowWidth) = 0;
 	virtual void SetOnChangeCallback(std::function<void()> const& onChange) = 0;
 	virtual void SetOnClickCallback(std::function<void()> const& onClick) = 0;
-	virtual void SetBackgroundImage(std::string const& image) = 0;
+	virtual void SetBackgroundImage(Path const& image) = 0;
 	virtual void SetState(bool state) = 0;
 	virtual bool GetState() const = 0;
 	virtual void Invalidate(bool resetTexture = false) const = 0;

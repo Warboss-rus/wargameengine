@@ -1,13 +1,11 @@
 #include "UIWindow.h"
-#include "../view/IRenderer.h"
-#include "UIText.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-CUIWindow::CUIWindow(int width, int height, std::wstring const& headerText, IUIElement* parent, view::ITextWriter& textWriter)
-	: UIElement(parent->GetWidth() / 2, parent->GetHeight() / 2, height, width, parent, textWriter)
+CUIWindow::CUIWindow(int width, int height, std::wstring const& headerText, IUIElement* parent)
+	: UICachedElement(parent->GetWidth() / 2, parent->GetHeight() / 2, height, width, parent)
 	, m_headerText(headerText)
 	, m_dragging(false)
 {
@@ -15,48 +13,15 @@ CUIWindow::CUIWindow(int width, int height, std::wstring const& headerText, IUIE
 	m_y = (600 - m_height) / 2;
 }
 
-void CUIWindow::Draw(view::IRenderer& renderer) const
+void CUIWindow::DoPaint(IUIRenderer& renderer) const
 {
-	if (!m_visible)
-		return;
-	renderer.PushMatrix();
-	renderer.Translate(GetX(), GetY(), 0);
 	auto& theme = m_theme->window;
-	if (!m_cache)
-	{
-		m_cache = renderer.CreateTexture(nullptr, GetWidth(), GetHeight(), CachedTextureType::RenderTarget);
-	}
-	if (m_invalidated)
-	{
-		renderer.RenderToTexture([this, &renderer]() {
-			renderer.UnbindTexture();
-			auto& theme = m_theme->window;
-			renderer.SetColor(theme.headerColor);
-			int headerHeight = static_cast<int>(theme.headerHeight * m_scale);
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i(0, 0), { 0, headerHeight }, { GetWidth(), 0 }, { GetWidth(), headerHeight } }, {});
-			renderer.SetTexture(m_theme->texture);
-			int buttonSize = static_cast<int>(theme.buttonSize * m_scale);
-			int right = GetWidth() - buttonSize;
-			float* texCoord = theme.closeButtonTexCoord;
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i(right, 0), { right, buttonSize }, { GetWidth(), 0 }, { GetWidth(), buttonSize } },
-				{ CVector2f(texCoord[0], texCoord[1]), { texCoord[0], texCoord[3] }, { texCoord[2], texCoord[1] }, { texCoord[2], texCoord[3] } });
-			renderer.UnbindTexture();
-			renderer.SetColor(m_theme->defaultColor);
-			renderer.RenderArrays(RenderMode::TriangleStrip,
-				{ CVector2i(0, headerHeight), { GetWidth(), headerHeight }, { 0, GetHeight() }, { GetWidth(), GetHeight() }, }, {});
-			PrintText(renderer, m_textWriter, 0, 0, GetWidth() - buttonSize, headerHeight, m_headerText, theme.headerText, m_scale);
-
-		}, *m_cache, GetWidth(), GetHeight());
-	}
-	renderer.SetTexture(*m_cache);
-	renderer.RenderArrays(RenderMode::TriangleStrip,
-		{ CVector2i(0, 0), { GetWidth(), 0 }, { 0, GetHeight() }, { GetWidth(), GetHeight() } },
-		{ CVector2f(0.0f, 0.0f), { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f } });
-	renderer.Translate(0, theme.headerHeight, 0);
-	UIElement::Draw(renderer);
-	renderer.PopMatrix();
+	int headerHeight = static_cast<int>(theme.headerHeight * m_scale);
+	renderer.DrawRect({ 0, 0, GetWidth(), headerHeight }, theme.headerColor);
+	int buttonSize = static_cast<int>(theme.buttonSize * m_scale);
+	renderer.DrawTexturedRect({ GetWidth() - buttonSize, 0, GetWidth(), buttonSize }, theme.closeButtonTexCoord, m_theme->texture);
+	renderer.DrawRect({ 0, headerHeight, GetWidth(), GetHeight() }, m_theme->defaultColor);
+	renderer.DrawText({ 0, 0, GetWidth() - buttonSize, headerHeight }, m_headerText, theme.headerText, m_scale);
 }
 
 bool CUIWindow::LeftMouseButtonDown(int x, int y)

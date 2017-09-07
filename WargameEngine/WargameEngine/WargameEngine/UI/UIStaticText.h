@@ -1,14 +1,14 @@
-#include "UIElement.h"
+#include "UICachedElement.h"
 
 namespace wargameEngine
 {
 namespace ui
 {
-class UIStaticText : public UIElement
+class UIStaticText : public UICachedElement
 {
 public:
-	UIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent, view::ITextWriter& textWriter);
-	void Draw(view::IRenderer& renderer) const override;
+	UIStaticText(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent);
+	void DoPaint(IUIRenderer& renderer) const override;
 	std::wstring const GetText() const override;
 	void SetText(std::wstring const& text) override;
 
