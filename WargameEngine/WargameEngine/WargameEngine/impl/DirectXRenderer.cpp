@@ -223,7 +223,6 @@ float GetAspectRatio(HWND m_hWnd)
 
 CDirectXRenderer::CDirectXRenderer(HWND hWnd)
 	:m_hWnd(hWnd)
-	, m_textureManager(nullptr)
 	, m_shaderManager(this)
 {
 	DXGI_SWAP_CHAIN_DESC scd;
@@ -498,11 +497,6 @@ void CDirectXRenderer::PopMatrix()
 	m_matricesChanged = true;
 }
 
-void CDirectXRenderer::Translate(int dx, int dy, int dz)
-{
-	Translate(CVector3f(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz)));
-}
-
 void CDirectXRenderer::Translate(const CVector3f& delta)
 {
 	if (abs(delta.x) < FLT_EPSILON && abs(delta.y) < FLT_EPSILON && abs(delta.z) < FLT_EPSILON) return;
@@ -567,19 +561,6 @@ void CDirectXRenderer::LookAt(CVector3f const& position, CVector3f const& direct
 	m_viewMatrix = Store(DirectX::XMMatrixLookAtLH(pos, dir, upVec));
 	*m_modelMatrix = Store(DirectX::XMMatrixIdentity());
 	m_matricesChanged = true;
-}
-
-void CDirectXRenderer::SetTexture(const Path& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
-{
-	if (texture.empty())
-	{
-		return UnbindTexture();
-	}
-	if (forceLoadNow)
-	{
-		m_textureManager->LoadTextureNow(texture, flags);
-	}
-	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
 
 void CDirectXRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)
@@ -831,11 +812,6 @@ void CDirectXRenderer::ClearBuffers(bool color /*= true*/, bool depth /*= true*/
 	FLOAT backgroundColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	if(backbuffer && color) m_devcon->ClearRenderTargetView(backbuffer, backgroundColor);
 	if (depthBuffer && depth) m_devcon->ClearDepthStencilView(depthBuffer, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-}
-
-void CDirectXRenderer::SetTextureManager(TextureManager& texMan)
-{
-	m_textureManager = &texMan;
 }
 
 void CDirectXRenderer::UnbindTexture(TextureSlot slot)

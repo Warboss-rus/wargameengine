@@ -11,12 +11,13 @@ namespace view
 {
 class IRenderer;
 class IShaderProgram;
+class TextureManager;
 
 class ParticleSystem
 {
 public:
 	void SetShaders(const Path& vertex, const Path& fragment, IRenderer& renderer);
-	void Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer);
+	void Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer, TextureManager& textureManager);
 	model::IParticleUpdater* GetParticleUpdater(const Path& path);
 private:
 	std::unordered_map<Path, ParticleModel> m_models;

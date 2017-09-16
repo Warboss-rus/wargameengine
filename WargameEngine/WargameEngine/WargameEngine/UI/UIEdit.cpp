@@ -4,8 +4,9 @@ namespace wargameEngine
 {
 namespace ui
 {
-UIEdit::UIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent)
+UIEdit::UIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent, IUITextHelper& textHelper)
 	: UICachedElement(x, y, height, width, parent)
+	, m_textHelper(textHelper)
 	, m_text(text)
 	, m_pos(0)
 	, m_beginSelection(0)
@@ -176,7 +177,7 @@ void UIEdit::SetCursorPos(int x)
 {
 	int pos = x - GetX();
 	auto& text = m_theme->edit.text;
-	if (pos > 0)//m_textWriter.GetStringWidth(text.font, text.fontSize, m_text))
+	if (pos > m_textHelper.GetStringWidth(m_text, text.font, text.fontSize))
 	{
 		m_pos = m_text.size();
 		return;
@@ -186,7 +187,7 @@ void UIEdit::SetCursorPos(int x)
 	while (begin < end - 1)
 	{
 		size_t divider = (end + begin) / 2;
-		if (/*m_textWriter.GetStringWidth(text.font, text.fontSize, m_text.substr(0, divider))*/0 > pos)
+		if (m_textHelper.GetStringWidth(m_text.substr(0, divider), text.font, text.fontSize) > pos)
 		{
 			end = divider;
 		}

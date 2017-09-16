@@ -137,7 +137,6 @@ public:
 	void PushMatrix() override;
 	void PopMatrix() override;
 	void Translate(const CVector3f& delta) override;
-	void Translate(int dx, int dy, int dz = 0) override;
 	void Rotate(float angle, const CVector3f& axis) override;
 	void Rotate(const CVector3f& angles) override;
 	void Scale(float scale) override;
@@ -146,7 +145,6 @@ public:
 	void SetModelMatrix(const float* matrix) override;
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
-	void SetTexture(const wargameEngine::Path& texture, bool forceLoadNow = false, int flags = 0) override;
 	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::Diffuse) override;
 	void UnbindTexture(TextureSlot slot = TextureSlot::Diffuse) override;
 	void RenderToTexture(std::function<void()> const& func, ICachedTexture& texture, unsigned int width, unsigned int height) override;
@@ -175,7 +173,6 @@ public:
 
 	//IViewHelper
 	std::unique_ptr<wargameEngine::view::IFrameBuffer> CreateFramebuffer() const override;
-	void SetTextureManager(wargameEngine::view::TextureManager& textureManager) override;
 
 	void WindowCoordsToWorldVector(wargameEngine::view::IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const override;
 	void WorldCoordsToWindowCoords(wargameEngine::view::IViewport& viewport, CVector3f const& worldCoords, int& x, int& y) const override;
@@ -233,7 +230,6 @@ private:
 	std::unique_ptr<wargameEngine::view::IShaderProgram> m_defaultProgram;
 	std::unique_ptr<CVulkanVertexAttribCache> m_emptyBuffer;
 	VkViewport m_viewport;
-	wargameEngine::view::TextureManager* m_textureManager = nullptr;
 	CMatrixManagerGLM m_matrixManager;
 	std::deque<std::pair<VkImage, int>> m_imagesToDestroy;
 	std::deque<std::pair<VkImageView, int>> m_imageViewsToDestroy;

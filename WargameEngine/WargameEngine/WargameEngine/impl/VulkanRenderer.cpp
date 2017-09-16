@@ -640,11 +640,6 @@ void CVulkanRenderer::ClearBuffers(bool /*color = true*/, bool depth /*= true*/)
 	vkCmdBindPipeline(*m_activeCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHelper.GetPipeline());
 }
 
-void CVulkanRenderer::SetTextureManager(TextureManager& textureManager)
-{
-	m_textureManager = &textureManager;
-}
-
 void CVulkanRenderer::UnbindTexture(TextureSlot slot /*= TextureSlot::eDiffuse*/)
 {
 	SetTexture(*m_emptyTexture);
@@ -793,11 +788,6 @@ void CVulkanRenderer::Translate(const CVector3f& delta)
 	m_matrixManager.Translate(delta.x, delta.y, delta.z);
 }
 
-void CVulkanRenderer::Translate(int dx, int dy, int dz)
-{
-	m_matrixManager.Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
-}
-
 void CVulkanRenderer::Rotate(float angle, const CVector3f& axis)
 {
 	m_matrixManager.Rotate(angle, axis);
@@ -831,15 +821,6 @@ void CVulkanRenderer::SetModelMatrix(const float* matrix)
 void CVulkanRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
 	m_matrixManager.LookAt(position, direction, -up, true);
-}
-
-void CVulkanRenderer::SetTexture(const Path& texture, bool forceLoadNow /*= false*/, int flags /*= 0*/)
-{
-	if (forceLoadNow)
-	{
-		m_textureManager->LoadTextureNow(texture, flags);
-	}
-	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
 
 void CVulkanRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)

@@ -12,7 +12,6 @@ using wargameEngine::view::ICachedTexture;
 using wargameEngine::view::IOcclusionQuery;
 using wargameEngine::view::IViewport;
 using wargameEngine::view::IFrameBuffer;
-using wargameEngine::view::TextureManager;
 using wargameEngine::view::TextureMipMaps;
 using wargameEngine::view::IShaderManager;
 
@@ -42,7 +41,6 @@ public:
 	void PushMatrix() override;
 	void PopMatrix() override;
 	void Translate(const CVector3f& delta) override;
-	void Translate(int dx, int dy, int dz) override;
 	void Rotate(float angle, const CVector3f& axis) override;
 	void Rotate(const CVector3f& angles) override;
 	void Scale(float scale) override;
@@ -51,7 +49,6 @@ public:
 	void SetModelMatrix(const float* matrix) override;
 	void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 	
-	void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) override;
 	void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::Diffuse) override;
 	void UnbindTexture(TextureSlot slot = TextureSlot::Diffuse) override;
 	void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
@@ -79,7 +76,6 @@ public:
 	void SetUpViewport(unsigned int viewportX, unsigned int viewportY, unsigned int viewportWidth, unsigned int viewportHeight, float viewingAngle, float nearPane = 1.0f, float farPane = 1000.0f) override;
 	void EnablePolygonOffset(bool enable, float factor = 0.0f, float units = 0.0f) override;
 	void ClearBuffers(bool color = true, bool depth = true) override;
-	void SetTextureManager(TextureManager & textureManager) override;
 	void DrawIn2D(std::function<void()> const& drawHandler) override;
 
 	std::unique_ptr<ICachedTexture> CreateEmptyTexture(bool cubemap) override;
@@ -114,7 +110,6 @@ private:
 	CComPtr<ID3D11Device> m_dev;
 	CComPtr<ID3D11DeviceContext> m_devcon;
 	HWND m_hWnd;
-	TextureManager * m_textureManager;
 	CShaderManagerDirectX m_shaderManager;
 	CComPtr<ID3D11DepthStencilState> m_depthState[4];
 	CComPtr<ID3D11BlendState> m_blendStates[2];

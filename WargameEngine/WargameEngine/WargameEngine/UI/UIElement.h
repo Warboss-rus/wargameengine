@@ -56,7 +56,7 @@ public:
 	IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) override;
 	IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState) override;
 	IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring>* items = nullptr) override;
-	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) override;
+	IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text, IUITextHelper& textHelper) override;
 	IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) override;
 	IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) override;
 	IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) override;

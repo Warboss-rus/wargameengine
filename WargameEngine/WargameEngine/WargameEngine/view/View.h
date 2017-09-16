@@ -51,6 +51,7 @@ public:
 	IViewHelper& GetViewHelper();
 	IInput& GetInput();
 	ParticleSystem& GetParticleSystem();
+	TextWriter& GetTextWriter();
 
 	size_t GetViewportCount() const;
 	Viewport& GetViewport(size_t index = 0);

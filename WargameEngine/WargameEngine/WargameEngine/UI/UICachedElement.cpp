@@ -9,7 +9,7 @@ void UICachedElement::Draw(IUIRenderer& renderer) const
 {
 	if (!m_visible)
 		return;
-	renderer.Translate(GetX(), GetY());
+	ScopedTranslation translation(renderer, GetX(), GetY());
 	if (!m_cache)
 	{
 		m_cache = renderer.CreateTexture(GetWidth(), GetHeight());
@@ -22,7 +22,6 @@ void UICachedElement::Draw(IUIRenderer& renderer) const
 	}
 	renderer.DrawCachedTexture(m_cache);
 	UIElement::Draw(renderer);
-	renderer.Restore();
 }
 
 }

@@ -7,7 +7,8 @@ namespace wargameEngine
 namespace view
 {
 SkyBox::SkyBox(float width, float height, float length, const Path& imageFolder, TextureManager& texMan)
-	: m_height(height)
+	: m_textureManager(texMan)
+	, m_height(height)
 	, m_width(width)
 	, m_length(length)
 {
@@ -65,22 +66,28 @@ void SkyBox::Draw(IRenderer& renderer, CVector3f const& pos, float scale)
 		renderer.Scale(1.0f / scale);
 		static const std::array<CVector2f, 4> texCoords = { CVector2f(1.0f, 0.0f), { 1.0f, 1.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f } };
 		// Top side
-		renderer.SetTexture(m_images[4], false, TextureFlags::TEXTURE_NO_WRAP);
+		auto texture = m_textureManager.GetTexturePtr(m_images[4], nullptr, TextureFlags::TEXTURE_NO_WRAP);
+		renderer.SetTexture(*texture);
 		renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector3f(m_width, 0.0f, m_length), { 0.0f, 0.0f, m_length }, { m_width, m_height, m_length }, { 0.0f, m_height, m_length } }, {}, texCoords);
 		// Bottom side
-		renderer.SetTexture(m_images[5], false, TextureFlags::TEXTURE_NO_WRAP);
+		texture = m_textureManager.GetTexturePtr(m_images[5], nullptr, TextureFlags::TEXTURE_NO_WRAP);
+		renderer.SetTexture(*texture);
 		renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector3f(0.0f, 0.0f, 0.0f), { m_width, 0.0f, 0.0f }, { 0.0f, m_height, 0.0f }, { m_width, m_height, 0.0f } }, {}, texCoords);
 		// Front side
-		renderer.SetTexture(m_images[3], false, TextureFlags::TEXTURE_NO_WRAP);
+		texture = m_textureManager.GetTexturePtr(m_images[3], nullptr, TextureFlags::TEXTURE_NO_WRAP);
+		renderer.SetTexture(*texture);
 		renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector3f(0.0f, 0.0f, 0.0f), { 0.0f, 0.0f, m_length }, { m_width, 0.0f, 0.0f }, { m_width, 0.0f, m_length } }, {}, texCoords);
 		// Back side
-		renderer.SetTexture(m_images[2], false, TextureFlags::TEXTURE_NO_WRAP);
+		texture = m_textureManager.GetTexturePtr(m_images[2], nullptr, TextureFlags::TEXTURE_NO_WRAP);
+		renderer.SetTexture(*texture);
 		renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector3f(m_width, m_height, 0.0f), { m_width, m_height, m_length }, { 0.0f, m_height, 0.0f }, { 0.0f, m_height, m_length } }, {}, texCoords);
 		// Left side
-		renderer.SetTexture(m_images[1], false, TextureFlags::TEXTURE_NO_WRAP);
+		texture = m_textureManager.GetTexturePtr(m_images[1], nullptr, TextureFlags::TEXTURE_NO_WRAP);
+		renderer.SetTexture(*texture);
 		renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector3f(0.0f, m_height, 0.0f), { 0.0f, m_height, m_length }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, m_length } }, {}, texCoords);
 		// Right side
-		renderer.SetTexture(m_images[0], false, TextureFlags::TEXTURE_NO_WRAP);
+		texture = m_textureManager.GetTexturePtr(m_images[0], nullptr, TextureFlags::TEXTURE_NO_WRAP);
+		renderer.SetTexture(*texture);
 		renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector3f(m_width, 0.0f, 0.0f), { m_width, 0.0f, m_length }, { m_width, m_height, 0.0f }, { m_width, m_height, m_length } }, {}, texCoords);
 		renderer.PopMatrix();
 	}

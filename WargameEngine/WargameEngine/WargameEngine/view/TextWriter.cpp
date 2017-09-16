@@ -76,7 +76,7 @@ void TextWriter::PrintText(IRenderer& renderer, int x, int y, std::string const&
 	}
 }
 
-int TextWriter::GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text)
+int TextWriter::GetStringHeight(std::wstring const& text, std::string const& font, unsigned int size)
 {
 	int height = 0;
 	auto& face = m_faces[{font, size}];
@@ -91,7 +91,7 @@ int TextWriter::GetStringHeight(std::string const& font, unsigned int size, std:
 	return height;
 }
 
-int TextWriter::GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text)
+int TextWriter::GetStringWidth(std::wstring const& text, std::string const& font, unsigned int size)
 {
 	int width = 0;
 	auto& face = m_faces[{font, size}];

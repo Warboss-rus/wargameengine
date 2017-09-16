@@ -15,38 +15,33 @@ UIComboBox::UIComboBox(int x, int y, int height, int width, IUIElement* parent)
 
 void UIComboBox::DoPaint(IUIRenderer& renderer) const
 {
-	int realHeight = GetHeight();
-	if (m_expanded)
-		realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
-	
 	auto& theme = m_theme->combobox;
 	int elementSize = static_cast<int>(theme.elementSize * m_scale);
-	renderer.DrawRect({ 0, 0, GetWidth(), GetHeight() }, m_theme->defaultColor);
+	renderer.DrawRect({ 0, 0, GetWidth(), GetHeaderHeight() }, m_theme->defaultColor);
 	int borderSize = static_cast<int>(theme.borderSize * m_scale);
-	renderer.DrawRect({ borderSize, borderSize, GetWidth() - borderSize, GetHeight() - borderSize }, m_theme->textfieldColor);
+	renderer.DrawRect({ borderSize, borderSize, GetWidth() - borderSize, GetHeaderHeight() - borderSize }, m_theme->textfieldColor);
 
 	if (m_selected >= 0)
 	{
-		renderer.DrawText({ borderSize, borderSize, GetWidth() - borderSize, GetHeight() - borderSize }, m_items[m_selected], theme.text, m_scale);
+		renderer.DrawText({ borderSize, borderSize, GetWidth() - borderSize, GetHeaderHeight() - borderSize }, m_items[m_selected], theme.text, m_scale);
 	}
 
 	const float* texCoords = m_expanded ? theme.expandedTexCoord : theme.texCoord;
-	int firstX = GetWidth() - static_cast<int>(GetHeight() * theme.buttonWidthCoeff);
-	renderer.DrawTexturedRect({ firstX, 0, GetWidth(), GetHeight() }, texCoords, m_theme->texture);
+	int firstX = GetWidth() - static_cast<int>(GetHeaderHeight() * theme.buttonWidthCoeff);
+	renderer.DrawTexturedRect({ firstX, 0, GetWidth(), GetHeaderHeight() }, texCoords, m_theme->texture);
 
 	if (m_expanded)
 	{
-		renderer.Translate(0, GetHeight());
+		ScopedTranslation translation(renderer, 0, GetHeaderHeight());
 		renderer.DrawRect({ 0, 0, GetWidth(), elementSize * static_cast<int>(m_items.size()) }, m_theme->textfieldColor);
 
 		for (size_t i = m_scrollbar.GetPosition() / elementSize; i < m_items.size(); ++i)
 		{
-			if (GetHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight)
+			if (GetHeaderHeight() + elementSize * static_cast<int>(i) - m_scrollbar.GetPosition() > m_windowHeight)
 				break;
 			renderer.DrawText({ borderSize, elementSize * static_cast<int>(i) - m_scrollbar.GetPosition(), GetWidth() - borderSize, elementSize * static_cast<int>(i + 1) - m_scrollbar.GetPosition() }, m_items[i], theme.text, m_scale);
 		}
 		m_scrollbar.Draw(renderer);
-		renderer.Restore();
 	}
 }
 
@@ -61,7 +56,7 @@ bool UIComboBox::LeftMouseButtonDown(int x, int y)
 	{
 		if (m_expanded)
 		{
-			if (m_scrollbar.LeftMouseButtonDown(x - GetX(), y - GetY() - GetHeight()))
+			if (m_scrollbar.LeftMouseButtonDown(x - GetX(), y - GetY() - GetHeaderHeight()))
 				return true;
 		}
 		m_pressed = true;
@@ -80,7 +75,7 @@ bool UIComboBox::LeftMouseButtonUp(int x, int y)
 		m_pressed = false;
 		return true;
 	}
-	if (m_expanded && m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY() - GetHeight()))
+	if (m_expanded && m_scrollbar.LeftMouseButtonUp(x - GetX(), y - GetY() - GetHeaderHeight()))
 		return true;
 	if (PointIsOnElement(x, y))
 	{
@@ -88,7 +83,7 @@ bool UIComboBox::LeftMouseButtonUp(int x, int y)
 		{
 			if (m_expanded && PointIsOnElement(x, y))
 			{
-				int index = (y - GetHeight() - GetY() + m_scrollbar.GetPosition()) / static_cast<int>(m_theme->combobox.elementSize * m_scale);
+				int index = (y - GetHeaderHeight() - GetY() + m_scrollbar.GetPosition()) / static_cast<int>(m_theme->combobox.elementSize * m_scale);
 				if (index >= 0)
 					m_selected = index;
 				if (m_onChange)
@@ -116,7 +111,7 @@ void UIComboBox::AddItem(std::wstring const& str)
 		m_selected = 0;
 	}
 	int elementSize = static_cast<int>(m_theme->combobox.elementSize * m_scale);
-	m_scrollbar.Update(m_windowHeight - GetX() - GetHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
+	m_scrollbar.Update(m_windowHeight - GetX() - GetHeaderHeight(), elementSize * static_cast<int>(m_items.size() + 1), GetWidth(), elementSize);
 	Invalidate(true);
 }
 
@@ -134,13 +129,14 @@ void UIComboBox::SetSelected(size_t index)
 bool UIComboBox::PointIsOnElement(int x, int y) const
 {
 	int height = GetHeight();
-	if (m_expanded)
-	{
-		height += static_cast<int>(m_theme->combobox.elementSize * m_scale * m_items.size());
-	}
 	if (x > GetX() && x < GetX() + GetWidth() && y > GetY() && y < GetY() + height)
 		return true;
 	return false;
+}
+
+int UIComboBox::GetHeaderHeight() const
+{
+	return UIElement::GetHeight();
 }
 
 void UIComboBox::DeleteItem(size_t index)
@@ -216,11 +212,19 @@ void UIComboBox::SetScale(float scale)
 	m_scrollbar.SetScale(scale);
 }
 
+int UIComboBox::GetHeight() const
+{
+	int realHeight = GetHeaderHeight();
+	if (m_expanded)
+		realHeight += static_cast<int>(m_theme->combobox.elementSize * m_items.size() * m_scale);
+	return realHeight;
+}
+
 void UIComboBox::OnMouseMove(int x, int y)
 {
 	if (m_visible && m_focused)
 		m_focused->OnMouseMove(x, y);
-	if (m_scrollbar.OnMouseMove(x - GetX(), y - GetY() - GetHeight()))
+	if (m_scrollbar.OnMouseMove(x - GetX(), y - GetY() - GetHeaderHeight()))
 	{
 		Invalidate();
 	}

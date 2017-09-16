@@ -27,9 +27,11 @@ public:
 	void Resize(int windowHeight, int windowWidth) override;
 	void SetTheme(std::shared_ptr<UITheme> const& theme) override;
 	void SetScale(float scale) override;
+	int GetHeight() const override;
 
 private:
 	bool PointIsOnElement(int x, int y) const final;
+	int GetHeaderHeight() const;
 
 	std::vector<std::wstring> m_items;
 	int m_selected;

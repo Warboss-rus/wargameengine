@@ -1,7 +1,5 @@
 #pragma once
-#include "../Typedefs.h"
 #include "../array_view.h"
-#include "../model/TeamColor.h"
 #include "Vector3.h"
 #include <functional>
 #include <memory>
@@ -75,7 +73,6 @@ public:
 	virtual void PushMatrix() = 0;
 	virtual void PopMatrix() = 0;
 	virtual void Translate(const CVector3f& delta) = 0;
-	virtual void Translate(int dx, int dy, int dz = 0) = 0;
 	virtual void Rotate(float angle, const CVector3f& axis) = 0;
 	virtual void Rotate(const CVector3f& rotations) = 0;
 	virtual void Scale(float scale) = 0;
@@ -84,7 +81,6 @@ public:
 	virtual void SetModelMatrix(const float* matrix) = 0;
 	virtual void LookAt(const CVector3f& position, const CVector3f& direction, const CVector3f& up) = 0;
 
-	virtual void SetTexture(const Path& texture, bool forceLoadNow = false, int flags = 0) = 0;
 	virtual void SetTexture(const ICachedTexture& texture, TextureSlot slot = TextureSlot::Diffuse) = 0;
 	virtual void UnbindTexture(TextureSlot slot = TextureSlot::Diffuse) = 0;
 	virtual void RenderToTexture(const std::function<void()>& func, ICachedTexture& texture, unsigned int width, unsigned int height) = 0;

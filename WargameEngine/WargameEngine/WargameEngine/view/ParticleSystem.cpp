@@ -1,6 +1,7 @@
 #include "ParticleSystem.h"
 #include "IRenderer.h"
 #include "IShaderManager.h"
+#include "TextureManager.h"
 
 using namespace std;
 
@@ -16,7 +17,7 @@ void ParticleSystem::SetShaders(const Path& vertex, const Path& fragment, IRende
 	}
 }
 
-void ParticleSystem::Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer)
+void ParticleSystem::Draw(model::ParticleEffect const& particleEffect, IRenderer & renderer, TextureManager& textureManager)
 {
 	float modelview[4][4];
 	memcpy(modelview, renderer.GetViewMatrix(), sizeof(float) * 16);
@@ -24,7 +25,8 @@ void ParticleSystem::Draw(model::ParticleEffect const& particleEffect, IRenderer
 	renderer.Translate(particleEffect.GetPosition());
 	renderer.Scale(particleEffect.GetScale());
 	auto& model = m_models.at(particleEffect.GetEffectPath());
-	renderer.SetTexture(model.GetTexture());
+	auto texture = textureManager.GetTexturePtr(model.GetTexture());
+	renderer.SetTexture(*texture);
 
 	auto size = model.GetParticleSize();
 	auto textureFrameSize = CVector2f(1.0f, 1.0f) / model.GetTextureFrameSize();

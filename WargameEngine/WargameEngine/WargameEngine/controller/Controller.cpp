@@ -57,7 +57,7 @@ void Controller::Init(view::View& view, std::function<std::unique_ptr<INetSocket
 	RegisterModelFunctions(m_scriptHandler, m_model);
 	RegisterViewFunctions(m_scriptHandler, view, asyncFileProvider);
 	RegisterControllerFunctions(m_scriptHandler, *this, asyncFileProvider, view.GetThreadPool());
-	RegisterUI(m_scriptHandler, view.GetUI(), view.GetTranslationManager());
+	RegisterUI(m_scriptHandler, view.GetUI(), view.GetTranslationManager(), view.GetTextWriter());
 	RegisterObject(m_scriptHandler, *this, m_model, view.GetModelManager());
 	RegisterViewport(m_scriptHandler, view);
 	{

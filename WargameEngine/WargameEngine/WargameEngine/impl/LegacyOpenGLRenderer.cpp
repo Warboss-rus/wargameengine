@@ -110,15 +110,6 @@ private:
 	unsigned int m_type;
 };
 
-void CLegacyGLRenderer::SetTexture(const Path& texture, bool forceLoadNow, int flags)
-{
-	if (forceLoadNow)
-	{
-		m_textureManager->LoadTextureNow(texture, flags);
-	}
-	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
-}
-
 void CLegacyGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot /*= TextureSlot::eDiffuse*/)
 {
 	if (slot != TextureSlot::Diffuse) glActiveTexture(GL_TEXTURE0 + static_cast<int>(slot));
@@ -167,7 +158,6 @@ void Bind(const void* vertices, const void* normals, const void* texCoords, GLen
 }
 
 CLegacyGLRenderer::CLegacyGLRenderer()
-	:m_textureManager(nullptr)
 {
 	glDepthFunc(GL_LESS);
 	glEnable(GL_TEXTURE_2D);
@@ -198,11 +188,6 @@ void CLegacyGLRenderer::PushMatrix()
 void CLegacyGLRenderer::PopMatrix()
 {
 	glPopMatrix();
-}
-
-void CLegacyGLRenderer::Translate(int dx, int dy, int dz)
-{
-	glTranslated(static_cast<double>(dx), static_cast<double>(dy), static_cast<double>(dz));
 }
 
 void CLegacyGLRenderer::Translate(const CVector3f& delta)
@@ -278,7 +263,7 @@ void CLegacyGLRenderer::RenderToTexture(std::function<void() > const& func, ICac
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE_EXT);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	SetTexture(L"");
+	UnbindTexture();
 	//set up buffer
 	GLint prevBuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevBuffer);
@@ -352,11 +337,6 @@ std::unique_ptr<IFrameBuffer> CLegacyGLRenderer::CreateFramebuffer() const
 IShaderManager& CLegacyGLRenderer::GetShaderManager()
 {
 	return m_shaderManager;
-}
-
-void CLegacyGLRenderer::SetTextureManager(TextureManager & textureManager)
-{
-	m_textureManager = &textureManager;
 }
 
 void CLegacyGLRenderer::SetMaterial(const float * ambient, const float * diffuse, const float * specular, float shininess)

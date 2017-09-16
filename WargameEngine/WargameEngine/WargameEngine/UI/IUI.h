@@ -11,6 +11,7 @@ namespace ui
 {
 struct UITheme;
 class IUIRenderer;
+class IUITextHelper;
 
 class IUIElement
 {
@@ -60,7 +61,7 @@ public:
 	virtual IUIElement* AddNewPanel(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewCheckBox(std::string const& name, int x, int y, int height, int width, std::wstring const& text, bool initState) = 0;
 	virtual IUIElement* AddNewComboBox(std::string const& name, int x, int y, int height, int width, std::vector<std::wstring>* items = nullptr) = 0;
-	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text) = 0;
+	virtual IUIElement* AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text, IUITextHelper& textHelper) = 0;
 	virtual IUIElement* AddNewList(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewRadioGroup(std::string const& name, int x, int y, int height, int width) = 0;
 	virtual IUIElement* AddNewWindow(std::string const& name, int height, int width, std::wstring const& headerText) = 0;

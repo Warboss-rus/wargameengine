@@ -24,7 +24,6 @@ public:
 	virtual void PushMatrix() override;
 	virtual void PopMatrix() override;
 	virtual void Translate(const CVector3f& delta) override;
-	virtual void Translate(int dx, int dy, int dz = 0) override;
 	virtual void Rotate(float angle, const CVector3f& axis) override;
 	virtual void Rotate(const CVector3f& rotations) override;
 	virtual void Scale(float scale) override;
@@ -33,7 +32,6 @@ public:
 	virtual void SetModelMatrix(const float* matrix) override;
 	virtual void LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up) override;
 
-	virtual void SetTexture(const wargameEngine::Path& texture, bool forceLoadNow = false, int flags = 0) override;
 	virtual void SetTexture(ICachedTexture const& texture, TextureSlot slot = TextureSlot::Diffuse) override;
 	virtual void UnbindTexture(TextureSlot slot = TextureSlot::Diffuse) override;
 
@@ -51,8 +49,6 @@ public:
 	virtual std::unique_ptr<wargameEngine::view::IOcclusionQuery> CreateOcclusionQuery() override;
 
 	virtual wargameEngine::view::IShaderManager& GetShaderManager()  override;
-
-	virtual void SetTextureManager(wargameEngine::view::TextureManager & textureManager) override;
 
 	virtual void WindowCoordsToWorldVector(wargameEngine::view::IViewport & viewport, int x, int y, CVector3f & start, CVector3f & end) const override;
 	virtual void WorldCoordsToWindowCoords(wargameEngine::view::IViewport & viewport, CVector3f const& worldCoords, int& x, int& y) const override;
@@ -82,7 +78,6 @@ public:
 	virtual void EnableMultisampling(bool enable) override;
 private:
 	void ResetViewMatrix();
-	wargameEngine::view::TextureManager* m_textureManager;
 	CShaderManagerLegacyGL m_shaderManager;
 	mutable float m_matrix[16];
 };

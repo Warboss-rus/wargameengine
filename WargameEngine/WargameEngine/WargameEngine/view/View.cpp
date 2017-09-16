@@ -40,7 +40,6 @@ View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextRasterizer& textRast
 	, m_modelManager(m_boundingManager, asyncFileProvider)
 	, m_textureManager(m_viewHelper, asyncFileProvider)
 {
-	m_viewHelper.SetTextureManager(m_textureManager);
 	for (auto& reader : imageReaders)
 	{
 		m_textureManager.RegisterImageReader(std::move(reader));
@@ -453,13 +452,13 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport)
 			renderer.Translate(projectile.GetCoords());
 			renderer.Rotate(projectile.GetRotations());
 			if (projectile.GetParticle())
-				m_particles.Draw(*projectile.GetParticle(), renderer);
+				m_particles.Draw(*projectile.GetParticle(), renderer, m_textureManager);
 			renderer.PopMatrix();
 		}
 		for (size_t i = 0; i < m_model->GetParticleCount(); ++i)
 		{
 			model::ParticleEffect const& effect = m_model->GetParticleEffect(i);
-			m_particles.Draw(effect, renderer);
+			m_particles.Draw(effect, renderer, m_textureManager);
 		}
 	}
 }
@@ -646,7 +645,8 @@ void View::CollectTableMeshes()
 	for (size_t i = 0; i < landscape.GetNumberOfDecals(); ++i)
 	{
 		model::Decal const& decal = landscape.GetDecal(i);
-		m_renderer.SetTexture(decal.texture);
+		auto texture = m_textureManager.GetTexturePtr(decal.texture);
+		m_renderer.SetTexture(*texture);
 		m_renderer.PushMatrix();
 		m_renderer.Translate(CVector3f(decal.x, decal.y, 0.0f));
 		m_renderer.Rotate(decal.rotation, CVector3f(0.0f, 0.0f, 1.0f));
@@ -779,6 +779,11 @@ ParticleSystem& View::GetParticleSystem()
 	return m_particles;
 }
 
+TextWriter& View::GetTextWriter()
+{
+	return m_textWriter;
+}
+
 size_t View::GetViewportCount() const
 {
 	return m_viewports.size();
@@ -812,8 +817,9 @@ void View::Preload(const Path& image)
 	if (!image.empty())
 	{
 		m_viewHelper.ClearBuffers(true, true);
-		m_viewHelper.DrawIn2D([this, &image] {
-			m_renderer.SetTexture(image);
+		auto texture = m_textureManager.GetTexturePtr(image);
+		m_viewHelper.DrawIn2D([this, texture] {
+			m_renderer.SetTexture(*texture);
 			int width = 640;
 			int height = 480;
 			m_window.GetWindowSize(width, height);

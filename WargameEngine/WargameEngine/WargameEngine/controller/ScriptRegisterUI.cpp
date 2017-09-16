@@ -12,7 +12,7 @@ namespace controller
 {
 using namespace ui;
 
-void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::TranslationManager& transMan)
+void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::TranslationManager& transMan, ui::IUITextHelper& textHelper)
 {
 	handler.RegisterMethod(CLASS_UI, NEW_BUTTON, [&, uiRoot](void* instance, IArguments const& args) {
 		if (args.GetCount() != 7)
@@ -94,7 +94,7 @@ void RegisterUI(IScriptHandler& handler, ui::IUIElement* uiRoot, view::Translati
 		int height = args.GetInt(4);
 		int width = args.GetInt(5);
 		std::wstring caption = args.GetWStr(6);
-		IUIElement* edit = c->AddNewEdit(name, x, y, height, width, transMan.GetTranslation(caption));
+		IUIElement* edit = c->AddNewEdit(name, x, y, height, width, transMan.GetTranslation(caption), textHelper);
 		return FunctionArgument(edit, CLASS_UI);
 	});
 

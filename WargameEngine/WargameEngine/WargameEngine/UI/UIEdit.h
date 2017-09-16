@@ -7,7 +7,7 @@ namespace ui
 class UIEdit : public UICachedElement
 {
 public:
-	UIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent);
+	UIEdit(int x, int y, int height, int width, std::wstring const& text, IUIElement* parent, IUITextHelper& textHelper);
 	void DoPaint(IUIRenderer& renderer) const override;
 	bool OnCharacterInput(wchar_t key) override;
 	bool OnKeyPress(view::VirtualKey key, int modifiers) override;
@@ -19,6 +19,7 @@ public:
 private:
 	void SetCursorPos(int x);
 
+	IUITextHelper& m_textHelper;
 	std::wstring m_text;
 	size_t m_pos;
 	size_t m_beginSelection;

@@ -266,9 +266,9 @@ IUIElement* UIElement::AddNewComboBox(std::string const& name, int x, int y, int
 	return item.get();
 }
 
-IUIElement* UIElement::AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text)
+IUIElement* UIElement::AddNewEdit(std::string const& name, int x, int y, int height, int width, std::wstring const& text, IUITextHelper& textHelper)
 {
-	std::shared_ptr<IUIElement> item = std::make_shared<UIEdit>(x, y, height, width, text, this);
+	std::shared_ptr<IUIElement> item = std::make_shared<UIEdit>(x, y, height, width, text, this, textHelper);
 	AddChild(name, item);
 	return item.get();
 }

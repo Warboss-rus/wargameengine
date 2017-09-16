@@ -259,8 +259,7 @@ COpenGlCachedTexture::~COpenGlCachedTexture()
 }
 
 COpenGLRenderer::COpenGLRenderer()
-	: m_textureManager(nullptr)
-	, m_currentTextures(8)
+	: m_currentTextures(8)
 {
 	if (glewInit() != GLEW_OK || !GLEW_VERSION_3_0)
 	{
@@ -465,11 +464,6 @@ void COpenGLRenderer::PopMatrix()
 	m_matrixManager.PopMatrix();
 }
 
-void COpenGLRenderer::Translate(int dx, int dy, int dz)
-{
-	m_matrixManager.Translate(static_cast<float>(dx), static_cast<float>(dy), static_cast<float>(dz));
-}
-
 void COpenGLRenderer::Translate(const CVector3f& delta)
 {
 	m_matrixManager.Translate(delta.x, delta.y, delta.z);
@@ -508,19 +502,6 @@ void COpenGLRenderer::SetModelMatrix(const float* matrix)
 void COpenGLRenderer::LookAt(CVector3f const& position, CVector3f const& direction, CVector3f const& up)
 {
 	m_matrixManager.LookAt(position, direction, up);
-}
-
-void COpenGLRenderer::SetTexture(const Path& texture, bool forceLoadNow, int flags)
-{
-	if (texture.empty())
-	{
-		return UnbindTexture();
-	}
-	if (forceLoadNow)
-	{
-		m_textureManager->LoadTextureNow(texture, flags);
-	}
-	SetTexture(*m_textureManager->GetTexturePtr(texture, nullptr, flags));
 }
 
 void COpenGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot)
@@ -872,11 +853,6 @@ bool COpenGLRenderer::ConvertBgra() const
 unique_ptr<IFrameBuffer> COpenGLRenderer::CreateFramebuffer() const
 {
 	return make_unique<COpenGLFrameBuffer>();
-}
-
-void COpenGLRenderer::SetTextureManager(TextureManager& textureManager)
-{
-	m_textureManager = &textureManager;
 }
 
 void COpenGLRenderer::WindowCoordsToWorldVector(IViewport& viewport, int x, int y, CVector3f& start, CVector3f& end) const

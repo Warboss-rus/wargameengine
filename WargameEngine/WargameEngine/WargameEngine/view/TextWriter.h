@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "..\ITextRasterizer.h"
+#include "..\UI\IUIRenderer.h"
 
 namespace wargameEngine
 {
@@ -12,7 +13,7 @@ namespace view
 class IRenderer;
 class ICachedTexture;
 
-class TextWriter
+class TextWriter : public ui::IUITextHelper
 {
 public:
 	TextWriter(ITextRasterizer& rasterizer);
@@ -20,8 +21,8 @@ public:
 
 	void Reset();
 	void PrintText(IRenderer& renderer, int x, int y, std::string const& font, unsigned int size, std::wstring const& text, int width = 0, int height = 0);
-	int GetStringHeight(std::string const& font, unsigned int size, std::wstring const& text);
-	int GetStringWidth(std::string const& font, unsigned int size, std::wstring const& text);
+	int GetStringHeight(std::wstring const& text, std::string const& font, unsigned int size) override;
+	int GetStringWidth(std::wstring const& text, std::string const& font, unsigned int size) override;
 
 private:
 	struct Glyph : ITextRasterizer::GlyphInfo

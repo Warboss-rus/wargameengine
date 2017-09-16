@@ -18,6 +18,7 @@ public:
 	void SetShaders(const Path& vertex, const Path& fragment, IShaderManager& shaderManager);
 
 private:
+	TextureManager& m_textureManager;
 	float m_height;
 	float m_width;
 	float m_length;

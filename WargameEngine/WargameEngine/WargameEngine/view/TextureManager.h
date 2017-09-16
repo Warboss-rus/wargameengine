@@ -1,5 +1,6 @@
 #pragma once
 #include "../Typedefs.h"
+#include "../model/TeamColor.h"
 #include <unordered_map>
 #include <map>
 #include <vector>
