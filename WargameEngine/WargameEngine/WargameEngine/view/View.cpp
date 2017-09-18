@@ -10,7 +10,6 @@
 #include "IImageReader.h"
 #include "IModelReader.h"
 #include "../Utils.h"
-#include "ITextWriter.h"
 #include "ISoundPlayer.h"
 #include "Material.h"
 #include "PerfomanceMeter.h"

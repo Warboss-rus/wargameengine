@@ -417,7 +417,6 @@
     <ClInclude Include="view\IWindow.h" />
     <ClInclude Include="view\ISoundPlayer.h" />
     <ClInclude Include="view\ITextureHelper.h" />
-    <ClInclude Include="view\ITextWriter.h" />
     <ClInclude Include="view\IViewHelper.h" />
     <ClInclude Include="view\IViewport.h" />
     <ClInclude Include="view\KeyDefines.h" />

@@ -39,7 +39,8 @@ void UIRenderer::DrawTexturedRect(const RectI& rect, const RectF& texCoords, con
 	{
 		if (m_boundTexture.empty())
 		{
-			m_renderer.SetColor(0, 0, 0);
+			static constexpr float BLACK_COLOR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_renderer.SetColor(BLACK_COLOR);
 		}
 		m_boundTexture = texture;
 		m_textureManager.LoadTextureNow(texture);

@@ -418,9 +418,6 @@
     <ClInclude Include="view\Matrix4.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
-    <ClInclude Include="view\ITextWriter.h">
-      <Filter>Source Files\view</Filter>
-    </ClInclude>
     <ClInclude Include="controller\ScriptRegisterFunctions.h">
       <Filter>Source Files\controller\functionRegisters</Filter>
     </ClInclude>
