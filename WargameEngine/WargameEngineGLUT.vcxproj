@@ -55,18 +55,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freeglut\include;..\libs\freetype2\include;..\libs\glew\include;..\libs\FMod\inc;..\libs\;..\libs\bullet\src;..\libs\glm;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\freeglut\lib;..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freeglut\include;..\libs\freetype2\include;..\libs\glew\include;..\libs\FMod\inc;..\libs\;..\libs\bullet\src;..\libs\glm;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\freeglut\lib;..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <LibraryPath>..\..\freeglut\lib;..\..\FMod\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\..\freeglut\include;..\..\freetype2\include;..\..\glew\include;..\..\FMod\inc;..\..\;..\..\bullet\src;..\..\glm;..\..\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\freeglut\lib;..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freeglut\include;..\libs\freetype2\include;..\libs\glew\include;..\libs\FMod\inc;..\libs\;..\libs\bullet\src;..\libs\glm;..\libs\LUA;$(IncludePath)</IncludePath>
     <IntDir>$(Configuration)_GLUT\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -123,22 +123,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\bullet\build3\vs2010\BulletCollision.vcxproj">
+    <ProjectReference Include="..\libs\bullet\build3\vs2010\BulletCollision.vcxproj">
       <Project>{51155a97-5122-7748-82ee-b5eb729a7104}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\bullet\build3\vs2010\BulletDynamics.vcxproj">
+    <ProjectReference Include="..\libs\bullet\build3\vs2010\BulletDynamics.vcxproj">
       <Project>{6c3ad969-e349-6744-ac43-b9c86102a745}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\bullet\build3\vs2010\LinearMath.vcxproj">
+    <ProjectReference Include="..\libs\bullet\build3\vs2010\LinearMath.vcxproj">
       <Project>{e57afbbf-8c5b-4d44-973d-d304dc6245c8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\freetype2\builds\windows\vc2010\freetype.vcxproj">
+    <ProjectReference Include="..\libs\freetype2\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\glew\build\vc12\glew_static.vcxproj">
+    <ProjectReference Include="..\libs\glew\build\vc12\glew_static.vcxproj">
       <Project>{664e6f0d-6784-4760-9565-d54f8eb1edf4}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\LUA\LUA.vcxproj">
+    <ProjectReference Include="..\libs\LUA\LUA.vcxproj">
       <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
     </ProjectReference>
     <ProjectReference Include="WargameEngine.vcxproj">

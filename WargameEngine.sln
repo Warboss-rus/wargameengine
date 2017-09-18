@@ -7,9 +7,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngine", "WargameEng
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssimpPlugin", "AssimpPlugin\AssimpPlugin.vcxproj", "{1DAB2629-E7AA-4068-BBC3-DE6C62148527}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "..\freetype2\builds\windows\vc2010\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "libs\freetype2\builds\windows\vc2010\freetype.vcxproj", "{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw", "..\glfw\glfw.vcxproj", "{A1E46D6E-6F4C-4974-8FDA-17203FF36F1E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw", "libs\glfw\glfw.vcxproj", "{A1E46D6E-6F4C-4974-8FDA-17203FF36F1E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineGLFW", "WargameEngine\WargameEngineGLFW.vcxproj", "{C76D278D-0186-4B57-802C-1ADCFCDA7D80}"
 EndProject
@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineDirectX", "War
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineGLUT", "WargameEngine\WargameEngineGLUT.vcxproj", "{2F8D8554-D588-48AB-A183-88D376423755}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glew_static", "..\glew\build\vc12\glew_static.vcxproj", "{664E6F0D-6784-4760-9565-D54F8EB1EDF4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glew_static", "libs\glew\build\vc12\glew_static.vcxproj", "{664E6F0D-6784-4760-9565-D54F8EB1EDF4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WargameEngineMobile", "WargameEngineMobile", "{5D1D8DAC-CFCD-467C-BA46-987AB6D25AAF}"
 EndProject
@@ -31,11 +31,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetypeMobile", "WargameEn
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BulletPhysics", "BulletPhysics", "{164F12AF-738F-4E11-A393-1F3A718E50BC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "..\bullet\build3\vs2010\BulletCollision.vcxproj", "{51155A97-5122-7748-82EE-B5EB729A7104}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "libs\bullet\build3\vs2010\BulletCollision.vcxproj", "{51155A97-5122-7748-82EE-B5EB729A7104}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "..\bullet\build3\vs2010\LinearMath.vcxproj", "{E57AFBBF-8C5B-4D44-973D-D304DC6245C8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "libs\bullet\build3\vs2010\LinearMath.vcxproj", "{E57AFBBF-8C5B-4D44-973D-D304DC6245C8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "..\bullet\build3\vs2010\BulletDynamics.vcxproj", "{6C3AD969-E349-6744-AC43-B9C86102A745}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "libs\bullet\build3\vs2010\BulletDynamics.vcxproj", "{6C3AD969-E349-6744-AC43-B9C86102A745}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletMobile", "WargameEngineMobile\BulletMobile\BulletMobile.vcxproj", "{88388191-8E3B-4C3C-8F6C-AA25DAE0A6E1}"
 EndProject
@@ -43,11 +43,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineLinux", "Warga
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{9DD17817-E849-42E3-B857-08F570CD4708}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LUA", "..\LUA\LUA.vcxproj", "{CB4CA645-DCF0-4A99-8416-B3F50D0E1781}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LUA", "libs\LUA\LUA.vcxproj", "{CB4CA645-DCF0-4A99-8416-B3F50D0E1781}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openvr_api", "..\openvr\openvr_api.vcxproj", "{CE6E0FB8-B46D-3437-8BA4-3F45E47732C4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openvr_api", "libs\openvr\openvr_api.vcxproj", "{CE6E0FB8-B46D-3437-8BA4-3F45E47732C4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPIRV-Cross", "..\SPIRV-Cross\msvc\SPIRV-Cross.vcxproj", "{977E3701-1A21-4425-B7E5-6BDF5EA062CD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPIRV-Cross", "libs\SPIRV-Cross\msvc\SPIRV-Cross.vcxproj", "{977E3701-1A21-4425-B7E5-6BDF5EA062CD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WargameEngineMobile", "WargameEngineMobile\WargameEngineMobile\WargameEngineMobile.vcxproj", "{9022827A-40BA-407A-9BF2-7CEABD2FD3D0}"
 EndProject
@@ -61,9 +61,9 @@ Project("{39E2626F-3545-4960-A6E8-258AD8476CE5}") = "WargameEngineMobileGoogleVR
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assimp", "Assimp", "{0C562BC8-35C1-40D4-9E45-F0841BD6C636}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlibstatic", "..\assimp\project\zlibstatic.vcxproj", "{1658D0BB-8E23-3D4A-B917-9117606818E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlibstatic", "libs\assimp\project\zlibstatic.vcxproj", "{1658D0BB-8E23-3D4A-B917-9117606818E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "assimp", "..\assimp\project\assimp.vcxproj", "{0F7F7F0B-E419-3705-9658-6052B2F0B95F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "assimp", "libs\assimp\project\assimp.vcxproj", "{0F7F7F0B-E419-3705-9658-6052B2F0B95F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssimpMobile", "WargameEngineMobile\AssimpMobile\AssimpMobile.vcxproj", "{91C609CA-E641-4A1F-A738-28BBBAA0A124}"
 EndProject

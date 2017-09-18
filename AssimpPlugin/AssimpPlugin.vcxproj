@@ -98,27 +98,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\libs\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\..\assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\libs\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\libs\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\libs\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\libs\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\..\assimp\include;$(IncludePath)</IncludePath>
+    <IncludePath>..\libs\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -225,10 +225,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\assimp\project\assimp.vcxproj">
+    <ProjectReference Include="..\libs\assimp\project\assimp.vcxproj">
       <Project>{0f7f7f0b-e419-3705-9658-6052b2f0b95f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\assimp\project\zlibstatic.vcxproj">
+    <ProjectReference Include="..\libs\assimp\project\zlibstatic.vcxproj">
       <Project>{1658d0bb-8e23-3d4a-b917-9117606818e9}</Project>
     </ProjectReference>
     <ProjectReference Include="..\WargameEngine\WargameEngine.vcxproj">

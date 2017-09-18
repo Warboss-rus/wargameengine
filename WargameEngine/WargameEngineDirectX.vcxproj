@@ -96,31 +96,31 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freetype2\include;..\libs\FMod\inc;..\libs\bullet\src;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freetype2\include;..\libs\FMod\inc;..\libs\bullet\src;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freetype2\include;..\libs\FMod\inc;..\libs\bullet\src;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freetype2\include;..\libs\FMod\inc;..\libs\bullet\src;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|Win32'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freetype2\include;..\libs\FMod\inc;..\libs\bullet\src;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Configuration)DirectX\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-XP|x64'">
-    <IncludePath>..\..\freetype2\include;..\..\FMod\inc;..\..\bullet\src;..\..\LUA;$(IncludePath)</IncludePath>
-    <LibraryPath>..\..\FMod\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\freetype2\include;..\libs\FMod\inc;..\libs\bullet\src;..\libs\LUA;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\FMod\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -229,19 +229,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\bullet\build3\vs2010\BulletCollision.vcxproj">
+    <ProjectReference Include="..\libs\bullet\build3\vs2010\BulletCollision.vcxproj">
       <Project>{51155a97-5122-7748-82ee-b5eb729a7104}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\bullet\build3\vs2010\BulletDynamics.vcxproj">
+    <ProjectReference Include="..\libs\bullet\build3\vs2010\BulletDynamics.vcxproj">
       <Project>{6c3ad969-e349-6744-ac43-b9c86102a745}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\bullet\build3\vs2010\LinearMath.vcxproj">
+    <ProjectReference Include="..\libs\bullet\build3\vs2010\LinearMath.vcxproj">
       <Project>{e57afbbf-8c5b-4d44-973d-d304dc6245c8}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\freetype2\builds\windows\vc2010\freetype.vcxproj">
+    <ProjectReference Include="..\libs\freetype2\builds\windows\vc2010\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\LUA\LUA.vcxproj">
+    <ProjectReference Include="..\libs\LUA\LUA.vcxproj">
       <Project>{cb4ca645-dcf0-4a99-8416-b3f50d0e1781}</Project>
     </ProjectReference>
     <ProjectReference Include="WargameEngine.vcxproj">
