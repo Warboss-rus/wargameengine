@@ -86,7 +86,6 @@ public:
 	virtual void RenderToTexture(const std::function<void()>& func, ICachedTexture& texture, unsigned int width, unsigned int height) = 0;
 	virtual std::unique_ptr<ICachedTexture> CreateTexture(const void* data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) = 0;
 
-	virtual void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) = 0;
 	virtual void SetColor(const float* color) = 0;
 	virtual void SetMaterial(const float* ambient, const float* diffuse, const float* specular, float shininess) = 0;
 

@@ -654,13 +654,6 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 	return move(texture);
 }
 
-void COpenGLRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	auto charToFloat = [](const int value) { return static_cast<float>(value) / 0xff; };
-	const float color[] = { charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a) };
-	SetColor(color);
-}
-
 void COpenGLRenderer::SetColor(const float* color)
 {
 	memcpy(m_color, color, sizeof(float) * 4);

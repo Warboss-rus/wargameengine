@@ -761,13 +761,6 @@ void CVulkanRenderer::AddVertexAttribute(IVertexBuffer& buffer, const std::strin
 	//TODO:
 }
 
-void CVulkanRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a /*= UCHAR_MAX*/)
-{
-	auto charToFloat = [](const int value) { return static_cast<float>(value) / 0xff; };
-	const float color[] = { charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a) };
-	SetColor(color);
-}
-
 void CVulkanRenderer::SetColor(const float* color)
 {
 	m_shaderManager.SetUniformValue("color", 4, 1, color);

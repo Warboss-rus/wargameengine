@@ -54,8 +54,6 @@ public:
 	void RenderToTexture(std::function<void() > const& func, ICachedTexture & texture, unsigned int width, unsigned int height) override;
 	std::unique_ptr<ICachedTexture> CreateTexture(const void * data, unsigned int width, unsigned int height, CachedTextureType type = CachedTextureType::RGBA) override;
 
-
-	void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a = 0xff) override;
 	void SetColor(const float * color) override;
 	void SetMaterial(const float * ambient, const float * diffuse, const float * specular, float shininess) override;
 

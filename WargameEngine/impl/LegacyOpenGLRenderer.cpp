@@ -240,11 +240,6 @@ void CLegacyGLRenderer::LookAt(CVector3f const& position, CVector3f const& direc
 	gluLookAt(position[0], position[1], position[2], direction[0], direction[1], direction[2], up[0], up[1], up[2]);
 }
 
-void CLegacyGLRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	glColor4ub(r, g, b, a);
-}
-
 void CLegacyGLRenderer::SetColor(const float * color)
 {
 	glColor4fv(color);

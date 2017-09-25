@@ -477,13 +477,6 @@ void CDirectXRenderer::SetColor(const float * color)
 	m_shaderManager.SetColor(color);
 }
 
-void CDirectXRenderer::SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	auto charToFloat = [](const int value) {return static_cast<float>(value) / 0xff; };
-	const float color[] = { charToFloat(r), charToFloat(g), charToFloat(b), charToFloat(a) };
-	SetColor(color);
-}
-
 void CDirectXRenderer::PushMatrix()
 {
 	m_modelMatrices.push_back(*m_modelMatrix);

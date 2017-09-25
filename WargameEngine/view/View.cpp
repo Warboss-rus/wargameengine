@@ -23,8 +23,128 @@ namespace wargameEngine
 namespace view
 {
 
-static const string g_controllerTag = "controller";
-template<class T> struct always_false : std::false_type {};
+namespace
+{
+static constexpr char g_controllerTag[] = "controller";
+
+void SetColor(IRenderer& renderer, unsigned char r, unsigned char g, unsigned char b)
+{
+	const float color[] = { static_cast<float>(r) / 255.0f, static_cast<float>(g) / 255.0f, static_cast<float>(b) / 255.0f, 1.0f };
+	renderer.SetColor(color);
+}
+
+void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object, IRenderer & renderer, float scale)
+{
+	renderer.UnbindTexture();
+	renderer.PushMatrix();
+	renderer.Translate(object.GetCoords());
+	renderer.Rotate(object.GetRotations());
+	renderer.Scale(scale);
+	CVector3f min = bbox.max;
+	CVector3f max = bbox.min;
+	SetColor(renderer, 0, 0, 255);
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] } }, {}, {});//Left
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] } }, {}, {});//Back
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] } }, {}, {});//Right
+	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] } }, {}, {}); //Front
+	SetColor(renderer, 0, 0, 0);
+	renderer.PopMatrix();
+}
+
+void DrawBBox(model::Bounding const& bounding, model::IBaseObject const& object, IRenderer & renderer)
+{
+	std::visit([&](auto&& boundingItem)->void {
+		using T = std::decay_t<decltype(boundingItem)>;
+		if constexpr (std::is_same_v<T, model::Bounding::Compound>)
+		{
+			for (const auto& item : boundingItem.items)
+			{
+				DrawBBox(item, object, renderer);
+			}
+		}
+		else if constexpr(std::is_same_v<T, model::Bounding::Box>)
+		{
+			DrawBBox(boundingItem, object, renderer, bounding.scale);
+		}
+		else
+		{
+			static_assert(std::false_type::value, "unknown bounding type");
+		}
+	}, bounding.data);
+}
+
+bool IsOutsideFrustum(IViewHelper& viewHelper, IViewport& viewport, const model::IBaseObject* obj)
+{
+	int x(-1), y(-1);
+	viewHelper.WorldCoordsToWindowCoords(viewport, obj->GetCoords(), x, y);
+	return x < viewport.GetX() || x > viewport.GetX() + viewport.GetWidth() ||
+		y < viewport.GetY() || y > viewport.GetY() + viewport.GetHeight();
+}
+
+bool operator==(const Matrix4F& first, const Matrix4F& second)
+{
+	for (size_t i = 0; i < 16; ++i)
+	{
+		if (fabs(first[i] - second[i]) > FLT_EPSILON)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+std::vector<float> GetBoundingVertices(const model::Bounding& bounding)
+{
+	return std::visit([](auto&& boundingItem)->std::vector<float> {
+		using T = std::decay_t<decltype(boundingItem)>;
+		std::vector<float> result;
+		if constexpr (std::is_same_v<T, model::Bounding::Compound>)
+		{
+			for (const auto& item : boundingItem.items)
+			{
+				auto childVertices = GetBoundingVertices(item);
+				result.insert(result.end(), childVertices.begin(), childVertices.end());
+			}
+		}
+		else if constexpr (std::is_same_v<T, model::Bounding::Box>)
+		{
+			auto min = boundingItem.min;
+			auto max = boundingItem.max;
+			std::array<CVector3f, 24> vertices = {
+				//left
+				min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },
+				{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] },
+				//back
+				min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },
+				{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] },
+				//right
+				CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,
+				{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] },
+				//front
+				CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
+				{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
+			};
+			for (auto& vec : vertices)
+			{
+				result.push_back(vec.x);
+				result.push_back(vec.y);
+				result.push_back(vec.z);
+			}
+		}
+		else
+		{
+			static_assert(std::false_type, "unknown bounding type");
+		}
+		return result;
+	}, bounding.data);
+}
+
+bool MeshComparator(const DrawableMesh& first, const DrawableMesh& second) {
+	return std::tie(first.shader, first.texturePtr, first.buffer, first.material)
+		< std::tie(second.shader, second.texturePtr, second.buffer, second.material);
+};
+
+}
 
 View::View(IWindow& window, ISoundPlayer& soundPlayer, ITextRasterizer& textRasterizer, ThreadPool& threadPool, AsyncFileProvider& asyncFileProvider,
 	vector<unique_ptr<IImageReader>>& imageReaders, vector<unique_ptr<IModelReader>>& modelReaders, model::IBoundingBoxManager & boundingManager)
@@ -230,51 +350,11 @@ void View::InitInput()
 
 void View::DrawUI()
 {
-	m_renderer.SetColor(0, 0, 0);
+	SetColor(m_renderer, 0, 0, 0);
 	m_viewHelper.DrawIn2D([this] {
 		UIRenderer uiRenderer(m_renderer, m_textWriter, m_textureManager);
 		m_ui.Draw(uiRenderer);
 	});
-}
-
-void DrawBBox(model::Bounding::Box const& bbox, model::IBaseObject const& object, IRenderer & renderer, float scale)
-{
-	renderer.UnbindTexture();
-	renderer.PushMatrix();
-	renderer.Translate(object.GetCoords());
-	renderer.Rotate(object.GetRotations());
-	renderer.Scale(scale);
-	CVector3f min = bbox.max;
-	CVector3f max = bbox.min;
-	renderer.SetColor(0, 0, 255);
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] } }, {}, {});//Left
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] } }, {}, {});//Back
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] } }, {}, {});//Right
-	renderer.RenderArrays(IRenderer::RenderMode::LineLoop, { CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] } }, {}, {}); //Front
-	renderer.SetColor(0, 0, 0);
-	renderer.PopMatrix();
-}
-
-void DrawBBox(model::Bounding const& bounding, model::IBaseObject const& object, IRenderer & renderer)
-{
-	std::visit([&](auto&& boundingItem)->void {
-		using T = std::decay_t<decltype(boundingItem)>;
-		if constexpr (std::is_same_v<T, model::Bounding::Compound>)
-		{
-			for (const auto& item : boundingItem.items)
-			{
-				DrawBBox(item, object, renderer);
-			}
-		}
-		else if constexpr(std::is_same_v<T, model::Bounding::Box>)
-		{
-			DrawBBox(boundingItem, object, renderer, bounding.scale);
-		}
-		else
-		{
-			static_assert(std::false_type::value, "unknown bounding type");
-		}
-	}, bounding.data);
 }
 
 void View::DrawBoundingBox()
@@ -342,12 +422,12 @@ void View::Update()
 	}
 	m_viewHelper.DrawIn2D([this] {
 		PerfomanceMeter::ReportFrameEnd();
-		m_renderer.SetColor(255, 255, 0);
+		SetColor(m_renderer, 255, 255, 0);
 		m_textWriter.PrintText(m_renderer, 1, 16, "times.ttf", 16, L"FPS" + std::to_wstring(PerfomanceMeter::GetFps()));
 		m_textWriter.PrintText(m_renderer, 1, 34, "times.ttf", 16, L"V" + std::to_wstring(PerfomanceMeter::GetVerticesDrawn()));
 		m_textWriter.PrintText(m_renderer, 1, 52, "times.ttf", 16, L"P" + std::to_wstring(PerfomanceMeter::GetPolygonsDrawn()));
 		m_textWriter.PrintText(m_renderer, 1, 70, "times.ttf", 16, L"DC" + std::to_wstring(PerfomanceMeter::GetDrawCalls()));
-		m_renderer.SetColor(0, 0, 0);
+		SetColor(m_renderer, 0, 0, 0);
 	});
 }
 
@@ -355,20 +435,12 @@ void View::DrawRuler(IViewport& viewport, IViewHelper& renderer)
 {
 	if (m_ruler.IsVisible())
 	{
-		m_renderer.SetColor(255, 255, 0);
+		SetColor(m_renderer, 255, 255, 0);
 		m_renderer.RenderArrays(IRenderer::RenderMode::Lines, { m_ruler.GetBegin(),m_ruler.GetEnd() }, {}, {});
-		m_renderer.SetColor(255, 255, 255);
+		SetColor(m_renderer, 255, 255, 255);
 		DrawText3D(m_ruler.GetEnd(), ToWstring(m_ruler.GetDistance(), 2), viewport, renderer);
-		m_renderer.SetColor(0, 0, 0);
+		SetColor(m_renderer, 0, 0, 0);
 	}
-}
-
-bool IsOutsideFrustum(IViewHelper& viewHelper, IViewport& viewport, const model::IBaseObject* obj)
-{
-	int x(-1), y(-1);
-	viewHelper.WorldCoordsToWindowCoords(viewport, obj->GetCoords(), x, y);
-	return x < viewport.GetX() || x > viewport.GetX() + viewport.GetWidth() ||
-		y < viewport.GetY() || y > viewport.GetY() + viewport.GetHeight();
 }
 
 void View::CollectMeshes()
@@ -460,18 +532,6 @@ void View::DrawMeshes(IViewHelper& renderer, Viewport& currentViewport)
 			m_particles.Draw(effect, renderer, m_textureManager);
 		}
 	}
-}
-
-bool operator==(const Matrix4F& first, const Matrix4F& second)
-{
-	for (size_t i = 0; i < 16; ++i)
-	{
-		if (fabs(first[i] - second[i]) > FLT_EPSILON)
-		{
-			return false;
-		}
-	}
-	return true;
 }
 
 void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>& list, bool shadowOnly)
@@ -576,7 +636,7 @@ void View::DrawMeshesList(IViewHelper &renderer, const std::vector<DrawableMesh>
 
 		if (!texture && mesh.material)
 		{
-			m_renderer.SetColor(0, 0, 0);
+			SetColor(m_renderer, 0, 0, 0);
 		}
 
 		if (mesh.skeleton)
@@ -875,52 +935,6 @@ void View::EnableGPUSkinning(bool enable)
 	m_modelManager.EnableGPUSkinning(enable);
 }
 
-std::vector<float> GetBoundingVertices(const model::Bounding& bounding)
-{
-	return std::visit([](auto&& boundingItem)->std::vector<float> {
-		using T = std::decay_t<decltype(boundingItem)>;
-		std::vector<float> result;
-		if constexpr (std::is_same_v<T, model::Bounding::Compound>)
-		{
-			for (const auto& item : boundingItem.items)
-			{
-				auto childVertices = GetBoundingVertices(item);
-				result.insert(result.end(), childVertices.begin(), childVertices.end());
-			}
-		}
-		else if constexpr (std::is_same_v<T, model::Bounding::Box>)
-		{
-			auto min = boundingItem.min;
-			auto max = boundingItem.max;
-			std::array<CVector3f, 24> vertices = {
-				//left
-				min,{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },
-				{ min[0], max[1], min[2] },{ min[0], max[1], max[2] },{ min[0], min[1], max[2] },
-				//back
-				min,{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },
-				{ min[0], min[1], max[2] },{ max[0], min[1], max[2] },{ max[0], min[1], min[2] },
-				//right
-				CVector3f(max[0], min[1], min[2]),{ max[0], max[1], min[2] }, max,
-				{ max[0], max[1], min[2] }, max,{ max[0], min[1], max[2] },
-				//front
-				CVector3f(min[0], max[1], min[2]),{ min[0], max[1], max[2] }, max,
-				{ min[0], max[1], max[2] }, max,{ max[0], max[1], min[2] }
-			};
-			for (auto& vec : vertices)
-			{
-				result.push_back(vec.x);
-				result.push_back(vec.y);
-				result.push_back(vec.z);
-			}
-		}
-		else
-		{
-			static_assert(std::always_false<T>::value, "unknown bounding type");
-		}
-		return result;
-	}, bounding.data);
-}
-
 void View::RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewport &currentViewport, IViewHelper& renderer)
 {
 	renderer.EnableColorWrite(false, false);
@@ -948,11 +962,6 @@ void View::RunOcclusionQueries(std::vector<model::IBaseObject *> objects, Viewpo
 	}
 	renderer.EnableColorWrite(true, true);
 }
-
-bool MeshComparator(const DrawableMesh& first, const DrawableMesh& second) {
-	return std::tie(first.shader, first.texturePtr, first.buffer, first.material)
-		< std::tie(second.shader, second.texturePtr, second.buffer, second.material);
-};
 
 void View::SortMeshes()
 {
