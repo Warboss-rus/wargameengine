@@ -10,8 +10,5 @@ public:
 	static void WriteLine(std::string const& line);
 	static void WriteLine(std::wstring const& line);
 	static void SetLogLocation(Path const& path);
-
-private:
-	static std::string filename;
 };
 }

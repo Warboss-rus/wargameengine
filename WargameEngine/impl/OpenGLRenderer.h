@@ -93,8 +93,6 @@ private:
 	unsigned int m_drawIndirectBuffer = 0;
 	CMatrixManagerGLM m_matrixManager;
 	std::vector<unsigned> m_currentTextures;
-	bool m_supportsMultibind = false;
-	bool m_supportsDSA = false;
 };
 
 class COpenGlCachedTexture : public wargameEngine::view::ICachedTexture

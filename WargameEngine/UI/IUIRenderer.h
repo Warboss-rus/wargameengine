@@ -60,8 +60,8 @@ public:
 	virtual void DrawLine(Point a, Point b, const float* color) = 0;
 	virtual void DrawText(const RectI& rect, std::wstring const& str, UITheme::Text const& theme, float scale) = 0;
 	virtual CachedTexture CreateTexture(int width, int height) = 0;
-	virtual void RenderToTexture(CachedTexture& texture, const std::function<void()>& handler) = 0;
-	virtual void DrawCachedTexture(const CachedTexture& texture) = 0;
+	virtual void RenderToTexture(CachedTexture& texture, int width, int height, const std::function<void()>& handler) = 0;
+	virtual void DrawCachedTexture(const CachedTexture& texture, int width, int height) = 0;
 };
 
 class ScopedTranslation

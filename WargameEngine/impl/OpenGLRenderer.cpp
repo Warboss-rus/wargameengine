@@ -230,11 +230,7 @@ GLenum RenderModeToGlEnum(IRenderer::RenderMode mode)
 	}
 }
 
-#ifdef _WINDOWS
 void APIENTRY ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/, const GLchar* message, const void* /*userParam*/)
-#else
-void ErrorCallback(GLenum /*source*/, GLenum /*type*/, GLuint /*id*/, GLenum /*severity*/, GLsizei /*length*/, const GLchar* message, const void* /*userParam*/)
-#endif
 {
 	LogWriter::WriteLine(message);
 }
@@ -278,7 +274,6 @@ COpenGLRenderer::COpenGLRenderer()
 	glGenVertexArrays(1, &m_vao);
 	glBindVertexArray(m_vao);
 
-	m_color[3] = 1.0f;
 	m_shaderManager.DoOnProgramChange([this]() {
 		m_matrixManager.InvalidateMatrices();
 		m_shaderManager.SetUniformValue("color", 4, 1, m_color);
@@ -290,8 +285,6 @@ COpenGLRenderer::COpenGLRenderer()
 	{
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	}
-	m_supportsMultibind = GLEW_ARB_multi_bind;
-	m_supportsDSA = GLEW_ARB_direct_state_access;
 }
 
 COpenGLRenderer::~COpenGLRenderer()
@@ -356,7 +349,7 @@ typedef  struct {
 
 void COpenGLRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<IndirectDraw>& indirectList, bool indexed)
 {
-	if (GL_ARB_draw_indirect && indirectList.size() > 5)
+	if (GLEW_ARB_draw_indirect && indirectList.size() > 5)
 	{
 		reinterpret_cast<COpenGLVertexBuffer&>(buffer).Bind(*this, m_shaderManager);
 		m_matrixManager.UpdateMatrices(m_shaderManager);
@@ -372,7 +365,7 @@ void COpenGLRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<Indir
 				return DrawElementsIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0, 0 };
 			});
 			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawElementsIndirectCommand), commands.data(), GL_STREAM_DRAW);
-			if (GL_ARB_multi_draw_indirect)
+			if (GLEW_ARB_multi_draw_indirect)
 			{
 				glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, indirectList.size(), sizeof(DrawElementsIndirectCommand));
 			}
@@ -391,7 +384,7 @@ void COpenGLRenderer::DrawIndirect(IVertexBuffer& buffer, const array_view<Indir
 				return DrawArraysIndirectCommand{ static_cast<GLuint>(indirect.count), static_cast<GLuint>(indirect.instances), static_cast<GLuint>(indirect.start), 0 };
 			});
 			glBufferData(GL_DRAW_INDIRECT_BUFFER, commands.size() * sizeof(DrawArraysIndirectCommand), commands.data(), GL_STREAM_DRAW);
-			if (GL_ARB_multi_draw_indirect)
+			if (GLEW_ARB_multi_draw_indirect)
 			{
 				glMultiDrawArraysIndirect(GL_TRIANGLES, NULL, indirectList.size(), sizeof(DrawArraysIndirectCommand));
 			}
@@ -445,7 +438,7 @@ void COpenGLRenderer::SetIndexBuffer(IVertexBuffer& buffer, const unsigned int* 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize * sizeof(unsigned), indexPtr, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
+	m_indexBuffer = indexBuffer;
 	reinterpret_cast<COpenGLVertexBuffer&>(buffer).SetIndexBuffer(indexBuffer);
 }
 
@@ -513,11 +506,11 @@ void COpenGLRenderer::SetTexture(ICachedTexture const& texture, TextureSlot slot
 		return;
 	}
 	m_currentTextures[slotIndex] = glTexture;
-	if (m_supportsDSA)
+	if (GLEW_ARB_direct_state_access)
 	{
 		glBindTextureUnit(slotIndex, glTexture);
 	}
-	else if (m_supportsMultibind)
+	else if (GLEW_ARB_multi_bind)
 	{
 		GLuint tex = glTexture;
 		glBindTextures(GL_TEXTURE0 + slotIndex, 1, &tex);
@@ -537,11 +530,11 @@ void COpenGLRenderer::UnbindTexture(TextureSlot slot)
 	unsigned slotIndex = static_cast<unsigned>(slot);
 	if (m_currentTextures[slotIndex] == 0)
 		return;
-	if (m_supportsDSA)
+	if (GLEW_ARB_direct_state_access)
 	{
 		glBindTextureUnit(slotIndex, 0);
 	}
-	else if (m_supportsMultibind)
+	else if (GLEW_ARB_multi_bind)
 	{
 		GLuint tex = 0;
 		glBindTextures(GL_TEXTURE0 + slotIndex, 1, &tex);
@@ -603,12 +596,12 @@ unique_ptr<ICachedTexture> COpenGLRenderer::CreateTexture(const void* data, unsi
 		{ CachedTextureType::Depth, { GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32, GL_UNSIGNED_INT } }
 	};
 
-	auto texture = make_unique<COpenGlCachedTexture>(GL_TEXTURE_2D, m_supportsDSA);
+	auto texture = make_unique<COpenGlCachedTexture>(GL_TEXTURE_2D, GLEW_ARB_direct_state_access);
 	if (width == 0 || height == 0)
 	{
 		return move(texture);
 	}
-	if (m_supportsDSA)
+	if (GLEW_ARB_direct_state_access)
 	{
 		unsigned glTexture = *texture;
 		glTextureStorage2D(glTexture, 1, get<1>(formatMap.at(type)), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
@@ -696,7 +689,7 @@ IShaderManager& COpenGLRenderer::GetShaderManager()
 
 unique_ptr<ICachedTexture> COpenGLRenderer::CreateEmptyTexture(bool cubemap)
 {
-	return make_unique<COpenGlCachedTexture>(cubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, m_supportsDSA);
+	return make_unique<COpenGlCachedTexture>(cubemap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, GLEW_ARB_direct_state_access);
 }
 
 void COpenGLRenderer::SetTextureAnisotropy(float value)
@@ -710,11 +703,11 @@ void COpenGLRenderer::SetTextureAnisotropy(float value)
 void COpenGLRenderer::UploadTexture(ICachedTexture& texture, unsigned char* data, size_t width, size_t height, unsigned short, int flags, TextureMipMaps const& mipmaps)
 {
 	GLenum format = (flags & TEXTURE_BGRA) ? ((flags & TEXTURE_HAS_ALPHA) ? GL_BGRA : GL_BGR_EXT) : ((flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB);
-	if (m_supportsDSA)
+	if (GLEW_ARB_direct_state_access)
 	{
 		unsigned glTexture = reinterpret_cast<COpenGlCachedTexture&>(texture);
-		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 		glTextureParameteri(glTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTextureParameteri(glTexture, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTextureParameteri(glTexture, GL_TEXTURE_BASE_LEVEL, 0);
@@ -735,8 +728,8 @@ void COpenGLRenderer::UploadTexture(ICachedTexture& texture, unsigned char* data
 	else
 	{
 		SetTexture(texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTexImage2D(GL_TEXTURE_2D, 0, (flags & TEXTURE_HAS_ALPHA) ? GL_RGBA : GL_RGB, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, GL_UNSIGNED_BYTE, data);
@@ -768,11 +761,11 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture& texture, unsigned 
 		{ TEXTURE_COMPRESSION_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT }
 	};
 	GLenum format = compressionMap.at(flags & TEXTURE_COMPRESSION_MASK);
-	if (m_supportsDSA)
+	if (GLEW_ARB_direct_state_access)
 	{
 		GLuint glTexture = reinterpret_cast<COpenGlCachedTexture&>(texture);
-		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTextureParameteri(glTexture, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 		glTextureParameteri(glTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTextureParameteri(glTexture, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTextureParameteri(glTexture, GL_TEXTURE_BASE_LEVEL, 0);
@@ -790,8 +783,8 @@ void COpenGLRenderer::UploadCompressedTexture(ICachedTexture& texture, unsigned 
 	else
 	{
 		SetTexture(texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_NO_WRAP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (flags & TextureFlags::TEXTURE_WRAP_CLAMP) ? GL_CLAMP_TO_EDGE : GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (flags & TEXTURE_BUILD_MIPMAPS || !mipmaps.empty()) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 

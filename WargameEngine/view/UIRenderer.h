@@ -20,11 +20,14 @@ public:
 	void DrawLine(ui::Point a, ui::Point b, const float* color) override;
 	void DrawText(const ui::RectI& rect, std::wstring const& str, ui::UITheme::Text const& theme, float scale) override;
 	CachedTexture CreateTexture(int width, int height) override;
-	void RenderToTexture(CachedTexture& texture, const std::function<void() >& handler) override;
-	void DrawCachedTexture(const CachedTexture& texture) override;
+	void RenderToTexture(CachedTexture& texture, int width, int height, const std::function<void() >& handler) override;
+	void DrawCachedTexture(const CachedTexture& texture, int width, int height) override;
 	int GetStringWidth(const std::wstring& text, const std::string& font, unsigned fontSize) override;
 	int GetStringHeight(const std::wstring& text, const std::string& font, unsigned fontSize) override;
+
 private:
+	void RenderRect(const ui::RectI& rect, const ui::RectF& texCoords);
+
 	IRenderer& m_renderer;
 	TextWriter& m_textWriter;
 	TextureManager& m_textureManager;

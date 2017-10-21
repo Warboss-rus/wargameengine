@@ -97,8 +97,7 @@ void Network::Update()
 		}
 		else if (type == 1) //state
 		{
-			char state[30];
-			sprintf(state, "State Received. Size=%zu.", m_netRecievedSize);
+			std::string state = "State Received. Size=" + std::to_string(m_netRecievedSize);
 			LogWriter::WriteLine(state);
 			m_stateManager.LoadState(stream);
 			if (m_stateRecievedCallback) m_stateRecievedCallback();

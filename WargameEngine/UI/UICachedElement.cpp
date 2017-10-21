@@ -16,11 +16,11 @@ void UICachedElement::Draw(IUIRenderer& renderer) const
 	}
 	if (m_invalidated)
 	{
-		renderer.RenderToTexture(m_cache, [this, &renderer]() {
+		renderer.RenderToTexture(m_cache, GetWidth(), GetHeight(), [this, &renderer]() {
 			DoPaint(renderer);
 		});
 	}
-	renderer.DrawCachedTexture(m_cache);
+	renderer.DrawCachedTexture(m_cache, GetWidth(), GetHeight());
 	UIElement::Draw(renderer);
 }
 

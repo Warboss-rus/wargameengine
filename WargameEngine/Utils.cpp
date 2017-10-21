@@ -9,20 +9,23 @@
 
 namespace wargameEngine
 {
+namespace
+{
+auto& GetWstringConverter()
+{
+	static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter;
+}
+}
+
 std::wstring Utf8ToWstring(std::string const& str)
 {
-	std::wstring result;
-	result.resize(str.size());
-	mbstowcs(&result[0], str.c_str(), str.size());
-	return result;
+	return GetWstringConverter().from_bytes(str);
 }
 
 std::string WStringToUtf8(std::wstring const& str)
 {
-	std::string result;
-	result.resize(str.size());
-	wcstombs(&result[0], str.c_str(), str.size());
-	return result;
+	return GetWstringConverter().to_bytes(str);
 }
 
 std::wstring ReplaceAll(std::wstring const& text, std::unordered_map<std::wstring, std::wstring> const& replaceMap)

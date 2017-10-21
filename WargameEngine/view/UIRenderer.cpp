@@ -13,12 +13,10 @@ namespace
 {
 struct UITexture : public ui::ICachedTexture
 {
-	UITexture(std::unique_ptr<view::ICachedTexture>&& texture, int width, int height)
-		: texture(std::move(texture)), width(width), height(height)
+	UITexture(std::unique_ptr<view::ICachedTexture>&& texture)
+		: texture(std::move(texture))
 	{}
 	std::unique_ptr<view::ICachedTexture> texture;
-	int width;
-	int height;
 };
 }
 
@@ -46,9 +44,7 @@ void UIRenderer::DrawTexturedRect(const RectI& rect, const RectF& texCoords, con
 		m_textureManager.LoadTextureNow(texture);
 		m_renderer.SetTexture(*m_textureManager.GetTexturePtr(texture));
 	}
-	m_renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip,
-	{ CVector2i(rect.left + m_transX, rect.top + m_transY),{ rect.right + m_transX, rect.top + m_transY },{ rect.left + m_transX, rect.bottom + m_transY },{ rect.right + m_transX, rect.bottom + m_transY } },
-	{ CVector2f(texCoords.left, texCoords.top),{ texCoords.right, texCoords.top },{ texCoords.left, texCoords.bottom },{ texCoords.right, texCoords.bottom } });
+	RenderRect(rect, texCoords);
 }
 
 void UIRenderer::DrawRect(const RectI& rect, const float* color)
@@ -94,24 +90,23 @@ void UIRenderer::DrawText(const RectI& rect, std::wstring const& str, UITheme::T
 
 IUIRenderer::CachedTexture UIRenderer::CreateTexture(int width, int height)
 {
-	return std::make_unique<UITexture>(m_renderer.CreateTexture(nullptr, width, height, IRenderer::CachedTextureType::RenderTarget), width, height);
+	return std::make_unique<UITexture>(m_renderer.CreateTexture(nullptr, width, height, IRenderer::CachedTextureType::RenderTarget));
 }
 
-void UIRenderer::RenderToTexture(CachedTexture& texture, const std::function<void() >& handler)
+void UIRenderer::RenderToTexture(CachedTexture& texture, int width, int height, const std::function<void() >& handler)
 {
 	auto& uitexture = reinterpret_cast<UITexture&>(*texture);
 	m_renderer.RenderToTexture([this, &handler] {
 		ScopedTranslation translation(*this, -m_transX, -m_transY);
 		handler();
-	}, *uitexture.texture, uitexture.width, uitexture.height);
+	}, *uitexture.texture, width, height);
 }
 
-void UIRenderer::DrawCachedTexture(const CachedTexture& texture)
+void UIRenderer::DrawCachedTexture(const CachedTexture& texture, int width, int height)
 {
 	auto& uitexture = reinterpret_cast<UITexture&>(*texture);
 	m_renderer.SetTexture(*uitexture.texture);
-	m_renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip,
-	{ CVector2i(m_transX, m_transY),{ uitexture.width + m_transX, m_transY },{ m_transX, uitexture.height + m_transY },{ uitexture.width + m_transX, uitexture.height + m_transY } }, { { 0.0f, 0.0f },{ 1.0f, 0.0f },{ 0.0f, 1.0f },{ 1.0f, 1.0f } });
+	RenderRect({ 0, 0, width, height }, { 0.0f, 0.0f, 1.0f, 1.0f });
 	m_renderer.UnbindTexture();
 	m_boundTexture.clear();
 }
@@ -124,6 +119,13 @@ int UIRenderer::GetStringWidth(const std::wstring& text, const std::string& font
 int UIRenderer::GetStringHeight(const std::wstring& text, const std::string& font, unsigned fontSize)
 {
 	return m_textWriter.GetStringHeight(text, font, fontSize);
+}
+
+void UIRenderer::RenderRect(const ui::RectI& rect, const ui::RectF& texCoords)
+{
+	m_renderer.RenderArrays(IRenderer::RenderMode::TriangleStrip, { CVector2i(rect.left + m_transX, rect.top + m_transY),{ rect.right + m_transX, rect.top },
+	{ rect.left + m_transX, rect.bottom + m_transY },{ rect.right + m_transX, rect.bottom + m_transY } },
+		{ CVector2f(texCoords.left, texCoords.top), { texCoords.right, texCoords.top }, { texCoords.left, texCoords.bottom }, { texCoords.right, texCoords.bottom } });
 }
 
 }

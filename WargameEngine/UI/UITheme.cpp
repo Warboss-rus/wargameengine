@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <memory>
 #include <string.h>
+#include <sstream>
 
 using namespace std;
 using namespace rapidxml;
@@ -25,25 +26,26 @@ float atoff(const char* ch)
 	return static_cast<float>(atof(ch));
 }
 
-void GetValues(float* array, const char* data, size_t max = UINT_MAX)
+void GetValues(float* array, char* data, size_t max = UINT_MAX)
 {
-	char* fl = strtok((char*)data, " \n\t");
-	for (size_t i = 0; (i < max) && fl; ++i)
+	for (size_t j = 0; j < strlen(data); ++j)
 	{
-		for (size_t j = 0; j < strlen(fl); ++j)
-		{
-			if (fl[j] == ',')
-				fl[j] = '.';
-		}
-		array[i] = atoff(fl);
-		fl = strtok(NULL, " \n\t");
+		if (data[j] == ',')
+			data[j] = '.';
+	}
+	std::stringstream sstream(data);
+	float token = 0.0f;
+	for(size_t i = 0; i < max && !sstream.eof(); ++i)
+	{
+		sstream >> token;
+		array[i] = token;
 	}
 }
 
 void ParseTextTheme(xml_node<>* theme, UITheme::Text& text)
 {
 	if (theme->first_attribute("color"))
-		GetValues(text.color, (char*)theme->first_attribute("color"), 3);
+		GetValues(text.color, theme->first_attribute("color")->value(), 3);
 	if (theme->first_attribute("font"))
 		text.font = theme->first_attribute("font")->value();
 	if (theme->first_attribute("fontSize"))

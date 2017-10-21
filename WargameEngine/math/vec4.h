@@ -2,15 +2,17 @@
 
 namespace wargameEngine
 {
-namespace math
+inline namespace math
 {
 template<class T>
 struct vec4T
 {
-	T x = 0;
-	T y = 0;
-	T z = 0;
-	T w = 0;
+	T x;
+	T y;
+	T z;
+	T w;
+	operator T*() { return &x; }
+	operator const T*() { return &x; }
 };
 
 using vec4 = vec4T<float>;

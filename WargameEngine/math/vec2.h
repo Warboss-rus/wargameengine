@@ -2,20 +2,15 @@
 
 namespace wargameEngine
 {
-namespace math
+inline namespace math
 {
 template<class T>
 struct vec2T
 {
-	union
-	{
-		T values[2] = { 0, 0 };
-		struct
-		{
-			T x;
-			T y;
-		};
-	};
+	T x;
+	T y;
+	operator T*() { return &x; }
+	operator const T*() { return &x; }
 };
 
 using vec2 = vec2T<float>;

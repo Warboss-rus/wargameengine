@@ -592,5 +592,8 @@
     <ClInclude Include="view\TextWriter.h">
       <Filter>Source Files\view</Filter>
     </ClInclude>
+    <ClInclude Include="math\quat.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

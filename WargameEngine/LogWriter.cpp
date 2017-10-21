@@ -5,22 +5,26 @@
 
 namespace wargameEngine
 {
-std::string LogWriter::filename;
+static Path g_logPath;
 
 void LogWriter::WriteLine(std::string const& line)
 {
+	auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	struct tm now;
+#ifdef _WINDOWS
+	localtime_s(&now, &t);
+#else
+	now = *localtime_r(&t);
+#endif
+	static std::string filename;
 	if (filename.empty())
 	{
-		time_t t = time(0);
-		struct tm* now = localtime(&t);
 		char date[30];
-		strftime(date, sizeof(date), "%x.%H-%M-%S_log.txt", now);
-		filename = /*std::string("..\\") + */ date;
+		strftime(date, sizeof(date), "%x.%H-%M-%S_log.txt", &now);
+		filename = (g_logPath / date).string();
 	}
 	std::ofstream oFile(filename, std::ofstream::app);
-	time_t t = time(0);
-	struct tm* now = localtime(&t);
-	oFile << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec << "\t" << line.c_str() << "\n";
+	oFile << now.tm_hour << ":" << now.tm_min << ":" << now.tm_sec << "\t" << line << "\n";
 	oFile.close();
 }
 
@@ -31,11 +35,7 @@ void LogWriter::WriteLine(std::wstring const& line)
 
 void LogWriter::SetLogLocation(Path const& path)
 {
-	time_t t = time(0);
-	struct tm* now = localtime(&t);
-	char date[30];
-	strftime(date, sizeof(date), "%x.%H-%M-%S_log.txt", now);
-	filename = path.string() + date;
+	g_logPath = path;
 }
 
 }
